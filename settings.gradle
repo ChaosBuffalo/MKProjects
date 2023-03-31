@@ -1,0 +1,43 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url = 'https://maven.minecraftforge.net/' }
+        maven {
+            name 'ParchmentMC'
+            url 'https://maven.parchmentmc.org'
+        }
+    }
+    resolutionStrategy {
+        eachPlugin {
+            switch (requested.id.toString()) {
+                case "net.minecraftforge.gradle": {
+                    useModule("${requested.id}:ForgeGradle:${requested.version}")
+                    break
+                }
+                case "org.spongepowered.mixin": {
+                    useModule("org.spongepowered:mixingradle:${requested.version}")
+                    break;
+                }
+            }
+        }
+    }
+}
+
+rootProject.name = "mk-platform-${minecraft_version}"
+
+include 'TargetingAPI'
+project(":TargetingAPI").buildFileName = "mono.gradle"
+include 'MKWidgets'
+project(":MKWidgets").buildFileName = "mono.gradle"
+include 'MKCore'
+project(":MKCore").buildFileName = "mono.gradle"
+include 'MKChat'
+project(":MKChat").buildFileName = "mono.gradle"
+include 'MKFaction'
+project(":MKFaction").buildFileName = "mono.gradle"
+include 'MKWeapons'
+project(":MKWeapons").buildFileName = "mono.gradle"
+include 'MKNpc'
+project(":MKNpc").buildFileName = 'mono.gradle'
+include 'MKUltra'
+project(":MKUltra").buildFileName = 'mono.gradle'
