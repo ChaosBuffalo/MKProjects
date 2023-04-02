@@ -1,0 +1,18 @@
+plugins {
+    id "com.google.cloud.artifactregistry.gradle-plugin" version "2.1.5"
+    id "mk-platform"
+}
+
+
+version = "${minecraft_version}-${mknpc_version}"
+project.ext.base_version = version
+project.ext.dependentProjects = [
+        project(":TargetingAPI"),
+        project(":MKWidgets"),
+        project(":MKCore"),
+        project(":MKChat"),
+        project(":MKFaction"),
+        project(":MKWeapons")
+]
+
+apply from: '../common.gradle'

@@ -1,0 +1,16 @@
+{
+  "type": "mknpc:test_jigsaw",
+  "config": {
+    "start_pool": "mknpc:digger/diggerbase",
+    "size": 7
+  },
+  "biomes": "#minecraft:is_forest",
+  "adapt_noise": false,
+  "spawn_overrides": {
+    "monster": {
+      "bounding_box": "piece",
+      "spawns": [
+      ]
+    }
+  }
+}

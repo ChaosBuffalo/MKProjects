@@ -1,0 +1,16 @@
+{
+  "name": "mknpc:digger/diggerbase",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "location": "mknpc:digger/diggerbig1",
+        "projection": "rigid",
+        "element_type": "mknpc:mk_single_jigsaw",
+        "processors": [],
+        "bWaterLog": false
+      }
+    }
+  ]
+}

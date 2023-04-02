@@ -1,0 +1,26 @@
+{
+  "name": "mknpc:digger/diggercamp",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "location": "mknpc:digger/diggertentdbl1",
+        "projection": "rigid",
+        "element_type": "mknpc:mk_single_jigsaw",
+        "processors": [],
+        "bWaterLog": false
+      }
+    },
+    {
+      "weight": 1,
+      "element": {
+        "location": "mknpc:digger/diggertentsgl1",
+        "projection": "rigid",
+        "element_type": "mknpc:mk_single_jigsaw",
+        "processors": [],
+        "bWaterLog": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "entityType": "mknpc:zombified_piglin",
+  "options": [
+    {
+      "optionType": "mknpc:attributes",
+      "attributes": [
+        {
+          "attributeName": "minecraft:generic.max_health",
+          "value": 100.0
+        }
+      ]
+    },
+    {
+      "optionType": "mknpc:dialogue",
+      "value": "mkchat:test"
+    },
+    {
+      "optionType": "mknpc:name",
+      "value": "Test Lady"
+    },
+    {
+      "optionType": "mknpc:equipment",
+      "slotOptions": {
+        "mainhand": [
+          {
+            "weight": 5.0,
+            "dropChance": 1.1,
+            "item": "{id: \"mkweapons:katana_iron\", Count: 1b, tag: {Damage: 0}}"
+          },
+          {
+            "weight": 10.0,
+            "dropChance": 1.1,
+            "item": "{id: \"mkweapons:dagger_iron\", Count: 1b, tag: {Damage: 0}}"
+          }
+        ],
+        "chest": [
+          {
+            "weight": 5.0,
+            "dropChance": 1.1,
+            "item": "{id: \"minecraft:golden_chestplate\", Count: 1b, tag: {Damage: 0}}"
+          }
+        ],
+        "head": [
+          {
+            "weight": 5.0,
+            "dropChance": 1.1,
+            "item": "{id: \"minecraft:golden_helmet\", Count: 1b, tag: {Damage: 0}}"
+          }
+        ]
+      }
+    },
+    {
+      "optionType": "mknpc:faction",
+      "value": "mkfaction:villagers"
+    }
+  ]
+}

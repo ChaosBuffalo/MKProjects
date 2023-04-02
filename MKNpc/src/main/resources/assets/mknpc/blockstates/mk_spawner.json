@@ -1,0 +1,20 @@
+{
+  "variants":
+  {
+    "orientation=east": {
+      "model": "mknpc:block/mk_spawner",
+      "y": 90
+    },
+    "orientation=north": {
+      "model": "mknpc:block/mk_spawner"
+    },
+    "orientation=south": {
+      "model": "mknpc:block/mk_spawner",
+      "y": 180
+    },
+    "orientation=west": {
+      "model": "mknpc:block/mk_spawner",
+      "y": 270
+    }
+  }
+}

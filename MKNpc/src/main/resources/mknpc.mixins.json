@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "com.chaosbuffalo.mknpc.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "mknpc.refmap.json",
+  "mixins": [
+    "StructureStartMixins",
+    "LivingRendererMixins",
+    "StructureMixins"
+  ],
+  "client": [
+    "LivingRendererMixins"
+  ],
+  "minVersion": "0.8"
+}

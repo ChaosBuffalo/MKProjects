@@ -1,0 +1,18 @@
+{
+  "parent": "mknpc:test",
+  "options": [
+    {
+      "optionType": "mknpc:notable",
+      "value": true
+    },
+    {
+      "optionType": "mknpc:faction_name",
+      "title": "Chief",
+      "hasLastName": true
+    },
+    {
+      "optionType": "mknpc:faction",
+      "value": "mkfaction:undead"
+    }
+  ]
+}

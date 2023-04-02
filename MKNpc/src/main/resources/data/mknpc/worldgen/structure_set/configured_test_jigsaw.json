@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "mknpc:configured_test_jigsaw",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "salt": 32441244,
+    "spacing": 10,
+    "separation": 5,
+    "type": "minecraft:random_spread"
+  }
+}

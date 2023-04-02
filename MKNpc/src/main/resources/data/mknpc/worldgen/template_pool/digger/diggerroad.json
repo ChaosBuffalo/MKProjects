@@ -1,0 +1,16 @@
+{
+  "name": "mknpc:digger/diggerroad",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "location": "mknpc:digger/diggerrd1",
+        "projection": "terrain_matching",
+        "element_type": "mknpc:mk_single_jigsaw",
+        "processors": [],
+        "bWaterLog": false
+      }
+    }
+  ]
+}
