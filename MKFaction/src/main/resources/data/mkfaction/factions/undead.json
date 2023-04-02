@@ -1,0 +1,16 @@
+{
+  "enemies": [
+    "mkfaction:villagers"
+  ],
+  "firstNames": [
+    "Ted",
+    "James",
+    "Jolipnik"
+  ],
+  "lastNames": [
+    "Smith",
+    "Caliente",
+    "Elkins"
+  ],
+  "defaultPlayerScore": -5000
+}

@@ -1,0 +1,20 @@
+{
+  "allies": ["mkfaction:domesticated_animals"],
+  "enemies": [
+    "mkfaction:undead",
+    "mkfaction:hostile_animals",
+    "mkfaction:monsters",
+    "mkfaction:illagers"
+  ],
+  "defaultPlayerScore": 1000,
+  "firstNames": [
+    "Ted",
+    "James",
+    "Jolipnik"
+  ],
+  "lastNames": [
+    "Smith",
+    "Caliente",
+    "Elkins"
+  ]
+}

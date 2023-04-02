@@ -1,0 +1,109 @@
+{
+  "members": [
+    {
+      "name":  "mkfaction:undead",
+      "defaultMembers": [
+        "minecraft:skeleton",
+        "minecraft:zombie",
+        "minecraft:drowned",
+        "minecraft:giant",
+        "minecraft:husk",
+        "minecraft:zombie_pigman",
+        "minecraft:skeleton_horse",
+        "minecraft:stray",
+        "minecraft:vex",
+        "minecraft:wither_skeleton",
+        "minecraft:wither",
+        "minecraft:wither_skull",
+        "minecraft:zombie_horse"
+      ]
+    },
+    {
+      "name": "mkfaction:domesticated_animals",
+      "defaultMembers": [
+        "minecraft:bee",
+        "minecraft:cat",
+        "minecraft:chicken",
+        "minecraft:cow",
+        "minecraft:donkey",
+        "minecraft:horse",
+        "minecraft:llama",
+        "minecraft:mule",
+        "minecraft:parrot",
+        "minecraft:pig",
+        "minecraft:sheep",
+        "minecraft:trader_llama"
+      ]
+    },
+    {
+      "name": "mkfaction:wild_animals",
+      "defaultMembers": [
+        "minecraft:bat",
+        "minecraft:cod",
+        "minecraft:dolphin",
+        "minecraft:fox",
+        "minecraft:ocelot",
+        "minecraft:panda",
+        "minecraft:pufferfish",
+        "minecraft:rabbit",
+        "minecraft:salmon",
+        "minecraft:squid",
+        "minecraft:tropical_fish",
+        "minecraft:turtle",
+        "minecraft:wolf"
+
+      ]
+    },
+    {
+      "name": "mkfaction:hostile_animals",
+      "defaultMembers": [
+        "minecraft:cave_spider",
+        "minecraft:polar_bear",
+        "minecraft:spider"
+      ]
+    },
+    {
+      "name": "mkfaction:villagers",
+      "defaultMembers": [
+        "minecraft:villager",
+        "minecraft:iron_golem",
+        "minecraft:snow_golem",
+        "minecraft:wandering_trader"
+      ]
+    },
+    {
+      "name": "mkfaction:illagers",
+      "defaultMembers": [
+        "minecraft:evoker",
+        "minecraft:illusioner",
+        "minecraft:vindicator",
+        "minecraft:pillager",
+        "minecraft:witch",
+        "minecraft:ravager"
+      ]
+    },
+    {
+      "name": "mkfaction:monsters",
+      "defaultMembers": [
+        "minecraft:blaze",
+        "minecraft:creeper",
+        "minecraft:elder_guardian",
+        "minecraft:ender_dragon",
+        "minecraft:enderman",
+        "minecraft:endermite",
+        "minecraft:ghast",
+        "minecraft:guardian",
+        "minecraft:magma_cube",
+        "minecraft:shulker",
+        "minecraft:silverfish",
+        "minecraft:slime",
+        "minecraft:phantom"
+      ]
+    },
+    {
+      "name": "mkfaction:neutral",
+      "defaultMembers": [
+      ]
+    }
+  ]
+}
