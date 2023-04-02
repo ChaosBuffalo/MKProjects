@@ -1,0 +1,24 @@
+{
+  "required": true,
+  "package": "com.chaosbuffalo.mkcore.mixins",
+  "compatibilityLevel": "JAVA_16",
+  "refmap": "mkcore.refmap.json",
+  "mixins": [
+    "LivingEntityMixins",
+    "MobEntityMixins",
+    "ShieldItemMixins",
+    "SwordItemMixins"
+  ],
+  "injectors": {
+    "maxShiftBy": 2
+  },
+  "client": [
+    "ClientPlayerEntityMixins",
+    "InGameGuiMixins",
+    "ItemStackClientMixins",
+    "PotionSpriteUploaderMixins",
+    "WorldRendererMixins",
+    "EntityRendererDispatcherMixins"
+  ],
+  "minVersion": "0.8"
+}

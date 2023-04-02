@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "lines": [
+    {
+      "name": "knight_1",
+      "talents": [
+        {
+          "name": "mkcore:talent.max_health",
+          "max_points": 2,
+          "value": 1
+        },
+        {
+          "name": "mkcore:talent.armor",
+          "max_points": 2,
+          "value": 1
+        },
+        {
+          "name": "mkcore:talent.armor",
+          "max_points": 1,
+          "value": 1
+        },
+        {
+          "name": "mkcore:talent.max_mana",
+          "max_points": 2,
+          "value": 1
+        },
+        {
+          "name": "mkcore:talent.burning_soul",
+          "max_points": 1
+        }
+      ]
+    },
+    {
+      "name": "knight_2",
+      "talents": [
+        {
+          "name": "mkcore:talent.max_health",
+          "max_points": 4,
+          "value": 1
+        },
+        {
+          "name": "mkcore:talent.max_mana",
+          "max_points": 2,
+          "value": 1
+        },
+        {
+          "name": "mkcore:talent.heal_bonus",
+          "max_points": 3,
+          "value": 1
+        },
+        {
+          "name": "mkcore:talent.mana_regen",
+          "max_points": 2,
+          "value": 0.25
+        },
+        {
+          "name": "mkcore:talent.righteous_judgement",
+          "max_points": 1
+        }
+      ]
+    },
+    {
+      "name": "knight_3",
+      "talents": [
+        {
+          "name": "mkcore:talent.max_health",
+          "max_points": 2,
+          "value": 1
+        },
+        {
+          "name": "mkcore:talent.armor",
+          "max_points": 2,
+          "value": 1
+        },
+        {
+          "name": "mkcore:talent.mana_regen",
+          "max_points": 2,
+          "value": 0.25
+        },
+        {
+          "name": "mkcore:talent.healing_rain",
+          "max_points": 1
+        }
+      ]
+    }
+  ]
+}

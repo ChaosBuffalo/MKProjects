@@ -1,0 +1,8 @@
+{
+  "cooldown": 100,
+  "manaCost": 4.0,
+  "castTime": 40,
+  "attributes": {
+    "casting_particles": "mkcore:fx.casting.test"
+  }
+}

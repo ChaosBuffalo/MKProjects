@@ -1,0 +1,6 @@
+{
+  "cooldown": 8000,
+  "manaCost": 15.0,
+  "castTime": 60,
+  "attributes": {}
+}

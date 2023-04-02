@@ -1,0 +1,14 @@
+{
+  "parent": "minecraft:item/sword_base",
+  "textures": {
+    "layer0": "minecraft:item/wooden_sword"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "minecraft:blocking": 1.0
+      },
+      "model": "minecraft:item/wooden_sword_blocking"
+    }
+  ]
+}
