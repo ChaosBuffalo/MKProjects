@@ -1,0 +1,12 @@
+{
+  "targeting_api.targeting_context.all": "All",
+  "targeting_api.targeting_context.all_around": "Non-caster All",
+  "targeting_api.targeting_context.enemy": "Enemy",
+  "targeting_api.targeting_context.friend": "Friend",
+  "targeting_api.targeting_context.friend_around": "Non-caster Friend",
+  "targeting_api.targeting_context.neutral": "Neutral",
+  "targeting_api.targeting_context.players": "Player",
+  "targeting_api.targeting_context.players_around": "Non-caster Player",
+  "targeting_api.targeting_context.self": "Self",
+  "targeting_api.targeting_context.default": "Not Set"
+}
