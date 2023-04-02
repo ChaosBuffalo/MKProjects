@@ -1,0 +1,7 @@
+{
+  "parent": "mkweapons:item/longbow_base_pulling_2",
+  "textures": {
+    "0": "mkweapons:items/gold_tool",
+    "particle": "mkweapons:items/gold_tool"
+  }
+}

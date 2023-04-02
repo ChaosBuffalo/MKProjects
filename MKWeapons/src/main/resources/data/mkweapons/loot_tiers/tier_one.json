@@ -1,0 +1,206 @@
+{
+  "slotItems": {
+    "mkweapons:rings": [
+      {
+        "weight": 1.0,
+        "template": {
+          "potentialItems": [
+            {
+              "itemStack": "{id: \"mkweapons:copper_ring\", Count: 1b}",
+              "weight": 1.0
+            }
+          ],
+          "lootSlot": "mkweapons:rings",
+          "options": [
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 1.0,
+              "modifiers": [
+                {
+                  "Name": "mkweapons:tier_one",
+                  "Amount": 5.0,
+                  "Operation": 0,
+                  "AttributeName": "minecraft:generic.max_health",
+                  "minValue": 5.0,
+                  "maxValue": 10.0
+                }
+              ]
+            },
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 1.0,
+              "modifiers": [
+                {
+                  "Name": "mkweapons:tier_one",
+                  "Amount": 0.5,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:mana_regen",
+                  "minValue": 0.5,
+                  "maxValue": 2.0
+                }
+              ]
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "templateType": "mkweapons:simple_template_2x",
+                "slots": [
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.attributes"
+                ]
+              },
+              "weight": 10.0
+            },
+            {
+              "template": {
+                "templateType": "mkweapons:simple_template",
+                "slots": [
+                  "mkweapons:randomization.attributes"
+                ]
+              },
+              "weight": 10.0
+            }
+          ]
+        }
+      }
+    ],
+    "mkweapons:main_hand": [
+      {
+        "weight": 1.0,
+        "template": {
+          "potentialItems": [
+            {
+              "itemStack": "{id: \"mkweapons:dagger_wood\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:katana_wood\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:mace_wood\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:staff_wood\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:warhammer_wood\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:longsword_wood\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:greatsword_wood\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:battleaxe_wood\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:spear_wood\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:katana_stone\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:mace_stone\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:staff_stone\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:warhammer_stone\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:longsword_stone\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:greatsword_stone\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:battleaxe_stone\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:spear_stone\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            }
+          ],
+          "lootSlot": "mkweapons:main_hand",
+          "options": [
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 1.0,
+              "modifiers": [
+                {
+                  "Name": "mkweapons:tier_one",
+                  "Amount": 5.0,
+                  "Operation": 0,
+                  "AttributeName": "minecraft:generic.max_health",
+                  "minValue": 5.0,
+                  "maxValue": 10.0
+                }
+              ]
+            },
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 1.0,
+              "modifiers": [
+                {
+                  "Name": "mkweapons:tier_one",
+                  "Amount": 0.5,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:mana_regen",
+                  "minValue": 0.5,
+                  "maxValue": 2.0
+                }
+              ]
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "templateType": "mkweapons:simple_template_2x",
+                "slots": [
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.attributes"
+                ]
+              },
+              "weight": 10.0
+            },
+            {
+              "template": {
+                "templateType": "mkweapons:simple_template",
+                "slots": [
+                  "mkweapons:randomization.attributes"
+                ]
+              },
+              "weight": 10.0
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

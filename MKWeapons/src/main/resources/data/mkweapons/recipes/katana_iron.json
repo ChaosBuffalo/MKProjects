@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "  I",
+    " I ",
+    "H  "
+  ],
+  "key": {
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "H": {
+      "item": "mkweapons:haft"
+    }
+  },
+  "result": {
+    "item": "mkweapons:katana_iron"
+  }
+}

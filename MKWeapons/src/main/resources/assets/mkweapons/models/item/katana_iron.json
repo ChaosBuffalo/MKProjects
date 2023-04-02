@@ -1,0 +1,15 @@
+{
+  "parent": "mkweapons:item/katana_base",
+  "textures": {
+    "0": "mkweapons:items/iron_tool",
+    "particle": "mkweapons:items/iron_tool"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "minecraft:blocking": 1.0
+      },
+      "model": "mkweapons:item/katana_iron_blocking"
+    }
+  ]
+}

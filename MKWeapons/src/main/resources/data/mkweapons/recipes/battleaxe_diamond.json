@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "IHI",
+    " H "
+  ],
+  "key": {
+    "I": {
+      "tag": "forge:gems/diamond"
+    },
+    "H": {
+      "item": "mkweapons:haft"
+    }
+  },
+  "result": {
+    "item": "mkweapons:battleaxe_diamond"
+  }
+}

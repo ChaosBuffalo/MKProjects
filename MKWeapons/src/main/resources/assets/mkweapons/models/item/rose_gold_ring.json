@@ -1,0 +1,6 @@
+{
+  "parent": "mkweapons:item/jewelry_base",
+  "textures": {
+    "layer0": "mkweapons:items/rose_gold_ring"
+  }
+}

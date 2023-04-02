@@ -1,0 +1,29 @@
+{
+  "parent": "mkweapons:item/longbow_base",
+  "textures": {
+    "0": "mkweapons:items/iron_tool",
+    "particle": "mkweapons:items/iron_tool"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "minecraft:pulling": 1.0
+      },
+      "model": "mkweapons:item/longbow_iron_pulling_0"
+    },
+    {
+      "predicate": {
+        "minecraft:pulling": 1.0,
+        "minecraft:pull": 0.65
+      },
+      "model": "mkweapons:item/longbow_iron_pulling_1"
+    },
+    {
+      "predicate": {
+        "minecraft:pulling": 1.0,
+        "minecraft:pull": 0.9
+      },
+      "model": "mkweapons:item/longbow_iron_pulling_2"
+    }
+  ]
+}

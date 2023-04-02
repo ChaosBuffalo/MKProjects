@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "mkweapons:copper_ring",
+    "mkweapons:gold_ring",
+    "mkweapons:rose_gold_ring",
+    "mkweapons:silver_ring"
+  ]
+}

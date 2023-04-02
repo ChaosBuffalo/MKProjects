@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " IS",
+    "H S",
+    " IS"
+  ],
+  "key": {
+    "H": {
+      "item": "mkweapons:haft"
+    },
+    "I": {
+      "tag": "minecraft:planks"
+    },
+    "S": {
+      "tag": "forge:string"
+    }
+  },
+  "result": {
+    "item": "mkweapons:longbow_wood"
+  }
+}

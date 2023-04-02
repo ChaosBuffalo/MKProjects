@@ -1,0 +1,7 @@
+{
+  "parent": "mkweapons:item/katana_base_blocking",
+  "textures": {
+    "0": "mkweapons:items/iron_tool",
+    "particle": "mkweapons:items/iron_tool"
+  }
+}

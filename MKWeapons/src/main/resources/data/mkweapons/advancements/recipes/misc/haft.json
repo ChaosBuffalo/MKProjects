@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "mkweapons:haft"
+    ]
+  },
+  "criteria": {
+    "has_stick": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "minecraft:stick"
+          }
+        ]
+      }
+    },
+    "has_leather": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "tag": "forge:leather"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "mkweapons:haft"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_stick",
+      "has_leather",
+      "has_the_recipe"
+    ]
+  ]
+}

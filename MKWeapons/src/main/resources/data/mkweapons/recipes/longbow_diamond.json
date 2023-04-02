@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " IS",
+    "H S",
+    " IS"
+  ],
+  "key": {
+    "H": {
+      "item": "mkweapons:haft"
+    },
+    "I": {
+      "tag": "forge:gems/diamond"
+    },
+    "S": {
+      "tag": "forge:string"
+    }
+  },
+  "result": {
+    "item": "mkweapons:longbow_diamond"
+  }
+}

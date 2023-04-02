@@ -1,0 +1,7 @@
+{
+  "parent": "mkweapons:item/longsword_base_blocking",
+  "textures": {
+    "0": "mkweapons:items/gold_tool",
+    "particle": "mkweapons:items/gold_tool"
+  }
+}

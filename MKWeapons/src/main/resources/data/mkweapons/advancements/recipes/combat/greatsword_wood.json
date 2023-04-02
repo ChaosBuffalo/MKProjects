@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "mkweapons:greatsword_wood"
+    ]
+  },
+  "criteria": {
+    "has_haft": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "mkweapons:haft"
+          }
+        ]
+      }
+    },
+    "has_ingot": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "tag": "minecraft:planks"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "mkweapons:greatsword_wood"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_haft",
+      "has_ingot",
+      "has_the_recipe"
+    ]
+  ]
+}

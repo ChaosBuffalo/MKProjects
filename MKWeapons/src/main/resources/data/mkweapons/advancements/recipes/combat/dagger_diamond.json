@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "mkweapons:dagger_diamond"
+    ]
+  },
+  "criteria": {
+    "has_stick": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "minecraft:stick"
+          }
+        ]
+      }
+    },
+    "has_ingot": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "tag": "forge:gems/diamond"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "mkweapons:dagger_diamond"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_stick",
+      "has_ingot",
+      "has_the_recipe"
+    ]
+  ]
+}

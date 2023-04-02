@@ -1,0 +1,25 @@
+{
+  "damageMultiplier": 1.75,
+  "attackSpeed": -2.1,
+  "reach": 0.0,
+  "critMultiplier": 0.25,
+  "critChance": 0.05,
+  "isTwoHanded": false,
+  "effects": [
+    {
+      "itemEffectType": "mkweapons:weapon_effect.skill_scaling",
+      "baseDamage": 5.25,
+      "skill": "mkcore:one_hand_blunt"
+    },
+    {
+      "itemEffectType": "mkweapons:weapon_effect.undead_damage",
+      "multiplier": 1.5
+    },
+    {
+      "itemEffectType": "mkweapons:weapon_effect.double_strike",
+      "chance": 0.1
+    }
+  ],
+  "blockEfficiency": 0.75,
+  "maxPoise": 30.0
+}

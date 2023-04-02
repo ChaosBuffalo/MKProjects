@@ -1,0 +1,15 @@
+{
+  "parent": "mkweapons:item/longsword_base",
+  "textures": {
+    "0": "mkweapons:items/wood_tool",
+    "particle": "mkweapons:items/wood_tool"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "minecraft:blocking": 1.0
+      },
+      "model": "mkweapons:item/longsword_wood_blocking"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "  I",
+    " H ",
+    "H  "
+  ],
+  "key": {
+    "I": {
+      "tag": "forge:cobblestone"
+    },
+    "H": {
+      "item": "mkweapons:haft"
+    }
+  },
+  "result": {
+    "item": "mkweapons:spear_stone"
+  }
+}

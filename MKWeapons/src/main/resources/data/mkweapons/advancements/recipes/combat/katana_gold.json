@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "mkweapons:katana_gold"
+    ]
+  },
+  "criteria": {
+    "has_haft": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "mkweapons:haft"
+          }
+        ]
+      }
+    },
+    "has_ingot": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "tag": "forge:ingots/gold"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "mkweapons:katana_gold"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_haft",
+      "has_ingot",
+      "has_the_recipe"
+    ]
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "parent": "mkweapons:item/mace_base",
+  "textures": {
+    "0": "mkweapons:items/gold_tool",
+    "particle": "mkweapons:items/gold_tool"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "minecraft:blocking": 1.0
+      },
+      "model": "mkweapons:item/mace_gold_blocking"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "mkweapons:item/staff_base_blocking",
+  "textures": {
+    "0": "mkweapons:items/wood_tool",
+    "particle": "mkweapons:items/wood_tool"
+  }
+}

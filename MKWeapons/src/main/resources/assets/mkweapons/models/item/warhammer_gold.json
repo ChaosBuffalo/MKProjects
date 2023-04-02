@@ -1,0 +1,15 @@
+{
+  "parent": "mkweapons:item/warhammer_base",
+  "textures": {
+    "0": "mkweapons:items/gold_tool",
+    "particle": "mkweapons:items/gold_tool"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "minecraft:blocking": 1.0
+      },
+      "model": "mkweapons:item/warhammer_gold_blocking"
+    }
+  ]
+}
