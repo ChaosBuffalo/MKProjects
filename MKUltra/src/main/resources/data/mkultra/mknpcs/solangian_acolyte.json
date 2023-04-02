@@ -1,0 +1,118 @@
+{
+  "entityType": "mkultra:human",
+  "options": [
+    {
+      "optionType": "mknpc:render_group",
+      "value": "cleric_1"
+    },
+    {
+      "optionType": "mknpc:attributes",
+      "attributes": [
+        {
+          "attributeName": "minecraft:generic.max_health",
+          "value": 150.0
+        }
+      ]
+    },
+    {
+      "optionType": "mknpc:dialogue",
+      "value": "mkultra:intro_cleric_acolyte"
+    },
+    {
+      "optionType": "mknpc:ability_trainings",
+      "value": [
+        {
+          "ability": "mkultra:ability.heal",
+          "reqs": [
+            {
+              "reqType": "mkcore:training_req.has_entitlement",
+              "attributes": {},
+              "entitlement": "mkultra:cleric.intro.tier_1"
+            }
+          ]
+        },
+        {
+          "ability": "mkultra:ability.smite",
+          "reqs": [
+            {
+              "reqType": "mkcore:training_req.has_entitlement",
+              "attributes": {},
+              "entitlement": "mkultra:cleric.intro.tier_1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "optionType": "mknpc:equipment",
+      "slotOptions": {
+        "mainhand": [
+          {
+            "weight": 1.0,
+            "dropChance": 0.0,
+            "item": "{id: \"mkweapons:mace_iron\", Count: 1b, tag: {Damage: 0}}"
+          }
+        ]
+      }
+    },
+    {
+      "optionType": "mknpc:notable",
+      "value": true
+    },
+    {
+      "optionType": "mknpc:abilities",
+      "options": [
+        {
+          "priority": 1,
+          "chance": 1.0,
+          "abilityName": "mkultra:ability.heal"
+        },
+        {
+          "priority": 2,
+          "chance": 1.0,
+          "abilityName": "mkultra:ability.smite"
+        },
+        {
+          "priority": 3,
+          "chance": 1.0,
+          "abilityName": "mkultra:ability.galvanize"
+        }
+      ]
+    },
+    {
+      "optionType": "mknpc:skills",
+      "minor_skills": [
+        "mkcore:necromancy",
+        "mkcore:abjuration",
+        "mkcore:evocation"
+      ],
+      "major_skills": [
+        "mkcore:alteration",
+        "mkcore:restoration"
+      ],
+      "remedial_skills": [
+        "mkcore:two_hand_blunt",
+        "mkcore:one_hand_blunt"
+      ]
+    },
+    {
+      "optionType": "mknpc:mk_size",
+      "value": 1.05
+    },
+    {
+      "optionType": "mknpc:faction_name",
+      "title": "Acolyte",
+      "hasLastName": false
+    },
+    {
+      "optionType": "mknpc:faction",
+      "value": "mkultra:see_of_solang"
+    },
+    {
+      "optionType": "mknpc:offer_quests",
+      "offerings": [
+        "mkultra:cleric_intro"
+      ]
+    }
+  ]
+}

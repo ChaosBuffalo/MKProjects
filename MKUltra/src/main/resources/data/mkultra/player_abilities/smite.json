@@ -1,0 +1,12 @@
+{
+  "cooldown": 120,
+  "manaCost": 5.0,
+  "castTime": 20,
+  "attributes": {
+    "modifierScaling": 1.0,
+    "cast_particles": "mkultra:smite_cast",
+    "scale": 5.0,
+    "casting_particles": "mkultra:smite_casting",
+    "base": 5.0
+  }
+}

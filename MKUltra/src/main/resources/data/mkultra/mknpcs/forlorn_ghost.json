@@ -1,0 +1,55 @@
+{
+  "entityType": "mkultra:human",
+  "options": [
+    {
+      "optionType": "mknpc:render_group",
+      "value": "ghost_1"
+    },
+    {
+      "optionType": "mknpc:attributes",
+      "attributes": [
+        {
+          "attributeName": "minecraft:generic.max_health",
+          "value": 100.0
+        }
+      ]
+    },
+    {
+      "optionType": "mknpc:name",
+      "value": "Forlorn Ghost"
+    },
+    {
+      "optionType": "mknpc:notable",
+      "value": true
+    },
+    {
+      "optionType": "mknpc:skills",
+      "minor_skills": [
+        "mkcore:one_hand_pierce",
+        "mkcore:two_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:one_hand_slash",
+        "mkcore:one_hand_blunt",
+        "mkcore:two_hand_pierce"
+      ],
+      "major_skills": [],
+      "remedial_skills": [
+        "mkcore:arete",
+        "mkcore:pneuma",
+        "mkcore:pankration"
+      ]
+    },
+    {
+      "optionType": "mknpc:ghost",
+      "value": 1.0
+    },
+    {
+      "optionType": "mknpc:mk_size",
+      "value": 1.0
+    },
+    {
+      "optionType": "mknpc:faction",
+      "value": "mkultra:see_of_solang"
+    }
+  ]
+}

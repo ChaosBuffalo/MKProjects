@@ -1,0 +1,909 @@
+{
+  "quests": [
+    {
+      "questName": "talk_to_smith",
+      "objectives": [
+        {
+          "objectiveType": "mknpc:objective.talk_to_npc",
+          "description": [
+            "{\"text\":\"Talk to the smith\"}"
+          ],
+          "attributes": {
+            "structureIndex": 0,
+            "npcDefinition": "mkultra:green_smith",
+            "structure": "mkultra:intro_castle",
+            "objectiveName": "talk_to_smith"
+          },
+          "dialogue": {
+            "nodes": [
+              {
+                "id": "talk_to_smith_hail",
+                "message": "We ain't got much left after the crash. Check that chest over there we got a few things. You can use my crafting table as well. Talk to me again when you have made a weapon.",
+                "effects": [
+                  {
+                    "dialogueEffectType": "mknpc:objective_completion",
+                    "objectiveName": "talk_to_smith",
+                    "questName": "talk_to_smith"
+                  }
+                ]
+              }
+            ],
+            "prompts": [
+              {
+                "id": "hail",
+                "message": "",
+                "triggerPhrase": "",
+                "suggestedText": "",
+                "responses": [
+                  {
+                    "responseNodeId": "talk_to_smith_hail"
+                  }
+                ]
+              }
+            ],
+            "hailPrompt": "hail"
+          }
+        }
+      ],
+      "description": "{\"text\":\"The Green Lady wants you to go talk to the smith and equip yourself for an unknown task.\"}",
+      "autoComplete": true,
+      "rewards": [
+        {
+          "rewardType": "mknpc:quest_reward.xp",
+          "attributes": {
+            "xp": 25
+          }
+        }
+      ]
+    },
+    {
+      "questName": "equip_yourself",
+      "objectives": [
+        {
+          "objectiveType": "mknpc:objective.loot_chest",
+          "description": [
+            "{\"text\":\"Loot the smith's chest\"}"
+          ],
+          "attributes": {
+            "structureIndex": 0,
+            "chestTag": "intro_chest",
+            "structure": "mkultra:intro_castle",
+            "objectiveName": "loot_chest"
+          },
+          "items": [
+            "{id: \"minecraft:cobblestone\", Count: 20b}",
+            "{id: \"minecraft:oak_planks\", Count: 20b}",
+            "{id: \"minecraft:string\", Count: 10b}",
+            "{id: \"minecraft:leather\", Count: 40b}",
+            "{id: \"minecraft:coal\", Count: 10b}",
+            "{id: \"minecraft:flint\", Count: 10b}",
+            "{id: \"minecraft:porkchop\", Count: 10b}"
+          ]
+        }
+      ],
+      "description": "{\"text\":\"The Green Smith points you towards a chest in his workshop.\"}",
+      "autoComplete": true,
+      "rewards": [
+        {
+          "rewardType": "mknpc:quest_reward.xp",
+          "attributes": {
+            "xp": 25
+          }
+        }
+      ]
+    },
+    {
+      "questName": "return_to_smith",
+      "objectives": [
+        {
+          "objectiveType": "mknpc:objective.talk_to_npc",
+          "description": [
+            "{\"text\":\"Talk to the Green Smith with a weapon in your hand.\"}"
+          ],
+          "attributes": {
+            "structureIndex": 0,
+            "npcDefinition": "mkultra:green_smith",
+            "structure": "mkultra:intro_castle",
+            "objectiveName": "return_to_smith"
+          },
+          "dialogue": {
+            "nodes": [
+              {
+                "id": "return_to_smith_wo_cond",
+                "message": "Come back to me with a weapon in your hand."
+              },
+              {
+                "id": "return_to_smith_w_cond",
+                "message": "Great, but you're going to need more than just a sharp rock where we're going. Go back and talk to the Green Lady, ask her about learning to develop your magical talents.",
+                "effects": [
+                  {
+                    "dialogueEffectType": "mknpc:objective_completion",
+                    "objectiveName": "return_to_smith",
+                    "questName": "return_to_smith"
+                  }
+                ]
+              }
+            ],
+            "prompts": [
+              {
+                "id": "hail",
+                "message": "",
+                "triggerPhrase": "",
+                "suggestedText": "",
+                "responses": [
+                  {
+                    "responseNodeId": "return_to_smith_w_cond",
+                    "conditions": [
+                      {
+                        "dialogueConditionType": "mknpc:has_weapon_in_hand",
+                        "invert": false
+                      }
+                    ]
+                  },
+                  {
+                    "responseNodeId": "return_to_smith_wo_cond"
+                  }
+                ]
+              }
+            ],
+            "hailPrompt": "hail"
+          }
+        }
+      ],
+      "description": "{\"text\":\"Use the Green Smith's supplies to craft your desired weapon and perhaps some armor for the battle ahead.\"}",
+      "autoComplete": true,
+      "rewards": [
+        {
+          "rewardType": "mknpc:quest_reward.xp",
+          "attributes": {
+            "xp": 25
+          }
+        }
+      ]
+    },
+    {
+      "questName": "green_lady_talent",
+      "objectives": [
+        {
+          "objectiveType": "mknpc:objective.talk_to_npc",
+          "description": [
+            "{\"text\":\"Talk to the Green Lady about the talent system.\"}"
+          ],
+          "attributes": {
+            "structureIndex": 0,
+            "npcDefinition": "mkultra:green_lady",
+            "structure": "mkultra:intro_castle",
+            "objectiveName": "green_lady_talent"
+          },
+          "dialogue": {
+            "nodes": [
+              {
+                "id": "green_lady_talent_hail",
+                "message": "We can help you awaken your magical gifts, the first step is learning how to train your talents. You should have gained a talent point upon initiating this conversation. Open your player screen and go to the talent section, train any of the first talents in order to unlock your first ability slot. Talk to me again when you have finished this.",
+                "effects": [
+                  {
+                    "dialogueEffectType": "mknpc:objective_completion",
+                    "objectiveName": "green_lady_talent",
+                    "questName": "green_lady_talent"
+                  }
+                ]
+              }
+            ],
+            "prompts": [
+              {
+                "id": "hail",
+                "message": "",
+                "triggerPhrase": "",
+                "suggestedText": "",
+                "responses": [
+                  {
+                    "responseNodeId": "green_lady_talent_hail"
+                  }
+                ]
+              }
+            ],
+            "hailPrompt": "hail"
+          }
+        }
+      ],
+      "description": "{\"text\":\"Talk to the Green Lady to learn more about developing your magical abilities\"}",
+      "autoComplete": true,
+      "rewards": [
+        {
+          "rewardType": "mknpc:quest_reward.xp",
+          "attributes": {
+            "xp": 25
+          }
+        }
+      ]
+    },
+    {
+      "questName": "return_to_green_lady",
+      "objectives": [
+        {
+          "objectiveType": "mknpc:objective.talk_to_npc",
+          "description": [
+            "{\"text\":\"Talk to the Green Lady after training a talent.\"}"
+          ],
+          "attributes": {
+            "structureIndex": 0,
+            "npcDefinition": "mkultra:green_lady",
+            "structure": "mkultra:intro_castle",
+            "objectiveName": "return_to_green_lady"
+          },
+          "dialogue": {
+            "nodes": [
+              {
+                "id": "open_training",
+                "message": "Let me see what I can teach you. Talk to me again when you're done.",
+                "effects": [
+                  {
+                    "dialogueEffectType": "mknpc:open_learn_abilities"
+                  }
+                ]
+              },
+              {
+                "id": "return_to_green_lady_wo_cond",
+                "message": "Come back to me when you have spent your first talent point."
+              },
+              {
+                "id": "return_to_green_lady_w_cond",
+                "message": "Alright you're now {prompt:need_training} your first ability.",
+                "effects": [
+                  {
+                    "dialogueEffectType": "mknpc:objective_completion",
+                    "objectiveName": "return_to_green_lady",
+                    "questName": "return_to_green_lady"
+                  }
+                ]
+              }
+            ],
+            "prompts": [
+              {
+                "id": "need_training",
+                "message": "ready to learn",
+                "triggerPhrase": "want to learn",
+                "suggestedText": "I want to learn.",
+                "responses": [
+                  {
+                    "responseNodeId": "open_training"
+                  }
+                ]
+              },
+              {
+                "id": "hail",
+                "message": "",
+                "triggerPhrase": "",
+                "suggestedText": "",
+                "responses": [
+                  {
+                    "responseNodeId": "return_to_green_lady_w_cond",
+                    "conditions": [
+                      {
+                        "dialogueConditionType": "mknpc:has_spent_talents",
+                        "invert": false,
+                        "talentCount": 1
+                      }
+                    ]
+                  },
+                  {
+                    "responseNodeId": "return_to_green_lady_wo_cond"
+                  }
+                ]
+              }
+            ],
+            "hailPrompt": "hail"
+          }
+        }
+      ],
+      "description": "{\"text\":\"The Green Lady wants you to learn about spending talent points.\"}",
+      "autoComplete": true,
+      "rewards": [
+        {
+          "rewardType": "mknpc:quest_reward.xp",
+          "attributes": {
+            "xp": 50
+          }
+        },
+        {
+          "rewardType": "mknpc:quest_reward.entitlement",
+          "attributes": {
+            "entitlement": "mkultra:green_knight.tier_1"
+          }
+        }
+      ]
+    },
+    {
+      "questName": "after_ability",
+      "objectives": [
+        {
+          "objectiveType": "mknpc:objective.talk_to_npc",
+          "description": [
+            "{\"text\":\"Talk to the Green Lady after learning your first ability.\"}"
+          ],
+          "attributes": {
+            "structureIndex": 0,
+            "npcDefinition": "mkultra:green_lady",
+            "structure": "mkultra:intro_castle",
+            "objectiveName": "after_green_lady"
+          },
+          "dialogue": {
+            "nodes": [
+              {
+                "id": "after_green_lady_wo_cond",
+                "message": "Come back to me once you've learned one of our abilities."
+              },
+              {
+                "id": "after_green_lady_w_cond",
+                "message": "Now we must test your mettle in combat. Go kill some of the zombies on the first floor to try out your new magic, and don't forget you can always return to me to learn more.",
+                "effects": [
+                  {
+                    "dialogueEffectType": "mknpc:objective_completion",
+                    "objectiveName": "after_green_lady",
+                    "questName": "after_ability"
+                  }
+                ]
+              },
+              {
+                "id": "open_training_ability",
+                "message": "Let me see what I can teach you. Talk to me again when you're done.",
+                "effects": [
+                  {
+                    "dialogueEffectType": "mknpc:open_learn_abilities"
+                  }
+                ]
+              }
+            ],
+            "prompts": [
+              {
+                "id": "hail",
+                "message": "",
+                "triggerPhrase": "",
+                "suggestedText": "",
+                "responses": [
+                  {
+                    "responseNodeId": "after_green_lady_w_cond",
+                    "conditions": [
+                      {
+                        "dialogueConditionType": "mknpc:has_trained_abilities",
+                        "invert": false,
+                        "allMatch": false,
+                        "abilities": [
+                          "mkultra:ability.skin_like_wood",
+                          "mkultra:ability.natures_remedy"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "responseNodeId": "after_green_lady_wo_cond"
+                  }
+                ]
+              },
+              {
+                "id": "need_training_ability",
+                "message": "ready to learn",
+                "triggerPhrase": "want to learn",
+                "suggestedText": "I want to learn.",
+                "responses": [
+                  {
+                    "responseNodeId": "open_training_ability"
+                  }
+                ]
+              }
+            ],
+            "hailPrompt": "hail"
+          }
+        }
+      ],
+      "description": "{\"text\":\"Talk to the Green Lady and learn your first ability, then speak to her again.\"}",
+      "autoComplete": true,
+      "rewards": [
+        {
+          "rewardType": "mknpc:quest_reward.xp",
+          "attributes": {
+            "xp": 50
+          }
+        }
+      ]
+    },
+    {
+      "questName": "first_kill",
+      "objectives": [
+        {
+          "objectiveType": "mknpc:objective.kill_npc_def",
+          "description": [
+            "{\"text\":\"Placeholder\"}"
+          ],
+          "attributes": {
+            "npcDefinition": "mkultra:decaying_piglin",
+            "count": 4,
+            "objectiveName": "kill_zombies"
+          }
+        },
+        {
+          "objectiveType": "mknpc:objective.kill_npc_def",
+          "description": [
+            "{\"text\":\"Placeholder\"}"
+          ],
+          "attributes": {
+            "npcDefinition": "mkultra:decaying_piglin_archer",
+            "count": 4,
+            "objectiveName": "kill_archers"
+          }
+        },
+        {
+          "objectiveType": "mknpc:objective.talk_to_npc",
+          "description": [
+            "{\"text\":\"Talk to the Green Lady after completing the other objectives.\"}"
+          ],
+          "attributes": {
+            "structureIndex": 0,
+            "npcDefinition": "mkultra:green_lady",
+            "structure": "mkultra:intro_castle",
+            "objectiveName": "after_kill"
+          },
+          "dialogue": {
+            "nodes": [
+              {
+                "id": "after_kill_wo_complete",
+                "message": "Come back to me after you've proven yourself."
+              },
+              {
+                "id": "after_kill_complete",
+                "message": "Your skills have not gone unnoticed. The dead rise everywhere, to cull the damned is a blessed pursuit. Would you be willing to go back into that cursed hall and destroy {mk_quest_notable:mkultra:intro_castle#0#mkultra:trooper_captain}.",
+                "effects": [
+                  {
+                    "dialogueEffectType": "mknpc:objective_completion",
+                    "objectiveName": "after_kill",
+                    "questName": "first_kill"
+                  }
+                ]
+              }
+            ],
+            "prompts": [
+              {
+                "id": "hail",
+                "message": "",
+                "triggerPhrase": "",
+                "suggestedText": "",
+                "responses": [
+                  {
+                    "responseNodeId": "after_kill_complete",
+                    "conditions": [
+                      {
+                        "dialogueConditionType": "mknpc:objectives_complete",
+                        "invert": false,
+                        "objectiveNames": [
+                          "kill_zombies",
+                          "kill_archers"
+                        ],
+                        "questName": "first_kill"
+                      }
+                    ]
+                  },
+                  {
+                    "responseNodeId": "after_kill_wo_complete"
+                  }
+                ]
+              }
+            ],
+            "hailPrompt": "hail"
+          }
+        }
+      ],
+      "description": "{\"text\":\"The Green Lady wants you to clear out some of the zombies on the first floor of the castle\"}",
+      "autoComplete": true,
+      "rewards": [
+        {
+          "rewardType": "mknpc:quest_reward.xp",
+          "attributes": {
+            "xp": 50
+          }
+        }
+      ]
+    },
+    {
+      "questName": "kill_captain",
+      "objectives": [
+        {
+          "objectiveType": "mknpc:objective.kill_notable",
+          "description": [],
+          "attributes": {
+            "structureIndex": 0,
+            "npcDefinition": "mkultra:trooper_captain",
+            "structure": "mkultra:intro_castle",
+            "objectiveName": "kill_captain"
+          }
+        },
+        {
+          "objectiveType": "mknpc:objective.talk_to_npc",
+          "description": [
+            "{\"text\":\"Talk to the Green Lady after completing the other objectives.\"}"
+          ],
+          "attributes": {
+            "structureIndex": 0,
+            "npcDefinition": "mkultra:green_lady",
+            "structure": "mkultra:intro_castle",
+            "objectiveName": "after_kill_captain"
+          },
+          "dialogue": {
+            "nodes": [
+              {
+                "id": "after_kill_captain_complete",
+                "message": "I need you to return to the castle and delve even deeper. I know not why it appeared here at this time, but I do sense a residual life force beneath the castle. Perhaps this spirit will be amiable to conversation. Go find it.",
+                "effects": [
+                  {
+                    "dialogueEffectType": "mknpc:objective_completion",
+                    "objectiveName": "after_kill_captain",
+                    "questName": "kill_captain"
+                  }
+                ]
+              },
+              {
+                "id": "after_kill_captain_wo_complete",
+                "message": "Come back to me after you've taken care of {mk_quest_notable:mkultra:intro_castle#0#mkultra:trooper_captain}."
+              }
+            ],
+            "prompts": [
+              {
+                "id": "hail",
+                "message": "",
+                "triggerPhrase": "",
+                "suggestedText": "",
+                "responses": [
+                  {
+                    "responseNodeId": "after_kill_captain_complete",
+                    "conditions": [
+                      {
+                        "dialogueConditionType": "mknpc:objectives_complete",
+                        "invert": false,
+                        "objectiveNames": [
+                          "kill_captain"
+                        ],
+                        "questName": "kill_captain"
+                      }
+                    ]
+                  },
+                  {
+                    "responseNodeId": "after_kill_captain_wo_complete"
+                  }
+                ]
+              }
+            ],
+            "hailPrompt": "hail"
+          }
+        }
+      ],
+      "description": "{\"text\":\"The Green Lady wants you to find and kill the Piglin Captain\"}",
+      "autoComplete": true,
+      "rewards": [
+        {
+          "rewardType": "mknpc:quest_reward.xp",
+          "attributes": {
+            "xp": 100
+          }
+        },
+        {
+          "rewardType": "mknpc:quest_reward.entitlement",
+          "attributes": {
+            "entitlement": "mkultra:green_knight.tier_2"
+          }
+        }
+      ]
+    },
+    {
+      "questName": "talk_to_ghost",
+      "objectives": [
+        {
+          "objectiveType": "mknpc:objective.talk_to_npc",
+          "description": [
+            "{\"text\":\"Find the spirit in the castle.\"}"
+          ],
+          "attributes": {
+            "structureIndex": 0,
+            "npcDefinition": "mkultra:forlorn_ghost",
+            "structure": "mkultra:intro_castle",
+            "objectiveName": "talk_to_ghost"
+          },
+          "dialogue": {
+            "nodes": [
+              {
+                "id": "offer",
+                "message": "The skeleton that stands ever-burning in the chamber beyond. Destroy this revenant and return to your Green Lady. Leave me to infinity.",
+                "effects": [
+                  {
+                    "dialogueEffectType": "mknpc:objective_completion",
+                    "objectiveName": "talk_to_ghost",
+                    "questName": "talk_to_ghost"
+                  }
+                ]
+              },
+              {
+                "id": "my_time",
+                "message": "Best I can tell, that was 500 or so years ago. This castle dates back to the {prompt:empire} of my time. We were in the early days of the first invasion."
+              },
+              {
+                "id": "talk_to_ghost_hail",
+                "message": "Those {prompt:crusaders} sent you after me didn't they?"
+              },
+              {
+                "id": "green_lady_desc",
+                "message": "There's always only one Green Lady. I don't know if it's always the same one. The Green Lady is in charge, whatever that means. The GK's are a secretive bunch. I never dealt with them when I was alive."
+              },
+              {
+                "id": "empire",
+                "message": "Those pigs just can't stop killing and stealing. Been doing it for 500 years or so. I died here in an early {prompt:attempt} at banishing a Piglin Castle back to their home-plane."
+              },
+              {
+                "id": "peril",
+                "message": "Oh the same old hogwash about the world being overrun by the undead and then deleted. In the Hyborean religion we believe the world, which is a giant cube, travels around in the dice bag of an interplanar vagrant. Obviously the world will end when said villain abandons, forgets, or perhaps loses us in a game of chance to an even iller-suited caretaker."
+              },
+              {
+                "id": "attempt",
+                "message": "I was mortally wounded when the time came, and something went wrong. My partner and I were unable to complete the ritual. My body was destroyed immediately, leaving my soul bound to the castle grounds. My partner's spirit was shorn from their body as the spell completed, leaving only a {prompt:offer} to stalk the depths of this cursed castle."
+              },
+              {
+                "id": "crusaders",
+                "message": "They call themselves the Green Knights, we had them in {prompt:my_time} as well. Serve some orc called the {prompt:green_lady_desc}. They're laser-focused on seeking out and destroying corruption throughout the known planes; think we're all in {prompt:peril} and so on."
+              }
+            ],
+            "prompts": [
+              {
+                "id": "offer",
+                "message": "soulless husk",
+                "triggerPhrase": "soulless husk",
+                "suggestedText": "a soulless husk?",
+                "responses": [
+                  {
+                    "responseNodeId": "offer"
+                  }
+                ]
+              },
+              {
+                "id": "my_time",
+                "message": "my time",
+                "triggerPhrase": "your time",
+                "suggestedText": "When was your time?",
+                "responses": [
+                  {
+                    "responseNodeId": "my_time"
+                  }
+                ]
+              },
+              {
+                "id": "green_lady_desc",
+                "message": "Green Lady",
+                "triggerPhrase": "Green Lady",
+                "suggestedText": "What do you know about the Green Lady?",
+                "responses": [
+                  {
+                    "responseNodeId": "green_lady_desc"
+                  }
+                ]
+              },
+              {
+                "id": "empire",
+                "message": "Piglin Empire",
+                "triggerPhrase": "Piglin Empire",
+                "suggestedText": "the Piglin Empire?",
+                "responses": [
+                  {
+                    "responseNodeId": "empire"
+                  }
+                ]
+              },
+              {
+                "id": "peril",
+                "message": "grave peril",
+                "triggerPhrase": "grave peril",
+                "suggestedText": "What grave peril?",
+                "responses": [
+                  {
+                    "responseNodeId": "peril"
+                  }
+                ]
+              },
+              {
+                "id": "hail",
+                "message": "",
+                "triggerPhrase": "",
+                "suggestedText": "",
+                "responses": [
+                  {
+                    "responseNodeId": "talk_to_ghost_hail"
+                  }
+                ]
+              },
+              {
+                "id": "attempt",
+                "message": "attempt",
+                "triggerPhrase": "the attempt",
+                "suggestedText": "What happened during the attempt?",
+                "responses": [
+                  {
+                    "responseNodeId": "attempt"
+                  }
+                ]
+              },
+              {
+                "id": "crusaders",
+                "message": "dimension-hopping crusaders",
+                "triggerPhrase": "crusaders",
+                "suggestedText": "What crusaders?",
+                "responses": [
+                  {
+                    "responseNodeId": "crusaders"
+                  }
+                ]
+              }
+            ],
+            "hailPrompt": "hail"
+          }
+        }
+      ],
+      "description": "{\"text\":\"The Green Lady wants you to seek out a spirit in the depths.\"}",
+      "autoComplete": true,
+      "rewards": [
+        {
+          "rewardType": "mknpc:quest_reward.xp",
+          "attributes": {
+            "xp": 25
+          }
+        }
+      ]
+    },
+    {
+      "questName": "kill_burning",
+      "objectives": [
+        {
+          "objectiveType": "mknpc:objective.kill_notable",
+          "description": [],
+          "attributes": {
+            "structureIndex": 0,
+            "npcDefinition": "mkultra:burning_skeleton",
+            "structure": "mkultra:intro_castle",
+            "objectiveName": "kill_burning"
+          }
+        },
+        {
+          "objectiveType": "mknpc:objective.talk_to_npc",
+          "description": [
+            "{\"text\":\"Return to the Green Lady after completing the other objectives.\"}"
+          ],
+          "attributes": {
+            "structureIndex": 0,
+            "npcDefinition": "mkultra:green_lady",
+            "structure": "mkultra:intro_castle",
+            "objectiveName": "after_kill_burning"
+          },
+          "dialogue": {
+            "nodes": [
+              {
+                "id": "after_kill_burning_complete",
+                "message": "Good: it is done. Our order is dedicated to cleansing this land. You are welcome to stay here and learn of our ways or go as you please.",
+                "effects": [
+                  {
+                    "dialogueEffectType": "mknpc:objective_completion",
+                    "objectiveName": "after_kill_burning",
+                    "questName": "kill_burning"
+                  }
+                ]
+              },
+              {
+                "id": "after_kill_burning_wo_complete",
+                "message": "Has the castle been cleansed, is the {mk_quest_notable:mkultra:intro_castle#0#mkultra:burning_skeleton} dead?"
+              }
+            ],
+            "prompts": [
+              {
+                "id": "hail",
+                "message": "",
+                "triggerPhrase": "",
+                "suggestedText": "",
+                "responses": [
+                  {
+                    "responseNodeId": "after_kill_burning_complete",
+                    "conditions": [
+                      {
+                        "dialogueConditionType": "mknpc:objectives_complete",
+                        "invert": false,
+                        "objectiveNames": [
+                          "kill_burning"
+                        ],
+                        "questName": "kill_burning"
+                      }
+                    ]
+                  },
+                  {
+                    "responseNodeId": "after_kill_burning_wo_complete"
+                  }
+                ]
+              }
+            ],
+            "hailPrompt": "hail"
+          }
+        }
+      ],
+      "description": "{\"text\":\"The Forlorn Ghost has asked you you to kill the Burning Revenant\"}",
+      "autoComplete": true,
+      "rewards": [
+        {
+          "rewardType": "mknpc:quest_reward.xp",
+          "attributes": {
+            "xp": 100
+          }
+        },
+        {
+          "rewardType": "mknpc:quest_reward.entitlement",
+          "attributes": {
+            "entitlement": "mkultra:green_knight.tier_3"
+          }
+        }
+      ]
+    }
+  ],
+  "repeatable": false,
+  "questName": "{\"text\":\"The Green Knights\"}",
+  "requirements": [],
+  "questMode": 0,
+  "dialogue": {
+    "nodes": [
+      {
+        "id": "start_quest",
+        "message": "This world is on the verge of deletion, the dead rise from the ground everywhere, there may still be time to save it if we act now. We're in need of another hero: go talk to our smith and get equipped.",
+        "effects": [
+          {
+            "dialogueEffectType": "mknpc:start_quest_chain"
+          }
+        ]
+      },
+      {
+        "id": "hail",
+        "message": "Hail and well met. You're lucky we were able to grab you before your soul drifted too far into the aether. {prompt:start_quest} in an archival zone?"
+      }
+    ],
+    "prompts": [
+      {
+        "id": "start_quest",
+        "message": "What are you doing",
+        "triggerPhrase": "don't know",
+        "suggestedText": "I don't know",
+        "responses": [
+          {
+            "responseNodeId": "start_quest"
+          },
+          {
+            "responseNodeId": "start_quest",
+            "conditions": [
+              {
+                "dialogueConditionType": "mknpc:can_start_chain_condition",
+                "invert": false,
+                "allowRepeat": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hail",
+        "message": "",
+        "triggerPhrase": "",
+        "suggestedText": "",
+        "responses": [
+          {
+            "responseNodeId": "hail",
+            "conditions": [
+              {
+                "dialogueConditionType": "mknpc:can_start_chain_condition",
+                "invert": false,
+                "allowRepeat": false
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "hailPrompt": "hail"
+  }
+}

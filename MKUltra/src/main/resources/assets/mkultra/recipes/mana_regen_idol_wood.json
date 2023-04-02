@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "mana_regen_idol",
+  "result": {
+    "item": "mkultra:mana_regen_idol_wood"
+  },
+  "key": {
+    "i": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    " i ",
+    "iii",
+    " i "
+  ]
+}

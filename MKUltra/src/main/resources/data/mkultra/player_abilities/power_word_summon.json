@@ -1,0 +1,11 @@
+{
+  "cooldown": 320,
+  "manaCost": 6.0,
+  "castTime": 20,
+  "attributes": {
+    "baseDuration": 4,
+    "cast_particles": "mkultra:power_word_summon_cast",
+    "scaleDuration": 1,
+    "casting_particles": "mkultra:power_word_summon_casting"
+  }
+}

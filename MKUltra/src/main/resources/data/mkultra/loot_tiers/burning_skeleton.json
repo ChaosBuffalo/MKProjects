@@ -1,0 +1,343 @@
+{
+  "slotItems": {
+    "mkweapons:rings": [
+      {
+        "weight": 10.0,
+        "template": {
+          "potentialItems": [
+            {
+              "itemStack": "{id: \"mkweapons:rose_gold_ring\", Count: 1b}",
+              "weight": 1.0
+            }
+          ],
+          "lootSlot": "mkweapons:rings",
+          "options": [
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 1.0,
+              "modifiers": [
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 3.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:bleed_damage",
+                  "minValue": 3.0,
+                  "maxValue": 9.0
+                }
+              ]
+            },
+            {
+              "randomizationType": "mkweapons:name",
+              "slotName": "mkweapons:randomization.name",
+              "weight": 1.0,
+              "name": "{\"text\":\"Bloody Ring\"}"
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "templateType": "mkultra:ring",
+                "slots": [
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.name"
+                ]
+              },
+              "weight": 15.0
+            }
+          ]
+        }
+      }
+    ],
+    "mkweapons:earrings": [
+      {
+        "weight": 10.0,
+        "template": {
+          "potentialItems": [
+            {
+              "itemStack": "{id: \"mkweapons:silver_earring\", Count: 1b}",
+              "weight": 1.0
+            }
+          ],
+          "lootSlot": "mkweapons:earrings",
+          "options": [
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 1.0,
+              "modifiers": [
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 2.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:fire_damage",
+                  "minValue": 2.0,
+                  "maxValue": 8.0
+                }
+              ]
+            },
+            {
+              "randomizationType": "mkweapons:name",
+              "slotName": "mkweapons:randomization.name",
+              "weight": 1.0,
+              "name": "{\"text\":\"Earring of Minor Firepower\"}"
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "templateType": "mkultra:earring",
+                "slots": [
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.name"
+                ]
+              },
+              "weight": 15.0
+            }
+          ]
+        }
+      }
+    ],
+    "mkweapons:main_hand": [
+      {
+        "weight": 10.0,
+        "template": {
+          "potentialItems": [
+            {
+              "itemStack": "{id: \"mkweapons:dagger_iron\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            }
+          ],
+          "lootSlot": "mkweapons:main_hand",
+          "options": [
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 9.0,
+              "modifiers": [
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 1.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:bleed_damage",
+                  "minValue": 1.0,
+                  "maxValue": 3.0
+                },
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 1.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:fire_damage",
+                  "minValue": 1.0,
+                  "maxValue": 3.0
+                }
+              ]
+            },
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 8.0,
+              "modifiers": [
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 1.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:bleed_damage",
+                  "minValue": 1.0,
+                  "maxValue": 3.0
+                },
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 2.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:fire_damage",
+                  "minValue": 2.0,
+                  "maxValue": 6.0
+                }
+              ]
+            },
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 7.0,
+              "modifiers": [
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 1.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:bleed_damage",
+                  "minValue": 1.0,
+                  "maxValue": 3.0
+                },
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 3.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:fire_damage",
+                  "minValue": 3.0,
+                  "maxValue": 9.0
+                }
+              ]
+            },
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 8.0,
+              "modifiers": [
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 2.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:bleed_damage",
+                  "minValue": 2.0,
+                  "maxValue": 6.0
+                },
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 1.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:fire_damage",
+                  "minValue": 1.0,
+                  "maxValue": 3.0
+                }
+              ]
+            },
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 6.0,
+              "modifiers": [
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 2.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:bleed_damage",
+                  "minValue": 2.0,
+                  "maxValue": 6.0
+                },
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 2.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:fire_damage",
+                  "minValue": 2.0,
+                  "maxValue": 6.0
+                }
+              ]
+            },
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 4.0,
+              "modifiers": [
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 2.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:bleed_damage",
+                  "minValue": 2.0,
+                  "maxValue": 6.0
+                },
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 3.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:fire_damage",
+                  "minValue": 3.0,
+                  "maxValue": 9.0
+                }
+              ]
+            },
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 7.0,
+              "modifiers": [
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 3.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:bleed_damage",
+                  "minValue": 3.0,
+                  "maxValue": 9.0
+                },
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 1.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:fire_damage",
+                  "minValue": 1.0,
+                  "maxValue": 3.0
+                }
+              ]
+            },
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 4.0,
+              "modifiers": [
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 3.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:bleed_damage",
+                  "minValue": 3.0,
+                  "maxValue": 9.0
+                },
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 2.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:fire_damage",
+                  "minValue": 2.0,
+                  "maxValue": 6.0
+                }
+              ]
+            },
+            {
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 1.0,
+              "modifiers": [
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 3.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:bleed_damage",
+                  "minValue": 3.0,
+                  "maxValue": 9.0
+                },
+                {
+                  "Name": "mkultra:burning_skeleton",
+                  "Amount": 3.0,
+                  "Operation": 0,
+                  "AttributeName": "mkcore:fire_damage",
+                  "minValue": 3.0,
+                  "maxValue": 9.0
+                }
+              ]
+            },
+            {
+              "randomizationType": "mkweapons:name",
+              "slotName": "mkweapons:randomization.name",
+              "weight": 1.0,
+              "name": "{\"text\":\"Sacrificial Dagger\"}"
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "templateType": "mkultra:blade",
+                "slots": [
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.name"
+                ]
+              },
+              "weight": 10.0
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
