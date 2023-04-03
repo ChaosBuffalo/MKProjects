@@ -10,8 +10,8 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.effects.ShadowbringerEffect;
 import com.chaosbuffalo.mkultra.entities.projectiles.ShadowBoltProjectileEntity;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkultra.init.MKUEntities;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
@@ -37,8 +37,7 @@ public class ShadowBoltAbility extends MKAbility {
         setCooldownSeconds(8);
         setManaCost(7);
         setCastTime(GameConstants.TICKS_PER_SECOND);
-        addAttributes(baseDamage, scaleDamage, projectileSpeed, projectileInaccuracy,
-                modifierScaling);
+        addAttributes(baseDamage, scaleDamage, projectileSpeed, projectileInaccuracy, modifierScaling);
         addSkillAttribute(MKAttributes.EVOCATION);
         casting_particles.setDefaultValue(CASTING_PARTICLES);
     }
@@ -53,13 +52,13 @@ public class ShadowBoltAbility extends MKAbility {
 
     @Override
     public int getCastTime(IMKEntityData casterData) {
-        return casterData.getEffects().isEffectActive(ShadowbringerEffect.INSTANCE) ? 0 : super.getCastTime(casterData);
+        return casterData.getEffects().isEffectActive(MKUEffects.SHADOWBRINGER.get()) ? 0 : super.getCastTime(casterData);
     }
 
     @Override
     public float getManaCost(IMKEntityData casterData) {
         float cost = super.getManaCost(casterData);
-        return casterData.getEffects().isEffectActive(ShadowbringerEffect.INSTANCE) ? cost / 2.0f : cost;
+        return casterData.getEffects().isEffectActive(MKUEffects.SHADOWBRINGER.get()) ? cost / 2.0f : cost;
     }
 
     @Override
@@ -105,8 +104,8 @@ public class ShadowBoltAbility extends MKAbility {
     public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
         super.endCast(entity, data, context);
         float level = getSkillLevel(entity, MKAttributes.EVOCATION);
-        if (data.getEffects().isEffectActive(ShadowbringerEffect.INSTANCE)) {
-            data.getEffects().removeEffect(ShadowbringerEffect.INSTANCE);
+        if (data.getEffects().isEffectActive(MKUEffects.SHADOWBRINGER.get())) {
+            data.getEffects().removeEffect(MKUEffects.SHADOWBRINGER.get());
         }
         ShadowBoltProjectileEntity proj = new ShadowBoltProjectileEntity(MKUEntities.SHADOWBOLT_TYPE.get(), entity.level);
         proj.setOwner(entity);

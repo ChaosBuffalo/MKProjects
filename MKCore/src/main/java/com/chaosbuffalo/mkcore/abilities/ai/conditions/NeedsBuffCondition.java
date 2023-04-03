@@ -9,11 +9,12 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.LivingEntity;
 
 import javax.annotation.Nonnull;
+import java.util.function.Supplier;
 
 public class NeedsBuffCondition extends AbilityUseCondition {
 
     private final MobEffect buffEffect;
-    private final MKEffect buffMKEffect;
+    private final Supplier<? extends MKEffect> buffMKEffect;
     private final AbilityTargetingDecision.MovementSuggestion movementSuggestion;
     private boolean selfOnly;
 
@@ -26,7 +27,7 @@ public class NeedsBuffCondition extends AbilityUseCondition {
         selfOnly = false;
     }
 
-    public NeedsBuffCondition(MKAbility ability, MKEffect buffEffect) {
+    public NeedsBuffCondition(MKAbility ability, Supplier<? extends MKEffect> buffEffect) {
         super(ability);
         this.buffEffect = null;
         buffMKEffect = buffEffect;
@@ -44,7 +45,7 @@ public class NeedsBuffCondition extends AbilityUseCondition {
             return entity.getEffect(buffEffect) == null;
         } else if (buffMKEffect != null) {
             return MKCore.getEntityData(entity)
-                    .map(entityData -> !entityData.getEffects().isEffectActive(buffMKEffect))
+                    .map(entityData -> !entityData.getEffects().isEffectActive(buffMKEffect.get()))
                     .orElse(false);
         }
         return false;

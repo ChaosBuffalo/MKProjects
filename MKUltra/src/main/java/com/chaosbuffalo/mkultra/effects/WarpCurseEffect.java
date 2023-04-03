@@ -10,34 +10,28 @@ import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
-import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
 public class WarpCurseEffect extends MKEffect {
     public static final int DEFAULT_PERIOD = 40;
 
-    public static final WarpCurseEffect INSTANCE = new WarpCurseEffect();
-
     public static MKEffectBuilder<?> from(LivingEntity source, float base, float scaling, float modifier, ResourceLocation castParticles) {
-        return INSTANCE.builder(source).state(s -> {
+        return MKUEffects.WARP_CURSE.get().builder(source).state(s -> {
                     s.setEffectParticles(castParticles);
                     s.setScalingParameters(base, scaling, modifier);
                 })
                 .periodic(DEFAULT_PERIOD);
     }
 
-    private WarpCurseEffect() {
+    public WarpCurseEffect() {
         super(MobEffectCategory.HARMFUL);
-        setRegistryName(MKUltra.MODID, "effect.warp_curse");
     }
 
     @Override
@@ -80,15 +74,6 @@ public class WarpCurseEffect extends MKEffect {
             targetData.getAbilityExecutor().interruptCast(CastInterruptReason.Teleport);
             sendEffectParticles(target);
             return true;
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    private static class RegisterMe {
-        @SubscribeEvent
-        public static void register(RegistryEvent.Register<MKEffect> event) {
-            event.getRegistry().register(INSTANCE);
         }
     }
 }

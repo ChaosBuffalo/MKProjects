@@ -14,7 +14,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.effects.ResistanceEffects;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
@@ -84,7 +84,7 @@ public class WrathBeamAbility extends PositionTargetingAbility {
                         base.value(), scale.value(), modifierScaling.value())
                 .ability(this)
                 .skillLevel(level);
-        MKEffectBuilder<?> fireBreak = ResistanceEffects.BREAK_FIRE.builder(castingEntity)
+        MKEffectBuilder<?> fireBreak = MKUEffects.BREAK_FIRE.get().builder(castingEntity)
                 .ability(this)
                 .timed(breakDuration.value())
                 .skillLevel(level);

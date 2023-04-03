@@ -9,24 +9,18 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
-import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
 public class VampiricDamageEffect extends MKEffect {
 
-    public static final VampiricDamageEffect INSTANCE = new VampiricDamageEffect();
-
     public VampiricDamageEffect() {
         super(MobEffectCategory.HARMFUL);
-        this.setRegistryName(MKUltra.MODID, "effect.vampiric_damage");
     }
 
     @Override
@@ -46,7 +40,7 @@ public class VampiricDamageEffect extends MKEffect {
 
     public static MKEffectBuilder<State> from(LivingEntity source, MKDamageType damageType, float baseDamage,
                                               float scaling, float modifierScaling, float healthScaling, float healModScaling) {
-        return INSTANCE.builder(source).state((s) -> {
+        return MKUEffects.VAMPIRIC_DAMAGE.get().builder(source).state((s) -> {
             s.setDamageType(damageType);
             s.setScalingParameters(baseDamage, scaling, modifierScaling);
             s.setHealthScaling(healthScaling);
@@ -111,15 +105,6 @@ public class VampiricDamageEffect extends MKEffect {
                 MKHealing.healEntityFrom(source, value * getHealthScaling(), healSource);
             }
             return true;
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    private static class RegisterMe {
-        @SubscribeEvent
-        public static void register(RegistryEvent.Register<MKEffect> event) {
-            event.getRegistry().register(INSTANCE);
         }
     }
 }

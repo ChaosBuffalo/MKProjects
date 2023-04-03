@@ -15,7 +15,7 @@ import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.effects.ResistanceEffects;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
@@ -55,7 +55,7 @@ public class FireArmorAbility extends MKAbility {
     @Override
     protected Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.ABJURATION);
-        float amount = ResistanceEffects.FIRE_ARMOR.getPerLevel() * (level + 1) * 100.0f;
+        float amount = MKUEffects.FIRE_ARMOR.get().getPerLevel() * (level + 1) * 100.0f;
         int duration = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
         return new TranslatableComponent(getDescriptionTranslationKey(), amount,
                 CoreDamageTypes.FireDamage.get().getFormattedDisplayName(), duration);
@@ -83,7 +83,7 @@ public class FireArmorAbility extends MKAbility {
         MKEffectBuilder<?> sound = SoundEffect.from(entity, ModSounds.spell_fire_2.get(), entity.getSoundSource())
                 .ability(this);
 
-        MKEffectBuilder<?> fireArmor = ResistanceEffects.FIRE_ARMOR.builder(entity)
+        MKEffectBuilder<?> fireArmor = MKUEffects.FIRE_ARMOR.get().builder(entity)
                 .ability(this)
                 .timed(duration)
                 .skillLevel(level);

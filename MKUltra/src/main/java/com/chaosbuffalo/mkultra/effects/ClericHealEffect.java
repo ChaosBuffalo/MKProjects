@@ -7,27 +7,21 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
-import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
 public class ClericHealEffect extends MKEffect {
 
-    public static final ClericHealEffect INSTANCE = new ClericHealEffect();
-
-    private ClericHealEffect() {
+    public ClericHealEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        setRegistryName(MKUltra.MODID, "effect.cleric_heal");
     }
 
     public static MKEffectBuilder<?> from(LivingEntity source, float base, float scale, float modScale) {
-        return INSTANCE.builder(source).state(s -> s.setScalingParameters(base, scale, modScale));
+        return MKUEffects.CLERIC_HEAL.get().builder(source).state(s -> s.setScalingParameters(base, scale, modScale));
     }
 
     @Override
@@ -63,15 +57,6 @@ public class ClericHealEffect extends MKEffect {
             heal.setDamageUndead(activeEffect.hasSourceEntity() && !activeEffect.getSourceEntity().isInvertedHealAndHarm());
             MKHealing.healEntityFrom(target, value, heal);
             return true;
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    private static class RegisterMe {
-        @SubscribeEvent
-        public static void register(RegistryEvent.Register<MKEffect> event) {
-            event.getRegistry().register(INSTANCE);
         }
     }
 }

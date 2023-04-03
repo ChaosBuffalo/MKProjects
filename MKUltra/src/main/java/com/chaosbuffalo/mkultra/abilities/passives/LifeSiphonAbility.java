@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
-import com.chaosbuffalo.mkultra.effects.LifeSiphonEffect;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.LivingEntity;
@@ -40,7 +40,7 @@ public class LifeSiphonAbility extends MKPassiveAbility {
 
     @Override
     public MKEffect getPassiveEffect() {
-        return LifeSiphonEffect.INSTANCE;
+        return MKUEffects.LIFE_SIPHON.get();
     }
 
 }

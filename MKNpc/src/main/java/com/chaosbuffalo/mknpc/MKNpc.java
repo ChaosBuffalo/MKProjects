@@ -5,10 +5,7 @@ import com.chaosbuffalo.mknpc.client.gui.screens.QuestPage;
 import com.chaosbuffalo.mknpc.command.NpcCommands;
 import com.chaosbuffalo.mknpc.dialogue.NPCDialogueExtension;
 import com.chaosbuffalo.mknpc.event.NpcClientEventHandler;
-import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
-import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
-import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
-import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
+import com.chaosbuffalo.mknpc.init.*;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.npc.IMKNpcExtension;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
@@ -23,6 +20,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
@@ -44,6 +42,7 @@ public class MKNpc {
     private QuestDefinitionManager questDefinitionManager;
 
     public MKNpc() {
+        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         MinecraftForge.EVENT_BUS.register(this);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
@@ -53,6 +52,7 @@ public class MKNpc {
         MKNpcBlocks.register();
         MKNpcTileEntityTypes.register();
         MKNpcEntityTypes.register();
+        MKNpcEffects.register(modBus);
         NpcDialogueUtils.setupMKNpcHandlers();
         npcDefinitionManager = new NpcDefinitionManager();
         questDefinitionManager = new QuestDefinitionManager();

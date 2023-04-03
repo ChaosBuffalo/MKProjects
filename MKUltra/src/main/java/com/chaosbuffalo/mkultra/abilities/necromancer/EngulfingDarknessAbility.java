@@ -16,6 +16,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribut
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.EngulfingDarknessEffect;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
@@ -63,7 +64,7 @@ public class EngulfingDarknessAbility extends MKAbility {
     @Override
     public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
         super.buildDescription(casterData, consumer);
-        AbilityDescriptions.getEffectModifiers(EngulfingDarknessEffect.INSTANCE, casterData, false).forEach(consumer);
+        AbilityDescriptions.getEffectModifiers(MKUEffects.ENGULFING_DARKNESS.get(), casterData, false).forEach(consumer);
     }
 
     @Override

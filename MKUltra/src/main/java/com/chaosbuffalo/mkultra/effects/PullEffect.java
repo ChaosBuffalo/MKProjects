@@ -6,30 +6,24 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
-import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
 public class PullEffect extends MKEffect {
 
-    public static final PullEffect INSTANCE = new PullEffect();
-
-    private PullEffect() {
+    public PullEffect() {
         super(MobEffectCategory.NEUTRAL);
-        setRegistryName(MKUltra.MODID, "effect.pull");
     }
 
     public static MKEffectBuilder<?> from(LivingEntity source, float base, float scale, Vec3 sourcePos) {
-        return INSTANCE.builder(source).state(s -> {
+        return MKUEffects.PULL.get().builder(source).state(s -> {
             s.setScalingParameters(base, scale, 0.0f);
             s.setPos(sourcePos);
         });
@@ -87,15 +81,6 @@ public class PullEffect extends MKEffect {
             stateTag.putDouble("posX", pos.x());
             stateTag.putDouble("posY", pos.y());
             stateTag.putDouble("posZ", pos.z());
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    private static class RegisterMe {
-        @SubscribeEvent
-        public static void register(RegistryEvent.Register<MKEffect> event) {
-            event.getRegistry().register(INSTANCE);
         }
     }
 }

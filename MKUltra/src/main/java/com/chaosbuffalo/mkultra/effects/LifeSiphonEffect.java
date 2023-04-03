@@ -9,24 +9,17 @@ import com.chaosbuffalo.mkcore.effects.MKSimplePassiveState;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
-import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 public class LifeSiphonEffect extends MKEffect {
 
-    public static final LifeSiphonEffect INSTANCE = new LifeSiphonEffect();
-
     public LifeSiphonEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        setRegistryName(MKUltra.MODID, "effect.life_siphon");
         SpellTriggers.LIVING_KILL_ENTITY.register(this, this::onLivingKillEntity);
     }
 
@@ -43,14 +36,5 @@ public class LifeSiphonEffect extends MKEffect {
     @Override
     public MKEffectState makeState() {
         return MKSimplePassiveState.INSTANCE;
-    }
-
-    @SuppressWarnings("unused")
-    @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    private static class RegisterMe {
-        @SubscribeEvent
-        public static void register(RegistryEvent.Register<MKEffect> event) {
-            event.getRegistry().register(INSTANCE);
-        }
     }
 }

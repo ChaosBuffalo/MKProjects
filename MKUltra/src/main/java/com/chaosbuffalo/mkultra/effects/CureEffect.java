@@ -5,26 +5,21 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectState;
-import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.ArrayList;
 
 public class CureEffect extends MKEffect {
-    public static final CureEffect INSTANCE = new CureEffect();
 
-    private CureEffect() {
+    public CureEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        setRegistryName(MKUltra.MODID, "effect.cure");
     }
 
     public static MKEffectBuilder<?> from(LivingEntity source) {
-        return INSTANCE.builder(source);
+        return MKUEffects.CURE.get().builder(source);
     }
 
     @Override
@@ -51,15 +46,6 @@ public class CureEffect extends MKEffect {
                 targetData.getEntity().removeEffect(effect.getEffect());
             }
             return true;
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    private static class RegisterMe {
-        @SubscribeEvent
-        public static void register(RegistryEvent.Register<MKEffect> event) {
-            event.getRegistry().register(INSTANCE);
         }
     }
 }

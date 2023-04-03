@@ -9,15 +9,12 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
-import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
@@ -25,17 +22,15 @@ public class FuriousBroodingEffect extends MKEffect {
     public static final int DEFAULT_PERIOD = GameConstants.TICKS_PER_SECOND;
 
     private static final UUID modUUID = UUID.fromString("06bbfb88-d53e-4565-964c-4642b9165c6d");
-    public static final FuriousBroodingEffect INSTANCE = new FuriousBroodingEffect();
 
-    protected FuriousBroodingEffect() {
+    public FuriousBroodingEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        setRegistryName(MKUltra.MODID, "effect.furious_brooding");
         addAttribute(Attributes.MOVEMENT_SPEED, modUUID, -0.60, 0.05, AttributeModifier.Operation.MULTIPLY_TOTAL, MKAttributes.PNEUMA);
     }
 
     public static MKEffectBuilder<?> from(LivingEntity source, float baseHealing, float scaling, float modifierScaling,
                                           ResourceLocation castParticles) {
-        return INSTANCE.builder(source)
+        return MKUEffects.FURIOUS_BROODING.get().builder(source)
                 .state(s -> {
                     s.setEffectParticles(castParticles);
                     s.setScalingParameters(baseHealing, scaling, modifierScaling);
@@ -68,15 +63,6 @@ public class FuriousBroodingEffect extends MKEffect {
                     activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getModifierScale()));
             sendEffectParticles(targetData.getEntity());
             return true;
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    private static class RegisterMe {
-        @SubscribeEvent
-        public static void register(RegistryEvent.Register<MKEffect> event) {
-            event.getRegistry().register(INSTANCE);
         }
     }
 }

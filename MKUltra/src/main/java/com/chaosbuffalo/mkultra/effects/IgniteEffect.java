@@ -8,28 +8,22 @@ import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
 public class IgniteEffect extends MKEffect {
 
-    public static final IgniteEffect INSTANCE = new IgniteEffect();
-
     public static MKEffectBuilder<?> from(LivingEntity source, float baseDamage, float scaling, float modifierScaling) {
-        return INSTANCE.builder(source)
+        return MKUEffects.IGNITE.get().builder(source)
                 .state(s -> s.setScalingParameters(baseDamage, scaling, modifierScaling));
     }
 
-    private IgniteEffect() {
+    public IgniteEffect() {
         super(MobEffectCategory.HARMFUL);
-        setRegistryName("effect.ignite");
     }
 
     @Override
@@ -64,15 +58,6 @@ public class IgniteEffect extends MKEffect {
             });
 
             return true;
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    private static class RegisterMe {
-        @SubscribeEvent
-        public static void register(RegistryEvent.Register<MKEffect> event) {
-            event.getRegistry().register(INSTANCE);
         }
     }
 }

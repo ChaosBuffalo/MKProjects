@@ -7,13 +7,10 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
-import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
@@ -21,16 +18,13 @@ public class NaturesRemedyEffect extends MKEffect {
 
     public static final int DEFAULT_PERIOD = 20;
 
-    public static final NaturesRemedyEffect INSTANCE = new NaturesRemedyEffect();
-
-    private NaturesRemedyEffect() {
+    public NaturesRemedyEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        setRegistryName(MKUltra.MODID, "effect.natures_remedy");
     }
 
     public static MKEffectBuilder<?> from(LivingEntity source, float base, float scale, float modScale,
                                           ResourceLocation castParticles) {
-        return INSTANCE.builder(source)
+        return MKUEffects.NATURES_REMEDY.get().builder(source)
                 .state(s -> {
                     s.setEffectParticles(castParticles);
                     s.setScalingParameters(base, scale, modScale);
@@ -72,15 +66,6 @@ public class NaturesRemedyEffect extends MKEffect {
             MKHealing.healEntityFrom(target, value, heal);
             sendEffectParticles(targetData.getEntity());
             return true;
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    private static class RegisterMe {
-        @SubscribeEvent
-        public static void register(RegistryEvent.Register<MKEffect> event) {
-            event.getRegistry().register(INSTANCE);
         }
     }
 }

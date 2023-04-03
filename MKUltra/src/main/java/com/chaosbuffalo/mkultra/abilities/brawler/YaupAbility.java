@@ -19,6 +19,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.YaupEffect;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
@@ -46,7 +47,7 @@ public class YaupAbility extends MKAbility {
         setManaCost(2);
         addAttributes(baseDuration, scaleDuration, tick_particles, cast_particles);
         addSkillAttribute(MKAttributes.ARETE);
-        setUseCondition(new NeedsBuffCondition(this, YaupEffect.INSTANCE));
+        setUseCondition(new NeedsBuffCondition(this, MKUEffects.YAUP));
     }
 
     @Override
@@ -59,7 +60,7 @@ public class YaupAbility extends MKAbility {
     @Override
     public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
         super.buildDescription(casterData, consumer);
-        AbilityDescriptions.getEffectModifiers(YaupEffect.INSTANCE, casterData, false).forEach(consumer);
+        AbilityDescriptions.getEffectModifiers(MKUEffects.YAUP.get(), casterData, false).forEach(consumer);
     }
 
     @Override

@@ -11,9 +11,9 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.misc.FireballAbility;
-import com.chaosbuffalo.mkultra.effects.ResistanceEffects;
 import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
@@ -62,7 +62,7 @@ public class FireballProjectileEntity extends TrailProjectileEntity implements I
                     .skillLevel(getSkillLevel())
                     .amplify(amplifier);
 
-            MKEffectBuilder<?> fireBreak = ResistanceEffects.BREAK_FIRE.builder(casterLiving)
+            MKEffectBuilder<?> fireBreak = MKUEffects.BREAK_FIRE.get().builder(casterLiving)
                     .ability(ability)
                     .directEntity(this)
                     .timed(Math.round((getSkillLevel() + 1) * GameConstants.TICKS_PER_SECOND))

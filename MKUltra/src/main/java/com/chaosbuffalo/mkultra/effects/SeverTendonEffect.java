@@ -11,15 +11,12 @@ import com.chaosbuffalo.mkcore.fx.ParticleEffects;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.ParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsParticles;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
@@ -27,16 +24,14 @@ public class SeverTendonEffect extends MKEffect {
     public static final int DEFAULT_PERIOD = GameConstants.TICKS_PER_SECOND * 2;
 
     private static final UUID modUUID = UUID.fromString("bde03af5-32ed-4f6b-9f2c-c23296d60fa8");
-    public static final SeverTendonEffect INSTANCE = new SeverTendonEffect();
 
-    protected SeverTendonEffect() {
+    public SeverTendonEffect() {
         super(MobEffectCategory.HARMFUL);
-        setRegistryName(MKUltra.MODID, "effect.sever_tendon");
         addAttribute(Attributes.MOVEMENT_SPEED, modUUID, -0.05, AttributeModifier.Operation.MULTIPLY_TOTAL);
     }
 
     public static MKEffectBuilder<?> from(LivingEntity source, float baseDamage, float scaling, float modifierScaling) {
-        return INSTANCE.builder(source)
+        return MKUEffects.SEVER_TENDON.get().builder(source)
                 .state(s -> s.setScalingParameters(baseDamage, scaling, modifierScaling))
                 .periodic(DEFAULT_PERIOD);
     }
@@ -74,15 +69,6 @@ public class SeverTendonEffect extends MKEffect {
                             target.getZ(), target.getBbWidth() / 2.0, 0.5, target.getBbWidth() / 2.0, 3,
                             target.getUpVector(0)), target);
             return true;
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    private static class RegisterMe {
-        @SubscribeEvent
-        public static void register(RegistryEvent.Register<MKEffect> event) {
-            event.getRegistry().register(INSTANCE);
         }
     }
 }

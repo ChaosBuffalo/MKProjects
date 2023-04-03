@@ -13,7 +13,7 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.effects.SkinLikeWoodEffect;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
@@ -35,7 +35,7 @@ public class SkinLikeWoodAbility extends MKToggleAbility {
         setManaCost(2);
         addAttributes(cast_particles);
         addSkillAttribute(MKAttributes.ABJURATION);
-        setUseCondition(new NeedsBuffCondition(this, SkinLikeWoodEffect.INSTANCE).setSelfOnly(true));
+        setUseCondition(new NeedsBuffCondition(this, this::getToggleEffect).setSelfOnly(true));
         casting_particles.setDefaultValue(CASTING_PARTICLES);
     }
 
@@ -51,7 +51,7 @@ public class SkinLikeWoodAbility extends MKToggleAbility {
 
     @Override
     public MKEffect getToggleEffect() {
-        return SkinLikeWoodEffect.INSTANCE;
+        return MKUEffects.SKIN_LIKE_WOOD.get();
     }
 
     @Nullable

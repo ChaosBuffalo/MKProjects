@@ -8,25 +8,20 @@ import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.MKUAbilityUtils;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
 public class FlameWaveEffect extends MKEffect {
 
-    public static final FlameWaveEffect INSTANCE = new FlameWaveEffect();
-
     public static MKEffectBuilder<?> from(LivingEntity source, float baseDamage, float scaling, float modifierScaling,
                                           int witherBase, int witherScale, float damageMultiplier) {
-        return INSTANCE.builder(source).state(s -> {
+        return MKUEffects.FLAME_WAVE.get().builder(source).state(s -> {
             s.witherDurationBase = witherBase;
             s.witherDurationScale = witherScale;
             s.damageBoost = damageMultiplier;
@@ -34,9 +29,8 @@ public class FlameWaveEffect extends MKEffect {
         });
     }
 
-    private FlameWaveEffect() {
+    public FlameWaveEffect() {
         super(MobEffectCategory.HARMFUL);
-        setRegistryName("effect.flame_wave");
     }
 
     @Override
@@ -73,15 +67,6 @@ public class FlameWaveEffect extends MKEffect {
             targetData.getEntity().hurt(MKDamageSource.causeAbilityDamage(CoreDamageTypes.FireDamage.get(),
                     activeEffect.getAbilityId(), activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getModifierScale()), damage);
             return true;
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    private static class RegisterMe {
-        @SubscribeEvent
-        public static void register(RegistryEvent.Register<MKEffect> event) {
-            event.getRegistry().register(INSTANCE);
         }
     }
 }

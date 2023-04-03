@@ -5,20 +5,16 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
-import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.status.DamageTypeDotEffect;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
-import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
@@ -27,19 +23,14 @@ public class EngulfingDarknessEffect extends DamageTypeDotEffect {
     public static int DEFAULT_PERIOD = 40;
     private static final UUID modUUID = UUID.fromString("b349fa30-5995-42c0-8fff-19b5c181cc75");
 
-    public static final EngulfingDarknessEffect INSTANCE = new EngulfingDarknessEffect();
-
-
     public EngulfingDarknessEffect() {
-
-        setRegistryName("effect.engulfing_darkness");
         addAttribute(Attributes.MOVEMENT_SPEED, modUUID, -0.10, -0.05, AttributeModifier.Operation.MULTIPLY_TOTAL, MKAttributes.CONJURATION);
     }
 
     public static MKEffectBuilder<?> from(LivingEntity source, float base, float scaling, float modifierScaling,
                                           float chanceToTrigger, int ticksForTrigger,
                                           ResourceLocation castParticles) {
-        return INSTANCE.builder(source)
+        return MKUEffects.ENGULFING_DARKNESS.get().builder(source)
                 .state(s -> {
                     s.setEffectParticles(castParticles);
                     s.setScalingParameters(base, scaling, modifierScaling);
@@ -104,15 +95,6 @@ public class EngulfingDarknessEffect extends DamageTypeDotEffect {
                         });
             }
             return super.performEffect(targetData, activeEffect);
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    private static class RegisterMe {
-        @SubscribeEvent
-        public static void register(RegistryEvent.Register<MKEffect> event) {
-            event.getRegistry().register(INSTANCE);
         }
     }
 }

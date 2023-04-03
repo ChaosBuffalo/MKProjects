@@ -18,6 +18,7 @@ public class MKUltra {
 
     public MKUltra() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        MKUEffects.register(modBus);
         MKUEntities.register();
         MKUAbilities.register();
         MKUWorldGen.register();
