@@ -30,20 +30,19 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
 
     @Override
     public void applyToEntity(Entity entity) {
-        if (entity instanceof LivingEntity) {
-            LivingEntity livingEntity = (LivingEntity) entity;
+        if (entity instanceof LivingEntity livingEntity) {
             livingEntity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((cap) -> {
                 List<ResourceLocation> toUnlearn = new ArrayList<>();
-                for (MKAbilityInfo ability : cap.getKnowledge().getAllAbilities()) {
+                for (MKAbilityInfo ability : cap.getAbilities().getAllAbilities()) {
                     toUnlearn.add(ability.getId());
                 }
                 for (ResourceLocation loc : toUnlearn){
-                    cap.getKnowledge().getAbilityKnowledge().unlearnAbility(loc, AbilitySource.TRAINED);
+                    cap.getAbilities().unlearnAbility(loc, AbilitySource.TRAINED);
                 }
                 for (NpcAbilityEntry entry : abilities) {
                     MKAbility ability = MKCoreRegistry.getAbility(entry.getAbilityName());
                     if (ability != null) {
-                        cap.getKnowledge().learnAbility(ability, entry.getPriority());
+                        cap.getAbilities().learnAbility(ability, entry.getPriority());
                     }
                 }
             });

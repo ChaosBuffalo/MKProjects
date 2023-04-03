@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.abilities;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -27,6 +28,10 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
     @Nonnull
     public MKAbility getAbility() {
         return ability;
+    }
+
+    public AbilityType getAbilityType() {
+        return ability.getType();
     }
 
     public ResourceLocation getId() {

@@ -6,7 +6,6 @@ import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKAbilityKnowledge;
-import com.chaosbuffalo.mkcore.core.IMKEntityKnowledge;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import net.minecraft.nbt.CompoundTag;
@@ -15,7 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class EntityAbilityKnowledge implements IMKEntityKnowledge, IMKAbilityKnowledge, IMKSerializable<CompoundTag> {
+public class EntityAbilityKnowledge implements IMKAbilityKnowledge, IMKSerializable<CompoundTag> {
     private final MKEntityData entityData;
     private final Map<ResourceLocation, MKAbilityInfo> abilityInfoMap = new HashMap<>();
     private final Map<ResourceLocation, Integer> abilityPriorities = new HashMap<>();
@@ -23,11 +22,6 @@ public class EntityAbilityKnowledge implements IMKEntityKnowledge, IMKAbilityKno
 
     public EntityAbilityKnowledge(MKEntityData entityData) {
         this.entityData = entityData;
-    }
-
-    @Override
-    public IMKAbilityKnowledge getAbilityKnowledge() {
-        return this;
     }
 
     @Override

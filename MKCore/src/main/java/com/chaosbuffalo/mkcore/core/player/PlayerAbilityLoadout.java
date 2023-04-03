@@ -1,14 +1,14 @@
 package com.chaosbuffalo.mkcore.core.player;
 
-import com.chaosbuffalo.mkcore.core.AbilityGroupId;
+import com.chaosbuffalo.mkcore.abilities.AbilitySource;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.loadout.ItemAbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.loadout.PassiveAbilityGroup;
-import com.chaosbuffalo.mkcore.core.player.loadout.UltimateAbilityGroup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -18,14 +18,14 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
 
     private final Map<AbilityGroupId, AbilityGroup> abilityGroups = new EnumMap<>(AbilityGroupId.class);
     private final PassiveAbilityGroup passiveAbilityGroup;
-    private final UltimateAbilityGroup ultimateAbilityGroup;
-    private final BasicAbilityGroup basicAbilityGroup;
+    private final AbilityGroup ultimateAbilityGroup;
+    private final AbilityGroup basicAbilityGroup;
     private final ItemAbilityGroup itemAbilityGroup;
 
     public PlayerAbilityLoadout(MKPlayerData playerData) {
-        basicAbilityGroup = new BasicAbilityGroup(playerData);
+        basicAbilityGroup = new AbilityGroup(playerData, "basic", AbilityGroupId.Basic);
         passiveAbilityGroup = new PassiveAbilityGroup(playerData);
-        ultimateAbilityGroup = new UltimateAbilityGroup(playerData);
+        ultimateAbilityGroup = new AbilityGroup(playerData, "ultimate", AbilityGroupId.Ultimate);
         itemAbilityGroup = new ItemAbilityGroup(playerData);
         registerAbilityGroup(AbilityGroupId.Basic, basicAbilityGroup);
         registerAbilityGroup(AbilityGroupId.Item, itemAbilityGroup);
@@ -43,25 +43,36 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
         return abilityGroups.get(group);
     }
 
+    public Collection<AbilityGroup> getAbilityGroups() {
+        return abilityGroups.values();
+    }
+
     private void registerAbilityGroup(AbilityGroupId group, AbilityGroup abilityGroup) {
         abilityGroups.put(group, abilityGroup);
         addSyncChild(abilityGroup);
     }
 
-    public ResourceLocation getAbilityInSlot(AbilityGroupId group, int slot) {
-        return getAbilityGroup(group).getSlot(slot);
-    }
-
-    public PassiveAbilityGroup getPassiveGroup() {
-        return passiveAbilityGroup;
-    }
-
-    public UltimateAbilityGroup getUltimateGroup() {
-        return ultimateAbilityGroup;
-    }
-
     public ItemAbilityGroup getItemGroup() {
         return itemAbilityGroup;
+    }
+
+    void onAbilityLearned(MKAbilityInfo abilityInfo, AbilitySource source) {
+        if (source.placeOnBarWhenLearned()) {
+            for (Map.Entry<AbilityGroupId, AbilityGroup> entry : abilityGroups.entrySet()) {
+                if (entry.getKey().fitsAbilityType(abilityInfo.getAbilityType()) &&
+                        entry.getValue().tryEquip(abilityInfo.getId())) {
+                    break;
+                }
+            }
+        }
+    }
+
+    void onAbilityUnlearned(MKAbilityInfo abilityInfo) {
+        abilityGroups.values().forEach(group -> {
+            if (group.isEquipped(abilityInfo)) {
+                group.onAbilityUnlearned(abilityInfo);
+            }
+        });
     }
 
     public CompoundTag serializeNBT() {
@@ -90,13 +101,6 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
 
     public void onPersonaDeactivated() {
         abilityGroups.values().forEach(AbilityGroup::onPersonaDeactivated);
-    }
-
-    public static class BasicAbilityGroup extends AbilityGroup {
-
-        public BasicAbilityGroup(MKPlayerData playerData) {
-            super(playerData, "basic", AbilityGroupId.Basic);
-        }
     }
 
 }

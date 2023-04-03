@@ -65,8 +65,7 @@ public class MKPlayerData implements IMKEntityData {
         return abilityExecutor;
     }
 
-    @Override
-    public PlayerKnowledge getKnowledge() {
+    private PlayerKnowledge getKnowledge() {
         return getPersonaManager().getActivePersona().getKnowledge();
     }
 
@@ -74,6 +73,7 @@ public class MKPlayerData implements IMKEntityData {
         return getKnowledge().getAbilityLoadout();
     }
 
+    @Override
     public PlayerAbilityKnowledge getAbilities() {
         return getKnowledge().getAbilityKnowledge();
     }
@@ -208,13 +208,11 @@ public class MKPlayerData implements IMKEntityData {
 
     public void onPersonaActivated() {
         getEquipment().onPersonaActivated();
-        getAbilityExecutor().onPersonaActivated();
         getStats().onPersonaActivated();
     }
 
     public void onPersonaDeactivated() {
         getEquipment().onPersonaDeactivated();
-        getAbilityExecutor().onPersonaDeactivated();
         getStats().onPersonaDeactivated();
     }
 

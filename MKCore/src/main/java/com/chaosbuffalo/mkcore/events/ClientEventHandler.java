@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.client.gui.IPlayerDataAwareScreen;
 import com.chaosbuffalo.mkcore.client.gui.ParticleEditorScreen;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
-import com.chaosbuffalo.mkcore.core.AbilityGroupId;
+import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.MKRangedAttribute;

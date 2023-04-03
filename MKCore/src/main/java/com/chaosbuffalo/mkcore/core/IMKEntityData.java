@@ -20,7 +20,7 @@ public interface IMKEntityData {
 
     AbilityExecutor getAbilityExecutor();
 
-    IMKEntityKnowledge getKnowledge();
+    IMKAbilityKnowledge getAbilities();
 
     IMKEntityStats getStats();
 

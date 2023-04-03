@@ -36,12 +36,12 @@ public class VampiricDamageEffect extends MKEffect {
 
     @Override
     public MKEffectBuilder<State> builder(UUID sourceId) {
-        return new MKEffectBuilder(this, sourceId, this::makeState);
+        return new MKEffectBuilder<>(this, sourceId, this::makeState);
     }
 
     @Override
     public MKEffectBuilder<State> builder(LivingEntity sourceEntity) {
-        return new MKEffectBuilder(this, sourceEntity, this::makeState);
+        return new MKEffectBuilder<>(this, sourceEntity, this::makeState);
     }
 
     public static MKEffectBuilder<State> from(LivingEntity source, MKDamageType damageType, float baseDamage,

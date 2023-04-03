@@ -44,7 +44,7 @@ public class MKEntityData implements IMKEntityData {
     }
 
     @Override
-    public EntityAbilityKnowledge getKnowledge() {
+    public EntityAbilityKnowledge getAbilities() {
         return knowledge;
     }
 
@@ -87,7 +87,7 @@ public class MKEntityData implements IMKEntityData {
     @Override
     public CompoundTag serialize() {
         CompoundTag tag = new CompoundTag();
-        tag.put("knowledge", getKnowledge().serialize());
+        tag.put("knowledge", knowledge.serialize());
         tag.put("effects", effectHandler.serialize());
         return tag;
     }
@@ -99,7 +99,7 @@ public class MKEntityData implements IMKEntityData {
 
     @Override
     public void deserialize(CompoundTag tag) {
-        getKnowledge().deserialize(tag.getCompound("knowledge"));
+        knowledge.deserialize(tag.getCompound("knowledge"));
         effectHandler.deserialize(tag.getCompound("effects"));
     }
 

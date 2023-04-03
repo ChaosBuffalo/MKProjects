@@ -43,20 +43,19 @@ public class TempAbilitiesOption extends NpcDefinitionOption {
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
-        if (entity instanceof LivingEntity) {
-            LivingEntity livingEntity = (LivingEntity) entity;
+        if (entity instanceof LivingEntity livingEntity) {
             livingEntity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((cap) -> {
                 List<ResourceLocation> toUnlearn = new ArrayList<>();
-                for (MKAbilityInfo ability : cap.getKnowledge().getAllAbilities()) {
+                for (MKAbilityInfo ability : cap.getAbilities().getAllAbilities()) {
                     toUnlearn.add(ability.getId());
                 }
                 for (ResourceLocation loc : toUnlearn) {
-                    cap.getKnowledge().getAbilityKnowledge().unlearnAbility(loc, AbilitySource.TRAINED);
+                    cap.getAbilities().unlearnAbility(loc, AbilitySource.TRAINED);
                 }
                 for (NpcAbilityEntry entry : abilities) {
                     MKAbility ability = MKCoreRegistry.getAbility(entry.getAbilityName());
                     if (ability != null && ((LivingEntity) entity).getRandom().nextDouble() <= entry.getChance()) {
-                        cap.getKnowledge().learnAbility(ability, entry.getPriority());
+                        cap.getAbilities().learnAbility(ability, entry.getPriority());
                     }
                 }
             });

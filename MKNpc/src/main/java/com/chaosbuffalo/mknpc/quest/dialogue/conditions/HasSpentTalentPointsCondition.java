@@ -28,8 +28,8 @@ public class HasSpentTalentPointsCondition extends DialogueCondition {
     @Override
     public boolean meetsCondition(ServerPlayer player, LivingEntity source) {
         return MKCore.getPlayer(player).map(x -> {
-            int unspent = x.getKnowledge().getTalentKnowledge().getUnspentTalentPoints();
-            int total = x.getKnowledge().getTalentKnowledge().getTotalTalentPoints();
+            int unspent = x.getTalents().getUnspentTalentPoints();
+            int total = x.getTalents().getTotalTalentPoints();
             int spent = total - unspent;
             return spent >= talentCount;
         }).orElse(false);

@@ -1,12 +1,11 @@
 package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.IMKEntityKnowledge;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
 import net.minecraft.nbt.CompoundTag;
 
-public class PlayerKnowledge implements IMKEntityKnowledge, IPlayerSyncComponentProvider {
+public class PlayerKnowledge implements IPlayerSyncComponentProvider {
 
     private final SyncComponent sync = new SyncComponent("knowledge");
     private final PlayerAbilityKnowledge abilityKnowledge;
@@ -35,7 +34,6 @@ public class PlayerKnowledge implements IMKEntityKnowledge, IPlayerSyncComponent
         return sync;
     }
 
-    @Override
     public PlayerAbilityKnowledge getAbilityKnowledge() {
         return abilityKnowledge;
     }

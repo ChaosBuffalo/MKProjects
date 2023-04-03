@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.command.arguments.AbilityIdArgument;
-import com.chaosbuffalo.mkcore.core.AbilityGroupId;
+import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.PlayerAbilityKnowledge;
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
@@ -103,8 +103,7 @@ public class HotBarCommand {
         MKCore.getPlayer(player).ifPresent(playerData -> {
             PlayerAbilityKnowledge abilityKnowledge = playerData.getAbilities();
             if (abilityKnowledge.knowsAbility(abilityId)) {
-                int slot = playerData.getLoadout().getAbilityGroup(group).tryEquip(abilityId);
-                if (slot == -1) {
+                if (!playerData.getLoadout().getAbilityGroup(group).tryEquip(abilityId)) {
                     ChatUtils.sendMessage(player, "No room for ability");
                 }
             }

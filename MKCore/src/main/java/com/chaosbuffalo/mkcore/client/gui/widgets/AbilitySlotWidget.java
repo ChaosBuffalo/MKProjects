@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.client.gui.GuiTextures;
 import com.chaosbuffalo.mkcore.client.gui.IAbilityScreen;
-import com.chaosbuffalo.mkcore.core.AbilityGroupId;
+import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
@@ -68,7 +68,7 @@ public class AbilitySlotWidget extends MKLayout {
         if (playerEntity == null)
             return;
         MKCore.getPlayer(playerEntity).ifPresent(playerData -> {
-            abilityId = playerData.getLoadout().getAbilityInSlot(slotGroup, slotIndex);
+            abilityId = playerData.getLoadout().getAbilityGroup(slotGroup).getSlot(slotIndex);
             setupBackground(playerData);
             setupIcon(abilityId);
         });

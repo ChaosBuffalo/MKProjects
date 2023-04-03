@@ -11,11 +11,10 @@ import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.google.common.collect.ImmutableSet;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.Sensor;
-import net.minecraft.server.level.ServerLevel;
-import org.apache.logging.log4j.core.Core;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -39,7 +38,7 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
         }
         entityIn.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent(mkEntityData -> {
             AbilityDecisionContext context = createAbilityDecisionContext(entityIn);
-            for (MKAbilityInfo ability : mkEntityData.getKnowledge().getAbilitiesPriorityOrder()) {
+            for (MKAbilityInfo ability : mkEntityData.getAbilities().getAbilitiesPriorityOrder()) {
                 MKAbility mkAbility = ability.getAbility();
                 if (!mkEntityData.getAbilityExecutor().canActivateAbility(mkAbility))
                     continue;

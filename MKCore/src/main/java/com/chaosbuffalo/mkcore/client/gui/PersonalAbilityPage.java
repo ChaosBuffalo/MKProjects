@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.client.gui.widgets.AbilitySlotWidget;
 import com.chaosbuffalo.mkcore.client.gui.widgets.CycleButton;
 import com.chaosbuffalo.mkcore.client.gui.widgets.IconText;
-import com.chaosbuffalo.mkcore.core.AbilityGroupId;
+import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.OffsetConstraint;
