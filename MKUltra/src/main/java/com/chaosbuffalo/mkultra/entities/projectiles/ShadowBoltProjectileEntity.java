@@ -11,7 +11,6 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.necromancer.ShadowBoltAbility;
-import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
@@ -30,16 +29,15 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-public class ShadowBoltProjectileEntity extends TrailProjectileEntity implements IMKRenderAsItem {
+public class ShadowBoltProjectileEntity extends SpriteTrailProjectileEntity {
 
     public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_trail");
     public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_detonate");
-    private static ItemStack projectileItem;
 
 
     public ShadowBoltProjectileEntity(EntityType<? extends Projectile> entityTypeIn,
                                       Level worldIn) {
-        super(entityTypeIn, worldIn);
+        super(entityTypeIn, worldIn, new ItemStack(MKUItems.shadowBoltProjectileItem.get()));
         setDeathTime(GameConstants.TICKS_PER_SECOND * 6);
         setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
     }
@@ -47,8 +45,7 @@ public class ShadowBoltProjectileEntity extends TrailProjectileEntity implements
 
     @Override
     protected boolean onImpact(Entity caster, HitResult result, int amplifier) {
-        if (!this.level.isClientSide && caster instanceof LivingEntity) {
-            LivingEntity casterLiving = (LivingEntity) caster;
+        if (!this.level.isClientSide && caster instanceof LivingEntity casterLiving) {
             SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
             SoundUtils.serverPlaySoundAtEntity(this, MKUSounds.spell_dark_8.get(), cat);
             PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
@@ -82,13 +79,5 @@ public class ShadowBoltProjectileEntity extends TrailProjectileEntity implements
     @Override
     protected TargetingContext getTargetContext() {
         return TargetingContexts.ENEMY;
-    }
-
-    @Override
-    public ItemStack getItem() {
-        if (projectileItem == null) {
-            projectileItem = new ItemStack(MKUItems.shadowBoltProjectileItem);
-        }
-        return projectileItem;
     }
 }

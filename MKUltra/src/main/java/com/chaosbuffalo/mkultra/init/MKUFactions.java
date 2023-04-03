@@ -7,14 +7,12 @@ import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mkultra.MKUltra;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MKUFactions {
 
     public static final DeferredRegister<MKFaction> REGISTRY = DeferredRegister.create(

@@ -19,13 +19,14 @@ public class MKUltra {
     public MKUltra() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         MKUEffects.register(modBus);
-        MKUEntities.register();
-        MKUAbilities.register();
-        MKUWorldGen.register();
+        MKUEntities.register(modBus);
+        MKUAbilities.register(modBus);
+        MKUWorldGen.register(modBus);
         MKUEntitlements.register(modBus);
         MKUTalents.register(modBus);
         MKUSounds.register(modBus);
         MKUFactions.register(modBus);
+        MKUItems.register(modBus);
         modBus.addListener(this::enqueueIMC);
     }
 

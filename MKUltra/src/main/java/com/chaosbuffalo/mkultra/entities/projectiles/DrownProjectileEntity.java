@@ -27,7 +27,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-public class DrownProjectileEntity extends TrailProjectileEntity implements IMKRenderAsItem {
+public class DrownProjectileEntity extends SpriteTrailProjectileEntity {
 
     public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "drown_trail");
     public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "drown_detonate");
@@ -35,7 +35,7 @@ public class DrownProjectileEntity extends TrailProjectileEntity implements IMKR
 
     public DrownProjectileEntity(EntityType<? extends Projectile> entityTypeIn,
                                  Level worldIn) {
-        super(entityTypeIn, worldIn);
+        super(entityTypeIn, worldIn, new ItemStack(MKUItems.drownProjectileItem.get()));
         setDeathTime(GameConstants.TICKS_PER_SECOND * 3);
         setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
     }
@@ -70,14 +70,6 @@ public class DrownProjectileEntity extends TrailProjectileEntity implements IMKR
     @Override
     protected TargetingContext getTargetContext() {
         return TargetingContexts.ENEMY;
-    }
-
-    @Override
-    public ItemStack getItem() {
-        if (projectileItem == null) {
-            projectileItem = new ItemStack(MKUItems.drownProjectileItem);
-        }
-        return projectileItem;
     }
 }
 

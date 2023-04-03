@@ -7,159 +7,113 @@ import com.chaosbuffalo.mkweapons.items.armor.MKArmorItem;
 import com.chaosbuffalo.mkweapons.items.effects.armor.ArmorModifierEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
 import com.google.common.collect.Lists;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.List;
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class MKUItems {
 
-    @ObjectHolder(MKUltra.MODID + ":cleansing_seed_projectile")
-    public static Item cleansingSeedProjectileItem;
+    public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, MKUltra.MODID);
 
-    @ObjectHolder(MKUltra.MODID + ":spirit_bomb_projectile")
-    public static Item spiritBombProjectileItem;
+    public static RegistryObject<Item> cleansingSeedProjectileItem = REGISTRY.register("cleansing_seed_projectile",
+            () -> new Item(new Item.Properties()));
 
-    @ObjectHolder(MKUltra.MODID + ":fireball_projectile")
-    public static Item fireballProjectileItem;
+    public static RegistryObject<Item> spiritBombProjectileItem = REGISTRY.register("spirit_bomb_projectile",
+            () -> new Item(new Item.Properties()));
 
-    @ObjectHolder(MKUltra.MODID + ":shadow_bolt_projectile")
-    public static Item shadowBoltProjectileItem;
+    public static RegistryObject<Item> fireballProjectileItem = REGISTRY.register("fireball_projectile",
+            () -> new Item(new Item.Properties()));
 
-    @ObjectHolder(MKUltra.MODID + ":drown_projectile")
-    public static Item drownProjectileItem;
+    public static RegistryObject<Item> shadowBoltProjectileItem = REGISTRY.register("shadow_bolt_projectile",
+            () -> new Item(new Item.Properties()));
 
-    @ObjectHolder(MKUltra.MODID + ":green_knight_helmet")
-    public static Item greenKnightHelmet;
+    public static RegistryObject<Item> drownProjectileItem = REGISTRY.register("drown_projectile",
+            () -> new Item(new Item.Properties()));
 
-    @ObjectHolder(MKUltra.MODID + ":green_knight_leggings")
-    public static Item greenKnightLeggings;
+    static List<AttributeOptionEntry> gkHelmetAttrs = Lists.newArrayList(
+            new AttributeOptionEntry(MKAttributes.COOLDOWN,
+                    new AttributeModifier(UUID.fromString("2013a410-ca6d-48a9-a12d-a70a65ec8190"),
+                            "Bonus", 0.25, AttributeModifier.Operation.MULTIPLY_TOTAL)));
 
-    @ObjectHolder(MKUltra.MODID + ":green_knight_chestplate")
-    public static Item greenKnightChestplate;
+    static List<AttributeOptionEntry> gkLegsAttrs = Lists.newArrayList(
+            new AttributeOptionEntry(MKAttributes.MAX_MANA,
+                    new AttributeModifier(UUID.fromString("9b184106-1a7b-444c-8bbe-538bff1f66cd"),
+                            "Bonus", 6, AttributeModifier.Operation.ADDITION)),
+            new AttributeOptionEntry(MKAttributes.MANA_REGEN,
+                    new AttributeModifier(UUID.fromString("25f12c51-a841-4ac9-8fbb-02000a19e563"),
+                            "Bonus", 1.0, AttributeModifier.Operation.ADDITION)));
 
-    @ObjectHolder(MKUltra.MODID + ":green_knight_boots")
-    public static Item greenKnightBoots;
+    static List<AttributeOptionEntry> gkChestAttrs = Lists.newArrayList(
+            new AttributeOptionEntry(Attributes.MAX_HEALTH,
+                    new AttributeModifier(UUID.fromString("ea84d132-3e14-40d7-acda-2f8ab0d5f3ad"),
+                            "Bonus", 10, AttributeModifier.Operation.ADDITION)),
+            new AttributeOptionEntry(MKAttributes.HEAL_BONUS,
+                    new AttributeModifier(UUID.fromString("c6359e08-8e0c-4721-b8aa-d55d978f4798"),
+                            "Bonus", 2, AttributeModifier.Operation.ADDITION)));
 
-    @ObjectHolder(MKUltra.MODID + ":corrupted_pig_iron_plate")
-    public static Item corruptedPigIronPlate;
+    static List<AttributeOptionEntry> gkBootsAttrs = Lists.newArrayList(
+            new AttributeOptionEntry(Attributes.ATTACK_SPEED,
+                    new AttributeModifier(UUID.fromString("f0d94451-5a80-4669-954d-bc6f6c39ccd0"),
+                            "Bonus", 0.10, AttributeModifier.Operation.MULTIPLY_TOTAL)));
 
-    @ObjectHolder(MKUltra.MODID + ":trooper_knight_helmet")
-    public static Item trooperKnightHelmet;
+    public static RegistryObject<Item> greenKnightHelmet = REGISTRY.register("green_knight_helmet",
+            () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, EquipmentSlot.HEAD,
+                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT), new ArmorModifierEffect(gkHelmetAttrs)));
 
-    @ObjectHolder(MKUltra.MODID + ":trooper_knight_leggings")
-    public static Item trooperKnightLeggings;
+    public static RegistryObject<Item> greenKnightLeggings = REGISTRY.register("green_knight_leggings",
+            () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, EquipmentSlot.LEGS,
+                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT), new ArmorModifierEffect(gkLegsAttrs)));
 
-    @ObjectHolder(MKUltra.MODID + ":trooper_knight_chestplate")
-    public static Item trooperKnightChestplate;
+    public static RegistryObject<Item> greenKnightChestplate = REGISTRY.register("green_knight_chestplate",
+            () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, EquipmentSlot.CHEST,
+                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT), new ArmorModifierEffect(gkChestAttrs)));
 
-    @ObjectHolder(MKUltra.MODID + ":trooper_knight_boots")
-    public static Item trooperKnightBoots;
+    public static RegistryObject<Item> greenKnightBoots = REGISTRY.register("green_knight_boots",
+            () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, EquipmentSlot.FEET,
+                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT), new ArmorModifierEffect(gkBootsAttrs)));
 
-    @ObjectHolder(MKUltra.MODID + ":destroyed_trooper_helmet")
-    public static Item destroyedTrooperHelmet;
+    public static RegistryObject<Item> corruptedPigIronPlate = REGISTRY.register("corrupted_pig_iron_plate",
+            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 
-    @ObjectHolder(MKUltra.MODID + ":destroyed_trooper_leggings")
-    public static Item destroyedTrooperLeggings;
+    public static RegistryObject<Item> trooperKnightHelmet = REGISTRY.register("trooper_knight_helmet",
+            () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, EquipmentSlot.HEAD,
+                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT)));
 
-    @ObjectHolder(MKUltra.MODID + ":destroyed_trooper_chestplate")
-    public static Item destroyedTrooperChestplate;
+    public static RegistryObject<Item> trooperKnightLeggings = REGISTRY.register("trooper_knight_leggings",
+            () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, EquipmentSlot.LEGS,
+                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT)));
 
-    @ObjectHolder(MKUltra.MODID + ":destroyed_trooper_boots")
-    public static Item destroyedTrooperBoots;
+    public static RegistryObject<Item> trooperKnightChestplate = REGISTRY.register("trooper_knight_chestplate",
+            () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, EquipmentSlot.CHEST,
+                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT)));
 
-    @SubscribeEvent
-    public static void registerItems(RegistryEvent.Register<Item> event) {
-        //projectiles
-        event.getRegistry().register(new Item(new Item.Properties())
-                .setRegistryName(MKUltra.MODID, "cleansing_seed_projectile"));
-        event.getRegistry().register(new Item(new Item.Properties())
-                .setRegistryName(MKUltra.MODID, "spirit_bomb_projectile"));
-        event.getRegistry().register(new Item(new Item.Properties())
-                .setRegistryName(MKUltra.MODID, "fireball_projectile"));
-        event.getRegistry().register(new Item(new Item.Properties())
-                .setRegistryName(MKUltra.MODID, "shadow_bolt_projectile"));
-        event.getRegistry().register(new Item(new Item.Properties())
-                .setRegistryName(MKUltra.MODID, "drown_projectile"));
+    public static RegistryObject<Item> trooperKnightBoots = REGISTRY.register("trooper_knight_boots",
+            () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, EquipmentSlot.FEET,
+                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT)));
 
-        //quest items
-        Item pigIronPlate = new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC))
-                .setRegistryName(new ResourceLocation(MKUltra.MODID, "corrupted_pig_iron_plate"));
-        event.getRegistry().register(pigIronPlate);
-        Item destroyedTrooperHelmet = new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC))
-                .setRegistryName(MKUltra.MODID, "destroyed_trooper_helmet");
-        Item destroyedTrooperChestplate = new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC))
-                .setRegistryName(MKUltra.MODID, "destroyed_trooper_chestplate");
-        Item destroyedTrooperBoots = new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC))
-                .setRegistryName(MKUltra.MODID, "destroyed_trooper_boots");
-        Item destroyedTrooperLeggings = new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC))
-                .setRegistryName(MKUltra.MODID, "destroyed_trooper_leggings");
-        event.getRegistry().registerAll(destroyedTrooperBoots, destroyedTrooperHelmet,
-                destroyedTrooperChestplate, destroyedTrooperLeggings);
+    public static RegistryObject<Item> destroyedTrooperHelmet = REGISTRY.register("destroyed_trooper_helmet",
+            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 
-        // green knight armor
-        List<AttributeOptionEntry> gkHelmetAttrs = Lists.newArrayList(
-                new AttributeOptionEntry(MKAttributes.COOLDOWN,
-                        new AttributeModifier(UUID.fromString("2013a410-ca6d-48a9-a12d-a70a65ec8190"),
-                                "Bonus", 0.25, AttributeModifier.Operation.MULTIPLY_TOTAL)));
+    public static RegistryObject<Item> destroyedTrooperLeggings = REGISTRY.register("destroyed_trooper_leggings",
+            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 
-        List<AttributeOptionEntry> gkLegsAttrs = Lists.newArrayList(
-                new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                        new AttributeModifier(UUID.fromString("9b184106-1a7b-444c-8bbe-538bff1f66cd"),
-                                "Bonus", 6, AttributeModifier.Operation.ADDITION)),
-                new AttributeOptionEntry(MKAttributes.MANA_REGEN,
-                        new AttributeModifier(UUID.fromString("25f12c51-a841-4ac9-8fbb-02000a19e563"),
-                                "Bonus", 1.0, AttributeModifier.Operation.ADDITION)));
+    public static RegistryObject<Item> destroyedTrooperChestplate = REGISTRY.register("destroyed_trooper_chestplate",
+            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 
-        List<AttributeOptionEntry> gkChestAttrs = Lists.newArrayList(
-                new AttributeOptionEntry(Attributes.MAX_HEALTH,
-                        new AttributeModifier(UUID.fromString("ea84d132-3e14-40d7-acda-2f8ab0d5f3ad"),
-                                "Bonus", 10, AttributeModifier.Operation.ADDITION)),
-                new AttributeOptionEntry(MKAttributes.HEAL_BONUS,
-                        new AttributeModifier(UUID.fromString("c6359e08-8e0c-4721-b8aa-d55d978f4798"),
-                                "Bonus", 2, AttributeModifier.Operation.ADDITION)));
+    public static RegistryObject<Item> destroyedTrooperBoots = REGISTRY.register("destroyed_trooper_boots",
+            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 
-        List<AttributeOptionEntry> gkBootsAttrs = Lists.newArrayList(
-                new AttributeOptionEntry(Attributes.ATTACK_SPEED,
-                        new AttributeModifier(UUID.fromString("f0d94451-5a80-4669-954d-bc6f6c39ccd0"),
-                                "Bonus", 0.10, AttributeModifier.Operation.MULTIPLY_TOTAL)));
-
-        Item gkHelmet = new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, EquipmentSlot.HEAD,
-                (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT), new ArmorModifierEffect(gkHelmetAttrs))
-                .setRegistryName(MKUltra.MODID, "green_knight_helmet");
-        Item gkLeggings = new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, EquipmentSlot.LEGS,
-                (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT), new ArmorModifierEffect(gkLegsAttrs))
-                .setRegistryName(MKUltra.MODID, "green_knight_leggings");
-        Item gkChestplate = new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, EquipmentSlot.CHEST,
-                (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT), new ArmorModifierEffect(gkChestAttrs))
-                .setRegistryName(MKUltra.MODID, "green_knight_chestplate");
-        Item gkBoots = new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, EquipmentSlot.FEET,
-                (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT), new ArmorModifierEffect(gkBootsAttrs))
-                .setRegistryName(MKUltra.MODID, "green_knight_boots");
-        event.getRegistry().registerAll(gkChestplate, gkHelmet, gkBoots, gkLeggings);
-
-        // trooper knight armor
-        Item tkHelmet = new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, EquipmentSlot.HEAD,
-                (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT)).setRegistryName(MKUltra.MODID, "trooper_knight_helmet");
-        Item tkLeggings = new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, EquipmentSlot.LEGS,
-                (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT)).setRegistryName(MKUltra.MODID, "trooper_knight_leggings");
-        Item tkChestplate = new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, EquipmentSlot.CHEST,
-                (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT)).setRegistryName(MKUltra.MODID, "trooper_knight_chestplate");
-        Item tkBoots = new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, EquipmentSlot.FEET,
-                (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT)).setRegistryName(MKUltra.MODID, "trooper_knight_boots");
-        event.getRegistry().registerAll(tkBoots, tkChestplate, tkHelmet, tkLeggings);
-
-
+    public static void register(IEventBus bus) {
+        REGISTRY.register(bus);
     }
 
 }

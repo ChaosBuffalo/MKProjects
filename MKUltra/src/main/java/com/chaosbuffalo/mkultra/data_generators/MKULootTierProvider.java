@@ -104,13 +104,13 @@ public class MKULootTierProvider extends LootTierProvider {
     private LootTier trooperKnightLootTier() {
         LootTier tier = new LootTier(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"));
         LootItemTemplate headTemp = new LootItemTemplate(LootSlotManager.HEAD);
-        headTemp.addItem(MKUItems.trooperKnightHelmet);
+        headTemp.addItem(MKUItems.trooperKnightHelmet.get());
         LootItemTemplate chestTemp = new LootItemTemplate(LootSlotManager.CHEST);
-        chestTemp.addItem(MKUItems.trooperKnightChestplate);
+        chestTemp.addItem(MKUItems.trooperKnightChestplate.get());
         LootItemTemplate feetTemp = new LootItemTemplate(LootSlotManager.FEET);
-        feetTemp.addItem(MKUItems.trooperKnightBoots);
+        feetTemp.addItem(MKUItems.trooperKnightBoots.get());
         LootItemTemplate legsTemp = new LootItemTemplate(LootSlotManager.LEGS);
-        legsTemp.addItem(MKUItems.trooperKnightLeggings);
+        legsTemp.addItem(MKUItems.trooperKnightLeggings.get());
         introCastleAttrs(tier, headTemp);
         introCastleAttrs(tier, feetTemp);
         introCastleAttrs(tier, chestTemp);
@@ -257,11 +257,11 @@ public class MKULootTierProvider extends LootTierProvider {
     private LootTier zombieTrooperTier() {
         LootTier tier = new LootTier(new ResourceLocation(MKUltra.MODID, "zombie_trooper"));
         LootItemTemplate pigLoot = new LootItemTemplate(LootSlotManager.ITEMS);
-        pigLoot.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate), 10.0);
-        pigLoot.addItemStack(new ItemStack(MKUItems.destroyedTrooperBoots), 1.0);
-        pigLoot.addItemStack(new ItemStack(MKUItems.destroyedTrooperChestplate), 1.0);
-        pigLoot.addItemStack(new ItemStack(MKUItems.destroyedTrooperLeggings), 1.0);
-        pigLoot.addItemStack(new ItemStack(MKUItems.destroyedTrooperHelmet), 1.0);
+        pigLoot.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate.get()), 10.0);
+        pigLoot.addItemStack(new ItemStack(MKUItems.destroyedTrooperBoots.get()), 1.0);
+        pigLoot.addItemStack(new ItemStack(MKUItems.destroyedTrooperChestplate.get()), 1.0);
+        pigLoot.addItemStack(new ItemStack(MKUItems.destroyedTrooperLeggings.get()), 1.0);
+        pigLoot.addItemStack(new ItemStack(MKUItems.destroyedTrooperHelmet.get()), 1.0);
         pigLoot.addTemplate(new RandomizationTemplate(new ResourceLocation(MKUltra.MODID, "empty")), 1.0);
         tier.addItemTemplate(pigLoot, 10);
         return tier;

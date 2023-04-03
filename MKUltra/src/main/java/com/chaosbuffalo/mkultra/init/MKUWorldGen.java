@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkultra.world.gen.feature.structure.IntroCastleJigsawStr
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.JigsawConfiguration;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -35,8 +36,8 @@ public class MKUWorldGen {
                             .addTrigger(StructureEvent.EventTrigger.ON_DEATH)));
 
 
-    public static void register() {
-        STRUCTURE_REGISTRY.register(FMLJavaModLoadingContext.get().getModEventBus());
+    public static void register(IEventBus bus) {
+        STRUCTURE_REGISTRY.register(bus);
     }
 
 

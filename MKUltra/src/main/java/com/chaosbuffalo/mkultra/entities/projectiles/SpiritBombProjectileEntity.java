@@ -11,7 +11,6 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.green_knight.SpiritBombAbility;
-import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
@@ -34,7 +33,7 @@ import net.minecraftforge.registries.ObjectHolder;
 /**
  * Created by Jacob on 7/28/2018.
  */
-public class SpiritBombProjectileEntity extends TrailProjectileEntity implements IMKRenderAsItem {
+public class SpiritBombProjectileEntity extends SpriteTrailProjectileEntity {
 
     public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_trail");
     public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_detonate");
@@ -45,18 +44,13 @@ public class SpiritBombProjectileEntity extends TrailProjectileEntity implements
 
     public SpiritBombProjectileEntity(EntityType<? extends Projectile> entityTypeIn,
                                       Level worldIn) {
-        super(entityTypeIn, worldIn);
+        super(entityTypeIn, worldIn, new ItemStack(MKUItems.spiritBombProjectileItem.get()));
         setDeathTime(60);
         setAirProcTime(GameConstants.TICKS_PER_SECOND);
         setDoAirProc(true);
         setDoGroundProc(true);
         setGroundProcTime(GameConstants.TICKS_PER_SECOND);
         setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
-    }
-
-    @Override
-    public ItemStack getItem() {
-        return new ItemStack(MKUItems.spiritBombProjectileItem);
     }
 
     @Override

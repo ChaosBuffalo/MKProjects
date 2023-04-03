@@ -21,19 +21,19 @@ public class MKUItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        makeSimpleItem(MKUItems.corruptedPigIronPlate);
-        makeSimpleItem(MKUItems.greenKnightHelmet);
-        makeSimpleItem(MKUItems.greenKnightChestplate);
-        makeSimpleItem(MKUItems.greenKnightBoots);
-        makeSimpleItem(MKUItems.greenKnightLeggings);
-        makeSimpleItem(MKUItems.trooperKnightBoots);
-        makeSimpleItem(MKUItems.trooperKnightChestplate);
-        makeSimpleItem(MKUItems.trooperKnightHelmet);
-        makeSimpleItem(MKUItems.trooperKnightLeggings);
-        makeSimpleItem(MKUItems.destroyedTrooperBoots);
-        makeSimpleItem(MKUItems.destroyedTrooperChestplate);
-        makeSimpleItem(MKUItems.destroyedTrooperLeggings);
-        makeSimpleItem(MKUItems.destroyedTrooperHelmet);
+        makeSimpleItem(MKUItems.corruptedPigIronPlate.get());
+        makeSimpleItem(MKUItems.greenKnightHelmet.get());
+        makeSimpleItem(MKUItems.greenKnightChestplate.get());
+        makeSimpleItem(MKUItems.greenKnightBoots.get());
+        makeSimpleItem(MKUItems.greenKnightLeggings.get());
+        makeSimpleItem(MKUItems.trooperKnightBoots.get());
+        makeSimpleItem(MKUItems.trooperKnightChestplate.get());
+        makeSimpleItem(MKUItems.trooperKnightHelmet.get());
+        makeSimpleItem(MKUItems.trooperKnightLeggings.get());
+        makeSimpleItem(MKUItems.destroyedTrooperBoots.get());
+        makeSimpleItem(MKUItems.destroyedTrooperChestplate.get());
+        makeSimpleItem(MKUItems.destroyedTrooperLeggings.get());
+        makeSimpleItem(MKUItems.destroyedTrooperHelmet.get());
     }
 
     private void makeSimpleItem(Item item) {

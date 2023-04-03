@@ -11,7 +11,6 @@ import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.green_knight.CleansingSeedAbility;
 import com.chaosbuffalo.mkultra.effects.CureEffect;
-import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
@@ -35,14 +34,14 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Created by Jacob on 7/28/2018.
  */
-public class CleansingSeedProjectileEntity extends TrailProjectileEntity implements IMKRenderAsItem {
+public class CleansingSeedProjectileEntity extends SpriteTrailProjectileEntity {
     public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "cleansing_seed_trail");
     public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "cleansing_seed_detonate");
 
 
     public CleansingSeedProjectileEntity(EntityType<? extends Projectile> entityTypeIn,
                                          Level worldIn) {
-        super(entityTypeIn, worldIn);
+        super(entityTypeIn, worldIn, new ItemStack(MKUItems.cleansingSeedProjectileItem.get()));
         setDeathTime(40);
         setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
     }
@@ -99,8 +98,4 @@ public class CleansingSeedProjectileEntity extends TrailProjectileEntity impleme
         return TargetingContexts.ALL;
     }
 
-    @Override
-    public ItemStack getItem() {
-        return new ItemStack(MKUItems.cleansingSeedProjectileItem);
-    }
 }

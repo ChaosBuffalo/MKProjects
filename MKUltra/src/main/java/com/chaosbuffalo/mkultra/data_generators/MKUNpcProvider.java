@@ -856,13 +856,13 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new NameOption().setValue("Green Guardian"));
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.HEAD,
-                new NpcItemChoice(new ItemStack(MKUItems.greenKnightHelmet), 1.0, 0.05f));
+                new NpcItemChoice(new ItemStack(MKUItems.greenKnightHelmet.get()), 1.0, 0.05f));
         equipOption.addItemChoice(EquipmentSlot.CHEST,
-                new NpcItemChoice(new ItemStack(MKUItems.greenKnightChestplate), 1.0, 0.05f));
+                new NpcItemChoice(new ItemStack(MKUItems.greenKnightChestplate.get()), 1.0, 0.05f));
         equipOption.addItemChoice(EquipmentSlot.LEGS,
-                new NpcItemChoice(new ItemStack(MKUItems.greenKnightLeggings), 1.0, 0.05f));
+                new NpcItemChoice(new ItemStack(MKUItems.greenKnightLeggings.get()), 1.0, 0.05f));
         equipOption.addItemChoice(EquipmentSlot.FEET,
-                new NpcItemChoice(new ItemStack(MKUItems.greenKnightBoots), 1.0, 0.05f));
+                new NpcItemChoice(new ItemStack(MKUItems.greenKnightBoots.get()), 1.0, 0.05f));
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
                         new ResourceLocation("mkweapons:dagger_stone"))), 1.0, 0.0f));
@@ -890,13 +890,13 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new NameOption().setValue("Green Knight"));
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.HEAD,
-                new NpcItemChoice(new ItemStack(MKUItems.greenKnightHelmet), 1.0, 0.05f));
+                new NpcItemChoice(new ItemStack(MKUItems.greenKnightHelmet.get()), 1.0, 0.05f));
         equipOption.addItemChoice(EquipmentSlot.CHEST,
-                new NpcItemChoice(new ItemStack(MKUItems.greenKnightChestplate), 1.0, 0.05f));
+                new NpcItemChoice(new ItemStack(MKUItems.greenKnightChestplate.get()), 1.0, 0.05f));
         equipOption.addItemChoice(EquipmentSlot.LEGS,
-                new NpcItemChoice(new ItemStack(MKUItems.greenKnightLeggings), 1.0, 0.05f));
+                new NpcItemChoice(new ItemStack(MKUItems.greenKnightLeggings.get()), 1.0, 0.05f));
         equipOption.addItemChoice(EquipmentSlot.FEET,
-                new NpcItemChoice(new ItemStack(MKUItems.greenKnightBoots), 1.0, 0.05f));
+                new NpcItemChoice(new ItemStack(MKUItems.greenKnightBoots.get()), 1.0, 0.05f));
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
                         new ResourceLocation("mkweapons:battleaxe_stone"))), 1.0, 0.0f));

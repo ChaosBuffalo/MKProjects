@@ -18,6 +18,7 @@ import com.chaosbuffalo.mkultra.abilities.passives.LifeSiphonAbility;
 import com.chaosbuffalo.mkultra.abilities.passives.SoulDrainAbility;
 import com.chaosbuffalo.mkultra.abilities.wet_wizard.DrownAbility;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
@@ -76,7 +77,7 @@ public class MKUAbilities {
     public static final net.minecraftforge.registries.RegistryObject<SoulDrainAbility> SOUL_DRAIN = REGISTRY.register("ability.soul_drain", SoulDrainAbility::new);
 
 
-    public static void register() {
-        REGISTRY.register(FMLJavaModLoadingContext.get().getModEventBus());
+    public static void register(IEventBus bus) {
+        REGISTRY.register(bus);
     }
 }

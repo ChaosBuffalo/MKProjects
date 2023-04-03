@@ -21,25 +21,6 @@ public class MKNpcEntityTypes {
     public static final String ZOMBIFIED_PIGLIN_NAME = "zombified_piglin";
 
     @SubscribeEvent
-    public static void registerEntities(RegistryEvent.Register<EntityType<?>> event) {
-//        EntityType<MKSkeletonEntity> skel1 = EntityType.Builder.of(
-//                MKSkeletonEntity::new, MobCategory.MONSTER)
-//                .sized(EntityType.SKELETON.getWidth(), EntityType.SKELETON.getHeight())
-//                .build(new ResourceLocation(MKNpc.MODID, SKELETON_NAME).toString());
-//        skel1.setRegistryName(MKNpc.MODID, SKELETON_NAME);
-//        SKELETON_TYPE = skel1;
-//        event.getRegistry().register(skel1);
-//        EntityType<MKZombifiedPiglinEntity> zombiePiglin = EntityType.Builder.of(
-//                MKZombifiedPiglinEntity::new, MobCategory.MONSTER)
-//                .sized(EntityType.ZOMBIFIED_PIGLIN.getWidth(), EntityType.ZOMBIFIED_PIGLIN.getHeight())
-//                .build(new ResourceLocation(MKNpc.MODID, ZOMBIFIED_PIGLIN_NAME).toString());
-//        zombiePiglin.setRegistryName(MKNpc.MODID, ZOMBIFIED_PIGLIN_NAME);
-//        ZOMBIFIED_PIGLIN_TYPE = zombiePiglin;
-//        event.getRegistry().register(zombiePiglin);
-
-    }
-
-    @SubscribeEvent
     public static void registerEntityAttributes(EntityAttributeCreationEvent event) {
         event.put(SKELETON_TYPE.get(), MKSkeletonEntity.registerAttributes(1.0, 0.3).build());
         event.put(ZOMBIE_PIGLIN_TYPE.get(), MKZombifiedPiglinEntity.registerAttributes(1.0, 0.2).build());

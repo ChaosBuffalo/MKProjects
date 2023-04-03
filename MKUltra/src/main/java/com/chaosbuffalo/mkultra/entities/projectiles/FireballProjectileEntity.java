@@ -11,7 +11,6 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.misc.FireballAbility;
-import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkultra.init.MKUItems;
@@ -30,14 +29,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-public class FireballProjectileEntity extends TrailProjectileEntity implements IMKRenderAsItem {
+public class FireballProjectileEntity extends SpriteTrailProjectileEntity {
 
     public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_trail");
     public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_detonate");
 
     public FireballProjectileEntity(EntityType<? extends Projectile> entityTypeIn,
                                     Level worldIn) {
-        super(entityTypeIn, worldIn);
+        super(entityTypeIn, worldIn, new ItemStack(MKUItems.fireballProjectileItem.get()));
         setDeathTime(GameConstants.TICKS_PER_SECOND * 5);
         setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
     }
@@ -91,8 +90,4 @@ public class FireballProjectileEntity extends TrailProjectileEntity implements I
         return TargetingContexts.ENEMY;
     }
 
-    @Override
-    public ItemStack getItem() {
-        return new ItemStack(MKUItems.fireballProjectileItem);
-    }
 }

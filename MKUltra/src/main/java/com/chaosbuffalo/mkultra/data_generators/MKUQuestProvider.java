@@ -276,9 +276,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                         "If you %s I should be able to put something together.",
                 startQuestPrompt.getPromptEmbed()));
         DialogueNode questStart = new DialogueNode("start_quest",
-                String.format("For the full set I will need %s, a %s, a %s, a %s, and a %s.", DialogueUtils.getStackCountItemProvider(new ItemStack(MKUItems.corruptedPigIronPlate, 20)),
-                        DialogueUtils.getItemNameProvider(MKUItems.destroyedTrooperHelmet), DialogueUtils.getItemNameProvider(MKUItems.destroyedTrooperLeggings),
-                        DialogueUtils.getItemNameProvider(MKUItems.destroyedTrooperChestplate), DialogueUtils.getItemNameProvider(MKUItems.destroyedTrooperBoots)));
+                String.format("For the full set I will need %s, a %s, a %s, a %s, and a %s.", DialogueUtils.getStackCountItemProvider(new ItemStack(MKUItems.corruptedPigIronPlate.get(), 20)),
+                        DialogueUtils.getItemNameProvider(MKUItems.destroyedTrooperHelmet.get()), DialogueUtils.getItemNameProvider(MKUItems.destroyedTrooperLeggings.get()),
+                        DialogueUtils.getItemNameProvider(MKUItems.destroyedTrooperChestplate.get()), DialogueUtils.getItemNameProvider(MKUItems.destroyedTrooperBoots.get())));
         def.setupStartQuestResponse(questStart, startQuestPrompt);
         def.addHailResponse(hailNode);
 
@@ -290,12 +290,12 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 "tradeHelmetObj",
                 MKUWorldGen.INTRO_CASTLE.getId(), 0,
                 new ResourceLocation(MKUltra.MODID, "green_smith"));
-        helmetTrade.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate, 2));
-        helmetTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperHelmet));
+        helmetTrade.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate.get(), 2));
+        helmetTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperHelmet.get()));
         helmet.addObjective(helmetTrade);
         helmet.addReward(new XpReward(25));
         helmet.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"), LootSlotManager.HEAD.getName(),
-                new TranslatableComponent("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightHelmet.getDescription())));
+                new TranslatableComponent("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightHelmet.get().getDescription())));
         def.addQuest(helmet);
 
         Quest leggings = new Quest("tradeLeggings", new TextComponent("The Green Smith needs " +
@@ -305,12 +305,12 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 "tradeHelmetObj",
                 MKUWorldGen.INTRO_CASTLE.getId(), 0,
                 new ResourceLocation(MKUltra.MODID, "green_smith"));
-        leggingsTrade.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate, 6));
-        leggingsTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperLeggings));
+        leggingsTrade.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate.get(), 6));
+        leggingsTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperLeggings.get()));
         leggings.addObjective(leggingsTrade);
         leggings.addReward(new XpReward(25));
         leggings.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"), LootSlotManager.LEGS.getName(),
-                new TranslatableComponent("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightLeggings.getDescription())));
+                new TranslatableComponent("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightLeggings.get().getDescription())));
         def.addQuest(leggings);
 
         Quest boots = new Quest("tradeBoots", new TextComponent("The Green Smith needs " +
@@ -320,12 +320,12 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 "tradeLeggingsObj",
                 MKUWorldGen.INTRO_CASTLE.getId(), 0,
                 new ResourceLocation(MKUltra.MODID, "green_smith"));
-        bootTrade.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate, 4));
-        bootTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperBoots));
+        bootTrade.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate.get(), 4));
+        bootTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperBoots.get()));
         boots.addObjective(bootTrade);
         boots.addReward(new XpReward(25));
         boots.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"), LootSlotManager.FEET.getName(),
-                new TranslatableComponent("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightBoots.getDescription())));
+                new TranslatableComponent("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightBoots.get().getDescription())));
         def.addQuest(boots);
 
         Quest chestplate = new Quest("tradeChestplate", new TextComponent("The Green Smith needs " +
@@ -335,12 +335,12 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 "tradeChestObj",
                 MKUWorldGen.INTRO_CASTLE.getId(), 0,
                 new ResourceLocation(MKUltra.MODID, "green_smith"));
-        chestplateTrade.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate, 8));
-        chestplateTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperChestplate));
+        chestplateTrade.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate.get(), 8));
+        chestplateTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperChestplate.get()));
         chestplate.addObjective(chestplateTrade);
         chestplate.addReward(new XpReward(25));
         chestplate.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"), LootSlotManager.CHEST.getName(),
-                new TranslatableComponent("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightChestplate.getDescription())));
+                new TranslatableComponent("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightChestplate.get().getDescription())));
         def.addQuest(chestplate);
 
         return def;
