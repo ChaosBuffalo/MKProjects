@@ -24,15 +24,23 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tiers;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.*;
 
-@ObjectHolder(MKWeapons.MODID)
 @Mod.EventBusSubscriber(modid = MKWeapons.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MKWeaponsItems {
+
+    public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, MKWeapons.MODID);
+
+    public static void register(IEventBus bus) {
+        REGISTRY.register(bus);
+    }
 
     public static List<MKMeleeWeapon> WEAPONS = new ArrayList<>();
     private static final UUID RANGED_WEP_UUID = UUID.fromString("dbaf479e-515e-4ebc-94dd-eb5a4014bb64");
@@ -47,26 +55,26 @@ public class MKWeaponsItems {
 
     public static Map<MKTier, Map<IMeleeWeaponType, Item>> WEAPON_LOOKUP = new HashMap<>();
 
-    @ObjectHolder("haft")
-    public static Item Haft;
+    public static RegistryObject<Item> Haft = REGISTRY.register("haft",
+            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MATERIALS)));
 
-    @ObjectHolder("copper_ring")
-    public static Item CopperRing;
+    public static RegistryObject<Item> CopperRing = REGISTRY.register("copper_ring",
+            () -> new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT)));
 
-    @ObjectHolder("gold_ring")
-    public static Item GoldRing;
+    public static RegistryObject<Item> GoldRing = REGISTRY.register("gold_ring",
+            () -> new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT)));
 
-    @ObjectHolder("rose_gold_ring")
-    public static Item RoseGoldRing;
+    public static RegistryObject<Item> RoseGoldRing = REGISTRY.register("rose_gold_ring",
+            () -> new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT)));
 
-    @ObjectHolder("silver_ring")
-    public static Item SilverRing;
+    public static RegistryObject<Item> SilverRing = REGISTRY.register("silver_ring",
+            () -> new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT)));
 
-    @ObjectHolder("silver_earring")
-    public static Item SilverEarring;
+    public static RegistryObject<Item> SilverEarring = REGISTRY.register("silver_earring",
+            () -> new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT)));
 
-    @ObjectHolder("gold_earring")
-    public static Item GoldEarring;
+    public static RegistryObject<Item> GoldEarring = REGISTRY.register("gold_earring",
+            () -> new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT)));
 
     public static void putWeaponForLookup(MKTier tier, IMeleeWeaponType weaponType, Item item) {
         WEAPON_LOOKUP.putIfAbsent(tier, new HashMap<>());
@@ -86,6 +94,7 @@ public class MKWeaponsItems {
         materials.add(new Tuple<>("diamond", DIAMOND_TIER));
         materials.add(new Tuple<>("gold", GOLD_TIER));
         materials.add(new Tuple<>("stone", STONE_TIER));
+        WEAPON_LOOKUP.clear();
         for (Tuple<String, MKTier> mat : materials) {
             for (IMeleeWeaponType weaponType : MeleeWeaponTypes.WEAPON_TYPES.values()) {
                 MKMeleeWeapon weapon = new MKMeleeWeapon(new ResourceLocation(MKWeapons.MODID,
@@ -110,30 +119,9 @@ public class MKWeaponsItems {
             BOWS.add(bow);
             evt.getRegistry().register(bow);
         }
-        Item haft = new Item(new Item.Properties().tab(CreativeModeTab.TAB_MATERIALS));
-        haft.setRegistryName(MKWeapons.MODID, "haft");
-        evt.getRegistry().register(haft);
         TestNBTWeaponEffectItem testNBTWeaponEffectItem = new TestNBTWeaponEffectItem(new Item.Properties());
         testNBTWeaponEffectItem.setRegistryName(MKWeapons.MODID, "test_nbt_effect");
         evt.getRegistry().register(testNBTWeaponEffectItem);
-        MKAccessory copperRing = new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT));
-        copperRing.setRegistryName(MKWeapons.MODID, "copper_ring");
-        evt.getRegistry().register(copperRing);
-        MKAccessory goldRing = new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT));
-        goldRing.setRegistryName(MKWeapons.MODID, "gold_ring");
-        evt.getRegistry().register(goldRing);
-        MKAccessory silverRing = new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT));
-        silverRing.setRegistryName(MKWeapons.MODID, "silver_ring");
-        evt.getRegistry().register(silverRing);
-        MKAccessory roseGoldRing = new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT));
-        roseGoldRing.setRegistryName(MKWeapons.MODID, "rose_gold_ring");
-        evt.getRegistry().register(roseGoldRing);
-        MKAccessory silverEarring = new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT));
-        silverEarring.setRegistryName(MKWeapons.MODID, "silver_earring");
-        evt.getRegistry().register(silverEarring);
-        MKAccessory goldEarring = new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT));
-        goldEarring.setRegistryName(MKWeapons.MODID, "gold_earring");
-        evt.getRegistry().register(goldEarring);
     }
 
     public static void registerItemProperties() {

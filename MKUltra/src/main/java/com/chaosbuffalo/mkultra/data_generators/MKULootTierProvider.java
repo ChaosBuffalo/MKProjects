@@ -73,7 +73,7 @@ public class MKULootTierProvider extends LootTierProvider {
     private void addEarringOfFireDamage(LootTier tier, double weight) {
 
         LootItemTemplate template = new LootItemTemplate(LootSlotManager.EARRINGS);
-        template.addItem(MKWeaponsItems.SilverEarring);
+        template.addItem(MKWeaponsItems.SilverEarring.get());
 
         AttributeOption option = new AttributeOption();
         option.addAttributeModifier(MKAttributes.FIRE_DAMAGE, tier.getName().toString(),
@@ -89,7 +89,7 @@ public class MKULootTierProvider extends LootTierProvider {
     private void addBloodyRing(LootTier tier, double weight) {
 
         LootItemTemplate template = new LootItemTemplate(LootSlotManager.RINGS);
-        template.addItem(MKWeaponsItems.RoseGoldRing);
+        template.addItem(MKWeaponsItems.RoseGoldRing.get());
         AttributeOption option = new AttributeOption();
         option.addAttributeModifier(MKAttributes.BLEED_DAMAGE, tier.getName().toString(),
                 3, 9, AttributeModifier.Operation.ADDITION);
@@ -135,7 +135,7 @@ public class MKULootTierProvider extends LootTierProvider {
 
     private void addEarringOfMinorHealth(LootTier tier, double weight) {
         LootItemTemplate template = new LootItemTemplate(LootSlotManager.EARRINGS);
-        template.addItem(MKWeaponsItems.GoldEarring);
+        template.addItem(MKWeaponsItems.GoldEarring.get());
         AttributeOption option = new AttributeOption();
         option.addAttributeModifier(Attributes.MAX_HEALTH, tier.getName().toString(),
                 4, 20.0, AttributeModifier.Operation.ADDITION);
@@ -150,7 +150,7 @@ public class MKULootTierProvider extends LootTierProvider {
 
     private void addEarringOfMinorManaRegen(LootTier tier, double weight) {
         LootItemTemplate template = new LootItemTemplate(LootSlotManager.EARRINGS);
-        template.addItem(MKWeaponsItems.SilverEarring);
+        template.addItem(MKWeaponsItems.SilverEarring.get());
         AttributeOption option = new AttributeOption();
         option.addAttributeModifier(MKAttributes.MANA_REGEN, tier.getName().toString(),
                 0.25, 2.5, AttributeModifier.Operation.ADDITION);
@@ -164,7 +164,7 @@ public class MKULootTierProvider extends LootTierProvider {
 
     private void addRingOfMinorMana(LootTier tier, double weight) {
         LootItemTemplate template = new LootItemTemplate(LootSlotManager.RINGS);
-        template.addItem(MKWeaponsItems.SilverRing);
+        template.addItem(MKWeaponsItems.SilverRing.get());
         AttributeOption option = new AttributeOption();
         option.addAttributeModifier(MKAttributes.MAX_MANA, tier.getName().toString(),
                 4, 20, AttributeModifier.Operation.ADDITION);
@@ -179,7 +179,7 @@ public class MKULootTierProvider extends LootTierProvider {
 
     private void addRingOfMinorHealth(LootTier tier, double weight) {
         LootItemTemplate template = new LootItemTemplate(LootSlotManager.RINGS);
-        template.addItem(MKWeaponsItems.GoldRing);
+        template.addItem(MKWeaponsItems.GoldRing.get());
         AttributeOption option = new AttributeOption();
         option.addAttributeModifier(Attributes.MAX_HEALTH, tier.getName().toString(),
                 4, 20.0, AttributeModifier.Operation.ADDITION);

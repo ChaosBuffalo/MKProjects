@@ -63,7 +63,7 @@ public class SeverTendonEffect extends MKEffect {
                     getModifierScale()), damage);
             PacketHandler.sendToTrackingAndSelf(
                     new ParticleEffectSpawnPacket(
-                            MKWeaponsParticles.DRIPPING_BLOOD,
+                            MKWeaponsParticles.DRIPPING_BLOOD.get(),
                             ParticleEffects.DIRECTED_SPOUT, 8, 1,
                             target.getX(), target.getY() + target.getBbHeight() * .75,
                             target.getZ(), target.getBbWidth() / 2.0, 0.5, target.getBbWidth() / 2.0, 3,

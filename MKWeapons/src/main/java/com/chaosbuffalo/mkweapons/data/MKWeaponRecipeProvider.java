@@ -66,28 +66,28 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
                 Arrays.asList(new Tuple<>('S', Items.STICK))));
         weaponRecipes.put(MeleeWeaponTypes.BATTLEAXE_TYPE, new WeaponRecipe(
                 Arrays.asList("III", "IHI", " H "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft))));
+                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.GREATSWORD_TYPE, new WeaponRecipe(
                 Arrays.asList(" I ", " I ", "IHI"),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft))));
+                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.KATANA_TYPE, new WeaponRecipe(
                 Arrays.asList("  I", " I ", "H  "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft))));
+                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.LONGSWORD_TYPE, new WeaponRecipe(
                 Arrays.asList(" I ", " I ", " H "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft))));
+                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.SPEAR_TYPE, new WeaponRecipe(
                 Arrays.asList("  I", " H ", "H  "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft))));
+                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.WARHAMMER_TYPE, new WeaponRecipe(
                 Arrays.asList(" II", " HI", "H  "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft))));
+                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.MACE_TYPE, new WeaponRecipe(
                 Arrays.asList(" I ", " H ", " H "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft))));
+                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.STAFF_TYPE, new WeaponRecipe(
                 Arrays.asList("  I", " H ", "I  "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft))));
+                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
 
     }
 
@@ -109,34 +109,33 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
     }
 
     private ShapedRecipeBuilder getHaftRecipe() {
-        return ShapedRecipeBuilder.shaped(MKWeaponsItems.Haft, 3)
+        return ShapedRecipeBuilder.shaped(MKWeaponsItems.Haft.get(), 3)
                 .define('S', Items.STICK)
                 .define('L', Tags.Items.LEATHER)
                 .pattern("SSS")
                 .pattern(" L ")
                 .pattern("SSS")
-                .unlockedBy("has_stick", this.has(Items.STICK))
-                .unlockedBy("has_leather", this.has(Tags.Items.LEATHER));
+                .unlockedBy("has_stick", has(Items.STICK))
+                .unlockedBy("has_leather", has(Tags.Items.LEATHER));
     }
 
     private ShapedRecipeBuilder getLongbowRecipe(MKBow bow) {
         return ShapedRecipeBuilder.shaped(bow)
-                .define('H', MKWeaponsItems.Haft)
+                .define('H', MKWeaponsItems.Haft.get())
                 .define('I', bow.getMKTier().getMajorIngredient())
                 .define('S', Tags.Items.STRING)
                 .pattern(" IS")
                 .pattern("H S")
                 .pattern(" IS")
-                .unlockedBy("has_haft", this.has(MKWeaponsItems.Haft))
-                .unlockedBy("has_string", this.has(Tags.Items.STRING))
-                .unlockedBy("has_ingot", this.has(bow.getMKTier().getItemTag()))
+                .unlockedBy("has_haft", has(MKWeaponsItems.Haft.get()))
+                .unlockedBy("has_string", has(Tags.Items.STRING))
+                .unlockedBy("has_ingot", has(bow.getMKTier().getItemTag()))
                 ;
     }
 
     private ShapedRecipeBuilder getRecipe(MKMeleeWeapon weapon) {
         ShapedRecipeBuilder recipeBuilder = ShapedRecipeBuilder.shaped(weapon);
         recipeBuilder.define('I', weapon.getMKTier().getMajorIngredient());
-        ;
         WeaponRecipe weaponRecipe = weaponRecipes.get(weapon.getWeaponType());
         for (Tuple<Character, Item> key : weaponRecipe.getItemKeys()) {
             recipeBuilder.define(key.getA(), key.getB());
@@ -145,12 +144,12 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
             recipeBuilder.pattern(line);
         }
         if (weaponRecipe.hasHaft()) {
-            recipeBuilder.unlockedBy("has_haft", this.has(MKWeaponsItems.Haft));
+            recipeBuilder.unlockedBy("has_haft", has(MKWeaponsItems.Haft.get()));
         }
         if (weaponRecipe.hasStick()) {
-            recipeBuilder.unlockedBy("has_stick", this.has(Items.STICK));
+            recipeBuilder.unlockedBy("has_stick", has(Items.STICK));
         }
-        recipeBuilder.unlockedBy("has_ingot", this.has(weapon.getMKTier().getItemTag()));
+        recipeBuilder.unlockedBy("has_ingot", has(weapon.getMKTier().getItemTag()));
         return recipeBuilder;
     }
 }

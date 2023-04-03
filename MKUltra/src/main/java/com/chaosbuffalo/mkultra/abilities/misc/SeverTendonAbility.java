@@ -107,7 +107,7 @@ public class SeverTendonAbility extends MKAbility {
             Vec3 lookVec = entity.getLookAngle();
             PacketHandler.sendToTrackingAndSelf(
                     new ParticleEffectSpawnPacket(
-                            MKWeaponsParticles.DRIPPING_BLOOD,
+                            MKWeaponsParticles.DRIPPING_BLOOD.get(),
                             ParticleEffects.CIRCLE_MOTION, 25, 10,
                             targetEntity.getX(), targetEntity.getY() + 1.0f,
                             targetEntity.getZ(), 0.75, 0.75, 0.75, 1.0,

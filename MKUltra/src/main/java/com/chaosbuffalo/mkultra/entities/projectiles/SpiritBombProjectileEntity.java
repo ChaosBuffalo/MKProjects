@@ -28,7 +28,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ObjectHolder;
 
 /**
  * Created by Jacob on 7/28/2018.
@@ -37,9 +36,6 @@ public class SpiritBombProjectileEntity extends SpriteTrailProjectileEntity {
 
     public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_trail");
     public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_detonate");
-
-    @ObjectHolder(MKUltra.MODID + ":spirit_bomb_projectile")
-    public static EntityType<SpiritBombProjectileEntity> TYPE;
 
 
     public SpiritBombProjectileEntity(EntityType<? extends Projectile> entityTypeIn,

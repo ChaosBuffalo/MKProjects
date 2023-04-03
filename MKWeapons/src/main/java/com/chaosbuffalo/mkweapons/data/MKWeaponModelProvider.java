@@ -33,12 +33,12 @@ public class MKWeaponModelProvider extends ItemModelProvider {
         for (MKBow bow : MKWeaponsItems.BOWS) {
             makeBowModels(bow);
         }
-        makeSimpleItem(MKWeaponsItems.CopperRing);
-        makeSimpleItem(MKWeaponsItems.GoldEarring);
-        makeSimpleItem(MKWeaponsItems.GoldRing);
-        makeSimpleItem(MKWeaponsItems.RoseGoldRing);
-        makeSimpleItem(MKWeaponsItems.SilverRing);
-        makeSimpleItem(MKWeaponsItems.SilverEarring);
+        makeSimpleItem(MKWeaponsItems.CopperRing.get());
+        makeSimpleItem(MKWeaponsItems.GoldEarring.get());
+        makeSimpleItem(MKWeaponsItems.GoldRing.get());
+        makeSimpleItem(MKWeaponsItems.RoseGoldRing.get());
+        makeSimpleItem(MKWeaponsItems.SilverRing.get());
+        makeSimpleItem(MKWeaponsItems.SilverEarring.get());
     }
 
     private void makeSimpleItem(Item item) {

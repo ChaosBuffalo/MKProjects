@@ -21,9 +21,9 @@ public class MKWeaponsItemTagProvider extends ItemTagsProvider {
 
     @Override
     protected void addTags() {
-        tag(accessory("ring")).add(MKWeaponsItems.CopperRing,
-                MKWeaponsItems.GoldRing, MKWeaponsItems.RoseGoldRing, MKWeaponsItems.SilverRing);
-        tag(accessory("earring")).add(MKWeaponsItems.GoldEarring, MKWeaponsItems.SilverEarring);
+        tag(accessory("ring")).add(MKWeaponsItems.CopperRing.get(),
+                MKWeaponsItems.GoldRing.get(), MKWeaponsItems.RoseGoldRing.get(), MKWeaponsItems.SilverRing.get());
+        tag(accessory("earring")).add(MKWeaponsItems.GoldEarring.get(), MKWeaponsItems.SilverEarring.get());
     }
 
     private static TagKey<Item> accessory(String name) {

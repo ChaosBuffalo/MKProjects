@@ -65,7 +65,7 @@ public class LootTierProvider implements DataProvider {
                 0.5, 2.0, AttributeModifier.Operation.ADDITION);
 
         LootItemTemplate ringTemplate = new LootItemTemplate(LootSlotManager.RINGS);
-        ringTemplate.addItem(MKWeaponsItems.CopperRing);
+        ringTemplate.addItem(MKWeaponsItems.CopperRing.get());
 
         List<LootItemTemplate> templates = Arrays.asList(weaponTemplate, ringTemplate);
 
