@@ -2,27 +2,17 @@ package com.chaosbuffalo.mkcore.core.damage;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import net.minecraft.ChatFormatting;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
-import java.util.function.Consumer;
-
 public class RangedDamageType extends MKDamageType {
-    public RangedDamageType(ResourceLocation name) {
-        super(name, MKAttributes.RANGED_DAMAGE, Attributes.ARMOR_TOUGHNESS, MKAttributes.RANGED_CRIT, MKAttributes.RANGED_CRIT_MULTIPLIER,
+    public RangedDamageType() {
+        super(MKAttributes.RANGED_DAMAGE, Attributes.ARMOR_TOUGHNESS,
+                MKAttributes.RANGED_CRIT, MKAttributes.RANGED_CRIT_MULTIPLIER,
                 ChatFormatting.DARK_BLUE);
-    }
-
-    @Override
-    public void registerAttributes(Consumer<Attribute> attributeMap) {
-        super.registerAttributes(attributeMap);
-        attributeMap.accept(getCritChanceAttribute());
-        attributeMap.accept(getCritMultiplierAttribute());
     }
 
     @Override

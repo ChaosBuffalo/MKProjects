@@ -57,9 +57,9 @@ public class EmberAbility extends MKAbility {
     protected Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.EVOCATION);
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.FireDamage, base.value(), scale.value(), level, modifierScaling.value());
+                CoreDamageTypes.FireDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         Component dotStr = getDamageDescription(entityData,
-                CoreDamageTypes.FireDamage, baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
+                CoreDamageTypes.FireDamage.get(), baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
         return new TranslatableComponent(getDescriptionTranslationKey(), valueStr,
                 NUMBER_FORMATTER.format(convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()))),
                 dotStr, NUMBER_FORMATTER.format(convertDurationToSeconds(BurnEffect.DEFAULT_PERIOD)));
@@ -103,7 +103,7 @@ public class EmberAbility extends MKAbility {
         super.endCast(entity, data, context);
         float level = getSkillLevel(entity, MKAttributes.EVOCATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.FireDamage,
+            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.FireDamage.get(),
                             base.value(), scale.value(), modifierScaling.value())
                     .ability(this)
                     .skillLevel(level);

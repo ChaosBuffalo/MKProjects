@@ -63,7 +63,7 @@ public class SeverTendonEffect extends MKEffect {
 
             float damage = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
             LivingEntity target = targetData.getEntity();
-            target.hurt(MKDamageSource.causeAbilityDamage(CoreDamageTypes.BleedDamage,
+            target.hurt(MKDamageSource.causeAbilityDamage(CoreDamageTypes.BleedDamage.get(),
                     activeEffect.getAbilityId(), activeEffect.getDirectEntity(), activeEffect.getSourceEntity(),
                     getModifierScale()), damage);
             PacketHandler.sendToTrackingAndSelf(

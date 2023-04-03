@@ -52,7 +52,7 @@ public class DrownAbility extends MKAbility {
     protected Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.CONJURATION);
         Component dotStr = getDamageDescription(entityData,
-                CoreDamageTypes.NatureDamage, baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
+                CoreDamageTypes.NatureDamage.get(), baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
         return new TranslatableComponent(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()))),
                 dotStr, NUMBER_FORMATTER.format(convertDurationToSeconds(DrownEffect.DEFAULT_PERIOD)));

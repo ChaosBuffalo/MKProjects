@@ -62,7 +62,7 @@ public class WarpCurseEffect extends MKEffect {
             LivingEntity target = targetData.getEntity();
 
             float damage = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
-            target.hurt(MKDamageSource.causeAbilityDamage(CoreDamageTypes.ShadowDamage,
+            target.hurt(MKDamageSource.causeAbilityDamage(CoreDamageTypes.ShadowDamage.get(),
                     activeEffect.getAbilityId(), activeEffect.getDirectEntity(), activeEffect.getSourceEntity(),
                     getModifierScale()), damage);
 

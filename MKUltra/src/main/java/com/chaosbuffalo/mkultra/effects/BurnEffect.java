@@ -57,7 +57,7 @@ public class BurnEffect extends DamageTypeDotEffect {
 
         public State() {
             super();
-            setDamageType(CoreDamageTypes.FireDamage);
+            setDamageType(CoreDamageTypes.FireDamage.get());
         }
 
         @Override

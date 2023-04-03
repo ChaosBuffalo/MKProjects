@@ -70,7 +70,7 @@ public class EngulfingDarknessAbility extends MKAbility {
     protected Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.CONJURATION);
         Component dotStr = getDamageDescription(entityData,
-                CoreDamageTypes.ShadowDamage, baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
+                CoreDamageTypes.ShadowDamage.get(), baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
         float dotDur = convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()));
         float shadowbringerDur = convertDurationToSeconds(shadowbringerDuration.value());
         return new TranslatableComponent(getDescriptionTranslationKey(),

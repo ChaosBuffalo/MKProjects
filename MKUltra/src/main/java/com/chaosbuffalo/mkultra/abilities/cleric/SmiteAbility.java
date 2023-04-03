@@ -47,7 +47,7 @@ public class SmiteAbility extends MKAbility {
     protected Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.EVOCATION);
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.HolyDamage, base.value(), scale.value(), level, modifierScaling.value());
+                CoreDamageTypes.HolyDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         return new TranslatableComponent(getDescriptionTranslationKey(), valueStr,
                 getBuffDuration(entityData, level, 0, 1) / 20);
     }
@@ -83,7 +83,7 @@ public class SmiteAbility extends MKAbility {
         float level = getSkillLevel(entity, MKAttributes.EVOCATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
 
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.HolyDamage,
+            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.HolyDamage.get(),
                             base.value(), scale.value(), modifierScaling.value())
                     .ability(this)
                     .skillLevel(level);

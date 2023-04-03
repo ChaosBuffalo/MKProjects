@@ -31,18 +31,18 @@ public class MKHealSource {
 
     public static MKHealSource getShadowHeal(ResourceLocation abilityId, @Nullable Entity directEntity,
                                              @Nullable LivingEntity sourceEntity, float modifierScaling) {
-        return new MKHealSource(abilityId, directEntity, sourceEntity, CoreDamageTypes.ShadowDamage, modifierScaling)
+        return new MKHealSource(abilityId, directEntity, sourceEntity, CoreDamageTypes.ShadowDamage.get(), modifierScaling)
                 .setDamageUndead(false);
     }
 
     public static MKHealSource getHolyHeal(ResourceLocation abilityId, @Nullable Entity directEntity,
                                            @Nullable LivingEntity sourceEntity, float modifierScaling) {
-        return new MKHealSource(abilityId, directEntity, sourceEntity, CoreDamageTypes.HolyDamage, modifierScaling);
+        return new MKHealSource(abilityId, directEntity, sourceEntity, CoreDamageTypes.HolyDamage.get(), modifierScaling);
     }
 
     public static MKHealSource getNatureHeal(ResourceLocation abilityId, @Nullable Entity directEntity,
                                              @Nullable LivingEntity sourceEntity, float modifierScaling) {
-        return new MKHealSource(abilityId, directEntity, sourceEntity, CoreDamageTypes.NatureDamage, modifierScaling);
+        return new MKHealSource(abilityId, directEntity, sourceEntity, CoreDamageTypes.NatureDamage.get(), modifierScaling);
     }
 
     public MKDamageType getDamageType() {

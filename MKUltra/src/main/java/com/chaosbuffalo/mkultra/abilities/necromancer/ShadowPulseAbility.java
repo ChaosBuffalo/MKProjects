@@ -62,8 +62,8 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
     @Override
     protected Component getAbilityDescription(IMKEntityData casterData) {
         float level = getSkillLevel(casterData.getEntity(), MKAttributes.CONJURATION);
-        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage, base.value(), scale.value(), level, modifierScaling.value());
-        Component detonateStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage, detonateBase.value(), detonateScale.value(), level, modifierScaling.value());
+        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
+        Component detonateStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), detonateBase.value(), detonateScale.value(), level, modifierScaling.value());
         return new TranslatableComponent(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(radius.value()),
                 damageStr,
@@ -93,7 +93,7 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
         Vec3 pulseOffset = new Vec3(0.0, 0.5, 0.0);
         Vec3 pulsePos = position.add(pulseOffset);
         float level = getSkillLevel(castingEntity, MKAttributes.CONJURATION);
-        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage,
+        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
                         base.value(), scale.value(), modifierScaling.value())
                 .ability(this)
                 .skillLevel(level);
@@ -106,7 +106,7 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
                 .skillLevel(level);
         MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, ModSounds.spell_shadow_10.get(), castingEntity.getSoundSource())
                 .ability(this);
-        MKEffectBuilder<?> detonateDamage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage,
+        MKEffectBuilder<?> detonateDamage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
                         detonateBase.value(), detonateScale.value(), modifierScaling.value())
                 .ability(this)
                 .skillLevel(level);

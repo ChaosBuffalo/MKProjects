@@ -54,7 +54,7 @@ public class WrathBeamAbility extends PositionTargetingAbility {
     @Override
     protected Component getAbilityDescription(IMKEntityData casterData) {
         float level = getSkillLevel(casterData.getEntity(), MKAttributes.EVOCATION);
-        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage, base.value(), scale.value(), level, modifierScaling.value());
+        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         return new TranslatableComponent(getDescriptionTranslationKey(), damageStr,
                 NUMBER_FORMATTER.format(convertDurationToSeconds(breakDuration.value())),
                 NUMBER_FORMATTER.format(convertDurationToSeconds(tickRate.value())),
@@ -80,7 +80,7 @@ public class WrathBeamAbility extends PositionTargetingAbility {
     @Override
     public void castAtPosition(LivingEntity castingEntity, Vec3 position) {
         float level = getSkillLevel(castingEntity, MKAttributes.EVOCATION);
-        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.FireDamage,
+        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.FireDamage.get(),
                         base.value(), scale.value(), modifierScaling.value())
                 .ability(this)
                 .skillLevel(level);

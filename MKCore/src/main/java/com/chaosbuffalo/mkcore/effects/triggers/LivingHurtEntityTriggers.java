@@ -161,8 +161,8 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
             damage += livingSource.getAttribute(MKAttributes.RANGED_DAMAGE).getValue();
         }
         boolean wasCrit = false;
-        if (projectile != null && CoreDamageTypes.RangedDamage.rollCrit(livingSource, livingTarget, projectile)) {
-            damage = CoreDamageTypes.RangedDamage.applyCritDamage(livingSource, livingTarget, projectile, damage);
+        if (projectile != null && CoreDamageTypes.RangedDamage.get().rollCrit(livingSource, livingTarget, projectile)) {
+            damage = CoreDamageTypes.RangedDamage.get().applyCritDamage(livingSource, livingTarget, projectile, damage);
             wasCrit = true;
         }
         damage = (float) (damage * (1.0 - livingTarget.getAttribute(MKAttributes.RANGED_RESISTANCE).getValue()));
@@ -188,8 +188,8 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
     private void handleVanillaMelee(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
                                     LivingEntity livingSource, IMKEntityData sourceData) {
         if (sourceData instanceof MKPlayerData) {
-            if (CoreDamageTypes.MeleeDamage.rollCrit(livingSource, livingTarget)) {
-                float newDamage = CoreDamageTypes.MeleeDamage.applyCritDamage(livingSource, livingTarget, event.getAmount());
+            if (CoreDamageTypes.MeleeDamage.get().rollCrit(livingSource, livingTarget)) {
+                float newDamage = CoreDamageTypes.MeleeDamage.get().applyCritDamage(livingSource, livingTarget, event.getAmount());
                 event.setAmount(newDamage);
                 sendCritPacket(livingTarget, livingSource,
                         new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage));

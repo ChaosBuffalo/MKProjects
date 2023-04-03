@@ -77,7 +77,7 @@ public class CleansingSeedProjectileEntity extends TrailProjectileEntity impleme
                         break;
                     }
                     case ENEMY: {
-                        target.hurt(MKDamageSource.causeAbilityDamage(CoreDamageTypes.NatureDamage,
+                        target.hurt(MKDamageSource.causeAbilityDamage(CoreDamageTypes.NatureDamage.get(),
                                         ability.getAbilityId(), this, caster,
                                         ability.getModifierScaling()),
                                 ability.getDamageForLevel(getSkillLevel()));

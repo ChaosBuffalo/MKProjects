@@ -47,9 +47,9 @@ public class SeverTendonAbility extends MKAbility {
     protected Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.PANKRATION);
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.MeleeDamage, base.value(), scale.value(), level, modifierScaling.value());
+                CoreDamageTypes.MeleeDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         Component dotStr = getDamageDescription(entityData,
-                CoreDamageTypes.BleedDamage, baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
+                CoreDamageTypes.BleedDamage.get(), baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
         int periodSeconds = SeverTendonEffect.DEFAULT_PERIOD / 20;
         return new TranslatableComponent(getDescriptionTranslationKey(), valueStr,
                 getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / 20,
@@ -86,7 +86,7 @@ public class SeverTendonAbility extends MKAbility {
         super.endCast(entity, data, context);
         float level = getSkillLevel(entity, MKAttributes.PANKRATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.MeleeDamage,
+            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.MeleeDamage.get(),
                             base.value(), scale.value(), modifierScaling.value())
                     .ability(this)
                     .skillLevel(level);

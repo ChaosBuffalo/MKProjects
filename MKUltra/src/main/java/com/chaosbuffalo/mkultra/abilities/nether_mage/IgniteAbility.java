@@ -61,7 +61,7 @@ public class IgniteAbility extends MKAbility {
     protected Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.EVOCATION);
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.FireDamage, base.value(), scale.value(), level, modifierScaling.value());
+                CoreDamageTypes.FireDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         return new TranslatableComponent(getDescriptionTranslationKey(), valueStr, igniteDistance.value());
     }
 
@@ -95,7 +95,7 @@ public class IgniteAbility extends MKAbility {
         super.endCast(entity, data, context);
         float level = getSkillLevel(entity, MKAttributes.EVOCATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.FireDamage,
+            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.FireDamage.get(),
                             base.value(),
                             scale.value(),
                             modifierScaling.value())

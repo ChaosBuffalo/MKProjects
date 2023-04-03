@@ -58,7 +58,7 @@ public class FireArmorAbility extends MKAbility {
         float amount = ResistanceEffects.FIRE_ARMOR.getPerLevel() * (level + 1) * 100.0f;
         int duration = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
         return new TranslatableComponent(getDescriptionTranslationKey(), amount,
-                CoreDamageTypes.FireDamage.getDisplayName().withStyle(CoreDamageTypes.FireDamage.getFormatting()), duration);
+                CoreDamageTypes.FireDamage.get().getFormattedDisplayName(), duration);
     }
 
     @Nullable

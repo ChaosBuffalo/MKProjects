@@ -157,7 +157,7 @@ public abstract class MKDamageSource extends DamageSource {
     }
 
     public boolean isMeleeDamage() {
-        return damageType.equals(CoreDamageTypes.MeleeDamage);
+        return damageType.equals(CoreDamageTypes.MeleeDamage.get());
     }
 
     public boolean shouldSuppressTriggers() {
@@ -173,7 +173,7 @@ public abstract class MKDamageSource extends DamageSource {
                                                     ResourceLocation abilityId,
                                                     @Nullable Entity immediateSource,
                                                     @Nullable Entity trueSource) {
-        if (damageType.equals(CoreDamageTypes.MeleeDamage)) {
+        if (damageType.equals(CoreDamageTypes.MeleeDamage.get())) {
             return causeMeleeDamage(abilityId, immediateSource, trueSource);
         }
         return (MKDamageSource) new AbilityDamage(damageType, immediateSource, trueSource, abilityId)
@@ -208,7 +208,7 @@ public abstract class MKDamageSource extends DamageSource {
     public static MKDamageSource causeMeleeDamage(ResourceLocation abilityId,
                                                   @Nullable Entity immediateSource,
                                                   @Nullable Entity trueSource) {
-        return new AbilityDamage(CoreDamageTypes.MeleeDamage, immediateSource, trueSource, abilityId);
+        return new AbilityDamage(CoreDamageTypes.MeleeDamage.get(), immediateSource, trueSource, abilityId);
     }
 
     public static MKDamageSource causeMeleeDamage(ResourceLocation abilityId,

@@ -52,7 +52,7 @@ public class WarpCurseAbility extends MKAbility {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.ALTERATON);
         int duration = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value());
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.ShadowDamage, base.value(), scale.value(), level, modifierScaling.value());
+                CoreDamageTypes.ShadowDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         return new TranslatableComponent(getDescriptionTranslationKey(), valueStr,
                 WarpCurseEffect.DEFAULT_PERIOD / 20,
                 duration / 20);

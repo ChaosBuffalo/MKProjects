@@ -57,7 +57,7 @@ public class ShadowBoltProjectileEntity extends TrailProjectileEntity implements
             if (result.getType().equals(HitResult.Type.ENTITY)) {
                 EntityHitResult entityTrace = (EntityHitResult) result;
                 ShadowBoltAbility ability = MKUAbilities.SHADOW_BOLT.get();
-                MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(casterLiving, CoreDamageTypes.ShadowDamage,
+                MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(casterLiving, CoreDamageTypes.ShadowDamage.get(),
                                 ability.getBaseDamage(),
                                 ability.getScaleDamage(),
                                 ability.getModifierScaling())

@@ -74,12 +74,12 @@ public class WhirlwindBladesAbility extends MKAbility {
     protected Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.PANKRATION);
         Component baseDamage = getDamageDescription(entityData,
-                CoreDamageTypes.MeleeDamage, base.value(), scale.value(), level, 0.0f);
+                CoreDamageTypes.MeleeDamage.get(), base.value(), scale.value(), level, 0.0f);
         float periodSeconds = 6.0f / GameConstants.TICKS_PER_SECOND;
         int castSeconds = getCastTime(entityData) / GameConstants.TICKS_PER_SECOND;
         int numberOfCasts = Math.round(castSeconds / periodSeconds);
         Component maxDamage = getDamageDescription(entityData,
-                CoreDamageTypes.MeleeDamage, base.value(), scale.value(), level,
+                CoreDamageTypes.MeleeDamage.get(), base.value(), scale.value(), level,
                 modifierScaling.value() * numberOfCasts * perTick.value());
         return new TranslatableComponent(getDescriptionTranslationKey(), NUMBER_FORMATTER.format(periodSeconds), INTEGER_FORMATTER.format(castSeconds),
                 PERCENT_FORMATTER.format(perTick.value()), baseDamage, maxDamage);
@@ -117,7 +117,7 @@ public class WhirlwindBladesAbility extends MKAbility {
             float baseAmount = perTick.value();
             float scaling = count * baseAmount;
 
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.MeleeDamage,
+            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.MeleeDamage.get(),
                             base.value(), scale.value(), modifierScaling.value() * scaling)
                     .ability(this)
                     .skillLevel(level);

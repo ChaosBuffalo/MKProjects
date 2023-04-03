@@ -74,6 +74,7 @@ public class MKCoreRegistry {
     }
 
     public static void register(IEventBus modBus) {
+        CoreDamageTypes.register(modBus);
         CoreEffects.register(modBus);
         CoreEntities.register(modBus);
         CoreEntitlements.register(modBus);

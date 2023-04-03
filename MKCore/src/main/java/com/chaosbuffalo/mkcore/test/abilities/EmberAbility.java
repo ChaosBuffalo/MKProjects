@@ -40,7 +40,7 @@ public class EmberAbility extends MKAbility {
 
     @Override
     protected Component getAbilityDescription(IMKEntityData casterData) {
-        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage, damage.value(), 0.0f, 0, 1.0f);
+        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(), damage.value(), 0.0f, 0, 1.0f);
         Component burn = new TextComponent(burnTime.valueAsString()).withStyle(ChatFormatting.UNDERLINE);
         return new TranslatableComponent(getDescriptionTranslationKey(), damageStr, burn);
     }
@@ -73,7 +73,7 @@ public class EmberAbility extends MKAbility {
             float amount = damage.value();
             MKCore.LOGGER.info("Ember damage {} burnTime {}", amount, burnDuration);
             targetEntity.setSecondsOnFire(burnDuration);
-            targetEntity.hurt(MKDamageSource.causeAbilityDamage(CoreDamageTypes.FireDamage,
+            targetEntity.hurt(MKDamageSource.causeAbilityDamage(CoreDamageTypes.FireDamage.get(),
                     getAbilityId(), castingEntity, castingEntity), amount);
 //            SoundUtils.playSoundAtEntity(targetEntity, ModSounds.spell_fire_6);
             EntityEffectBuilder.LineEffectBuilder lineBuilder = EntityEffectBuilder.createLineEffectOnEntity(castingEntity, targetEntity,

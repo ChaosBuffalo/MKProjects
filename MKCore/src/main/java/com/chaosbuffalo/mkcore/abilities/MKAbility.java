@@ -82,7 +82,7 @@ public abstract class MKAbility extends ForgeRegistryEntry<MKAbility> implements
         if (bonus != 0) {
             damageStr.append(new TextComponent(String.format(" (+%s)", NUMBER_FORMATTER.format(bonus))).withStyle(ChatFormatting.BOLD));
         }
-        damageStr.append(" ").append(damageType.getDisplayName().withStyle(damageType.getFormatting()));
+        damageStr.append(" ").append(damageType.getFormattedDisplayName());
         return damageStr;
     }
 

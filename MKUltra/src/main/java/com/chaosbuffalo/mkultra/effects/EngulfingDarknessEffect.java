@@ -70,7 +70,7 @@ public class EngulfingDarknessEffect extends DamageTypeDotEffect {
 
         public State() {
             super();
-            setDamageType(CoreDamageTypes.ShadowDamage);
+            setDamageType(CoreDamageTypes.ShadowDamage.get());
         }
 
         public void setTriggerChance(float triggerChance) {

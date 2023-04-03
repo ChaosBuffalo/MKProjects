@@ -65,7 +65,7 @@ public class ShadowBoltAbility extends MKAbility {
     @Override
     protected Component getAbilityDescription(IMKEntityData entityData) {
         float skillLevel = getSkillLevel(entityData.getEntity(), MKAttributes.EVOCATION);
-        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.ShadowDamage, baseDamage.value(),
+        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.ShadowDamage.get(), baseDamage.value(),
                 scaleDamage.value(), skillLevel,
                 modifierScaling.value());
         return new TranslatableComponent(getDescriptionTranslationKey(), damageStr);

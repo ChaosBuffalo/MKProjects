@@ -54,9 +54,9 @@ public class LifeSpikeAbility extends MKAbility {
     protected Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.NECROMANCY);
         Component valueStr = getDamageDescription(entityData,
-                CoreDamageTypes.ShadowDamage, base.value(), scale.value(), level, modifierScaling.value());
+                CoreDamageTypes.ShadowDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
 
-        float bonus = entityData.getStats().getDamageTypeBonus(CoreDamageTypes.ShadowDamage) * modifierScaling.value();
+        float bonus = entityData.getStats().getDamageTypeBonus(CoreDamageTypes.ShadowDamage.get()) * modifierScaling.value();
         float healing = (base.value() + scale.value() * level + bonus) * healScaling.value();
         Component healStr = getHealDescription(entityData, healing, 0.0f, 0.0f, healModScaling.value());
         return new TranslatableComponent(getDescriptionTranslationKey(), valueStr, healStr);
@@ -93,7 +93,7 @@ public class LifeSpikeAbility extends MKAbility {
         float level = getSkillLevel(entity, MKAttributes.EVOCATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
 
-            MKEffectBuilder<?> damage = VampiricDamageEffect.from(entity, CoreDamageTypes.ShadowDamage,
+            MKEffectBuilder<?> damage = VampiricDamageEffect.from(entity, CoreDamageTypes.ShadowDamage.get(),
                             base.value(), scale.value(), modifierScaling.value(), healScaling.value(), healModScaling.value())
                     .ability(this)
                     .skillLevel(level);

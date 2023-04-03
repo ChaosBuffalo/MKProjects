@@ -71,7 +71,7 @@ public class StunningShoutAbility extends MKAbility {
     @Override
     protected Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.PNEUMA);
-        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.BleedDamage, baseDamage.value(),
+        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.BleedDamage.get(), baseDamage.value(),
                 scaleDamage.value(), level, modifierScaling.value());
         int dur = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
         return new TranslatableComponent(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(dur), damageStr);
@@ -94,7 +94,7 @@ public class StunningShoutAbility extends MKAbility {
         float level = getSkillLevel(castingEntity, MKAttributes.PNEUMA);
 
 
-        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.BleedDamage,
+        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.BleedDamage.get(),
                         baseDamage.value(), scaleDamage.value(), modifierScaling.value())
                 .skillLevel(level)
                 .ability(this);

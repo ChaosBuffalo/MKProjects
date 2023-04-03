@@ -74,8 +74,7 @@ public class SpiritBombProjectileEntity extends TrailProjectileEntity implements
                     break;
                 case ENTITY:
                     EntityHitResult entityTrace = (EntityHitResult) result;
-                    if (entityTrace.getEntity() instanceof LivingEntity) {
-                        LivingEntity target = (LivingEntity) entityTrace.getEntity();
+                    if (entityTrace.getEntity() instanceof LivingEntity target) {
                         if (Targeting.isValidTarget(getTargetContext(), caster, target)) {
                             this.setDeltaMovement(0.0, 0.0, 0.0);
                         }
@@ -100,10 +99,9 @@ public class SpiritBombProjectileEntity extends TrailProjectileEntity implements
     }
 
     private boolean doEffect(Entity caster, int amplifier) {
-        if (!this.level.isClientSide && caster instanceof LivingEntity) {
-            LivingEntity casterLiving = (LivingEntity) caster;
+        if (!this.level.isClientSide && caster instanceof LivingEntity casterLiving) {
             SpiritBombAbility ability = MKUAbilities.SPIRIT_BOMB.get();
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(casterLiving, CoreDamageTypes.NatureDamage,
+            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(casterLiving, CoreDamageTypes.NatureDamage.get(),
                             ability.getBaseDamage(),
                             ability.getScaleDamage(),
                             ability.getModifierScaling())

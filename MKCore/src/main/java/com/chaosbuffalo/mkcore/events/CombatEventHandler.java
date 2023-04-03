@@ -125,9 +125,9 @@ public class CombatEventHandler {
                 if (!(dmgSource instanceof MKDamageSource)) {
                     // correct for if we're a vanilla damage source and we're going to bypass armor so pre-apply armor
                     if (DamageUtils.isProjectileDamage(dmgSource)) {
-                        left = CoreDamageTypes.RangedDamage.applyResistance(event.getEntityLiving(), left);
+                        left = CoreDamageTypes.RangedDamage.get().applyResistance(event.getEntityLiving(), left);
                     } else {
-                        left = CoreDamageTypes.MeleeDamage.applyResistance(event.getEntityLiving(), left);
+                        left = CoreDamageTypes.MeleeDamage.get().applyResistance(event.getEntityLiving(), left);
                     }
 
                 }

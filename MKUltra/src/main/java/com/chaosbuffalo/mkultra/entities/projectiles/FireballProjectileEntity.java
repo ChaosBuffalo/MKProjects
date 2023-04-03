@@ -53,7 +53,7 @@ public class FireballProjectileEntity extends TrailProjectileEntity implements I
                     new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES, getId()), this);
 
             FireballAbility ability = MKUAbilities.FIREBALL.get();
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(casterLiving, CoreDamageTypes.FireDamage,
+            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(casterLiving, CoreDamageTypes.FireDamage.get(),
                             ability.getBaseDamage(),
                             ability.getScaleDamage(),
                             ability.getModifierScaling())

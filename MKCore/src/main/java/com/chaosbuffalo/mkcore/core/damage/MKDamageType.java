@@ -16,7 +16,6 @@ import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 
 public class MKDamageType extends ForgeRegistryEntry<MKDamageType> {
@@ -24,15 +23,12 @@ public class MKDamageType extends ForgeRegistryEntry<MKDamageType> {
     private final Attribute resistanceAttribute;
     private final Attribute critAttribute;
     private final Attribute critMultiplierAttribute;
-    private final ResourceLocation iconLoc;
     private float critMultiplier;
     private boolean shouldDisplay;
     private final ChatFormatting formatting;
 
-    public MKDamageType(ResourceLocation name, Attribute damageAttribute,
-                        Attribute resistanceAttribute, Attribute critAttribute,
-                        Attribute critMultiplierAttribute, ChatFormatting formatting) {
-        setRegistryName(name);
+    public MKDamageType(Attribute damageAttribute, Attribute resistanceAttribute,
+                        Attribute critAttribute, Attribute critMultiplierAttribute, ChatFormatting formatting) {
         this.damageAttribute = damageAttribute;
         this.resistanceAttribute = resistanceAttribute;
         this.critMultiplierAttribute = critMultiplierAttribute;
@@ -40,8 +36,6 @@ public class MKDamageType extends ForgeRegistryEntry<MKDamageType> {
         this.critMultiplier = 1.0f;
         this.shouldDisplay = true;
         this.formatting = formatting;
-        iconLoc = new ResourceLocation(name.getNamespace(), String.format("textures/damage_types/%s.png",
-                name.getPath().substring(7)));
     }
 
     @Nonnull
@@ -72,8 +66,14 @@ public class MKDamageType extends ForgeRegistryEntry<MKDamageType> {
         return new TranslatableComponent(String.format("%s.%s.name", name.getNamespace(), name.getPath()));
     }
 
+    public MutableComponent getFormattedDisplayName() {
+        return getDisplayName().withStyle(formatting);
+    }
+
     public ResourceLocation getIcon() {
-        return iconLoc;
+        ResourceLocation name = getId();
+        return new ResourceLocation(name.getNamespace(),
+                String.format("textures/damage_types/%s.png", name.getPath().substring(7)));
     }
 
     public Attribute getDamageAttribute() {
@@ -90,11 +90,6 @@ public class MKDamageType extends ForgeRegistryEntry<MKDamageType> {
 
     public Attribute getResistanceAttribute() {
         return resistanceAttribute;
-    }
-
-    public void registerAttributes(Consumer<Attribute> attributeMap) {
-        attributeMap.accept(getDamageAttribute());
-        attributeMap.accept(getResistanceAttribute());
     }
 
     public Component getEffectCritMessage(LivingEntity source, LivingEntity target, float damage,

@@ -61,7 +61,7 @@ public class DrownEffect extends DamageTypeDotEffect {
 
         public State() {
             super();
-            setDamageType(CoreDamageTypes.NatureDamage);
+            setDamageType(CoreDamageTypes.NatureDamage.get());
         }
 
         @Override
