@@ -24,12 +24,14 @@ public class MKNpcWorldGen {
     public static final DeferredRegister<StructureFeature<?>> STRUCTURE_REGISTRY = DeferredRegister.create(
             ForgeRegistries.STRUCTURE_FEATURES, MKNpc.MODID);
     public static final RegistryObject<StructureFeature<JigsawConfiguration>> TEST_JIGSAW = STRUCTURE_REGISTRY.register("test_jigsaw",
-            () -> new MKJigsawStructure(JigsawConfiguration.CODEC, 0, true, true, (piece) -> true, false));
+            () -> new MKJigsawStructure(JigsawConfiguration.CODEC, 0, true, true,
+                    (piece) -> true, false));
 
     public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECE_REGISTRY = DeferredRegister.create(
             Registry.STRUCTURE_PIECE_REGISTRY, MKNpc.MODID);
 
-    public static RegistryObject<StructurePieceType> MK_JIGSAW_PIECE_TYPE = STRUCTURE_PIECE_REGISTRY.register("mk_jigsaw", () -> MKPoolElementPiece::new);
+    public static RegistryObject<StructurePieceType> MK_JIGSAW_PIECE_TYPE = STRUCTURE_PIECE_REGISTRY.register("mk_jigsaw",
+            () -> MKPoolElementPiece::new);
 
     public static final DeferredRegister<StructurePoolElementType<?>> STRUCTURE_POOL_REGISTRY = DeferredRegister.create(
             Registry.STRUCTURE_POOL_ELEMENT_REGISTRY, MKNpc.MODID
@@ -43,14 +45,8 @@ public class MKNpcWorldGen {
         }
     }
 
-//    public static StructurePoolElementType<MKSingleJigsawPiece> _MK_SINGLE_JIGSAW_DESERIALIZER;
-//
-//    public static void registerStructurePoolTypes() {
-//        _MK_SINGLE_JIGSAW_DESERIALIZER = StructurePoolElementType.register("mknpc:mk_single_jigsaw", MKSingleJigsawPiece.codec);
-//    }
-
-    public static final RegistryObject<StructurePoolElementType<MKSingleJigsawPiece>> MK_SINGLE_JIGSAW_DESERIALIZER = STRUCTURE_POOL_REGISTRY.register("mk_single_jigsaw",
-            MKSingleJigsawWrapper::new);
+    public static final RegistryObject<StructurePoolElementType<MKSingleJigsawPiece>> MK_SINGLE_JIGSAW_DESERIALIZER =
+            STRUCTURE_POOL_REGISTRY.register("mk_single_jigsaw", MKSingleJigsawWrapper::new);
 
     public static void register() {
         STRUCTURE_REGISTRY.register(FMLJavaModLoadingContext.get().getModEventBus());

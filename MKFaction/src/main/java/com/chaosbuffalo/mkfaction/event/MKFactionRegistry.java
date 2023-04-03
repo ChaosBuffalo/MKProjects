@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkfaction.event;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import net.minecraft.resources.ResourceLocation;
@@ -15,6 +16,8 @@ import javax.annotation.Nullable;
 public class MKFactionRegistry {
     public static IForgeRegistry<MKFaction> FACTION_REGISTRY = null;
 
+    public static final ResourceLocation FACTION_REGISTRY_NAME = new ResourceLocation(MKFactionMod.MODID, "abilities");
+
     @Nullable
     public static MKFaction getFaction(ResourceLocation name) {
         return FACTION_REGISTRY.getValue(name);
@@ -24,9 +27,7 @@ public class MKFactionRegistry {
     @SubscribeEvent
     public static void createRegistries(NewRegistryEvent event) {
         event.create(new RegistryBuilder<MKFaction>()
-                .setName(new ResourceLocation(MKFactionMod.MODID, "factions"))
-                .setType(MKFaction.class)
-                .setIDRange(0, Integer.MAX_VALUE - 1)
-                .allowModification(), r -> FACTION_REGISTRY = r);
+                .setName(FACTION_REGISTRY_NAME)
+                .setType(MKFaction.class), r -> FACTION_REGISTRY = r);
     }
 }

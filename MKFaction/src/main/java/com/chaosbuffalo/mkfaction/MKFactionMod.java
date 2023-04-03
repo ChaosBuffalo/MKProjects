@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkfaction.command.FactionCommand;
 import com.chaosbuffalo.mkfaction.event.InputHandler;
 import com.chaosbuffalo.mkfaction.faction.FactionDefaultManager;
 import com.chaosbuffalo.mkfaction.faction.FactionManager;
+import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mkfaction.network.PacketHandler;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -34,6 +35,7 @@ public class MKFactionMod {
         // Register the enqueueIMC method for modloading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
         MinecraftForge.EVENT_BUS.register(this);
+        MKFactions.register(FMLJavaModLoadingContext.get().getModEventBus());
         factionManager = new FactionManager();
         factionDefaultManager = new FactionDefaultManager();
     }

@@ -29,13 +29,12 @@ public class MKFaction extends ForgeRegistryEntry<MKFaction> {
     private final EnumMap<PlayerFactionStatus, String> customStatusNames = new EnumMap<>(PlayerFactionStatus.class);
     private int defaultPlayerScore;
 
-    public MKFaction(ResourceLocation name, int defaultPlayerScore) {
-        this(name, defaultPlayerScore, new HashSet<>(), new HashSet<>());
+    public MKFaction(int defaultPlayerScore) {
+        this(defaultPlayerScore, new HashSet<>(), new HashSet<>());
     }
 
-    public MKFaction(ResourceLocation name, int defaultPlayerScore, Set<ResourceLocation> allies,
+    public MKFaction(int defaultPlayerScore, Set<ResourceLocation> allies,
                      Set<ResourceLocation> enemies) {
-        setRegistryName(name);
         this.allies = allies;
         this.enemies = enemies;
         this.defaultPlayerScore = defaultPlayerScore;
@@ -100,12 +99,14 @@ public class MKFaction extends ForgeRegistryEntry<MKFaction> {
         return enemies;
     }
 
-    public void addAlly(ResourceLocation allyName) {
+    public MKFaction addAlly(ResourceLocation allyName) {
         allies.add(allyName);
+        return this;
     }
 
-    public void addEnemy(ResourceLocation enemyName) {
+    public MKFaction addEnemy(ResourceLocation enemyName) {
         enemies.add(enemyName);
+        return this;
     }
 
     public void setStatusName(PlayerFactionStatus status, String name) {

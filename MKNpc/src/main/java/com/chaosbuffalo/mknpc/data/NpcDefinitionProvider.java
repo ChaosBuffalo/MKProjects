@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.data;
 
 import com.chaosbuffalo.mkchat.MKChat;
-import com.chaosbuffalo.mkfaction.init.Factions;
+import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -44,7 +44,7 @@ public class NpcDefinitionProvider implements DataProvider {
     private NpcDefinition generateTestSkeleton() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKNpc.MODID, "test_skeleton"),
                 new ResourceLocation(MKNpc.MODID, "skeleton"), null);
-        def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new MKSizeOption().setValue(0.25f));
         def.addOption(new RenderGroupOption().setValue("wither_king"));
         return def;
@@ -55,7 +55,7 @@ public class NpcDefinitionProvider implements DataProvider {
                 new ResourceLocation(MKNpc.MODID, "green_lady"), null);
         def.addOption(new NameOption().setValue("Test Lady"));
         def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 100)));
-        def.addOption(new FactionOption().setValue(Factions.VILLAGER_FACTION_NAME));
+        def.addOption(new FactionOption().setValue(MKFactions.VILLAGER_FACTION_NAME));
         def.addOption(new DialogueOption().setValue(new ResourceLocation(MKChat.MODID, "test")));
         def.addOption(new EquipmentOption()
                 .addItemChoice(EquipmentSlot.MAINHAND, new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
@@ -69,7 +69,7 @@ public class NpcDefinitionProvider implements DataProvider {
     private NpcDefinition generateTestLady2() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKNpc.MODID, "test2"), null,
                 new ResourceLocation(MKNpc.MODID, "test"));
-        def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new NotableOption().setValue(true));
         def.addOption(new FactionNameOption().setHasLastName(true).setTitle("Chief"));
         return def;

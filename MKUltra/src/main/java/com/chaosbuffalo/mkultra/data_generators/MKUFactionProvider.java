@@ -15,10 +15,10 @@ public class MKUFactionProvider extends MKFactionDataProvider {
     }
 
     public void run(@Nonnull HashCache cache) {
-        writeFaction(MKUFactions.GREEN_KNIGHTS_FACTION, cache);
-        writeFaction(MKUFactions.HYBOREAN_DEAD, cache);
-        writeFaction(MKUFactions.IMPERIAL_DEAD, cache);
-        writeFaction(MKUFactions.SEE_OF_SOLANG, cache);
-        writeFaction(MKUFactions.NETHER_MAGES, cache);
+        writeFaction(MKUFactions.GREEN_KNIGHTS_FACTION.get(), cache);
+        writeFaction(MKUFactions.HYBOREAN_DEAD.get(), cache);
+        writeFaction(MKUFactions.IMPERIAL_DEAD.get(), cache);
+        writeFaction(MKUFactions.SEE_OF_SOLANG.get(), cache);
+        writeFaction(MKUFactions.NETHER_MAGES.get(), cache);
     }
 }

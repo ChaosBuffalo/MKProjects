@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkcore.abilities.training.requirements.HasEntitlementReq
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.BoneEffectInstance;
-import com.chaosbuffalo.mkfaction.init.Factions;
+import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
@@ -628,7 +628,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateHyboreanWarrior() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "hyborean_warrior"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new MKSizeOption().setValue(1.0f));
         def.addOption(new RenderGroupOption().setValue(MKUSkeletons.HYBOREAN_WARRIOR_NAME));
         def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 30.0)));
@@ -657,7 +657,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateHyboreanArcher() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "hyborean_archer"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new MKSizeOption().setValue(0.95f));
         def.addOption(new RenderGroupOption().setValue(MKUSkeletons.HYBOREAN_ARCHER_NAME));
         def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 25.0)));
@@ -674,7 +674,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateHyboreanSorcererQueen() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "hyborean_sorcerer_queen"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new MKSizeOption().setValue(1.1f));
         def.addOption(new RenderGroupOption().setValue(MKUSkeletons.SORCERER_QUEEN_NAME));
         def.addOption(new AttributesOption()
@@ -703,7 +703,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateAncientKing() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "an_ancient_king"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new MKSizeOption().setValue(1.15f));
         def.addOption(new RenderGroupOption().setValue(MKUSkeletons.ANCIENT_KING_NAME));
         def.addOption(new AttributesOption()
@@ -738,7 +738,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateHyboreanSorcerer() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "hyborean_sorcerer"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new MKSizeOption().setValue(0.9f));
         def.addOption(new RenderGroupOption().setValue(MKUSkeletons.SORCERER_NAME));
         def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 40.0)));
@@ -760,7 +760,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateHyboreanHonorGuard() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "hyborean_honor_guard"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new MKSizeOption().setValue(1.0f));
         def.addOption(new RenderGroupOption().setValue(MKUSkeletons.HONOR_GUARD_NAME));
         def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 65.0)));
