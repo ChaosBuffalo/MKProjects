@@ -4,7 +4,7 @@ package com.chaosbuffalo.mkcore.init;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.core.AbilityGroupId;
+import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.player.AbilityPoolEntitlement;
 import com.chaosbuffalo.mkcore.core.player.AbilitySlotEntitlement;

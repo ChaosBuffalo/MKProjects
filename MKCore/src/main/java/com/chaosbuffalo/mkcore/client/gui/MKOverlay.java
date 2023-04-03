@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.client.gui.widgets.OnScreenXpBarWidget;
-import com.chaosbuffalo.mkcore.core.AbilityGroupId;
+import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.pets.MKPet;
@@ -27,7 +27,6 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.gui.ForgeIngameGui;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -431,9 +430,9 @@ public class MKOverlay {
             drawCastBar(event.getMatrixStack(), cap);
 
 
-            int totalSlots = Arrays.stream(AbilityGroupId.values())
-                    .filter(AbilityGroupId::isActive)
-                    .mapToInt(type -> cap.getLoadout().getAbilityGroup(type).getCurrentSlotCount())
+            int totalSlots = cap.getLoadout().getAbilityGroups().stream()
+                    .filter(AbilityGroup::containsActiveAbilities)
+                    .mapToInt(AbilityGroup::getCurrentSlotCount)
                     .sum();
 
             int slot = drawAbilities(event.getMatrixStack(), cap, AbilityGroupId.Basic, 0, totalSlots, event.getPartialTicks());

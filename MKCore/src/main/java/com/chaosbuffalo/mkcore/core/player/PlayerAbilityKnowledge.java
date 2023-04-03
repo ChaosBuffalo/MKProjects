@@ -96,10 +96,6 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         return abilityInfoMap.values().stream().filter(MKAbilityInfo::isCurrentlyKnown);
     }
 
-    private AbilityGroup getAbilityGroup(MKAbility ability) {
-        return playerData.getLoadout().getAbilityGroup(ability.getType().getGroup());
-    }
-
     @Override
     public boolean learnAbility(MKAbility ability, AbilitySource source) {
         MKCore.LOGGER.debug("learnAbility {} {}", ability, source);
@@ -125,11 +121,7 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         info.addSource(source);
         markDirty(info);
 
-        AbilityGroup group = getAbilityGroup(ability);
-        group.onAbilityLearned(info);
-        if (source.placeOnBarWhenLearned()) {
-            group.tryEquip(ability.getAbilityId());
-        }
+        playerData.getLoadout().onAbilityLearned(info, source);
         return true;
     }
 
@@ -145,9 +137,8 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         markDirty(info);
 
         if (!info.isCurrentlyKnown()) {
-            MKAbility ability = info.getAbility();
-            playerData.getAbilityExecutor().onAbilityUnlearned(ability);
-            getAbilityGroup(ability).onAbilityUnlearned(info);
+            playerData.getAbilityExecutor().onAbilityUnlearned(info);
+            playerData.getLoadout().onAbilityUnlearned(info);
             abilityInfoMap.remove(abilityId);
         }
         return true;

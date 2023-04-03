@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKToggleAbility;
-import com.chaosbuffalo.mkcore.core.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.sync.ResourceListUpdater;
 import com.chaosbuffalo.mkcore.sync.SyncInt;
@@ -67,6 +66,14 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         return activeAbilities.size();
     }
 
+    protected boolean requiresAbilityKnown() {
+        return true;
+    }
+
+    public boolean containsActiveAbilities() {
+        return true;
+    }
+
     public boolean setSlots(int newSlotCount) {
         if (newSlotCount < 0 || newSlotCount > getMaximumSlotCount()) {
             MKCore.LOGGER.error("setSlots({}, {}) - bad count", newSlotCount, getMaximumSlotCount());
@@ -100,17 +107,22 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         return getAbilitySlot(MKCoreRegistry.INVALID_ABILITY);
     }
 
-    public int tryEquip(ResourceLocation abilityId) {
+    public boolean tryEquip(ResourceLocation abilityId) {
         int slot = getAbilitySlot(abilityId);
         if (slot == -1) {
             // Ability was just learned so let's try to put it on the bar
             slot = getFirstFreeAbilitySlot();
             if (slot != -1 && slot < getCurrentSlotCount()) {
                 setSlot(slot, abilityId);
+                return true;
             }
         }
 
-        return slot;
+        return slot != -1;
+    }
+
+    public boolean isEquipped(MKAbilityInfo abilityInfo) {
+        return getAbilitySlot(abilityInfo.getId()) != -1;
     }
 
     public int getAbilitySlot(ResourceLocation abilityId) {
@@ -192,7 +204,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
             return false;
         }
 
-        if (groupId.requiresAbilityKnown() && !playerData.getAbilities().knowsAbility(abilityId)) {
+        if (requiresAbilityKnown() && !playerData.getAbilities().knowsAbility(abilityId)) {
             MKCore.LOGGER.error("setSlot({}, {}, {}) - player does not know ability!", groupId, index, abilityId);
             return false;
         }
@@ -242,11 +254,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         setSlot(slot, MKCoreRegistry.INVALID_ABILITY);
     }
 
-    public void onAbilityLearned(MKAbilityInfo info) {
-
-    }
-
-    public void onAbilityUnlearned(MKAbilityInfo info) {
+    protected void onAbilityUnlearned(MKAbilityInfo info) {
         clearAbility(info.getId());
     }
 
@@ -254,7 +262,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY))
             return;
 
-        if (!groupId.requiresAbilityKnown() || playerData.getAbilities().knowsAbility(abilityId))
+        if (!requiresAbilityKnown() || playerData.getAbilities().knowsAbility(abilityId))
             return;
 
         MKCore.LOGGER.debug("ensureValidAbility({}, {}) - bad", groupId, abilityId);

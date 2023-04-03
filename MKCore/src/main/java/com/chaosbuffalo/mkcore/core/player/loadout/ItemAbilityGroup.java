@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
-import com.chaosbuffalo.mkcore.core.AbilityGroupId;
+import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import net.minecraft.resources.ResourceLocation;
@@ -15,6 +15,11 @@ public class ItemAbilityGroup extends AbilityGroup {
 
     public ItemAbilityGroup(MKPlayerData playerData) {
         super(playerData, "item", AbilityGroupId.Item);
+    }
+
+    @Override
+    protected boolean requiresAbilityKnown() {
+        return false;
     }
 
     @Override

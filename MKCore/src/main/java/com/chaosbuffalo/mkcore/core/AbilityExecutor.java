@@ -228,8 +228,8 @@ public class AbilityExecutor {
         MinecraftForge.EVENT_BUS.post(new EntityAbilityEvent.EntityCompleteAbilityEvent(ability, entityData));
     }
 
-    public void onAbilityUnlearned(MKAbility ability) {
-        updateToggleAbility(ability);
+    public void onAbilityUnlearned(MKAbilityInfo abilityInfo) {
+        updateToggleAbility(abilityInfo.getAbility());
     }
 
     protected ServerCastingState createServerCastingState(AbilityContext context, MKAbilityInfo abilityInfo, int castTime) {

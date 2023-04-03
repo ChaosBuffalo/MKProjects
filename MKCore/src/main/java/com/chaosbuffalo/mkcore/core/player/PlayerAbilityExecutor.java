@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.AbilityExecutor;
-import com.chaosbuffalo.mkcore.core.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import net.minecraft.resources.ResourceLocation;
 
@@ -70,8 +69,7 @@ public class PlayerAbilityExecutor extends AbilityExecutor {
         for (int i = 0; i < group.getMaximumSlotCount(); i++) {
             ResourceLocation abilityId = group.getSlot(i);
             MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-            if (ability instanceof MKToggleAbility) {
-                MKToggleAbility toggle = (MKToggleAbility) ability;
+            if (ability instanceof MKToggleAbility toggle) {
                 toggle.removeEffect(entityData.getEntity(), entityData);
             }
         }
@@ -90,10 +88,8 @@ public class PlayerAbilityExecutor extends AbilityExecutor {
         for (int i = 0; i < group.getMaximumSlotCount(); i++) {
             ResourceLocation abilityId = group.getSlot(i);
             MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-            if (ability instanceof MKToggleAbility) {
-                MKToggleAbility toggle = (MKToggleAbility) ability;
-                if (toggle.isEffectActive(entityData))
-                    setToggleGroupAbility(toggle.getToggleGroupId(), toggle);
+            if (ability instanceof MKToggleAbility toggle && toggle.isEffectActive(entityData)) {
+                setToggleGroupAbility(toggle.getToggleGroupId(), toggle);
             }
         }
     }
