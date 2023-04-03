@@ -19,7 +19,7 @@ public class LookAtThreatTargetGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        Optional<LivingEntity> target = entity.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        Optional<LivingEntity> target = entity.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         if (target.isPresent()) {
             this.target = target.get();
             return true;
@@ -34,7 +34,7 @@ public class LookAtThreatTargetGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        Optional<LivingEntity> target = entity.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        Optional<LivingEntity> target = entity.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         return target.isPresent() && this.target != null && this.target.is(target.get());
     }
 

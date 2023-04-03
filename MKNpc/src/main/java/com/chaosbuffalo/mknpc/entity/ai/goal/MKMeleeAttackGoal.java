@@ -26,7 +26,7 @@ public class MKMeleeAttackGoal extends Goal {
     @Override
     public boolean canUse() {
         Brain<?> brain = entity.getBrain();
-        Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         if (targetOpt.isPresent()) {
             LivingEntity target = targetOpt.get();
             if (isInMeleeRange(target)) {
@@ -111,7 +111,7 @@ public class MKMeleeAttackGoal extends Goal {
     @Override
     public boolean canContinueToUse() {
         Brain<?> brain = entity.getBrain();
-        Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         return target != null && targetOpt.map((ent) -> ent.is(target) && isInMeleeRange(ent)).orElse(false);
     }
 

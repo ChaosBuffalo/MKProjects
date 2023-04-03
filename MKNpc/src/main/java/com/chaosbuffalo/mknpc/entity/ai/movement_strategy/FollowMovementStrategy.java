@@ -24,7 +24,7 @@ public class FollowMovementStrategy extends MovementStrategy {
     @Override
     public void update(ServerLevel world, MKEntity entity) {
         Brain<?> brain = entity.getBrain();
-        Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.MOVEMENT_TARGET);
+        Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get());
         if (targetOpt.isPresent()) {
             LivingEntity target = targetOpt.get();
             if (target.is(entity)) {

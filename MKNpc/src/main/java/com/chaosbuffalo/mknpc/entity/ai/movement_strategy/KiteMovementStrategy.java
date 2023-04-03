@@ -23,7 +23,7 @@ public class KiteMovementStrategy extends MovementStrategy {
     @Override
     public void update(ServerLevel world, MKEntity entity) {
         Brain<?> brain = entity.getBrain();
-        Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.MOVEMENT_TARGET);
+        Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get());
         Optional<WalkTarget> walkTargetOptional = brain.getMemory(MemoryModuleType.WALK_TARGET);
         if (entity.getRandom().nextInt(20) == 0) {
             return;

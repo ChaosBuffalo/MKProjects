@@ -34,10 +34,10 @@ public class LivingEntitiesSensor extends Sensor<MKEntity> {
                 .stream()
                 .sorted(this::sortByHealth)
                 .collect(Collectors.toList());
-        brain.setMemory(MKMemoryModuleTypes.ENEMIES, enemies);
-        brain.setMemory(MKMemoryModuleTypes.ALLIES, friends);
-        brain.setMemory(MKMemoryModuleTypes.VISIBLE_ENEMIES, enemies.stream().filter(x -> entityIn.getSensing().hasLineOfSight(x))
-                .collect(Collectors.toList()));
+        brain.setMemory(MKMemoryModuleTypes.ENEMIES.get(), enemies);
+        brain.setMemory(MKMemoryModuleTypes.ALLIES.get(), friends);
+        brain.setMemory(MKMemoryModuleTypes.VISIBLE_ENEMIES.get(),
+                enemies.stream().filter(x -> entityIn.getSensing().hasLineOfSight(x)).toList());
     }
 
     private int sortByHealth(LivingEntity friend, LivingEntity other) {
@@ -45,7 +45,8 @@ public class LivingEntitiesSensor extends Sensor<MKEntity> {
     }
 
     public Set<MemoryModuleType<?>> requires() {
-        return ImmutableSet.of(MKMemoryModuleTypes.ENEMIES, MKMemoryModuleTypes.ALLIES,
-                MKMemoryModuleTypes.VISIBLE_ENEMIES);
+        return ImmutableSet.of(MKMemoryModuleTypes.ENEMIES.get(),
+                MKMemoryModuleTypes.ALLIES.get(),
+                MKMemoryModuleTypes.VISIBLE_ENEMIES.get());
     }
 }

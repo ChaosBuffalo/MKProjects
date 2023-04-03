@@ -18,7 +18,7 @@ public class MKTargetGoal extends TargetGoal {
 
     @Override
     public boolean canUse() {
-        Optional<LivingEntity> opt = mob.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        Optional<LivingEntity> opt = mob.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         if (opt.isPresent() && (this.targetMob == null || !this.targetMob.is(opt.get()))) {
             this.targetMob = opt.get();
             return true;
@@ -28,7 +28,7 @@ public class MKTargetGoal extends TargetGoal {
 
     @Override
     public boolean canContinueToUse() {
-        Optional<LivingEntity> opt = mob.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        Optional<LivingEntity> opt = mob.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         return opt.isPresent() && opt.get().is(targetMob);
     }
 

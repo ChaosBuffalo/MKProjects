@@ -11,29 +11,29 @@ public class MovementStrategyController {
 
 
     public static void enterMeleeMode(LivingEntity entity, int meleeDistance) {
-        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
+        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
                 new FollowMovementStrategy(1.0f, meleeDistance));
     }
 
     public static void enterFollowMode(LivingEntity entity, int followDistance, LivingEntity followTarget) {
-        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
+        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
                 new FollowMovementStrategy(1.0f, followDistance));
-        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET, followTarget);
+        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get(), followTarget);
     }
 
     public static void enterStationary(LivingEntity entity) {
-        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
+        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
                 StationaryMovementStrategy.STATIONARY_MOVEMENT_STRATEGY);
     }
 
     public static void enterCastingMode(LivingEntity entity, double castingDistance) {
-        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
+        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
                 new KiteMovementStrategy(castingDistance));
     }
 
     public static void enterRandomWander(LivingEntity entity) {
-        entity.getBrain().eraseMemory(MKMemoryModuleTypes.MOVEMENT_TARGET);
-        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
+        entity.getBrain().eraseMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get());
+        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
                 new RandomWanderMovementStrategy(1200));
     }
 }

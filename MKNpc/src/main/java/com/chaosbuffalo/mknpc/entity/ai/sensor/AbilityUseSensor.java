@@ -29,11 +29,11 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
 
     @Override
     protected void doTick(@Nonnull ServerLevel worldIn, MKEntity entityIn) {
-        Optional<MKAbility> abilityOptional = entityIn.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
-        int timeOut = entityIn.getBrain().getMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT).orElse(0);
+        Optional<MKAbility> abilityOptional = entityIn.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get());
+        int timeOut = entityIn.getBrain().getMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT.get()).orElse(0);
         boolean isCasting = MKCore.getEntityData(entityIn).map(data -> data.getAbilityExecutor().isCasting()).orElse(false);
         if (abilityOptional.isPresent() && !isCasting && timeOut <= 20) {
-            entityIn.getBrain().setMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT, timeOut + 1);
+            entityIn.getBrain().setMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT.get(), timeOut + 1);
             return;
         }
         entityIn.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent(mkEntityData -> {
@@ -50,11 +50,11 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
                 if (mkAbility.isValidTarget(entityIn, targetSelection.getTargetEntity())) {
                     entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_TARGET.get(), targetSelection.getTargetEntity());
                     entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_POSITION_TARGET.get(), new TargetUtil.LivingOrPosition(targetSelection.getTargetEntity()));
-                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.CURRENT_ABILITY, mkAbility);
-                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
+                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get(), mkAbility);
+                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
                             entityIn.getMovementStrategy(targetSelection));
-                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET, targetSelection.getTargetEntity());
-                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT, 0);
+                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get(), targetSelection.getTargetEntity());
+                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT.get(), 0);
                     return;
                 }
             }
@@ -63,17 +63,17 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
 
     @Nonnull
     private AbilityDecisionContext createAbilityDecisionContext(MKEntity entityIn) {
-        Optional<LivingEntity> targetOptional = entityIn.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        Optional<LivingEntity> targetOptional = entityIn.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         return new AbilityDecisionContext(entityIn, targetOptional.orElse(null),
-                entityIn.getBrain().getMemory(MKMemoryModuleTypes.ALLIES).orElse(Collections.emptyList()),
-                entityIn.getBrain().getMemory(MKMemoryModuleTypes.ENEMIES).orElse(Collections.emptyList()));
+                entityIn.getBrain().getMemory(MKMemoryModuleTypes.ALLIES.get()).orElse(Collections.emptyList()),
+                entityIn.getBrain().getMemory(MKMemoryModuleTypes.ENEMIES.get()).orElse(Collections.emptyList()));
     }
 
     @Nonnull
     @Override
     public Set<MemoryModuleType<?>> requires() {
-        return ImmutableSet.of(MKMemoryModuleTypes.CURRENT_ABILITY, MKMemoryModuleTypes.THREAT_TARGET,
-                MKAbilityMemories.ABILITY_TARGET.get(), MKMemoryModuleTypes.ALLIES, MKMemoryModuleTypes.ENEMIES,
-                MKMemoryModuleTypes.MOVEMENT_STRATEGY, MKMemoryModuleTypes.ABILITY_TIMEOUT, MKAbilityMemories.ABILITY_POSITION_TARGET.get());
+        return ImmutableSet.of(MKMemoryModuleTypes.CURRENT_ABILITY.get(), MKMemoryModuleTypes.THREAT_TARGET.get(),
+                MKAbilityMemories.ABILITY_TARGET.get(), MKMemoryModuleTypes.ALLIES.get(), MKMemoryModuleTypes.ENEMIES.get(),
+                MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(), MKMemoryModuleTypes.ABILITY_TIMEOUT.get(), MKAbilityMemories.ABILITY_POSITION_TARGET.get());
     }
 }

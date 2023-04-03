@@ -11,24 +11,25 @@ import java.util.Set;
 
 public class MovementStrategySensor extends Sensor<MKEntity> {
 
-
-    @Override
-    protected void doTick(ServerLevel worldIn, MKEntity entityIn) {
-        if ((entityIn.avoidsWater() && entityIn.isInWater()) || entityIn.getBrain().getMemory(MKMemoryModuleTypes.IS_RETURNING).orElse(false)) {
-            return;
-        }
-        entityIn.getBrain().getMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY).ifPresent(
-                movementStrategy -> movementStrategy.update(worldIn, entityIn));
-
-    }
-
     public MovementStrategySensor() {
         super(5);
     }
 
     @Override
+    protected void doTick(ServerLevel worldIn, MKEntity entityIn) {
+        if ((entityIn.avoidsWater() && entityIn.isInWater()) || entityIn.getBrain().getMemory(MKMemoryModuleTypes.IS_RETURNING.get()).orElse(false)) {
+            return;
+        }
+        entityIn.getBrain().getMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get())
+                .ifPresent(movementStrategy -> movementStrategy.update(worldIn, entityIn));
+    }
+
+    @Override
     public Set<MemoryModuleType<?>> requires() {
-        return ImmutableSet.of(MKMemoryModuleTypes.THREAT_TARGET, MKMemoryModuleTypes.VISIBLE_ENEMIES,
-                MemoryModuleType.WALK_TARGET, MKMemoryModuleTypes.MOVEMENT_STRATEGY, MKMemoryModuleTypes.IS_RETURNING);
+        return ImmutableSet.of(MKMemoryModuleTypes.THREAT_TARGET.get(),
+                MKMemoryModuleTypes.VISIBLE_ENEMIES.get(),
+                MemoryModuleType.WALK_TARGET,
+                MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
+                MKMemoryModuleTypes.IS_RETURNING.get());
     }
 }

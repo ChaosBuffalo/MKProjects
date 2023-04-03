@@ -32,16 +32,15 @@ public class ThreatSensor extends Sensor<MKEntity> {
 
     @Override
     protected void doTick(ServerLevel worldIn, MKEntity entityIn) {
-        Optional<List<LivingEntity>> enemyOpt = entityIn.getBrain().getMemory(MKMemoryModuleTypes.VISIBLE_ENEMIES);
-        Optional<Map<LivingEntity, ThreatMapEntry>> opt = entityIn.getBrain().getMemory(
-                MKMemoryModuleTypes.THREAT_MAP);
-        Map<LivingEntity, ThreatMapEntry> threatMap = opt.orElse(new HashMap<>());
-        Optional<LivingEntity> targetOpt = entityIn.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET);
-        Optional<Boolean> isReturningOpt = entityIn.getBrain().getMemory(MKMemoryModuleTypes.IS_RETURNING);
+        Optional<List<LivingEntity>> enemyOpt = entityIn.getBrain().getMemory(MKMemoryModuleTypes.VISIBLE_ENEMIES.get());
+        Map<LivingEntity, ThreatMapEntry> threatMap = entityIn.getBrain().getMemory(MKMemoryModuleTypes.THREAT_MAP.get())
+                .orElseGet(HashMap::new);
+        Optional<LivingEntity> targetOpt = entityIn.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
+        Optional<Boolean> isReturningOpt = entityIn.getBrain().getMemory(MKMemoryModuleTypes.IS_RETURNING.get());
         if (targetOpt.isPresent() && (!targetOpt.get().isAlive() || isReturningOpt.isPresent())) {
-            entityIn.getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_TARGET);
+            entityIn.getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         }
-        if (enemyOpt.isPresent() && !isReturningOpt.isPresent()) {
+        if (enemyOpt.isPresent() && isReturningOpt.isEmpty()) {
             List<LivingEntity> enemies = enemyOpt.get();
             for (LivingEntity enemy : enemies) {
                 double dist2 = entityIn.distanceToSqr(enemy);
@@ -66,18 +65,18 @@ public class ThreatSensor extends Sensor<MKEntity> {
             }
             List<Map.Entry<LivingEntity, ThreatMapEntry>> sortedThreat = threatMap.entrySet().stream()
                     .sorted(Comparator.comparingDouble(entry -> -entry.getValue().getCurrentThreat()))
-                    .collect(Collectors.toList());
-            entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_MAP, threatMap);
-            entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_LIST, sortedThreat.stream()
+                    .toList();
+            entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_MAP.get(), threatMap);
+            entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_LIST.get(), sortedThreat.stream()
                     .map(Map.Entry::getKey).collect(Collectors.toList()));
             if (sortedThreat.size() > 0) {
                 Map.Entry<LivingEntity, ThreatMapEntry> ent = sortedThreat.get(0);
-                if (!entityIn.getBrain().hasMemoryValue(MKMemoryModuleTypes.THREAT_TARGET)) {
+                if (!entityIn.getBrain().hasMemoryValue(MKMemoryModuleTypes.THREAT_TARGET.get())) {
                     entityIn.callForHelp(ent.getKey(), ent.getValue().getCurrentThreat());
                 }
-                entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_TARGET, ent.getKey());
+                entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_TARGET.get(), ent.getKey());
             } else {
-                entityIn.getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_TARGET);
+                entityIn.getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
 
             }
         }
@@ -85,7 +84,9 @@ public class ThreatSensor extends Sensor<MKEntity> {
 
     @Override
     public Set<MemoryModuleType<?>> requires() {
-        return ImmutableSet.of(MKMemoryModuleTypes.THREAT_MAP, MKMemoryModuleTypes.VISIBLE_ENEMIES,
-                MKMemoryModuleTypes.THREAT_LIST, MKMemoryModuleTypes.IS_RETURNING);
+        return ImmutableSet.of(MKMemoryModuleTypes.THREAT_MAP.get(),
+                MKMemoryModuleTypes.VISIBLE_ENEMIES.get(),
+                MKMemoryModuleTypes.THREAT_LIST.get(),
+                MKMemoryModuleTypes.IS_RETURNING.get());
     }
 }

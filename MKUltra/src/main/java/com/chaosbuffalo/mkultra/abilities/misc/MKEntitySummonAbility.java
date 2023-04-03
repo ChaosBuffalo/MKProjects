@@ -82,7 +82,8 @@ public class MKEntitySummonAbility extends MKAbility {
         if (!casterData.getPets().isPetActive(getAbilityId())) {
             NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefintion.getValue());
             if (def != null && target.getPosition().isPresent()) {
-                UUID id = casterData instanceof MKPlayerData ? ((MKPlayerData) casterData).getPersonaManager().getActivePersona().getPersonaId() :
+                UUID id = casterData instanceof MKPlayerData playerData ?
+                        playerData.getPersonaManager().getActivePersona().getPersonaId() :
                         MKNpc.getNpcData(castingEntity).map(IEntityNpcData::getSpawnID).orElse(castingEntity.getUUID());
                 Entity entity = def.createEntity(castingEntity.getCommandSenderWorld(), target.getPosition().get(), id, getSkillLevel(castingEntity, summoningSkill));
                 MKPet<MKEntity> pet = MKPet.makePetFromEntity(MKEntity.class, getAbilityId(), entity);
@@ -120,7 +121,7 @@ public class MKEntitySummonAbility extends MKAbility {
                             if (Targeting.isValidEnemy(castingEntity, tar)) {
                                 float newThreat = x.getEntity().getHighestThreat() + 500.0f;
                                 x.getEntity().addThreat(tar, newThreat, true);
-                                x.getEntity().getBrain().eraseMemory(MKMemoryModuleTypes.SPAWN_POINT);
+                                x.getEntity().getBrain().eraseMemory(MKMemoryModuleTypes.SPAWN_POINT.get());
                                 if (x.getEntity() instanceof Mob) {
                                     ((Mob) x.getEntity()).getNavigation().stop();
                                 }

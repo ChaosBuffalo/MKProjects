@@ -51,7 +51,7 @@ public class MKBowAttackGoal extends Goal {
             return false;
         }
         Brain<?> brain = entity.getBrain();
-        Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         if (targetOpt.isPresent()) {
             LivingEntity target = targetOpt.get();
             if (isInReach(target) && entity.getSensing().hasLineOfSight(target)) {
@@ -69,7 +69,7 @@ public class MKBowAttackGoal extends Goal {
     @Override
     public boolean canContinueToUse() {
         Brain<?> brain = entity.getBrain();
-        Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         return target != null && seeTime >= -SEE_TIME_TIMEOUT && ItemUtils.isRangedWeapon(entity.getMainHandItem()) && targetOpt.map(
                 (ent) -> ent.is(target) && isInReach(ent)).orElse(false);
     }

@@ -25,8 +25,8 @@ public class RandomWanderMovementStrategy extends MovementStrategy {
     public void update(ServerLevel world, MKEntity entity) {
         Brain<?> brain = entity.getBrain();
         Optional<WalkTarget> walkTargetOptional = brain.getMemory(MemoryModuleType.WALK_TARGET);
-        Optional<BlockPos> spawnPointOptional = brain.getMemory(MKMemoryModuleTypes.SPAWN_POINT);
-        if (!walkTargetOptional.isPresent() || entity.getRandom().nextInt(positionChance) == 0 || entity.getNavigation().isDone()) {
+        Optional<BlockPos> spawnPointOptional = brain.getMemory(MKMemoryModuleTypes.SPAWN_POINT.get());
+        if (walkTargetOptional.isEmpty() || entity.getRandom().nextInt(positionChance) == 0 || entity.getNavigation().isDone()) {
             Vec3 position = spawnPointOptional.map(blockPos -> {
                 Vec3 vecPos = Vec3.atLowerCornerOf(blockPos);
                 if (entity.distanceToSqr(vecPos) > entity.getWanderRange() * entity.getWanderRange()) {

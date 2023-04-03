@@ -63,7 +63,10 @@ import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -73,7 +76,6 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("EntityConstructor")
 public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, IUpdateEngineProvider, IMKPet, ITargetingOwner {
@@ -293,9 +295,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     public void attackEntityWithRangedAttack(LivingEntity target, float launchPower, float launchVelocity) {
         ItemStack arrowStack = this.getProjectile(this.getItemInHand(InteractionHand.MAIN_HAND));
         AbstractArrow arrowEntity = ProjectileUtil.getMobArrow(this, arrowStack, launchPower);
-        Item mainhand = this.getMainHandItem().getItem();
-        if (mainhand instanceof BowItem) {
-            arrowEntity = ((BowItem) this.getMainHandItem().getItem()).customArrow(arrowEntity);
+        if (getMainHandItem().getItem() instanceof BowItem bow) {
+            arrowEntity = bow.customArrow(arrowEntity);
         }
         EntityUtils.shootArrow(this, arrowEntity, target, launchPower * launchVelocity);
         this.playSound(getShootSound(), 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
@@ -350,11 +351,11 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     public void callForHelp(LivingEntity entity, float threatVal) {
-        brain.getMemory(MKMemoryModuleTypes.ALLIES).ifPresent(x -> {
+        brain.getMemory(MKMemoryModuleTypes.ALLIES.get()).ifPresent(x -> {
             x.forEach(ent -> {
-                if (ent instanceof MKEntity) {
-                    if (ent.distanceToSqr(this) < 9.0) {
-                        ((MKEntity) ent).addThreat(entity, threatVal, true);
+                if (ent.distanceToSqr(this) < 9.0) {
+                    if (ent instanceof MKEntity mkEntity) {
+                        mkEntity.addThreat(entity, threatVal, true);
                     }
                 }
             });
@@ -425,9 +426,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     @Override
     public void clearThreat() {
-        getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_MAP);
-        getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_TARGET);
-        getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_LIST);
+        getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_MAP.get());
+        getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
+        getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_LIST.get());
     }
 
     @Override
@@ -487,7 +488,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         SpawnGroupData entityData = super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
         this.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).ifPresent((cap) -> {
             if (cap.wasMKSpawned()) {
-                getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT, cap.getSpawnPos());
+                getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT.get(), cap.getSpawnPos());
             }
         });
         enterNonCombatMovementState();
@@ -496,10 +497,10 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     @Override
     public void addThreat(LivingEntity entity, float value, boolean propagate) {
-        Optional<Map<LivingEntity, ThreatMapEntry>> threatMap = this.brain.getMemory(MKMemoryModuleTypes.THREAT_MAP);
-        Map<LivingEntity, ThreatMapEntry> newMap = threatMap.orElse(new HashMap<>());
+        Map<LivingEntity, ThreatMapEntry> newMap = brain.getMemory(MKMemoryModuleTypes.THREAT_MAP.get())
+                .orElseGet(HashMap::new);
         newMap.put(entity, newMap.getOrDefault(entity, new ThreatMapEntry()).addThreat(value));
-        this.brain.setMemory(MKMemoryModuleTypes.THREAT_MAP, newMap);
+        this.brain.setMemory(MKMemoryModuleTypes.THREAT_MAP.get(), newMap);
         if (propagate) {
             MKCore.getEntityData(this).ifPresent(x -> {
                 if (x.getPets().hasPet()) {
@@ -533,7 +534,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         attackStrengthTicker++;
         super.aiStep();
         if (nonCombatBehavior != null && !hasThreatTarget()) {
-            nonCombatBehavior.getEntity().ifPresent(x -> getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT, x.blockPosition()));
+            nonCombatBehavior.getEntity().ifPresent(x -> getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT.get(), x.blockPosition()));
         }
     }
 
@@ -567,7 +568,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     public void returnToDefaultMovementState() {
-        LivingEntity target = getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET).orElse(null);
+        LivingEntity target = getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET.get()).orElse(null);
         if (target != null) {
             enterCombatMovementState(target);
         } else {
@@ -604,18 +605,11 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     @Override
     public void enterCombatMovementState(LivingEntity target) {
-        getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET, target);
+        getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get(), target);
         switch (getCombatMoveType()) {
-            case STATIONARY:
-                MovementStrategyController.enterStationary(this);
-                break;
-            case RANGE:
-                MovementStrategyController.enterCastingMode(this, 6.0);
-                break;
-            case MELEE:
-            default:
-                MovementStrategyController.enterMeleeMode(this, 1);
-                break;
+            case STATIONARY -> MovementStrategyController.enterStationary(this);
+            case RANGE -> MovementStrategyController.enterCastingMode(this, 6.0);
+            default -> MovementStrategyController.enterMeleeMode(this, 1);
         }
     }
 
@@ -625,30 +619,25 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             if (nonCombatBehavior.getBehaviorType() == PetNonCombatBehavior.Behavior.FOLLOW) {
                 nonCombatBehavior.getEntity().ifPresent(x -> MovementStrategyController.enterFollowMode(this, 2, x));
             } else if (nonCombatBehavior.getBehaviorType() == PetNonCombatBehavior.Behavior.GUARD) {
-                nonCombatBehavior.getPos().ifPresent(x -> getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT, new BlockPos(x)));
+                nonCombatBehavior.getPos().ifPresent(x -> getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT.get(), new BlockPos(x)));
             }
         } else {
             switch (getNonCombatMoveType()) {
-                case RANDOM_WANDER:
-                    MovementStrategyController.enterRandomWander(this);
-                    break;
-                case STATIONARY:
-                default:
-                    MovementStrategyController.enterStationary(this);
-                    break;
+                case RANDOM_WANDER -> MovementStrategyController.enterRandomWander(this);
+                default -> MovementStrategyController.enterStationary(this);
             }
         }
     }
 
     public boolean hasThreatTarget() {
-        return getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET).isPresent();
+        return getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET.get()).isPresent();
     }
 
     public void reduceThreat(LivingEntity entity, float value) {
-        Optional<Map<LivingEntity, ThreatMapEntry>> threatMap = this.brain.getMemory(MKMemoryModuleTypes.THREAT_MAP);
+        Optional<Map<LivingEntity, ThreatMapEntry>> threatMap = this.brain.getMemory(MKMemoryModuleTypes.THREAT_MAP.get());
         Map<LivingEntity, ThreatMapEntry> newMap = threatMap.orElse(new HashMap<>());
         newMap.put(entity, newMap.getOrDefault(entity, new ThreatMapEntry()).subtractThreat(value));
-        this.brain.setMemory(MKMemoryModuleTypes.THREAT_MAP, newMap);
+        this.brain.setMemory(MKMemoryModuleTypes.THREAT_MAP.get(), newMap);
     }
 
     @Override
@@ -711,8 +700,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        if (source.getEntity() instanceof LivingEntity) {
-            addThreat((LivingEntity) source.getEntity(), amount * NpcConstants.DAMAGE_THREAT_MULTIPLIER, true);
+        if (source.getEntity() instanceof LivingEntity livingEntity) {
+            addThreat(livingEntity, amount * NpcConstants.DAMAGE_THREAT_MULTIPLIER, true);
         }
         return super.hurt(source, amount);
     }
@@ -731,7 +720,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     public boolean hasThreatWithTarget(LivingEntity target) {
-        return getBrain().getMemory(MKMemoryModuleTypes.THREAT_MAP).map(x -> x.containsKey(target)).orElse(false);
+        return getBrain().getMemory(MKMemoryModuleTypes.THREAT_MAP.get()).map(x -> x.containsKey(target)).orElse(false);
     }
 
     @Override
@@ -746,14 +735,13 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     public InteractionResult interactAt(Player player, Vec3 vec, InteractionHand hand) {
         if (hand.equals(InteractionHand.MAIN_HAND) && getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
                 .map((cap) -> cap.getRelationToEntity(player) != Targeting.TargetRelation.ENEMY).orElse(false)) {
-            if (!player.level.isClientSide() && player instanceof ServerPlayer) {
+            if (!player.level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
                 if (player.isShiftKeyDown()) {
                     player.openMenu(entityTradeContainer);
                 } else {
-                    getCapability(ChatCapabilities.NPC_DIALOGUE_CAPABILITY).ifPresent(cap ->
-                            cap.startDialogue((ServerPlayer) player, false));
+                    getCapability(ChatCapabilities.NPC_DIALOGUE_CAPABILITY)
+                            .ifPresent(cap -> cap.hail(serverPlayer));
                 }
-
             }
             return InteractionResult.CONSUME;
         }
@@ -762,10 +750,10 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     @Override
     public float getHighestThreat() {
-        return getBrain().getMemory(MKMemoryModuleTypes.THREAT_MAP).map(x -> {
+        return getBrain().getMemory(MKMemoryModuleTypes.THREAT_MAP.get()).map(x -> {
             List<ThreatMapEntry> sorted = x.values().stream()
                     .sorted(Comparator.comparingDouble(ThreatMapEntry::getCurrentThreat))
-                    .collect(Collectors.toList());
+                    .toList();
             if (sorted.size() == 0) {
                 return 0f;
             }
@@ -783,34 +771,34 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     protected Brain.Provider<?> brainProvider() {
         return Brain.provider(
                 ImmutableList.of(
-                        MKMemoryModuleTypes.ALLIES,
-                        MKMemoryModuleTypes.ENEMIES,
-                        MKMemoryModuleTypes.THREAT_LIST,
-                        MKMemoryModuleTypes.THREAT_MAP,
-                        MKMemoryModuleTypes.VISIBLE_ENEMIES,
+                        MKMemoryModuleTypes.ALLIES.get(),
+                        MKMemoryModuleTypes.ENEMIES.get(),
+                        MKMemoryModuleTypes.THREAT_LIST.get(),
+                        MKMemoryModuleTypes.THREAT_MAP.get(),
+                        MKMemoryModuleTypes.VISIBLE_ENEMIES.get(),
                         MemoryModuleType.WALK_TARGET,
                         MemoryModuleType.PATH,
-                        MKMemoryModuleTypes.MOVEMENT_STRATEGY,
-                        MKMemoryModuleTypes.MOVEMENT_TARGET,
-                        MKMemoryModuleTypes.CURRENT_ABILITY,
+                        MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
+                        MKMemoryModuleTypes.MOVEMENT_TARGET.get(),
+                        MKMemoryModuleTypes.CURRENT_ABILITY.get(),
                         MKAbilityMemories.ABILITY_TARGET.get(),
-                        MKMemoryModuleTypes.SPAWN_POINT,
-                        MKMemoryModuleTypes.IS_RETURNING,
-                        MKMemoryModuleTypes.ABILITY_TIMEOUT,
+                        MKMemoryModuleTypes.SPAWN_POINT.get(),
+                        MKMemoryModuleTypes.IS_RETURNING.get(),
+                        MKMemoryModuleTypes.ABILITY_TIMEOUT.get(),
                         MKAbilityMemories.ABILITY_POSITION_TARGET.get()
                 ),
                 ImmutableList.of(
-                        MKSensorTypes.ENTITIES_SENSOR,
-                        MKSensorTypes.THREAT_SENSOR,
-                        MKSensorTypes.DESTINATION_SENSOR,
-                        MKSensorTypes.ABILITY_SENSOR
+                        MKSensorTypes.ENTITIES_SENSOR.get(),
+                        MKSensorTypes.THREAT_SENSOR.get(),
+                        MKSensorTypes.DESTINATION_SENSOR.get(),
+                        MKSensorTypes.ABILITY_SENSOR.get()
                 ));
     }
 
     @Override
     public ItemStack getProjectile(ItemStack shootable) {
-        if (shootable.getItem() instanceof ProjectileWeaponItem) {
-            Predicate<ItemStack> predicate = ((ProjectileWeaponItem) shootable.getItem()).getSupportedHeldProjectiles();
+        if (shootable.getItem() instanceof ProjectileWeaponItem projectileWeaponItem) {
+            Predicate<ItemStack> predicate = projectileWeaponItem.getSupportedHeldProjectiles();
             ItemStack itemstack = ProjectileWeaponItem.getHeldProjectile(this, predicate);
             return itemstack.isEmpty() ? new ItemStack(Items.ARROW) : itemstack;
         } else {

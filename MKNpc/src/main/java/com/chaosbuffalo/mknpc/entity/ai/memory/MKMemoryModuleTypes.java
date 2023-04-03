@@ -7,82 +7,57 @@ import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.MovementStrategy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Mod.EventBusSubscriber(modid = MKNpc.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MKMemoryModuleTypes {
 
-    @ObjectHolder("mknpc:allies")
-    public static MemoryModuleType<List<LivingEntity>> ALLIES;
+    private static final DeferredRegister<MemoryModuleType<?>> REGISTRY =
+            DeferredRegister.create(ForgeRegistries.MEMORY_MODULE_TYPES, MKNpc.MODID);
 
-    @ObjectHolder("mknpc:enemies")
-    public static MemoryModuleType<List<LivingEntity>> ENEMIES;
+    public static final RegistryObject<MemoryModuleType<List<LivingEntity>>> ALLIES = REGISTRY.register("allies",
+            () -> new MemoryModuleType<>(Optional.empty()));
 
-    @ObjectHolder("mknpc:visible_enemies")
-    public static MemoryModuleType<List<LivingEntity>> VISIBLE_ENEMIES;
+    public static final RegistryObject<MemoryModuleType<List<LivingEntity>>> ENEMIES = REGISTRY.register("enemies",
+            () -> new MemoryModuleType<>(Optional.empty()));
 
-    @ObjectHolder("mknpc:threat_map")
-    public static MemoryModuleType<Map<LivingEntity, ThreatMapEntry>> THREAT_MAP;
+    public static final RegistryObject<MemoryModuleType<List<LivingEntity>>> VISIBLE_ENEMIES = REGISTRY.register("visible_enemies",
+            () -> new MemoryModuleType<>(Optional.empty()));
 
-    @ObjectHolder("mknpc:threat_list")
-    public static MemoryModuleType<List<LivingEntity>> THREAT_LIST;
+    public static final RegistryObject<MemoryModuleType<Map<LivingEntity, ThreatMapEntry>>> THREAT_MAP = REGISTRY.register("threat_map",
+            () -> new MemoryModuleType<>(Optional.empty()));
 
-    @ObjectHolder("mknpc:threat_target")
-    public static MemoryModuleType<LivingEntity> THREAT_TARGET;
+    public static final RegistryObject<MemoryModuleType<List<LivingEntity>>> THREAT_LIST = REGISTRY.register("threat_list",
+            () -> new MemoryModuleType<>(Optional.empty()));
 
-    @ObjectHolder("mknpc:movement_strategy")
-    public static MemoryModuleType<MovementStrategy> MOVEMENT_STRATEGY;
+    public static final RegistryObject<MemoryModuleType<LivingEntity>> THREAT_TARGET = REGISTRY.register("threat_target",
+            () -> new MemoryModuleType<>(Optional.empty()));
 
-    @ObjectHolder("mknpc:movement_target")
-    public static MemoryModuleType<LivingEntity> MOVEMENT_TARGET;
+    public static final RegistryObject<MemoryModuleType<MovementStrategy>> MOVEMENT_STRATEGY = REGISTRY.register("movement_strategy",
+            () -> new MemoryModuleType<>(Optional.empty()));
 
-    @ObjectHolder("mknpc:current_ability")
-    public static MemoryModuleType<MKAbility> CURRENT_ABILITY;
+    public static final RegistryObject<MemoryModuleType<LivingEntity>> MOVEMENT_TARGET = REGISTRY.register("movement_target",
+            () -> new MemoryModuleType<>(Optional.empty()));
 
-    @ObjectHolder("mknpc:spawn_point")
-    public static MemoryModuleType<BlockPos> SPAWN_POINT;
+    public static final RegistryObject<MemoryModuleType<MKAbility>> CURRENT_ABILITY = REGISTRY.register("current_ability",
+            () -> new MemoryModuleType<>(Optional.empty()));
 
-    @ObjectHolder("mknpc:is_returning")
-    public static MemoryModuleType<Boolean> IS_RETURNING;
+    public static final RegistryObject<MemoryModuleType<BlockPos>> SPAWN_POINT = REGISTRY.register("spawn_point",
+            () -> new MemoryModuleType<>(Optional.empty()));
 
-    @ObjectHolder("mknpc:ability_timeout")
-    public static MemoryModuleType<Integer> ABILITY_TIMEOUT;
+    public static final RegistryObject<MemoryModuleType<Boolean>> IS_RETURNING = REGISTRY.register("is_returning",
+            () -> new MemoryModuleType<>(Optional.empty()));
 
+    public static final RegistryObject<MemoryModuleType<Integer>> ABILITY_TIMEOUT = REGISTRY.register("ability_timeout",
+            () -> new MemoryModuleType<>(Optional.empty()));
 
-    @SubscribeEvent
-    public static void registerModuleTypes(RegistryEvent.Register<MemoryModuleType<?>> evt) {
-        evt.getRegistry().register(new MemoryModuleType<List<LivingEntity>>(Optional.empty())
-                .setRegistryName(MKNpc.MODID, "allies"));
-        evt.getRegistry().register(new MemoryModuleType<List<LivingEntity>>(Optional.empty())
-                .setRegistryName(MKNpc.MODID, "enemies"));
-        evt.getRegistry().register(new MemoryModuleType<List<LivingEntity>>(Optional.empty())
-                .setRegistryName(MKNpc.MODID, "visible_enemies"));
-        evt.getRegistry().register(new MemoryModuleType<Map<LivingEntity, ThreatMapEntry>>(Optional.empty())
-                .setRegistryName(MKNpc.MODID, "threat_map"));
-        evt.getRegistry().register(new MemoryModuleType<List<LivingEntity>>(Optional.empty())
-                .setRegistryName(MKNpc.MODID, "threat_list"));
-        evt.getRegistry().register(new MemoryModuleType<LivingEntity>(Optional.empty())
-                .setRegistryName(MKNpc.MODID, "threat_target"));
-        evt.getRegistry().register(new MemoryModuleType<MovementStrategy>(Optional.empty())
-                .setRegistryName(MKNpc.MODID, "movement_strategy"));
-        evt.getRegistry().register(new MemoryModuleType<LivingEntity>(Optional.empty())
-                .setRegistryName(MKNpc.MODID, "movement_target"));
-        evt.getRegistry().register(new MemoryModuleType<MKAbility>(Optional.empty())
-                .setRegistryName(MKNpc.MODID, "current_ability"));
-        evt.getRegistry().register(new MemoryModuleType<BlockPos>(Optional.empty())
-                .setRegistryName(MKNpc.MODID, "spawn_point"));
-        evt.getRegistry().register(new MemoryModuleType<Boolean>(Optional.empty())
-                .setRegistryName(MKNpc.MODID, "is_returning"));
-        evt.getRegistry().register(new MemoryModuleType<Integer>(Optional.empty())
-                .setRegistryName(MKNpc.MODID, "ability_timeout"));
+    public static void register(IEventBus modBus) {
+        REGISTRY.register(modBus);
     }
-
-
 }
