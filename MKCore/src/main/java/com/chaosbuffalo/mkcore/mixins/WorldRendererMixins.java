@@ -50,8 +50,8 @@ public abstract class WorldRendererMixins {
 
         //draw clouds early before particles
         Minecraft mc = Minecraft.getInstance();
+        savedOption = mc.options.getCloudsType();
         if (mc.options.renderClouds == CloudStatus.OFF) {
-            savedOption = mc.options.getCloudsType();
             return;
         }
         ProfilerFiller profilerfiller = level.getProfiler();
@@ -59,8 +59,9 @@ public abstract class WorldRendererMixins {
         double d0 = vector3d.x();
         double d1 = vector3d.y();
         double d2 = vector3d.z();
-        p_109600_.pushPose();
-        p_109600_.mulPoseMatrix(p_109600_.last().pose());
+        PoseStack posestack = RenderSystem.getModelViewStack();
+        posestack.pushPose();
+        posestack.mulPoseMatrix(p_109600_.last().pose());
         RenderSystem.applyModelViewMatrix();
         if (mc.options.getCloudsType() != CloudStatus.OFF) {
             if (this.transparencyChain != null) {
@@ -75,7 +76,7 @@ public abstract class WorldRendererMixins {
                 this.renderClouds(p_109600_, p_109607_, p_109601_, d0, d1, d2);
             }
         }
-        p_109600_.popPose();
+        posestack.popPose();
         //pretend clouds are off for rest of render loop, disables vanilla cloud rendering since we just did it
         mc.options.renderClouds = CloudStatus.OFF;
 
