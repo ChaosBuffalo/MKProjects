@@ -34,17 +34,13 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     protected final AbilityGroupId groupId;
 
     public AbilityGroup(MKPlayerData playerData, String name, AbilityGroupId groupId) {
-        this(playerData, name, groupId, groupId.getDefaultSlots(), groupId.getMaxSlots());
-    }
-
-    public AbilityGroup(MKPlayerData playerData, String name, AbilityGroupId groupId, int defaultSize, int max) {
         sync = new SyncComponent(name);
         this.playerData = playerData;
         this.name = name;
         this.groupId = groupId;
-        activeAbilities = NonNullList.withSize(max, MKCoreRegistry.INVALID_ABILITY);
+        activeAbilities = NonNullList.withSize(groupId.getMaxSlots(), MKCoreRegistry.INVALID_ABILITY);
         activeUpdater = new ResourceListUpdater("active", () -> activeAbilities);
-        slots = new SyncInt("slots", defaultSize);
+        slots = new SyncInt("slots", groupId.getDefaultSlots());
         addSyncPrivate(activeUpdater);
         addSyncPrivate(slots);
     }
@@ -269,20 +265,39 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         clearAbility(abilityId);
     }
 
+    private void rebuildActiveToggleMap() {
+        // Inspect the player's action bar and see if there are any toggle abilities slotted.
+        // If there are, and the corresponding toggle effect is active on the player, set the toggle exclusive group
+        for (int i = 0; i < getMaximumSlotCount(); i++) {
+            MKAbilityInfo abilityInfo = getAbilityInfo(i);
+            if (abilityInfo != null && abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
+                if (toggle.isEffectActive(playerData)) {
+                    playerData.getAbilityExecutor().setToggleGroupAbility(toggle.getToggleGroupId(), toggle);
+                }
+            }
+        }
+    }
+
+    private void deactivateCurrentToggleAbilities() {
+        for (int i = 0; i < getMaximumSlotCount(); i++) {
+            MKAbilityInfo abilityInfo = getAbilityInfo(i);
+            if (abilityInfo != null && abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
+                toggle.removeEffect(playerData.getEntity(), playerData);
+            }
+        }
+    }
+
     public void onJoinWorld() {
 
     }
 
     public void onPersonaActivated() {
-        onPersonaSwitch();
+        activeAbilities.forEach(this::ensureValidAbility);
+        rebuildActiveToggleMap();
     }
 
     public void onPersonaDeactivated() {
-
-    }
-
-    protected void onPersonaSwitch() {
-        activeAbilities.forEach(this::ensureValidAbility);
+        deactivateCurrentToggleAbilities();
     }
 
     protected <T> T serialize(DynamicOps<T> ops) {
