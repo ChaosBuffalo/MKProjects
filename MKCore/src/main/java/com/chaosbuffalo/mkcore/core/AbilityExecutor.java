@@ -57,7 +57,7 @@ public class AbilityExecutor {
     }
 
     public void executeAbilityWithContext(ResourceLocation abilityId, AbilityContext context) {
-        MKAbilityInfo info = entityData.getKnowledge().getAbilityKnowledge().getKnownAbility(abilityId);
+        MKAbilityInfo info = entityData.getAbilities().getKnownAbility(abilityId);
         if (info == null)
             return;
 
@@ -372,13 +372,12 @@ public class AbilityExecutor {
     }
 
     private void updateToggleAbility(MKAbility ability) {
-        if (!(ability instanceof MKToggleAbility)) {
+        if (!(ability instanceof MKToggleAbility toggle)) {
             return;
         }
-        MKToggleAbility toggle = (MKToggleAbility) ability;
 
         LivingEntity entity = entityData.getEntity();
-        MKAbilityInfo info = entityData.getKnowledge().getAbilityKnowledge().getKnownAbility(ability.getAbilityId());
+        MKAbilityInfo info = entityData.getAbilities().getKnownAbility(ability.getAbilityId());
         if (info != null) {
             // If this is a toggle ability we must re-apply the effect to make sure it's working at the proper rank
             if (toggle.isEffectActive(entityData)) {
