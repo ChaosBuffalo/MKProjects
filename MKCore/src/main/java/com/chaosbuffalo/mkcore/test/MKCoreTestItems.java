@@ -55,7 +55,6 @@ public class MKCoreTestItems {
     }
 
 
-
     public static void register(IEventBus modBus) {
         ITEMS.register(modBus);
     }

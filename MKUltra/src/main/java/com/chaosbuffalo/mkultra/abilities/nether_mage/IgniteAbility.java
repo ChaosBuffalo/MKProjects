@@ -24,12 +24,12 @@ import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
 public class IgniteAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "ignite_casting");
@@ -96,9 +96,9 @@ public class IgniteAbility extends MKAbility {
         float level = getSkillLevel(entity, MKAttributes.EVOCATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.FireDamage,
-                    base.value(),
-                    scale.value(),
-                    modifierScaling.value())
+                            base.value(),
+                            scale.value(),
+                            modifierScaling.value())
                     .ability(this)
                     .skillLevel(level);
 
@@ -112,7 +112,7 @@ public class IgniteAbility extends MKAbility {
                             .ability(this)
                             .skillLevel(level);
                     MKEffectBuilder<?> particle = MKParticleEffect.from(entity, cast_2_particles.getValue(),
-                            true, new Vec3(0.0, 1.0, 0.0))
+                                    true, new Vec3(0.0, 1.0, 0.0))
                             .ability(this);
                     MKEffectBuilder<?> sound = SoundEffect.from(entity, ModSounds.spell_fire_8.get(), entity.getSoundSource())
                             .ability(this);

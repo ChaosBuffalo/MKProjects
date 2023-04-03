@@ -19,7 +19,7 @@ public class StructureEventManager {
     public static final Map<ResourceLocation, Supplier<StructureEvent>> EVENT_DESERIALIZERS = new HashMap<>();
 
     public static void putRequirementDeserializer(ResourceLocation name,
-                                                  Supplier<StructureEventRequirement> function){
+                                                  Supplier<StructureEventRequirement> function) {
         REQ_DESERIALIZERS.put(name, function);
     }
 
@@ -40,7 +40,7 @@ public class StructureEventManager {
     }
 
     @Nullable
-    public static Supplier<StructureEventRequirement> getRequirementDeserializer(ResourceLocation name){
+    public static Supplier<StructureEventRequirement> getRequirementDeserializer(ResourceLocation name) {
         return REQ_DESERIALIZERS.get(name);
     }
 

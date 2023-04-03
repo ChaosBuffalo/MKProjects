@@ -73,8 +73,8 @@ public class NewFireArmor extends MKAbility {
                 .amplify(level);
 
         MKEffectBuilder<?> particleEffect = MKOldParticleEffect.from(castingEntity, ParticleTypes.FLAME,
-                ParticleEffects.CIRCLE_PILLAR_MOTION, false, new Vec3(1.0, 1.0, 1.0),
-                new Vec3(0.0, 1.0, 0.0), 40, 5, .1f)
+                        ParticleEffects.CIRCLE_PILLAR_MOTION, false, new Vec3(1.0, 1.0, 1.0),
+                        new Vec3(0.0, 1.0, 0.0), 40, 5, .1f)
                 .ability(this)
                 .amplify(level);
 

@@ -23,7 +23,7 @@ public class IncrementableField extends CenteringHorizontalLayout {
         setPaddingRight(2);
         addWidget(text);
         HoverTextButton plusButton = new HoverTextButton(fontRenderer, "+", () -> {
-            if (Screen.hasShiftDown()){
+            if (Screen.hasShiftDown()) {
                 callback.accept(this, getValue() + 10.0);
                 updateText();
             } else {
@@ -33,7 +33,7 @@ public class IncrementableField extends CenteringHorizontalLayout {
         });
         addWidget(plusButton);
         HoverTextButton minusButton = new HoverTextButton(fontRenderer, "-", () -> {
-            if (Screen.hasShiftDown()){
+            if (Screen.hasShiftDown()) {
                 callback.accept(this, getValue() - 10.0);
                 updateText();
             } else {
@@ -56,7 +56,7 @@ public class IncrementableField extends CenteringHorizontalLayout {
         return name;
     }
 
-    public void updateText(){
+    public void updateText() {
         String textStr = String.format("%s: %.2f", getName(), getValue());
         text.setText(textStr);
     }

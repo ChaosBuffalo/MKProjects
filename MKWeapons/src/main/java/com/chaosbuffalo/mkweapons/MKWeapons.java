@@ -6,11 +6,10 @@ import com.chaosbuffalo.mkweapons.command.WeaponsCommands;
 import com.chaosbuffalo.mkweapons.event.MKWeaponsEventHandler;
 import com.chaosbuffalo.mkweapons.extensions.MKWCuriosExtension;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
+import com.chaosbuffalo.mkweapons.items.effects.IWeaponEffectsExtension;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotManager;
-import com.chaosbuffalo.mkweapons.items.effects.IWeaponEffectsExtension;
-import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import com.chaosbuffalo.mkweapons.items.weapon.types.WeaponTypeManager;
 import com.chaosbuffalo.mkweapons.network.PacketHandler;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -29,8 +28,7 @@ import org.apache.logging.log4j.Logger;
 
 
 @Mod(MKWeapons.MODID)
-public class MKWeapons
-{
+public class MKWeapons {
     // Directly reference a log4j logger.
     public static final Logger LOGGER = LogManager.getLogger();
     public static final String MODID = "mkweapons";
@@ -64,8 +62,7 @@ public class MKWeapons
         MKWCuriosExtension.sendExtension();
     }
 
-    private void processIMC(final InterModProcessEvent event)
-    {
+    private void processIMC(final InterModProcessEvent event) {
         LOGGER.info("MKWeapons.processIMC");
         event.getIMCStream().forEach(m -> {
             if (m.getMethod().equals(REGISTER_MK_WEAPONS_EXTENSION)) {
@@ -78,16 +75,16 @@ public class MKWeapons
 
     }
 
-    private void clientSetup(final FMLClientSetupEvent event){
+    private void clientSetup(final FMLClientSetupEvent event) {
         MKWeaponsItems.registerItemProperties();
     }
 
     @SubscribeEvent
-    public void onRegisterCommands(RegisterCommandsEvent event){
+    public void onRegisterCommands(RegisterCommandsEvent event) {
         WeaponsCommands.register(event.getDispatcher());
     }
 
-    public static LazyOptional<IArrowData> getArrowCapability(AbstractArrow entity){
+    public static LazyOptional<IArrowData> getArrowCapability(AbstractArrow entity) {
         return entity.getCapability(WeaponsCapabilities.ARROW_DATA_CAPABILITY);
     }
 }

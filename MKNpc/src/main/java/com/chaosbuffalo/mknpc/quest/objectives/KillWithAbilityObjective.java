@@ -13,20 +13,20 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.EmptyInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class KillWithAbilityObjective extends QuestObjective<EmptyInstanceData> implements IKillObjectiveHandler{
+public class KillWithAbilityObjective extends QuestObjective<EmptyInstanceData> implements IKillObjectiveHandler {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.kill_w_ability");
     protected RegistryEntryAttribute<MKAbility> ability = new RegistryEntryAttribute<>("ability", MKCoreRegistry.ABILITIES, MKCoreRegistry.INVALID_ABILITY);
     protected IntAttribute count = new IntAttribute("count", 1);
@@ -63,10 +63,10 @@ public class KillWithAbilityObjective extends QuestObjective<EmptyInstanceData> 
         return Collections.singletonList(getDescriptionWithKillCount(0));
     }
 
-    private MutableComponent getDescriptionWithKillCount(int count){
+    private MutableComponent getDescriptionWithKillCount(int count) {
         return this.ability.resolve().map(
-                x -> new TranslatableComponent("mknpc.objective.kill_w_ability.desc", x.getAbilityName(),
-                        count, this.count.value()))
+                        x -> new TranslatableComponent("mknpc.objective.kill_w_ability.desc", x.getAbilityName(),
+                                count, this.count.value()))
                 .orElse(new TranslatableComponent("mknpc.objective.kill_w_ability.desc",
                         new TextComponent("Ability Not Found"), count, this.count.value()));
     }
@@ -81,15 +81,15 @@ public class KillWithAbilityObjective extends QuestObjective<EmptyInstanceData> 
     @Override
     public boolean onPlayerKillNpcDefEntity(Player player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
                                             LivingDeathEvent event, QuestData questData, PlayerQuestChainInstance playerChain) {
-        if (event.getSource() instanceof MKDamageSource.AbilityDamage && !isComplete(objectiveData)){
+        if (event.getSource() instanceof MKDamageSource.AbilityDamage && !isComplete(objectiveData)) {
             MKDamageSource.AbilityDamage src = (MKDamageSource.AbilityDamage) event.getSource();
             int currentCount = objectiveData.getInt("killCount");
-            if (src.getAbilityId() != null && src.getAbilityId().equals(ability.getValue())){
+            if (src.getAbilityId() != null && src.getAbilityId().equals(ability.getValue())) {
                 currentCount++;
                 objectiveData.putInt("killCount", currentCount);
                 objectiveData.setDescription(getDescriptionWithKillCount(currentCount));
                 player.sendMessage(getDescriptionWithKillCount(currentCount).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
-                if (currentCount == count.value()){
+                if (currentCount == count.value()) {
                     signalCompleted(objectiveData);
                 }
                 playerChain.notifyDirty();

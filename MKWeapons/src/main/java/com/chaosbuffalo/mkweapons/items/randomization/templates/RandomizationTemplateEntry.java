@@ -10,7 +10,7 @@ public class RandomizationTemplateEntry implements IDynamicMapSerializer {
     public RandomizationTemplate template;
     public double weight;
 
-    public RandomizationTemplateEntry(RandomizationTemplate template, double weight){
+    public RandomizationTemplateEntry(RandomizationTemplate template, double weight) {
         this.template = template;
         this.weight = weight;
     }

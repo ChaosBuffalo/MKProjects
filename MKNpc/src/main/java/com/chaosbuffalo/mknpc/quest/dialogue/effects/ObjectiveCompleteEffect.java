@@ -10,12 +10,11 @@ import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.Util;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 
 import java.util.UUID;
@@ -57,25 +56,25 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
     @Override
     public void applyEffect(ServerPlayer serverPlayerEntity, LivingEntity livingEntity, DialogueNode dialogueNode) {
         MinecraftServer server = serverPlayerEntity.getServer();
-        if (server == null){
+        if (server == null) {
             return;
         }
         Level overworld = server.getLevel(Level.OVERWORLD);
-        if (overworld == null){
+        if (overworld == null) {
             return;
         }
         IPlayerQuestingData questingData = MKNpc.getPlayerQuestData(serverPlayerEntity).resolve().orElse(null);
-        if (questingData == null){
+        if (questingData == null) {
             return;
         }
-        overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(x ->{
+        overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(x -> {
             QuestChainInstance questChain = x.getQuest(chainId);
-            if (questChain == null){
+            if (questChain == null) {
                 return;
             }
             questingData.getQuestChain(chainId).ifPresent(playerChain -> {
                 Quest currentQuest = questChain.getDefinition().getQuest(questName);
-                if (currentQuest == null){
+                if (currentQuest == null) {
                     return;
                 }
                 questChain.signalObjectiveComplete(objectiveName, x, questingData, currentQuest, playerChain);
@@ -86,7 +85,7 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        if (!chainId.equals(Util.NIL_UUID)){
+        if (!chainId.equals(Util.NIL_UUID)) {
             builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
         }
         builder.put(ops.createString("objectiveName"), ops.createString(objectiveName));

@@ -15,7 +15,7 @@ public abstract class MKAbstractGui extends GuiComponent {
         blit(matrixStack, x, y, width, height, u0, v0, uSize, vSize, texWidth, texHeight);
     }
 
-    public static void mkFill(PoseStack matrixStack, int x0, int y0, int x1, int y1, int color){
+    public static void mkFill(PoseStack matrixStack, int x0, int y0, int x1, int y1, int color) {
         fill(matrixStack, x0, y0, x1, y1, color);
     }
 }

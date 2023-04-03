@@ -1,19 +1,19 @@
 package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mknpc.inventories.QuestGiverInventoryContainer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 
 import javax.annotation.Nullable;
 
 public class EntityTradeContainer implements MenuProvider {
     private final MKEntity entity;
 
-    public EntityTradeContainer(MKEntity entity){
+    public EntityTradeContainer(MKEntity entity) {
         this.entity = entity;
     }
 

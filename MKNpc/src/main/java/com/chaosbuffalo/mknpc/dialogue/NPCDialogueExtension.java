@@ -33,9 +33,9 @@ public class NPCDialogueExtension implements IDialogueExtension {
 
     private static final BiFunction<String, DialogueTree, Component> notableProvider =
             (name, tree) -> new ContextAwareTextComponent("mkchat.simple_context.msg", (context) -> {
-                if (context.getPlayer().getServer() != null){
+                if (context.getPlayer().getServer() != null) {
                     Level overworld = context.getPlayer().getServer().getLevel(Level.OVERWORLD);
-                    if (overworld != null){
+                    if (overworld != null) {
                         return Collections.singletonList(overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
                                 .map(x -> {
                                     NotableNpcEntry entry = x.getNotableNpc(UUID.fromString(name));

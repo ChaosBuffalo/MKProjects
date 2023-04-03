@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 public class LayoutRelativeXPosConstraint extends BaseConstraint {
     private final float xScale;
 
-    public LayoutRelativeXPosConstraint(float xScale){
+    public LayoutRelativeXPosConstraint(float xScale) {
         super();
         this.xScale = xScale;
     }

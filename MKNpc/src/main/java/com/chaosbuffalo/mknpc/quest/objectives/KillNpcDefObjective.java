@@ -11,17 +11,19 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.EmptyInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
-public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> implements IKillObjectiveHandler{
+public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> implements IKillObjectiveHandler {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.kill_npc_def");
     protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute("npcDefinition", NpcDefinitionManager.INVALID_NPC_DEF);
     protected IntAttribute count = new IntAttribute("count", 1);
@@ -58,7 +60,7 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
         return Collections.singletonList(getDescriptionWithKillCount(0));
     }
 
-    private MutableComponent getDescriptionWithKillCount(int count){
+    private MutableComponent getDescriptionWithKillCount(int count) {
         NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefinition.getValue());
         return new TranslatableComponent("mknpc.objective.kill_npc_def.desc", def.getDisplayName(),
                 count, this.count.value());
@@ -73,14 +75,14 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
 
     @Override
     public boolean onPlayerKillNpcDefEntity(Player player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
-                                         LivingDeathEvent event, QuestData questData, PlayerQuestChainInstance playerChain) {
-        if (def.getDefinitionName().equals(npcDefinition.getValue()) && !isComplete(objectiveData)){
+                                            LivingDeathEvent event, QuestData questData, PlayerQuestChainInstance playerChain) {
+        if (def.getDefinitionName().equals(npcDefinition.getValue()) && !isComplete(objectiveData)) {
             int currentCount = objectiveData.getInt("killCount");
             currentCount++;
             objectiveData.putInt("killCount", currentCount);
             objectiveData.setDescription(getDescriptionWithKillCount(currentCount));
             player.sendMessage(getDescriptionWithKillCount(currentCount).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
-            if (currentCount == count.value()){
+            if (currentCount == count.value()) {
                 signalCompleted(objectiveData);
             }
             playerChain.notifyDirty();

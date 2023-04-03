@@ -18,8 +18,8 @@ public class ClientHandlerWeaponPacket {
 
 
     @OnlyIn(Dist.CLIENT)
-    public static void handlePacket(SyncWeaponTypesPacket packet){
-        if (Minecraft.getInstance().player != null){
+    public static void handlePacket(SyncWeaponTypesPacket packet) {
+        if (Minecraft.getInstance().player != null) {
             WeaponTypeManager.handleMKWeaponReloadForPlayerPre(Minecraft.getInstance().player);
         }
         for (Map.Entry<ResourceLocation, CompoundTag> meleeWeaponPair : packet.data.entrySet()) {
@@ -32,7 +32,7 @@ public class ClientHandlerWeaponPacket {
             }
         }
         WeaponTypeManager.refreshAllWeapons();
-        if (Minecraft.getInstance().player != null){
+        if (Minecraft.getInstance().player != null) {
             WeaponTypeManager.handleMKWeaponReloadForPlayerPost(Minecraft.getInstance().player);
         }
     }

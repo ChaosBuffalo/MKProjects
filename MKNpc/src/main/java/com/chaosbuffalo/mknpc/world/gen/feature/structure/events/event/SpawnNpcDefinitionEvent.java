@@ -17,14 +17,14 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
@@ -81,8 +81,8 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
                 Vec3 pos = Vec3.atBottomCenterOf(x.getLocation().pos());
                 double difficultyValue = WorldUtils.getDifficultyForGlobalPos(x.getLocation());
                 Entity entity = def.createEntity(world, pos, npcId, difficultyValue);
-                if (entity != null){
-                    entry.getFirstPoiWithTag(faceTag.getValue()).ifPresent( face -> {
+                if (entity != null) {
+                    entry.getFirstPoiWithTag(faceTag.getValue()).ifPresent(face -> {
                         entity.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(face.getLocation().pos()));
                     });
                     world.addFreshEntity(entity);
@@ -94,10 +94,10 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
                         cap.setStructureId(entry.getStructureId());
                         cap.setDifficultyValue(finDiff);
                     });
-                    if (entity instanceof MKEntity){
+                    if (entity instanceof MKEntity) {
                         ((MKEntity) entity).setNonCombatMoveType(moveType);
                     }
-                    if (entity instanceof Mob && world instanceof ServerLevelAccessor){
+                    if (entity instanceof Mob && world instanceof ServerLevelAccessor) {
                         ((Mob) entity).finalizeSpawn((ServerLevelAccessor) world, world.getCurrentDifficultyAt(
                                 entity.blockPosition()), MobSpawnType.SPAWNER, null, null);
                     }

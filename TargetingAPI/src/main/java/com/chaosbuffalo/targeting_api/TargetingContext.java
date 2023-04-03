@@ -1,8 +1,8 @@
 package com.chaosbuffalo.targeting_api;
 
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.function.BiPredicate;
 

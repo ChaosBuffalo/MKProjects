@@ -16,11 +16,11 @@ import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.Util;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +32,11 @@ public class AttributeOption extends BaseRandomizationOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "attributes");
 
 
-    public AttributeOption(){
+    public AttributeOption() {
         this(RandomizationSlotManager.ATTRIBUTE_SLOT);
     }
 
-    public AttributeOption(IRandomizationSlot slot){
+    public AttributeOption(IRandomizationSlot slot) {
         super(NAME, slot);
         modifiers = new ArrayList<>();
     }
@@ -45,27 +45,27 @@ public class AttributeOption extends BaseRandomizationOption {
         return modifiers.stream().map(mod -> mod.getModifier().getId().equals(Util.NIL_UUID) ? mod.copy(difficulty) : mod).collect(Collectors.toList());
     }
 
-    public void addFixedAttributeModifier(Attribute attribute, AttributeModifier attributeModifier){
+    public void addFixedAttributeModifier(Attribute attribute, AttributeModifier attributeModifier) {
         modifiers.add(new AttributeOptionEntry(attribute, attributeModifier, attributeModifier.getAmount(), attributeModifier.getAmount()));
     }
 
-    public void addAttributeModifier(Attribute attribute, String name, double minAmount, double maxAmount, AttributeModifier.Operation op){
+    public void addAttributeModifier(Attribute attribute, String name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
         modifiers.add(new AttributeOptionEntry(attribute, new AttributeModifier(Util.NIL_UUID, name, minAmount, op), minAmount, maxAmount));
     }
 
     @Override
     public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
-        if (stack.getItem() instanceof IMKMeleeWeapon){
+        if (stack.getItem() instanceof IMKMeleeWeapon) {
             stack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).ifPresent(
                     cap -> cap.addMeleeWeaponEffect(new MeleeModifierEffect(getModifiers(difficulty))));
-        } else if (stack.getItem() instanceof IMKRangedWeapon){
+        } else if (stack.getItem() instanceof IMKRangedWeapon) {
             stack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).ifPresent(
                     cap -> cap.addRangedWeaponEffect(new RangedModifierEffect(getModifiers(difficulty))));
-        } else if (stack.getItem() instanceof IMKArmor){
+        } else if (stack.getItem() instanceof IMKArmor) {
             stack.getCapability(WeaponsCapabilities.ARMOR_DATA_CAPABILITY).ifPresent(
                     cap -> cap.addArmorEffect(new ArmorModifierEffect(getModifiers(difficulty)))
             );
-        } else if (stack.getItem() instanceof MKAccessory){
+        } else if (stack.getItem() instanceof MKAccessory) {
             MKAccessory.getAccessoryHandler(stack).ifPresent(
                     cap -> cap.addEffect(new AccessoryModifierEffect(getModifiers(difficulty)))
             );
@@ -88,8 +88,8 @@ public class AttributeOption extends BaseRandomizationOption {
             return entry;
         });
         modifiers.clear();
-        for (AttributeOptionEntry mod : deserialized){
-            if (mod != null){
+        for (AttributeOptionEntry mod : deserialized) {
+            if (mod != null) {
                 modifiers.add(mod);
             }
         }

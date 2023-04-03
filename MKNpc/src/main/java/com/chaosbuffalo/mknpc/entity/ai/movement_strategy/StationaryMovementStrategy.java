@@ -1,10 +1,10 @@
 package com.chaosbuffalo.mknpc.entity.ai.movement_strategy;
 
 import com.chaosbuffalo.mknpc.entity.MKEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
-import net.minecraft.server.level.ServerLevel;
 
 import java.util.Optional;
 

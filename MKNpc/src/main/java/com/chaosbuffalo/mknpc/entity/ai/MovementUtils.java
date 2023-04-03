@@ -14,7 +14,7 @@ public class MovementUtils {
     }
 
     @Nullable
-    public static Vec3 findRandomTargetBlockTowardsNoWater(PathfinderMob entity, int xz, int y, Vec3 targetPos){
+    public static Vec3 findRandomTargetBlockTowardsNoWater(PathfinderMob entity, int xz, int y, Vec3 targetPos) {
         return LandRandomPos.getPosTowards(entity, xz, y, targetPos);
     }
 }

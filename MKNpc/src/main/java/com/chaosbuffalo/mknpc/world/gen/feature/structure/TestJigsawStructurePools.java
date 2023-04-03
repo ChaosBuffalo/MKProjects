@@ -1,14 +1,5 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
-import com.chaosbuffalo.mknpc.MKNpc;
-import com.google.common.collect.ImmutableList;
-import com.mojang.datafixers.util.Pair;
-import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.data.worldgen.Pools;
-import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
-import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
-
 public class TestJigsawStructurePools {
 //
 //    private static final ResourceLocation DIGGER_BIG_1 = new ResourceLocation(MKNpc.MODID, "digger/diggerbig1");

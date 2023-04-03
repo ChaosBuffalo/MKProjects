@@ -4,20 +4,20 @@ package com.chaosbuffalo.mkweapons.items.effects.melee;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
 
 public abstract class SwingMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     private int numberOfHits;
     private double perHit;
 
-    public SwingMeleeWeaponEffect(ResourceLocation name, ChatFormatting color, int numberOfHits, double perHit){
+    public SwingMeleeWeaponEffect(ResourceLocation name, ChatFormatting color, int numberOfHits, double perHit) {
         this(name, color);
         this.numberOfHits = numberOfHits;
         this.perHit = perHit;
     }
 
-    public SwingMeleeWeaponEffect(ResourceLocation name, ChatFormatting color){
+    public SwingMeleeWeaponEffect(ResourceLocation name, ChatFormatting color) {
         super(name, color);
     }
 

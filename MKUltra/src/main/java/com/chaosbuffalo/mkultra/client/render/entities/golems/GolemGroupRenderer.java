@@ -4,7 +4,6 @@ import com.chaosbuffalo.mknpc.client.render.models.MKGolemModel;
 import com.chaosbuffalo.mknpc.client.render.renderers.BipedGroupRenderer;
 import com.chaosbuffalo.mknpc.entity.MKGolemEntity;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUGolems;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 

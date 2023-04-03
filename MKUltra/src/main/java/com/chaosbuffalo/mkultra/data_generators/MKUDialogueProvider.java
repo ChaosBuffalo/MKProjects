@@ -26,7 +26,7 @@ public class MKUDialogueProvider extends DialogueDataProvider {
         writeDialogue(getNetherMageInitiateDefault(), cache);
     }
 
-    private DialogueTree getAlphaMovePrompt(){
+    private DialogueTree getAlphaMovePrompt() {
         DialogueTree tree = new DialogueTree(new ResourceLocation(MKUltra.MODID, "open_abilities"));
         DialogueNode open_training = new DialogueNode("open_training", "Let me see what I can teach you.");
         open_training.addEffect(new OpenLearnAbilitiesEffect());
@@ -50,7 +50,7 @@ public class MKUDialogueProvider extends DialogueDataProvider {
         return tree;
     }
 
-    private DialogueTree getNetherMageInitiateDefault(){
+    private DialogueTree getNetherMageInitiateDefault() {
         DialogueTree tree = new DialogueTree(new ResourceLocation(MKUltra.MODID, "intro_nether_mage_initiate"));
 
         DialogueNode open_training = new DialogueNode("open_training", "Let me see what I can teach you.");
@@ -68,7 +68,7 @@ public class MKUDialogueProvider extends DialogueDataProvider {
 
         DialogueNode hail_wo_ability = new DialogueNode("hail_wo",
                 String.format("Greetings. I am %s, I've been sent here on a mission for %s. ",
-                DialogueContexts.ENTITY_NAME_CONTEXT, guildPrompt.getPromptEmbed()));
+                        DialogueContexts.ENTITY_NAME_CONTEXT, guildPrompt.getPromptEmbed()));
 
         DialogueNode hail_w_ability = new DialogueNode("hail", String.format("Did you want me to %s?.",
                 openTraining.getPromptEmbed()));
@@ -93,7 +93,7 @@ public class MKUDialogueProvider extends DialogueDataProvider {
         return tree;
     }
 
-    private DialogueTree getClericAcolyteDefault(){
+    private DialogueTree getClericAcolyteDefault() {
         DialogueTree tree = new DialogueTree(new ResourceLocation(MKUltra.MODID, "intro_cleric_acolyte"));
 
         DialogueNode open_training = new DialogueNode("open_training", "Let me see what I can teach you.");

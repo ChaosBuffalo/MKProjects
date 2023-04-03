@@ -4,9 +4,9 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainingEntity;
 import com.chaosbuffalo.mknpc.MKNpc;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 
 public class OpenLearnAbilitiesEffect extends DialogueEffect {
     public static ResourceLocation effectTypeName = new ResourceLocation(MKNpc.MODID, "open_learn_abilities");

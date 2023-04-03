@@ -4,14 +4,14 @@ import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -25,7 +25,6 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
     private String tag;
 
 
-
     public MKPoiTileEntity(BlockPos blockPos, BlockState blockState) {
         super(MKNpcTileEntityTypes.MK_POI_TILE_ENTITY_TYPE.get(), blockPos, blockState);
         this.structureName = null;
@@ -36,7 +35,7 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
     }
 
     @Override
-    public boolean isInsideStructure(){
+    public boolean isInsideStructure() {
         return structureName != null && structureId != null;
     }
 
@@ -107,8 +106,8 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
         }
     }
 
-    public void regenerateId(){
-        if (!placedByStructure){
+    public void regenerateId() {
+        if (!placedByStructure) {
             this.poiID = UUID.randomUUID();
             this.needsUploadToWorld = true;
             this.placedByStructure = true;
@@ -121,7 +120,7 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
         compound.putUUID("poiId", poiID);
         compound.putBoolean("hasUploadedToWorld", needsUploadToWorld);
         compound.putBoolean("placedByStructure", placedByStructure);
-        if (isInsideStructure()){
+        if (isInsideStructure()) {
             compound.putString("structureName", structureName.toString());
             compound.putUUID("structureId", structureId);
         }
@@ -130,20 +129,20 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
     @Override
     public void load(CompoundTag compound) {
         super.load(compound);
-        if (compound.contains("structureName")){
+        if (compound.contains("structureName")) {
             setStructureName(new ResourceLocation(compound.getString("structureName")));
         }
-        if (compound.contains("structureId")){
+        if (compound.contains("structureId")) {
             setStructureId(compound.getUUID("structureId"));
         }
-        if (compound.contains("hasUploadedToWorld")){
+        if (compound.contains("hasUploadedToWorld")) {
             needsUploadToWorld = compound.getBoolean("hasUploadedToWorld");
         }
-        if (compound.contains("placedByStructure")){
+        if (compound.contains("placedByStructure")) {
             placedByStructure = compound.getBoolean("placedByStructure");
         }
 
-        if (compound.contains("poiId")){
+        if (compound.contains("poiId")) {
             poiID = compound.getUUID("poiId");
         } else {
             poiID = UUID.randomUUID();

@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 
-public class MCWidgetContainer extends MKWidget{
+public class MCWidgetContainer extends MKWidget {
 
     private final AbstractWidget mcWidget;
 
@@ -19,7 +19,7 @@ public class MCWidgetContainer extends MKWidget{
         setCanFocus(canFocus);
     }
 
-    public AbstractWidget getContainedWidget(){
+    public AbstractWidget getContainedWidget() {
         return mcWidget;
     }
 

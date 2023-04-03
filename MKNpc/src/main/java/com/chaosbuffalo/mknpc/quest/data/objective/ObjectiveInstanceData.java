@@ -5,11 +5,11 @@ import net.minecraftforge.common.util.INBTSerializable;
 
 public abstract class ObjectiveInstanceData implements INBTSerializable<CompoundTag> {
 
-    public ObjectiveInstanceData(){
+    public ObjectiveInstanceData() {
 
     }
 
-    public ObjectiveInstanceData(CompoundTag nbt){
+    public ObjectiveInstanceData(CompoundTag nbt) {
         deserializeNBT(nbt);
     }
 }

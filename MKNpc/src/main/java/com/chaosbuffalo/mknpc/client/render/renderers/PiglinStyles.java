@@ -18,7 +18,7 @@ public class PiglinStyles {
 
     public static final ModelLook DEFAULT_ZOMBIE_LOOK = new ModelLook(ModelStyles.BASIC_STYLE, VANILLA_ZOMBIFIED_PIGLIN_TEXTURE);
 
-    public static void putZombifiedLook(String name, ModelLook style){
+    public static void putZombifiedLook(String name, ModelLook style) {
         ZOMBIFIED_PIGLIN_LOOKS.put(name, style);
     }
 
@@ -26,8 +26,8 @@ public class PiglinStyles {
         TEXTURE_VARIANTS.put("default", VANILLA_ZOMBIFIED_PIGLIN_TEXTURE);
 
 
-        for (Map.Entry<String, ResourceLocation> textureVariant : TEXTURE_VARIANTS.entrySet()){
-            for (Map.Entry<String, ResourceLocation> clothingVariant : CLOTHING_VARIANTS.entrySet()){
+        for (Map.Entry<String, ResourceLocation> textureVariant : TEXTURE_VARIANTS.entrySet()) {
+            for (Map.Entry<String, ResourceLocation> clothingVariant : CLOTHING_VARIANTS.entrySet()) {
                 putZombifiedLook(String.format("%s_%s", textureVariant.getKey(), clothingVariant.getKey()),
                         new ModelLook(ModelStyles.CLOTHES_ONLY_STYLE, textureVariant.getValue(), clothingVariant.getValue()));
             }

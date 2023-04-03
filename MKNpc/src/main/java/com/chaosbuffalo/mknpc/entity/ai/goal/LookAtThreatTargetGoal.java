@@ -8,8 +8,6 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import java.util.EnumSet;
 import java.util.Optional;
 
-import net.minecraft.world.entity.ai.goal.Goal.Flag;
-
 public class LookAtThreatTargetGoal extends Goal {
     private final Mob entity;
     private LivingEntity target;

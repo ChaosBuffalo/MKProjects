@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkultra.abilities.necromancer;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
@@ -20,12 +19,12 @@ import com.chaosbuffalo.mkultra.effects.PullEffect;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
@@ -95,7 +94,7 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
         Vec3 pulsePos = position.add(pulseOffset);
         float level = getSkillLevel(castingEntity, MKAttributes.CONJURATION);
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage,
-                base.value(), scale.value(), modifierScaling.value())
+                        base.value(), scale.value(), modifierScaling.value())
                 .ability(this)
                 .skillLevel(level);
 //        MKEffectBuilder<?> fireBreak = ResistanceEffects.BREAK_FIRE.builder(castingEntity)
@@ -108,7 +107,7 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
         MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, ModSounds.spell_shadow_10.get(), castingEntity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> detonateDamage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage,
-                detonateBase.value(), detonateScale.value(), modifierScaling.value())
+                        detonateBase.value(), detonateScale.value(), modifierScaling.value())
                 .ability(this)
                 .skillLevel(level);
         MKEffectBuilder<?> detonateSound = SoundEffect.from(castingEntity, ModSounds.spell_shadow_9.get(), castingEntity.getSoundSource())

@@ -2,14 +2,13 @@ package com.chaosbuffalo.mknpc.quest.dialogue.conditions;
 
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,20 +20,20 @@ public class HasTrainedAbilitiesCondition extends DialogueCondition {
     private final List<ResourceLocation> abilities = new ArrayList<>();
     private boolean allMatch;
 
-    public HasTrainedAbilitiesCondition(boolean allMatch, ResourceLocation... loc){
+    public HasTrainedAbilitiesCondition(boolean allMatch, ResourceLocation... loc) {
         super(conditionTypeName);
         abilities.addAll(Arrays.asList(loc));
         this.allMatch = allMatch;
     }
 
-    public HasTrainedAbilitiesCondition(){
+    public HasTrainedAbilitiesCondition() {
         super(conditionTypeName);
     }
 
 
     @Override
     public boolean meetsCondition(ServerPlayer player, LivingEntity source) {
-        if (allMatch){
+        if (allMatch) {
             return abilities.stream().allMatch(x -> MKCore.getPlayer(player).map(
                     pd -> pd.getAbilities().knowsAbility(x)).orElse(false));
         } else {

@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkweapons.capabilities;
 
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;

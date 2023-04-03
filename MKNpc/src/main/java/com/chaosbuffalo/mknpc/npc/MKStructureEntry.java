@@ -5,14 +5,14 @@ import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.capabilities.PointOfInterestEntry;
 import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
 import com.chaosbuffalo.mknpc.capabilities.structure_tracking.StructureData;
-import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
+import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.utils.NBTSerializableMappedData;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -36,7 +36,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
     private final AbilityTracker cooldownTracker;
     private final Set<String> activeEvents = new HashSet<>();
 
-    public MKStructureEntry(WorldNpcDataHandler worldData, ResourceLocation structureName, UUID structureId, @Nullable StructureData structureData){
+    public MKStructureEntry(WorldNpcDataHandler worldData, ResourceLocation structureName, UUID structureId, @Nullable StructureData structureData) {
         this(worldData);
         this.structureName = structureName;
         this.structureId = structureId;
@@ -61,8 +61,8 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         activeEvents.clear();
     }
 
-    public ChunkPos getChunkPos(){
-        if (structureData != null){
+    public ChunkPos getChunkPos() {
+        if (structureData != null) {
             return new ChunkPos(structureData.getChunkX(), structureData.getChunkZ());
         } else {
             return new ChunkPos(0, 0);
@@ -70,7 +70,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
 
     }
 
-    public MKStructureEntry(WorldNpcDataHandler worldData){
+    public MKStructureEntry(WorldNpcDataHandler worldData) {
         this.worldData = worldData;
         notables = new ArrayList<>();
         mobs = new HashSet<>();
@@ -94,31 +94,31 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         return pois.containsKey(tag) ? pois.get(tag).stream().findFirst() : Optional.empty();
     }
 
-    public boolean hasChestWithTag(String tag){
+    public boolean hasChestWithTag(String tag) {
         return notableChests.stream().anyMatch(x -> x.getLabel() != null && x.getLabel().equals(tag));
     }
 
-    public boolean hasNotableOfType(ResourceLocation npcDef){
+    public boolean hasNotableOfType(ResourceLocation npcDef) {
         return notables.stream().anyMatch(x -> x.getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef));
     }
 
-    public Optional<NotableNpcEntry> getFirstNotableOfType(ResourceLocation npcDef){
+    public Optional<NotableNpcEntry> getFirstNotableOfType(ResourceLocation npcDef) {
         return notables.stream().filter(x -> x.getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef)).findFirst();
     }
 
     public List<NotableNpcEntry> getAllNotablesOfType(ResourceLocation npcDef) {
-        return notables.stream().filter(x -> x. getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef)).collect(Collectors.toList());
+        return notables.stream().filter(x -> x.getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef)).collect(Collectors.toList());
     }
 
-    public Optional<NotableChestEntry> getFirstChestWithTag(String tag){
+    public Optional<NotableChestEntry> getFirstChestWithTag(String tag) {
         return notableChests.stream().filter(x -> x.getLabel() != null && x.getLabel().equals(tag)).findFirst();
     }
 
-    public List<NotableChestEntry> getChestsWithTag(String tag){
+    public List<NotableChestEntry> getChestsWithTag(String tag) {
         return notableChests.stream().filter(x -> x.getLabel() != null && x.getLabel().equals(tag)).collect(Collectors.toList());
     }
 
-    public boolean hasStructureData(){
+    public boolean hasStructureData() {
         return structureData != null;
     }
 
@@ -130,10 +130,10 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         return structureName;
     }
 
-    public void addSpawner(MKSpawnerTileEntity spawner){
-        for (SpawnOption spawnOption : spawner.getSpawnList().getOptions()){
+    public void addSpawner(MKSpawnerTileEntity spawner) {
+        for (SpawnOption spawnOption : spawner.getSpawnList().getOptions()) {
             NpcDefinition def = spawnOption.getDefinition();
-            if (def.isNotable()){
+            if (def.isNotable()) {
                 NotableNpcEntry entry = new NotableNpcEntry(def, spawner);
                 worldData.putNotableNpc(entry);
                 notables.add(entry);
@@ -164,7 +164,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         putPoi(entry);
     }
 
-    public void addChest(IChestNpcData chestData){
+    public void addChest(IChestNpcData chestData) {
         NotableChestEntry entry = new NotableChestEntry(chestData);
         worldData.putNotableChest(entry);
         notableChests.add(entry);
@@ -176,25 +176,25 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         tag.putString("structureName", structureName.toString());
         tag.putUUID("structureId", structureId);
         ListTag notablesNbt = new ListTag();
-        for (NotableNpcEntry notableEntry : notables){
+        for (NotableNpcEntry notableEntry : notables) {
             notablesNbt.add(notableEntry.serializeNBT());
         }
         tag.put("notables", notablesNbt);
         ListTag mobNbt = new ListTag();
-        for (ResourceLocation mob : mobs){
+        for (ResourceLocation mob : mobs) {
             mobNbt.add(StringTag.valueOf(mob.toString()));
         }
         tag.put("mobs", mobNbt);
         ListTag factionNbt = new ListTag();
-        for (ResourceLocation faction : factions){
+        for (ResourceLocation faction : factions) {
             factionNbt.add(StringTag.valueOf(faction.toString()));
         }
         tag.put("factions", factionNbt);
-        if (structureData != null){
+        if (structureData != null) {
             tag.put("structureData", structureData.serializeNBT());
         }
         ListTag chestNbt = new ListTag();
-        for (NotableChestEntry chest : notableChests){
+        for (NotableChestEntry chest : notableChests) {
             chestNbt.add(chest.serializeNBT());
         }
         tag.put("chests", chestNbt);
@@ -219,28 +219,28 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         structureName = new ResourceLocation(nbt.getString("structureName"));
         structureId = nbt.getUUID("structureId");
         ListTag notablesNbt = nbt.getList("notables", Tag.TAG_COMPOUND);
-        for (Tag notTag : notablesNbt){
+        for (Tag notTag : notablesNbt) {
             NotableNpcEntry newEntry = new NotableNpcEntry();
             newEntry.deserializeNBT((CompoundTag) notTag);
             worldData.putNotableNpc(newEntry);
             notables.add(newEntry);
         }
         ListTag mobNbt = nbt.getList("mobs", Tag.TAG_STRING);
-        for (Tag mobName : mobNbt){
+        for (Tag mobName : mobNbt) {
             ResourceLocation mobLoc = new ResourceLocation(mobName.getAsString());
             mobs.add(mobLoc);
         }
         ListTag factionNbt = nbt.getList("factions", Tag.TAG_STRING);
-        for (Tag factionName : factionNbt){
+        for (Tag factionName : factionNbt) {
             ResourceLocation factionLoc = new ResourceLocation(factionName.getAsString());
             factions.add(factionLoc);
         }
-        if (nbt.contains("structureData")){
+        if (nbt.contains("structureData")) {
             structureData = new StructureData();
             structureData.deserializeNBT(nbt.getCompound("structureData"));
         }
         ListTag chestNbt = nbt.getList("chests", Tag.TAG_COMPOUND);
-        for (Tag chest : chestNbt){
+        for (Tag chest : chestNbt) {
             NotableChestEntry chestEntry = new NotableChestEntry();
             chestEntry.deserializeNBT((CompoundTag) chest);
             worldData.putNotableChest(chestEntry);
@@ -251,7 +251,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         for (String key : poiNbt.getAllKeys()) {
             ListTag poiLNbt = poiNbt.getList(key, Tag.TAG_COMPOUND);
             for (Tag poi : poiLNbt) {
-                PointOfInterestEntry entry  = new PointOfInterestEntry();
+                PointOfInterestEntry entry = new PointOfInterestEntry();
                 entry.deserializeNBT((CompoundTag) poi);
                 putPoi(entry);
             }

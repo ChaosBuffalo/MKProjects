@@ -9,20 +9,19 @@ import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.client.Minecraft;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -31,7 +30,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-public class RangedSkillScalingEffect extends BaseRangedWeaponEffect{
+public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.ranged_skill_scaling");
     public static final UUID skillScaling = UUID.fromString("e4e8a04a-6c8e-43f6-9599-99a84f207c60");
     private double baseDamage;
@@ -41,7 +40,7 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect{
         super(NAME, ChatFormatting.GRAY);
     }
 
-    public RangedSkillScalingEffect(double baseDamage, Attribute skill){
+    public RangedSkillScalingEffect(double baseDamage, Attribute skill) {
         this();
         this.baseDamage = baseDamage;
         this.skill = skill;
@@ -62,7 +61,7 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect{
     @Override
     public void addInformation(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
         tooltip.add(new TranslatableComponent(skill.getDescriptionId()).withStyle(color));
-        if (Screen.hasShiftDown()){
+        if (Screen.hasShiftDown()) {
             float skillLevel = ClientUtils.getClientSkillLevel(skill);
             double bonus = skillLevel * baseDamage;
             tooltip.add(new TranslatableComponent("mkweapons.weapon_effect.ranged_skill_scaling.description",
@@ -74,8 +73,8 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect{
     public void onEntityEquip(LivingEntity entity) {
         float skillLevel = MKAbility.getSkillLevel(entity, skill);
         AttributeInstance attr = entity.getAttribute(MKAttributes.RANGED_DAMAGE);
-        if (attr != null){
-            if (attr.getModifier(skillScaling) == null){
+        if (attr != null) {
+            if (attr.getModifier(skillScaling) == null) {
                 attr.addTransientModifier(new AttributeModifier(skillScaling, "skill scaling", skillLevel * baseDamage, AttributeModifier.Operation.ADDITION));
             }
         }

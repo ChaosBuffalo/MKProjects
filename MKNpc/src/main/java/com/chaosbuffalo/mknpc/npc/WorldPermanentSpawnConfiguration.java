@@ -13,25 +13,25 @@ public class WorldPermanentSpawnConfiguration implements INBTSerializable<Compou
 
     private final HashMap<ResourceLocation, HashMap<ResourceLocation, INpcOptionEntry>> definitionMap;
 
-    public WorldPermanentSpawnConfiguration(){
+    public WorldPermanentSpawnConfiguration() {
         definitionMap = new HashMap<>();
     }
 
-    public boolean hasDefinition(ResourceLocation definitionName){
+    public boolean hasDefinition(ResourceLocation definitionName) {
         return definitionMap.containsKey(definitionName);
     }
 
-    public boolean hasAttributeEntry(ResourceLocation definitionName, ResourceLocation optionName){
+    public boolean hasAttributeEntry(ResourceLocation definitionName, ResourceLocation optionName) {
         return definitionMap.containsKey(definitionName) && definitionMap.get(definitionName).containsKey(optionName);
     }
 
-    public INpcOptionEntry getOptionEntry(NpcDefinition definition, WorldPermanentOption option){
+    public INpcOptionEntry getOptionEntry(NpcDefinition definition, WorldPermanentOption option) {
         return definitionMap.get(definition.getDefinitionName()).get(option.getName());
     }
 
     public void addAttributeEntry(NpcDefinition definition, WorldPermanentOption option,
-                                  INpcOptionEntry optionEntry){
-        if (!hasDefinition(definition.getDefinitionName())){
+                                  INpcOptionEntry optionEntry) {
+        if (!hasDefinition(definition.getDefinitionName())) {
             definitionMap.put(definition.getDefinitionName(), new HashMap<>());
         }
         definitionMap.get(definition.getDefinitionName()).put(option.getName(), optionEntry);
@@ -40,10 +40,10 @@ public class WorldPermanentSpawnConfiguration implements INBTSerializable<Compou
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-        for (ResourceLocation definitionName : definitionMap.keySet()){
+        for (ResourceLocation definitionName : definitionMap.keySet()) {
             CompoundTag defTag = new CompoundTag();
             HashMap<ResourceLocation, INpcOptionEntry> optionMap = definitionMap.get(definitionName);
-            for (ResourceLocation attributeName : optionMap.keySet()){
+            for (ResourceLocation attributeName : optionMap.keySet()) {
                 INpcOptionEntry entry = optionMap.get(attributeName);
                 defTag.put(attributeName.toString(), entry.serializeNBT());
             }
@@ -55,14 +55,14 @@ public class WorldPermanentSpawnConfiguration implements INBTSerializable<Compou
     @Override
     public void deserializeNBT(CompoundTag nbt) {
         definitionMap.clear();
-        for (String defKey : nbt.getAllKeys()){
+        for (String defKey : nbt.getAllKeys()) {
             ResourceLocation defLoc = new ResourceLocation(defKey);
             CompoundTag defTag = nbt.getCompound(defKey);
             HashMap<ResourceLocation, INpcOptionEntry> entryMap = new HashMap<>();
-            for (String entryKey : defTag.getAllKeys()){
+            for (String entryKey : defTag.getAllKeys()) {
                 ResourceLocation entryLoc = new ResourceLocation(entryKey);
                 INpcOptionEntry entry = NpcDefinitionManager.getNpcOptionEntry(entryLoc);
-                if (entry != null){
+                if (entry != null) {
                     entry.deserializeNBT(defTag.getCompound(entryKey));
                     entryMap.put(entryLoc, entry);
                 }

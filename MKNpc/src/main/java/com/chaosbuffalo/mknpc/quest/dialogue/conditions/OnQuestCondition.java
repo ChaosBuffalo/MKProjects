@@ -6,9 +6,9 @@ import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -19,21 +19,21 @@ public class OnQuestCondition extends DialogueCondition {
     private UUID questId;
     private String questStep;
 
-    public OnQuestCondition(UUID questId, String questStep){
+    public OnQuestCondition(UUID questId, String questStep) {
         super(conditionTypeName);
         this.questId = questId;
         this.questStep = questStep;
     }
 
-    public OnQuestCondition(){
+    public OnQuestCondition() {
         this(UUID.randomUUID(), "invalid");
     }
 
     @Override
     public boolean meetsCondition(ServerPlayer player, LivingEntity source) {
         return MKNpc.getPlayerQuestData(player).map(
-                x -> x.getQuestStatus(questId) == PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS
-                        && x.getCurrentQuestSteps(questId).orElse(new ArrayList<>()).contains(questStep))
+                        x -> x.getQuestStatus(questId) == PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS
+                                && x.getCurrentQuestSteps(questId).orElse(new ArrayList<>()).contains(questStep))
                 .orElse(false);
     }
 

@@ -4,11 +4,11 @@ import com.chaosbuffalo.mkcore.utils.SerializationUtils;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public class NpcItemChoice implements INBTSerializable<CompoundTag> {
@@ -34,13 +34,13 @@ public class NpcItemChoice implements INBTSerializable<CompoundTag> {
         this.item = item;
     }
 
-    public NpcItemChoice(){
+    public NpcItemChoice() {
         this(ItemStack.EMPTY, 1.0, 0.0f);
     }
 
     public static void livingEquipmentAssign(LivingEntity entity, EquipmentSlot slot, NpcItemChoice choice) {
         entity.setItemSlot(slot, choice.item.copy());
-        if (entity instanceof Mob){
+        if (entity instanceof Mob) {
             Mob mobEntity = (Mob) entity;
             mobEntity.setDropChance(slot, choice.dropChance);
         }

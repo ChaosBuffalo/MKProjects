@@ -4,7 +4,6 @@ import com.chaosbuffalo.mknpc.client.render.models.MKSkeletalModel;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
 import com.chaosbuffalo.mknpc.entity.MKSkeletonEntity;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 
@@ -18,7 +17,7 @@ public class SkeletalGroupRenderer extends BipedGroupRenderer<MKSkeletonEntity, 
         super(context);
         putRenderer(ModelStyles.BASIC_NAME, new SkeletalRenderer(context, ModelStyles.BASIC_STYLE, entityType));
         putRenderer(ModelStyles.CLOTHES_ONLY_NAME, new SkeletalRenderer(context, ModelStyles.CLOTHES_ONLY_STYLE, entityType));
-        for (Map.Entry<String, ModelLook> entry : styles.entrySet()){
+        for (Map.Entry<String, ModelLook> entry : styles.entrySet()) {
             putLook(entry.getKey(), entry.getValue());
         }
     }

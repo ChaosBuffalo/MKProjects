@@ -7,16 +7,11 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
-import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.CanStartQuestCondition;
-import com.chaosbuffalo.mknpc.quest.dialogue.conditions.OnQuestChainCondition;
-import com.chaosbuffalo.mknpc.quest.dialogue.conditions.OnQuestCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
-import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.mojang.serialization.Dynamic;
@@ -26,8 +21,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
@@ -37,7 +30,7 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
     @Nullable
     private DialogueTree tree;
 
-    public QuestOfferingEntry(ResourceLocation questDef){
+    public QuestOfferingEntry(ResourceLocation questDef) {
         this.questDef = questDef;
         this.questId = null;
     }
@@ -51,7 +44,7 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
         return questDef;
     }
 
-    public QuestOfferingEntry(CompoundTag nbt){
+    public QuestOfferingEntry(CompoundTag nbt) {
         deserializeNBT(nbt);
     }
 
@@ -64,21 +57,21 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
         return new ResourceLocation(MKNpc.MODID, String.format("give_quest.%s", questId));
     }
 
-    private DialogueTree specializeTree(QuestDefinition definition, QuestChainInstance.QuestChainBuildResult buildResult){
+    private DialogueTree specializeTree(QuestDefinition definition, QuestChainInstance.QuestChainBuildResult buildResult) {
         DialogueTree specializedTree = definition.getStartQuestTree().copy();
-        for (DialogueNode node : specializedTree.getNodes().values()){
-            for (DialogueEffect effect : node.getEffects()){
-                if (effect instanceof IReceivesChainId){
+        for (DialogueNode node : specializedTree.getNodes().values()) {
+            for (DialogueEffect effect : node.getEffects()) {
+                if (effect instanceof IReceivesChainId) {
                     IReceivesChainId advEffect = (IReceivesChainId) effect;
                     advEffect.setChainId(buildResult.instance.getQuestId());
                 }
             }
             TalkToNpcObjective.handleQuestRawMessageManipulation(node, buildResult.questStructures, buildResult.instance);
         }
-        for (DialoguePrompt prompt : specializedTree.getPrompts().values()){
-            for (DialogueResponse resp : prompt.getResponses()){
-                for (DialogueCondition condition : resp.getConditions()){
-                    if (condition instanceof IReceivesChainId){
+        for (DialoguePrompt prompt : specializedTree.getPrompts().values()) {
+            for (DialogueResponse resp : prompt.getResponses()) {
+                for (DialogueCondition condition : resp.getConditions()) {
+                    if (condition instanceof IReceivesChainId) {
                         ((IReceivesChainId) condition).setChainId(buildResult.instance.getQuestId());
                     }
                 }
@@ -87,17 +80,17 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
         return specializedTree;
     }
 
-    public void setupDialogue(QuestChainInstance.QuestChainBuildResult buildResult){
+    public void setupDialogue(QuestChainInstance.QuestChainBuildResult buildResult) {
         QuestDefinition definition = QuestDefinitionManager.getDefinition(questDef);
         UUID questId = buildResult.instance.getQuestId();
 
         DialogueTree startTree = specializeTree(definition, buildResult);
         DialoguePrompt hailPrompt = startTree.getHailPrompt();
-        if (hailPrompt != null){
+        if (hailPrompt != null) {
             hailPrompt.getResponses().stream().filter(x -> x.getConditions().stream()
-                    .anyMatch(cond -> cond instanceof CanStartQuestCondition))
+                            .anyMatch(cond -> cond instanceof CanStartQuestCondition))
                     .forEach(resp -> {
-                        for (QuestRequirement req : definition.getRequirements()){
+                        for (QuestRequirement req : definition.getRequirements()) {
                             resp.addCondition(req.getDialogueCondition());
                         }
                     });
@@ -122,10 +115,10 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
     public CompoundTag serializeNBT() {
         CompoundTag nbt = new CompoundTag();
         nbt.putString("questDef", questDef.toString());
-        if (questId != null){
+        if (questId != null) {
             nbt.putUUID("questId", questId);
         }
-        if (tree != null){
+        if (tree != null) {
             nbt.put("dialogue", tree.serialize(NbtOps.INSTANCE));
         }
         return nbt;
@@ -134,10 +127,10 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
     @Override
     public void deserializeNBT(CompoundTag nbt) {
         questDef = new ResourceLocation(nbt.getString("questDef"));
-        if (nbt.contains("questId")){
+        if (nbt.contains("questId")) {
             questId = nbt.getUUID("questId");
         }
-        if (nbt.contains("dialogue")){
+        if (nbt.contains("dialogue")) {
             tree = new DialogueTree(makeTreeId(questId));
             tree.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt.get("dialogue")));
         }

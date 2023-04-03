@@ -18,7 +18,7 @@ public class NpcDialogueUtils {
         public final Map<ResourceLocation, List<MKStructureEntry>> questStructures;
         public final QuestChainInstance questChain;
 
-        public QuestDialogueParse(String args, Map<ResourceLocation, List<MKStructureEntry>> questStructures, QuestChainInstance instance){
+        public QuestDialogueParse(String args, Map<ResourceLocation, List<MKStructureEntry>> questStructures, QuestChainInstance instance) {
             this.args = args;
             this.questStructures = questStructures;
             this.questChain = instance;
@@ -27,7 +27,7 @@ public class NpcDialogueUtils {
 
     public static final Map<String, Function<QuestDialogueParse, String>> QuestDialogueHandlers = new HashMap<>();
 
-    public static void putDialogueHandler(String name, Function<QuestDialogueParse, String> handler){
+    public static void putDialogueHandler(String name, Function<QuestDialogueParse, String> handler) {
         QuestDialogueHandlers.put(name, handler);
     }
 
@@ -41,11 +41,11 @@ public class NpcDialogueUtils {
         return npc.map(x -> String.format("{notable:%s}", x.getNotableId())).orElse("#notable.not_found#");
     };
 
-    public static void setupMKNpcHandlers(){
+    public static void setupMKNpcHandlers() {
         putDialogueHandler("mk_quest_notable", NotableHandler);
     }
 
-    public static String getNotableNpcRaw(ResourceLocation structureName, int index, ResourceLocation defName){
+    public static String getNotableNpcRaw(ResourceLocation structureName, int index, ResourceLocation defName) {
         return String.format("{mk_quest_notable:%s#%s#%s}", structureName.toString(), index, defName.toString());
     }
 
@@ -60,7 +60,7 @@ public class NpcDialogueUtils {
                 int endIndex = parsing.indexOf("}");
                 ret.append(parsing, 0, index);
                 String parsee = parsing.substring(index, endIndex + 1);
-                if (parsee.startsWith("{mk_quest")){
+                if (parsee.startsWith("{mk_quest")) {
                     ret.append(handleMKQuestEntry(parsee, questStructures, questChain));
                 } else {
                     ret.append(parsee);
@@ -77,13 +77,13 @@ public class NpcDialogueUtils {
 
     public static String handleMKQuestEntry(String parsee,
                                             Map<ResourceLocation, List<MKStructureEntry>> questStructures,
-                                            QuestChainInstance questChain){
+                                            QuestChainInstance questChain) {
         String request = parsee.replace("{", "").replace("}", "");
         if (request.contains(":")) {
             String[] requestSplit = request.split(":", 2);
             String reqName = requestSplit[0];
             String args = requestSplit[1];
-            if (QuestDialogueHandlers.containsKey(reqName)){
+            if (QuestDialogueHandlers.containsKey(reqName)) {
                 return QuestDialogueHandlers.get(reqName).apply(new QuestDialogueParse(args, questStructures, questChain));
             } else {
                 return parsee;

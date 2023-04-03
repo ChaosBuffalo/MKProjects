@@ -69,11 +69,11 @@ public class HealingRain extends MKAbility {
                     .ability(this)
                     .amplify(level);
             MKEffectBuilder<?> particlePotion = MKOldParticleEffect.from(castingEntity,
-                    ParticleTypes.BUBBLE,
-                    ParticleEffects.CIRCLE_MOTION, false,
-                    new Vec3(1.0, 1.0, 1.0),
-                    new Vec3(0.0, 1.0, 0.0),
-                    10, 0, 1.0)
+                            ParticleTypes.BUBBLE,
+                            ParticleEffects.CIRCLE_MOTION, false,
+                            new Vec3(1.0, 1.0, 1.0),
+                            new Vec3(0.0, 1.0, 0.0),
+                            10, 0, 1.0)
                     .ability(this);
 
             float dist = getDistance(castingEntity);

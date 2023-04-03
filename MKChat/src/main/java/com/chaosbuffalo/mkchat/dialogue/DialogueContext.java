@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 
 public class DialogueContext {
     private final LivingEntity speaker;

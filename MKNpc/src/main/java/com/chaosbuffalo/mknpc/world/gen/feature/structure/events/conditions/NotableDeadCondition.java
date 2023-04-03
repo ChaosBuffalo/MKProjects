@@ -8,11 +8,11 @@ import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
-public class NotableDeadCondition extends StructureEventCondition{
+public class NotableDeadCondition extends StructureEventCondition {
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID,
             "struct_condition.notable_dead");
     protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute(

@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.capabilities.*;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -26,15 +26,20 @@ public class NpcCapabilities {
     public static ResourceLocation MK_QUEST_CAP_ID = new ResourceLocation(MKNpc.MODID,
             "player_quest_data");
 
-    public static final Capability<IEntityNpcData> ENTITY_NPC_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+    public static final Capability<IEntityNpcData> ENTITY_NPC_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
+    });
 
-    public static final Capability<IWorldNpcData> WORLD_NPC_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+    public static final Capability<IWorldNpcData> WORLD_NPC_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
+    });
 
-    public static final Capability<IChunkNpcData> CHUNK_NPC_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+    public static final Capability<IChunkNpcData> CHUNK_NPC_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
+    });
 
-    public static final Capability<IChestNpcData> CHEST_NPC_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+    public static final Capability<IChestNpcData> CHEST_NPC_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
+    });
 
-    public static final Capability<IPlayerQuestingData> PLAYER_QUEST_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+    public static final Capability<IPlayerQuestingData> PLAYER_QUEST_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
+    });
 
 
     @SubscribeEvent

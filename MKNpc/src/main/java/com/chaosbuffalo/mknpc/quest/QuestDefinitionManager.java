@@ -13,11 +13,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.OnDatapackSyncEvent;
@@ -44,45 +44,45 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
     public static final Map<ResourceLocation, Supplier<QuestReward>> REWARD_DESERIALIZERS = new HashMap<>();
     public static final Map<ResourceLocation, Supplier<QuestRequirement>> REQUIREMENT_DESERIALIZERS = new HashMap<>();
 
-    public QuestDefinitionManager(){
+    public QuestDefinitionManager() {
         super(GSON, DEFINITION_FOLDER);
         MinecraftForge.EVENT_BUS.register(this);
     }
 
 
-    public static void putObjectiveDeserializer(ResourceLocation name, Supplier<QuestObjective<?>> deserializer){
+    public static void putObjectiveDeserializer(ResourceLocation name, Supplier<QuestObjective<?>> deserializer) {
         OBJECTIVE_DESERIALIZERS.put(name, deserializer);
     }
 
-    public static void putRequirementDeserializer(ResourceLocation name, Supplier<QuestRequirement> deserializer){
+    public static void putRequirementDeserializer(ResourceLocation name, Supplier<QuestRequirement> deserializer) {
         REQUIREMENT_DESERIALIZERS.put(name, deserializer);
     }
 
-    public static void putRewardDeserializer(ResourceLocation name, Supplier<QuestReward> deserializer){
+    public static void putRewardDeserializer(ResourceLocation name, Supplier<QuestReward> deserializer) {
         REWARD_DESERIALIZERS.put(name, deserializer);
     }
 
     @SubscribeEvent
-    public void subscribeEvent(AddReloadListenerEvent event){
+    public void subscribeEvent(AddReloadListenerEvent event) {
         event.addListener(this);
     }
 
     @Nullable
-    public static Supplier<QuestRequirement> getRequirementDeserializer(ResourceLocation name){
+    public static Supplier<QuestRequirement> getRequirementDeserializer(ResourceLocation name) {
         return REQUIREMENT_DESERIALIZERS.get(name);
     }
 
     @Nullable
-    public static Supplier<QuestObjective<?>> getObjectiveDeserializer(ResourceLocation name){
+    public static Supplier<QuestObjective<?>> getObjectiveDeserializer(ResourceLocation name) {
         return OBJECTIVE_DESERIALIZERS.get(name);
     }
 
     @Nullable
-    public static Supplier<QuestReward> getRewardDeserializer(ResourceLocation name){
+    public static Supplier<QuestReward> getRewardDeserializer(ResourceLocation name) {
         return REWARD_DESERIALIZERS.get(name);
     }
 
-    public static void setupDeserializers(){
+    public static void setupDeserializers() {
         putObjectiveDeserializer(LootChestObjective.NAME, LootChestObjective::new);
         putObjectiveDeserializer(TalkToNpcObjective.NAME, TalkToNpcObjective::new);
         putObjectiveDeserializer(KillNpcDefObjective.NAME, KillNpcDefObjective::new);
@@ -100,17 +100,18 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> objectIn, ResourceManager resourceManagerIn, ProfilerFiller profilerIn) {
         DEFINITIONS.clear();
-        for(Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
+        for (Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
             ResourceLocation resourcelocation = entry.getKey();
             MKNpc.LOGGER.info("Found Quest Definition file: {}", resourcelocation);
-            if (resourcelocation.getPath().startsWith("_")) continue; //Forge: filter anything beginning with "_" as it's used for metadata.
+            if (resourcelocation.getPath().startsWith("_"))
+                continue; //Forge: filter anything beginning with "_" as it's used for metadata.
             QuestDefinition def = new QuestDefinition(resourcelocation);
             def.deserialize(new Dynamic<>(JsonOps.INSTANCE, entry.getValue()));
             DEFINITIONS.put(def.getName(), def);
         }
     }
 
-    public static QuestDefinition getDefinition(ResourceLocation questName){
+    public static QuestDefinition getDefinition(ResourceLocation questName) {
         return DEFINITIONS.get(questName);
     }
 

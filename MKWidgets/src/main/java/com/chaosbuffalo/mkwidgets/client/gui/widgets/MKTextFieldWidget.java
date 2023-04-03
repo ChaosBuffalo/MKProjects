@@ -9,8 +9,8 @@ import org.lwjgl.glfw.GLFW;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
-public class MKTextFieldWidget extends MCWidgetContainer{
-    private BiConsumer<MKTextFieldWidget,String> callback;
+public class MKTextFieldWidget extends MCWidgetContainer {
+    private BiConsumer<MKTextFieldWidget, String> callback;
     private Predicate<String> validator;
     private BiConsumer<MKTextFieldWidget, String> onSubmit;
 
@@ -26,40 +26,40 @@ public class MKTextFieldWidget extends MCWidgetContainer{
         return this;
     }
 
-    public MKTextFieldWidget setTextValidator(Predicate<String> validator){
+    public MKTextFieldWidget setTextValidator(Predicate<String> validator) {
         this.validator = validator;
         return this;
     }
 
-    public String getText(){
+    public String getText() {
         return getContainedWidget().getValue();
     }
 
-    public MKTextFieldWidget setSubmitCallback(BiConsumer<MKTextFieldWidget, String> cb){
+    public MKTextFieldWidget setSubmitCallback(BiConsumer<MKTextFieldWidget, String> cb) {
         this.onSubmit = cb;
         return this;
     }
 
-    protected boolean validateText(String text){
-        if (validator != null){
+    protected boolean validateText(String text) {
+        if (validator != null) {
             return validator.test(text);
         } else {
             return true;
         }
     }
 
-    public void setText(String text){
+    public void setText(String text) {
         getContainedWidget().setValue(text);
     }
 
-    protected void onSubmitText(String text){
-        if (onSubmit != null){
+    protected void onSubmitText(String text) {
+        if (onSubmit != null) {
             onSubmit.accept(this, text);
         }
     }
 
-    protected void onTextChange(String text){
-        if (callback != null){
+    protected void onTextChange(String text) {
+        if (callback != null) {
             callback.accept(this, text);
         }
     }
@@ -77,7 +77,7 @@ public class MKTextFieldWidget extends MCWidgetContainer{
 
     @Override
     public boolean keyPressed(Minecraft minecraft, int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_ENTER){
+        if (keyCode == GLFW.GLFW_KEY_ENTER) {
             onSubmitText(getContainedWidget().getValue());
             if (getScreen() != null) {
                 getScreen().setFocus(null);

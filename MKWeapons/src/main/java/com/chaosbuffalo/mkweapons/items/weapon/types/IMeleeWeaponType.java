@@ -3,8 +3,8 @@ package com.chaosbuffalo.mkweapons.items.weapon.types;
 import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.world.item.Tier;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Tier;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public interface IMeleeWeaponType {
 
     ResourceLocation getName();
 
-    default float getDamageForTier(Tier tier){
+    default float getDamageForTier(Tier tier) {
         return (tier.getAttackDamageBonus() + 3) * getDamageMultiplier();
     }
 

@@ -14,10 +14,14 @@ import com.chaosbuffalo.mkweapons.items.weapon.tier.MKTier;
 import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import com.chaosbuffalo.mkweapons.items.weapon.types.WeaponTypeManager;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.tags.ItemTags;
+import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Tiers;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -25,11 +29,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ObjectHolder;
 
 import java.util.*;
-
-import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Tiers;
 
 @ObjectHolder(MKWeapons.MODID)
 @Mod.EventBusSubscriber(modid = MKWeapons.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -69,17 +68,17 @@ public class MKWeaponsItems {
     @ObjectHolder("gold_earring")
     public static Item GoldEarring;
 
-    public static void putWeaponForLookup(MKTier tier, IMeleeWeaponType weaponType, Item item){
+    public static void putWeaponForLookup(MKTier tier, IMeleeWeaponType weaponType, Item item) {
         WEAPON_LOOKUP.putIfAbsent(tier, new HashMap<>());
         WEAPON_LOOKUP.get(tier).put(weaponType, item);
     }
 
-    public static Item lookupWeapon(MKTier tier, IMeleeWeaponType weaponType){
+    public static Item lookupWeapon(MKTier tier, IMeleeWeaponType weaponType) {
         return WEAPON_LOOKUP.get(tier).get(weaponType);
     }
 
     @SubscribeEvent
-    public static void registerItems(RegistryEvent.Register<Item> evt){
+    public static void registerItems(RegistryEvent.Register<Item> evt) {
         MeleeWeaponTypes.registerWeaponTypes();
         Set<Tuple<String, MKTier>> materials = new HashSet<>();
         materials.add(new Tuple<>("iron", IRON_TIER));
@@ -87,8 +86,8 @@ public class MKWeaponsItems {
         materials.add(new Tuple<>("diamond", DIAMOND_TIER));
         materials.add(new Tuple<>("gold", GOLD_TIER));
         materials.add(new Tuple<>("stone", STONE_TIER));
-        for (Tuple<String, MKTier> mat : materials){
-            for (IMeleeWeaponType weaponType : MeleeWeaponTypes.WEAPON_TYPES.values()){
+        for (Tuple<String, MKTier> mat : materials) {
+            for (IMeleeWeaponType weaponType : MeleeWeaponTypes.WEAPON_TYPES.values()) {
                 MKMeleeWeapon weapon = new MKMeleeWeapon(new ResourceLocation(MKWeapons.MODID,
                         String.format("%s_%s", weaponType.getName().getPath(), mat.getA())), mat.getB(), weaponType,
                         (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT));
@@ -99,15 +98,15 @@ public class MKWeaponsItems {
             }
             RangedModifierEffect rangedMods = new RangedModifierEffect();
             rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT,
-                    new AttributeModifier(RANGED_WEP_UUID, "Bow Crit",0.05, AttributeModifier.Operation.ADDITION ));
+                    new AttributeModifier(RANGED_WEP_UUID, "Bow Crit", 0.05, AttributeModifier.Operation.ADDITION));
             rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT_MULTIPLIER,
-                    new AttributeModifier(RANGED_WEP_UUID, "Bow Crit",0.25, AttributeModifier.Operation.ADDITION ));
+                    new AttributeModifier(RANGED_WEP_UUID, "Bow Crit", 0.25, AttributeModifier.Operation.ADDITION));
             MKBow bow = new MKBow(new ResourceLocation(MKWeapons.MODID, String.format("longbow_%s", mat.getA())),
                     new Item.Properties().durability(mat.getB().getUses() * 3).tab(CreativeModeTab.TAB_COMBAT), mat.getB(),
                     GameConstants.TICKS_PER_SECOND * 2.5f, 4.0f,
                     new RapidFireRangedWeaponEffect(7, .10f),
                     rangedMods
-                   );
+            );
             BOWS.add(bow);
             evt.getRegistry().register(bow);
         }
@@ -137,22 +136,22 @@ public class MKWeaponsItems {
         evt.getRegistry().register(goldEarring);
     }
 
-    public static void registerItemProperties(){
-        for (MKBow bow : BOWS){
+    public static void registerItemProperties() {
+        for (MKBow bow : BOWS) {
             ItemProperties.register(bow, new ResourceLocation("pull"), (itemStack, world, entity, seed) -> {
                 if (entity == null) {
                     return 0.0F;
                 } else {
                     return !(entity.getUseItem().getItem() instanceof MKBow) ? 0.0F :
-                            (float)(itemStack.getUseDuration() - entity.getUseItemRemainingTicks()) / bow.getDrawTime(itemStack, entity);
+                            (float) (itemStack.getUseDuration() - entity.getUseItemRemainingTicks()) / bow.getDrawTime(itemStack, entity);
                 }
             });
             ItemProperties.register(bow, new ResourceLocation("pulling"), (itemStack, world, entity, seed) -> {
                 return entity != null && entity.isUsingItem() && entity.getUseItem() == itemStack ? 1.0F : 0.0F;
             });
         }
-        for (MKMeleeWeapon weapon : WEAPONS){
-            if (MeleeWeaponTypes.WITH_BLOCKING.contains(weapon.getWeaponType())){
+        for (MKMeleeWeapon weapon : WEAPONS) {
+            if (MeleeWeaponTypes.WITH_BLOCKING.contains(weapon.getWeaponType())) {
                 ItemProperties.register(weapon, new ResourceLocation("blocking"),
                         (itemStack, world, entity, seed) -> entity != null && entity.isUsingItem()
                                 && entity.getUseItem() == itemStack ? 1.0F : 0.0F);

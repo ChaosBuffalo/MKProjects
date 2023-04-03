@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkweapons.items.randomization.options;
 
-import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ItemEffects;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.IRandomizationSlot;
@@ -21,7 +20,7 @@ public abstract class EffectOption<T extends IItemEffect> extends BaseRandomizat
         super(name, slot);
     }
 
-    public void addEffect(T effect){
+    public void addEffect(T effect) {
         itemEffects.add(effect);
     }
 

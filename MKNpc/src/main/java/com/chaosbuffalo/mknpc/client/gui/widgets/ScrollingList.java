@@ -19,7 +19,7 @@ public abstract class ScrollingList extends MKWidget {
         scrollView.addWidget(stackLayout);
     }
 
-    public void populate(){
+    public void populate() {
         stackLayout.clearWidgets();
         populateList(stackLayout);
         stackLayout.manualRecompute();

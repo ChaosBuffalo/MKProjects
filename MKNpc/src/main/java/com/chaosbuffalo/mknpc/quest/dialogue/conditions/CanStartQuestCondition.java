@@ -7,10 +7,10 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.Util;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.UUID;
 
@@ -20,13 +20,13 @@ public class CanStartQuestCondition extends DialogueCondition implements IReceiv
     private UUID questId;
     private boolean allowRepeat;
 
-    public CanStartQuestCondition(UUID questId, boolean allowRepeat){
+    public CanStartQuestCondition(UUID questId, boolean allowRepeat) {
         super(conditionTypeName);
         this.questId = questId;
         this.allowRepeat = allowRepeat;
     }
 
-    public CanStartQuestCondition(){
+    public CanStartQuestCondition() {
         this(Util.NIL_UUID, false);
     }
 
@@ -34,7 +34,7 @@ public class CanStartQuestCondition extends DialogueCondition implements IReceiv
     public boolean meetsCondition(ServerPlayer player, LivingEntity source) {
         return MKNpc.getPlayerQuestData(player).map(x -> {
             PlayerQuestingDataHandler.QuestStatus status = x.getQuestStatus(questId);
-            if (status == PlayerQuestingDataHandler.QuestStatus.NOT_ON){
+            if (status == PlayerQuestingDataHandler.QuestStatus.NOT_ON) {
                 return true;
             } else {
                 return allowRepeat && status != PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS;
@@ -57,7 +57,7 @@ public class CanStartQuestCondition extends DialogueCondition implements IReceiv
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        if (!questId.equals(Util.NIL_UUID)){
+        if (!questId.equals(Util.NIL_UUID)) {
             builder.put(ops.createString("questId"), ops.createString(questId.toString()));
         }
         builder.put(ops.createString("allowRepeat"), ops.createBoolean(allowRepeat));

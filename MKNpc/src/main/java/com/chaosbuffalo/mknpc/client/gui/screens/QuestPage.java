@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.client.gui.screens;
 import com.chaosbuffalo.mkcore.client.gui.GuiTextures;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageBase;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
-import com.chaosbuffalo.mkcore.client.gui.widgets.*;
+import com.chaosbuffalo.mkcore.client.gui.widgets.ScrollingListPanelLayout;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mknpc.MKNpc;
@@ -17,10 +17,10 @@ import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import com.chaosbuffalo.mkwidgets.utils.TextureRegion;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.InterModComms;
 
 
@@ -73,7 +73,7 @@ public class QuestPage extends PlayerPageBase {
                     .setMarginRight(4).setPaddingBot(2).setPaddingRight(2);
             stackLayout.doSetChildWidth(true);
             pData.getQuestChains().forEach(questChain -> {
-                if (!questChain.isQuestComplete()){
+                if (!questChain.isQuestComplete()) {
                     QuestListEntry questEntry = new QuestListEntry(0, 0, 16, font, questChain, this);
                     stackLayout.addWidget(questEntry);
                     MKRectangle div = new MKRectangle(0, 0,
@@ -93,7 +93,7 @@ public class QuestPage extends PlayerPageBase {
 
     public void setCurrentQuest(PlayerQuestChainInstance currentQuest) {
         this.currentQuest = currentQuest;
-        if (questPanel != null){
+        if (questPanel != null) {
             questPanel.setCurrentChain(currentQuest);
         }
     }

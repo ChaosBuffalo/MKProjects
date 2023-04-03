@@ -7,17 +7,17 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.entities.humans.HumanEntity;
 import com.chaosbuffalo.mkultra.entities.orcs.OrcEntity;
 import com.chaosbuffalo.mkultra.entities.projectiles.*;
-import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 
 @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -55,7 +55,6 @@ public class MKUEntities {
             () -> EntityType.Builder.of(HumanEntity::new, MobCategory.CREATURE)
                     .sized(EntityType.ZOMBIE.getWidth(), EntityType.ZOMBIE.getHeight())
                     .build(new ResourceLocation(MKUltra.MODID, HUMAN_NAME).toString()));
-
 
 
     public static final RegistryObject<EntityType<CleansingSeedProjectileEntity>> CLEANSING_SEED_TYPE = REGISTRY.register(
@@ -109,14 +108,13 @@ public class MKUEntities {
                     .build(new ResourceLocation(MKUltra.MODID, "drown_projectile").toString()));
 
 
-
     public static void register() {
         REGISTRY.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
 
     @SubscribeEvent
-    public static void registerEntityAttributes(EntityAttributeCreationEvent event){
+    public static void registerEntityAttributes(EntityAttributeCreationEvent event) {
         event.put(HYBOREAN_SKELETON_TYPE.get(), MKSkeletonEntity.registerAttributes(2.0, 0.22)
                 .add(Attributes.ARMOR, 5.0).build());
         event.put(ORC_TYPE.get(), OrcEntity.registerAttributes(2.0, 0.35).build());

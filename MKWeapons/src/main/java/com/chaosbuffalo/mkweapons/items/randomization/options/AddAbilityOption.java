@@ -10,23 +10,23 @@ import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotMan
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
-public class AddAbilityOption extends BaseRandomizationOption{
+public class AddAbilityOption extends BaseRandomizationOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "option.ability");
     private MKAbility ability;
 
-    public AddAbilityOption(IRandomizationSlot slot){
+    public AddAbilityOption(IRandomizationSlot slot) {
         super(NAME, slot);
     }
 
-    public AddAbilityOption(MKAbility ability, IRandomizationSlot slot){
+    public AddAbilityOption(MKAbility ability, IRandomizationSlot slot) {
         this(slot);
         this.ability = ability;
     }
 
-    public AddAbilityOption(){
+    public AddAbilityOption() {
         this(RandomizationSlotManager.ABILITY_SLOT);
     }
 

@@ -10,6 +10,6 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 public interface IKillObjectiveHandler {
 
     boolean onPlayerKillNpcDefEntity(Player player, PlayerQuestObjectiveData objectiveData,
-                                  NpcDefinition def, LivingDeathEvent event, QuestData quest,
-                                  PlayerQuestChainInstance playerChain);
+                                     NpcDefinition def, LivingDeathEvent event, QuestData quest,
+                                     PlayerQuestChainInstance playerChain);
 }

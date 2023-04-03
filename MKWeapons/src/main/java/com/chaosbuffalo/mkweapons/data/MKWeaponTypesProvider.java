@@ -8,8 +8,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.HashCache;
 import net.minecraft.data.DataProvider;
+import net.minecraft.data.HashCache;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -33,7 +33,7 @@ public class MKWeaponTypesProvider implements DataProvider {
             try {
                 JsonElement element = type.serialize(JsonOps.INSTANCE);
                 DataProvider.save(GSON, cache, element, path);
-            } catch (IOException e){
+            } catch (IOException e) {
                 MKWeapons.LOGGER.error("Couldn't write weapon type {}", path, e);
             }
         });

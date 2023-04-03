@@ -3,12 +3,12 @@ package com.chaosbuffalo.mknpc.entity.ai.movement_strategy;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.MovementUtils;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.server.level.ServerLevel;
 
 import java.util.Optional;
 
@@ -25,7 +25,7 @@ public class KiteMovementStrategy extends MovementStrategy {
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.MOVEMENT_TARGET);
         Optional<WalkTarget> walkTargetOptional = brain.getMemory(MemoryModuleType.WALK_TARGET);
-        if (entity.getRandom().nextInt(20) == 0){
+        if (entity.getRandom().nextInt(20) == 0) {
             return;
         }
         if (targetOpt.isPresent()) {

@@ -1,19 +1,17 @@
 package com.chaosbuffalo.mkwidgets.client.gui.widgets;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
-import net.minecraft.client.gui.Font;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.util.Mth;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.BiFunction;
@@ -103,7 +101,7 @@ public class MKButton extends MKWidget {
 
     @Override
     public boolean keyPressed(Minecraft minecraft, int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_E){
+        if (keyCode == GLFW.GLFW_KEY_E) {
             if (pressedCallback != null) {
                 if (pressedCallback.apply(this, GLFW.GLFW_MOUSE_BUTTON_1)) {
                     playPressSound(minecraft.getSoundManager());

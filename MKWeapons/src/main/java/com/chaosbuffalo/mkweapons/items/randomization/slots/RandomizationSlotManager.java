@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkweapons.items.randomization.slots;
 
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,15 +36,15 @@ public class RandomizationSlotManager {
 
     public static final Map<ResourceLocation, IRandomizationSlot> SLOTS = new HashMap<>();
 
-    public static void addRandomizatiotSlot(IRandomizationSlot slot){
+    public static void addRandomizatiotSlot(IRandomizationSlot slot) {
         SLOTS.put(slot.getName(), slot);
     }
 
-    public static IRandomizationSlot getSlotFromName(ResourceLocation name){
+    public static IRandomizationSlot getSlotFromName(ResourceLocation name) {
         return SLOTS.get(name);
     }
 
-    public static void setupRandomizationSlots(){
+    public static void setupRandomizationSlots() {
         addRandomizatiotSlot(ATTRIBUTE_SLOT);
         addRandomizatiotSlot(EFFECT_SLOT);
         addRandomizatiotSlot(ABILITY_SLOT);

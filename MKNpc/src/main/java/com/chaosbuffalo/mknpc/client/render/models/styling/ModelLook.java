@@ -14,23 +14,23 @@ public class ModelLook {
     private final Map<String, ResourceLocation> layerTexture;
     public static final ResourceLocation MISSING_TEXTURE = new ResourceLocation(MKNpc.MODID, "textures/entity/missing_texture.png");
 
-    public ModelLook(ModelStyle baseStyle, ResourceLocation baseTexture, ResourceLocation... textureLayers){
+    public ModelLook(ModelStyle baseStyle, ResourceLocation baseTexture, ResourceLocation... textureLayers) {
         this.baseTexture = baseTexture;
         this.baseStyle = baseStyle;
         this.layerTexture = new HashMap<>();
         setTexturesForLayers(baseStyle, textureLayers);
     }
 
-    public void setTexturesForLayers(ModelStyle style, ResourceLocation... textures){
+    public void setTexturesForLayers(ModelStyle style, ResourceLocation... textures) {
         int index = 0;
-        for (LayerStyle layer : style.getAdditionalLayers()){
+        for (LayerStyle layer : style.getAdditionalLayers()) {
             layerTexture.put(layer.getLayerName(), textures[index]);
             index++;
         }
     }
 
     @Nullable
-    public ResourceLocation getLayerTexture(String layer){
+    public ResourceLocation getLayerTexture(String layer) {
         return layerTexture.get(layer);
     }
 

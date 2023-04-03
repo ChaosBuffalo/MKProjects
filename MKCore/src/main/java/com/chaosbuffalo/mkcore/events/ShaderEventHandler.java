@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Objects;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, modid= MKCore.MOD_ID, bus= Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = MKCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ShaderEventHandler {
     @Nullable
     private static ShaderInstance rendertypeMagicParticle;
@@ -25,15 +25,13 @@ public class ShaderEventHandler {
         return Objects.requireNonNull(rendertypeBlackMagicParticle, "Attempted to call getBlackMagicParticleShader before shaders have finished loading.");
     }
 
-    public static ShaderInstance getMagicParticleShader()
-    {
+    public static ShaderInstance getMagicParticleShader() {
         return Objects.requireNonNull(rendertypeMagicParticle, "Attempted to call getMagicParticleShader before shaders have finished loading.");
     }
 
     @SubscribeEvent
-    public static void registerShaders(RegisterShadersEvent event) throws IOException
-    {
-        event.registerShader(new ShaderInstance(event.getResourceManager(), new ResourceLocation(MKCore.MOD_ID,"magic_particle"),
+    public static void registerShaders(RegisterShadersEvent event) throws IOException {
+        event.registerShader(new ShaderInstance(event.getResourceManager(), new ResourceLocation(MKCore.MOD_ID, "magic_particle"),
                 DefaultVertexFormat.PARTICLE), (p_172645_) -> {
             rendertypeMagicParticle = p_172645_;
         });

@@ -22,12 +22,12 @@ import com.chaosbuffalo.mkultra.effects.YaupEffect;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Consumer;
 
@@ -90,7 +90,7 @@ public class YaupAbility extends MKAbility {
         MKEffectBuilder<?> sound = SoundEffect.from(entity, ModSounds.spell_buff_attack_4.get(), entity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, tick_particles.getValue(),
-                true, new Vec3(0.0, 1.0, 0.0))
+                        true, new Vec3(0.0, 1.0, 0.0))
                 .ability(this);
 
         AreaEffectBuilder.createOnCaster(entity)

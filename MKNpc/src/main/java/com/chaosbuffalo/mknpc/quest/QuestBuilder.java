@@ -9,9 +9,9 @@ import com.chaosbuffalo.mknpc.quest.dialogue.conditions.ObjectivesCompleteCondit
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.objectives.*;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -20,45 +20,45 @@ import java.util.function.Consumer;
 public class QuestBuilder {
     private Quest quest;
 
-    public QuestBuilder(String questName, MutableComponent description){
+    public QuestBuilder(String questName, MutableComponent description) {
         this.quest = new Quest(questName, description);
     }
 
-    public QuestBuilder autoComplete(boolean value){
+    public QuestBuilder autoComplete(boolean value) {
         quest.setAutoComplete(value);
         return this;
     }
 
-    public QuestBuilder objective(QuestObjective<?> objective){
+    public QuestBuilder objective(QuestObjective<?> objective) {
         quest.addObjective(objective);
         return this;
     }
 
-    public QuestBuilder reward(QuestReward reward){
+    public QuestBuilder reward(QuestReward reward) {
         quest.addReward(reward);
         return this;
     }
 
-    public QuestBuilder killNotable(String objectiveName, QuestNpc npc){
+    public QuestBuilder killNotable(String objectiveName, QuestNpc npc) {
         KillNotableNpcObjective kill = new KillNotableNpcObjective(objectiveName, npc.location.structureName,
                 npc.location.structureIndex, npc.npcDef);
         objective(kill);
         return this;
     }
 
-    public QuestBuilder killNpc(String objectiveName, ResourceLocation npcDef, int count){
+    public QuestBuilder killNpc(String objectiveName, ResourceLocation npcDef, int count) {
         KillNpcDefObjective kill = new KillNpcDefObjective(objectiveName, npcDef, count);
         objective(kill);
         return this;
     }
 
-    public QuestBuilder killWithAbility(String objectiveName, MKAbility ability, int count){
+    public QuestBuilder killWithAbility(String objectiveName, MKAbility ability, int count) {
         KillWithAbilityObjective kill = new KillWithAbilityObjective(objectiveName, ability, count);
         objective(kill);
         return this;
     }
 
-    public QuestBuilder questLootFromNotable(String objectiveName, QuestNpc npc, double chance, int count, MutableComponent itemDescription){
+    public QuestBuilder questLootFromNotable(String objectiveName, QuestNpc npc, double chance, int count, MutableComponent itemDescription) {
         QuestLootNotableObjective obj = new QuestLootNotableObjective(objectiveName, npc.location.structureName,
                 npc.location.structureIndex, npc.npcDef, chance, count, itemDescription);
         objective(obj);
@@ -68,7 +68,7 @@ public class QuestBuilder {
     public QuestBuilder hailWithObjectives(String objectiveName, MutableComponent description,
                                            QuestNpc talkTo, String withComplete,
                                            String withoutComplete, List<String> objectives,
-                                           @Nullable Consumer<TalkToNpcObjective> additionalLogic){
+                                           @Nullable Consumer<TalkToNpcObjective> additionalLogic) {
         TalkToNpcObjective talkObj = new TalkToNpcObjective(objectiveName,
                 talkTo.location.structureName, talkTo.location.structureIndex, talkTo.npcDef, description);
         DialogueNode completeNode = new DialogueNode(String.format("%s_complete", objectiveName), withComplete);
@@ -79,7 +79,7 @@ public class QuestBuilder {
         DialogueResponse withoutResponse = new DialogueResponse(withoutCompleteNode.getId());
         talkObj.withHailResponse(completeNode, completeResponse);
         talkObj.withHailResponse(withoutCompleteNode, withoutResponse);
-        if (additionalLogic != null){
+        if (additionalLogic != null) {
             additionalLogic.accept(talkObj);
         }
         objective(talkObj);
@@ -89,7 +89,7 @@ public class QuestBuilder {
     public QuestBuilder hailWithCondition(String objectiveName, MutableComponent description,
                                           QuestNpc talkTo, String withCondition, String withoutCondition,
                                           DialogueCondition withCond,
-                                          @Nullable Consumer<TalkToNpcObjective> additionalLogic){
+                                          @Nullable Consumer<TalkToNpcObjective> additionalLogic) {
         TalkToNpcObjective talkObj = new TalkToNpcObjective(objectiveName,
                 talkTo.location.structureName, talkTo.location.structureIndex, talkTo.npcDef, description);
         DialogueNode conditionNode = new DialogueNode(String.format("%s_w_cond", objectiveName), withCondition);
@@ -100,7 +100,7 @@ public class QuestBuilder {
         DialogueResponse withoutConditionResponse = new DialogueResponse(withoutConditionNode.getId());
         talkObj.withHailResponse(conditionNode, conditionResponse);
         talkObj.withHailResponse(withoutConditionNode, withoutConditionResponse);
-        if (additionalLogic != null){
+        if (additionalLogic != null) {
             additionalLogic.accept(talkObj);
         }
         objective(talkObj);
@@ -109,17 +109,17 @@ public class QuestBuilder {
 
     public QuestBuilder simpleHail(String objectiveName, MutableComponent description,
                                    QuestNpc talkTo, String hailMessage,
-                                   boolean immediateComplete, @Nullable Consumer<TalkToNpcObjective> additionalLogic){
+                                   boolean immediateComplete, @Nullable Consumer<TalkToNpcObjective> additionalLogic) {
         TalkToNpcObjective talkObj = new TalkToNpcObjective(
                 objectiveName,
                 talkTo.location.structureName, talkTo.location.structureIndex, talkTo.npcDef,
                 description);
         DialogueNode hailNode = new DialogueNode(String.format("%s_hail", objectiveName), hailMessage);
-        if (immediateComplete){
+        if (immediateComplete) {
             hailNode.addEffect(new ObjectiveCompleteEffect(talkObj.getObjectiveName(), quest.getQuestName()));
         }
         talkObj.withHailResponse(hailNode, new DialogueResponse(hailNode.getId()));
-        if (additionalLogic != null){
+        if (additionalLogic != null) {
             additionalLogic.accept(talkObj);
         }
         objective(talkObj);
@@ -127,17 +127,17 @@ public class QuestBuilder {
     }
 
     public QuestBuilder lootChest(String objectiveName, MutableComponent description, QuestLocation location,
-                                  String chestTag, ItemStack... items){
+                                  String chestTag, ItemStack... items) {
         LootChestObjective chestObj = new LootChestObjective(objectiveName, location.structureName,
                 location.structureIndex, chestTag, description);
-        for (ItemStack item : items){
+        for (ItemStack item : items) {
             chestObj.addItemStack(item);
         }
         objective(chestObj);
         return this;
     }
 
-    public Quest quest(){
+    public Quest quest() {
         return quest;
     }
 
@@ -145,7 +145,7 @@ public class QuestBuilder {
         ResourceLocation structureName;
         int structureIndex;
 
-        public QuestLocation(ResourceLocation structureName, int structureIndex){
+        public QuestLocation(ResourceLocation structureName, int structureIndex) {
             this.structureIndex = structureIndex;
             this.structureName = structureName;
         }
@@ -155,12 +155,12 @@ public class QuestBuilder {
         QuestLocation location;
         ResourceLocation npcDef;
 
-        public QuestNpc(QuestLocation location, ResourceLocation npcDef){
+        public QuestNpc(QuestLocation location, ResourceLocation npcDef) {
             this.location = location;
             this.npcDef = npcDef;
         }
 
-        public String getDialogueLink(){
+        public String getDialogueLink() {
             return NpcDialogueUtils.getNotableNpcRaw(location.structureName, location.structureIndex, npcDef);
         }
     }

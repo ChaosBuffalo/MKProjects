@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkwidgets.client.gui.widgets;
 
 import com.chaosbuffalo.mkwidgets.client.gui.math.IntColor;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +24,7 @@ public class MKImage extends MKWidget {
     public MKImage(int x, int y, int width, int height, int sourceWidth,
                    int sourceHeight, int imageU, int imageV,
                    int imageWidth, int imageHeight,
-                   ResourceLocation imageLoc){
+                   ResourceLocation imageLoc) {
         super(x, y, width, height);
         this.imageLoc = imageLoc;
         texU = imageU;
@@ -115,7 +115,7 @@ public class MKImage extends MKWidget {
         RenderSystem.setShaderColor(color.getRedF(), color.getBlueF(), color.getGreenF(), color.getAlphaF());
         RenderSystem.setShaderTexture(0, getImageLoc());
         mkBlitUVSizeDifferent(matrixStack, getX(), getY(), getWidth(),
-                getHeight(), (float)getTexU(), (float)getTexV(), getTexWidth(), getTexHeight(), getSourceWidth(), getSourceHeight());
+                getHeight(), (float) getTexU(), (float) getTexV(), getTexWidth(), getTexHeight(), getSourceWidth(), getSourceHeight());
         RenderSystem.enableDepthTest();
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
     }

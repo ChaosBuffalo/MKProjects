@@ -1,21 +1,21 @@
 package com.chaosbuffalo.mknpc.quest.data.objective;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.Util;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.UUID;
 
-public class UUIDInstanceData extends ObjectiveInstanceData{
+public class UUIDInstanceData extends ObjectiveInstanceData {
 
     private UUID uuid;
     private boolean isValid;
 
-    public UUIDInstanceData(){
+    public UUIDInstanceData() {
         uuid = Util.NIL_UUID;
         isValid = false;
     }
 
-    public UUIDInstanceData(UUID uuid){
+    public UUIDInstanceData(UUID uuid) {
         this.uuid = uuid;
         isValid = true;
     }

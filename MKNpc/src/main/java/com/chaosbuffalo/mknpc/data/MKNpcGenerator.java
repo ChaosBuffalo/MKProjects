@@ -10,7 +10,7 @@ public class MKNpcGenerator {
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {
         DataGenerator gen = event.getGenerator();
-        if (event.includeServer()){
+        if (event.includeServer()) {
             gen.addProvider(new NpcDefinitionProvider(gen));
             gen.addProvider(new NpcPoolProvider(gen));
             gen.addProvider(new NpcConfiguredStructureProvider(gen));

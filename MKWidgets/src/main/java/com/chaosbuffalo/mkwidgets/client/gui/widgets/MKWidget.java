@@ -1,13 +1,12 @@
 package com.chaosbuffalo.mkwidgets.client.gui.widgets;
 
+import com.chaosbuffalo.mkwidgets.client.gui.UIConstants;
 import com.chaosbuffalo.mkwidgets.client.gui.instructions.HoveringTextInstruction;
 import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.IMKScreen;
-import com.chaosbuffalo.mkwidgets.client.gui.UIConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-
 
 import javax.annotation.Nullable;
 import java.util.LinkedList;
@@ -33,7 +32,7 @@ public class MKWidget extends MKAbstractGui implements IMKWidget {
     private boolean canFocus;
     private Component tooltip;
 
-    public MKWidget(int x, int y, int width, int height){
+    public MKWidget(int x, int y, int width, int height) {
         id = UUID.randomUUID();
         this.x = x;
         this.y = y;
@@ -86,7 +85,7 @@ public class MKWidget extends MKAbstractGui implements IMKWidget {
     @Override
     public void longHoverDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         IMKScreen screen = getScreen();
-        if (tooltip != null && screen != null){
+        if (tooltip != null && screen != null) {
             // tooltips are added in screen space so we need to climb the widget tree to the top.
             Vec2i parentPos = getParentCoords(new Vec2i(mouseX, mouseY));
             screen.addPostRenderInstruction(new HoveringTextInstruction(tooltip, parentPos));

@@ -30,7 +30,7 @@ public class MKWeaponsClientEventHandler {
                     event.getPlayer() != null ? event.getPlayer().getCommandSenderWorld() : null, event.getToolTip());
         }
 
-        if (item instanceof MKAccessory){
+        if (item instanceof MKAccessory) {
             ((MKAccessory) item).addToTooltip(event.getItemStack(),
                     event.getPlayer() != null ? event.getPlayer().getCommandSenderWorld() : null, event.getToolTip());
         }

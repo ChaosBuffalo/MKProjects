@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mkcore.CoreCapabilities;
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
@@ -14,8 +13,6 @@ import net.minecraft.world.entity.ai.goal.Goal;
 
 import java.util.EnumSet;
 import java.util.Optional;
-
-import net.minecraft.world.entity.ai.goal.Goal.Flag;
 
 public class UseAbilityGoal extends Goal {
     public static final int CAN_SEE_TIMEOUT = 30;
@@ -68,7 +65,7 @@ public class UseAbilityGoal extends Goal {
 
     public boolean canActivate() {
         return entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).map((entityData) ->
-                entityData.getAbilityExecutor().canActivateAbility(currentAbility))
+                        entityData.getAbilityExecutor().canActivateAbility(currentAbility))
                 .orElse(false);
     }
 
@@ -94,10 +91,10 @@ public class UseAbilityGoal extends Goal {
 
     @Override
     public void tick() {
-        if (!target.is(entity)){
+        if (!target.is(entity)) {
             entity.lookAt(target, 50.0f, 50.0f);
             entity.getLookControl().setLookAt(target, 50.0f, 50.0f);
-            if (entity.getSensing().hasLineOfSight(target)){
+            if (entity.getSensing().hasLineOfSight(target)) {
                 ticksSinceSeenTarget = 0;
             } else {
                 ticksSinceSeenTarget++;

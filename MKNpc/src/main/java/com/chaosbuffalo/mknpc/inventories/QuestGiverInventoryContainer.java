@@ -13,17 +13,17 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.objectives.ITradeObjectiveHandler;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.Util;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
@@ -56,37 +56,38 @@ public class QuestGiverInventoryContainer extends ChestMenu {
             }
             inventory.setItem(i, ItemStack.EMPTY);
         }
-        if (nonEmpty.isEmpty()){
+        if (nonEmpty.isEmpty()) {
             return;
         }
         Optional<? extends IPlayerQuestingData> playerQuestOpt = MKNpc.getPlayerQuestData(playerIn).resolve();
         MinecraftServer server = playerIn.getServer();
-        if (server != null){
+        if (server != null) {
             Level overWorld = server.getLevel(Level.OVERWORLD);
-            if (overWorld != null){
+            if (overWorld != null) {
                 Optional<? extends IWorldNpcData> worldDataOpt = overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).resolve();
-                if (worldDataOpt.isPresent()){
-                    IWorldNpcData worldData = worldDataOpt.get();;
-                    if (playerQuestOpt.isPresent()){
+                if (worldDataOpt.isPresent()) {
+                    IWorldNpcData worldData = worldDataOpt.get();
+                    ;
+                    if (playerQuestOpt.isPresent()) {
                         IPlayerQuestingData playerQuest = playerQuestOpt.get();
                         Collection<PlayerQuestChainInstance> chains = playerQuest.getQuestChains();
-                        for (PlayerQuestChainInstance chain : chains){
+                        for (PlayerQuestChainInstance chain : chains) {
                             QuestChainInstance questChain = worldData.getQuest(chain.getQuestId());
                             if (questChain == null) {
                                 continue;
                             }
-                            for (String questName : chain.getCurrentQuests()){
+                            for (String questName : chain.getCurrentQuests()) {
                                 Quest currentQuest = questChain.getDefinition().getQuest(questName);
                                 if (currentQuest != null) {
-                                    for (QuestObjective<?> obj : currentQuest.getObjectives()){
+                                    for (QuestObjective<?> obj : currentQuest.getObjectives()) {
                                         PlayerQuestData playerData = chain.getQuestData(currentQuest.getQuestName());
                                         PlayerQuestObjectiveData playerObj = playerData.getObjective(obj.getObjectiveName());
                                         QuestData questData = questChain.getQuestChainData().getQuestData(questName);
-                                        if (obj instanceof ITradeObjectiveHandler){
+                                        if (obj instanceof ITradeObjectiveHandler) {
                                             if (((ITradeObjectiveHandler) obj).canTradeWith(entity, playerIn, playerObj,
-                                                    questData, chain)){
+                                                    questData, chain)) {
                                                 int[] matches = ((ITradeObjectiveHandler) obj).findMatches(nonEmpty);
-                                                if (matches == null){
+                                                if (matches == null) {
                                                     continue;
                                                 } else {
                                                     ((ITradeObjectiveHandler) obj).onPlayerTradeSuccess(playerIn,
@@ -104,7 +105,7 @@ public class QuestGiverInventoryContainer extends ChestMenu {
                 }
             }
         }
-        for (ItemStack is : nonEmpty){
+        for (ItemStack is : nonEmpty) {
             TextComponent name = new TextComponent(String.format("<%s>", entity.getDisplayName().getString()));
             playerIn.sendMessage(new TranslatableComponent("mknpc.quest.trade.dont_need", name,
                     playerIn.getName(), is.getCount(), is.getHoverName()), Util.NIL_UUID);

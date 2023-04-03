@@ -16,7 +16,7 @@ public interface IMKMeleeWeapon extends IMKWeapon {
 
     List<IMeleeWeaponEffect> getWeaponEffects(ItemStack item);
 
-    default boolean allowSweep(){
+    default boolean allowSweep() {
         return false;
     }
 

@@ -15,7 +15,6 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.ParticleEffectSpawnPacket;
 import com.chaosbuffalo.mkcore.test.MKTestEffects;
 import com.chaosbuffalo.mkcore.test.effects.FeatherFallEffect;
-import com.chaosbuffalo.mkcore.test.effects.PhoenixAspectEffect;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.core.particles.ParticleTypes;
@@ -70,9 +69,9 @@ public class PhoenixAspectAbility extends MKAbility {
                 .timed(duration + 10 * GameConstants.TICKS_PER_SECOND)
                 .amplify(level);
         MKEffectBuilder<?> particlePotion = MKOldParticleEffect.from(castingEntity,
-                ParticleTypes.FIREWORK,
-                ParticleEffects.DIRECTED_SPOUT, false, new Vec3(1.0, 1.5, 1.0),
-                new Vec3(0.0, 1.0, 0.0), 40, 5, 1.0)
+                        ParticleTypes.FIREWORK,
+                        ParticleEffects.DIRECTED_SPOUT, false, new Vec3(1.0, 1.5, 1.0),
+                        new Vec3(0.0, 1.0, 0.0), 40, 5, 1.0)
                 .ability(this);
 
         AreaEffectBuilder.createOnCaster(castingEntity)

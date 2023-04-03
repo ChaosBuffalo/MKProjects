@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
-import java.util.Map;
 
 public class OrcGroupRenderer extends BipedGroupRenderer<OrcEntity, MKBipedModel<OrcEntity>> {
 

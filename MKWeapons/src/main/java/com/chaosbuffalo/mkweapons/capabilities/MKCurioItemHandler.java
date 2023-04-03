@@ -9,7 +9,10 @@ import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +30,7 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
     private final Map<String, Multimap<Attribute, AttributeModifier>> modifiers = new HashMap<>();
     private boolean isCacheDirty;
 
-    public MKCurioItemHandler(ItemStack itemStack){
+    public MKCurioItemHandler(ItemStack itemStack) {
         this.stack = itemStack;
         effects = new ArrayList<>();
         cachedEffects = new ArrayList<>();
@@ -45,14 +48,14 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
 
     @Override
     public void onEquip(SlotContext slotContext, ItemStack prevStack) {
-        for (IAccessoryEffect effect : getEffects()){
+        for (IAccessoryEffect effect : getEffects()) {
             effect.onEntityEquip(slotContext.getWearer());
         }
     }
 
     @Override
     public void onUnequip(SlotContext slotContext, ItemStack newStack) {
-        for (IAccessoryEffect effect : getEffects()){
+        for (IAccessoryEffect effect : getEffects()) {
             effect.onEntityUnequip(slotContext.getWearer());
         }
     }
@@ -72,14 +75,14 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
         markCacheDirty();
     }
 
-    public MKAccessory getAccessory(){
+    public MKAccessory getAccessory() {
         return (MKAccessory) getStack().getItem();
     }
 
     public List<IAccessoryEffect> getEffects() {
-        if (isCacheDirty){
+        if (isCacheDirty) {
             cachedEffects.clear();
-            if (getStack().getItem() instanceof MKAccessory){
+            if (getStack().getItem() instanceof MKAccessory) {
                 cachedEffects.addAll(((MKAccessory) getStack().getItem()).getAccessoryEffects());
             }
             cachedEffects.addAll(getStackEffects());
@@ -88,11 +91,11 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
         return cachedEffects;
     }
 
-    public boolean hasEffects(){
+    public boolean hasEffects() {
         return !effects.isEmpty();
     }
 
-    private void loadSlotModifiers(String slotId){
+    private void loadSlotModifiers(String slotId) {
         Multimap<Attribute, AttributeModifier> newMods = HashMultimap.create();
         for (IAccessoryEffect weaponEffect : getEffects()) {
             if (weaponEffect instanceof ItemModifierEffect) {
@@ -105,7 +108,7 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
 
     @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(SlotContext slotContext, UUID uuid) {
-        if (!modifiers.containsKey(slotContext.getIdentifier())){
+        if (!modifiers.containsKey(slotContext.getIdentifier())) {
             loadSlotModifiers(slotContext.getIdentifier());
         }
         return modifiers.get(slotContext.getIdentifier());
@@ -115,7 +118,7 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
     public CompoundTag serializeNBT() {
         CompoundTag nbt = new CompoundTag();
         ListTag effectList = new ListTag();
-        for (IAccessoryEffect effect : getStackEffects()){
+        for (IAccessoryEffect effect : getStackEffects()) {
             effectList.add(effect.serialize(NbtOps.INSTANCE));
         }
         nbt.put("accessory_effects", effectList);
@@ -124,12 +127,12 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
-        if (nbt.contains("accessory_effects")){
+        if (nbt.contains("accessory_effects")) {
             ListTag effectList = nbt.getList("accessory_effects", Tag.TAG_COMPOUND);
             effects.clear();
-            for (Tag effectNBT : effectList){
+            for (Tag effectNBT : effectList) {
                 IItemEffect effect = ItemEffects.deserializeEffect(new Dynamic<>(NbtOps.INSTANCE, effectNBT));
-                if (effect instanceof IAccessoryEffect){
+                if (effect instanceof IAccessoryEffect) {
                     addEffect((IAccessoryEffect) effect);
                 } else {
                     MKWeapons.LOGGER.error("Failed to deserialize accessory effect of type {} for item {}", effect.getTypeName(),

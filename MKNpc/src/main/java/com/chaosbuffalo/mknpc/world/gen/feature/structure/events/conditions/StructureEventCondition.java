@@ -22,7 +22,7 @@ public abstract class StructureEventCondition implements ISerializableAttributeC
     private final List<ISerializableAttribute<?>> attributes = new ArrayList<>();
     private final ResourceLocation typeName;
 
-    public StructureEventCondition(ResourceLocation typeName){
+    public StructureEventCondition(ResourceLocation typeName) {
         this.typeName = typeName;
     }
 
@@ -51,7 +51,7 @@ public abstract class StructureEventCondition implements ISerializableAttributeC
         deserializeAttributeMap(dynamic, "attributes");
     }
 
-    public static <D> ResourceLocation getType(Dynamic<D> dynamic){
+    public static <D> ResourceLocation getType(Dynamic<D> dynamic) {
         return IDynamicMapTypedSerializer.getType(dynamic, TYPE_ENTRY_NAME).orElse(INVALID_OPTION);
     }
 

@@ -1,19 +1,19 @@
 package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
-import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 
 
-
-public class MKGolemEntity extends MKEntity  {
+public class MKGolemEntity extends MKEntity {
     public static final String DEFAULT = "default";
+
     public MKGolemEntity(EntityType<? extends MKGolemEntity> type, Level worldIn) {
         super(type, worldIn);
         setCurrentModelLook(DEFAULT);
@@ -32,7 +32,6 @@ public class MKGolemEntity extends MKEntity  {
                 .add(MKAttributes.NATURE_RESISTANCE, 0.25)
                 .add(Attributes.ARMOR, 10);
     }
-
 
 
     @Override

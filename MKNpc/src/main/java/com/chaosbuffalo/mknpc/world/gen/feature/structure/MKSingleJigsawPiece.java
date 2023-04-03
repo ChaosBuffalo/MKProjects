@@ -4,35 +4,29 @@ import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Rotation;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.core.Holder;
+import net.minecraft.data.worldgen.ProcessorLists;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.templatesystem.*;
 
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
 
-
-import net.minecraft.data.worldgen.ProcessorLists;
-import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
-import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
-import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
-import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-
-public class MKSingleJigsawPiece extends SinglePoolElement implements IMKJigsawPiece{
+public class MKSingleJigsawPiece extends SinglePoolElement implements IMKJigsawPiece {
 
     public static final Codec<MKSingleJigsawPiece> codec = RecordCodecBuilder.create((builder) ->
             builder.group(templateCodec(), processorsCodec(), projectionCodec(), Codec.BOOL.fieldOf("bWaterLog")
-                    .forGetter(MKSingleJigsawPiece::doWaterlog))
+                            .forGetter(MKSingleJigsawPiece::doWaterlog))
                     .apply(builder, MKSingleJigsawPiece::new));
 
     private boolean bWaterlogBlocks;
@@ -48,13 +42,12 @@ public class MKSingleJigsawPiece extends SinglePoolElement implements IMKJigsawP
         super(template);
     }
 
-    public boolean doWaterlog(){
+    public boolean doWaterlog() {
         return bWaterlogBlocks;
     }
 
 
-
-    public Either<ResourceLocation, StructureTemplate> getPieceEither(){
+    public Either<ResourceLocation, StructureTemplate> getPieceEither() {
         return template;
     }
 
@@ -78,10 +71,10 @@ public class MKSingleJigsawPiece extends SinglePoolElement implements IMKJigsawP
             List<StructureTemplate.StructureBlockInfo> dataMarkers = this.getDataMarkers(templateManager, structurePos, rot, false);
             StructurePlaceSettings processSettings = placementsettings.copy();
 //            processSettings.removeProcessor(BlockIgnoreStructureProcessor.STRUCTURE_BLOCK);
-            for(StructureTemplate.StructureBlockInfo blockinfo : StructureTemplate.processBlockInfos(
+            for (StructureTemplate.StructureBlockInfo blockinfo : StructureTemplate.processBlockInfos(
                     seedReader, structurePos, blockPos, processSettings,
                     dataMarkers, template)) {
-                if (boundingBox.isInside(blockinfo.pos)){
+                if (boundingBox.isInside(blockinfo.pos)) {
                     mkHandleDataMarker(seedReader, blockinfo, blockinfo.pos, rot, rand, boundingBox, parent);
                 }
             }

@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkweapons.items.randomization.slots;
 
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,25 +24,29 @@ public class LootSlotManager {
             EquipmentSlot.HEAD);
     public static final LootSlot FEET = new LootSlot(new ResourceLocation(MKWeapons.MODID, "feet"),
             EquipmentSlot.FEET);
-    public static final LootSlot INVALID = new LootSlot(INVALID_LOOT_SLOT, (ent, item) -> {});
+    public static final LootSlot INVALID = new LootSlot(INVALID_LOOT_SLOT, (ent, item) -> {
+    });
     public static final LootSlot ITEMS = new LootSlot(new ResourceLocation(MKWeapons.MODID, "items"),
-            (ent, item) -> {});
+            (ent, item) -> {
+            });
     public static final LootSlot RINGS = new LootSlot(new ResourceLocation(MKWeapons.MODID, "rings"),
-            (ent, item) -> {});
+            (ent, item) -> {
+            });
     public static final LootSlot EARRINGS = new LootSlot(new ResourceLocation(MKWeapons.MODID, "earrings"),
-            (ent, item) -> {});
+            (ent, item) -> {
+            });
 
     public static final Map<ResourceLocation, LootSlot> SLOTS = new HashMap<>();
 
-    public static void addLootSlot(LootSlot slot){
+    public static void addLootSlot(LootSlot slot) {
         SLOTS.put(slot.getName(), slot);
     }
 
-    public static LootSlot getSlotFromName(ResourceLocation name){
+    public static LootSlot getSlotFromName(ResourceLocation name) {
         return SLOTS.get(name);
     }
 
-    public static void setupLootSlots(){
+    public static void setupLootSlots() {
         addLootSlot(MAIN_HAND);
         addLootSlot(OFF_HAND);
         addLootSlot(CHEST);

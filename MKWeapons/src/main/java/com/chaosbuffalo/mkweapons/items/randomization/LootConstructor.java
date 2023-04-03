@@ -13,8 +13,8 @@ import com.chaosbuffalo.mkweapons.items.randomization.templates.RandomizationTem
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class LootConstructor implements IDynamicMapSerializer {
     @Nullable
     private RandomizationTemplate template;
 
-    public LootConstructor(ItemStack item, LootSlot slot, List<IRandomizationOption> permanentOptions){
+    public LootConstructor(ItemStack item, LootSlot slot, List<IRandomizationOption> permanentOptions) {
         this.item = item;
         this.slot = slot;
         this.permanentOptions = new ArrayList<>();
@@ -39,7 +39,7 @@ public class LootConstructor implements IDynamicMapSerializer {
         this.randomizedOptions = new ArrayList<>();
     }
 
-    public LootConstructor(){
+    public LootConstructor() {
         this(ItemStack.EMPTY, LootSlotManager.INVALID, new ArrayList<>());
     }
 
@@ -48,25 +48,25 @@ public class LootConstructor implements IDynamicMapSerializer {
         this.randomizedOptions.addAll(options);
     }
 
-    public ItemStack constructItem(Random random, double difficulty){
-        if (item.isEmpty() || slot.equals(LootSlotManager.INVALID)){
+    public ItemStack constructItem(Random random, double difficulty) {
+        if (item.isEmpty() || slot.equals(LootSlotManager.INVALID)) {
             return ItemStack.EMPTY;
         }
         ItemStack newItem = item.copy();
-        for (IRandomizationOption option : permanentOptions){
+        for (IRandomizationOption option : permanentOptions) {
             option.applyToItemStackForSlot(newItem, slot, difficulty);
         }
         if (template != null) {
             for (IRandomizationSlot randomizationSlot : template.getRandomizationSlots()) {
                 if (!randomizationSlot.isPermanent()) {
                     List<IRandomizationOption> options = randomizedOptions.stream().filter(x ->
-                            x.getSlot().equals(randomizationSlot) && x.isApplicableToItem(newItem))
+                                    x.getSlot().equals(randomizationSlot) && x.isApplicableToItem(newItem))
                             .collect(Collectors.toList());
                     RandomCollection<IRandomizationOption> optionChoices = new RandomCollection<>();
-                    for (IRandomizationOption option : options){
+                    for (IRandomizationOption option : options) {
                         optionChoices.add(option.getWeight(), option);
                     }
-                    if (optionChoices.size() > 0){
+                    if (optionChoices.size() > 0) {
                         IRandomizationOption opt = optionChoices.next(random);
                         opt.applyToItemStackForSlot(newItem, slot, difficulty);
                     } else {
@@ -91,12 +91,12 @@ public class LootConstructor implements IDynamicMapSerializer {
         }
     }
 
-    public <D> void deserialize(Dynamic<D> dynamic){
+    public <D> void deserialize(Dynamic<D> dynamic) {
         List<IRandomizationOption> options = dynamic.get("permanentOptions").asList(
                 RandomizationOptionManager::deserializeOption);
         this.permanentOptions.clear();
-        for (IRandomizationOption option : options){
-            if (option != null){
+        for (IRandomizationOption option : options) {
+            if (option != null) {
                 this.permanentOptions.add(option);
             }
         }
@@ -111,7 +111,7 @@ public class LootConstructor implements IDynamicMapSerializer {
         template = dynamic.get("template").map(RandomizationTemplate::deserializeTemplate).result().orElse(null);
         item = dynamic.get("item").map(SerializationUtils::deserializeItemStack).result().orElse(ItemStack.EMPTY);
         slot = dynamic.get("slot").asString().result().map(
-                slotName -> LootSlotManager.getSlotFromName(new ResourceLocation(slotName)))
+                        slotName -> LootSlotManager.getSlotFromName(new ResourceLocation(slotName)))
                 .orElse(LootSlotManager.INVALID);
 
     }

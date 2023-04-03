@@ -4,38 +4,35 @@ import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.network.OpenMKSpawnerPacket;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.util.*;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.Level;
+import net.minecraftforge.network.NetworkDirection;
 
 import javax.annotation.Nullable;
-
-
-
-import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraftforge.network.NetworkDirection;
 
 public class MKSpawnerBlock extends BaseEntityBlock {
 
@@ -49,7 +46,7 @@ public class MKSpawnerBlock extends BaseEntityBlock {
         private final String name;
         private final Direction direction;
 
-        MKSpawnerOrientation(String name, Direction direction){
+        MKSpawnerOrientation(String name, Direction direction) {
             this.name = name;
             this.direction = direction;
         }
@@ -58,7 +55,7 @@ public class MKSpawnerBlock extends BaseEntityBlock {
             return direction;
         }
 
-        public float getAngleInDegrees(){
+        public float getAngleInDegrees() {
             return switch (this) {
                 case EAST -> 270;
                 case WEST -> 90;
@@ -67,7 +64,7 @@ public class MKSpawnerBlock extends BaseEntityBlock {
             };
         }
 
-        public MKSpawnerOrientation rotate(Rotation rot){
+        public MKSpawnerOrientation rotate(Rotation rot) {
             return switch (rot) {
                 case NONE -> this;
                 case CLOCKWISE_90 -> switch (this) {
@@ -96,6 +93,7 @@ public class MKSpawnerBlock extends BaseEntityBlock {
             return name;
         }
     }
+
     public static final EnumProperty<MKSpawnerOrientation> ORIENTATION = EnumProperty.create("orientation", MKSpawnerOrientation.class);
 
     private final VoxelShape shape = Block.box(0, 0, 0, 16.0, 1.0, 16.0);
@@ -150,17 +148,16 @@ public class MKSpawnerBlock extends BaseEntityBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player,
-                                             InteractionHand handIn, BlockHitResult hit) {
-        if (handIn.equals(InteractionHand.MAIN_HAND)){
-            if (!worldIn.isClientSide() && player.isCreative()){
-                if (player.isShiftKeyDown()){
+                                 InteractionHand handIn, BlockHitResult hit) {
+        if (handIn.equals(InteractionHand.MAIN_HAND)) {
+            if (!worldIn.isClientSide() && player.isCreative()) {
+                if (player.isShiftKeyDown()) {
                     worldIn.setBlockAndUpdate(pos, state.setValue(ORIENTATION, getNextOrientation(state.getValue(ORIENTATION))));
                     BlockEntity spawner = worldIn.getBlockEntity(pos);
-                    if (spawner instanceof MKSpawnerTileEntity){
+                    if (spawner instanceof MKSpawnerTileEntity) {
                         ((MKSpawnerTileEntity) spawner).clearSpawn();
                     }
-                }
-                else {
+                } else {
                     ((ServerPlayer) player).connection.send(
                             PacketHandler.getNetworkChannel().toVanillaPacket(
                                     new OpenMKSpawnerPacket((MKSpawnerTileEntity) worldIn.getBlockEntity(pos)),
@@ -179,7 +176,7 @@ public class MKSpawnerBlock extends BaseEntityBlock {
         return RenderShape.MODEL;
     }
 
-    protected MKSpawnerOrientation getNextOrientation(MKSpawnerOrientation in){
+    protected MKSpawnerOrientation getNextOrientation(MKSpawnerOrientation in) {
         return switch (in) {
             case EAST -> MKSpawnerOrientation.SOUTH;
             case SOUTH -> MKSpawnerOrientation.WEST;

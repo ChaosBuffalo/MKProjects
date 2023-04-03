@@ -3,8 +3,8 @@ package com.chaosbuffalo.mkweapons.items.effects.armor;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.effects.ItemModifierEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public class ArmorModifierEffect extends ItemModifierEffect implements IArmorEff
         this.modifiers.addAll(modifiers);
     }
 
-    public ArmorModifierEffect(){
+    public ArmorModifierEffect() {
         super(NAME, ChatFormatting.WHITE);
     }
 }

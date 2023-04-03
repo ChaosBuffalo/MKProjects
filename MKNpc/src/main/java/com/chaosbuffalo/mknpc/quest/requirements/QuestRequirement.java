@@ -8,8 +8,8 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +21,7 @@ public abstract class QuestRequirement implements ISerializableAttributeContaine
     private final List<ISerializableAttribute<?>> attributes = new ArrayList<>();
     private final ResourceLocation requirementType;
 
-    public QuestRequirement(ResourceLocation typeName){
+    public QuestRequirement(ResourceLocation typeName) {
         this.requirementType = typeName;
     }
 
@@ -50,7 +50,7 @@ public abstract class QuestRequirement implements ISerializableAttributeContaine
         deserializeAttributeMap(dynamic, "attributes");
     }
 
-    public static <D> ResourceLocation getType(Dynamic<D> dynamic){
+    public static <D> ResourceLocation getType(Dynamic<D> dynamic) {
         return IDynamicMapTypedSerializer.getType(dynamic, TYPE_ENTRY_NAME).orElse(INVALID_OPTION);
     }
 

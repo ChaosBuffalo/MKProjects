@@ -2,12 +2,12 @@ package com.chaosbuffalo.mknpc.npc;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.INBTSerializable;
 
@@ -23,7 +23,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
     private UUID spawnerId;
     private UUID notableId;
 
-    public NotableNpcEntry(NpcDefinition definition, MKSpawnerTileEntity spawner){
+    public NotableNpcEntry(NpcDefinition definition, MKSpawnerTileEntity spawner) {
         this.location = spawner.getGlobalBlockPos();
         this.name = definition.getNameForEntity(spawner.getLevel(), spawner.getSpawnUUID());
         this.definition = definition.getDefinitionName();
@@ -32,7 +32,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
         this.notableId = UUID.randomUUID();
     }
 
-    public NotableNpcEntry(){
+    public NotableNpcEntry() {
 
     }
 
@@ -57,7 +57,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
     }
 
     @Nullable
-    public NpcDefinition getDefinition(){
+    public NpcDefinition getDefinition() {
         return NpcDefinitionManager.getDefinition(definition);
     }
 

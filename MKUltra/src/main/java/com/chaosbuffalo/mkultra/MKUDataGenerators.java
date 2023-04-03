@@ -28,7 +28,7 @@ public class MKUDataGenerators {
             generator.addProvider(new MKUStructureSetProvider(generator));
 
         }
-        if (event.includeClient()){
+        if (event.includeClient()) {
             generator.addProvider(new MKUItemModelProvider(generator, helper));
         }
     }

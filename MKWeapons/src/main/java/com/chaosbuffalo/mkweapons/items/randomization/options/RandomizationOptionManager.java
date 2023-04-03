@@ -13,7 +13,7 @@ public class RandomizationOptionManager {
             new HashMap<>();
 
     public static void addOptionDeserializer(ResourceLocation type,
-                                             Supplier<IRandomizationOption> deserializer){
+                                             Supplier<IRandomizationOption> deserializer) {
         OPTION_DESERIALIZERS.put(type, deserializer);
     }
 
@@ -28,10 +28,10 @@ public class RandomizationOptionManager {
         addOptionDeserializer(PrefixNameOption.NAME, PrefixNameOption::new);
     }
 
-    public static <D> IRandomizationOption deserializeOption(Dynamic<D> dynamic){
+    public static <D> IRandomizationOption deserializeOption(Dynamic<D> dynamic) {
         ResourceLocation type = BaseRandomizationOption.getType(dynamic);
         IRandomizationOption option = OPTION_DESERIALIZERS.get(type).get();
-        if (option != null){
+        if (option != null) {
             option.deserialize(dynamic);
         }
         return option;

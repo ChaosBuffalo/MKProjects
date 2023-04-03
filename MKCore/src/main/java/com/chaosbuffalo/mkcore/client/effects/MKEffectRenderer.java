@@ -16,6 +16,7 @@ public class MKEffectRenderer extends EffectRenderer {
     public MKEffectRenderer(MKEffect effect) {
         this.effect = effect;
     }
+
     @Override
     public void renderInventoryEffect(MobEffectInstance effect, EffectRenderingInventoryScreen<?> gui,
                                       PoseStack mStack, int x, int y, float z) {

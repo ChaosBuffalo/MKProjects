@@ -8,19 +8,18 @@ import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.client.Minecraft;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -28,7 +27,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-public class SkillScalingEffect extends BaseMeleeWeaponEffect{
+public class SkillScalingEffect extends BaseMeleeWeaponEffect {
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.skill_scaling");
     public static final UUID skillScaling = UUID.fromString("5db76231-686d-417e-952b-92f33c4c1b37");
     private double baseDamage;
@@ -38,7 +37,7 @@ public class SkillScalingEffect extends BaseMeleeWeaponEffect{
         super(NAME, ChatFormatting.GRAY);
     }
 
-    public SkillScalingEffect(double baseDamage, Attribute skill){
+    public SkillScalingEffect(double baseDamage, Attribute skill) {
         this();
         this.baseDamage = baseDamage;
         this.skill = skill;
@@ -59,8 +58,8 @@ public class SkillScalingEffect extends BaseMeleeWeaponEffect{
     public void onEntityEquip(LivingEntity entity) {
         float skillLevel = MKAbility.getSkillLevel(entity, skill);
         AttributeInstance attr = entity.getAttribute(Attributes.ATTACK_DAMAGE);
-        if (attr != null){
-            if (attr.getModifier(skillScaling) == null){
+        if (attr != null) {
+            if (attr.getModifier(skillScaling) == null) {
                 attr.addTransientModifier(new AttributeModifier(skillScaling, "skill scaling", skillLevel * baseDamage, AttributeModifier.Operation.ADDITION));
             }
         }
@@ -69,11 +68,11 @@ public class SkillScalingEffect extends BaseMeleeWeaponEffect{
     @Override
     public void addInformation(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
         tooltip.add(new TranslatableComponent(skill.getDescriptionId()).withStyle(color));
-        if (Screen.hasShiftDown()){
+        if (Screen.hasShiftDown()) {
             float skillLevel = ClientUtils.getClientSkillLevel(skill);
             double bonus = skillLevel * baseDamage;
-                tooltip.add(new TranslatableComponent("mkweapons.weapon_effect.skill_scaling.description",
-                        new TranslatableComponent(skill.getDescriptionId()), MKAbility.NUMBER_FORMATTER.format(bonus)));
+            tooltip.add(new TranslatableComponent("mkweapons.weapon_effect.skill_scaling.description",
+                    new TranslatableComponent(skill.getDescriptionId()), MKAbility.NUMBER_FORMATTER.format(bonus)));
         }
     }
 

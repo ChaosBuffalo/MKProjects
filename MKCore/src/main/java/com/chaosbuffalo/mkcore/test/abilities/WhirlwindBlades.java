@@ -93,11 +93,11 @@ public class WhirlwindBlades extends MKAbility {
                     .ability(this)
                     .amplify(level);
             MKEffectBuilder<?> particlePotion = MKOldParticleEffect.from(castingEntity,
-                    ParticleTypes.SWEEP_ATTACK,
-                    ParticleEffects.CIRCLE_MOTION, false,
-                    new Vec3(1.0, 1.0, 1.0),
-                    new Vec3(0.0, 1.0, 0.0),
-                    4, 0, 1.0)
+                            ParticleTypes.SWEEP_ATTACK,
+                            ParticleEffects.CIRCLE_MOTION, false,
+                            new Vec3(1.0, 1.0, 1.0),
+                            new Vec3(0.0, 1.0, 0.0),
+                            4, 0, 1.0)
                     .ability(this)
                     .amplify(level);
 

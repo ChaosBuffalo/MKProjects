@@ -24,12 +24,12 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -95,13 +95,13 @@ public class StunningShoutAbility extends MKAbility {
 
 
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.BleedDamage,
-                baseDamage.value(), scaleDamage.value(), modifierScaling.value())
+                        baseDamage.value(), scaleDamage.value(), modifierScaling.value())
                 .skillLevel(level)
                 .ability(this);
         MKEffectBuilder<?> stun = StunEffect.from(castingEntity).ability(this).skillLevel(level).timed(
                 getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()));
         MKEffectBuilder<?> particles = MKParticleEffect.from(castingEntity, tick_particles.getValue(),
-                false, new Vec3(0.0, 1.5, 0.0))
+                        false, new Vec3(0.0, 1.5, 0.0))
                 .ability(this);
 
         Vec3 look = castingEntity.getLookAngle().scale(getDistance(castingEntity));

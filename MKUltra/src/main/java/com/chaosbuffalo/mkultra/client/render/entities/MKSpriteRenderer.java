@@ -2,21 +2,20 @@ package com.chaosbuffalo.mkultra.client.render.entities;
 
 import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
-import com.mojang.math.Vector3f;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 
 
-
-public class MKSpriteRenderer <T extends Entity & IMKRenderAsItem> extends EntityRenderer<T> {
+public class MKSpriteRenderer<T extends Entity & IMKRenderAsItem> extends EntityRenderer<T> {
     private final ItemRenderer itemRenderer;
     private final float scale;
     private final boolean doBlockLight;

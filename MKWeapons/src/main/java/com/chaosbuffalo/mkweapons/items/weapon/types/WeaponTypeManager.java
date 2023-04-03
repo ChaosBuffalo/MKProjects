@@ -12,15 +12,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -46,12 +46,12 @@ public class WeaponTypeManager extends SimpleJsonResourceReloadListener {
     }
 
     @SubscribeEvent
-    public void subscribeEvent(AddReloadListenerEvent event){
+    public void subscribeEvent(AddReloadListenerEvent event) {
         event.addListener(this);
     }
 
 
-    public static void addMeleeWeapon(IMKMeleeWeapon weapon){
+    public static void addMeleeWeapon(IMKMeleeWeapon weapon) {
         MELEE_WEAPONS.add(weapon);
     }
 
@@ -79,32 +79,32 @@ public class WeaponTypeManager extends SimpleJsonResourceReloadListener {
         }
     }
 
-    public static void handleMKWeaponReloadForPlayerPre(Player player){
+    public static void handleMKWeaponReloadForPlayerPre(Player player) {
         ItemStack mainHand = player.getMainHandItem();
-        if (mainHand.getItem() instanceof IMKMeleeWeapon){
+        if (mainHand.getItem() instanceof IMKMeleeWeapon) {
             player.getAttributes().removeAttributeModifiers(mainHand.getAttributeModifiers(EquipmentSlot.MAINHAND));
         }
     }
 
-    public static void refreshAllWeapons(){
-        for (IMKMeleeWeapon weapon : MELEE_WEAPONS){
+    public static void refreshAllWeapons() {
+        for (IMKMeleeWeapon weapon : MELEE_WEAPONS) {
             weapon.reload();
         }
     }
 
-    public static void handleMKWeaponReloadForPlayerPost(Player player){
+    public static void handleMKWeaponReloadForPlayerPost(Player player) {
         ItemStack mainHand = player.getMainHandItem();
-        if (mainHand.getItem() instanceof IMKMeleeWeapon){
+        if (mainHand.getItem() instanceof IMKMeleeWeapon) {
             player.getAttributes().addTransientAttributeModifiers(mainHand.getAttributeModifiers(EquipmentSlot.MAINHAND));
         }
-        for (ItemStack item : player.getInventory().items){
-            if (!item.isEmpty()){
+        for (ItemStack item : player.getInventory().items) {
+            if (!item.isEmpty()) {
                 item.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY)
                         .ifPresent(IWeaponData::markCacheDirty);
             }
         }
-        for (ItemStack item : player.getInventory().offhand){
-            if (!item.isEmpty()){
+        for (ItemStack item : player.getInventory().offhand) {
+            if (!item.isEmpty()) {
                 item.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY)
                         .ifPresent(IWeaponData::markCacheDirty);
             }
@@ -132,9 +132,9 @@ public class WeaponTypeManager extends SimpleJsonResourceReloadListener {
     protected void apply(Map<ResourceLocation, JsonElement> objectIn, ResourceManager resourceManagerIn, ProfilerFiller profilerIn) {
         MKWeapons.LOGGER.debug("Loading melee weapon type definitions from Json");
         boolean wasChanged = false;
-        if (serverStarted){
+        if (serverStarted) {
             List<ServerPlayer> players = server.getPlayerList().getPlayers();
-            for (ServerPlayer entity : players){
+            for (ServerPlayer entity : players) {
                 handleMKWeaponReloadForPlayerPre(entity);
             }
         }
@@ -148,9 +148,9 @@ public class WeaponTypeManager extends SimpleJsonResourceReloadListener {
             }
         }
         refreshAllWeapons();
-        if (serverStarted){
+        if (serverStarted) {
             List<ServerPlayer> players = server.getPlayerList().getPlayers();
-            for (ServerPlayer entity : players){
+            for (ServerPlayer entity : players) {
                 handleMKWeaponReloadForPlayerPost(entity);
             }
         }

@@ -2,24 +2,23 @@ package com.chaosbuffalo.mknpc.command;
 
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.capabilities.PointOfInterestEntry;
-import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
+import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
 import com.chaosbuffalo.mknpc.world.gen.StructureUtils;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.Util;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraftforge.registries.ForgeRegistries;
-
 
 import java.util.List;
 import java.util.Map;
@@ -37,7 +36,7 @@ public class MKStructureCommands {
     static int listStructures(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         MinecraftServer server = player.getServer();
-        if (server != null){
+        if (server != null) {
 
             Optional<List<StructureStart>> starts = StructureUtils.getStructuresOverlaps(player);
             if (starts.isPresent()) {
@@ -57,9 +56,6 @@ public class MKStructureCommands {
             }
 
 
-
-
-
         }
 
         return Command.SINGLE_SUCCESS;
@@ -68,7 +64,7 @@ public class MKStructureCommands {
     static int listPoiForStruct(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         MinecraftServer server = player.getServer();
-        if (server != null){
+        if (server != null) {
 
             Optional<List<StructureStart>> starts = StructureUtils.getStructuresOverlaps(player);
             if (starts.isPresent()) {
@@ -77,9 +73,9 @@ public class MKStructureCommands {
                     player.sendMessage(new TranslatableComponent("mknpc.command.not_in_struct"), Util.NIL_UUID);
                 } else {
                     Level overworld = server.getLevel(Level.OVERWORLD);
-                    if (overworld != null){
+                    if (overworld != null) {
                         overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
-                                .ifPresent(cap ->  {
+                                .ifPresent(cap -> {
                                     s.forEach(start -> {
                                         UUID startId = IStructureStartMixin.getInstanceIdFromStart(start);
                                         MKStructureEntry entry = cap.getStructureData(startId);

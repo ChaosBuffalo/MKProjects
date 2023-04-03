@@ -17,35 +17,34 @@ import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.UseAnim;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.ToolAction;
+import net.minecraftforge.common.ToolActions;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import net.minecraftforge.common.ToolAction;
-import net.minecraftforge.common.ToolActions;
 
 public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitItemTooltip, IImplementsBlocking, IReceivesSkillChange {
     private final IMeleeWeaponType weaponType;
@@ -70,7 +69,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
         setRegistryName(weaponName);
     }
 
-    protected void recalculateModifiers(){
+    protected void recalculateModifiers() {
         ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
         builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID,
                 "Weapon modifier", getDamage(), AttributeModifier.Operation.ADDITION));
@@ -100,7 +99,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
     }
 
     @Override
-    public void reload(){
+    public void reload() {
         weaponEffects.clear();
         recalculateModifiers();
         weaponEffects.addAll(getMKTier().getMeleeWeaponEffects());
@@ -120,9 +119,9 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         MKCore.getEntityData(attacker).ifPresent(cap -> {
-            if (!target.isBlocking()){
-                if (cap.getCombatExtension().getEntityTicksSinceLastSwing() >= EntityUtils.getCooldownPeriod(attacker)){
-                    for (IMeleeWeaponEffect effect : getWeaponEffects(stack)){
+            if (!target.isBlocking()) {
+                if (cap.getCombatExtension().getEntityTicksSinceLastSwing() >= EntityUtils.getCooldownPeriod(attacker)) {
+                    for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
                         effect.onHit(this, stack, target, attacker);
                     }
                 }
@@ -152,10 +151,10 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
     public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand handIn) {
         ItemStack itemstack = playerIn.getItemInHand(handIn);
         ItemStack offhand = playerIn.getOffhandItem();
-        if (offhand.getItem() instanceof ShieldItem){
+        if (offhand.getItem() instanceof ShieldItem) {
             return InteractionResultHolder.pass(itemstack);
         }
-        if (MKCore.getPlayer(playerIn).map(x -> x.getStats().isPoiseBroke()).orElse(false)){
+        if (MKCore.getPlayer(playerIn).map(x -> x.getStats().isPoiseBroke()).orElse(false)) {
             return InteractionResultHolder.pass(itemstack);
         } else {
             playerIn.startUsingItem(handIn);
@@ -235,7 +234,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
     @Override
     public List<IMeleeWeaponEffect> getWeaponEffects(ItemStack item) {
         return item.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).map(cap -> {
-            if (cap.hasMeleeWeaponEffects()){
+            if (cap.hasMeleeWeaponEffects()) {
                 return cap.getMeleeEffects();
             } else {
                 return weaponEffects;
@@ -252,16 +251,16 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
 
     @Override
     public Multimap<Attribute, AttributeModifier> limitTooltip(ItemStack itemStack, EquipmentSlot equipmentSlotType, Multimap<Attribute, AttributeModifier> multimap) {
-        if (multimap.containsKey(MKAttributes.BLOCK_EFFICIENCY)){
+        if (multimap.containsKey(MKAttributes.BLOCK_EFFICIENCY)) {
             multimap.removeAll(MKAttributes.BLOCK_EFFICIENCY);
         }
-        if (multimap.containsKey(MKAttributes.MAX_POISE)){
+        if (multimap.containsKey(MKAttributes.MAX_POISE)) {
             multimap.removeAll(MKAttributes.MAX_POISE);
         }
-        if (multimap.containsKey(MKAttributes.MELEE_CRIT)){
+        if (multimap.containsKey(MKAttributes.MELEE_CRIT)) {
             multimap.removeAll(MKAttributes.MELEE_CRIT);
         }
-        if (multimap.containsKey(MKAttributes.MELEE_CRIT_MULTIPLIER)){
+        if (multimap.containsKey(MKAttributes.MELEE_CRIT_MULTIPLIER)) {
             multimap.removeAll(MKAttributes.MELEE_CRIT_MULTIPLIER);
         }
         return multimap;

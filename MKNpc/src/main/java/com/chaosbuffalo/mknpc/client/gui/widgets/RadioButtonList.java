@@ -22,7 +22,7 @@ public class RadioButtonList<T> extends MKStackLayoutVertical {
         private final T value;
         private final String name;
 
-        public RadioValue(T value, String name){
+        public RadioValue(T value, String name) {
             this.value = value;
             this.name = name;
         }
@@ -49,7 +49,7 @@ public class RadioButtonList<T> extends MKStackLayoutVertical {
         setPaddingBot(2);
         setPaddingTop(2);
         buttonIndex = new HashMap<>();
-        for (RadioValue<T> value : values){
+        for (RadioValue<T> value : values) {
             RadioButton<T> button = new RadioButton<T>(x, y, 9, fontRenderer, value, this);
             buttons.add(button);
             buttonIndex.put(value.getValue(), button);
@@ -58,16 +58,16 @@ public class RadioButtonList<T> extends MKStackLayoutVertical {
     }
 
 
-    public void selectEntry(T entryKey){
-        if (buttonIndex.containsKey(entryKey)){
+    public void selectEntry(T entryKey) {
+        if (buttonIndex.containsKey(entryKey)) {
             buttonIndex.get(entryKey).onSelected();
         }
     }
 
-    public void notifySelected(RadioButton<T> selected){
+    public void notifySelected(RadioButton<T> selected) {
         selectCallback.accept(selected.getValue().getValue());
-        for (RadioButton<T> button : buttons){
-            if (button.equals(selected)){
+        for (RadioButton<T> button : buttons) {
+            if (button.equals(selected)) {
                 continue;
             }
             button.deselect();

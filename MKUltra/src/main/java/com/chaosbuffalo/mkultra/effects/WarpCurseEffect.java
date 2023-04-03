@@ -12,9 +12,9 @@ import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.ModSounds;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -69,7 +69,7 @@ public class WarpCurseEffect extends MKEffect {
             SoundUtils.serverPlaySoundAtEntity(target, ModSounds.spell_fire_5.get(), target.getSoundSource());
             boolean hasTeleported = false;
             int attempts = 5;
-            while (!hasTeleported && attempts > 0){
+            while (!hasTeleported && attempts > 0) {
                 Vec3 targetOrigin = target.position();
                 double nextX = targetOrigin.x + (target.getRandom().nextInt(8) - target.getRandom().nextInt(8));
                 double nextY = targetOrigin.y + 1.0;

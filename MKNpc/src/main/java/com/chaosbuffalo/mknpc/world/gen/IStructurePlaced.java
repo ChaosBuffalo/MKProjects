@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;

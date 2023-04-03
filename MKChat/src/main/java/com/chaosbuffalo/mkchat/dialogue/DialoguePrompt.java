@@ -6,15 +6,15 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.OptionalDynamic;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.nbt.Tag;
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.util.StringUtil;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.StringUtil;
+import net.minecraft.world.entity.LivingEntity;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -56,8 +56,8 @@ public class DialoguePrompt extends DialogueObject {
         return newPrompt;
     }
 
-    public void merge(DialoguePrompt other){
-        for (DialogueResponse resp : other.getResponses()){
+    public void merge(DialoguePrompt other) {
+        for (DialogueResponse resp : other.getResponses()) {
             addResponse(resp);
         }
     }

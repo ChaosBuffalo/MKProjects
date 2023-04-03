@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.data.worldgen.Pools;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public class CryptStructurePools {

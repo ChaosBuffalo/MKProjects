@@ -20,7 +20,7 @@ public class NamedButtonEntry extends CenteringHorizontalLayout {
         addWidget(button);
     }
 
-    public void updateButtonText(String newText){
+    public void updateButtonText(String newText) {
         button.setWidth(Math.max(fontRenderer.width(newText), 100));
         button.buttonText = new TextComponent(newText);
     }

@@ -6,7 +6,6 @@ import com.chaosbuffalo.mkcore.core.entitlements.EntitlementInstance;
 import com.chaosbuffalo.mkcore.core.entitlements.EntitlementTypeHandler;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.records.IRecordType;
-import net.minecraft.resources.ResourceLocation;
 
 public class AbilityPoolEntitlement extends MKEntitlement {
     private final IRecordType<AbilityPoolEntitlementHandler> recordType;

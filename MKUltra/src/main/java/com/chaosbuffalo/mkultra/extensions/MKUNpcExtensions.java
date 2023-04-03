@@ -2,9 +2,7 @@ package com.chaosbuffalo.mkultra.extensions;
 
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.npc.IMKNpcExtension;
-import com.chaosbuffalo.mkultra.init.MKUWorldGen;
 import net.minecraftforge.fml.InterModComms;
 
 public class MKUNpcExtensions implements IMKNpcExtension {

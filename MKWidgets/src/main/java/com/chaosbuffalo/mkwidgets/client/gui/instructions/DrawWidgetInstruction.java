@@ -13,7 +13,7 @@ public class DrawWidgetInstruction implements IInstruction {
     private final Vec2i mousePos;
     private final Minecraft minecraft;
 
-    public DrawWidgetInstruction(IMKWidget widget, Vec2i mousePos, Minecraft minecraft){
+    public DrawWidgetInstruction(IMKWidget widget, Vec2i mousePos, Minecraft minecraft) {
         this.widget = widget;
         this.mousePos = mousePos;
         this.minecraft = minecraft;

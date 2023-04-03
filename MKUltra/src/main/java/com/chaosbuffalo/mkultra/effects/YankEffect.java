@@ -7,11 +7,11 @@ import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
 import com.chaosbuffalo.mkultra.MKUltra;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -59,14 +59,14 @@ public class YankEffect extends MKEffect {
             Vec3 targetPos = new Vec3(target.getX(), target.getY(0.6f), target.getZ());
             float force = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
             float heightRatio = 1.0f;
-            if (activeEffect.getSourceEntity() != null){
+            if (activeEffect.getSourceEntity() != null) {
                 heightRatio = activeEffect.getSourceEntity().getBbHeight() / target.getBbHeight();
             }
             force *= heightRatio;
             targetData.getAbilityExecutor().interruptCast(CastInterruptReason.Jump);
             Vec3 awayFrom = pos.subtract(targetPos).normalize().scale(force);
             target.push(awayFrom.x(), awayFrom.y(), awayFrom.z());
-            if (target instanceof ServerPlayer){
+            if (target instanceof ServerPlayer) {
                 ((ServerPlayer) target).connection.send(new ClientboundSetEntityMotionPacket(target));
             }
             return true;

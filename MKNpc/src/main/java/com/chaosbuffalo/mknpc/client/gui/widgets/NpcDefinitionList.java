@@ -23,10 +23,10 @@ public class NpcDefinitionList extends ScrollingList {
     }
 
     @Override
-    protected void populateList(MKStackLayoutVertical layout){
+    protected void populateList(MKStackLayoutVertical layout) {
         List<NpcDefinitionClient> defs = new ArrayList<>(NpcDefinitionManager.CLIENT_DEFINITIONS.values());
         defs.sort(Comparator.comparing(NpcDefinitionClient::getName));
-        for (NpcDefinitionClient clientDef : defs){
+        for (NpcDefinitionClient clientDef : defs) {
             layout.addWidget(new NpcDefinitionEntry(
                     clientDef,
                     getWidth() - layout.getMarginLeft() - layout.getMarginRight(),

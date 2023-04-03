@@ -3,8 +3,8 @@ package com.chaosbuffalo.mknpc.npc.options;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 
 public class FactionOption extends ResourceLocationOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "faction");

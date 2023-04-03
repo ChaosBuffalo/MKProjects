@@ -29,12 +29,14 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
     protected final List<StructureEventCondition> conditions = new ArrayList<>();
     protected ResourceLocation timerName;
     protected final IntAttribute eventTimer = new IntAttribute("cooldown", 10 * GameConstants.TICKS_PER_SECOND * 60);
+
     public enum EventTrigger {
         ON_TICK,
         ON_DEATH,
         ON_ACTIVATE,
         ON_DEACTIVATE
     }
+
     protected final Set<EventTrigger> triggers = new HashSet<>();
 
     public StructureEvent(ResourceLocation typeName) {
@@ -58,7 +60,7 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
         return this;
     }
 
-    public int getCooldown(){
+    public int getCooldown() {
         return eventTimer.value();
     }
 
@@ -103,7 +105,7 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         builder.put(ops.createString("attributes"), serializeAttributeMap(ops));
-        builder.put(ops.createString("requirements"),  ops.createList(requirements.stream().map(x -> x.serialize(ops))));
+        builder.put(ops.createString("requirements"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("conditions"), ops.createList(conditions.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("eventName"), ops.createString(getEventName()));
     }
@@ -112,7 +114,7 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
         return requirements;
     }
 
-    public void addRequirement(StructureEventRequirement requirement){
+    public void addRequirement(StructureEventRequirement requirement) {
         this.requirements.add(requirement);
     }
 
@@ -126,7 +128,7 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
         List<Optional<StructureEventRequirement>> reqs = dynamic.get("requirements").asList(x -> {
             ResourceLocation type = StructureEventRequirement.getType(x);
             Supplier<StructureEventRequirement> deserializer = StructureEventManager.getRequirementDeserializer(type);
-            if (deserializer == null){
+            if (deserializer == null) {
                 return Optional.empty();
             } else {
                 StructureEventRequirement req = deserializer.get();
@@ -159,7 +161,7 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
         return conditions.stream().allMatch(x -> x.meetsCondition(entry, activeStructure, world));
     }
 
-    public static <D> ResourceLocation getType(Dynamic<D> dynamic){
+    public static <D> ResourceLocation getType(Dynamic<D> dynamic) {
         return IDynamicMapTypedSerializer.getType(dynamic, TYPE_ENTRY_NAME).orElse(INVALID_OPTION);
     }
 

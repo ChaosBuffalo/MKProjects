@@ -28,7 +28,7 @@ public class SpawnOptionList extends ScrollingList {
 
     @Override
     protected void populateList(MKStackLayoutVertical layout) {
-        for (SpawnOption option : spawnList.getOptions()){
+        for (SpawnOption option : spawnList.getOptions()) {
             layout.addWidget(new SpawnOptionEntry(0, 0, 20, option, font,
                     (spawnOption) -> {
                         spawnList.getOptions().remove(spawnOption);

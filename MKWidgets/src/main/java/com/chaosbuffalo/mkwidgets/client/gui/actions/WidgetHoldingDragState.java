@@ -9,7 +9,7 @@ import net.minecraft.client.Minecraft;
 public class WidgetHoldingDragState implements IDragState {
     private final IMKWidget widget;
 
-    public WidgetHoldingDragState(IMKWidget widget){
+    public WidgetHoldingDragState(IMKWidget widget) {
         this.widget = widget;
     }
 

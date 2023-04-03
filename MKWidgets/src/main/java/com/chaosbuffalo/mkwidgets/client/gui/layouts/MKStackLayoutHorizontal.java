@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mkwidgets.client.gui.layouts;
 
 
-import com.chaosbuffalo.mkwidgets.client.gui.constraints.*;
+import com.chaosbuffalo.mkwidgets.client.gui.constraints.LayoutRelativeHeightConstraint;
+import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
+import com.chaosbuffalo.mkwidgets.client.gui.constraints.StackConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 
 public class MKStackLayoutHorizontal extends MKLayout {

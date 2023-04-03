@@ -4,19 +4,19 @@ package com.chaosbuffalo.mknpc.npc;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class NpcAttributeEntry {
     private double value;
     private Attribute attribute;
 
-    public NpcAttributeEntry(){
+    public NpcAttributeEntry() {
 
     }
 
-    public NpcAttributeEntry(Attribute attribute, double value){
+    public NpcAttributeEntry(Attribute attribute, double value) {
         this.attribute = attribute;
         this.value = value;
     }
@@ -29,8 +29,8 @@ public class NpcAttributeEntry {
 
     public <D> D serialize(DynamicOps<D> ops) {
         return ops.createMap(ImmutableMap.of(
-           ops.createString("attributeName"), ops.createString(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString()),
-           ops.createString("value"), ops.createDouble(getValue())
+                ops.createString("attributeName"), ops.createString(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString()),
+                ops.createString("value"), ops.createDouble(getValue())
         ));
     }
 
@@ -38,11 +38,11 @@ public class NpcAttributeEntry {
         return value;
     }
 
-    public Attribute getAttribute(){
+    public Attribute getAttribute() {
         return attribute;
     }
 
-    public void setAttribute(Attribute attribute){
+    public void setAttribute(Attribute attribute) {
         this.attribute = attribute;
     }
 

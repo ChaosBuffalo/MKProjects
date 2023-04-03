@@ -1,9 +1,8 @@
 package com.chaosbuffalo.mkchat.capabilities;
 
 import com.chaosbuffalo.mkchat.MKChat;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.capabilities.*;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -22,10 +21,12 @@ public class ChatCapabilities {
             "npc_dialogue_data");
 
 
-    public static final Capability<IPlayerDialogue> PLAYER_DIALOGUE_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+    public static final Capability<IPlayerDialogue> PLAYER_DIALOGUE_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
+    });
 
 
-    public static final Capability<INpcDialogue> NPC_DIALOGUE_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+    public static final Capability<INpcDialogue> NPC_DIALOGUE_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
+    });
 
 
     @SubscribeEvent

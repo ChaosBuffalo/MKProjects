@@ -7,8 +7,8 @@ import com.chaosbuffalo.mkweapons.items.effects.ranged.IRangedWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.IRandomizationSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotManager;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -26,7 +26,7 @@ public class RangedEffectOption extends EffectOption<IRangedWeaponEffect> {
 
     @Override
     protected Optional<IRangedWeaponEffect> deserializeEffectToType(@Nullable IItemEffect effect) {
-        if (effect instanceof IRangedWeaponEffect){
+        if (effect instanceof IRangedWeaponEffect) {
             return Optional.of((IRangedWeaponEffect) effect);
         }
         return Optional.empty();

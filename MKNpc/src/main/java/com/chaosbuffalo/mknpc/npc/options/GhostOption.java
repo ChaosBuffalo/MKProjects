@@ -3,10 +3,10 @@ package com.chaosbuffalo.mknpc.npc.options;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 
-public class GhostOption extends FloatOption{
+public class GhostOption extends FloatOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "ghost");
 
     public GhostOption() {
@@ -15,7 +15,7 @@ public class GhostOption extends FloatOption{
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, Float value) {
-        if (entity instanceof MKEntity){
+        if (entity instanceof MKEntity) {
             ((MKEntity) entity).setGhost(true);
             ((MKEntity) entity).setGhostTranslucency(value);
         }

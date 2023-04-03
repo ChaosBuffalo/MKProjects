@@ -9,12 +9,15 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.util.Tuple;
 import net.minecraftforge.common.Tags;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class MKWeaponRecipeProvider extends RecipeProvider {
@@ -23,7 +26,7 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
         private final List<String> pattern;
         private final List<Tuple<Character, Item>> itemKeys;
 
-        public WeaponRecipe(List<String> pattern, List<Tuple<Character, Item>> itemKeys){
+        public WeaponRecipe(List<String> pattern, List<Tuple<Character, Item>> itemKeys) {
             this.pattern = pattern;
             this.itemKeys = itemKeys;
         }
@@ -32,18 +35,18 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
             return pattern;
         }
 
-        public boolean hasHaft(){
-            for (Tuple<Character, Item> tuple : itemKeys){
-                if (tuple.getA().equals('H')){
+        public boolean hasHaft() {
+            for (Tuple<Character, Item> tuple : itemKeys) {
+                if (tuple.getA().equals('H')) {
                     return true;
                 }
             }
             return false;
         }
 
-        public boolean hasStick(){
-            for (Tuple<Character, Item> tuple : itemKeys){
-                if (tuple.getA().equals('S')){
+        public boolean hasStick() {
+            for (Tuple<Character, Item> tuple : itemKeys) {
+                if (tuple.getA().equals('S')) {
                     return true;
                 }
             }
@@ -56,6 +59,7 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
     }
 
     public static final Map<IMeleeWeaponType, WeaponRecipe> weaponRecipes = new HashMap<>();
+
     static {
         weaponRecipes.put(MeleeWeaponTypes.DAGGER_TYPE, new WeaponRecipe(
                 Arrays.asList("I", "S"),
@@ -88,7 +92,6 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
     }
 
 
-
     public MKWeaponRecipeProvider(DataGenerator generatorIn) {
         super(generatorIn);
     }
@@ -97,15 +100,15 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
     @Override
     protected void buildCraftingRecipes(Consumer<FinishedRecipe> consumer) {
         getHaftRecipe().save(consumer);
-        for (MKMeleeWeapon weapon : MKWeaponsItems.WEAPONS){
+        for (MKMeleeWeapon weapon : MKWeaponsItems.WEAPONS) {
             getRecipe(weapon).save(consumer);
         }
-        for (MKBow bow : MKWeaponsItems.BOWS){
+        for (MKBow bow : MKWeaponsItems.BOWS) {
             getLongbowRecipe(bow).save(consumer);
         }
     }
 
-    private ShapedRecipeBuilder getHaftRecipe(){
+    private ShapedRecipeBuilder getHaftRecipe() {
         return ShapedRecipeBuilder.shaped(MKWeaponsItems.Haft, 3)
                 .define('S', Items.STICK)
                 .define('L', Tags.Items.LEATHER)
@@ -116,7 +119,7 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_leather", this.has(Tags.Items.LEATHER));
     }
 
-    private ShapedRecipeBuilder getLongbowRecipe(MKBow bow){
+    private ShapedRecipeBuilder getLongbowRecipe(MKBow bow) {
         return ShapedRecipeBuilder.shaped(bow)
                 .define('H', MKWeaponsItems.Haft)
                 .define('I', bow.getMKTier().getMajorIngredient())
@@ -132,18 +135,19 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
 
     private ShapedRecipeBuilder getRecipe(MKMeleeWeapon weapon) {
         ShapedRecipeBuilder recipeBuilder = ShapedRecipeBuilder.shaped(weapon);
-        recipeBuilder.define('I', weapon.getMKTier().getMajorIngredient());;
+        recipeBuilder.define('I', weapon.getMKTier().getMajorIngredient());
+        ;
         WeaponRecipe weaponRecipe = weaponRecipes.get(weapon.getWeaponType());
         for (Tuple<Character, Item> key : weaponRecipe.getItemKeys()) {
             recipeBuilder.define(key.getA(), key.getB());
         }
-        for (String line : weaponRecipe.getPattern()){
+        for (String line : weaponRecipe.getPattern()) {
             recipeBuilder.pattern(line);
         }
-        if (weaponRecipe.hasHaft()){
+        if (weaponRecipe.hasHaft()) {
             recipeBuilder.unlockedBy("has_haft", this.has(MKWeaponsItems.Haft));
         }
-        if (weaponRecipe.hasStick()){
+        if (weaponRecipe.hasStick()) {
             recipeBuilder.unlockedBy("has_stick", this.has(Items.STICK));
         }
         recipeBuilder.unlockedBy("has_ingot", this.has(weapon.getMKTier().getItemTag()));

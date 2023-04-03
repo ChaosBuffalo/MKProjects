@@ -7,8 +7,8 @@ import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.network.FinalizeMKSpawnerPacket;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.network.SetSpawnListPacket;
-import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
+import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.StackConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
@@ -19,8 +19,8 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKImage;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKModal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.TextComponent;
 
@@ -48,11 +48,11 @@ public class MKSpawnerScreen extends MKScreen {
         pushState("main");
     }
 
-    private MKStackLayoutHorizontal getNamedButton(String labelKey, String buttonText){
+    private MKStackLayoutHorizontal getNamedButton(String labelKey, String buttonText) {
         return new NamedButtonEntry(0, 0, 20, buttonText, labelKey, font);
     }
 
-    private MKLayout setupChooseDefinition(){
+    private MKLayout setupChooseDefinition() {
         int xPos = width / 2 - PANEL_WIDTH / 2;
         int yPos = height / 2 - PANEL_HEIGHT / 2;
         MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
@@ -66,24 +66,24 @@ public class MKSpawnerScreen extends MKScreen {
                 options.getY() + options.getHeight() + 5, 100, 20,
                 "Add Spawn");
         addOption.setPressedCallback((button, mouse) -> {
-                MKModal popup = new MKModal();
-                int screenWidth = getWidth();
-                int screenHeight = getHeight();
-                int popupX = (screenWidth - POPUP_WIDTH) / 2;
-                int popupY = (screenHeight - POPUP_HEIGHT) / 2;
-                MKImage background = GuiTextures.CORE_TEXTURES.getImageForRegion(
-                        GuiTextures.BACKGROUND_180_200, popupX, popupY, POPUP_WIDTH, POPUP_HEIGHT);
-                popup.addWidget(background);
-                NpcDefinitionList definitions = new NpcDefinitionList(popupX, popupY, POPUP_WIDTH, POPUP_HEIGHT,
-                        font, (client) -> {
-                    SpawnOption newOption = new SpawnOption(1.0, client.getDefinitionName());
-                    getSpawnerTileEntity().getSpawnList().addOption(newOption);
-                    options.populate();
-                    closeModal(popup);
-                });
-                popup.addWidget(definitions);
-                addModal(popup);
-           return true;
+            MKModal popup = new MKModal();
+            int screenWidth = getWidth();
+            int screenHeight = getHeight();
+            int popupX = (screenWidth - POPUP_WIDTH) / 2;
+            int popupY = (screenHeight - POPUP_HEIGHT) / 2;
+            MKImage background = GuiTextures.CORE_TEXTURES.getImageForRegion(
+                    GuiTextures.BACKGROUND_180_200, popupX, popupY, POPUP_WIDTH, POPUP_HEIGHT);
+            popup.addWidget(background);
+            NpcDefinitionList definitions = new NpcDefinitionList(popupX, popupY, POPUP_WIDTH, POPUP_HEIGHT,
+                    font, (client) -> {
+                SpawnOption newOption = new SpawnOption(1.0, client.getDefinitionName());
+                getSpawnerTileEntity().getSpawnList().addOption(newOption);
+                options.populate();
+                closeModal(popup);
+            });
+            popup.addWidget(definitions);
+            addModal(popup);
+            return true;
         });
         MKButton finalize = new MKButton(xPos + PANEL_WIDTH / 2 - 50,
                 options.getY() + options.getHeight() + 25, 100, 20, "Finalize");
@@ -108,7 +108,7 @@ public class MKSpawnerScreen extends MKScreen {
                 Lists.newArrayList(
                         new RadioButtonList.RadioValue<>(MKEntity.NonCombatMoveType.STATIONARY, "Stationary"),
                         new RadioButtonList.RadioValue<>(MKEntity.NonCombatMoveType.RANDOM_WANDER, "Random Wander")
-                        ),
+                ),
                 getSpawnerTileEntity()::setMoveType);
         movementBehaviors.selectEntry(getSpawnerTileEntity().getMoveType());
         root.addConstraintToWidget(MarginConstraint.LEFT, movementBehaviors);

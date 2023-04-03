@@ -13,17 +13,17 @@ public class LootOptionEntry {
     public ResourceLocation lootTierName;
     public double weight;
 
-    public LootOptionEntry(ResourceLocation lootSlotName, ResourceLocation lootTierName, double weight){
+    public LootOptionEntry(ResourceLocation lootSlotName, ResourceLocation lootTierName, double weight) {
         this.lootSlotName = lootSlotName;
         this.lootTierName = lootTierName;
         this.weight = weight;
     }
 
-    public LootOptionEntry(){
+    public LootOptionEntry() {
         this(LootSlotManager.INVALID_LOOT_SLOT, LootTierManager.INVALID_LOOT_TIER, 1.0);
     }
 
-    public <D> void deserialize(Dynamic<D> dynamic){
+    public <D> void deserialize(Dynamic<D> dynamic) {
         lootSlotName = dynamic.get("lootSlotName").asString().result().map(ResourceLocation::new)
                 .orElse(LootSlotManager.INVALID_LOOT_SLOT);
         lootTierName = dynamic.get("lootSlotTier").asString().result().map(ResourceLocation::new)
@@ -31,7 +31,7 @@ public class LootOptionEntry {
         weight = dynamic.get("weight").asDouble(1.0);
     }
 
-    public boolean isValidConfiguration(){
+    public boolean isValidConfiguration() {
         return !lootSlotName.equals(LootSlotManager.INVALID_LOOT_SLOT) &&
                 !lootTierName.equals(LootTierManager.INVALID_LOOT_TIER);
     }

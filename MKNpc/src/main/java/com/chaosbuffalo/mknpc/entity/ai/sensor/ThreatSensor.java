@@ -5,10 +5,10 @@ import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.entity.ai.memory.ThreatMapEntry;
 import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
 import com.google.common.collect.ImmutableSet;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.Sensor;
-import net.minecraft.server.level.ServerLevel;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,12 +21,12 @@ public class ThreatSensor extends Sensor<MKEntity> {
     private static final float REMOVE_DIST_2 = 400.0f;
 
 
-    private float getAggroDistanceForEntity(LivingEntity entity){
+    private float getAggroDistanceForEntity(LivingEntity entity) {
         double aggroDist = entity.getAttribute(NpcAttributes.AGGRO_RANGE).getValue();
         return (float) (aggroDist * aggroDist);
     }
 
-    public ThreatSensor(){
+    public ThreatSensor() {
         super(10);
     }
 
@@ -54,14 +54,14 @@ public class ThreatSensor extends Sensor<MKEntity> {
                 }
             }
             Set<LivingEntity> toRemove = new HashSet<>();
-            for (Map.Entry<LivingEntity, ThreatMapEntry> entry : threatMap.entrySet()){
+            for (Map.Entry<LivingEntity, ThreatMapEntry> entry : threatMap.entrySet()) {
                 float dist2 = (float) entityIn.distanceToSqr(entry.getKey());
                 ThreatMapEntry threat = entry.getValue().addThreat((1.0f - dist2 / THREAT_FALLOFF_2) * MAX_THREAT_FROM_DISTANCE);
-                if (threat.getCurrentThreat() < 0 || dist2 > REMOVE_DIST_2 || !entry.getKey().isAlive()){
+                if (threat.getCurrentThreat() < 0 || dist2 > REMOVE_DIST_2 || !entry.getKey().isAlive()) {
                     toRemove.add(entry.getKey());
                 }
             }
-            for (LivingEntity entity : toRemove){
+            for (LivingEntity entity : toRemove) {
                 threatMap.remove(entity);
             }
             List<Map.Entry<LivingEntity, ThreatMapEntry>> sortedThreat = threatMap.entrySet().stream()
@@ -72,7 +72,7 @@ public class ThreatSensor extends Sensor<MKEntity> {
                     .map(Map.Entry::getKey).collect(Collectors.toList()));
             if (sortedThreat.size() > 0) {
                 Map.Entry<LivingEntity, ThreatMapEntry> ent = sortedThreat.get(0);
-                if (!entityIn.getBrain().hasMemoryValue(MKMemoryModuleTypes.THREAT_TARGET)){
+                if (!entityIn.getBrain().hasMemoryValue(MKMemoryModuleTypes.THREAT_TARGET)) {
                     entityIn.callForHelp(ent.getKey(), ent.getValue().getCurrentThreat());
                 }
                 entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_TARGET, ent.getKey());

@@ -5,12 +5,12 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashSet;
@@ -35,7 +35,7 @@ public class SkillOption extends NpcDefinitionOption {
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
         if (entity instanceof LivingEntity) {
-            AttributeMap manager =((LivingEntity) entity).getAttributes();
+            AttributeMap manager = ((LivingEntity) entity).getAttributes();
             for (Attribute attr : remedialSkills) {
                 AttributeInstance instance = manager.getInstance(attr);
                 if (instance != null) {

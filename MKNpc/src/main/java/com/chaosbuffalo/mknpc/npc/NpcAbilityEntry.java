@@ -13,12 +13,12 @@ public class NpcAbilityEntry implements INBTSerializable<CompoundTag> {
     private int priority;
     private double chance;
 
-    public NpcAbilityEntry(){
+    public NpcAbilityEntry() {
         priority = 1;
         chance = 1.0;
     }
 
-    public NpcAbilityEntry(ResourceLocation abilityName, int priority, double chance){
+    public NpcAbilityEntry(ResourceLocation abilityName, int priority, double chance) {
         this.priority = priority;
         this.abilityName = abilityName;
         this.chance = chance;

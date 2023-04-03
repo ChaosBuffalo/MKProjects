@@ -41,19 +41,19 @@ public class ModelStyles {
             CLOTHES_ONLY_NAME,
             true,
             false,
-            new LayerStyle(CLOTHES,0.25f));
+            new LayerStyle(CLOTHES, 0.25f));
 
     public static final ModelStyle CLOTHES_ARMOR_STYLE = new ModelStyle(
             CLOTHES_ARMOR_NAME,
             true,
             false,
-            new LayerStyle(CLOTHES,0.75f));
+            new LayerStyle(CLOTHES, 0.75f));
 
     public static final ModelStyle CLOTHES_ARMOR_TRANSLUCENT_STYLE = new ModelStyle(
             CLOTHES_ARMOR_TRANSLUCENT_NAME,
             true,
             false,
-            new LayerStyle(CLOTHES,0.75f, true));
+            new LayerStyle(CLOTHES, 0.75f, true));
 
     public static final ModelStyle BASIC_STYLE = new ModelStyle(
             BASIC_NAME,

@@ -11,7 +11,7 @@ public interface IMKWeapon extends IMKAbilityProvider {
 
     MKTier getMKTier();
 
-    default void reload(){
+    default void reload() {
 
     }
 

@@ -3,13 +3,9 @@ package com.chaosbuffalo.mkultra.abilities.misc;
 import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
-import com.google.common.collect.ImmutableSet;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
-
-import java.util.Set;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
 public abstract class PositionTargetingAbility extends MKAbility {
 

@@ -8,19 +8,19 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
-public class StructureHasNotableRequirement extends StructureEventRequirement{
+public class StructureHasNotableRequirement extends StructureEventRequirement {
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID,
             "struct_requirement.has_notable");
     protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute(
             "npcDefinition", NpcDefinitionManager.INVALID_NPC_DEF);
 
-    public StructureHasNotableRequirement(ResourceLocation defName){
+    public StructureHasNotableRequirement(ResourceLocation defName) {
         this();
         npcDefinition.setValue(defName);
 
     }
 
-    public StructureHasNotableRequirement(){
+    public StructureHasNotableRequirement() {
         super(TYPE_NAME);
         addAttribute(npcDefinition);
     }

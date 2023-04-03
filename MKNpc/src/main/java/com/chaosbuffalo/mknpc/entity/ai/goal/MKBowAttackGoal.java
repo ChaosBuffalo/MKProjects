@@ -7,12 +7,12 @@ import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mkweapons.items.MKBow;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.InteractionHand;
 
 import java.util.EnumSet;
 import java.util.Optional;
@@ -47,7 +47,7 @@ public class MKBowAttackGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!ItemUtils.isRangedWeapon(entity.getMainHandItem())){
+        if (!ItemUtils.isRangedWeapon(entity.getMainHandItem())) {
             return false;
         }
         Brain<?> brain = entity.getBrain();
@@ -79,10 +79,10 @@ public class MKBowAttackGoal extends Goal {
         this.entity.setAggressive(true);
     }
 
-    public int getDrawTime(){
+    public int getDrawTime() {
         ItemStack item = entity.getMainHandItem();
         float drawTime;
-        if (item.getItem() instanceof MKBow){
+        if (item.getItem() instanceof MKBow) {
             drawTime = ((MKBow) item.getItem()).getDrawTime(item, entity);
         } else {
             drawTime = 20.0f;
@@ -99,9 +99,9 @@ public class MKBowAttackGoal extends Goal {
         this.entity.stopUsingItem();
     }
 
-    public float getLaunchVelocity(float powerFactor){
+    public float getLaunchVelocity(float powerFactor) {
         ItemStack item = entity.getMainHandItem();
-        if (item.getItem() instanceof MKBow){
+        if (item.getItem() instanceof MKBow) {
             MKBow mkBow = (MKBow) item.getItem();
             float launchVel = mkBow.getLaunchVelocity(item, entity);
             return powerFactor * launchVel;
@@ -110,9 +110,9 @@ public class MKBowAttackGoal extends Goal {
         }
     }
 
-    public float getLaunchPower(int useTicks){
+    public float getLaunchPower(int useTicks) {
         ItemStack item = entity.getMainHandItem();
-        if (item.getItem() instanceof MKBow){
+        if (item.getItem() instanceof MKBow) {
             MKBow mkBow = (MKBow) item.getItem();
             return mkBow.getPowerFactor(useTicks, item, entity);
         } else {
@@ -136,7 +136,7 @@ public class MKBowAttackGoal extends Goal {
                 --this.seeTime;
             }
 
-            if (!(d0 > (double)this.maxAttackDistance) && this.seeTime >= GameConstants.TICKS_PER_SECOND) {
+            if (!(d0 > (double) this.maxAttackDistance) && this.seeTime >= GameConstants.TICKS_PER_SECOND) {
                 this.entity.getNavigation().stop();
                 ++this.strafingTime;
             } else {
@@ -145,11 +145,11 @@ public class MKBowAttackGoal extends Goal {
             }
 
             if (this.strafingTime >= 20) {
-                if ((double)this.entity.getRandom().nextFloat() < 0.3D) {
+                if ((double) this.entity.getRandom().nextFloat() < 0.3D) {
                     this.strafingClockwise = !this.strafingClockwise;
                 }
 
-                if ((double)this.entity.getRandom().nextFloat() < 0.3D) {
+                if ((double) this.entity.getRandom().nextFloat() < 0.3D) {
                     this.strafingBackwards = !this.strafingBackwards;
                 }
 
@@ -157,9 +157,9 @@ public class MKBowAttackGoal extends Goal {
             }
 
             if (this.strafingTime > -1) {
-                if (d0 > (double)(this.maxAttackDistance * 0.75F)) {
+                if (d0 > (double) (this.maxAttackDistance * 0.75F)) {
                     this.strafingBackwards = false;
-                } else if (d0 < (double)(this.maxAttackDistance * 0.25F)) {
+                } else if (d0 < (double) (this.maxAttackDistance * 0.25F)) {
                     this.strafingBackwards = true;
                 }
 

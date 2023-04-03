@@ -2,11 +2,11 @@ package com.chaosbuffalo.mkultra.init;
 
 
 import com.chaosbuffalo.mknpc.entity.MKEntity;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.*;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.event.SpawnNpcDefinitionEvent;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.world.gen.feature.structure.*;
+import com.chaosbuffalo.mkultra.world.gen.feature.structure.IntroCastleJigsawStructure;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.JigsawConfiguration;

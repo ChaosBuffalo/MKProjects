@@ -2,10 +2,10 @@ package com.chaosbuffalo.mknpc.capabilities;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.core.GlobalPos;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.INBTSerializable;
 
@@ -63,7 +63,7 @@ public class PointOfInterestEntry implements INBTSerializable<CompoundTag> {
                 .result().orElse(GlobalPos.of(Level.OVERWORLD, NbtUtils.readBlockPos(nbt.getCompound("location"))));
         pointId = nbt.getUUID("pointId");
         structureId = nbt.getUUID("structureId");
-        if (nbt.contains("label")){
+        if (nbt.contains("label")) {
             label = nbt.getString("label");
         }
     }

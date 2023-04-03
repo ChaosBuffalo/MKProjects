@@ -21,17 +21,20 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceData> {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.talk_to_npc");
     protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute("npcDefinition", NpcDefinitionManager.INVALID_NPC_DEF);
     protected DialogueTree tree;
 
-    public TalkToNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, MutableComponent... description){
+    public TalkToNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, MutableComponent... description) {
         super(NAME, name, structure, index, description);
         addAttribute(this.npcDefinition);
         this.npcDefinition.setValue(npcDefinition);
@@ -41,12 +44,12 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         tree.setHailPrompt(hailPrompt);
     }
 
-    public TalkToNpcObjective(){
+    public TalkToNpcObjective() {
         super(NAME, "invalid", defaultDescription);
         addAttribute(this.npcDefinition);
     }
 
-    public ResourceLocation getNpcDefinition(){
+    public ResourceLocation getNpcDefinition() {
         return npcDefinition.getValue();
     }
 
@@ -57,8 +60,8 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         return npcOpt.map(x -> new UUIDInstanceData(x.getNotableId())).orElse(new UUIDInstanceData());
     }
 
-    public TalkToNpcObjective withHailResponse(DialogueNode hailNode, DialogueResponse hailResponse){
-        if (tree.getHailPrompt() != null){
+    public TalkToNpcObjective withHailResponse(DialogueNode hailNode, DialogueResponse hailResponse) {
+        if (tree.getHailPrompt() != null) {
             tree.getHailPrompt().addResponse(hailResponse);
         } else {
             MKNpc.LOGGER.error("TalkToNpcObjective Dialogue Tree is Missing hail prompt");
@@ -67,17 +70,17 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         return this;
     }
 
-    public TalkToNpcObjective withAdditionalNode(DialogueNode node){
+    public TalkToNpcObjective withAdditionalNode(DialogueNode node) {
         tree.addNode(node);
         return this;
     }
 
-    public TalkToNpcObjective withAdditionalPrompts(DialoguePrompt prompt){
+    public TalkToNpcObjective withAdditionalPrompts(DialoguePrompt prompt) {
         tree.addPrompt(prompt);
         return this;
     }
 
-    public TalkToNpcObjective withTree(DialogueTree tree){
+    public TalkToNpcObjective withTree(DialogueTree tree) {
         this.tree = tree;
         return this;
     }
@@ -97,28 +100,28 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     }
 
     public static void handleQuestRawMessageManipulation(DialogueObject dialogueObj,
-                                                   Map<ResourceLocation, List<MKStructureEntry>> questStructures,
-                                                   QuestChainInstance questChain){
+                                                         Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                                         QuestChainInstance questChain) {
         String rawMsg = dialogueObj.getRawMessage();
         String newMsg = NpcDialogueUtils.parseQuestDialogueMessage(rawMsg, questStructures, questChain);
         dialogueObj.setRawMessage(newMsg);
     }
 
-    private DialogueTree specializeTree(Quest quest, QuestChainInstance questChain, Map<ResourceLocation, List<MKStructureEntry>> questStructures){
+    private DialogueTree specializeTree(Quest quest, QuestChainInstance questChain, Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
         DialogueTree specializedTree = tree.copy();
-        for (DialogueNode node : specializedTree.getNodes().values()){
-            for (DialogueEffect effect : node.getEffects()){
-                if (effect instanceof IReceivesChainId){
+        for (DialogueNode node : specializedTree.getNodes().values()) {
+            for (DialogueEffect effect : node.getEffects()) {
+                if (effect instanceof IReceivesChainId) {
                     IReceivesChainId advEffect = (IReceivesChainId) effect;
                     advEffect.setChainId(questChain.getQuestId());
                 }
             }
             handleQuestRawMessageManipulation(node, questStructures, questChain);
         }
-        for (DialoguePrompt prompt : specializedTree.getPrompts().values()){
-            for (DialogueResponse resp : prompt.getResponses()){
-                for (DialogueCondition condition : resp.getConditions()){
-                    if (condition instanceof IReceivesChainId){
+        for (DialoguePrompt prompt : specializedTree.getPrompts().values()) {
+            for (DialogueResponse resp : prompt.getResponses()) {
+                for (DialogueCondition condition : resp.getConditions()) {
+                    if (condition instanceof IReceivesChainId) {
                         ((IReceivesChainId) condition).setChainId(questChain.getQuestId());
                     }
                 }
@@ -129,9 +132,9 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     }
 
     public DialogueTree generateDialogueForNpc(Quest quest, QuestChainInstance questChain, ResourceLocation npcDefinitionName,
-                                       UUID npcId, DialogueTree tree,
-                                       Map<ResourceLocation, List<MKStructureEntry>> questStructures,
-                                       QuestDefinition definition){
+                                               UUID npcId, DialogueTree tree,
+                                               Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                               QuestDefinition definition) {
         return tree.merge(specializeTree(quest, questChain, questStructures));
     }
 

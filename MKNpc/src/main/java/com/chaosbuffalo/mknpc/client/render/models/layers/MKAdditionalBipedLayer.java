@@ -6,13 +6,13 @@ import com.chaosbuffalo.mknpc.client.render.renderers.ILayerTextureProvider;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.model.EntityModel;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.function.Function;
@@ -71,7 +71,7 @@ public class MKAdditionalBipedLayer<T extends MKEntity, M extends EntityModel<T>
     public void render(PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn,
                        T entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTicks,
                        float ageInTicks, float netHeadYaw, float headPitch) {
-        if (style.isTranslucent()){
+        if (style.isTranslucent()) {
             renderCopyTranslucent(
                     this.getParentModel(), this.layerModel,
                     renderer.getLayerTexture(style.getLayerName(), entitylivingbaseIn),

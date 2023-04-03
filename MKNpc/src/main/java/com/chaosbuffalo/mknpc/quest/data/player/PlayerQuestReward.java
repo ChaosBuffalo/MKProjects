@@ -2,19 +2,19 @@ package com.chaosbuffalo.mknpc.quest.data.player;
 
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public class PlayerQuestReward implements INBTSerializable<CompoundTag> {
     MutableComponent description;
 
 
-    public PlayerQuestReward(QuestReward questReward){
+    public PlayerQuestReward(QuestReward questReward) {
         this.description = questReward.getDescription();
     }
 
-    public PlayerQuestReward(CompoundTag nbt){
+    public PlayerQuestReward(CompoundTag nbt) {
         deserializeNBT(nbt);
     }
 

@@ -19,7 +19,7 @@ public class MKText extends MKWidget {
     public boolean isMultiline;
     public boolean isCentered;
 
-    public MKText(Font renderer, Component text, int x, int y, int width, int height){
+    public MKText(Font renderer, Component text, int x, int y, int width, int height) {
         super(x, y, width, height);
         this.color = 0;
         this.fontRenderer = renderer;
@@ -27,11 +27,11 @@ public class MKText extends MKWidget {
         this.isMultiline = false;
     }
 
-    public MKText(Font renderer, Component text){
+    public MKText(Font renderer, Component text) {
         this(renderer, text, 200, renderer.lineHeight);
     }
 
-    public MKText(Font renderer, Component text, int x, int y){
+    public MKText(Font renderer, Component text, int x, int y) {
         this(renderer, text, x, y, 200, renderer.lineHeight);
     }
 
@@ -39,15 +39,15 @@ public class MKText extends MKWidget {
         this(renderer, text, 200);
     }
 
-    public MKText(Font renderer, String text, int x, int y){
+    public MKText(Font renderer, String text, int x, int y) {
         this(renderer, text, x, y, 200, renderer.lineHeight);
     }
 
-    public MKText(Font renderer, String text, int x, int y, int width, int height){
+    public MKText(Font renderer, String text, int x, int y, int width, int height) {
         this(renderer, new TextComponent(text), x, y, width, height);
     }
 
-    public MKText(Font renderer, String text, int width){
+    public MKText(Font renderer, String text, int width) {
         this(renderer, text, 0, 0, width, renderer.lineHeight);
     }
 
@@ -93,8 +93,8 @@ public class MKText extends MKWidget {
     }
 
     private void drawWordWrap(Font font, PoseStack matrixStack, FormattedText text, int x, int y, int width, int color) {
-        for(FormattedCharSequence formattedcharsequence : font.split(text, width)) {
-            drawInternalDuplicate(font, formattedcharsequence, (float)x, (float)y, color, matrixStack.last().pose(), false);
+        for (FormattedCharSequence formattedcharsequence : font.split(text, width)) {
+            drawInternalDuplicate(font, formattedcharsequence, (float) x, (float) y, color, matrixStack.last().pose(), false);
             y += 9;
         }
     }
@@ -104,11 +104,11 @@ public class MKText extends MKWidget {
     }
 
     public void drawCenteredStringNoDropShadow(PoseStack matrixStack, Font fontRenderer, String string, int x, int y, int color) {
-        fontRenderer.draw(matrixStack, string, (float)(x - fontRenderer.width(string) / 2), (float)y, color);
+        fontRenderer.draw(matrixStack, string, (float) (x - fontRenderer.width(string) / 2), (float) y, color);
     }
 
     public void drawCenteredStringNoDropShadow(PoseStack matrixStack, Font fontRenderer, Component string, int x, int y, int color) {
-        drawString(fontRenderer, matrixStack, string, (float)(x - fontRenderer.width(string) / 2), (float)y, color);
+        drawString(fontRenderer, matrixStack, string, (float) (x - fontRenderer.width(string) / 2), (float) y, color);
     }
 
     public MKText setIsCentered(boolean isCentered) {
@@ -124,7 +124,7 @@ public class MKText extends MKWidget {
         return setText(new TextComponent(text));
     }
 
-    public MKText setText(Component text){
+    public MKText setText(Component text) {
         this.text = text;
         updateLabel();
         return this;

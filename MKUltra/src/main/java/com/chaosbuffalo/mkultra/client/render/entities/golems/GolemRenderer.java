@@ -1,13 +1,10 @@
 package com.chaosbuffalo.mkultra.client.render.entities.golems;
 
 import com.chaosbuffalo.mknpc.client.render.models.MKGolemModel;
-import com.chaosbuffalo.mknpc.client.render.models.MKSkeletalModel;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
 import com.chaosbuffalo.mknpc.client.render.renderers.MKBipedRenderer;
-import com.chaosbuffalo.mknpc.client.render.renderers.SkeletonStyles;
 import com.chaosbuffalo.mknpc.entity.MKGolemEntity;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUGolems;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 

@@ -38,8 +38,8 @@ public class LineEffectEntity extends BaseEffectEntity {
     @Override
     protected Collection<LivingEntity> getEntitiesInBounds() {
         return RayTraceUtils.rayTraceAllEntities(LivingEntity.class, getCommandSenderWorld(),
-                startPoint, endPoint, Vec3.ZERO,
-                1.5f, 0.0f, this::entityCheck).getEntities().stream().map(x -> x.entity)
+                        startPoint, endPoint, Vec3.ZERO,
+                        1.5f, 0.0f, this::entityCheck).getEntities().stream().map(x -> x.entity)
                 .collect(Collectors.toList());
     }
 

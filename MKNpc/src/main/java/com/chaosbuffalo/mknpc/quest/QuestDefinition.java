@@ -1,6 +1,9 @@
 package com.chaosbuffalo.mknpc.quest;
 
-import com.chaosbuffalo.mkchat.dialogue.*;
+import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
+import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
+import com.chaosbuffalo.mkchat.dialogue.DialogueResponse;
+import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
@@ -11,10 +14,10 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -38,7 +41,7 @@ public class QuestDefinition {
     private QuestMode mode;
     private DialogueTree startQuestTree;
 
-    public QuestDefinition(ResourceLocation name){
+    public QuestDefinition(ResourceLocation name) {
         this.name = name;
         this.questChain = new ArrayList<>();
         this.questIndex = new HashMap<>();
@@ -64,7 +67,7 @@ public class QuestDefinition {
         return requirements;
     }
 
-    public void addRequirement(QuestRequirement requirement){
+    public void addRequirement(QuestRequirement requirement) {
         this.requirements.add(requirement);
     }
 
@@ -76,13 +79,13 @@ public class QuestDefinition {
         return questName;
     }
 
-    public void addStartNode(DialogueNode node){
+    public void addStartNode(DialogueNode node) {
         startQuestTree.addNode(node);
     }
 
-    public void addStartPrompt(DialoguePrompt prompt){
-        if (prompt.getId().equals("hail")){
-            if (startQuestTree.getHailPrompt() != null){
+    public void addStartPrompt(DialoguePrompt prompt) {
+        if (prompt.getId().equals("hail")) {
+            if (startQuestTree.getHailPrompt() != null) {
                 startQuestTree.getHailPrompt().merge(prompt);
             } else {
                 startQuestTree.addPrompt(prompt);
@@ -93,10 +96,10 @@ public class QuestDefinition {
         }
     }
 
-    public void addHailResponse(DialogueNode node){
+    public void addHailResponse(DialogueNode node) {
         startQuestTree.addNode(node);
         DialoguePrompt hail = startQuestTree.getHailPrompt();
-        if (hail != null){
+        if (hail != null) {
             DialogueResponse startResponse = new DialogueResponse(node)
                     .addCondition(new CanStartQuestCondition(Util.NIL_UUID, isRepeatable()));
             hail.addResponse(startResponse);
@@ -116,7 +119,7 @@ public class QuestDefinition {
         addStartNode(startQuestResponse);
         DialogueResponse startResponse = new DialogueResponse(startQuestResponse)
                 .addCondition(new CanStartQuestCondition(Util.NIL_UUID, isRepeatable()));
-        for (DialogueCondition cond : extraConditions){
+        for (DialogueCondition cond : extraConditions) {
             startResponse.addCondition(cond);
         }
         prompt.addResponse(startResponse);
@@ -131,8 +134,8 @@ public class QuestDefinition {
         return repeatable;
     }
 
-    public List<Quest> getFirstQuests(){
-        switch (getMode()){
+    public List<Quest> getFirstQuests() {
+        switch (getMode()) {
             case UNSORTED:
                 return questChain;
             default:
@@ -141,8 +144,8 @@ public class QuestDefinition {
         }
     }
 
-    public void addQuest(Quest quest){
-        if (questIndex.containsKey(quest.getQuestName())){
+    public void addQuest(Quest quest) {
+        if (questIndex.containsKey(quest.getQuestName())) {
             MKNpc.LOGGER.error("Trying to add quest with existing quest name {} to quest definition: {}", quest.getQuestName(), name.toString());
         } else {
             questChain.add(quest);
@@ -151,7 +154,7 @@ public class QuestDefinition {
     }
 
     @Nullable
-    public Quest getQuest(String name){
+    public Quest getQuest(String name) {
         return questIndex.get(name);
     }
 
@@ -164,7 +167,7 @@ public class QuestDefinition {
     }
 
 
-    public <D> D serialize(DynamicOps<D> ops){
+    public <D> D serialize(DynamicOps<D> ops) {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("quests"), ops.createList(questChain.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("repeatable"), ops.createBoolean(isRepeatable()));
@@ -193,7 +196,7 @@ public class QuestDefinition {
         List<Optional<QuestRequirement>> reqs = dynamic.get("requirements").asList(x -> {
             ResourceLocation type = QuestRequirement.getType(x);
             Supplier<QuestRequirement> deserializer = QuestDefinitionManager.getRequirementDeserializer(type);
-            if (deserializer == null){
+            if (deserializer == null) {
                 return Optional.empty();
             } else {
                 QuestRequirement req = deserializer.get();
@@ -207,7 +210,7 @@ public class QuestDefinition {
                         "QuestDefinition: %s missing start quest dialogue", getName().toString()))));
     }
 
-    public Map<ResourceLocation, Integer> getStructuresNeeded(){
+    public Map<ResourceLocation, Integer> getStructuresNeeded() {
 
         List<Pair<ResourceLocation, Integer>> allObjectives = questChain
                 .stream()
@@ -215,19 +218,19 @@ public class QuestDefinition {
                 .flatMap(Collection::stream).collect(Collectors.toList());
 
         Map<ResourceLocation, Integer> finals = new HashMap<>();
-        for (Pair<ResourceLocation, Integer> pair : allObjectives){
-            if (!finals.containsKey(pair.getFirst()) || finals.get(pair.getFirst()) < pair.getSecond()){
+        for (Pair<ResourceLocation, Integer> pair : allObjectives) {
+            if (!finals.containsKey(pair.getFirst()) || finals.get(pair.getFirst()) < pair.getSecond()) {
                 finals.put(pair.getFirst(), pair.getSecond());
             }
         }
         return finals;
     }
 
-    public boolean doesStructureMeetRequirements(MKStructureEntry entry){
+    public boolean doesStructureMeetRequirements(MKStructureEntry entry) {
         return questChain.stream().allMatch(x -> x.isStructureRelevant(entry));
     }
 
-    public QuestChainInstance generate(Map<ResourceLocation, List<MKStructureEntry>> questStructures){
+    public QuestChainInstance generate(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
         QuestChainInstance instance = new QuestChainInstance(this, questStructures);
         return instance;
     }

@@ -4,7 +4,9 @@ import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.client.rendering.MKPlayerRenderer;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.entity.*;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,11 +36,11 @@ public abstract class EntityRendererDispatcherMixins {
             method = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;onResourceManagerReload(Lnet/minecraft/server/packs/resources/ResourceManager;)V"
     )
     private Map<String, EntityRenderer<? extends Player>> proxyCreatePlayerRenderers(EntityRendererProvider.Context p_174052_) {
-       ImmutableMap.Builder<String, EntityRenderer<? extends Player>> builder = ImmutableMap.builder();
+        ImmutableMap.Builder<String, EntityRenderer<? extends Player>> builder = ImmutableMap.builder();
         Map<String, EntityRendererProvider<AbstractClientPlayer>> providers;
         if (MKConfig.CLIENT.enablePlayerCastAnimations.get()) {
-           providers = PLAYER_PROVIDERS;
-       } else {
+            providers = PLAYER_PROVIDERS;
+        } else {
             providers = VANILLA_PROVIDERS;
         }
         providers.forEach((p_174047_, p_174048_) -> {

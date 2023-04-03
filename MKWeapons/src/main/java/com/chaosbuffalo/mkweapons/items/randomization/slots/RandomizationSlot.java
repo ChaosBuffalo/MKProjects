@@ -1,16 +1,16 @@
 package com.chaosbuffalo.mkweapons.items.randomization.slots;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 
 public class RandomizationSlot implements IRandomizationSlot {
     private final ResourceLocation name;
     private final ChatFormatting textColor;
     private final boolean permanent;
 
-    public RandomizationSlot(ResourceLocation name, ChatFormatting textColor, boolean permanent){
+    public RandomizationSlot(ResourceLocation name, ChatFormatting textColor, boolean permanent) {
         this.name = name;
         this.textColor = textColor;
         this.permanent = permanent;

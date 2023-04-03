@@ -20,19 +20,19 @@ public class LootTier implements IDynamicMapSerializer {
     private final Map<LootSlot, List<LootItemTemplateEntry>> potentialItemsForSlot;
     private static final List<LootItemTemplateEntry> EMPTY_CHOICES = new ArrayList<>();
 
-    public LootTier(ResourceLocation name){
+    public LootTier(ResourceLocation name) {
         this.name = name;
         this.potentialItemsForSlot = new HashMap<>();
     }
 
     @Nullable
-    public LootItemTemplate chooseItemTemplate(Random random, LootSlot slot){
+    public LootItemTemplate chooseItemTemplate(Random random, LootSlot slot) {
         List<LootItemTemplateEntry> slotOptions = potentialItemsForSlot.getOrDefault(slot, EMPTY_CHOICES);
-        if (slotOptions.isEmpty()){
+        if (slotOptions.isEmpty()) {
             return null;
         } else {
             RandomCollection<LootItemTemplate> choices = new RandomCollection<>();
-            for (LootItemTemplateEntry entry : slotOptions){
+            for (LootItemTemplateEntry entry : slotOptions) {
                 choices.add(entry.weight, entry.template);
             }
             return choices.next(random);
@@ -40,9 +40,9 @@ public class LootTier implements IDynamicMapSerializer {
     }
 
     @Nullable
-    public LootConstructor generateConstructorForSlot(Random random, LootSlot slot){
+    public LootConstructor generateConstructorForSlot(Random random, LootSlot slot) {
         LootItemTemplate template = chooseItemTemplate(random, slot);
-        if (template == null){
+        if (template == null) {
             return null;
         } else {
             return template.generateConstructor(random);
@@ -60,18 +60,18 @@ public class LootTier implements IDynamicMapSerializer {
     }
 
 
-    public <D> void deserialize(Dynamic<D> dynamic){
+    public <D> void deserialize(Dynamic<D> dynamic) {
         Map<LootSlot, List<LootItemTemplateEntry>> slotMap = dynamic.get("slotItems").asMap(
                 (d -> d.asString().result().map(slotName -> LootSlotManager.getSlotFromName(new ResourceLocation(slotName)))
-                                .orElse(LootSlotManager.INVALID)),
+                        .orElse(LootSlotManager.INVALID)),
                 (d -> d.asList(x -> {
                     LootItemTemplateEntry newEntry = new LootItemTemplateEntry();
                     newEntry.deserialize(x);
                     return newEntry;
                 })));
         potentialItemsForSlot.clear();
-        for (Map.Entry<LootSlot, List<LootItemTemplateEntry>> entry : slotMap.entrySet()){
-            if (entry.getKey() != LootSlotManager.INVALID){
+        for (Map.Entry<LootSlot, List<LootItemTemplateEntry>> entry : slotMap.entrySet()) {
+            if (entry.getKey() != LootSlotManager.INVALID) {
                 potentialItemsForSlot.put(entry.getKey(), entry.getValue().stream().filter(x -> x.template != null)
                         .collect(Collectors.toList()));
             }

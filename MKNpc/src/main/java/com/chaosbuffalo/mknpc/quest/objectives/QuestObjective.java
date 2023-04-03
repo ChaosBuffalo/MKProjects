@@ -14,12 +14,15 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public abstract class QuestObjective<T extends ObjectiveInstanceData>
@@ -34,7 +37,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
     protected final StringAttribute objectiveName = new StringAttribute("objectiveName", "invalid");
     protected List<MutableComponent> description = new ArrayList<>();
 
-    public QuestObjective(ResourceLocation typeName, String name, MutableComponent... description){
+    public QuestObjective(ResourceLocation typeName, String name, MutableComponent... description) {
         this.attributes = new ArrayList<>();
         addAttribute(objectiveName);
         objectiveName.setValue(name);
@@ -46,7 +49,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
         this.setDescription(Arrays.asList(description));
     }
 
-    public void setDescription(List<MutableComponent> description){
+    public void setDescription(List<MutableComponent> description) {
         this.description.clear();
         this.description.addAll(description);
     }
@@ -72,7 +75,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
 
     // return true if it works or you dont care
     // return false only if this structure is needed but doesnt meet requirements
-    public boolean isStructureRelevant(MKStructureEntry entry){
+    public boolean isStructureRelevant(MKStructureEntry entry) {
         return true;
     }
 
@@ -80,7 +83,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
 
     public abstract T instanceDataFactory();
 
-    public T loadInstanceData(CompoundTag nbt){
+    public T loadInstanceData(CompoundTag nbt) {
         T data = instanceDataFactory();
         data.deserializeNBT(nbt);
         return data;
@@ -90,7 +93,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
 
     public abstract PlayerQuestObjectiveData playerDataFactory();
 
-    public T getInstanceData(QuestData data){
+    public T getInstanceData(QuestData data) {
         return (T) data.getObjective(getObjectiveName());
     }
 
@@ -103,11 +106,11 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
         return playerData.getBool("isComplete");
     }
 
-    public void createDataForQuest(QuestData data, Map<ResourceLocation, List<MKStructureEntry>> questStructures){
+    public void createDataForQuest(QuestData data, Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
         data.putObjective(getObjectiveName(), generateInstanceData(questStructures));
     }
 
-    public List<MutableComponent> getDescription(){
+    public List<MutableComponent> getDescription() {
         return description;
     }
 

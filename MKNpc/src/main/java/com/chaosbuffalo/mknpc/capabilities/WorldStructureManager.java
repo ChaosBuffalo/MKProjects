@@ -31,7 +31,7 @@ public class WorldStructureManager {
         private final int EMPTY_TIMEOUT = 20 * 60;
         private final BiConsumer<ServerPlayer, ActiveStructure> playerRemoveCallback;
 
-        public ActiveStructure(UUID structureId, BiConsumer<ServerPlayer, ActiveStructure> removalCallback){
+        public ActiveStructure(UUID structureId, BiConsumer<ServerPlayer, ActiveStructure> removalCallback) {
             this.activePlayers = new HashMap<>();
             this.structureId = structureId;
             this.playerRemoveCallback = removalCallback;
@@ -151,7 +151,7 @@ public class WorldStructureManager {
 
     }
 
-    public void tick(){
+    public void tick() {
         if (activeStructures.isEmpty()) {
             return;
         }

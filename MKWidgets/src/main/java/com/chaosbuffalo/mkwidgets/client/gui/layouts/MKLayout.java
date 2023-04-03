@@ -22,20 +22,20 @@ public class MKLayout extends MKWidget implements IMKLayout {
     private boolean needsRecompute;
     private HashMap<UUID, ArrayList<IConstraint>> constraints;
 
-    public MKLayout(int x, int y, int width, int height){
+    public MKLayout(int x, int y, int width, int height) {
         super(x, y, width, height);
         constraints = new HashMap<>();
         needsRecompute = false;
     }
 
-    public void flagNeedsRecompute(){
+    public void flagNeedsRecompute() {
         needsRecompute = true;
     }
 
-    public void computeChildLayouts(){
-        for (IMKWidget child : getChildren()){
-            if (child instanceof MKLayout){
-                if (((MKLayout) child).needsRecompute){
+    public void computeChildLayouts() {
+        for (IMKWidget child : getChildren()) {
+            if (child instanceof MKLayout) {
+                if (((MKLayout) child).needsRecompute) {
                     ((MKLayout) child).manualRecompute();
                 }
             }
@@ -55,7 +55,7 @@ public class MKLayout extends MKWidget implements IMKLayout {
 
     @Override
     public void addConstraintToWidget(IConstraint constraint, IMKWidget widget) {
-        ArrayList<IConstraint> widgetConstraints =  constraints.computeIfAbsent(widget.getId(),
+        ArrayList<IConstraint> widgetConstraints = constraints.computeIfAbsent(widget.getId(),
                 (id) -> new ArrayList<>());
         widgetConstraints.add(constraint);
         flagNeedsRecompute();
@@ -63,17 +63,17 @@ public class MKLayout extends MKWidget implements IMKLayout {
 
     @Override
     public void removeConstraintFromWidget(IConstraint constraint, IMKWidget widget) {
-        if (constraints.containsKey(widget.getId())){
+        if (constraints.containsKey(widget.getId())) {
             ArrayList<IConstraint> widgetConstraints = constraints.get(widget.getId());
             widgetConstraints.removeIf((con) -> con.getConstraintID().equals(constraint.getConstraintID()));
             flagNeedsRecompute();
         }
     }
 
-    public void applyConstraints(IMKWidget widget, int widgetIndex){
-        if (constraints.containsKey(widget.getId())){
+    public void applyConstraints(IMKWidget widget, int widgetIndex) {
+        if (constraints.containsKey(widget.getId())) {
             ArrayList<IConstraint> widgetConstraints = constraints.get(widget.getId());
-            for (IConstraint constraint : widgetConstraints){
+            for (IConstraint constraint : widgetConstraints) {
                 constraint.applyConstraint(this, widget, widgetIndex);
             }
         }
@@ -133,20 +133,20 @@ public class MKLayout extends MKWidget implements IMKLayout {
 
     @Override
     public void clearWidgetConstraints(IMKWidget widget) {
-        if (constraints.containsKey(widget.getId())){
+        if (constraints.containsKey(widget.getId())) {
             constraints.remove(widget.getId());
             flagNeedsRecompute();
         }
     }
 
-    public void manualRecompute(){
+    public void manualRecompute() {
         recomputeChildren();
         needsRecompute = false;
     }
 
     @Override
     public void drawWidget(PoseStack matrixStack, Minecraft mc, int mouseX, int mouseY, float partialTicks) {
-        if (needsRecompute){
+        if (needsRecompute) {
             recomputeChildren();
             needsRecompute = false;
         }
@@ -154,7 +154,7 @@ public class MKLayout extends MKWidget implements IMKLayout {
         int y = getY();
         int width = getWidth();
         int height = getHeight();
-        if (doDrawDebugBounds()){
+        if (doDrawDebugBounds()) {
             drawDebugBounds(matrixStack, mc, x, y, width, height, mouseX, mouseY, partialTicks);
         }
         preDraw(matrixStack, mc, x, y, width, height, mouseX, mouseY, partialTicks);
@@ -196,15 +196,15 @@ public class MKLayout extends MKWidget implements IMKLayout {
         postLayoutWidget(widget, index);
     }
 
-    public void postLayoutWidget(IMKWidget widget, int index){
+    public void postLayoutWidget(IMKWidget widget, int index) {
 
     }
 
-    protected void skipComputeSetWidth(int newWidth){
+    protected void skipComputeSetWidth(int newWidth) {
         super.setWidth(newWidth);
     }
 
-    protected void skipComputeSetHeight(int newHeight){
+    protected void skipComputeSetHeight(int newHeight) {
         super.setHeight(newHeight);
     }
 

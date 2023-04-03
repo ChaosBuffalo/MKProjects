@@ -1,19 +1,16 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.level.pathfinder.Path;
 
 import java.util.EnumSet;
 import java.util.Optional;
-
-import net.minecraft.world.entity.ai.goal.Goal.Flag;
 
 public class ReturnToSpawnGoal extends Goal {
     private final MKEntity entity;
@@ -32,12 +29,12 @@ public class ReturnToSpawnGoal extends Goal {
     public void tick() {
         super.tick();
         ticksReturning++;
-        if (ticksReturning > TICKS_TO_TELEPORT){
+        if (ticksReturning > TICKS_TO_TELEPORT) {
             Optional<BlockPos> blockPosOpt = entity.getBrain().getMemory(MKMemoryModuleTypes.SPAWN_POINT);
             blockPosOpt.ifPresent(blockPos -> entity.teleportTo(blockPos.getX() + 0.5,
                     blockPos.getY(), blockPos.getZ() + 0.5));
         }
-        if (this.entity.getNavigation().isDone()){
+        if (this.entity.getNavigation().isDone()) {
             Optional<BlockPos> blockPosOpt = entity.getBrain().getMemory(MKMemoryModuleTypes.SPAWN_POINT);
             if (blockPosOpt.isPresent()) {
                 BlockPos spawn = blockPosOpt.get();
@@ -63,16 +60,16 @@ public class ReturnToSpawnGoal extends Goal {
         entity.enterNonCombatMovementState();
     }
 
-    private boolean needsToReturnHome(BlockPos spawn){
+    private boolean needsToReturnHome(BlockPos spawn) {
         Optional<LivingEntity> targetOpt = entity.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET);
         int distFromSpawn = spawn.distManhattan(entity.blockPosition());
-        if (distFromSpawn <= MIN_RANGE * 2){
+        if (distFromSpawn <= MIN_RANGE * 2) {
             return false;
         }
-        if (targetOpt.isPresent()){
+        if (targetOpt.isPresent()) {
             return distFromSpawn > LEASH_RANGE;
         } else {
-            if (entity.getNonCombatMoveType() == MKEntity.NonCombatMoveType.RANDOM_WANDER ){
+            if (entity.getNonCombatMoveType() == MKEntity.NonCombatMoveType.RANDOM_WANDER) {
                 return distFromSpawn > LEASH_RANGE;
             }
             return true;
@@ -81,9 +78,9 @@ public class ReturnToSpawnGoal extends Goal {
 
     public boolean canUse() {
         Optional<BlockPos> blockPosOpt = entity.getBrain().getMemory(MKMemoryModuleTypes.SPAWN_POINT);
-        if (blockPosOpt.isPresent()){
+        if (blockPosOpt.isPresent()) {
             BlockPos spawn = blockPosOpt.get();
-            if (needsToReturnHome(spawn)){
+            if (needsToReturnHome(spawn)) {
                 Path path = entity.getNavigation().createPath(spawn, 1);
                 entity.getNavigation().moveTo(path, 1.0);
                 entity.getBrain().setMemory(MemoryModuleType.PATH, path);

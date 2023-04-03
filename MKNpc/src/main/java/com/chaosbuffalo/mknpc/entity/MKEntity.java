@@ -19,7 +19,6 @@ import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.entity.ai.controller.MovementStrategyController;
 import com.chaosbuffalo.mknpc.entity.ai.goal.*;
@@ -32,62 +31,49 @@ import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.StationaryMovementStra
 import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
 import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
 import com.chaosbuffalo.mknpc.entity.boss.BossStage;
-import com.chaosbuffalo.mknpc.inventories.QuestGiverInventoryContainer;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.NpcConstants;
-import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.targeting_api.ITargetingOwner;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.Brain;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.util.*;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.*;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.monster.RangedAttackMob;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ProjectileWeaponItem;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ServerLevelAccessor;
 
 @SuppressWarnings("EntityConstructor")
 public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, IUpdateEngineProvider, IMKPet, ITargetingOwner {
@@ -162,7 +148,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     protected MKEntity(EntityType<? extends PathfinderMob> type, Level worldIn) {
         super(type, worldIn);
-        if (!worldIn.isClientSide()){
+        if (!worldIn.isClientSide()) {
             setAttackComboStatsAndDefault(1, GameConstants.TICKS_PER_SECOND);
             setupDifficulty(worldIn.getDifficulty());
         }
@@ -185,7 +171,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }));
     }
 
-    public boolean hasBossStages(){
+    public boolean hasBossStages() {
         return !bossStages.isEmpty();
     }
 
@@ -193,8 +179,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return currentStage;
     }
 
-    public void addBossStage(BossStage stage){
-        if (!hasBossStages()){
+    public void addBossStage(BossStage stage) {
+        if (!hasBossStages()) {
             stage.apply(this);
         }
         bossStages.add(stage);
@@ -210,16 +196,16 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return isGhost() || super.isInvisible();
     }
 
-    public boolean hasNextStage(){
+    public boolean hasNextStage() {
         return bossStages.size() > getCurrentStage() + 1;
     }
 
-    public BossStage getNextStage(){
+    public BossStage getNextStage() {
         return bossStages.get(getCurrentStage() + 1);
     }
 
-    protected double getCastingSpeedForDifficulty(Difficulty difficulty){
-        switch (difficulty){
+    protected double getCastingSpeedForDifficulty(Difficulty difficulty) {
+        switch (difficulty) {
             case NORMAL:
                 return 0.5;
             case HARD:
@@ -230,33 +216,32 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
-    protected void setupDifficulty(Difficulty difficulty){
+    protected void setupDifficulty(Difficulty difficulty) {
         AttributeInstance inst = getAttribute(MKAttributes.CASTING_SPEED);
-        if (inst != null){
+        if (inst != null) {
             inst.addTransientModifier(new AttributeModifier("difficulty",
                     getCastingSpeedForDifficulty(difficulty), AttributeModifier.Operation.MULTIPLY_TOTAL));
         }
     }
 
 
-    public float getTranslucency(){
+    public float getTranslucency() {
         // vanilla value is 0.15f
         return isGhost() ? getGhostTranslucency() : 0.15f;
     }
 
-    public void postDefinitionApply(NpcDefinition definition){
+    public void postDefinitionApply(NpcDefinition definition) {
         float maxHealth = getMaxHealth();
-        if (maxHealth > 100.0f){
+        if (maxHealth > 100.0f) {
             float ratio = maxHealth / 100.0f;
             float adjustForBase = ratio - 1.0f;
             AttributeInstance inst = getAttribute(MKAttributes.HEAL_EFFICIENCY);
-            if (inst != null){
+            if (inst != null) {
                 inst.addTransientModifier(new AttributeModifier("heal_scaling",
                         adjustForBase, AttributeModifier.Operation.ADDITION));
             }
         }
     }
-
 
 
     public ParticleEffectInstanceTracker getParticleEffectTracker() {
@@ -309,7 +294,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         ItemStack arrowStack = this.getProjectile(this.getItemInHand(InteractionHand.MAIN_HAND));
         AbstractArrow arrowEntity = ProjectileUtil.getMobArrow(this, arrowStack, launchPower);
         Item mainhand = this.getMainHandItem().getItem();
-        if (mainhand instanceof BowItem){
+        if (mainhand instanceof BowItem) {
             arrowEntity = ((BowItem) this.getMainHandItem().getItem()).customArrow(arrowEntity);
         }
         EntityUtils.shootArrow(this, arrowEntity, target, launchPower * launchVelocity);
@@ -317,7 +302,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         this.level.addFreshEntity(arrowEntity);
     }
 
-    protected SoundEvent getShootSound(){
+    protected SoundEvent getShootSound() {
         return SoundEvents.ARROW_SHOOT;
     }
 
@@ -326,7 +311,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         this.playSound(this.getStepSound(), 0.15F, 1.0F);
     }
 
-    protected SoundEvent getStepSound(){
+    protected SoundEvent getStepSound() {
         return SoundEvents.ZOMBIE_VILLAGER_STEP;
     }
 
@@ -335,7 +320,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return entityData.get(SCALE);
     }
 
-    public void setRenderScale(float newScale){
+    public void setRenderScale(float newScale) {
         entityData.set(SCALE, newScale);
     }
 
@@ -345,41 +330,41 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         this.targetSelector.addGoal(3, new MKTargetGoal(this, true, true));
         this.goalSelector.addGoal(0, new ReturnToSpawnGoal(this));
         this.goalSelector.addGoal(2, new MovementGoal(this));
-        this.meleeAttackGoal =  new MKMeleeAttackGoal(this);
+        this.meleeAttackGoal = new MKMeleeAttackGoal(this);
         this.goalSelector.addGoal(4, new MKBowAttackGoal(this, 5, 15.0f));
         this.goalSelector.addGoal(5, meleeAttackGoal);
         this.goalSelector.addGoal(3, new UseAbilityGoal(this));
         this.goalSelector.addGoal(1, new FloatGoal(this));
     }
 
-    public boolean avoidsWater(){
+    public boolean avoidsWater() {
         return true;
     }
 
-    private void handleCombatMovementDetect(ItemStack stack){
-        if (ItemUtils.isRangedWeapon(stack)){
+    private void handleCombatMovementDetect(ItemStack stack) {
+        if (ItemUtils.isRangedWeapon(stack)) {
             setCombatMoveType(CombatMoveType.RANGE);
         } else {
             setCombatMoveType(CombatMoveType.MELEE);
         }
     }
 
-    public void callForHelp(LivingEntity entity, float threatVal){
-       brain.getMemory(MKMemoryModuleTypes.ALLIES).ifPresent(x -> {
-           x.forEach(ent -> {
-               if (ent instanceof MKEntity){
-                   if (ent.distanceToSqr(this) < 9.0){
-                       ((MKEntity) ent).addThreat(entity, threatVal, true);
-                   }
-               }
-           });
-       });
+    public void callForHelp(LivingEntity entity, float threatVal) {
+        brain.getMemory(MKMemoryModuleTypes.ALLIES).ifPresent(x -> {
+            x.forEach(ent -> {
+                if (ent instanceof MKEntity) {
+                    if (ent.distanceToSqr(this) < 9.0) {
+                        ((MKEntity) ent).addThreat(entity, threatVal, true);
+                    }
+                }
+            });
+        });
     }
 
     @Override
     public void setItemInHand(InteractionHand hand, ItemStack stack) {
         super.setItemInHand(hand, stack);
-        if (hand == InteractionHand.MAIN_HAND){
+        if (hand == InteractionHand.MAIN_HAND) {
             handleCombatMovementDetect(stack);
         }
     }
@@ -387,7 +372,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     public void setItemSlot(EquipmentSlot slotIn, ItemStack stack) {
         super.setItemSlot(slotIn, stack);
-        if (slotIn == EquipmentSlot.MAINHAND){
+        if (slotIn == EquipmentSlot.MAINHAND) {
             handleCombatMovementDetect(stack);
         }
     }
@@ -398,16 +383,16 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         enterNonCombatMovementState();
     }
 
-    public MKMeleeAttackGoal getMeleeAttackGoal(){
+    public MKMeleeAttackGoal getMeleeAttackGoal() {
         return meleeAttackGoal;
     }
 
-    public void setComboDefaults(int count, int cooldown){
+    public void setComboDefaults(int count, int cooldown) {
         comboCountDefault = count;
         comboCooldownDefault = cooldown;
     }
 
-    public void setAttackComboStatsAndDefault(int count, int cooldown){
+    public void setAttackComboStatsAndDefault(int count, int cooldown) {
         setComboDefaults(count, cooldown);
         restoreComboDefaults();
     }
@@ -417,24 +402,24 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return false;
     }
 
-    public void restoreComboDefaults(){
+    public void restoreComboDefaults() {
         setAttackComboCount(comboCountDefault);
         setAttackComboCooldown(comboCooldownDefault);
     }
 
-    public void setAttackComboCount(int count){
+    public void setAttackComboCount(int count) {
         comboCount = count;
     }
 
-    public int getAttackComboCount(){
+    public int getAttackComboCount() {
         return comboCount;
     }
 
-    public void setAttackComboCooldown(int ticks){
+    public void setAttackComboCooldown(int ticks) {
         comboCooldown = ticks;
     }
 
-    public int getAttackComboCooldown(){
+    public int getAttackComboCooldown() {
         return comboCooldown;
     }
 
@@ -448,7 +433,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
-        if (key.equals(SCALE)){
+        if (key.equals(SCALE)) {
             refreshDimensions();
         }
     }
@@ -468,12 +453,12 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         entityData.set(LOOK_STYLE, group);
     }
 
-    public MovementStrategy getMovementStrategy(AbilityTargetingDecision decision){
+    public MovementStrategy getMovementStrategy(AbilityTargetingDecision decision) {
         MKAbility ability = decision.getAbility();
-        if (ability == null){
+        if (ability == null) {
             return StationaryMovementStrategy.STATIONARY_MOVEMENT_STRATEGY;
         }
-        switch (decision.getMovementSuggestion()){
+        switch (decision.getMovementSuggestion()) {
             case KITE:
                 return new KiteMovementStrategy(Math.max(ability.getDistance(this) * .5, 8));
             case FOLLOW:
@@ -486,7 +471,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
-    public void returnToSpawnTick(){
+    public void returnToSpawnTick() {
         boolean isReturningToPlayer = MKCore.getEntityData(this).map(x -> x.getPets().isPet()
                 && x.getPets().getOwner() instanceof Player).orElse(false);
         if (!isReturningToPlayer) {
@@ -501,7 +486,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         MKNpc.LOGGER.info("In initial spawn for {}", this);
         SpawnGroupData entityData = super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
         this.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).ifPresent((cap) -> {
-            if (cap.wasMKSpawned()){
+            if (cap.wasMKSpawned()) {
                 getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT, cap.getSpawnPos());
             }
         });
@@ -547,20 +532,20 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         updateEntityCastState();
         attackStrengthTicker++;
         super.aiStep();
-        if (nonCombatBehavior != null && !hasThreatTarget()){
+        if (nonCombatBehavior != null && !hasThreatTarget()) {
             nonCombatBehavior.getEntity().ifPresent(x -> getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT, x.blockPosition()));
         }
     }
 
-    public void resetSwing(){
+    public void resetSwing() {
         attackStrengthTicker = 0;
     }
 
-    public void subtractFromTicksSinceLastSwing(int toSubtract){
+    public void subtractFromTicksSinceLastSwing(int toSubtract) {
         attackStrengthTicker -= toSubtract;
     }
 
-    public int getTicksSinceLastSwing(){
+    public int getTicksSinceLastSwing() {
         return attackStrengthTicker;
     }
 
@@ -581,9 +566,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         castingAbility = ability;
     }
 
-    public void returnToDefaultMovementState(){
+    public void returnToDefaultMovementState() {
         LivingEntity target = getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET).orElse(null);
-        if (target != null){
+        if (target != null) {
             enterCombatMovementState(target);
         } else {
             enterNonCombatMovementState();
@@ -613,14 +598,14 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return combatMoveType;
     }
 
-    public int getWanderRange(){
+    public int getWanderRange() {
         return 10;
     }
 
     @Override
     public void enterCombatMovementState(LivingEntity target) {
         getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET, target);
-        switch (getCombatMoveType()){
+        switch (getCombatMoveType()) {
             case STATIONARY:
                 MovementStrategyController.enterStationary(this);
                 break;
@@ -643,7 +628,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
                 nonCombatBehavior.getPos().ifPresent(x -> getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT, new BlockPos(x)));
             }
         } else {
-            switch (getNonCombatMoveType()){
+            switch (getNonCombatMoveType()) {
                 case RANDOM_WANDER:
                     MovementStrategyController.enterRandomWander(this);
                     break;
@@ -655,7 +640,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
-    public boolean hasThreatTarget(){
+    public boolean hasThreatTarget() {
         return getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET).isPresent();
     }
 
@@ -671,12 +656,12 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         super.setTarget(entitylivingbaseIn);
     }
 
-    public double getAttackSpeedMultiplier(){
+    public double getAttackSpeedMultiplier() {
         AttributeInstance attackSpeed = getAttribute(Attributes.ATTACK_SPEED);
         return attackSpeed.getValue() / getBaseAttackSpeedValueWithItem();
     }
 
-    public double getBaseAttackSpeedValueWithItem(){
+    public double getBaseAttackSpeedValueWithItem() {
         ItemStack itemInHand = getMainHandItem();
         double baseValue = getAttribute(Attributes.ATTACK_SPEED).getBaseValue();
         if (!itemInHand.equals(ItemStack.EMPTY)) {
@@ -709,7 +694,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         this.level.getProfiler().pop();
     }
 
-@Override
+    @Override
     public void absMoveTo(double x, double y, double z, float yaw, float pitch) {
         super.absMoveTo(x, y, z, yaw, pitch);
         this.yBodyRot = yaw;
@@ -724,7 +709,6 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
 
-
     @Override
     public boolean hurt(DamageSource source, float amount) {
         if (source.getEntity() instanceof LivingEntity) {
@@ -735,7 +719,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     @Override
     public void die(DamageSource cause) {
-        if (hasNextStage()){
+        if (hasNextStage()) {
             BossStage next = getNextStage();
             next.apply(this);
             next.transition(this);
@@ -753,7 +737,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     public void setLastHurtByMob(@Nullable LivingEntity target) {
         super.setLastHurtByMob(target);
-        if (target != null){
+        if (target != null) {
             addThreat(target, NpcConstants.INITIAL_THREAT, true);
         }
     }
@@ -761,9 +745,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     public InteractionResult interactAt(Player player, Vec3 vec, InteractionHand hand) {
         if (hand.equals(InteractionHand.MAIN_HAND) && getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
-                .map((cap) -> cap.getRelationToEntity(player) != Targeting.TargetRelation.ENEMY).orElse(false)){
-            if (!player.level.isClientSide() && player instanceof ServerPlayer){
-                if (player.isShiftKeyDown()){
+                .map((cap) -> cap.getRelationToEntity(player) != Targeting.TargetRelation.ENEMY).orElse(false)) {
+            if (!player.level.isClientSide() && player instanceof ServerPlayer) {
+                if (player.isShiftKeyDown()) {
                     player.openMenu(entityTradeContainer);
                 } else {
                     getCapability(ChatCapabilities.NPC_DIALOGUE_CAPABILITY).ifPresent(cap ->
@@ -826,7 +810,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     public ItemStack getProjectile(ItemStack shootable) {
         if (shootable.getItem() instanceof ProjectileWeaponItem) {
-            Predicate<ItemStack> predicate = ((ProjectileWeaponItem)shootable.getItem()).getSupportedHeldProjectiles();
+            Predicate<ItemStack> predicate = ((ProjectileWeaponItem) shootable.getItem()).getSupportedHeldProjectiles();
             ItemStack itemstack = ProjectileWeaponItem.getHeldProjectile(this, predicate);
             return itemstack.isEmpty() ? new ItemStack(Items.ARROW) : itemstack;
         } else {

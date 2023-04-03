@@ -1,19 +1,17 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
-import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
-import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.pathfinder.Path;
-import net.minecraft.core.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.EnumSet;
 import java.util.Optional;
-
-import net.minecraft.world.entity.ai.goal.Goal.Flag;
 
 public class MovementGoal extends Goal {
 

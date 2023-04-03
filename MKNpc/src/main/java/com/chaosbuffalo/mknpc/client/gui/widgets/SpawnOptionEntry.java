@@ -37,7 +37,7 @@ public class SpawnOptionEntry extends CenteringHorizontalLayout {
         setPaddingRight(2);
         addWidget(text);
         HoverTextButton plusButton = new HoverTextButton(fontRenderer, "+", () -> {
-            if (Screen.hasShiftDown()){
+            if (Screen.hasShiftDown()) {
                 option.setWeight(option.getWeight() + 10.0);
                 updateText();
             } else {
@@ -47,7 +47,7 @@ public class SpawnOptionEntry extends CenteringHorizontalLayout {
         });
         addWidget(plusButton);
         HoverTextButton minusButton = new HoverTextButton(fontRenderer, "-", () -> {
-            if (Screen.hasShiftDown()){
+            if (Screen.hasShiftDown()) {
                 option.setWeight(Math.max(option.getWeight() - 10.0, 1.0));
                 updateText();
             } else {
@@ -63,14 +63,14 @@ public class SpawnOptionEntry extends CenteringHorizontalLayout {
         addWidget(delButton);
     }
 
-    public void updateText(){
+    public void updateText() {
         String weightText = String.format("Weight: %.2f", option.getWeight());
         text.setText(weightText);
     }
 
-    public boolean handleOpenNpcDefinitionList(MKButton button, int mouseButton){
+    public boolean handleOpenNpcDefinitionList(MKButton button, int mouseButton) {
         IMKScreen screen = getScreen();
-        if (screen != null){
+        if (screen != null) {
             MKModal popup = new MKModal();
             int screenWidth = screen.getWidth();
             int screenHeight = screen.getHeight();
@@ -81,11 +81,11 @@ public class SpawnOptionEntry extends CenteringHorizontalLayout {
             popup.addWidget(background);
             NpcDefinitionList definitions = new NpcDefinitionList(xPos, yPos, POPUP_WIDTH, POPUP_HEIGHT,
                     fontRenderer, (client) -> {
-                        option.setDefinition(client.getDefinitionName());
-                        String name = option.getDefinitionClient().getName() != null ? option.getDefinitionClient().getName() :
-                            option.getDefinitionClient().toString();
-                        updateButtonText(name);
-                        screen.closeModal(popup);
+                option.setDefinition(client.getDefinitionName());
+                String name = option.getDefinitionClient().getName() != null ? option.getDefinitionClient().getName() :
+                        option.getDefinitionClient().toString();
+                updateButtonText(name);
+                screen.closeModal(popup);
 
             });
             popup.addWidget(definitions);
@@ -94,7 +94,7 @@ public class SpawnOptionEntry extends CenteringHorizontalLayout {
         return true;
     }
 
-    public void updateButtonText(String newText){
+    public void updateButtonText(String newText) {
         button.setWidth(Math.max(fontRenderer.width(newText), 100));
         button.buttonText = new TextComponent(newText);
     }

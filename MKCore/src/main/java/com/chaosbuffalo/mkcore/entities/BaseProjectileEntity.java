@@ -74,7 +74,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
     public Entity getOwner() {
         //replacement for the old get owner on client logic
         Entity ret = super.getOwner();
-        if (ret == null && ownerNetworkId != 0){
+        if (ret == null && ownerNetworkId != 0) {
             return this.level.getEntity(ownerNetworkId);
         }
         return ret;

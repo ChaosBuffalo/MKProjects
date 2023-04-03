@@ -1,12 +1,8 @@
 package com.chaosbuffalo.mkfaction.capabilities;
 
-import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.MKEntityData;
-import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.capabilities.*;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -25,10 +21,12 @@ public class FactionCapabilities {
     public static ResourceLocation MOB_FACTION_CAP_ID = new ResourceLocation(MKFactionMod.MODID,
             "mob_faction_data");
 
-    public static final Capability<IPlayerFaction> PLAYER_FACTION_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+    public static final Capability<IPlayerFaction> PLAYER_FACTION_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
+    });
 
 
-    public static final Capability<IMobFaction> MOB_FACTION_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+    public static final Capability<IMobFaction> MOB_FACTION_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
+    });
 
 
     @SubscribeEvent

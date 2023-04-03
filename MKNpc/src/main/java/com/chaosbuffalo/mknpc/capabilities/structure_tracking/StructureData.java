@@ -1,13 +1,13 @@
 package com.chaosbuffalo.mknpc.capabilities.structure_tracking;
 
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.core.Registry;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ public class StructureData implements INBTSerializable<CompoundTag> {
     private final List<StructureComponentData> components;
     private ResourceKey<Level> worldKey;
 
-    public StructureData(ResourceKey<Level> worldKey, int chunkX, int chunkZ, BoundingBox bounds, List<StructureComponentData> data){
+    public StructureData(ResourceKey<Level> worldKey, int chunkX, int chunkZ, BoundingBox bounds, List<StructureComponentData> data) {
         this.chunkX = chunkX;
         this.chunkZ = chunkZ;
         this.boundingBox = bounds;
@@ -30,7 +30,7 @@ public class StructureData implements INBTSerializable<CompoundTag> {
         components.addAll(data);
     }
 
-    public StructureData(){
+    public StructureData() {
         this.components = new ArrayList<>();
     }
 
@@ -54,7 +54,7 @@ public class StructureData implements INBTSerializable<CompoundTag> {
         int[] boundsArr = {boundingBox.minX(), boundingBox.minY(), boundingBox.minZ(), boundingBox.maxX(), boundingBox.maxY(), boundingBox.maxZ()};
         tag.putIntArray("bounds", boundsArr);
         ListTag comps = new ListTag();
-        for (StructureComponentData dat : components){
+        for (StructureComponentData dat : components) {
             comps.add(dat.serializeNBT());
         }
         tag.put("components", comps);
@@ -71,7 +71,7 @@ public class StructureData implements INBTSerializable<CompoundTag> {
         boundingBox = new BoundingBox(boundsArr[0], boundsArr[1], boundsArr[2], boundsArr[3], boundsArr[4], boundsArr[5]);
         ListTag comps = nbt.getList("components", Tag.TAG_COMPOUND);
         List<StructureComponentData> newComps = new ArrayList<>();
-        for (Tag comp : comps){
+        for (Tag comp : comps) {
             StructureComponentData data = new StructureComponentData();
             data.deserializeNBT((CompoundTag) comp);
             newComps.add(data);

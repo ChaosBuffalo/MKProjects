@@ -34,14 +34,14 @@ public abstract class ConfiguredStructureProvider implements DataProvider {
     }
 
 
-    public void writeFeature(ConfiguredStructureData configuredData, @Nonnull HashCache cache){
+    public void writeFeature(ConfiguredStructureData configuredData, @Nonnull HashCache cache) {
         Path outputFolder = this.generator.getOutputFolder();
         ResourceLocation key = configuredData.name;
         Path path = outputFolder.resolve("data/" + key.getNamespace() + "/worldgen/configured_structure_feature/" + key.getPath() + ".json");
         try {
             JsonElement element = configuredData.serialize(JsonOps.INSTANCE);
             DataProvider.save(GSON, cache, element, path);
-        } catch (IOException e){
+        } catch (IOException e) {
             MKNpc.LOGGER.error("Couldn't write configured structure start {}", path, e);
         }
     }

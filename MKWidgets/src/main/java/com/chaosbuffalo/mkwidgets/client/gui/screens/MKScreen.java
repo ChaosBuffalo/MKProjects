@@ -117,7 +117,7 @@ public class MKScreen extends Screen implements IMKScreen {
     public void resize(Minecraft minecraft, int width, int height) {
         super.resize(minecraft, width, height);
         MKWidgets.LOGGER.info("Resize event called?");
-        for (IMKModal modal : modals){
+        for (IMKModal modal : modals) {
             closeModal(modal);
         }
         flagNeedSetup();
@@ -138,11 +138,11 @@ public class MKScreen extends Screen implements IMKScreen {
         preDrawRunnables.clear();
     }
 
-    public void clearHovers(){
-        for (IMKModal modal : modals){
+    public void clearHovers() {
+        for (IMKModal modal : modals) {
             modal.clearHovered();
         }
-        for (IMKWidget child : children){
+        for (IMKWidget child : children) {
             child.clearHovered();
         }
     }
@@ -181,7 +181,7 @@ public class MKScreen extends Screen implements IMKScreen {
 
     @Override
     public void clearDragState() {
-        if (dragSource != null){
+        if (dragSource != null) {
             this.dragSource.onDragEnd(dragState);
         }
         this.dragSource = null;
@@ -198,16 +198,16 @@ public class MKScreen extends Screen implements IMKScreen {
         if (newState.equals(getState())) {
             return;
         }
-        if (handleStateTransition(newState, getState())){
+        if (handleStateTransition(newState, getState())) {
             stateStack.push(newState);
         }
     }
 
-    private IMKWidget getStateFromCache(String newState){
+    private IMKWidget getStateFromCache(String newState) {
         return stateCache.computeIfAbsent(newState, (key) -> states.get(key).get());
     }
 
-    private boolean handleStateTransition(String newState, String oldState){
+    private boolean handleStateTransition(String newState, String oldState) {
         if (newState.equals(NO_STATE) || states.containsKey(newState)) {
             if (!oldState.equals(NO_STATE)) {
                 this.removeWidget(getStateFromCache(oldState));
@@ -225,7 +225,7 @@ public class MKScreen extends Screen implements IMKScreen {
     @Override
     public String popState() {
         String oldState;
-        if (!stateStack.empty()){
+        if (!stateStack.empty()) {
             oldState = stateStack.pop();
             String newState = getState();
             handleStateTransition(newState, oldState);
@@ -237,7 +237,7 @@ public class MKScreen extends Screen implements IMKScreen {
 
     @Override
     public String getState() {
-        if (stateStack.empty()){
+        if (stateStack.empty()) {
             return NO_STATE;
         }
         return stateStack.peek();
@@ -245,10 +245,10 @@ public class MKScreen extends Screen implements IMKScreen {
 
     @Override
     public void setFocus(@Nullable IMKWidget widget) {
-        if (focus != null){
+        if (focus != null) {
             focus.onFocusLost();
         }
-        if (widget != null){
+        if (widget != null) {
             widget.onFocus();
         }
         focus = widget;
@@ -298,27 +298,27 @@ public class MKScreen extends Screen implements IMKScreen {
         return false;
     }
 
-    public boolean onKeyPress(int keyCode, int scanCode, int modifiers){
+    public boolean onKeyPress(int keyCode, int scanCode, int modifiers) {
 
-        if (keyCode == GLFW.GLFW_KEY_TAB){
+        if (keyCode == GLFW.GLFW_KEY_TAB) {
             List<IMKWidget> widgets = findFocusable();
-            if (widgets.isEmpty()){
+            if (widgets.isEmpty()) {
                 return false;
             }
             int total = widgets.size();
-            if (focus == null){
+            if (focus == null) {
                 setFocus(widgets.get(0));
             } else {
                 int i = widgets.indexOf(focus);
                 int next;
-                if (hasShiftDown()){
+                if (hasShiftDown()) {
                     next = i - 1;
-                    if (next < 0){
+                    if (next < 0) {
                         next = total - 1;
                     }
                 } else {
                     next = i + 1;
-                    if (next >= total){
+                    if (next >= total) {
                         next = 0;
                     }
                 }
@@ -329,9 +329,9 @@ public class MKScreen extends Screen implements IMKScreen {
         return false;
     }
 
-    public List<IMKWidget> findFocusable(){
+    public List<IMKWidget> findFocusable() {
         List<IMKWidget> focusable = new ArrayList<>();
-        for (IMKWidget child : children){
+        for (IMKWidget child : children) {
             child.findFocusable(focusable);
         }
         return focusable;
@@ -339,9 +339,9 @@ public class MKScreen extends Screen implements IMKScreen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (focus != null){
+        if (focus != null) {
             boolean focusHandled = focus.keyPressed(this.minecraft, keyCode, scanCode, modifiers);
-            if (!focusHandled && !onKeyPress(keyCode, scanCode, modifiers)){
+            if (!focusHandled && !onKeyPress(keyCode, scanCode, modifiers)) {
                 return super.keyPressed(keyCode, scanCode, modifiers);
             } else {
                 return true;
@@ -354,7 +354,7 @@ public class MKScreen extends Screen implements IMKScreen {
     @Override
     public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         if (firstRender) {
-            if (!getState().equals(NO_STATE)){
+            if (!getState().equals(NO_STATE)) {
                 addRestoreStateCallbacks();
             }
             runSetup();
@@ -363,15 +363,15 @@ public class MKScreen extends Screen implements IMKScreen {
         for (Runnable runnable : preDrawRunnables) {
             runnable.run();
         }
-        if (!modals.isEmpty()){
-            for (IMKModal modal : modals){
+        if (!modals.isEmpty()) {
+            for (IMKModal modal : modals) {
                 modal.mouseHover(this.minecraft, mouseX, mouseY, partialTicks);
             }
-            for (IMKWidget child : children){
+            for (IMKWidget child : children) {
                 child.clearHovered();
             }
         } else {
-            for (IMKWidget child : children){
+            for (IMKWidget child : children) {
                 child.mouseHover(this.minecraft, mouseX, mouseY, partialTicks);
             }
         }
@@ -385,7 +385,7 @@ public class MKScreen extends Screen implements IMKScreen {
                 modal.drawWidget(matrixStack, this.minecraft, mouseX, mouseY, partialTicks);
             }
         }
-        if (dragState != null){
+        if (dragState != null) {
             dragState.updateDragState(minecraft, mouseX, mouseY, this);
         }
         for (IInstruction instruction : postRenderInstructions) {
@@ -429,7 +429,7 @@ public class MKScreen extends Screen implements IMKScreen {
             if (!child.isVisible()) {
                 continue;
             }
-            if (child.mousePressed(this.minecraft, mouseX, mouseY, mouseButton)){
+            if (child.mousePressed(this.minecraft, mouseX, mouseY, mouseButton)) {
                 return true;
             }
         }
@@ -479,7 +479,7 @@ public class MKScreen extends Screen implements IMKScreen {
             if (!child.isVisible()) {
                 continue;
             }
-            if (child.mouseReleased(mouseX, mouseY, mouseButton)){
+            if (child.mouseReleased(mouseX, mouseY, mouseButton)) {
                 return true;
             }
         }
@@ -498,7 +498,7 @@ public class MKScreen extends Screen implements IMKScreen {
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if (focus != null){
+        if (focus != null) {
             return focus.keyReleased(this.minecraft, keyCode, scanCode, modifiers);
         } else {
             return super.keyReleased(keyCode, scanCode, modifiers);
@@ -507,21 +507,21 @@ public class MKScreen extends Screen implements IMKScreen {
 
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
-        if (focus != null){
+        if (focus != null) {
             return focus.charTyped(this.minecraft, codePoint, modifiers);
         } else {
             return super.charTyped(codePoint, modifiers);
         }
     }
 
-    public void scheduleNextTick(Runnable runnable){
+    public void scheduleNextTick(Runnable runnable) {
         delayedTasks.add(runnable);
     }
 
     @Override
     public void tick() {
         super.tick();
-        while (!delayedTasks.isEmpty()){
+        while (!delayedTasks.isEmpty()) {
             delayedTasks.pop().run();
         }
     }

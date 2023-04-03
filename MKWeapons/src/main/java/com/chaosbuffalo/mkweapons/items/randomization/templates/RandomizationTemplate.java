@@ -12,17 +12,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class RandomizationTemplate{
+public class RandomizationTemplate {
     public static final ResourceLocation INVALID_TEMPLATE = new ResourceLocation(MKWeapons.MODID, "ranomization_template.error");
     private final ResourceLocation name;
     private final List<IRandomizationSlot> slots;
 
-    public RandomizationTemplate(ResourceLocation name){
+    public RandomizationTemplate(ResourceLocation name) {
         this.name = name;
         this.slots = new ArrayList<>();
     }
 
-    public RandomizationTemplate(ResourceLocation name, IRandomizationSlot... slots){
+    public RandomizationTemplate(ResourceLocation name, IRandomizationSlot... slots) {
         this(name);
         this.slots.addAll(Arrays.asList(slots));
     }
@@ -40,7 +40,7 @@ public class RandomizationTemplate{
                 ops.createString("templateType"), ops.createString(getName().toString()),
                 ops.createString("slots"), ops.createList(slots.stream()
                         .map(entry -> ops.createString(entry.getName().toString())
-                ))));
+                        ))));
     }
 
     public <D> void deserialize(Dynamic<D> dynamic) {
@@ -49,8 +49,8 @@ public class RandomizationTemplate{
             return RandomizationSlotManager.getSlotFromName(slotName);
         });
         slots.clear();
-        for (IRandomizationSlot entry : entries){
-            if (entry != null){
+        for (IRandomizationSlot entry : entries) {
+            if (entry != null) {
                 slots.add(entry);
             } else {
                 MKWeapons.LOGGER.error("Failed to decode slot for randomization template of type {}", getName());
@@ -58,11 +58,11 @@ public class RandomizationTemplate{
         }
     }
 
-    public static <D> ResourceLocation readType(Dynamic<D> dynamic){
+    public static <D> ResourceLocation readType(Dynamic<D> dynamic) {
         return new ResourceLocation(dynamic.get("templateType").asString(INVALID_TEMPLATE.toString()));
     }
 
-    public static <D> RandomizationTemplate deserializeTemplate(Dynamic<D> dynamic){
+    public static <D> RandomizationTemplate deserializeTemplate(Dynamic<D> dynamic) {
         ResourceLocation type = readType(dynamic);
         RandomizationTemplate template = new RandomizationTemplate(type);
         template.deserialize(dynamic);

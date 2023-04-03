@@ -4,12 +4,12 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -29,8 +29,8 @@ public abstract class BipedGroupRenderer<T extends MKEntity, M extends HumanoidM
         currentModel = null;
     }
 
-    protected void putLook(String name, ModelLook look){
-        if (!renderers.containsKey(look.getStyleName(false)) || !renderers.containsKey(look.getStyleName(true))){
+    protected void putLook(String name, ModelLook look) {
+        if (!renderers.containsKey(look.getStyleName(false)) || !renderers.containsKey(look.getStyleName(true))) {
             MKNpc.LOGGER.error("Tried to register look {} to {}, but renderer for style is missing.",
                     name, this);
             return;
@@ -38,27 +38,27 @@ public abstract class BipedGroupRenderer<T extends MKEntity, M extends HumanoidM
         this.looks.put(name, look);
     }
 
-    protected void putRenderer(String key, MKBipedRenderer<T, M> renderer){
+    protected void putRenderer(String key, MKBipedRenderer<T, M> renderer) {
         renderers.put(key, renderer);
-        if (currentModel == null){
+        if (currentModel == null) {
             setCurrentModel(renderer.getModel());
         }
     }
 
     @Nullable
-    protected ModelLook getLookForEntity(T entityIn){
+    protected ModelLook getLookForEntity(T entityIn) {
         return looks.get(entityIn.getCurrentModelLook());
     }
 
     @Nullable
-    protected MKBipedRenderer<T, M> getRenderer(T entityIn){
+    protected MKBipedRenderer<T, M> getRenderer(T entityIn) {
         ModelLook look = getLookForEntity(entityIn);
-        if (look == null){
+        if (look == null) {
             return null;
         }
         MKBipedRenderer<T, M> renderer = renderers.get(look.getStyleName(
                 !entityIn.getItemBySlot(EquipmentSlot.CHEST).isEmpty()));
-        if (renderer != null){
+        if (renderer != null) {
             renderer.setLook(look);
         }
         return renderer;
@@ -69,7 +69,7 @@ public abstract class BipedGroupRenderer<T extends MKEntity, M extends HumanoidM
         return currentModel;
     }
 
-    protected void setCurrentModel(M newModel){
+    protected void setCurrentModel(M newModel) {
         this.currentModel = newModel;
     }
 
@@ -77,7 +77,7 @@ public abstract class BipedGroupRenderer<T extends MKEntity, M extends HumanoidM
     public void render(T entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn,
                        MultiBufferSource bufferIn, int packedLightIn) {
         MKBipedRenderer<T, M> currentRenderer = getRenderer(entityIn);
-        if (currentRenderer != null){
+        if (currentRenderer != null) {
             setCurrentModel(currentRenderer.getModel());
             currentRenderer.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
             this.shadowRadius = currentRenderer.shadowRadius;
@@ -93,7 +93,7 @@ public abstract class BipedGroupRenderer<T extends MKEntity, M extends HumanoidM
     @Override
     public ResourceLocation getTextureLocation(T entity) {
         MKBipedRenderer<T, M> renderer = getRenderer(entity);
-        if (renderer != null){
+        if (renderer != null) {
             return renderer.getTextureLocation(entity);
         } else {
             return getBaseTexture(entity);

@@ -37,7 +37,7 @@ public class NestedRect extends MKRectangle {
         return super.setHeight(newHeight);
     }
 
-    public void setInnerColor(int innerColor){
+    public void setInnerColor(int innerColor) {
         innerRectangle.setColor(innerColor);
     }
 }

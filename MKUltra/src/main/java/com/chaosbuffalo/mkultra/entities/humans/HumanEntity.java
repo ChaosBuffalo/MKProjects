@@ -16,7 +16,7 @@ public class HumanEntity extends MKEntity implements IAbilityTrainingEntity {
     public HumanEntity(EntityType<? extends HumanEntity> type, Level worldIn) {
         super(type, worldIn);
         abilityTrainer = new EntityAbilityTrainer(this);
-        if (!worldIn.isClientSide()){
+        if (!worldIn.isClientSide()) {
             setAttackComboStatsAndDefault(6, GameConstants.TICKS_PER_SECOND);
         }
         setLungeSpeed(0.75);

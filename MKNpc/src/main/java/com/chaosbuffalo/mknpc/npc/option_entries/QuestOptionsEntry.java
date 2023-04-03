@@ -3,27 +3,27 @@ package com.chaosbuffalo.mknpc.npc.option_entries;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class QuestOptionsEntry implements INpcOptionEntry{
+public class QuestOptionsEntry implements INpcOptionEntry {
 
     private Map<ResourceLocation, QuestOfferingEntry> questOfferings = new HashMap<>();
 
-    public QuestOptionsEntry(List<ResourceLocation> locs){
-        for (ResourceLocation loc : locs){
+    public QuestOptionsEntry(List<ResourceLocation> locs) {
+        for (ResourceLocation loc : locs) {
             questOfferings.put(loc, new QuestOfferingEntry(loc));
         }
     }
 
-    public QuestOptionsEntry(){
+    public QuestOptionsEntry() {
 
     }
 
@@ -52,7 +52,7 @@ public class QuestOptionsEntry implements INpcOptionEntry{
 //        }
         MKNpc.getNpcData(entity).ifPresent(x -> {
             x.putShouldHaveQuest(true);
-            for (QuestOfferingEntry entry : questOfferings.values()){
+            for (QuestOfferingEntry entry : questOfferings.values()) {
                 x.requestQuest(entry);
             }
         });
@@ -62,7 +62,7 @@ public class QuestOptionsEntry implements INpcOptionEntry{
     public CompoundTag serializeNBT() {
         CompoundTag nbt = new CompoundTag();
         ListTag offeringNbt = new ListTag();
-        for (QuestOfferingEntry entry : questOfferings.values()){
+        for (QuestOfferingEntry entry : questOfferings.values()) {
             offeringNbt.add(entry.serializeNBT());
         }
         nbt.put("offerings", offeringNbt);
@@ -72,7 +72,7 @@ public class QuestOptionsEntry implements INpcOptionEntry{
     @Override
     public void deserializeNBT(CompoundTag nbt) {
         ListTag offeringNbt = nbt.getList("offerings", Tag.TAG_COMPOUND);
-        for (Tag offering : offeringNbt){
+        for (Tag offering : offeringNbt) {
             QuestOfferingEntry newEntry = new QuestOfferingEntry((CompoundTag) offering);
             questOfferings.put(newEntry.getQuestDef(), newEntry);
         }

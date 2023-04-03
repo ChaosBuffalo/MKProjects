@@ -17,18 +17,18 @@ import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
 
 public class ShadowBoltProjectileEntity extends TrailProjectileEntity implements IMKRenderAsItem {
 
@@ -52,15 +52,15 @@ public class ShadowBoltProjectileEntity extends TrailProjectileEntity implements
             SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
             SoundUtils.serverPlaySoundAtEntity(this, ModSounds.spell_dark_8.get(), cat);
             PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
-                            new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES, getId()), this);
+                    new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES, getId()), this);
 
             if (result.getType().equals(HitResult.Type.ENTITY)) {
                 EntityHitResult entityTrace = (EntityHitResult) result;
                 ShadowBoltAbility ability = MKUAbilities.SHADOW_BOLT.get();
                 MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(casterLiving, CoreDamageTypes.ShadowDamage,
-                        ability.getBaseDamage(),
-                        ability.getScaleDamage(),
-                        ability.getModifierScaling())
+                                ability.getBaseDamage(),
+                                ability.getScaleDamage(),
+                                ability.getModifierScaling())
                         .ability(ability)
                         .directEntity(this)
                         .skillLevel(getSkillLevel())

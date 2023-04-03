@@ -22,12 +22,12 @@ import com.chaosbuffalo.mkultra.effects.FlameWaveEffect;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
@@ -98,7 +98,7 @@ public class FlameWaveAbility extends MKAbility {
         float level = getSkillLevel(entity, MKAttributes.EVOCATION);
 
         MKEffectBuilder<?> flames = FlameWaveEffect.from(entity, base.value(), scale.value(), modifierScaling.value(),
-                baseDuration.value(), scaleDuration.value(), damageBoost.value())
+                        baseDuration.value(), scaleDuration.value(), damageBoost.value())
                 .ability(this)
                 .skillLevel(level);
 

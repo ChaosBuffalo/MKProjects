@@ -10,12 +10,12 @@ public class StructureComponentData implements INBTSerializable<CompoundTag> {
     private ResourceLocation pieceName;
     private BoundingBox bounds;
 
-    public StructureComponentData(ResourceLocation pieceName, BoundingBox bounds){
+    public StructureComponentData(ResourceLocation pieceName, BoundingBox bounds) {
         this.pieceName = pieceName;
         this.bounds = bounds;
     }
 
-    public StructureComponentData(){
+    public StructureComponentData() {
         this.bounds = null;
         this.pieceName = null;
     }

@@ -12,8 +12,7 @@ import org.apache.logging.log4j.Logger;
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("mkwidgets")
 @Mod.EventBusSubscriber
-public class MKWidgets
-{
+public class MKWidgets {
     // Directly reference a log4j logger.
     public static final Logger LOGGER = LogManager.getLogger();
 
@@ -25,7 +24,7 @@ public class MKWidgets
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-    private void clientSetup(final FMLClientSetupEvent event){
+    private void clientSetup(final FMLClientSetupEvent event) {
         ClientEventHandler.clientSetup();
     }
 }

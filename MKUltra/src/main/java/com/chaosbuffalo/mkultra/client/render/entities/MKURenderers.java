@@ -55,8 +55,7 @@ public class MKURenderers {
     }
 
     @SubscribeEvent
-    public static void layerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event)
-    {
+    public static void layerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
 
         List<ModelStyle> orcStyles = List.of(ModelStyles.LONG_HAIR_STYLE, ModelStyles.ARMORED_LONG_HAIR_STYLE, ModelStyles.BASIC_STYLE);
         for (ModelStyle style : orcStyles) {

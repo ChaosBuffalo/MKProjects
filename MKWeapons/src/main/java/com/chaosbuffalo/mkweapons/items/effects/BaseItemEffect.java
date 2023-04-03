@@ -3,11 +3,11 @@ package com.chaosbuffalo.mkweapons.items.effects;
 import com.chaosbuffalo.mkcore.serialization.IDynamicMapTypedSerializer;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
@@ -19,7 +19,7 @@ public abstract class BaseItemEffect implements IItemEffect {
     protected final ChatFormatting color;
     private static final String TYPE_ENTRY_NAME = "itemEffectType";
 
-    public BaseItemEffect(ResourceLocation name, ChatFormatting color){
+    public BaseItemEffect(ResourceLocation name, ChatFormatting color) {
         this.name = name;
         this.color = color;
     }

@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkweapons.client.particle;
 
-import net.minecraft.client.particle.*;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.*;
 import net.minecraft.core.particles.SimpleParticleType;
 
 import javax.annotation.Nullable;
@@ -25,8 +25,8 @@ public class BloodDripParticle extends TextureSheetParticle {
         }
     }
 
-    protected void onUpdate(){
-        if (this.onGround){
+    protected void onUpdate() {
+        if (this.onGround) {
             this.remove();
         }
     }

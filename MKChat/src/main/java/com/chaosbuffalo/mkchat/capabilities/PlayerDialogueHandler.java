@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkchat.capabilities;
 
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,48 +1,38 @@
 package com.chaosbuffalo.mkultra.data_generators;
 
 import com.chaosbuffalo.mkchat.dialogue.*;
-import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mknpc.data.QuestDefinitionProvider;
 import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestBuilder;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
-import com.chaosbuffalo.mknpc.quest.dialogue.NpcDialogueUtils;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasSpentTalentPointsCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasTrainedAbilitiesCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasWeaponInHandCondition;
-import com.chaosbuffalo.mknpc.quest.dialogue.conditions.ObjectivesCompleteCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
-import com.chaosbuffalo.mknpc.quest.objectives.*;
+import com.chaosbuffalo.mknpc.quest.objectives.TradeItemsObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.quest.rewards.GrantEntitlementReward;
 import com.chaosbuffalo.mknpc.quest.rewards.MKLootReward;
-import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
 import com.chaosbuffalo.mknpc.quest.rewards.XpReward;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.abilities.green_knight.NaturesRemedyAbility;
-import com.chaosbuffalo.mkultra.abilities.green_knight.SkinLikeWoodAbility;
-import com.chaosbuffalo.mkultra.abilities.misc.FireballAbility;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUEntitlements;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkultra.init.MKUWorldGen;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.HashCache;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
-import java.util.function.Consumer;
 
 public class MKUQuestProvider extends QuestDefinitionProvider {
 
@@ -59,7 +49,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         writeDefinition(generateIntroMageQuest(), cache);
     }
 
-    private QuestDefinition generateIntroMageQuest(){
+    private QuestDefinition generateIntroMageQuest() {
         QuestBuilder.QuestLocation introCastle = new QuestBuilder.QuestLocation(MKUWorldGen.INTRO_CASTLE.getId(), 0);
         QuestBuilder.QuestNpc initiate = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "nether_mage_initiate"));
         QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "imperial_magus"));
@@ -84,7 +74,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         assignmentPrompt.addResponse(new DialogueResponse(assignmentNode));
 
         DialogueNode introNode = new DialogueNode("intro", String.format("Hello, I'm %s. The %s sent me out here to research the appearance of this castle. " +
-                "However, I was overwhelmed by zombies and found shelter in this cave. Perhaps you can help me finish %s.",
+                        "However, I was overwhelmed by zombies and found shelter in this cave. Perhaps you can help me finish %s.",
                 DialogueContexts.ENTITY_NAME_CONTEXT, netherMagePrompt.getPromptEmbed(), assignmentPrompt.getPromptEmbed()));
         def.setupStartQuestResponse(ambushedNode, ambushedPrompt);
         def.addHailResponse(introNode);
@@ -141,8 +131,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 .autoComplete(true)
                 .simpleHail("test_complete", new TextComponent("Talk to the Initiate"), initiate,
                         String.format("Looks like the staff is in working order. " +
-                        "You know you weren't half bad at this, you should consider joining %s. " +
-                        "In the meantime, I can %s a few spells. ", guildPrompt.getPromptEmbed(),
+                                        "You know you weren't half bad at this, you should consider joining %s. " +
+                                        "In the meantime, I can %s a few spells. ", guildPrompt.getPromptEmbed(),
                                 openTraining.getPromptEmbed()), true,
                         obj -> {
                             obj.withAdditionalPrompts(openTraining);
@@ -156,7 +146,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return def;
     }
 
-    private QuestDefinition generateIntroClericQuest(){
+    private QuestDefinition generateIntroClericQuest() {
         QuestBuilder.QuestLocation introCastle = new QuestBuilder.QuestLocation(MKUWorldGen.INTRO_CASTLE.getId(), 0);
         QuestBuilder.QuestNpc acolyte = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "solangian_acolyte"));
         QuestBuilder.QuestNpc apprentice = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "solangian_apprentice"));
@@ -169,12 +159,12 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         DialogueNode councilNode = new DialogueNode("council",
                 "The leadership of my order is called the Council of the Nine. " +
                         "They are tasked with overseeing all affairs of the church.");
-        DialoguePrompt councilPrompt = new DialoguePrompt("council",  "Council", "the Council?", "Council");
+        DialoguePrompt councilPrompt = new DialoguePrompt("council", "Council", "the Council?", "Council");
         councilPrompt.addResponse(new DialogueResponse(councilNode));
 
         DialogueNode holySeeNode = new DialogueNode("holySee", String.format(
                 "Our order is dedicated to the worship of the Sun God, Solang. We work to preserve order and prosperity in the realm. " +
-                "This plague of undeath is of great concern to the %s and we believe that this castle is somehow connected.", councilPrompt.getPromptEmbed()));
+                        "This plague of undeath is of great concern to the %s and we believe that this castle is somehow connected.", councilPrompt.getPromptEmbed()));
         DialoguePrompt holySeePrompt = new DialoguePrompt("holySee", "the Holy See", "Who are the Holy See?", "Holy See of Solang");
         holySeePrompt.addResponse(new DialogueResponse(holySeeNode));
 
@@ -182,8 +172,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 "What task?", "task");
         DialogueNode hailNode = new DialogueNode("hail", String.format(
                 "I am %s, sent here under the authority of the %s " +
-                "to investigate the appearance of this castle. I hear you are going into the castle; " +
-                "if you're interested, I have a %s for you.", DialogueContexts.ENTITY_NAME_CONTEXT, holySeePrompt.getPromptEmbed(), startQuestPrompt.getPromptEmbed()));
+                        "to investigate the appearance of this castle. I hear you are going into the castle; " +
+                        "if you're interested, I have a %s for you.", DialogueContexts.ENTITY_NAME_CONTEXT, holySeePrompt.getPromptEmbed(), startQuestPrompt.getPromptEmbed()));
 
 
         DialoguePrompt apprenticePrompt = new DialoguePrompt("apprentice", "apprentice", "Where did you last see your apprentice?", "my apprentice");
@@ -207,7 +197,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
 
         DialogueNode withFavor = new DialogueNode("favor",
                 String.format("When we were escaping from the library I accidentally dropped a necklace of sentimental value. " +
-                "I think the %s has it. Will you retrieve it for me?", magus.getDialogueLink()));
+                        "I think the %s has it. Will you retrieve it for me?", magus.getDialogueLink()));
         DialoguePrompt favorPrompt = new DialoguePrompt("favor", "favor", "What favor?", "a favor");
         favorPrompt.addResponse(new DialogueResponse(withFavor));
         withFavor.addEffect(new ObjectiveCompleteEffect("talk_to_apprentice", "talk_to_apprentice"));
@@ -272,7 +262,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return def;
     }
 
-    private QuestDefinition generateTrooperArmorQuest(){
+    private QuestDefinition generateTrooperArmorQuest() {
         QuestDefinition def = new QuestDefinition(new ResourceLocation(MKUltra.MODID, "trooper_armor"));
         def.addRequirement(new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier1.get()));
         def.setRepeatable(true);
@@ -291,7 +281,6 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                         DialogueUtils.getItemNameProvider(MKUItems.destroyedTrooperChestplate), DialogueUtils.getItemNameProvider(MKUItems.destroyedTrooperBoots)));
         def.setupStartQuestResponse(questStart, startQuestPrompt);
         def.addHailResponse(hailNode);
-
 
 
         Quest helmet = new Quest("tradeHelmet", new TextComponent("The Green Smith needs " +
@@ -357,7 +346,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return def;
     }
 
-    private QuestDefinition generateIntroQuest(){
+    private QuestDefinition generateIntroQuest() {
 
         QuestBuilder.QuestLocation introCastle = new QuestBuilder.QuestLocation(MKUWorldGen.INTRO_CASTLE.getId(), 0);
         QuestBuilder.QuestNpc greenLady = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "green_lady"));
@@ -372,7 +361,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 "I don't know", "What are you doing");
         startQuestPrompt.addResponse(new DialogueResponse("start_quest"));
         DialogueNode hailNode = new DialogueNode("hail", String.format("Hail and well met. " +
-                "You're lucky we were able to grab you before your soul drifted too far into the aether. %s in an archival zone?",
+                        "You're lucky we were able to grab you before your soul drifted too far into the aether. %s in an archival zone?",
                 startQuestPrompt.getPromptEmbed()));
         DialogueNode questStart = new DialogueNode("start_quest", "This world is on the verge of deletion, the dead rise from the ground everywhere, " +
                 "there may still be time to save it if we act now. " +
@@ -423,7 +412,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                         "Come back to me with a weapon in your hand.",
                         new HasWeaponInHandCondition(),
                         null
-                        )
+                )
                 .reward(new XpReward(25))
                 .quest();
         def.addQuest(returnToSmith);
@@ -441,7 +430,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                                 "order to unlock your first ability slot. Talk to me again when you have finished this.",
                         true,
                         null
-                        )
+                )
                 .reward(new XpReward(25))
                 .quest();
         def.addQuest(greenLadyTrainTalent);
@@ -463,11 +452,11 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                                 "Alright you're now %s your first ability.", needTraining.getPromptEmbed()),
                         "Come back to me when you have spent your first talent point.",
                         new HasSpentTalentPointsCondition(1),
-                        (convo) ->{
+                        (convo) -> {
                             convo.withAdditionalNode(openTraining);
                             convo.withAdditionalPrompts(needTraining);
                         }
-                        )
+                )
                 .reward(new XpReward(50))
                 .reward(new GrantEntitlementReward(MKUEntitlements.GreenKnightTier1.get()))
                 .quest();
@@ -491,7 +480,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                                 "Go kill some of the zombies on the first floor to try out your new magic, and don't forget you can always return to me to learn more.",
                         "Come back to me once you've learned one of our abilities.",
                         new HasTrainedAbilitiesCondition(false, MKUAbilities.SKIN_LIKE_WOOD.getId(), MKUAbilities.NATURES_REMEDY.getId()),
-                        (convo) ->{
+                        (convo) -> {
                             convo.withAdditionalNode(openTraining2);
                             convo.withAdditionalPrompts(needTraining2);
                         })
@@ -530,7 +519,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                         String.format("Come back to me after you've taken care of %s.", piglinCaptain.getDialogueLink()),
                         Collections.singletonList("kill_captain"),
                         null
-                        )
+                )
                 .reward(new XpReward(100))
                 .reward(new GrantEntitlementReward(MKUEntitlements.GreenKnightTier2.get()))
                 .quest();

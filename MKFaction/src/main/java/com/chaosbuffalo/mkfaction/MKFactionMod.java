@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkfaction;
 
-import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mkfaction.capabilities.PlayerFactionHandler;
 import com.chaosbuffalo.mkfaction.client.gui.FactionPage;
 import com.chaosbuffalo.mkfaction.command.FactionCommand;
@@ -52,7 +51,7 @@ public class MKFactionMod {
     }
 
     @SubscribeEvent
-    public void onRegisterCommands(RegisterCommandsEvent event){
+    public void onRegisterCommands(RegisterCommandsEvent event) {
         FactionCommand.register(event.getDispatcher());
     }
 

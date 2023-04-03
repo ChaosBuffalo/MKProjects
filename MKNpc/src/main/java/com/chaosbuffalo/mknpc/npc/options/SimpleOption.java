@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 
 public abstract class SimpleOption<T> extends NpcDefinitionOption {
     private T value;

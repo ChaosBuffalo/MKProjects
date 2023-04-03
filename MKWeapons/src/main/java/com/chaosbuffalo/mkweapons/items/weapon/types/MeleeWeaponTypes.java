@@ -14,18 +14,18 @@ public class MeleeWeaponTypes {
 
     public static final HashMap<ResourceLocation, IMeleeWeaponType> WEAPON_TYPES = new HashMap<net.minecraft.resources.ResourceLocation, IMeleeWeaponType>();
 
-    public static void addWeaponType(IMeleeWeaponType weaponType){
+    public static void addWeaponType(IMeleeWeaponType weaponType) {
         WEAPON_TYPES.put(weaponType.getName(), weaponType);
     }
 
     @Nullable
-    public static IMeleeWeaponType getWeaponType(ResourceLocation name){
+    public static IMeleeWeaponType getWeaponType(ResourceLocation name) {
         return WEAPON_TYPES.get(name);
     }
 
     public static final MeleeWeaponType LONGSWORD_TYPE = new MeleeWeaponType(
             new ResourceLocation(MKWeapons.MODID, "longsword"),
-                1.5f, -2.4f, 0.5f, 0.05f, 0.0f, false,
+            1.5f, -2.4f, 0.5f, 0.05f, 0.0f, false,
             0.75f, 25f,
             new SkillScalingEffect(4.5, MKAttributes.ONE_HAND_SLASH),
             new FuryStrikeMeleeWeaponEffect(5, .25));
@@ -98,7 +98,7 @@ public class MeleeWeaponTypes {
     }
 
 
-    public static void registerWeaponTypes(){
+    public static void registerWeaponTypes() {
         addWeaponType(LONGSWORD_TYPE);
         addWeaponType(GREATSWORD_TYPE);
         addWeaponType(KATANA_TYPE);

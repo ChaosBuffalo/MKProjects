@@ -1,13 +1,5 @@
 package com.chaosbuffalo.mkultra.world.gen.feature.structure;
 
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructurePieceArgs;
-import com.chaosbuffalo.mkultra.init.MKUWorldGen;
-import com.mojang.serialization.Codec;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
-
-
 //public class HyboreanAlterStructure extends StructureFeature<NoneFeatureConfiguration> {
 //
 //

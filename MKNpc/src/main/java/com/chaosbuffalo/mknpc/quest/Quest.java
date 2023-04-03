@@ -19,10 +19,10 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -39,7 +39,7 @@ public class Quest {
     private MutableComponent description;
     public static final MutableComponent defaultDescription = new TextComponent("Placeholder Quest Description");
 
-    public Quest(String questName, MutableComponent description){
+    public Quest(String questName, MutableComponent description) {
         this.questName = questName;
         this.objectives = new ArrayList<>();
         this.objectiveIndex = new HashMap<>();
@@ -52,11 +52,11 @@ public class Quest {
         this.autoComplete = autoComplete;
     }
 
-    public boolean shouldAutoComplete(){
+    public boolean shouldAutoComplete() {
         return autoComplete;
     }
 
-    public Quest(){
+    public Quest() {
         this("default", defaultDescription);
     }
 
@@ -65,15 +65,15 @@ public class Quest {
     }
 
     public DialogueTree generateDialogueForNpc(QuestChainInstance questChain, ResourceLocation npcDefinitionName,
-                                       UUID npcId, DialogueTree tree,
-                                       Map<ResourceLocation, List<MKStructureEntry>> questStructures,
-                                       QuestDefinition definition){
+                                               UUID npcId, DialogueTree tree,
+                                               Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                               QuestDefinition definition) {
         QuestData questData = questChain.getQuestChainData().getQuestData(getQuestName());
         for (QuestObjective<?> obj : getObjectives()) {
             if (obj instanceof TalkToNpcObjective) {
                 TalkToNpcObjective talkObj = (TalkToNpcObjective) obj;
                 UUIDInstanceData instanceData = talkObj.getInstanceData(questData);
-                if (instanceData.getUuid().equals(npcId)){
+                if (instanceData.getUuid().equals(npcId)) {
                     tree = talkObj.generateDialogueForNpc(this, questChain, npcDefinitionName, npcId, tree, questStructures, definition);
                 }
             }
@@ -81,8 +81,8 @@ public class Quest {
         return tree;
     }
 
-    public void addObjective(QuestObjective<?> objective){
-        if (objectiveIndex.containsKey(objective.getObjectiveName())){
+    public void addObjective(QuestObjective<?> objective) {
+        if (objectiveIndex.containsKey(objective.getObjectiveName())) {
             MKNpc.LOGGER.error("Failed to add objective {} to quest {}", objective.getObjectiveName(), getQuestName());
         } else {
             objectives.add(objective);
@@ -90,11 +90,11 @@ public class Quest {
         }
     }
 
-    public void addReward(QuestReward reward){
+    public void addReward(QuestReward reward) {
         rewards.add(reward);
     }
 
-    public QuestObjective<?> getObjective(String name){
+    public QuestObjective<?> getObjective(String name) {
         return objectiveIndex.get(name);
     }
 
@@ -102,7 +102,7 @@ public class Quest {
         return description;
     }
 
-    public <D> D serialize(DynamicOps<D> ops){
+    public <D> D serialize(DynamicOps<D> ops) {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("questName"), ops.createString(questName));
         builder.put(ops.createString("objectives"), ops.createList(objectives.stream().map(x -> x.serialize(ops))));
@@ -112,7 +112,7 @@ public class Quest {
         return ops.createMap(builder.build());
     }
 
-    public <D> void deserialize(Dynamic<D> dynamic){
+    public <D> void deserialize(Dynamic<D> dynamic) {
         questName = dynamic.get("questName").asString("default");
         autoComplete = dynamic.get("autoComplete").asBoolean(false);
         description = Component.Serializer.fromJson(
@@ -120,28 +120,28 @@ public class Quest {
         List<Optional<QuestObjective<?>>> objectives = dynamic.get("objectives").asList(x -> {
             ResourceLocation type = QuestObjective.getType(x);
             Supplier<QuestObjective<?>> sup = QuestDefinitionManager.getObjectiveDeserializer(type);
-            if (sup != null){
+            if (sup != null) {
                 QuestObjective<?> obj = sup.get();
                 obj.deserialize(x);
                 return Optional.of(obj);
             }
             return Optional.empty();
         });
-        for (Optional<QuestObjective<?>> objOpt : objectives){
+        for (Optional<QuestObjective<?>> objOpt : objectives) {
             objOpt.ifPresent(this::addObjective);
         }
 
         List<Optional<QuestReward>> rewards = dynamic.get("rewards").asList(x -> {
             ResourceLocation type = QuestReward.getType(x);
             Supplier<QuestReward> sup = QuestDefinitionManager.getRewardDeserializer(type);
-            if (sup != null){
+            if (sup != null) {
                 QuestReward reward = sup.get();
                 reward.deserialize(x);
                 return Optional.of(reward);
             }
             return Optional.empty();
         });
-        for (Optional<QuestReward> rewardOpt : rewards){
+        for (Optional<QuestReward> rewardOpt : rewards) {
             rewardOpt.ifPresent(this::addReward);
         }
     }
@@ -150,7 +150,7 @@ public class Quest {
         return objectives;
     }
 
-    public List<Pair<ResourceLocation, Integer>> getStructuresNeeded(){
+    public List<Pair<ResourceLocation, Integer>> getStructuresNeeded() {
         return objectives.stream().filter(x -> x instanceof StructureInstanceObjective)
                 .map(x -> (StructureInstanceObjective<?>) x)
                 .map(x -> new Pair<>(x.getStructureName(), x.getStructureIndex() + 1))
@@ -158,11 +158,11 @@ public class Quest {
     }
 
 
-    public boolean isStructureRelevant(MKStructureEntry entry){
+    public boolean isStructureRelevant(MKStructureEntry entry) {
         return objectives.stream().allMatch(x -> x.isStructureRelevant(entry));
     }
 
-    public PlayerQuestData generatePlayerQuestData(IWorldNpcData worldData, QuestData instanceData){
+    public PlayerQuestData generatePlayerQuestData(IWorldNpcData worldData, QuestData instanceData) {
         PlayerQuestData data = new PlayerQuestData(getQuestName(), getDescription());
         objectives.forEach(x -> {
             PlayerQuestObjectiveData obj = x.generatePlayerData(worldData, instanceData);
@@ -176,12 +176,12 @@ public class Quest {
         return data;
     }
 
-    public boolean isComplete(PlayerQuestData data){
+    public boolean isComplete(PlayerQuestData data) {
         return objectives.stream().allMatch(x -> x.isComplete(data.getObjective(x.getObjectiveName())));
     }
 
-    public void grantRewards(IPlayerQuestingData playerData){
-        for (QuestReward reward : rewards){
+    public void grantRewards(IPlayerQuestingData playerData) {
+        for (QuestReward reward : rewards) {
             reward.grantReward(playerData.getPlayer());
         }
 

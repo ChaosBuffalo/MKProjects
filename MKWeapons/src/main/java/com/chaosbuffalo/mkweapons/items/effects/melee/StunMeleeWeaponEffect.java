@@ -11,16 +11,16 @@ import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -31,13 +31,13 @@ public class StunMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.stun");
     public static final ResourceLocation PARTICLES = new ResourceLocation(MKWeapons.MODID, "stun_effect");
 
-    public StunMeleeWeaponEffect(double stunChance, int stunSeconds){
+    public StunMeleeWeaponEffect(double stunChance, int stunSeconds) {
         this();
         this.stunChance = stunChance;
         this.stunDuration = stunSeconds;
     }
 
-    public StunMeleeWeaponEffect(){
+    public StunMeleeWeaponEffect() {
         super(NAME, ChatFormatting.DARK_PURPLE);
     }
 
@@ -62,14 +62,14 @@ public class StunMeleeWeaponEffect extends BaseMeleeWeaponEffect {
                     .timed(stunDuration * GameConstants.TICKS_PER_SECOND);
             MKCore.getEntityData(target).ifPresent(targetData -> targetData.getEffects().addEffect(stun));
             PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
-                            new Vec3(0.0, target.getBbHeight(), 0.0), PARTICLES, target.getId()), target);
+                    new Vec3(0.0, target.getBbHeight(), 0.0), PARTICLES, target.getId()), target);
         }
     }
 
     @Override
     public void addInformation(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
         super.addInformation(stack, worldIn, tooltip);
-        if (Screen.hasShiftDown()){
+        if (Screen.hasShiftDown()) {
             tooltip.add(new TextComponent(I18n.get("mkweapons.weapon_effect.stun.description",
                     stunChance * 100.0, stunDuration)));
         }

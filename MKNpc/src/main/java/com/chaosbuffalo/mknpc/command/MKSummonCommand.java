@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.command;
 
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -9,17 +9,17 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.Util;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.TextComponent;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -30,7 +30,7 @@ public class MKSummonCommand {
                 .then(Commands.argument("npc_definition", NpcDefinitionIdArgument.definition())
                         .suggests(MKSummonCommand::suggestNpcDefinitions)
                         .then(Commands.argument("difficulty_value", DoubleArgumentType.doubleArg(0.0, 200.0))
-                        .executes(MKSummonCommand::summon)));
+                                .executes(MKSummonCommand::summon)));
     }
 
     static CompletableFuture<Suggestions> suggestNpcDefinitions(final CommandContext<CommandSourceStack> context,
@@ -44,11 +44,11 @@ public class MKSummonCommand {
         ResourceLocation definition_id = ctx.getArgument("npc_definition", ResourceLocation.class);
         double difficulty_value = DoubleArgumentType.getDouble(ctx, "difficulty_value");
         NpcDefinition definition = NpcDefinitionManager.getDefinition(definition_id);
-        if (definition != null){
+        if (definition != null) {
             Entity entity = definition.createEntity(player.getLevel(), player.position(), difficulty_value);
-            if (entity != null){
+            if (entity != null) {
                 player.getLevel().addFreshEntity(entity);
-                if (entity instanceof Mob){
+                if (entity instanceof Mob) {
                     ((Mob) entity).finalizeSpawn(player.getLevel(), player.getLevel().getCurrentDifficultyAt(
                             new BlockPos(entity.position())), MobSpawnType.COMMAND, null, null);
                 }

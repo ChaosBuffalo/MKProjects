@@ -3,9 +3,9 @@ package com.chaosbuffalo.mknpc.entity.ai.sensor;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.google.common.collect.ImmutableSet;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.Sensor;
-import net.minecraft.server.level.ServerLevel;
 
 import java.util.Set;
 
@@ -22,7 +22,7 @@ public class MovementStrategySensor extends Sensor<MKEntity> {
 
     }
 
-    public MovementStrategySensor(){
+    public MovementStrategySensor() {
         super(5);
     }
 

@@ -1,22 +1,17 @@
 package com.chaosbuffalo.mkweapons.capabilities;
 
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.ContainerHelper;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
-import net.minecraftforge.common.capabilities.Capability;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nullable;
-
-public class ArrowDataHandler implements IArrowData{
+public class ArrowDataHandler implements IArrowData {
 
     private AbstractArrow arrow;
     private ItemStack shootingWeapon;
 
-    public ArrowDataHandler(){
+    public ArrowDataHandler() {
         shootingWeapon = ItemStack.EMPTY;
     }
 

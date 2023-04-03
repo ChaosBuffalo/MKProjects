@@ -18,11 +18,11 @@ import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsParticles;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
 public class SeverTendonAbility extends MKAbility {
     protected final FloatAttribute base = new FloatAttribute("base", 4.0f);
@@ -87,7 +87,7 @@ public class SeverTendonAbility extends MKAbility {
         float level = getSkillLevel(entity, MKAttributes.PANKRATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.MeleeDamage,
-                    base.value(), scale.value(), modifierScaling.value())
+                            base.value(), scale.value(), modifierScaling.value())
                     .ability(this)
                     .skillLevel(level);
 

@@ -6,16 +6,16 @@ import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mkfaction.client.gui.FactionPage;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionStatus;
-import net.minecraft.client.Minecraft;
+import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.Util;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.event.InputEvent;
@@ -43,8 +43,8 @@ public class InputHandler {
 
     @Nullable
     public static <E extends Entity> EntityHitResult getLookingAtNonPlayer(Class<E> clazz,
-                                                                                final Entity mainEntity,
-                                                                                double distance) {
+                                                                           final Entity mainEntity,
+                                                                           double distance) {
         HitResult result = RayTraceUtils.getLookingAt(clazz, mainEntity, 30.f, e -> !(e instanceof Player));
         return result instanceof EntityHitResult ? (EntityHitResult) result : null;
     }

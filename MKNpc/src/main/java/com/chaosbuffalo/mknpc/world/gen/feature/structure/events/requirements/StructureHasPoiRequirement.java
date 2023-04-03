@@ -7,18 +7,18 @@ import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
-public class StructureHasPoiRequirement extends StructureEventRequirement{
+public class StructureHasPoiRequirement extends StructureEventRequirement {
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID,
             "struct_requirement.has_poi");
     protected StringAttribute poiName = new StringAttribute("poiName", "invalid_default");
 
-    public StructureHasPoiRequirement(String poiNameIn){
+    public StructureHasPoiRequirement(String poiNameIn) {
         this();
         poiName.setValue(poiNameIn);
 
     }
 
-    public StructureHasPoiRequirement(){
+    public StructureHasPoiRequirement() {
         super(TYPE_NAME);
         addAttribute(poiName);
     }

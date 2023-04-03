@@ -7,18 +7,19 @@ import com.chaosbuffalo.mkweapons.items.armor.MKArmorItem;
 import com.chaosbuffalo.mkweapons.items.effects.armor.ArmorModifierEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
 import com.google.common.collect.Lists;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ObjectHolder;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class MKUItems {
@@ -110,7 +111,7 @@ public final class MKUItems {
         List<AttributeOptionEntry> gkHelmetAttrs = Lists.newArrayList(
                 new AttributeOptionEntry(MKAttributes.COOLDOWN,
                         new AttributeModifier(UUID.fromString("2013a410-ca6d-48a9-a12d-a70a65ec8190"),
-                        "Bonus", 0.25, AttributeModifier.Operation.MULTIPLY_TOTAL)));
+                                "Bonus", 0.25, AttributeModifier.Operation.MULTIPLY_TOTAL)));
 
         List<AttributeOptionEntry> gkLegsAttrs = Lists.newArrayList(
                 new AttributeOptionEntry(MKAttributes.MAX_MANA,

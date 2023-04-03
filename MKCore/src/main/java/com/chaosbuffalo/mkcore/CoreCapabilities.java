@@ -23,8 +23,10 @@ public class CoreCapabilities {
     public static final ResourceLocation PLAYER_CAP_ID = MKCore.makeRL("player_data");
     public static final ResourceLocation ENTITY_CAP_ID = MKCore.makeRL("entity_data");
 
-    public static final Capability<MKPlayerData> PLAYER_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
-    public static final Capability<MKEntityData> ENTITY_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+    public static final Capability<MKPlayerData> PLAYER_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
+    });
+    public static final Capability<MKEntityData> ENTITY_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
+    });
 
 
     @SubscribeEvent

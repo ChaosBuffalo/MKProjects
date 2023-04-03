@@ -24,14 +24,14 @@ public abstract class TemplatePoolProvider implements DataProvider {
     }
 
 
-    public void writePool(StructureTemplatePool pool, @Nonnull HashCache cache){
+    public void writePool(StructureTemplatePool pool, @Nonnull HashCache cache) {
         Path outputFolder = this.generator.getOutputFolder();
         ResourceLocation key = pool.getName();
         Path path = outputFolder.resolve("data/" + key.getNamespace() + "/worldgen/template_pool/" + key.getPath() + ".json");
         StructureTemplatePool.CODEC.encodeStart(JsonOps.INSTANCE, Holder.direct(pool)).result().ifPresent(x -> {
             try {
                 DataProvider.save(GSON, cache, x, path);
-            } catch (IOException e){
+            } catch (IOException e) {
                 MKNpc.LOGGER.error("Couldn't write template pool {}", path, e);
             }
         });

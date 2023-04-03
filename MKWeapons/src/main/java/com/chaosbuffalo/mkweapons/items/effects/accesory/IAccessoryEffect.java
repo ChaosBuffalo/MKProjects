@@ -11,12 +11,12 @@ public interface IAccessoryEffect extends IItemEffect {
 
 
     default float modifyDamageDealt(float damage, MKAccessory accessory, ItemStack stack,
-                                    LivingEntity target, LivingEntity attacker){
+                                    LivingEntity target, LivingEntity attacker) {
         return damage;
     }
 
     default void livingCompleteAbility(LivingEntity caster, IMKEntityData entityData, MKAccessory accessory,
-                                       ItemStack stack, MKAbility ability){
+                                       ItemStack stack, MKAbility ability) {
 
     }
 }

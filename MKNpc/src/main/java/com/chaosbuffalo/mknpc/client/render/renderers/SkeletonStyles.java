@@ -24,7 +24,7 @@ public class SkeletonStyles {
     public static final Map<String, ModelLook> SKELETON_LOOKS = new HashMap<>();
     public static final ModelLook DEFAULT_LOOK = new ModelLook(ModelStyles.BASIC_STYLE, SKELETON_TEXTURES);
 
-    public static void putLook(String name, ModelLook style){
+    public static void putLook(String name, ModelLook style) {
         SKELETON_LOOKS.put(name, style);
     }
 
@@ -34,8 +34,8 @@ public class SkeletonStyles {
         TEXTURE_VARIANTS.put("default", SKELETON_TEXTURES);
         CLOTHING_VARIANTS.put("stray", STRAY_CLOTHES_TEXTURES);
 
-        for (Map.Entry<String, ResourceLocation> textureVariant : TEXTURE_VARIANTS.entrySet()){
-            for (Map.Entry<String, ResourceLocation> clothingVariant : CLOTHING_VARIANTS.entrySet()){
+        for (Map.Entry<String, ResourceLocation> textureVariant : TEXTURE_VARIANTS.entrySet()) {
+            for (Map.Entry<String, ResourceLocation> clothingVariant : CLOTHING_VARIANTS.entrySet()) {
                 putLook(String.format("%s_%s", textureVariant.getKey(), clothingVariant.getKey()),
                         new ModelLook(ModelStyles.CLOTHES_ONLY_STYLE, textureVariant.getValue(), clothingVariant.getValue()));
             }

@@ -6,5 +6,6 @@ import net.minecraft.nbt.CompoundTag;
 public interface IQuestInstanceData {
 
     CompoundTag serializeNBT();
+
     void deserializeNBT(CompoundTag nbt, QuestDefinition definition);
 }

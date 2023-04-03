@@ -34,7 +34,7 @@ public class HoverTextButton extends MKText {
     @Override
     public void draw(PoseStack stack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         super.draw(stack, mc, x, y, width, height, mouseX, mouseY, partialTicks);
-        if (!isHovered() && isClicked){
+        if (!isHovered() && isClicked) {
             isClicked = false;
         }
     }
@@ -44,7 +44,7 @@ public class HoverTextButton extends MKText {
         if (isHovered()) {
             mkFill(stack, x, y, x + width, y + height, 0x55ffffff);
         }
-        if (isClicked){
+        if (isClicked) {
             mkFill(stack, x, y, x + width, y + height, 0x55ffffff);
         }
     }

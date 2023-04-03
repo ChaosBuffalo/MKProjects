@@ -17,12 +17,12 @@ import com.chaosbuffalo.mkultra.effects.FuriousBroodingEffect;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
@@ -73,7 +73,7 @@ public class FuriousBroodingAbility extends MKAbility {
     public MKEffectBuilder<?> createFuriousBroodingEffect(IMKEntityData casterData, float level) {
         int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
         return FuriousBroodingEffect.from(casterData.getEntity(), baseValue.value(), scaleValue.value(),
-                modifierScaling.value(), tick_particles.getValue())
+                        modifierScaling.value(), tick_particles.getValue())
                 .ability(this)
                 .skillLevel(level)
                 .timed(duration);

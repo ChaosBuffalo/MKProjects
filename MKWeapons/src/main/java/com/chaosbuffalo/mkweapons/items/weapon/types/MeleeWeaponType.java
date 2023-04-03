@@ -27,7 +27,7 @@ public class MeleeWeaponType implements IMeleeWeaponType {
 
     public MeleeWeaponType(ResourceLocation name, float damageMultiplier, float attackSpeed,
                            float critMultiplier, float critChance, float reach, boolean isTwoHanded,
-                           float blockEfficiency, float maxPoise, IMeleeWeaponEffect... effects){
+                           float blockEfficiency, float maxPoise, IMeleeWeaponEffect... effects) {
         this.damageMultiplier = damageMultiplier;
         this.name = name;
         this.attackSpeed = attackSpeed;
@@ -46,7 +46,7 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         return isTwoHanded;
     }
 
-    public String getTranslationName(){
+    public String getTranslationName() {
         return String.format("mkweapon.melee.type.%s.%s", getName().getNamespace(), getName().getPath());
     }
 
@@ -58,7 +58,7 @@ public class MeleeWeaponType implements IMeleeWeaponType {
     @Override
     public <D> D serialize(DynamicOps<D> ops) {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
-        builder.put( ops.createString("damageMultiplier"), ops.createFloat(getDamageMultiplier()));
+        builder.put(ops.createString("damageMultiplier"), ops.createFloat(getDamageMultiplier()));
         builder.put(ops.createString("attackSpeed"), ops.createFloat(getAttackSpeed()));
         builder.put(ops.createString("reach"), ops.createFloat(getReach()));
         builder.put(ops.createString("critMultiplier"), ops.createFloat(getCritMultiplier()));
@@ -83,7 +83,7 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         maxPoise = dynamic.get("maxPoise").asFloat(20.0f);
         List<IMeleeWeaponEffect> deserializedEffects = dynamic.get("effects").asList(d -> {
             IItemEffect effect = ItemEffects.deserializeEffect(d);
-            if (effect instanceof IMeleeWeaponEffect){
+            if (effect instanceof IMeleeWeaponEffect) {
                 return (IMeleeWeaponEffect) effect;
             } else {
                 MKWeapons.LOGGER.error("Failed to deserialize {} not a melee effect type for {}",
@@ -92,8 +92,8 @@ public class MeleeWeaponType implements IMeleeWeaponType {
             }
         });
         effects.clear();
-        for (IMeleeWeaponEffect effect : deserializedEffects){
-            if (effect != null){
+        for (IMeleeWeaponEffect effect : deserializedEffects) {
+            if (effect != null) {
                 effects.add(effect);
             }
         }

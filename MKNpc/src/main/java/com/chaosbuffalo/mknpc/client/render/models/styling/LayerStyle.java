@@ -18,11 +18,11 @@ public class LayerStyle {
         return isTranslucent;
     }
 
-    public LayerStyle(String layerName, float size){
+    public LayerStyle(String layerName, float size) {
         this(layerName, size, false);
     }
 
-    public LayerStyle(String layerName, float size, boolean isTranslucent){
+    public LayerStyle(String layerName, float size, boolean isTranslucent) {
         this.layerSize = size;
         this.layerName = layerName;
         this.isTranslucent = isTranslucent;

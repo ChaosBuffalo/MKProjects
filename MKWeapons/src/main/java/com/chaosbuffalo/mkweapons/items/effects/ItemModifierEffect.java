@@ -4,12 +4,12 @@ import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEnt
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
@@ -32,7 +32,7 @@ public class ItemModifierEffect extends BaseItemEffect {
                 ops.createList(modifiers.stream().map(mod -> mod.serialize(ops))));
     }
 
-    public void addAttributeModifier(Attribute attribute, AttributeModifier attributeModifier){
+    public void addAttributeModifier(Attribute attribute, AttributeModifier attributeModifier) {
         modifiers.add(new AttributeOptionEntry(attribute, attributeModifier, attributeModifier.getAmount(), attributeModifier.getAmount()));
     }
 
@@ -54,8 +54,8 @@ public class ItemModifierEffect extends BaseItemEffect {
             return entry;
         });
         modifiers.clear();
-        for (AttributeOptionEntry mod : deserialized){
-            if (mod != null){
+        for (AttributeOptionEntry mod : deserialized) {
+            if (mod != null) {
                 modifiers.add(mod);
             }
         }

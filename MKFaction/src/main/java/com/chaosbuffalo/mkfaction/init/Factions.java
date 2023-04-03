@@ -10,7 +10,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ObjectHolder;
 
 @SuppressWarnings("unused")
-@Mod.EventBusSubscriber(modid = MKFactionMod.MODID, bus=Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = MKFactionMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Factions {
 
     public static final ResourceLocation UNDEAD_FACTION_NAME = new ResourceLocation(MKFactionMod.MODID,

@@ -30,14 +30,14 @@ public abstract class StructureSetProvider implements DataProvider {
     }
 
 
-    public void writeSet(StructureSetData set, @Nonnull HashCache cache){
+    public void writeSet(StructureSetData set, @Nonnull HashCache cache) {
         Path outputFolder = this.generator.getOutputFolder();
         ResourceLocation key = set.name;
         Path path = outputFolder.resolve("data/" + key.getNamespace() + "/worldgen/structure_set/" + key.getPath() + ".json");
         try {
             JsonElement element = set.serialize(JsonOps.INSTANCE);
             DataProvider.save(GSON, cache, element, path);
-        } catch (IOException e){
+        } catch (IOException e) {
             MKNpc.LOGGER.error("Couldn't write structure set {}", path, e);
         }
     }
@@ -70,7 +70,6 @@ public abstract class StructureSetProvider implements DataProvider {
             builder.put(dynamicOps.createString("weight"), dynamicOps.createInt(weight));
         }
     }
-
 
 
     public static class StructureSetData implements IDynamicMapSerializer {

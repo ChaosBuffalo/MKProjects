@@ -15,22 +15,22 @@ import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.GlobalPos;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -77,7 +77,7 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
     }
 
     @Override
-    public boolean isInsideStructure(){
+    public boolean isInsideStructure() {
         return structureName != null && structureId != null;
     }
 
@@ -98,7 +98,7 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
         return structureId;
     }
 
-    public void putNotableId(ResourceLocation loc, UUID notableId){
+    public void putNotableId(ResourceLocation loc, UUID notableId) {
         this.notableIds.put(loc, notableId);
     }
 
@@ -142,15 +142,15 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
         return spawnList;
     }
 
-    public void setSpawnList(SpawnList list){
+    public void setSpawnList(SpawnList list) {
         spawnList.copyList(list);
         populateRandomSpawns();
         ticksSinceDeath = 0;
     }
 
-    public void populateRandomSpawns(){
+    public void populateRandomSpawns() {
         randomSpawns.clear();
-        for (SpawnOption option : spawnList.getOptions()){
+        for (SpawnOption option : spawnList.getOptions()) {
             randomSpawns.add(option.getWeight(), option.getDefinition());
         }
     }
@@ -165,12 +165,12 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
         compound.putBoolean("hasUploadedToWorld", needsUploadToWorld);
         compound.putBoolean("placedByStructure", placedByStructure);
         compound.putInt("respawnTime", respawnTime);
-        if (isInsideStructure()){
+        if (isInsideStructure()) {
             compound.putString("structureName", structureName.toString());
             compound.putUUID("structureId", structureId);
         }
         CompoundTag notableTag = new CompoundTag();
-        for (Map.Entry<ResourceLocation, UUID> entry : notableIds.entrySet()){
+        for (Map.Entry<ResourceLocation, UUID> entry : notableIds.entrySet()) {
             notableTag.putUUID(entry.getKey().toString(), entry.getValue());
         }
         compound.put("notableIds", notableTag);
@@ -189,15 +189,15 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
         return respawnTime;
     }
 
-    public boolean isSpawnAlive(){
+    public boolean isSpawnAlive() {
         return entity != null && entity.isAlive();
     }
 
-    private boolean isSpawnDead(){
+    private boolean isSpawnDead() {
         return entity instanceof LivingEntity && ((LivingEntity) entity).getHealth() <= 0 && !entity.isAlive();
     }
 
-    public static double getDespawnRange(){
+    public static double getDespawnRange() {
         return DESPAWN_RANGE;
     }
 
@@ -205,8 +205,8 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
         return SPAWN_RANGE;
     }
 
-    public void regenerateSpawnID(){
-        if (!placedByStructure){
+    public void regenerateSpawnID() {
+        if (!placedByStructure) {
             this.spawnUUID = UUID.randomUUID();
             this.needsUploadToWorld = true;
             this.placedByStructure = true;
@@ -217,37 +217,37 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
     @Override
     public void load(CompoundTag compound) {
         super.load(compound);
-        if (compound.contains("spawnList")){
+        if (compound.contains("spawnList")) {
             spawnList.deserializeNBT(compound.getCompound("spawnList"));
             populateRandomSpawns();
         }
-        if (compound.contains("moveType")){
+        if (compound.contains("moveType")) {
             setMoveType(MKEntity.NonCombatMoveType.values()[compound.getInt("moveType")]);
         }
-        if (compound.contains("structureName")){
+        if (compound.contains("structureName")) {
             setStructureName(new ResourceLocation(compound.getString("structureName")));
         }
-        if (compound.contains("structureId")){
+        if (compound.contains("structureId")) {
             setStructureId(compound.getUUID("structureId"));
         }
-        if (compound.contains("hasUploadedToWorld")){
+        if (compound.contains("hasUploadedToWorld")) {
             needsUploadToWorld = compound.getBoolean("hasUploadedToWorld");
         }
-        if (compound.contains("placedByStructure")){
+        if (compound.contains("placedByStructure")) {
             placedByStructure = compound.getBoolean("placedByStructure");
         }
         ticksSinceDeath = compound.getInt("ticksSinceDeath");
-        if (compound.contains("spawnId")){
+        if (compound.contains("spawnId")) {
             spawnUUID = compound.getUUID("spawnId");
         } else {
             spawnUUID = UUID.randomUUID();
         }
-        if (compound.contains("respawnTime")){
+        if (compound.contains("respawnTime")) {
             setRespawnTime(compound.getInt("respawnTime"));
         }
-        if (compound.contains("notableIds")){
+        if (compound.contains("notableIds")) {
             CompoundTag notableTag = compound.getCompound("notableIds");
-            for (String key : notableTag.getAllKeys()){
+            for (String key : notableTag.getAllKeys()) {
                 UUID notId = notableTag.getUUID(key);
                 notableIds.put(new ResourceLocation(key), notId);
             }
@@ -255,8 +255,8 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
     }
 
 
-    public void spawnEntity(){
-        if (getLevel() != null){
+    public void spawnEntity() {
+        if (getLevel() != null) {
             NpcDefinition definition = randomSpawns.next();
             Vec3 spawnPos = Vec3.atLowerCornerOf(getBlockPos()).add(0.5, 0.125, 0.5);
             double difficultyValue = WorldUtils.getDifficultyForGlobalPos(
@@ -276,31 +276,31 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
             }
             Entity entity = definition.createEntity(getLevel(), spawnPos, spawnUUID, difficultyValue);
             this.entity = entity;
-            if (entity != null){
+            if (entity != null) {
                 float rot = getBlockState().getValue(MKSpawnerBlock.ORIENTATION).getAngleInDegrees();
                 entity.absMoveTo(
-                    entity.getX(),
-                    entity.getY(),
-                    entity.getZ(),
-                    rot,
-                    0.0f);
+                        entity.getX(),
+                        entity.getY(),
+                        entity.getZ(),
+                        rot,
+                        0.0f);
                 entity.setYHeadRot(rot);
                 getLevel().addFreshEntity(entity);
                 final double finDiff = difficultyValue;
                 MKNpc.getNpcData(entity).ifPresent((cap) -> {
                     cap.setMKSpawned(true);
                     cap.setSpawnPos(new BlockPos(spawnPos).above());
-                    if (notableIds.containsKey(definition.getDefinitionName())){
+                    if (notableIds.containsKey(definition.getDefinitionName())) {
                         cap.setNotableUUID(notableIds.get(definition.getDefinitionName()));
                     }
                     cap.setStructureId(getStructureId());
                     cap.setDifficultyValue(finDiff);
                     cap.setDeathReceiver(this);
                 });
-                if (entity instanceof MKEntity){
+                if (entity instanceof MKEntity) {
                     ((MKEntity) entity).setNonCombatMoveType(getMoveType());
                 }
-                if (entity instanceof Mob && getLevel() instanceof ServerLevel){
+                if (entity instanceof Mob && getLevel() instanceof ServerLevel) {
                     ((Mob) entity).finalizeSpawn((ServerLevel) getLevel(), getLevel().getCurrentDifficultyAt(
                             entity.blockPosition()), MobSpawnType.SPAWNER, null, null);
                 }
@@ -309,26 +309,26 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
         }
     }
 
-    private boolean isPlayerInRange(){
-        if (getLevel() == null){
+    private boolean isPlayerInRange() {
+        if (getLevel() == null) {
             return false;
         }
         Vec3 loc = Vec3.atLowerCornerOf(getBlockPos());
-        for (Player player : getLevel().players()){
-            if (player.distanceToSqr(loc) < getSpawnRange() * getSpawnRange()){
+        for (Player player : getLevel().players()) {
+            if (player.distanceToSqr(loc) < getSpawnRange() * getSpawnRange()) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean isPlayerInDespawnRange(){
-        if (getLevel() == null){
+    private boolean isPlayerInDespawnRange() {
+        if (getLevel() == null) {
             return false;
         }
         Vec3 loc = Vec3.atLowerCornerOf(getBlockPos());
-        for (Player player : getLevel().players()){
-            if (player.distanceToSqr(loc) < getDespawnRange() * getDespawnRange()){
+        for (Player player : getLevel().players()) {
+            if (player.distanceToSqr(loc) < getDespawnRange() * getDespawnRange()) {
                 return true;
             }
         }
@@ -339,15 +339,15 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
         return ticksSinceDeath > 0;
     }
 
-    public void clearSpawn(){
-        if (entity != null){
+    public void clearSpawn() {
+        if (entity != null) {
             entity.remove(Entity.RemovalReason.DISCARDED);
             entity = null;
         }
         ticksSinceDeath = 0;
     }
 
-    private boolean isAir(Level world, BlockPos pos){
+    private boolean isAir(Level world, BlockPos pos) {
         BlockState blockState = world.getBlockState(pos);
         return blockState.isAir();
     }
@@ -359,45 +359,45 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
 
 
     public void tick(Level level) {
-        if (level != null && randomSpawns.size() >0){
-            if (needsUploadToWorld){
+        if (level != null && randomSpawns.size() > 0) {
+            if (needsUploadToWorld) {
                 MinecraftServer server = level.getServer();
-                if (server != null){
+                if (server != null) {
                     Level overworld = server.getLevel(Level.OVERWORLD);
-                    if (overworld != null){
+                    if (overworld != null) {
                         overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
                                 .ifPresent(cap -> cap.addSpawner(this));
                     }
-                    if (!isAir(level, getBlockPos().above())){
+                    if (!isAir(level, getBlockPos().above())) {
                         level.setBlock(getBlockPos().above(), Blocks.AIR.defaultBlockState(), 3);
                     }
                     needsUploadToWorld = false;
 
                 }
             }
-            if (!isAir(level, getBlockPos().above())){
-                if (placedByStructure){
+            if (!isAir(level, getBlockPos().above())) {
+                if (placedByStructure) {
                     level.setBlock(getBlockPos().above(), Blocks.AIR.defaultBlockState(), 3);
                 } else {
                     return;
                 }
             }
             boolean isAlive = isSpawnAlive();
-            if (ticksSinceDeath > 0){
+            if (ticksSinceDeath > 0) {
                 ticksSinceDeath--;
             }
 
-            if (isPlayerInDespawnRange()){
-                if (!isAlive){
-                    if (ticksSinceDeath <= 0 && isPlayerInRange()){
+            if (isPlayerInDespawnRange()) {
+                if (!isAlive) {
+                    if (ticksSinceDeath <= 0 && isPlayerInRange()) {
                         spawnEntity();
                     }
                 }
                 ticksSincePlayer = 0;
             } else {
-                if (isAlive){
+                if (isAlive) {
                     ticksSincePlayer++;
-                    if (ticksSincePlayer > IDLE_TIME){
+                    if (ticksSincePlayer > IDLE_TIME) {
                         entity.remove(Entity.RemovalReason.DISCARDED);
                         this.entity = null;
                         ticksSinceDeath = 0;

@@ -1,20 +1,20 @@
 package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
-import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.monster.piglin.PiglinArmPose;
-import net.minecraft.world.item.Items;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.monster.piglin.PiglinArmPose;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
-public class MKZombifiedPiglinEntity extends MKAbstractPiglinEntity{
+public class MKZombifiedPiglinEntity extends MKAbstractPiglinEntity {
     private static final EntityDataAccessor<Boolean> CHARGING_CROSSBOW = SynchedEntityData.defineId(MKZombifiedPiglinEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DANCING = SynchedEntityData.defineId(MKZombifiedPiglinEntity.class, EntityDataSerializers.BOOLEAN);
 
@@ -39,7 +39,7 @@ public class MKZombifiedPiglinEntity extends MKAbstractPiglinEntity{
         this.entityData.set(DANCING, isDancing);
     }
 
-    public boolean isDancing(){
+    public boolean isDancing() {
         return this.entityData.get(DANCING);
     }
 
@@ -50,7 +50,7 @@ public class MKZombifiedPiglinEntity extends MKAbstractPiglinEntity{
         this.entityData.define(DANCING, false);
     }
 
-    public void setChargingCrossbow(boolean isCharging){
+    public void setChargingCrossbow(boolean isCharging) {
         this.entityData.set(CHARGING_CROSSBOW, isCharging);
     }
 

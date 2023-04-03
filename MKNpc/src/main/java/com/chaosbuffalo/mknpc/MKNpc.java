@@ -14,7 +14,6 @@ import com.chaosbuffalo.mknpc.npc.IMKNpcExtension;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.dialogue.NpcDialogueUtils;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.TestJigsawStructurePools;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEventManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -103,7 +102,6 @@ public class MKNpc {
     }
 
 
-
     public static double getDifficultyScale(LivingEntity entity) {
         switch (entity.getCommandSenderWorld().getDifficulty()) {
             case EASY:
@@ -118,19 +116,19 @@ public class MKNpc {
         }
     }
 
-    private void doClientStuff(final FMLClientSetupEvent event){
+    private void doClientStuff(final FMLClientSetupEvent event) {
         NpcClientEventHandler.initKeybindings();
     }
 
-    public static LazyOptional<? extends IEntityNpcData> getNpcData(Entity entity){
+    public static LazyOptional<? extends IEntityNpcData> getNpcData(Entity entity) {
         return entity.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY);
     }
 
-    public static LazyOptional<? extends IPlayerQuestingData> getPlayerQuestData(Player entity){
+    public static LazyOptional<? extends IPlayerQuestingData> getPlayerQuestData(Player entity) {
         return entity.getCapability(NpcCapabilities.PLAYER_QUEST_DATA_CAPABILITY);
     }
 
-    public static LazyOptional<? extends IWorldNpcData> getWorldNpcData(Level world){
+    public static LazyOptional<? extends IWorldNpcData> getWorldNpcData(Level world) {
         return world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY);
     }
 }

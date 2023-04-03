@@ -11,8 +11,8 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
-import net.minecraft.client.gui.Font;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.ArrayList;
@@ -60,14 +60,14 @@ public class QuestPanel extends MKLayout {
             questLayout.setPaddings(0, 0, 2, 2);
             MKText questName = new MKText(fontRenderer, currentChain.getQuestName());
             questName.setMultiline(true);
-            questName.setColor( 0xffffffff);
+            questName.setColor(0xffffffff);
             questName.setWidth(getWidth() - 10);
             questLayout.addWidget(questName);
             questLayout.addWidget(new MKRectangle(0, 0, getWidth() - 10, 1, 0x99ffffff));
             List<Map.Entry<String, PlayerQuestData>> quests = new ArrayList<>(currentChain.getQuestData().entrySet());
             Collections.reverse(quests);
             int index = 0;
-            for (Map.Entry<String, PlayerQuestData> questEntry : quests){
+            for (Map.Entry<String, PlayerQuestData> questEntry : quests) {
                 PlayerQuestData current = questEntry.getValue();
                 boolean isComplete = current.isComplete();
                 MKText quest_desc = new MKText(fontRenderer, current.getDescription());
@@ -78,7 +78,7 @@ public class QuestPanel extends MKLayout {
                 MKText objectiveName = new MKText(fontRenderer, new TranslatableComponent("mknpc.gui.objectives.name").withStyle(ChatFormatting.BOLD));
                 objectiveName.setColor(!current.isComplete() ? 0xffffffff : 0x99ffffff);
                 questLayout.addWidget(objectiveName);
-                for (PlayerQuestObjectiveData obj : current.getObjectives()){
+                for (PlayerQuestObjectiveData obj : current.getObjectives()) {
                     obj.getDescription().forEach(desc -> {
                         MKText obj_desc = new MKText(fontRenderer, obj.isComplete() ?
                                 desc.copy().withStyle(ChatFormatting.STRIKETHROUGH) : desc);
@@ -91,11 +91,11 @@ public class QuestPanel extends MKLayout {
 
                 }
                 List<PlayerQuestReward> rewards = current.getQuestRewards();
-                if (rewards.size() >0 ){
+                if (rewards.size() > 0) {
                     MKText rewardName = new MKText(fontRenderer, new TranslatableComponent("mknpc.gui.rewards.name").withStyle(ChatFormatting.BOLD));
                     rewardName.setColor(!isComplete ? 0xffffffff : 0x99ffffff);
                     questLayout.addWidget(rewardName);
-                    for (PlayerQuestReward reward : rewards){
+                    for (PlayerQuestReward reward : rewards) {
                         MKText reward_desc = new MKText(fontRenderer, !isComplete ? reward.getDescription() :
                                 reward.getDescription().copy().withStyle(ChatFormatting.STRIKETHROUGH));
                         reward_desc.setMultiline(true);

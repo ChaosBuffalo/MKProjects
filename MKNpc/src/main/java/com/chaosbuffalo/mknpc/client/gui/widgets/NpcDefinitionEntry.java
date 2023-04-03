@@ -25,7 +25,7 @@ public class NpcDefinitionEntry extends MKLayout {
         this.callback = callback;
         MKFaction faction = MKFactionRegistry.getFaction(definition.getFaction());
         String text;
-        if (faction != null){
+        if (faction != null) {
             text = String.format("%s (%s) %s", definition.getName(),
                     faction.getTranslationKey() != null ? I18n.get(faction.getTranslationKey()) :
                             definition.getFaction().toString(), definition.getDefinitionName().toString());

@@ -28,7 +28,7 @@ public class MKUTalentTreeProvider extends DataGenerators.TalentTreeDataGenerato
     }
 
 
-    private void generateCoreTree(@Nonnull HashCache cache){
+    private void generateCoreTree(@Nonnull HashCache cache) {
         TalentTreeDefinition tree = new TalentTreeDefinition(new ResourceLocation(MKUltra.MODID, "core_talents"));
         tree.setVersion(2);
         tree.setDefault(true);

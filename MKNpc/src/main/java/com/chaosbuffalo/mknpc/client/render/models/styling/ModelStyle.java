@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.client.render.models.styling;
 
 
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.model.geom.LayerDefinitions;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
@@ -30,11 +29,11 @@ public class ModelStyle {
         return hasArmor;
     }
 
-    public boolean needsArmorVariant(){
+    public boolean needsArmorVariant() {
         return hasArmorVariant;
     }
 
-    public ModelStyle(String name, boolean hasArmor, boolean hasArmorVariant, LayerStyle... layers){
+    public ModelStyle(String name, boolean hasArmor, boolean hasArmorVariant, LayerStyle... layers) {
         this.name = name;
         this.hasArmor = hasArmor;
         this.hasArmorVariant = hasArmorVariant;
@@ -47,7 +46,7 @@ public class ModelStyle {
     }
 
 
-    public ModelLayerLocation getLayerLocation(ResourceLocation entityTypeName, LayerStyle style){
+    public ModelLayerLocation getLayerLocation(ResourceLocation entityTypeName, LayerStyle style) {
         return new ModelLayerLocation(entityTypeName, String.format("%s.%s", name, style.getLayerName()));
     }
 
@@ -77,7 +76,7 @@ public class ModelStyle {
         for (LayerStyle style : getAdditionalLayers()) {
             event.registerLayerDefinition(new ModelLayerLocation(entityTypeName, String.format("%s.%s", name, style.getLayerName())),
                     () -> LayerDefinition.create(layerProvider.apply(
-                            args.copyWithOverrides(false, new CubeDeformation(style.getLayerSize()))),
+                                    args.copyWithOverrides(false, new CubeDeformation(style.getLayerSize()))),
                             textureWidth, textureHeight));
         }
 

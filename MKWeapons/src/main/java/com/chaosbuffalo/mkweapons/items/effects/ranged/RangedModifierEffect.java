@@ -1,10 +1,10 @@
 package com.chaosbuffalo.mkweapons.items.effects.ranged;
 
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
 import com.chaosbuffalo.mkweapons.items.effects.ItemModifierEffect;
-import net.minecraft.resources.ResourceLocation;
+import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
 import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public class RangedModifierEffect extends ItemModifierEffect implements IRangedW
         this.modifiers.addAll(modifiers);
     }
 
-    public RangedModifierEffect(){
+    public RangedModifierEffect() {
         super(NAME, ChatFormatting.WHITE);
     }
 }

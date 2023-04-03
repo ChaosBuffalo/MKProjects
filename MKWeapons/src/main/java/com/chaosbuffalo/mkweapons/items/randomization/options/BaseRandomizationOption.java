@@ -3,37 +3,34 @@ package com.chaosbuffalo.mkweapons.items.randomization.options;
 import com.chaosbuffalo.mkcore.serialization.IDynamicMapTypedSerializer;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.IRandomizationSlot;
-import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotManager;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-public abstract class BaseRandomizationOption implements IRandomizationOption{
+public abstract class BaseRandomizationOption implements IRandomizationOption {
     public static final ResourceLocation INVALID_OPTION = new ResourceLocation(MKWeapons.MODID, "randomization_option.error");
     private final ResourceLocation typeName;
     private IRandomizationSlot slot;
     private double weight;
     private static final String TYPE_ENTRY_NAME = "randomizationType";
 
-    public BaseRandomizationOption(ResourceLocation typeName, IRandomizationSlot slot){
+    public BaseRandomizationOption(ResourceLocation typeName, IRandomizationSlot slot) {
         this(typeName, slot, 1.0);
     }
 
-    public BaseRandomizationOption(ResourceLocation typeName, IRandomizationSlot slot, double weight){
+    public BaseRandomizationOption(ResourceLocation typeName, IRandomizationSlot slot, double weight) {
         this(typeName);
         this.slot = slot;
         this.weight = weight;
     }
 
-    public BaseRandomizationOption(ResourceLocation typeName){
+    public BaseRandomizationOption(ResourceLocation typeName) {
         this.typeName = typeName;
     }
 

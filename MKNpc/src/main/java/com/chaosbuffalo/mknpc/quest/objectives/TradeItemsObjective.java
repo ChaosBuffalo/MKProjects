@@ -15,14 +15,14 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.Util;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.common.util.RecipeMatcher;
 
 import javax.annotation.Nullable;
@@ -33,23 +33,23 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstanceData> implements ITradeObjectiveHandler{
+public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstanceData> implements ITradeObjectiveHandler {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.trade_with_npc");
     protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute("npcDefinition", NpcDefinitionManager.INVALID_NPC_DEF);
     private final List<ItemStack> neededItems = new ArrayList<>();
 
-    public TradeItemsObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, MutableComponent... description){
+    public TradeItemsObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, MutableComponent... description) {
         super(NAME, name, structure, index, description);
         addAttribute(this.npcDefinition);
         this.npcDefinition.setValue(npcDefinition);
     }
 
-    public TradeItemsObjective(){
+    public TradeItemsObjective() {
         super(NAME, "invalid", defaultDescription);
         addAttribute(this.npcDefinition);
     }
 
-    public void addItemStack(ItemStack stack){
+    public void addItemStack(ItemStack stack) {
         neededItems.add(stack);
         setDescription(neededItems.stream().map(x -> new TranslatableComponent("mknpc.trade.item_needed",
                 x.getCount(), x.getHoverName())).collect(Collectors.toList()));
@@ -111,7 +111,7 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
     }
 
     @Nullable
-    public int[] findMatches(List<ItemStack> nonEmptyInventoryContents){
+    public int[] findMatches(List<ItemStack> nonEmptyInventoryContents) {
         return RecipeMatcher.findMatches(nonEmptyInventoryContents, neededItems.stream().map(
                 TradeItemsObjective::getItemsEqualTester).collect(Collectors.toList()));
     }
@@ -121,7 +121,7 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
         return new PlayerQuestObjectiveData(getObjectiveName(), getDescription());
     }
 
-    public static Predicate<ItemStack> getItemsEqualTester(ItemStack other){
+    public static Predicate<ItemStack> getItemsEqualTester(ItemStack other) {
         return itemStack -> ItemStack.matches(itemStack, other);
     }
 }

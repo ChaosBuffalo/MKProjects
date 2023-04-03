@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.events.PostAttackEvent;
@@ -9,18 +8,16 @@ import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.InteractionHand;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.EnumSet;
 import java.util.Optional;
-
-import net.minecraft.world.entity.ai.goal.Goal.Flag;
 
 public class MKMeleeAttackGoal extends Goal {
     private final MKEntity entity;
@@ -76,7 +73,7 @@ public class MKMeleeAttackGoal extends Goal {
         entity.swing(InteractionHand.MAIN_HAND);
         boolean didAttack = entity.doHurtTarget(enemy);
         ItemStack mainHand = entity.getMainHandItem();
-        if (didAttack && !mainHand.isEmpty()){
+        if (didAttack && !mainHand.isEmpty()) {
             mainHand.getItem().hurtEnemy(mainHand, enemy, entity);
         }
         entity.resetSwing();
@@ -85,16 +82,15 @@ public class MKMeleeAttackGoal extends Goal {
             cap.getCombatExtension().recordSwing();
             MinecraftForge.EVENT_BUS.post(new PostAttackEvent(entity));
             if (cap.getCombatExtension().getCurrentSwingCount() > 0 &&
-                    cap.getCombatExtension().getCurrentSwingCount() % getComboCount() == 0){
+                    cap.getCombatExtension().getCurrentSwingCount() % getComboCount() == 0) {
                 entity.subtractFromTicksSinceLastSwing(getComboDelay());
             }
         });
     }
 
-    public boolean isInMeleeRange(LivingEntity target){
+    public boolean isInMeleeRange(LivingEntity target) {
         return entity.distanceToSqr(target) <= this.getAttackReachSqr(target);
     }
-
 
 
     public boolean isInReach(LivingEntity target) {

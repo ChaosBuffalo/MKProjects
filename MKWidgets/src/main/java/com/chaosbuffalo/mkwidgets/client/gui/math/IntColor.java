@@ -7,7 +7,7 @@ public class IntColor {
     private int g;
     private int b;
 
-    public IntColor(int color){
+    public IntColor(int color) {
         a = color >> 24 & 255;
         r = color >> 16 & 255;
         g = color >> 8 & 255;
@@ -15,7 +15,7 @@ public class IntColor {
         colorInt = color;
     }
 
-    public IntColor(int r, int g, int b, int a){
+    public IntColor(int r, int g, int b, int a) {
         this.r = r;
         this.g = g;
         this.b = b;
@@ -23,7 +23,7 @@ public class IntColor {
         this.colorInt = a << 24 + r << 16 + b << 8 + g;
     }
 
-    public int getAsInt(){
+    public int getAsInt() {
         return colorInt;
     }
 
@@ -35,15 +35,15 @@ public class IntColor {
         return r;
     }
 
-    public int getBlue(){
+    public int getBlue() {
         return b;
     }
 
-    public int getGreen(){
+    public int getGreen() {
         return g;
     }
 
-    public float getAlphaF(){
+    public float getAlphaF() {
         return (float) a / 255.0f;
     }
 
@@ -51,11 +51,11 @@ public class IntColor {
         return (float) r / 255.0f;
     }
 
-    public float getBlueF(){
+    public float getBlueF() {
         return (float) b / 255.0f;
     }
 
-    public float getGreenF(){
+    public float getGreenF() {
         return (float) g / 255.0f;
     }
 

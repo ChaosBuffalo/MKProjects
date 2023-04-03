@@ -7,10 +7,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -45,12 +45,12 @@ public class LootTierManager extends SimpleJsonResourceReloadListener {
         }
     }
 
-    public static LootTier getTierFromName(ResourceLocation name){
+    public static LootTier getTierFromName(ResourceLocation name) {
         return LOOT_TIERS.get(name);
     }
 
     @SubscribeEvent
-    public void subscribeEvent(AddReloadListenerEvent event){
+    public void subscribeEvent(AddReloadListenerEvent event) {
         event.addListener(this);
     }
 

@@ -19,11 +19,11 @@ import com.chaosbuffalo.mkultra.init.MKUEntities;
 import com.chaosbuffalo.mkultra.init.ModSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.LivingEntity;
 
 public class DrownAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "ember_casting");
@@ -61,7 +61,7 @@ public class DrownAbility extends MKAbility {
     public MKEffectBuilder<?> getDotEffect(IMKEntityData casterData, float level) {
         int durTicks = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
         return DrownEffect.from(casterData.getEntity(), baseDot.value(), scaleDot.value(),
-                dotModifierScaling.value(), tick_particles.getValue())
+                        dotModifierScaling.value(), tick_particles.getValue())
                 .ability(this)
                 .skillLevel(level)
                 .timed(durTicks);

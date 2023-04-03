@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.concurrent.CompletableFuture;
 
-public class NpcDefinitionIdArgument  implements ArgumentType<ResourceLocation> {
+public class NpcDefinitionIdArgument implements ArgumentType<ResourceLocation> {
     public NpcDefinitionIdArgument() {
     }
 

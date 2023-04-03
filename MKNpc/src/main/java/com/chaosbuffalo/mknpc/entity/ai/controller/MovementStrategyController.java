@@ -31,7 +31,7 @@ public class MovementStrategyController {
                 new KiteMovementStrategy(castingDistance));
     }
 
-    public static void enterRandomWander(LivingEntity entity){
+    public static void enterRandomWander(LivingEntity entity) {
         entity.getBrain().eraseMemory(MKMemoryModuleTypes.MOVEMENT_TARGET);
         entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
                 new RandomWanderMovementStrategy(1200));

@@ -5,8 +5,6 @@ import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 
 public class SpriteProjectileRenderer<T extends BaseProjectileEntity & IMKRenderAsItem> extends MKSpriteRenderer<T> {
 

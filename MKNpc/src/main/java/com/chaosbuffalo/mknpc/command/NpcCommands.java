@@ -2,8 +2,8 @@ package com.chaosbuffalo.mknpc.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.synchronization.EmptyArgumentSerializer;
 import net.minecraft.commands.synchronization.ArgumentTypes;
+import net.minecraft.commands.synchronization.EmptyArgumentSerializer;
 
 public class NpcCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {

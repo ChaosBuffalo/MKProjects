@@ -32,7 +32,7 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
         Optional<MKAbility> abilityOptional = entityIn.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
         int timeOut = entityIn.getBrain().getMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT).orElse(0);
         boolean isCasting = MKCore.getEntityData(entityIn).map(data -> data.getAbilityExecutor().isCasting()).orElse(false);
-        if (abilityOptional.isPresent() && !isCasting && timeOut <= 20){
+        if (abilityOptional.isPresent() && !isCasting && timeOut <= 20) {
             entityIn.getBrain().setMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT, timeOut + 1);
             return;
         }

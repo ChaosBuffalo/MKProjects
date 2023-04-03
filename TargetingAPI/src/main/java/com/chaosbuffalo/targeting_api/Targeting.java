@@ -1,8 +1,8 @@
 package com.chaosbuffalo.targeting_api;
 
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.TamableAnimal;
 
 import java.util.ArrayList;
 import java.util.Comparator;

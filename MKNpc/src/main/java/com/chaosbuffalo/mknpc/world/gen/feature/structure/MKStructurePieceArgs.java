@@ -1,9 +1,9 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
@@ -23,7 +23,7 @@ public class MKStructurePieceArgs {
 
     public MKStructurePieceArgs(ChunkGenerator generator, StructureFeature<?> structure, StructureManager templateManager,
                                 BlockPos blockPos, Rotation rotation, WorldgenRandom random,
-                                UUID structureId, List<StructurePiece> componentsOut){
+                                UUID structureId, List<StructurePiece> componentsOut) {
         this.generator = generator;
         this.structure = structure;
         this.templateManager = templateManager;

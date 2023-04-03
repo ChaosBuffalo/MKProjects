@@ -8,12 +8,12 @@ import java.util.List;
 
 public class LootRandomizer {
 
-    public LootConstructor getConstructorForTierAndSlot(LootTier tier, LootSlot slot){
+    public LootConstructor getConstructorForTierAndSlot(LootTier tier, LootSlot slot) {
 
         return null;
     }
 
-    public List<LootConstructor> generateLootForEntity(LivingEntity entity, double[] chances, LootTier tier){
+    public List<LootConstructor> generateLootForEntity(LivingEntity entity, double[] chances, LootTier tier) {
         return new ArrayList<>();
     }
 }

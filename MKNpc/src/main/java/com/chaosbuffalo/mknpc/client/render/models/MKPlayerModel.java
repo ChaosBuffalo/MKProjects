@@ -3,17 +3,14 @@ package com.chaosbuffalo.mknpc.client.render.models;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.HumanoidArm;
 
 import java.util.List;
@@ -90,7 +87,7 @@ public class MKPlayerModel<T extends MKEntity> extends MKBipedModel<T> {
     public void translateToHand(HumanoidArm sideIn, PoseStack matrixStackIn) {
         ModelPart modelrenderer = this.getArm(sideIn);
         if (this.slim) {
-            float f = 0.5F * (float)(sideIn == HumanoidArm.RIGHT ? 1 : -1);
+            float f = 0.5F * (float) (sideIn == HumanoidArm.RIGHT ? 1 : -1);
             modelrenderer.x += f;
             modelrenderer.translateAndRotate(matrixStackIn);
             modelrenderer.x -= f;

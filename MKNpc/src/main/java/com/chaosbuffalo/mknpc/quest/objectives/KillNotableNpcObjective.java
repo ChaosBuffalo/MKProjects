@@ -12,12 +12,12 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.List;
@@ -31,7 +31,7 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
 
     public KillNotableNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition,
                                    MutableComponent... description) {
-        super(NAME, name,  structure, index, description);
+        super(NAME, name, structure, index, description);
         this.npcDefinition.setValue(npcDefinition);
         addAttributes(this.npcDefinition);
     }
@@ -43,12 +43,12 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
 
     @Override
     public boolean onPlayerKillNpcDefEntity(Player player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
-                                         LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
-        if (!isComplete(objectiveData)){
+                                            LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
+        if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = getInstanceData(quest);
             boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
                     x -> x.getNotableUUID().equals(objData.getUuid())).orElse(false);
-            if (applies){
+            if (applies) {
                 objectiveData.putBool("hasKilled", true);
                 objectiveData.removeBlockPos("npcPos");
                 player.sendMessage(new TranslatableComponent("mknpc.objective.kill_notable.complete",

@@ -1,10 +1,10 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraftforge.common.util.INBTSerializable;
 

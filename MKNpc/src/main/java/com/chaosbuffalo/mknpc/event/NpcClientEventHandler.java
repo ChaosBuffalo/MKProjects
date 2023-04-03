@@ -6,10 +6,10 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.event.InputEvent;
@@ -53,23 +53,23 @@ public class NpcClientEventHandler {
     }
 
     @SubscribeEvent
-    public static void onRenderLast(RenderLevelStageEvent event){
+    public static void onRenderLast(RenderLevelStageEvent event) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
-        if (player != null && event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS){
+        if (player != null && event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
 
-            if (player.tickCount != ticks){
+            if (player.tickCount != ticks) {
                 ticks = player.tickCount;
                 Set<GlobalPos> alreadySeen = new HashSet<>();
                 player.getCapability(NpcCapabilities.PLAYER_QUEST_DATA_CAPABILITY).ifPresent(x -> {
                     x.getQuestChains().forEach(pQuestChain -> {
                         pQuestChain.getCurrentQuests().forEach(questName -> {
                             PlayerQuestData playerQuestData = pQuestChain.getQuestData(questName);
-                            for (PlayerQuestObjectiveData objectiveData : playerQuestData.getObjectives()){
-                                if (!objectiveData.isComplete()){
+                            for (PlayerQuestObjectiveData objectiveData : playerQuestData.getObjectives()) {
+                                if (!objectiveData.isComplete()) {
                                     Map<String, GlobalPos> posMap = objectiveData.getBlockPosData();
-                                    for (GlobalPos pos : posMap.values()){
-                                        if (pos.dimension().equals(player.getCommandSenderWorld().dimension()) && !alreadySeen.contains(pos)){
+                                    for (GlobalPos pos : posMap.values()) {
+                                        if (pos.dimension().equals(player.getCommandSenderWorld().dimension()) && !alreadySeen.contains(pos)) {
                                             event.getLevelRenderer().addParticle(CoreParticles.INDICATOR_PARTICLE.get(), true,
                                                     pos.pos().getX() + 0.5, pos.pos().getY() + 1.0,
                                                     pos.pos().getZ() + 0.5, 0.0, 0.0, 0.0);

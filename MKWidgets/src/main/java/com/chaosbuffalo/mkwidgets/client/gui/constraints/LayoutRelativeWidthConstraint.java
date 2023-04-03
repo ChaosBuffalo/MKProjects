@@ -7,7 +7,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 public class LayoutRelativeWidthConstraint extends BaseConstraint {
     private final float widthScale;
 
-    public LayoutRelativeWidthConstraint(float widthScale){
+    public LayoutRelativeWidthConstraint(float widthScale) {
         super();
         this.widthScale = widthScale;
     }

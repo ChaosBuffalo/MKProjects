@@ -22,7 +22,7 @@ public abstract class StructureEventRequirement implements ISerializableAttribut
     private final List<ISerializableAttribute<?>> attributes = new ArrayList<>();
     private final ResourceLocation requirementType;
 
-    public StructureEventRequirement(ResourceLocation typeName){
+    public StructureEventRequirement(ResourceLocation typeName) {
         this.requirementType = typeName;
     }
 
@@ -51,7 +51,7 @@ public abstract class StructureEventRequirement implements ISerializableAttribut
         deserializeAttributeMap(dynamic, "attributes");
     }
 
-    public static <D> ResourceLocation getType(Dynamic<D> dynamic){
+    public static <D> ResourceLocation getType(Dynamic<D> dynamic) {
         return IDynamicMapTypedSerializer.getType(dynamic, TYPE_ENTRY_NAME).orElse(INVALID_OPTION);
     }
 

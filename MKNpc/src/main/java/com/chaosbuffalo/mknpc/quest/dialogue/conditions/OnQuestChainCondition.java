@@ -6,9 +6,9 @@ import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.UUID;
 
@@ -17,12 +17,12 @@ public class OnQuestChainCondition extends DialogueCondition {
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "on_quest_chain_condition");
     private UUID questId;
 
-    public OnQuestChainCondition(UUID questId){
+    public OnQuestChainCondition(UUID questId) {
         super(conditionTypeName);
         this.questId = questId;
     }
 
-    public OnQuestChainCondition(){
+    public OnQuestChainCondition() {
         this(UUID.randomUUID());
     }
 

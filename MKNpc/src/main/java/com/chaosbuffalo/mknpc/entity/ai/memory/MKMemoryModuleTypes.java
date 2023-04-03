@@ -4,9 +4,9 @@ package com.chaosbuffalo.mknpc.entity.ai.memory;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.MovementStrategy;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.core.BlockPos;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -81,7 +81,7 @@ public class MKMemoryModuleTypes {
         evt.getRegistry().register(new MemoryModuleType<Boolean>(Optional.empty())
                 .setRegistryName(MKNpc.MODID, "is_returning"));
         evt.getRegistry().register(new MemoryModuleType<Integer>(Optional.empty())
-            .setRegistryName(MKNpc.MODID, "ability_timeout"));
+                .setRegistryName(MKNpc.MODID, "ability_timeout"));
     }
 
 

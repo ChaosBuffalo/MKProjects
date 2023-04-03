@@ -6,8 +6,8 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 
 public abstract class NpcDefinitionOption implements IDynamicMapTypedSerializer {
     private static final String TYPE_NAME_FIELD = "optionType";

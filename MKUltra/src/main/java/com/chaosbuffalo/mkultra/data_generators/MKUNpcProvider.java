@@ -14,25 +14,16 @@ import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.*;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.abilities.brawler.FuriousBroodingAbility;
-import com.chaosbuffalo.mkultra.abilities.brawler.WhirlwindBladesAbility;
-import com.chaosbuffalo.mkultra.abilities.brawler.YankAbility;
-import com.chaosbuffalo.mkultra.abilities.cleric.*;
-import com.chaosbuffalo.mkultra.abilities.green_knight.*;
-import com.chaosbuffalo.mkultra.abilities.misc.*;
-import com.chaosbuffalo.mkultra.abilities.necromancer.ShadowBoltAbility;
-import com.chaosbuffalo.mkultra.abilities.nether_mage.*;
-import com.chaosbuffalo.mkultra.abilities.wet_wizard.DrownAbility;
 import com.chaosbuffalo.mkultra.client.render.styling.*;
 import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.HashCache;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
@@ -147,7 +138,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateClericAcolyte(){
+    private NpcDefinition generateClericAcolyte() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "solangian_acolyte"),
                 MKUEntities.HUMAN_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.SEE_OF_SOLANG_NAME));
@@ -168,15 +159,15 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                         new ResourceLocation("mkweapons:mace_iron"))), 1.0, 0.0f));
         def.addOption(new QuestOfferingOption(new ResourceLocation("mkultra", "cleric_intro")));
         def.addOption(new AbilityTrainingOption()
-                        .withTrainingOption(MKUAbilities.HEAL.get(), new HasEntitlementRequirement(MKUEntitlements.IntroClericTier1.get()))
-                        .withTrainingOption(MKUAbilities.SMITE.get(), new HasEntitlementRequirement(MKUEntitlements.IntroClericTier1.get()))
+                .withTrainingOption(MKUAbilities.HEAL.get(), new HasEntitlementRequirement(MKUEntitlements.IntroClericTier1.get()))
+                .withTrainingOption(MKUAbilities.SMITE.get(), new HasEntitlementRequirement(MKUEntitlements.IntroClericTier1.get()))
         );
         def.addOption(equipOption);
         def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.CLERIC));
         return def;
     }
 
-    private NpcDefinition generateCleric(){
+    private NpcDefinition generateCleric() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "solangian_cleric"),
                 MKUEntities.HUMAN_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.SEE_OF_SOLANG_NAME));
@@ -210,7 +201,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateForlornGhost(){
+    private NpcDefinition generateForlornGhost() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "forlorn_ghost"),
                 MKUEntities.HUMAN_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.SEE_OF_SOLANG_NAME));
@@ -278,7 +269,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateClericApprentice(){
+    private NpcDefinition generateClericApprentice() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "solangian_apprentice"),
                 MKUEntities.HUMAN_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.SEE_OF_SOLANG_NAME));
@@ -300,7 +291,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateNetherMageInitiate(){
+    private NpcDefinition generateNetherMageInitiate() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "nether_mage_initiate"),
                 MKUEntities.HUMAN_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.NETHER_MAGE_NAME));
@@ -329,7 +320,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateBurningSkeleton(){
+    private NpcDefinition generateBurningSkeleton() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "burning_skeleton"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.HYBOREAN_DEAD_NAME));
@@ -349,26 +340,26 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new NotableOption());
         def.addOption(equipOption);
         def.addOption(new BossStageOption()
-                .withStage(new BossStage()
-                        .withOption(new TempAbilitiesOption()
-                                .withAbilityOption(MKUAbilities.FIRE_ARMOR.get(), 3, 1.0)
-                                .withAbilityOption(MKUAbilities.FIREBALL.get(), 2, 1.0)
-                                .withAbilityOption(MKUAbilities.WRATH_BEAM.get(), 1, 1.0))
+                        .withStage(new BossStage()
+                                        .withOption(new TempAbilitiesOption()
+                                                .withAbilityOption(MKUAbilities.FIRE_ARMOR.get(), 3, 1.0)
+                                                .withAbilityOption(MKUAbilities.FIREBALL.get(), 2, 1.0)
+                                                .withAbilityOption(MKUAbilities.WRATH_BEAM.get(), 1, 1.0))
 //                        .withOption(new ParticleEffectsOption().withEffects(Collections.singletonList(
 //                                new BoneEffectInstance(UUID.fromString("3e7496f1-f5bf-45e6-b8e5-64192633ae9f"),
 //                                        BipedSkeleton.HEAD_BONE_NAME, new ResourceLocation(MKUltra.MODID, "flame_wave_casting")))))
-                )
-                .withStage(new BossStage()
-                        .withOption(new TempAbilitiesOption()
-                                .withAbilityOption(MKUAbilities.FIREBALL.get(), 3, 1.0)
-                                .withAbilityOption(MKUAbilities.WRATH_BEAM_FLURRY.get(), 1, 1.0))
+                        )
+                        .withStage(new BossStage()
+                                        .withOption(new TempAbilitiesOption()
+                                                .withAbilityOption(MKUAbilities.FIREBALL.get(), 3, 1.0)
+                                                .withAbilityOption(MKUAbilities.WRATH_BEAM_FLURRY.get(), 1, 1.0))
 //                        .withOption(new ParticleEffectsOption().withEffects(Collections.singletonList(
 //                                new BoneEffectInstance(UUID.fromString("e45696e1-ddb1-4709-bc29-1733ee1bced9"),
 //                                BipedSkeleton.HEAD_BONE_NAME, new ResourceLocation(MKUltra.MODID, "flame_wave_casting")))))
-                        .withParticleMode(BossStage.ParticleMode.LINE_HEIGHT)
-                        .withTransitionParticles(new ResourceLocation(MKUltra.MODID, "wrath_skeleton_transition"))
-                        .withTransitionSound(ModSounds.spell_dark_8.getId())
-                )
+                                        .withParticleMode(BossStage.ParticleMode.LINE_HEIGHT)
+                                        .withTransitionParticles(new ResourceLocation(MKUltra.MODID, "wrath_skeleton_transition"))
+                                        .withTransitionSound(ModSounds.spell_dark_8.getId())
+                        )
         );
         def.addOption(new ExperienceOption().setValue(50));
         def.addOption(new ParticleEffectsOption().withEffects(Collections.singletonList(
@@ -386,7 +377,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateDecayingZombiePiglin(){
+    private NpcDefinition generateDecayingZombiePiglin() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "decaying_piglin"),
                 MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
@@ -406,7 +397,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateDecayingZombieArcher(){
+    private NpcDefinition generateDecayingZombieArcher() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "decaying_piglin_archer"),
                 MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
@@ -423,7 +414,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateCrumblingTrooperMage(){
+    private NpcDefinition generateCrumblingTrooperMage() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "crumbling_trooper_mage"),
                 MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
@@ -452,7 +443,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateTrooperExecution(){
+    private NpcDefinition generateTrooperExecution() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "trooper_executioner"),
                 MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
@@ -486,7 +477,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateImperialMagus(){
+    private NpcDefinition generateImperialMagus() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "imperial_magus"),
                 MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
@@ -524,7 +515,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateTrooperCaptain(){
+    private NpcDefinition generateTrooperCaptain() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "trooper_captain"),
                 MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
@@ -564,7 +555,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateSkeletalTrooperMage(){
+    private NpcDefinition generateSkeletalTrooperMage() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "skeletal_trooper_mage"),
                 MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
@@ -597,7 +588,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateCrumblingTrooper(){
+    private NpcDefinition generateCrumblingTrooper() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "crumbling_trooper"),
                 MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
@@ -634,7 +625,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     }
 
 
-    private NpcDefinition generateHyboreanWarrior(){
+    private NpcDefinition generateHyboreanWarrior() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "hyborean_warrior"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
@@ -663,7 +654,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateHyboreanArcher(){
+    private NpcDefinition generateHyboreanArcher() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "hyborean_archer"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
@@ -680,7 +671,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateHyboreanSorcererQueen(){
+    private NpcDefinition generateHyboreanSorcererQueen() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "hyborean_sorcerer_queen"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
@@ -709,7 +700,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateAncientKing(){
+    private NpcDefinition generateAncientKing() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "an_ancient_king"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
@@ -744,7 +735,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateHyboreanSorcerer(){
+    private NpcDefinition generateHyboreanSorcerer() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "hyborean_sorcerer"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
@@ -766,7 +757,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateHyboreanHonorGuard(){
+    private NpcDefinition generateHyboreanHonorGuard() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "hyborean_honor_guard"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
@@ -794,7 +785,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateGreenSmith(){
+    private NpcDefinition generateGreenSmith() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "green_smith"),
                 MKUEntities.ORC_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.GREEN_KNIGHT_FACTION_NAME));
@@ -818,7 +809,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     }
 
 
-    private NpcDefinition generateGreenLady(){
+    private NpcDefinition generateGreenLady() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "green_lady"),
                 MKUEntities.ORC_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.GREEN_KNIGHT_FACTION_NAME));
@@ -847,7 +838,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateGreenLadyGuard2(){
+    private NpcDefinition generateGreenLadyGuard2() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "green_lady_guard_2"),
                 MKUEntities.ORC_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.GREEN_KNIGHT_FACTION_NAME));
@@ -881,7 +872,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
-    private NpcDefinition generateGreenLadyGuard1(){
+    private NpcDefinition generateGreenLadyGuard1() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "green_lady_guard_1"),
                 MKUEntities.ORC_TYPE.getId(), null);
         def.addOption(new FactionOption().setValue(MKUFactions.GREEN_KNIGHT_FACTION_NAME));

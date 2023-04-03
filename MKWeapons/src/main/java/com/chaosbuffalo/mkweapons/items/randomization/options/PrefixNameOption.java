@@ -6,13 +6,13 @@ import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotMan
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
-public class PrefixNameOption extends BaseRandomizationOption{
+public class PrefixNameOption extends BaseRandomizationOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "prefix_name");
 
     private Component name;
@@ -22,7 +22,7 @@ public class PrefixNameOption extends BaseRandomizationOption{
         this.name = name;
     }
 
-    public PrefixNameOption(){
+    public PrefixNameOption() {
         this(new TextComponent(""));
     }
 

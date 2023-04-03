@@ -3,15 +3,15 @@ package com.chaosbuffalo.mknpc.quest.dialogue.conditions;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 
 public class PendingGenerationCondition extends DialogueCondition {
 
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "pendering_generation");
 
-    public PendingGenerationCondition(){
+    public PendingGenerationCondition() {
         super(conditionTypeName);
     }
 

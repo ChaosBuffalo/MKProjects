@@ -1,12 +1,12 @@
 package com.chaosbuffalo.mknpc.utils;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.INBTSerializable;
 
@@ -53,11 +53,11 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
         stringData.remove(name);
     }
 
-    public boolean getBool(String name){
+    public boolean getBool(String name) {
         return boolData.get(name);
     }
 
-    public void putBool(String name, boolean value){
+    public void putBool(String name, boolean value) {
         boolData.put(name, value);
     }
 
@@ -65,11 +65,11 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
         boolData.remove(name);
     }
 
-    public int getInt(String name){
+    public int getInt(String name) {
         return intData.get(name);
     }
 
-    public void putInt(String name, int value){
+    public void putInt(String name, int value) {
         intData.put(name, value);
     }
 
@@ -77,11 +77,11 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
         intData.remove(name);
     }
 
-    public double getDouble(String name){
+    public double getDouble(String name) {
         return doubleData.get(name);
     }
 
-    public void putDouble(String name, double value){
+    public void putDouble(String name, double value) {
         doubleData.put(name, value);
     }
 
@@ -89,23 +89,23 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
         doubleData.remove(name);
     }
 
-    public GlobalPos getBlockPos(String name){
+    public GlobalPos getBlockPos(String name) {
         return blockPosData.get(name);
     }
 
-    public void putBlockPos(String name, GlobalPos value){
+    public void putBlockPos(String name, GlobalPos value) {
         blockPosData.put(name, value);
     }
 
-    public void removeBlockPos(String name){
+    public void removeBlockPos(String name) {
         blockPosData.remove(name);
     }
 
-    public float getFloat(String name){
+    public float getFloat(String name) {
         return floatData.get(name);
     }
 
-    public void putFloat(String name, float value){
+    public void putFloat(String name, float value) {
         floatData.put(name, value);
     }
 
@@ -113,11 +113,11 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
         floatData.remove(name);
     }
 
-    public ResourceLocation getResourceLocation(String name){
+    public ResourceLocation getResourceLocation(String name) {
         return rlData.get(name);
     }
 
-    public void putResourceLocation(String name, ResourceLocation value){
+    public void putResourceLocation(String name, ResourceLocation value) {
         rlData.put(name, value);
     }
 
@@ -125,11 +125,11 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
         rlData.remove(name);
     }
 
-    public Component getTextComponent(String name){
+    public Component getTextComponent(String name) {
         return textData.get(name);
     }
 
-    public void putTextComponent(String name, Component component){
+    public void putTextComponent(String name, Component component) {
         textData.put(name, component);
     }
 
@@ -188,21 +188,21 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
         CompoundTag nbt = new CompoundTag();
         if (!doubleData.isEmpty()) {
             CompoundTag doubleNbt = new CompoundTag();
-            for (Map.Entry<String, Double> entry : doubleData.entrySet()){
+            for (Map.Entry<String, Double> entry : doubleData.entrySet()) {
                 doubleNbt.putDouble(entry.getKey(), entry.getValue());
             }
             nbt.put("doubleData", doubleNbt);
         }
         if (!intData.isEmpty()) {
             CompoundTag intNbt = new CompoundTag();
-            for (Map.Entry<String, Integer> entry : intData.entrySet()){
+            for (Map.Entry<String, Integer> entry : intData.entrySet()) {
                 intNbt.putInt(entry.getKey(), entry.getValue());
             }
             nbt.put("intData", intNbt);
         }
         if (!blockPosData.isEmpty()) {
             CompoundTag blockPosNbt = new CompoundTag();
-            for (Map.Entry<String, GlobalPos> entry : blockPosData.entrySet()){
+            for (Map.Entry<String, GlobalPos> entry : blockPosData.entrySet()) {
                 blockPosNbt.put(entry.getKey(), GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, entry.getValue())
                         .getOrThrow(false, MKNpc.LOGGER::error));
             }
@@ -210,28 +210,28 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
         }
         if (!floatData.isEmpty()) {
             CompoundTag floatNbt = new CompoundTag();
-            for (Map.Entry<String, Float> entry : floatData.entrySet()){
+            for (Map.Entry<String, Float> entry : floatData.entrySet()) {
                 floatNbt.putFloat(entry.getKey(), entry.getValue());
             }
             nbt.put("floatData", floatNbt);
         }
         if (!rlData.isEmpty()) {
             CompoundTag rlNbt = new CompoundTag();
-            for (Map.Entry<String, ResourceLocation> entry : rlData.entrySet()){
+            for (Map.Entry<String, ResourceLocation> entry : rlData.entrySet()) {
                 rlNbt.putString(entry.getKey(), entry.getValue().toString());
             }
             nbt.put("rlData", rlNbt);
         }
         if (!boolData.isEmpty()) {
             CompoundTag boolNbt = new CompoundTag();
-            for (Map.Entry<String, Boolean> entry : boolData.entrySet()){
+            for (Map.Entry<String, Boolean> entry : boolData.entrySet()) {
                 boolNbt.putBoolean(entry.getKey(), entry.getValue());
             }
             nbt.put("boolData", boolNbt);
         }
         if (!textData.isEmpty()) {
             CompoundTag textNbt = new CompoundTag();
-            for (Map.Entry<String, Component> entry : textData.entrySet()){
+            for (Map.Entry<String, Component> entry : textData.entrySet()) {
                 textNbt.putString(entry.getKey(), Component.Serializer.toJson(entry.getValue()));
             }
             nbt.put("textData", textNbt);
@@ -258,44 +258,44 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
         clearData();
         if (nbt.contains("doubleData")) {
             CompoundTag doubleNbt = nbt.getCompound("doubleData");
-            for (String key : doubleNbt.getAllKeys()){
+            for (String key : doubleNbt.getAllKeys()) {
                 putDouble(key, doubleNbt.getDouble(key));
             }
         }
         if (nbt.contains("intData")) {
             CompoundTag intNbt = nbt.getCompound("intData");
-            for (String key : intNbt.getAllKeys()){
+            for (String key : intNbt.getAllKeys()) {
                 putInt(key, intNbt.getInt(key));
             }
         }
         if (nbt.contains("blockPosData")) {
             CompoundTag blockPosNbt = nbt.getCompound("blockPosData");
-            for (String key : blockPosNbt.getAllKeys()){
+            for (String key : blockPosNbt.getAllKeys()) {
                 putBlockPos(key, GlobalPos.CODEC.parse(NbtOps.INSTANCE, blockPosNbt.getCompound(key)).result()
                         .orElse(GlobalPos.of(Level.OVERWORLD, BlockPos.of(blockPosNbt.getLong(key)))));
             }
         }
         if (nbt.contains("floatData")) {
             CompoundTag floatNbt = nbt.getCompound("floatData");
-            for (String key : floatNbt.getAllKeys()){
+            for (String key : floatNbt.getAllKeys()) {
                 putFloat(key, floatNbt.getFloat(key));
             }
         }
         if (nbt.contains("rlData")) {
             CompoundTag rlNbt = nbt.getCompound("rlData");
-            for (String key : rlNbt.getAllKeys()){
+            for (String key : rlNbt.getAllKeys()) {
                 putResourceLocation(key, new ResourceLocation(rlNbt.getString(key)));
             }
         }
         if (nbt.contains("boolData")) {
             CompoundTag boolNbt = nbt.getCompound("boolData");
-            for (String key : boolNbt.getAllKeys()){
+            for (String key : boolNbt.getAllKeys()) {
                 putBool(key, boolNbt.getBoolean(key));
             }
         }
         if (nbt.contains("textData")) {
             CompoundTag textNbt = nbt.getCompound("textData");
-            for (String key : textNbt.getAllKeys()){
+            for (String key : textNbt.getAllKeys()) {
                 putTextComponent(key, Component.Serializer.fromJson(textNbt.getString(key)));
             }
         }

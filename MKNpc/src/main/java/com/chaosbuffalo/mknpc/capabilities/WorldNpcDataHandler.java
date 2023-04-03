@@ -5,40 +5,40 @@ import com.chaosbuffalo.mknpc.capabilities.structure_tracking.StructureComponent
 import com.chaosbuffalo.mknpc.capabilities.structure_tracking.StructureData;
 import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
-import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
 import com.chaosbuffalo.mknpc.npc.*;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.WorldPermanentOption;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
-import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
+import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
+import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSingleJigsawPiece;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.core.GlobalPos;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
-import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
+import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class WorldNpcDataHandler implements IWorldNpcData{
+public class WorldNpcDataHandler implements IWorldNpcData {
 
     private final HashMap<UUID, WorldPermanentSpawnConfiguration> worldPermanentSpawnConfigurations;
     private final HashMap<UUID, MKStructureEntry> structureIndex;
@@ -65,9 +65,8 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     }
 
 
-
     @Override
-    public QuestChainInstance getQuest(UUID questId){
+    public QuestChainInstance getQuest(UUID questId) {
         return quests.get(questId);
     }
 
@@ -77,17 +76,17 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         return hasEntityOptionEntry(definition, attribute, spawnId);
     }
 
-    public void putNotableChest(NotableChestEntry notableChestEntry){
+    public void putNotableChest(NotableChestEntry notableChestEntry) {
         notableChests.put(notableChestEntry.getChestId(), notableChestEntry);
     }
 
     @Override
-    public NotableChestEntry getNotableChest(UUID id){
+    public NotableChestEntry getNotableChest(UUID id) {
         return notableChests.get(id);
     }
 
     @Override
-    public NotableNpcEntry getNotableNpc(UUID id){
+    public NotableNpcEntry getNotableNpc(UUID id) {
         return notableNpcs.get(id);
     }
 
@@ -109,7 +108,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         return pointOfInterests.get(id);
     }
 
-    public void putNotableNpc(NotableNpcEntry notableNpcEntry){
+    public void putNotableNpc(NotableNpcEntry notableNpcEntry) {
         notableNpcs.put(notableNpcEntry.getNotableId(), notableNpcEntry);
     }
 
@@ -124,7 +123,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
                         definition.getDefinitionName(), attribute.getName());
     }
 
-    public static UUID getSpawnIdForEntity(Entity entity){
+    public static UUID getSpawnIdForEntity(Entity entity) {
         return MKNpc.getNpcData(entity).map(IEntityNpcData::getSpawnID).orElse(entity.getUUID());
     }
 
@@ -142,16 +141,16 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     @Override
     public void addEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute,
                                      UUID spawnId, INpcOptionEntry entry) {
-        if (!worldPermanentSpawnConfigurations.containsKey(spawnId)){
+        if (!worldPermanentSpawnConfigurations.containsKey(spawnId)) {
             worldPermanentSpawnConfigurations.put(spawnId, new WorldPermanentSpawnConfiguration());
         }
         worldPermanentSpawnConfigurations.get(spawnId).addAttributeEntry(definition, attribute, entry);
     }
 
     @Override
-    public Optional<QuestChainInstance.QuestChainBuildResult> buildQuest(QuestDefinition definition, BlockPos pos){
+    public Optional<QuestChainInstance.QuestChainBuildResult> buildQuest(QuestDefinition definition, BlockPos pos) {
         Map<ResourceLocation, Integer> structuresNeeded = definition.getStructuresNeeded();
-        if (hasStructureInstances(structuresNeeded.keySet())){
+        if (hasStructureInstances(structuresNeeded.keySet())) {
             Map<ResourceLocation, List<MKStructureEntry>> possibilities = structuresNeeded.keySet().stream()
                     .map(x -> new Pair<>(x, structureToInstanceIndex.get(x)))
                     .map(x -> x.mapSecond(ids -> ids.stream().map(structureIndex::get)
@@ -159,13 +158,13 @@ public class WorldNpcDataHandler implements IWorldNpcData{
                     .collect(Collectors.toMap(Pair::getFirst, pair -> pair.getSecond().collect(Collectors.toList())));
             if (possibilities.entrySet().stream().allMatch(x -> x.getValue().size() >= structuresNeeded.get(x.getKey()))) {
                 Map<ResourceLocation, List<MKStructureEntry>> questStructures = new HashMap<>();
-                for (Map.Entry<ResourceLocation, Integer> needed : structuresNeeded.entrySet()){
+                for (Map.Entry<ResourceLocation, Integer> needed : structuresNeeded.entrySet()) {
                     int toFind = needed.getValue();
                     List<MKStructureEntry> byDistance = possibilities.get(needed.getKey()).stream().sorted(Comparator.comparingInt(
-                            x -> new ChunkPos(pos).getChessboardDistance(x.getChunkPos())))
+                                    x -> new ChunkPos(pos).getChessboardDistance(x.getChunkPos())))
                             .collect(Collectors.toList());
                     List<MKStructureEntry> finals = new ArrayList<>();
-                    for (int i = 0; i < toFind; i++){
+                    for (int i = 0; i < toFind; i++) {
                         finals.add(byDistance.get(i));
                     }
                     questStructures.put(needed.getKey(), finals);
@@ -183,17 +182,17 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         return Optional.empty();
     }
 
-    public boolean hasStructureInstances(Set<ResourceLocation> structureNames){
+    public boolean hasStructureInstances(Set<ResourceLocation> structureNames) {
         return structureNames.stream().allMatch(this::isStructureIndexed);
     }
 
-    private MKStructureEntry computeStructureEntry(IStructurePlaced structurePlaced){
+    private MKStructureEntry computeStructureEntry(IStructurePlaced structurePlaced) {
         StructureData structureData = null;
         Level structureWorld = structurePlaced.getStructureWorld();
-        if (structureWorld instanceof ServerLevel){
+        if (structureWorld instanceof ServerLevel) {
             ServerLevel world = (ServerLevel) structureWorld;
             ConfiguredStructureFeature<?, MKJigsawStructure> struct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structurePlaced.getStructureName());
-            if (struct != null){
+            if (struct != null) {
                 StructureStart start = world.structureFeatureManager().getStructureAt(structurePlaced.getGlobalBlockPos().pos(), struct);
                 structureData = new StructureData(structurePlaced.getStructureWorld().dimension(),
                         start.getChunkPos().x, start.getChunkPos().z, start.getBoundingBox(), start.getPieces().stream().map(
@@ -206,15 +205,15 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         return structureEntry;
     }
 
-    private void indexStructureEntry(MKStructureEntry structureEntry){
+    private void indexStructureEntry(MKStructureEntry structureEntry) {
         structureToInstanceIndex.computeIfAbsent(structureEntry.getStructureName(), key -> new ArrayList<>())
                 .add(structureEntry.getStructureId());
     }
 
-    private StructureComponentData getComponentDataFromPiece(StructurePiece piece){
+    private StructureComponentData getComponentDataFromPiece(StructurePiece piece) {
         ResourceLocation pieceName = MKNpcWorldGen.UNKNOWN_PIECE;
-        if (piece instanceof PoolElementStructurePiece){
-            if (((PoolElementStructurePiece) piece).getElement() instanceof MKSingleJigsawPiece){
+        if (piece instanceof PoolElementStructurePiece) {
+            if (((PoolElementStructurePiece) piece).getElement() instanceof MKSingleJigsawPiece) {
                 MKSingleJigsawPiece mkPiece = ((MKSingleJigsawPiece) ((PoolElementStructurePiece) piece).getElement());
                 pieceName = mkPiece.getPieceEither().left().orElse(MKNpcWorldGen.UNKNOWN_PIECE);
             }
@@ -230,7 +229,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     }
 
     @Override
-    public void addChest(IChestNpcData chestData){
+    public void addChest(IChestNpcData chestData) {
         MKStructureEntry structure = structureIndex.computeIfAbsent(chestData.getStructureId(),
                 key -> computeStructureEntry(chestData));
         structure.addChest(chestData);
@@ -261,11 +260,11 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         return structureIndex.get(structId);
     }
 
-    protected boolean hasStructureInstance(UUID structureId){
+    protected boolean hasStructureInstance(UUID structureId) {
         return structureIndex.containsKey(structureId);
     }
 
-    protected boolean isStructureIndexed(ResourceLocation structureName){
+    protected boolean isStructureIndexed(ResourceLocation structureName) {
         return structureToInstanceIndex.containsKey(structureName) && structureToInstanceIndex.get(structureName).size() > 0;
     }
 
@@ -295,18 +294,18 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         CompoundTag spawnConfig = new CompoundTag();
-        for (UUID entityId : worldPermanentSpawnConfigurations.keySet()){
+        for (UUID entityId : worldPermanentSpawnConfigurations.keySet()) {
             WorldPermanentSpawnConfiguration config = worldPermanentSpawnConfigurations.get(entityId);
             spawnConfig.put(entityId.toString(), config.serializeNBT());
         }
         tag.put("spawnConfigs", spawnConfig);
         ListTag structuresNbt = new ListTag();
-        for (MKStructureEntry structure : structureIndex.values()){
+        for (MKStructureEntry structure : structureIndex.values()) {
             structuresNbt.add(structure.serializeNBT());
         }
         tag.put("structures", structuresNbt);
         ListTag questNbt = new ListTag();
-        for (QuestChainInstance inst : quests.values()){
+        for (QuestChainInstance inst : quests.values()) {
             questNbt.add(inst.serializeNBT());
         }
         tag.put("quests", questNbt);
@@ -316,21 +315,21 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     @Override
     public void deserializeNBT(CompoundTag nbt) {
         CompoundTag spawnConfigNbt = nbt.getCompound("spawnConfigs");
-        for (String idKey : spawnConfigNbt.getAllKeys()){
+        for (String idKey : spawnConfigNbt.getAllKeys()) {
             UUID entityId = UUID.fromString(idKey);
             WorldPermanentSpawnConfiguration config = new WorldPermanentSpawnConfiguration();
             config.deserializeNBT(spawnConfigNbt.getCompound(idKey));
             worldPermanentSpawnConfigurations.put(entityId, config);
         }
         ListTag structuresNbt = nbt.getList("structures", Tag.TAG_COMPOUND);
-        for (Tag structureNbt : structuresNbt){
+        for (Tag structureNbt : structuresNbt) {
             MKStructureEntry newStructure = new MKStructureEntry(this);
             newStructure.deserializeNBT((CompoundTag) structureNbt);
             structureIndex.put(newStructure.getStructureId(), newStructure);
             indexStructureEntry(newStructure);
         }
         ListTag questsNbt = nbt.getList("quests", Tag.TAG_COMPOUND);
-        for (Tag questNbt : questsNbt){
+        for (Tag questNbt : questsNbt) {
             QuestChainInstance inst = new QuestChainInstance((CompoundTag) questNbt);
             quests.put(inst.getQuestId(), inst);
         }

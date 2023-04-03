@@ -10,12 +10,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -54,7 +54,7 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
     }
 
     @SubscribeEvent
-    public void subscribeEvent(AddReloadListenerEvent event){
+    public void subscribeEvent(AddReloadListenerEvent event) {
         event.addListener(this);
     }
 
@@ -64,7 +64,7 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
         serverStarted = true;
     }
 
-    public static void setupDeserializers(){
+    public static void setupDeserializers() {
         putOptionEntryDeserializer(AbilitiesOption.NAME, AbilitiesOptionEntry::new);
         putOptionEntryDeserializer(EquipmentOption.NAME, EquipmentOptionEntry::new);
         putOptionDeserializer(EquipmentOption.NAME, EquipmentOption::new);
@@ -93,18 +93,18 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
     }
 
     public static void putOptionDeserializer(ResourceLocation optionName,
-                                             Supplier<NpcDefinitionOption> optionFunction){
+                                             Supplier<NpcDefinitionOption> optionFunction) {
         OPTION_DESERIALIZERS.put(optionName, optionFunction);
     }
 
     public static void putOptionEntryDeserializer(ResourceLocation entryName,
-                                                  Supplier<INpcOptionEntry> entryFunction){
+                                                  Supplier<INpcOptionEntry> entryFunction) {
         ENTRY_DESERIALIZERS.put(entryName, entryFunction);
     }
 
     @Nullable
-    public static INpcOptionEntry getNpcOptionEntry(ResourceLocation entryName){
-        if (!ENTRY_DESERIALIZERS.containsKey(entryName)){
+    public static INpcOptionEntry getNpcOptionEntry(ResourceLocation entryName) {
+        if (!ENTRY_DESERIALIZERS.containsKey(entryName)) {
             MKNpc.LOGGER.error("Failed to deserialize option entry {}", entryName);
             return null;
         }
@@ -112,9 +112,9 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
     }
 
     @Nullable
-    public static NpcDefinitionOption getNpcOption(ResourceLocation optionName){
+    public static NpcDefinitionOption getNpcOption(ResourceLocation optionName) {
 
-        if (!OPTION_DESERIALIZERS.containsKey(optionName)){
+        if (!OPTION_DESERIALIZERS.containsKey(optionName)) {
             MKNpc.LOGGER.error("Failed to deserialize option {}", optionName);
             return null;
         }
@@ -126,34 +126,35 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
                          ProfilerFiller profilerIn) {
         DEFINITIONS.clear();
         CLIENT_DEFINITIONS.clear();
-        for(Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
+        for (Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
             ResourceLocation resourcelocation = entry.getKey();
             MKNpc.LOGGER.info("Found Npc Definition file: {}", resourcelocation);
-            if (resourcelocation.getPath().startsWith("_")) continue; //Forge: filter anything beginning with "_" as it's used for metadata.
+            if (resourcelocation.getPath().startsWith("_"))
+                continue; //Forge: filter anything beginning with "_" as it's used for metadata.
             NpcDefinition def = NpcDefinition.deserializeDefinitionFromDynamic(entry.getKey(),
                     new Dynamic<>(JsonOps.INSTANCE, entry.getValue()));
             DEFINITIONS.put(def.getDefinitionName(), def);
         }
         resolveDefinitions();
-        if (serverStarted){
+        if (serverStarted) {
             syncToPlayers();
         }
     }
 
-    public static void resolveDefinitions(){
+    public static void resolveDefinitions() {
         List<ResourceLocation> toRemove = new ArrayList<>();
-        for (NpcDefinition def : DEFINITIONS.values()){
+        for (NpcDefinition def : DEFINITIONS.values()) {
             boolean resolved = def.resolveParents();
-            if (!resolved){
+            if (!resolved) {
                 MKNpc.LOGGER.info("Failed to resolve parents for {}, removing definition",
                         def.getDefinitionName());
                 toRemove.add(def.getDefinitionName());
             }
         }
-        for (ResourceLocation loc : toRemove){
+        for (ResourceLocation loc : toRemove) {
             DEFINITIONS.remove(loc);
         }
-        for (NpcDefinition def : DEFINITIONS.values()){
+        for (NpcDefinition def : DEFINITIONS.values()) {
             def.resolveEntityType();
             CLIENT_DEFINITIONS.put(def.getDefinitionName(), new NpcDefinitionClient(def));
         }
@@ -161,8 +162,8 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
 
     @SuppressWarnings("unused")
     @SubscribeEvent
-    public void playerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event){
-        if (event.getPlayer() instanceof ServerPlayer){
+    public void playerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getPlayer() instanceof ServerPlayer) {
             NpcDefinitionClientUpdatePacket updatePacket = new NpcDefinitionClientUpdatePacket(
                     CLIENT_DEFINITIONS.values());
             MKNpc.LOGGER.info("Sending {} update packet", event.getPlayer());
@@ -172,15 +173,15 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
         }
     }
 
-    public void syncToPlayers(){
+    public void syncToPlayers() {
         NpcDefinitionClientUpdatePacket updatePacket = new NpcDefinitionClientUpdatePacket(CLIENT_DEFINITIONS.values());
-        if (server != null){
+        if (server != null) {
             server.getPlayerList().broadcastAll(PacketHandler.getNetworkChannel().toVanillaPacket(
                     updatePacket, NetworkDirection.PLAY_TO_CLIENT));
         }
     }
 
-    public static NpcDefinition getDefinition(ResourceLocation name){
+    public static NpcDefinition getDefinition(ResourceLocation name) {
         return DEFINITIONS.get(name);
     }
 

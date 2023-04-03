@@ -7,8 +7,8 @@ import com.chaosbuffalo.mkweapons.items.effects.armor.IArmorEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.IRandomizationSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotManager;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -26,7 +26,7 @@ public class ArmorEffectOption extends EffectOption<IArmorEffect> {
 
     @Override
     protected Optional<IArmorEffect> deserializeEffectToType(@Nullable IItemEffect effect) {
-        if (effect instanceof IArmorEffect){
+        if (effect instanceof IArmorEffect) {
             return Optional.of((IArmorEffect) effect);
         }
         return Optional.empty();

@@ -25,7 +25,7 @@ public class RadioButton<T> extends CenteringHorizontalLayout {
 
     }
 
-    protected void onSelected(){
+    protected void onSelected() {
         nestedRect.setInnerColor(SELECTED_COLOR);
         list.notifySelected(this);
     }
@@ -38,7 +38,7 @@ public class RadioButton<T> extends CenteringHorizontalLayout {
         return value.getName();
     }
 
-    public void deselect(){
+    public void deselect() {
         nestedRect.setInnerColor(UNSELECTED_COLOR);
     }
 }

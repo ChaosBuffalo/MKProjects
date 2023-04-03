@@ -1,30 +1,5 @@
 package com.chaosbuffalo.mkultra.world.gen.feature.structure;
 
-import com.chaosbuffalo.mknpc.world.gen.StructureUtils;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.ChunkPosConfig;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructurePieceArgs;
-import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.init.MKUWorldGen;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.block.Mirror;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
-import net.minecraft.world.level.StructureFeatureManager;
-import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
-
-import java.util.Random;
-import java.util.UUID;
-
 //public class HyboreanAlterStructurePieces {
 //
 //    private static final ResourceLocation PIECE_ONE = new ResourceLocation(MKUltra.MODID, "hyborean_alter");

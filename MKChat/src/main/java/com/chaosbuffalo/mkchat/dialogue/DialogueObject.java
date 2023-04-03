@@ -31,7 +31,7 @@ public class DialogueObject {
         return rawMessage;
     }
 
-    public void setRawMessage(String newRaw){
+    public void setRawMessage(String newRaw) {
         rawMessage = newRaw;
         buildMessageSupplier();
     }

@@ -5,11 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKPoolElementPiece;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.StructureFeatureManager;
-import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
@@ -21,7 +17,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import java.util.Random;
 import java.util.UUID;
 
 @Mixin(StructureStart.class)
@@ -33,7 +28,7 @@ public abstract class StructureStartMixins implements IStructureStartMixin {
             at = @At("RETURN"),
             locals = LocalCapture.CAPTURE_FAILHARD)
     protected void proxyInit(ConfiguredStructureFeature<?, ?> feature, ChunkPos chunkPos, int references,
-                          PiecesContainer piecesContainer, CallbackInfo ci) {
+                             PiecesContainer piecesContainer, CallbackInfo ci) {
         instanceId = UUID.randomUUID();
         for (StructurePiece piece : piecesContainer.pieces()) {
             if (piece instanceof MKPoolElementPiece) {

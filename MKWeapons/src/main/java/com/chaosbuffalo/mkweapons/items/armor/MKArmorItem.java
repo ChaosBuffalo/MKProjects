@@ -4,23 +4,21 @@ import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
 import com.chaosbuffalo.mkweapons.items.effects.armor.IArmorEffect;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-
-import net.minecraft.world.item.Item.Properties;
 
 public class MKArmorItem extends ArmorItem implements IMKArmor {
     public static final UUID CHEST_UUID = UUID.fromString("77ab4b54-5885-4f7f-ab41-71af536309d1");
@@ -52,7 +50,7 @@ public class MKArmorItem extends ArmorItem implements IMKArmor {
     }
 
     protected void buildAttributes(ImmutableMultimap.Builder<Attribute, AttributeModifier> builder,
-                                   EquipmentSlot slot, ArmorMaterial material, UUID slotUUID){
+                                   EquipmentSlot slot, ArmorMaterial material, UUID slotUUID) {
 
     }
 
@@ -84,8 +82,8 @@ public class MKArmorItem extends ArmorItem implements IMKArmor {
         }
     }
 
-    public void addToTooltip(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip){
-        for (IArmorEffect armorEffect : getArmorEffects(stack)){
+    public void addToTooltip(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
+        for (IArmorEffect armorEffect : getArmorEffects(stack)) {
             armorEffect.addInformation(stack, worldIn, tooltip);
         }
     }
@@ -105,7 +103,7 @@ public class MKArmorItem extends ArmorItem implements IMKArmor {
     @Override
     public List<IArmorEffect> getArmorEffects(ItemStack item) {
         return item.getCapability(WeaponsCapabilities.ARMOR_DATA_CAPABILITY).map(cap -> {
-            if (cap.hasArmorEffects()){
+            if (cap.hasArmorEffects()) {
                 return cap.getArmorEffects();
             } else {
                 return armorEffects;

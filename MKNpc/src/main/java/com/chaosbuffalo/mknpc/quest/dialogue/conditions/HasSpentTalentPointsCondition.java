@@ -6,9 +6,9 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 
 
 public class HasSpentTalentPointsCondition extends DialogueCondition {
@@ -16,12 +16,12 @@ public class HasSpentTalentPointsCondition extends DialogueCondition {
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "has_spent_talents");
     private int talentCount;
 
-    public HasSpentTalentPointsCondition(int talentCount){
+    public HasSpentTalentPointsCondition(int talentCount) {
         super(conditionTypeName);
         this.talentCount = talentCount;
     }
 
-    public HasSpentTalentPointsCondition(){
+    public HasSpentTalentPointsCondition() {
         this(0);
     }
 

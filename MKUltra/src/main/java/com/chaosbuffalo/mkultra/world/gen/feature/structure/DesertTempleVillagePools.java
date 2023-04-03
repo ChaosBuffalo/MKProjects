@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.data.worldgen.Pools;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public class DesertTempleVillagePools {
@@ -28,10 +27,10 @@ public class DesertTempleVillagePools {
             StructureTemplatePool.Projection.TERRAIN_MATCHING);
 
     public static final StructureTemplatePool DESERT_TEMPLES = new StructureTemplatePool(new ResourceLocation(MKUltra.MODID, "desert_temples"), new ResourceLocation("empty"),
-                ImmutableList.of(
-                        Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DESERT_TEMPLE_SMALL, false), 1)
+            ImmutableList.of(
+                    Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DESERT_TEMPLE_SMALL, false), 1)
             ),
-    StructureTemplatePool.Projection.RIGID);
+            StructureTemplatePool.Projection.RIGID);
 
 
 }

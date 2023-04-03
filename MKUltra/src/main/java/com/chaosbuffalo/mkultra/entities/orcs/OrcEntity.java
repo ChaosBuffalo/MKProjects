@@ -11,14 +11,13 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 
 
-
 public class OrcEntity extends MKEntity implements IAbilityTrainingEntity {
     private final EntityAbilityTrainer abilityTrainer;
 
     public OrcEntity(EntityType<? extends OrcEntity> type, Level worldIn) {
         super(type, worldIn);
         abilityTrainer = new EntityAbilityTrainer(this);
-        if (!worldIn.isClientSide()){
+        if (!worldIn.isClientSide()) {
             setAttackComboStatsAndDefault(6, GameConstants.TICKS_PER_SECOND);
         }
         setLungeSpeed(0.75);

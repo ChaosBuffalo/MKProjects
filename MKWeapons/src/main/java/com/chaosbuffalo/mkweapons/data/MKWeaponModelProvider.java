@@ -27,10 +27,10 @@ public class MKWeaponModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        for (MKMeleeWeapon weapon : MKWeaponsItems.WEAPONS){
+        for (MKMeleeWeapon weapon : MKWeaponsItems.WEAPONS) {
             makeWeaponModel(weapon);
         }
-        for (MKBow bow : MKWeaponsItems.BOWS){
+        for (MKBow bow : MKWeaponsItems.BOWS) {
             makeBowModels(bow);
         }
         makeSimpleItem(MKWeaponsItems.CopperRing);
@@ -81,9 +81,9 @@ public class MKWeaponModelProvider extends ItemModelProvider {
     private void makeWeaponModel(MKMeleeWeapon weapon) {
         String path = ForgeRegistries.ITEMS.getKey(weapon).getPath();
         List<String> subModels = Arrays.asList("blocking");
-        if (MeleeWeaponTypes.WITH_BLOCKING.contains(weapon.getWeaponType())){
+        if (MeleeWeaponTypes.WITH_BLOCKING.contains(weapon.getWeaponType())) {
 
-            for (String subModel : subModels){
+            for (String subModel : subModels) {
                 String subPath = String.format("%s_%s", path, subModel);
                 getBuilder(subPath)
                         .parent(getExistingFile(modLoc(String.format("item/%s_base_%s", weapon.getWeaponType().getName().getPath(), subModel))))
@@ -101,11 +101,11 @@ public class MKWeaponModelProvider extends ItemModelProvider {
         Map<String, Tuple<Integer, Double>> subModelKeys = new HashMap<>();
         subModelKeys.put("blocking", new Tuple<>(1, -1.0));
 
-        if (MeleeWeaponTypes.WITH_BLOCKING.contains(weapon.getWeaponType())){
-            for (String subModel : subModels){
+        if (MeleeWeaponTypes.WITH_BLOCKING.contains(weapon.getWeaponType())) {
+            for (String subModel : subModels) {
                 Tuple<Integer, Double> predicates = subModelKeys.get(subModel);
                 ItemModelBuilder.OverrideBuilder override = builder.override().model(getExistingFile(modLoc(String.format("item/%s_%s",
-                        path, subModel))))
+                                path, subModel))))
                         .predicate(new ResourceLocation(subModel), predicates.getA());
             }
         }

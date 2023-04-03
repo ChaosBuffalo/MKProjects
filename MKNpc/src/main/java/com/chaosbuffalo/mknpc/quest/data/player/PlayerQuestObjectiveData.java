@@ -1,22 +1,27 @@
 package com.chaosbuffalo.mknpc.quest.data.player;
 
 import com.chaosbuffalo.mknpc.utils.NBTSerializableMappedData;
-import net.minecraft.nbt.*;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class PlayerQuestObjectiveData extends NBTSerializableMappedData {
 
     private String objectiveName;
     private List<MutableComponent> description = new ArrayList<>();
 
-    public PlayerQuestObjectiveData(String objectiveName, MutableComponent... description){
+    public PlayerQuestObjectiveData(String objectiveName, MutableComponent... description) {
         this(objectiveName, Arrays.asList(description));
     }
 
-    public PlayerQuestObjectiveData(String objectiveName, List<MutableComponent> description){
+    public PlayerQuestObjectiveData(String objectiveName, List<MutableComponent> description) {
         this.objectiveName = objectiveName;
         this.description.addAll(description);
     }
@@ -34,7 +39,7 @@ public class PlayerQuestObjectiveData extends NBTSerializableMappedData {
         return objectiveName;
     }
 
-    public PlayerQuestObjectiveData(CompoundTag nbt){
+    public PlayerQuestObjectiveData(CompoundTag nbt) {
         deserializeNBT(nbt);
     }
 
@@ -47,7 +52,7 @@ public class PlayerQuestObjectiveData extends NBTSerializableMappedData {
         CompoundTag nbt = super.serializeNBT();
         nbt.putString("name", objectiveName);
         ListTag descriptions = new ListTag();
-        for (MutableComponent comp : this.description){
+        for (MutableComponent comp : this.description) {
             descriptions.add(StringTag.valueOf(Component.Serializer.toJson(comp)));
         }
         nbt.put("description", descriptions);
@@ -59,7 +64,7 @@ public class PlayerQuestObjectiveData extends NBTSerializableMappedData {
         super.deserializeNBT(nbt);
         objectiveName = nbt.getString("name");
         ListTag descriptions = nbt.getList("description", Tag.TAG_STRING);
-        for (Tag desc : descriptions){
+        for (Tag desc : descriptions) {
             description.add(Component.Serializer.fromJson(desc.getAsString()));
         }
     }

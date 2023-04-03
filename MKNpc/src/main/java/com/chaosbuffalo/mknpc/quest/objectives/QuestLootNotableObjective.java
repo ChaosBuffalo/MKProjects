@@ -18,21 +18,20 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.Util;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 
 public class QuestLootNotableObjective extends StructureInstanceObjective<UUIDInstanceData> implements IKillObjectiveHandler {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.quest_loot_notable");
@@ -44,8 +43,8 @@ public class QuestLootNotableObjective extends StructureInstanceObjective<UUIDIn
 
 
     public QuestLootNotableObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition,
-                                 double chance, int count, MutableComponent itemDescription,
-                                 MutableComponent... description) {
+                                     double chance, int count, MutableComponent itemDescription,
+                                     MutableComponent... description) {
         super(NAME, name, structure, index, description);
         this.npcDefinition.setValue(npcDefinition);
         this.chanceToFind.setValue(chance);
@@ -85,7 +84,7 @@ public class QuestLootNotableObjective extends StructureInstanceObjective<UUIDIn
 
     @Override
     public boolean onPlayerKillNpcDefEntity(Player player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
-                                         LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
+                                            LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = getInstanceData(quest);
             boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(

@@ -4,8 +4,8 @@ import com.chaosbuffalo.mknpc.client.gui.screens.MKSpawnerScreen;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkEvent;
@@ -18,16 +18,16 @@ public class OpenMKSpawnerPacket extends SetSpawnListPacket {
         super(entity);
     }
 
-    public OpenMKSpawnerPacket(FriendlyByteBuf buffer){
+    public OpenMKSpawnerPacket(FriendlyByteBuf buffer) {
         super(buffer);
     }
 
     @OnlyIn(Dist.CLIENT)
-    private void handleInternal(){
+    private void handleInternal() {
         if (Minecraft.getInstance().player != null) {
             Level world = Minecraft.getInstance().player.getCommandSenderWorld();
             BlockEntity tileEntity = world.getBlockEntity(tileEntityLoc);
-            if (tileEntity instanceof MKSpawnerTileEntity){
+            if (tileEntity instanceof MKSpawnerTileEntity) {
                 MKSpawnerTileEntity spawner = (MKSpawnerTileEntity) tileEntity;
                 setSpawnerFromPacket(spawner);
                 Minecraft.getInstance().setScreen(new MKSpawnerScreen(spawner));
@@ -36,7 +36,7 @@ public class OpenMKSpawnerPacket extends SetSpawnListPacket {
     }
 
     @Override
-    public void handle(Supplier<NetworkEvent.Context> supplier){
+    public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
             handleInternal();

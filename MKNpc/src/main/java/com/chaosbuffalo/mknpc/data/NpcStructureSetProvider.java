@@ -9,7 +9,7 @@ import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadType;
 
 import java.io.IOException;
 
-public class NpcStructureSetProvider extends StructureSetProvider{
+public class NpcStructureSetProvider extends StructureSetProvider {
     public NpcStructureSetProvider(DataGenerator generator) {
         super(generator);
     }

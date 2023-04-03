@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkwidgets;
 
 import com.chaosbuffalo.mkwidgets.client.gui.example.TestScreen;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ClientRegistry;
@@ -19,14 +19,14 @@ public class ClientEventHandler {
             "key.mkwidgets.category");
 
     @SubscribeEvent
-    public static void onEvent(InputEvent.KeyInputEvent event){
-        if (openTestUi.consumeClick()){
+    public static void onEvent(InputEvent.KeyInputEvent event) {
+        if (openTestUi.consumeClick()) {
             Minecraft.getInstance().setScreen(new TestScreen(
                     new TextComponent("MK Widgets Test")));
         }
     }
 
-    protected static void clientSetup(){
+    protected static void clientSetup() {
         ClientRegistry.registerKeyBinding(openTestUi);
     }
 }

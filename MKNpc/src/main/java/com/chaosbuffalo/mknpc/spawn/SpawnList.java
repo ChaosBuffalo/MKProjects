@@ -12,7 +12,7 @@ public class SpawnList implements INBTSerializable<CompoundTag> {
 
     private final List<SpawnOption> options;
 
-    public SpawnList(){
+    public SpawnList() {
         this.options = new ArrayList<>();
     }
 
@@ -20,18 +20,18 @@ public class SpawnList implements INBTSerializable<CompoundTag> {
         return options;
     }
 
-    public void addOption(SpawnOption option){
+    public void addOption(SpawnOption option) {
         options.add(option);
     }
 
-    public void copyList(SpawnList other){
+    public void copyList(SpawnList other) {
         this.options.clear();
-        for (SpawnOption option : other.getOptions()){
+        for (SpawnOption option : other.getOptions()) {
             addOption(option);
         }
     }
 
-    public void setWeightForOption(int index, double weight){
+    public void setWeightForOption(int index, double weight) {
         options.get(index).setWeight(weight);
     }
 
@@ -39,7 +39,7 @@ public class SpawnList implements INBTSerializable<CompoundTag> {
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         ListTag opts = new ListTag();
-        for (SpawnOption option : getOptions()){
+        for (SpawnOption option : getOptions()) {
             opts.add(option.serializeNBT());
         }
         tag.put("options", opts);
@@ -50,7 +50,7 @@ public class SpawnList implements INBTSerializable<CompoundTag> {
     public void deserializeNBT(CompoundTag nbt) {
         ListTag opts = nbt.getList("options", Tag.TAG_COMPOUND);
         options.clear();
-        for (int i = 0; i < opts.size(); i++){
+        for (int i = 0; i < opts.size(); i++) {
             CompoundTag option = opts.getCompound(i);
             SpawnOption spawnOption = new SpawnOption();
             spawnOption.deserializeNBT(option);

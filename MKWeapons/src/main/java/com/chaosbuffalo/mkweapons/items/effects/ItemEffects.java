@@ -20,7 +20,7 @@ public class ItemEffects {
             new HashMap<>();
 
     public static void addWeaponEffectDeserializer(ResourceLocation type,
-                                                   Supplier<IItemEffect> deserializer){
+                                                   Supplier<IItemEffect> deserializer) {
         ITEM_EFFECT_DESERIALIZERS.put(type, deserializer);
     }
 
@@ -41,14 +41,14 @@ public class ItemEffects {
     }
 
     @Nullable
-    public static <D> IItemEffect deserializeEffect(Dynamic<D> dynamic){
+    public static <D> IItemEffect deserializeEffect(Dynamic<D> dynamic) {
         ResourceLocation type = BaseItemEffect.getType(dynamic);
         Supplier<IItemEffect> deserializer = ITEM_EFFECT_DESERIALIZERS.get(type);
-        if (deserializer == null){
+        if (deserializer == null) {
             return null;
         }
         IItemEffect weaponEffect = deserializer.get();
-        if (weaponEffect != null){
+        if (weaponEffect != null) {
             weaponEffect.deserialize(dynamic);
         }
         return weaponEffect;

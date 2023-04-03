@@ -3,12 +3,15 @@ package com.chaosbuffalo.mknpc.quest.data.player;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -20,7 +23,7 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundTag> {
     private boolean questComplete;
     private final LinkedHashMap<String, PlayerQuestData> questData = new LinkedHashMap<>();
 
-    public PlayerQuestChainInstance(UUID questId){
+    public PlayerQuestChainInstance(UUID questId) {
         this.questId = questId;
         questComplete = false;
     }
@@ -29,7 +32,7 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundTag> {
         return questData;
     }
 
-    public PlayerQuestChainInstance(CompoundTag nbt){
+    public PlayerQuestChainInstance(CompoundTag nbt) {
         deserialize(nbt);
     }
 
@@ -45,7 +48,7 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundTag> {
         this.questName = questName;
     }
 
-    public void setupQuestChain(QuestChainInstance instance){
+    public void setupQuestChain(QuestChainInstance instance) {
         setQuestName(instance.getDefinition().getQuestName());
     }
 
@@ -59,24 +62,24 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundTag> {
         tag.putString("questName", Component.Serializer.toJson(questName));
         tag.putUUID("questId", questId);
         ListTag currentQuestsNbt = new ListTag();
-        for (String questName : currentQuests){
+        for (String questName : currentQuests) {
             currentQuestsNbt.add(StringTag.valueOf(questName));
         }
         tag.put("currentQuests", currentQuestsNbt);
         tag.putBoolean("questComplete", questComplete);
         ListTag quests = new ListTag();
-        for (Map.Entry<String, PlayerQuestData> entry : questData.entrySet()){
+        for (Map.Entry<String, PlayerQuestData> entry : questData.entrySet()) {
             quests.add(entry.getValue().serializeNBT());
         }
         tag.put("quests", quests);
         return tag;
     }
 
-    public void addQuestData(PlayerQuestData questData){
+    public void addQuestData(PlayerQuestData questData) {
         this.questData.put(questData.getQuestName(), questData);
     }
 
-    public PlayerQuestData getQuestData(String questName){
+    public PlayerQuestData getQuestData(String questName) {
         return questData.get(questName);
     }
 
@@ -85,7 +88,7 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundTag> {
     }
 
 
-    public void addCurrentQuest(String questName){
+    public void addCurrentQuest(String questName) {
         this.currentQuests.add(questName);
     }
 
@@ -100,7 +103,7 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundTag> {
         ListTag currentQuestsNbt = compoundNBT.getList("currentQuests", Tag.TAG_STRING);
         currentQuests = currentQuestsNbt.stream().map(Tag::getAsString).collect(Collectors.toList());
         ListTag questData = compoundNBT.getList("quests", Tag.TAG_COMPOUND);
-        for (Tag questNbt : questData){
+        for (Tag questNbt : questData) {
             PlayerQuestData newData = new PlayerQuestData((CompoundTag) questNbt);
             this.questData.put(newData.getQuestName(), newData);
         }
@@ -116,7 +119,7 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundTag> {
         this.dirtyNotifier = dirtyNotifier;
     }
 
-    public void notifyDirty(){
+    public void notifyDirty() {
         dirtyNotifier.accept(this);
     }
 }

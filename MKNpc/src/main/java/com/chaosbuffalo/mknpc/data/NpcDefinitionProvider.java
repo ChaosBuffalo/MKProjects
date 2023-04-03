@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.data;
 
 import com.chaosbuffalo.mkchat.MKChat;
-import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.init.Factions;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
@@ -9,19 +8,17 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
 import com.chaosbuffalo.mknpc.npc.options.*;
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
-import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.HashCache;
 import net.minecraft.data.DataProvider;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.data.HashCache;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
@@ -44,7 +41,7 @@ public class NpcDefinitionProvider implements DataProvider {
 
     }
 
-    private NpcDefinition generateTestSkeleton(){
+    private NpcDefinition generateTestSkeleton() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKNpc.MODID, "test_skeleton"),
                 new ResourceLocation(MKNpc.MODID, "skeleton"), null);
         def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
@@ -53,7 +50,7 @@ public class NpcDefinitionProvider implements DataProvider {
         return def;
     }
 
-    private NpcDefinition generateTestLady(){
+    private NpcDefinition generateTestLady() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKNpc.MODID, "test"),
                 new ResourceLocation(MKNpc.MODID, "green_lady"), null);
         def.addOption(new NameOption().setValue("Test Lady"));
@@ -69,7 +66,7 @@ public class NpcDefinitionProvider implements DataProvider {
         return def;
     }
 
-    private NpcDefinition generateTestLady2(){
+    private NpcDefinition generateTestLady2() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKNpc.MODID, "test2"), null,
                 new ResourceLocation(MKNpc.MODID, "test"));
         def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
@@ -78,14 +75,14 @@ public class NpcDefinitionProvider implements DataProvider {
         return def;
     }
 
-    public void writeDefinition(NpcDefinition definition, @Nonnull HashCache cache){
+    public void writeDefinition(NpcDefinition definition, @Nonnull HashCache cache) {
         Path outputFolder = this.generator.getOutputFolder();
         ResourceLocation key = definition.getDefinitionName();
         Path path = outputFolder.resolve("data/" + key.getNamespace() + "/mknpcs/" + key.getPath() + ".json");
         try {
             JsonElement element = definition.serialize(JsonOps.INSTANCE);
             DataProvider.save(GSON, cache, element, path);
-        } catch (IOException e){
+        } catch (IOException e) {
             MKNpc.LOGGER.error("Couldn't write npc definition {}", path, e);
         }
     }

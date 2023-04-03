@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkwidgets.client.gui.widgets;
 
 import com.chaosbuffalo.mkwidgets.client.gui.actions.IDragState;
-import com.chaosbuffalo.mkwidgets.client.gui.screens.IMKScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
+import com.chaosbuffalo.mkwidgets.client.gui.screens.IMKScreen;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -23,9 +23,9 @@ public interface IMKWidget {
         return true;
     }
 
-    default void inheritScreen(IMKScreen screen){
+    default void inheritScreen(IMKScreen screen) {
         setScreen(screen);
-        for (IMKWidget widget : getChildren()){
+        for (IMKWidget widget : getChildren()) {
             widget.inheritScreen(screen);
         }
     }
@@ -38,11 +38,11 @@ public interface IMKWidget {
         }
     }
 
-    default void findFocusable(List<IMKWidget> tree){
-        if (canFocus()){
+    default void findFocusable(List<IMKWidget> tree) {
+        if (canFocus()) {
             tree.add(this);
         }
-        for (IMKWidget wid : getChildren()){
+        for (IMKWidget wid : getChildren()) {
             wid.findFocusable(tree);
         }
     }
@@ -103,14 +103,14 @@ public interface IMKWidget {
 
     int getLongHoverTicks();
 
-    default boolean canFocus(){
+    default boolean canFocus() {
         return false;
     }
 
     default void onFocus() {
     }
 
-    default void onFocusLost(){
+    default void onFocusLost() {
     }
 
     IMKWidget setLongHoverTicks(int ticks);
@@ -138,18 +138,15 @@ public interface IMKWidget {
         return x >= getX() && y >= getY() && x < getRight() && y < getBottom();
     }
 
-    default void preDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks)
-    {
+    default void preDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
 
     }
 
-    default void draw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks)
-    {
+    default void draw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
 
     }
 
-    default void postDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks)
-    {
+    default void postDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
 
     }
 
@@ -192,10 +189,10 @@ public interface IMKWidget {
     }
 
 
-    default void clearHovered(){
+    default void clearHovered() {
         setHoveredTicks(0);
         setHovered(false);
-        for (IMKWidget child : getChildren()){
+        for (IMKWidget child : getChildren()) {
             child.clearHovered();
         }
     }
@@ -203,7 +200,7 @@ public interface IMKWidget {
     boolean doDrawDebugBounds();
 
     default void drawDebugBounds(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX,
-                                 int mouseY, float partialTicks){
+                                 int mouseY, float partialTicks) {
 
     }
 
@@ -213,12 +210,12 @@ public interface IMKWidget {
 
     int getDebugColor();
 
-    default void onMouseHover(Minecraft mc, int mouseX, int mouseY, float partialTicks){
+    default void onMouseHover(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         handleHoverDetection(mouseX, mouseY, partialTicks);
     }
 
-    default void mouseHover(Minecraft mc, int mouseX, int mouseY, float partialTicks){
-        if (!checkHovered(mouseX, mouseY)){
+    default void mouseHover(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+        if (!checkHovered(mouseX, mouseY)) {
             clearHovered();
             return;
         }
@@ -228,7 +225,7 @@ public interface IMKWidget {
         onMouseHover(mc, mouseX, mouseY, partialTicks);
     }
 
-    default void drawChildren(PoseStack matrixStack, Minecraft mc, int mouseX, int mouseY, float partialTicks){
+    default void drawChildren(PoseStack matrixStack, Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         for (IMKWidget child : getChildren()) {
             if (child.isVisible()) {
                 child.drawWidget(matrixStack, mc, mouseX, mouseY, partialTicks);
@@ -241,7 +238,7 @@ public interface IMKWidget {
         int y = getY();
         int width = getWidth();
         int height = getHeight();
-        if (doDrawDebugBounds()){
+        if (doDrawDebugBounds()) {
             drawDebugBounds(matrixStack, mc, x, y, width, height, mouseX, mouseY, partialTicks);
         }
         preDraw(matrixStack, mc, x, y, width, height, mouseX, mouseY, partialTicks);
@@ -259,7 +256,7 @@ public interface IMKWidget {
     }
 
     @Nullable
-    default IMKWidget getChild(int index){
+    default IMKWidget getChild(int index) {
         return getChildren().get(index);
     }
 
@@ -271,7 +268,7 @@ public interface IMKWidget {
         if (!this.isVisible() || !this.isInBounds(mouseX, mouseY)) {
             return false;
         }
-        if (!this.isEnabled()){
+        if (!this.isEnabled()) {
             return true;
         }
         Iterator<IMKWidget> it = getChildren().descendingIterator();
@@ -284,7 +281,7 @@ public interface IMKWidget {
         return onMouseScrollWheel(minecraft, mouseX, mouseY, distance);
     }
 
-    default void onDragEnd(IDragState state){
+    default void onDragEnd(IDragState state) {
 
     }
 
@@ -293,7 +290,7 @@ public interface IMKWidget {
         if (!this.isVisible() || !this.isInBounds(mouseX, mouseY)) {
             return false;
         }
-        if (!this.isEnabled()){
+        if (!this.isEnabled()) {
             return true;
         }
         Iterator<IMKWidget> it = getChildren().descendingIterator();
@@ -315,7 +312,7 @@ public interface IMKWidget {
         if (!this.isVisible() || !this.isInBounds(mouseX, mouseY)) {
             return false;
         }
-        if (!this.isEnabled()){
+        if (!this.isEnabled()) {
             return true;
         }
         Iterator<IMKWidget> it = getChildren().descendingIterator();
@@ -336,7 +333,7 @@ public interface IMKWidget {
         if (!this.isVisible() || !this.isInBounds(mouseX, mouseY)) {
             return false;
         }
-        if (!this.isEnabled()){
+        if (!this.isEnabled()) {
             return true;
         }
         Iterator<IMKWidget> it = getChildren().descendingIterator();
@@ -347,10 +344,10 @@ public interface IMKWidget {
             }
         }
         boolean consumedBySelf = onMousePressed(minecraft, mouseX, mouseY, mouseButton);
-        if (consumedBySelf){
+        if (consumedBySelf) {
             IMKScreen screen = getScreen();
             if (screen != null) {
-                if (canFocus()){
+                if (canFocus()) {
                     screen.setFocus(this);
                 } else {
                     screen.setFocus(null);
