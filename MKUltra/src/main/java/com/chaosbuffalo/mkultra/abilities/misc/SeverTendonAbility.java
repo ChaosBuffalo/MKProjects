@@ -14,7 +14,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.effects.SeverTendonEffect;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsParticles;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
@@ -78,7 +78,7 @@ public class SeverTendonAbility extends MKAbility {
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_magic_whoosh_4.get();
+        return MKUSounds.spell_magic_whoosh_4.get();
     }
 
     @Override
@@ -103,7 +103,7 @@ public class SeverTendonAbility extends MKAbility {
                 targetData.getEffects().addEffect(severTendon);
             });
 
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, ModSounds.spell_punch_6.get(), targetEntity.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_punch_6.get(), targetEntity.getSoundSource());
             Vec3 lookVec = entity.getLookAngle();
             PacketHandler.sendToTrackingAndSelf(
                     new ParticleEffectSpawnPacket(

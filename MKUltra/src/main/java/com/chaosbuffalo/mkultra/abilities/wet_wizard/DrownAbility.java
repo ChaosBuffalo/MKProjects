@@ -16,7 +16,7 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.DrownEffect;
 import com.chaosbuffalo.mkultra.entities.projectiles.DrownProjectileEntity;
 import com.chaosbuffalo.mkultra.init.MKUEntities;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -84,12 +84,12 @@ public class DrownAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.casting_water.get();
+        return MKUSounds.casting_water.get();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_water_7.get();
+        return MKUSounds.spell_water_7.get();
     }
 
     @Override

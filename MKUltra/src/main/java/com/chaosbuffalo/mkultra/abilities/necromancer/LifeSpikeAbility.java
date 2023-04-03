@@ -15,7 +15,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribut
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.VampiricDamageEffect;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -79,12 +79,12 @@ public class LifeSpikeAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.casting_shadow.get();
+        return MKUSounds.casting_shadow.get();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_magic_whoosh_4.get();
+        return MKUSounds.spell_magic_whoosh_4.get();
     }
 
     @Override
@@ -103,7 +103,7 @@ public class LifeSpikeAbility extends MKAbility {
                 targetData.getEffects().addEffect(damage);
             });
 
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, ModSounds.spell_shadow_6.get(), targetEntity.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_shadow_6.get(), targetEntity.getSoundSource());
             PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
                     new Vec3(0.0, 1.75, 0.0), cast_particles.getValue(), targetEntity.getId()), targetEntity);
         });

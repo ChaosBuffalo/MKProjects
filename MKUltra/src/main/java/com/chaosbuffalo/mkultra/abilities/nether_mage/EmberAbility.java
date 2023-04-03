@@ -16,7 +16,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribut
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.BurnEffect;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -90,12 +90,12 @@ public class EmberAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.casting_fire.get();
+        return MKUSounds.casting_fire.get();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_cast_7.get();
+        return MKUSounds.spell_cast_7.get();
     }
 
     @Override
@@ -117,7 +117,7 @@ public class EmberAbility extends MKAbility {
             });
 
 
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, ModSounds.spell_fire_6.get(), targetEntity.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_6.get(), targetEntity.getSoundSource());
             PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
                             new Vec3(0.0, 1.0, 0.0), cast_particles.getValue(),
                             targetEntity.getId()),

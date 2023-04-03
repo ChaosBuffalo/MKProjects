@@ -12,7 +12,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.YankEffect;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -62,7 +62,7 @@ public class YankAbility extends MKAbility {
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_grab_2.get();
+        return MKUSounds.spell_grab_2.get();
     }
 
     @Override

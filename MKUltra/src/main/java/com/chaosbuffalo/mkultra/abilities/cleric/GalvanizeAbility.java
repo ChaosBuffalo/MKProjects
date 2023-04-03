@@ -17,7 +17,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.CureEffect;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -72,7 +72,7 @@ public class GalvanizeAbility extends MKAbility {
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_heal_1.get();
+        return MKUSounds.spell_heal_1.get();
     }
 
     @Override
@@ -86,7 +86,7 @@ public class GalvanizeAbility extends MKAbility {
         MKEffectBuilder<?> cure = CureEffect.from(entity)
                 .ability(this)
                 .skillLevel(level);
-        MKEffectBuilder<?> sound = SoundEffect.from(entity, ModSounds.spell_buff_5.get(), entity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_buff_5.get(), entity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, cast_2_particles.getValue(), false, new Vec3(0.0, 1.0, 0.0))
                 .ability(this);

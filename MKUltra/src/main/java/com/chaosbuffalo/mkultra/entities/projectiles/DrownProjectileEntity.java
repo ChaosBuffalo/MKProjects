@@ -11,7 +11,7 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.resources.ResourceLocation;
@@ -44,7 +44,7 @@ public class DrownProjectileEntity extends TrailProjectileEntity implements IMKR
     protected boolean onImpact(Entity caster, HitResult result, int amplifier) {
         if (!this.level.isClientSide && caster instanceof LivingEntity) {
             SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
-            SoundUtils.serverPlaySoundAtEntity(this, ModSounds.spell_water_5.get(), cat);
+            SoundUtils.serverPlaySoundAtEntity(this, MKUSounds.spell_water_5.get(), cat);
             PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
                     new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES, getId()), this);
 

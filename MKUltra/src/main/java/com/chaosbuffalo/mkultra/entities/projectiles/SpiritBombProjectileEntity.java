@@ -14,7 +14,7 @@ import com.chaosbuffalo.mkultra.abilities.green_knight.SpiritBombAbility;
 import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
@@ -68,7 +68,7 @@ public class SpiritBombProjectileEntity extends TrailProjectileEntity implements
     protected boolean onImpact(Entity caster, HitResult result, int amplifier) {
         if (!this.level.isClientSide && caster != null) {
             SoundSource cat = caster.getSoundSource();
-            SoundUtils.serverPlaySoundAtEntity(this, ModSounds.spell_thunder_3.get(), cat);
+            SoundUtils.serverPlaySoundAtEntity(this, MKUSounds.spell_thunder_3.get(), cat);
             switch (result.getType()) {
                 case BLOCK:
                     break;
@@ -118,7 +118,7 @@ public class SpiritBombProjectileEntity extends TrailProjectileEntity implements
                     .disableParticle()
                     .spawn();
             SoundSource cat = caster.getSoundSource();
-            SoundUtils.serverPlaySoundAtEntity(this, ModSounds.spell_magic_explosion.get(), cat);
+            SoundUtils.serverPlaySoundAtEntity(this, MKUSounds.spell_magic_explosion.get(), cat);
             PacketHandler.sendToTrackingAndSelf(
                     new MKParticleEffectSpawnPacket(new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES, getId()), this);
             return true;

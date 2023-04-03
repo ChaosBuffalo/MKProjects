@@ -358,7 +358,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
 //                                BipedSkeleton.HEAD_BONE_NAME, new ResourceLocation(MKUltra.MODID, "flame_wave_casting")))))
                                         .withParticleMode(BossStage.ParticleMode.LINE_HEIGHT)
                                         .withTransitionParticles(new ResourceLocation(MKUltra.MODID, "wrath_skeleton_transition"))
-                                        .withTransitionSound(ModSounds.spell_dark_8.getId())
+                                        .withTransitionSound(MKUSounds.spell_dark_8.getId())
                         )
         );
         def.addOption(new ExperienceOption().setValue(50));

@@ -13,7 +13,7 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.entities.projectiles.ShadowBoltProjectileEntity;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkultra.init.MKUEntities;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -78,7 +78,7 @@ public class ShadowBoltAbility extends MKAbility {
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_dark_3.get();
+        return MKUSounds.spell_dark_3.get();
     }
 
     @Override
@@ -97,7 +97,7 @@ public class ShadowBoltAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.casting_shadow.get();
+        return MKUSounds.casting_shadow.get();
     }
 
     @Override

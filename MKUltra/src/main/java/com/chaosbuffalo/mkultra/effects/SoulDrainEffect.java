@@ -7,7 +7,7 @@ import com.chaosbuffalo.mkcore.effects.MKSimplePassiveState;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,7 +22,7 @@ public class SoulDrainEffect extends MKEffect {
 
     public void onLivingKillEntity(LivingDeathEvent event, DamageSource source, LivingEntity living) {
         MKCore.getPlayer(living).ifPresent(data -> {
-            SoundUtils.playSoundAtEntity(living, ModSounds.spell_dark_4.get());
+            SoundUtils.playSoundAtEntity(living, MKUSounds.spell_dark_4.get());
             float mana = MKUAbilities.SOUL_DRAIN.get().getDrainValue(living);
             data.getStats().addMana(mana);
         });

@@ -24,7 +24,8 @@ public class MKUltra {
         MKUWorldGen.register();
         MKUEntitlements.register(modBus);
         MKUTalents.register(modBus);
-        ModSounds.register(modBus);
+        MKUSounds.register(modBus);
+        MKUFactions.register(modBus);
         modBus.addListener(this::enqueueIMC);
     }
 

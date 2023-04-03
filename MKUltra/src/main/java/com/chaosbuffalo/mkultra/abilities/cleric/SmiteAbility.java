@@ -15,7 +15,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -69,12 +69,12 @@ public class SmiteAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.casting_shadow.get();
+        return MKUSounds.casting_shadow.get();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_magic_whoosh_2.get();
+        return MKUSounds.spell_magic_whoosh_2.get();
     }
 
     @Override
@@ -97,7 +97,7 @@ public class SmiteAbility extends MKAbility {
                 targetData.getEffects().addEffect(damage);
                 targetData.getEffects().addEffect(stun);
             });
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, ModSounds.spell_holy_2.get(), targetEntity.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_holy_2.get(), targetEntity.getSoundSource());
             PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
                     new Vec3(0.0, 1.0, 0.0), cast_particles.getValue(), targetEntity.getId()), targetEntity);
         });

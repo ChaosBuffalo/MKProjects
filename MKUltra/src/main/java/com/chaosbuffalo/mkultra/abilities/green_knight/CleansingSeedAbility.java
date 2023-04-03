@@ -12,7 +12,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.entities.projectiles.CleansingSeedProjectileEntity;
 import com.chaosbuffalo.mkultra.init.MKUEntities;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -56,7 +56,7 @@ public class CleansingSeedAbility extends MKAbility {
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_cast_6.get();
+        return MKUSounds.spell_cast_6.get();
     }
 
     @Override
@@ -75,7 +75,7 @@ public class CleansingSeedAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.casting_water.get();
+        return MKUSounds.casting_water.get();
     }
 
     @Override

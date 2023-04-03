@@ -22,7 +22,7 @@ import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.CureEffect;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
@@ -91,13 +91,13 @@ public class ExplosiveGrowthAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.casting_shadow.get();
+        return MKUSounds.casting_shadow.get();
     }
 
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_earth_8.get();
+        return MKUSounds.spell_earth_8.get();
     }
 
     @Override
@@ -129,12 +129,12 @@ public class ExplosiveGrowthAbility extends MKAbility {
                         targetData.getEffects().addEffect(remedy);
                     });
 
-                    SoundUtils.serverPlaySoundAtEntity(entHit, ModSounds.spell_earth_6.get(), cat);
+                    SoundUtils.serverPlaySoundAtEntity(entHit, MKUSounds.spell_earth_6.get(), cat);
                     break;
                 }
                 case ENEMY: {
                     entHit.hurt(MKDamageSource.causeMeleeDamage(getAbilityId(), castingEntity, castingEntity), damage);
-                    SoundUtils.serverPlaySoundAtEntity(entHit, ModSounds.spell_earth_1.get(), cat);
+                    SoundUtils.serverPlaySoundAtEntity(entHit, MKUSounds.spell_earth_1.get(), cat);
                     break;
                 }
             }

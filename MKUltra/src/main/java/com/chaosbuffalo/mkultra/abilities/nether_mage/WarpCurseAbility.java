@@ -15,7 +15,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribut
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.WarpCurseEffect;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -75,12 +75,12 @@ public class WarpCurseAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.casting_shadow.get();
+        return MKUSounds.casting_shadow.get();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_dark_15.get();
+        return MKUSounds.spell_dark_15.get();
     }
 
     @Override
@@ -99,7 +99,7 @@ public class WarpCurseAbility extends MKAbility {
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> targetData.getEffects().addEffect(warpCast));
             targetEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, oldAmp, false, false, true, null));
 
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, ModSounds.spell_fire_5.get(), targetEntity.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_5.get(), targetEntity.getSoundSource());
             PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
                     new Vec3(0.0, 1.0, 0.0), cast_particles.getValue(), castingEntity.getId()), castingEntity);
         });

@@ -15,7 +15,7 @@ import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkultra.init.MKUItems;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.resources.ResourceLocation;
@@ -48,7 +48,7 @@ public class FireballProjectileEntity extends TrailProjectileEntity implements I
         if (!this.level.isClientSide && caster instanceof LivingEntity) {
             LivingEntity casterLiving = (LivingEntity) caster;
             SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
-            SoundUtils.serverPlaySoundAtEntity(this, ModSounds.spell_fire_4.get(), cat);
+            SoundUtils.serverPlaySoundAtEntity(this, MKUSounds.spell_fire_4.get(), cat);
             PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
                     new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES, getId()), this);
 

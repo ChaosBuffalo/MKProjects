@@ -20,7 +20,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribut
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.YaupEffect;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -80,7 +80,7 @@ public class YaupAbility extends MKAbility {
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_holy_2.get();
+        return MKUSounds.spell_holy_2.get();
     }
 
     @Override
@@ -88,7 +88,7 @@ public class YaupAbility extends MKAbility {
         super.endCast(entity, data, context);
         float level = getSkillLevel(entity, MKAttributes.ARETE);
         MKEffectBuilder<?> yaup = YaupEffect.from(entity, level, getBuffDuration(data, level, baseDuration.value(), scaleDuration.value()));
-        MKEffectBuilder<?> sound = SoundEffect.from(entity, ModSounds.spell_buff_attack_4.get(), entity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_buff_attack_4.get(), entity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, tick_particles.getValue(),
                         true, new Vec3(0.0, 1.0, 0.0))

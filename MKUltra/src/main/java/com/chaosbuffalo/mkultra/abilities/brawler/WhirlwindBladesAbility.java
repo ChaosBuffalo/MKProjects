@@ -19,7 +19,7 @@ import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -97,7 +97,7 @@ public class WhirlwindBladesAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.spell_whirlwind_1.get();
+        return MKUSounds.spell_whirlwind_1.get();
     }
 
     @Nullable
@@ -124,7 +124,7 @@ public class WhirlwindBladesAbility extends MKAbility {
             MKEffectBuilder<?> particles = MKParticleEffect.from(castingEntity,
                             cast_particles.getValue(), true, new Vec3(0.0, 1.0, 0.0))
                     .ability(this);
-            MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, ModSounds.spell_shadow_2.get(), castingEntity.getSoundSource())
+            MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_2.get(), castingEntity.getSoundSource())
                     .ability(this);
 
             AreaEffectBuilder.createOnCaster(castingEntity)

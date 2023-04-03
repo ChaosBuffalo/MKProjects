@@ -14,7 +14,7 @@ import com.chaosbuffalo.mkultra.effects.CureEffect;
 import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
@@ -55,7 +55,7 @@ public class CleansingSeedProjectileEntity extends TrailProjectileEntity impleme
         }
 
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
-        SoundUtils.serverPlaySoundAtEntity(this, ModSounds.spell_water_6.get(), cat);
+        SoundUtils.serverPlaySoundAtEntity(this, MKUSounds.spell_water_6.get(), cat);
         if (caster instanceof LivingEntity && trace.getType() == HitResult.Type.ENTITY) {
             LivingEntity casterLiving = (LivingEntity) caster;
             EntityHitResult entityTrace = (EntityHitResult) trace;
@@ -73,7 +73,7 @@ public class CleansingSeedProjectileEntity extends TrailProjectileEntity impleme
 
                         MKCore.getEntityData(target).ifPresent(targetData -> targetData.getEffects().addEffect(cure));
 
-                        SoundUtils.serverPlaySoundAtEntity(target, ModSounds.spell_water_2.get(), cat);
+                        SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_water_2.get(), cat);
                         break;
                     }
                     case ENEMY: {
@@ -81,7 +81,7 @@ public class CleansingSeedProjectileEntity extends TrailProjectileEntity impleme
                                         ability.getAbilityId(), this, caster,
                                         ability.getModifierScaling()),
                                 ability.getDamageForLevel(getSkillLevel()));
-                        SoundUtils.serverPlaySoundAtEntity(target, ModSounds.spell_water_8.get(), cat);
+                        SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_water_8.get(), cat);
                         break;
                     }
                 }

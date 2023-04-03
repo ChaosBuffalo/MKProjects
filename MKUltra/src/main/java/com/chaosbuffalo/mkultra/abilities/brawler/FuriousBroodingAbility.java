@@ -14,7 +14,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.FuriousBroodingEffect;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -67,7 +67,7 @@ public class FuriousBroodingAbility extends MKAbility {
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_negative_effect_7.get();
+        return MKUSounds.spell_negative_effect_7.get();
     }
 
     public MKEffectBuilder<?> createFuriousBroodingEffect(IMKEntityData casterData, float level) {

@@ -10,7 +10,7 @@ import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
@@ -25,7 +25,7 @@ public class LifeSiphonEffect extends MKEffect {
 
     public void onLivingKillEntity(LivingDeathEvent event, DamageSource source, LivingEntity living) {
         MKCore.getEntityData(living).ifPresent(data -> {
-            SoundUtils.playSoundAtEntity(living, ModSounds.spell_dark_5.get());
+            SoundUtils.playSoundAtEntity(living, MKUSounds.spell_dark_5.get());
             MKHealSource healSource = new MKHealSource(MKUAbilities.LIFE_SIPHON.getId(), living, living,
                     CoreDamageTypes.ShadowDamage.get(), MKUAbilities.LIFE_SIPHON.get().getModifierScaling());
             float amount = MKUAbilities.LIFE_SIPHON.get().getHealingValue(living);

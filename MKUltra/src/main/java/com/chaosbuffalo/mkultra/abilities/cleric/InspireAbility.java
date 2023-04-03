@@ -15,7 +15,7 @@ import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -68,12 +68,12 @@ public class InspireAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.casting_holy.get();
+        return MKUSounds.casting_holy.get();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_cast_12.get();
+        return MKUSounds.spell_cast_12.get();
     }
 
     @Override
@@ -90,7 +90,7 @@ public class InspireAbility extends MKAbility {
 
         MobEffectInstance hasteEffect = new MobEffectInstance(MobEffects.DIG_SPEED, duration, oldAmp, false, false);
         MobEffectInstance regenEffect = new MobEffectInstance(MobEffects.REGENERATION, duration, oldAmp, false, false);
-        MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, ModSounds.spell_holy_8.get(), castingEntity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_holy_8.get(), castingEntity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> particles = MKParticleEffect.from(castingEntity, cast_particles.getValue(), true, new Vec3(0.0, 1.0, 0.0))
                 .ability(this);

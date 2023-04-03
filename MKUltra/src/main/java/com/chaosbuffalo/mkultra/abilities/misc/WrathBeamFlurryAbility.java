@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkcore.abilities.ai.conditions.MeleeUseCondition;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.resources.ResourceLocation;
@@ -40,7 +40,7 @@ public class WrathBeamFlurryAbility extends PositionFlurryAbility {
     @Nullable
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.hostile_casting_fire.get();
+        return MKUSounds.hostile_casting_fire.get();
     }
 
     @Nullable

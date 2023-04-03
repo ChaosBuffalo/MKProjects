@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mkultra.MKUltra;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
@@ -237,6 +238,10 @@ public class MKUFactions {
             faction.addLastName(name);
         }
         return faction;
+    }
+
+    public static void register(IEventBus bus) {
+        REGISTRY.register(bus);
     }
 
 

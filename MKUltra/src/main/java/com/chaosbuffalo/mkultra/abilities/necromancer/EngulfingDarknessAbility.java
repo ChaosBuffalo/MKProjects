@@ -17,7 +17,7 @@ import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.EngulfingDarknessEffect;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -106,12 +106,12 @@ public class EngulfingDarknessAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.hostile_casting_shadow.get();
+        return MKUSounds.hostile_casting_shadow.get();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_dark_9.get();
+        return MKUSounds.spell_dark_9.get();
     }
 
     @Override
@@ -126,7 +126,7 @@ public class EngulfingDarknessAbility extends MKAbility {
                 targetData.getEffects().addEffect(dot);
             });
 
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, ModSounds.spell_dark_7.get(), targetEntity.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_dark_7.get(), targetEntity.getSoundSource());
             PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
                             new Vec3(0.0, 1.0, 0.0), castParticles.getValue(),
                             targetEntity.getId()),

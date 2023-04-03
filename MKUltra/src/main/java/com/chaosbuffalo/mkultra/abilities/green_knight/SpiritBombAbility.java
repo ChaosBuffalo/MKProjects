@@ -12,7 +12,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.entities.projectiles.SpiritBombProjectileEntity;
 import com.chaosbuffalo.mkultra.init.MKUEntities;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -58,13 +58,13 @@ public class SpiritBombAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.casting_holy.get();
+        return MKUSounds.casting_holy.get();
     }
 
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_magic_whoosh_1.get();
+        return MKUSounds.spell_magic_whoosh_1.get();
     }
 
     public float getBaseDamage() {

@@ -7,7 +7,7 @@ import com.chaosbuffalo.mkcore.effects.status.DamageTypeDotEffect;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -55,7 +55,7 @@ public class BurnEffect extends DamageTypeDotEffect {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
-            SoundUtils.serverPlaySoundAtEntity(targetData.getEntity(), ModSounds.spell_fire_6.get(), targetData.getEntity().getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetData.getEntity(), MKUSounds.spell_fire_6.get(), targetData.getEntity().getSoundSource());
             sendEffectParticles(targetData.getEntity());
             return super.performEffect(targetData, activeEffect);
         }

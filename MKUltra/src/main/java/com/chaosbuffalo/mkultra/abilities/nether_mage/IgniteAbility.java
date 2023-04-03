@@ -21,7 +21,7 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.MKUAbilityUtils;
 import com.chaosbuffalo.mkultra.effects.IgniteEffect;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -82,12 +82,12 @@ public class IgniteAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.casting_fire.get();
+        return MKUSounds.casting_fire.get();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_dark_13.get();
+        return MKUSounds.spell_dark_13.get();
     }
 
     @Override
@@ -105,7 +105,7 @@ public class IgniteAbility extends MKAbility {
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {
                 targetData.getEffects().addEffect(damage);
 
-                SoundUtils.serverPlaySoundAtEntity(targetEntity, ModSounds.spell_fire_4.get(), targetEntity.getSoundSource());
+                SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_4.get(), targetEntity.getSoundSource());
 
                 if (MKUAbilityUtils.isBurning(targetData)) {
                     MKEffectBuilder<?> ignite = IgniteEffect.from(entity, base.value(), scale.value(), modifierScaling.value())
@@ -114,7 +114,7 @@ public class IgniteAbility extends MKAbility {
                     MKEffectBuilder<?> particle = MKParticleEffect.from(entity, cast_2_particles.getValue(),
                                     true, new Vec3(0.0, 1.0, 0.0))
                             .ability(this);
-                    MKEffectBuilder<?> sound = SoundEffect.from(entity, ModSounds.spell_fire_8.get(), entity.getSoundSource())
+                    MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_fire_8.get(), entity.getSoundSource())
                             .ability(this);
 
                     AreaEffectBuilder.createOnEntity(entity, targetEntity)

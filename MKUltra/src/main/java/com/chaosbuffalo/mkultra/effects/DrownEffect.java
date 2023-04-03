@@ -8,7 +8,7 @@ import com.chaosbuffalo.mkcore.effects.status.DamageTypeDotEffect;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -60,7 +60,7 @@ public class DrownEffect extends DamageTypeDotEffect {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
-            SoundUtils.serverPlaySoundAtEntity(targetData.getEntity(), ModSounds.spell_water_4.get(), targetData.getEntity().getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetData.getEntity(), MKUSounds.spell_water_4.get(), targetData.getEntity().getSoundSource());
             sendEffectParticles(targetData.getEntity());
             return super.performEffect(targetData, activeEffect);
         }

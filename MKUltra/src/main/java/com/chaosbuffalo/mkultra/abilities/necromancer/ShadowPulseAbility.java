@@ -16,7 +16,7 @@ import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.misc.PositionTargetingAbility;
 import com.chaosbuffalo.mkultra.effects.PullEffect;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -85,7 +85,7 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
     @Nullable
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.hostile_casting_shadow.get();
+        return MKUSounds.hostile_casting_shadow.get();
     }
 
     @Override
@@ -104,13 +104,13 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
         MKEffectBuilder<?> pull = PullEffect.from(castingEntity, baseGravity.value(), scaleGravity.value(), pulsePos)
                 .ability(this)
                 .skillLevel(level);
-        MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, ModSounds.spell_shadow_10.get(), castingEntity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_10.get(), castingEntity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> detonateDamage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
                         detonateBase.value(), detonateScale.value(), modifierScaling.value())
                 .ability(this)
                 .skillLevel(level);
-        MKEffectBuilder<?> detonateSound = SoundEffect.from(castingEntity, ModSounds.spell_shadow_9.get(), castingEntity.getSoundSource())
+        MKEffectBuilder<?> detonateSound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_9.get(), castingEntity.getSoundSource())
                 .ability(this);
         EntityEffectBuilder.PointEffectBuilder builder = EntityEffectBuilder.createPointEffect(castingEntity, pulsePos);
 
@@ -125,7 +125,7 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
                 .duration(duration.value())
                 .waitTime(waitTime.value())
                 .tickRate(tickRate.value());
-        SoundUtils.serverPlaySoundFromEntity(position.x(), position.y(), position.z(), ModSounds.spell_dark_13.get(),
+        SoundUtils.serverPlaySoundFromEntity(position.x(), position.y(), position.z(), MKUSounds.spell_dark_13.get(),
                 castingEntity.getSoundSource(), 1.0f, 1.0f, castingEntity);
         builder.spawn();
     }

@@ -19,7 +19,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.FlameWaveEffect;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -83,13 +83,13 @@ public class FlameWaveAbility extends MKAbility {
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_fire_7.get();
+        return MKUSounds.spell_fire_7.get();
     }
 
     @Nullable
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return ModSounds.casting_fire.get();
+        return MKUSounds.casting_fire.get();
     }
 
     @Override
@@ -105,7 +105,7 @@ public class FlameWaveAbility extends MKAbility {
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, cast_2_particles.getValue(), false, new Vec3(0.0, 1.0, 0.0))
                 .ability(this);
 
-        MKEffectBuilder<?> sound = SoundEffect.from(entity, ModSounds.spell_fire_1.get(), entity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_fire_1.get(), entity.getSoundSource())
                 .ability(this);
 
         AreaEffectBuilder.createOnCaster(entity)

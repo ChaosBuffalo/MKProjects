@@ -16,7 +16,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
@@ -64,7 +64,7 @@ public class FireArmorAbility extends MKAbility {
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return ModSounds.spell_buff_5.get();
+        return MKUSounds.spell_buff_5.get();
     }
 
     @Override
@@ -80,7 +80,7 @@ public class FireArmorAbility extends MKAbility {
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, cast_particles.getValue(), true, new Vec3(0.0, 1.0, 0.0))
                 .ability(this);
 
-        MKEffectBuilder<?> sound = SoundEffect.from(entity, ModSounds.spell_fire_2.get(), entity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_fire_2.get(), entity.getSoundSource())
                 .ability(this);
 
         MKEffectBuilder<?> fireArmor = MKUEffects.FIRE_ARMOR.get().builder(entity)

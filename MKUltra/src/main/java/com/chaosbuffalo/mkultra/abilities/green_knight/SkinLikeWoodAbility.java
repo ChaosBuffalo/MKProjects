@@ -14,7 +14,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribut
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
-import com.chaosbuffalo.mkultra.init.ModSounds;
+import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.resources.ResourceLocation;
@@ -64,7 +64,7 @@ public class SkinLikeWoodAbility extends MKToggleAbility {
     public void applyEffect(LivingEntity entity, IMKEntityData entityData) {
         super.applyEffect(entity, entityData);
         float level = getSkillLevel(entity, MKAttributes.ABJURATION);
-        SoundUtils.serverPlaySoundAtEntity(entity, ModSounds.spell_earth_7.get(), entity.getSoundSource());
+        SoundUtils.serverPlaySoundAtEntity(entity, MKUSounds.spell_earth_7.get(), entity.getSoundSource());
 
         MKEffectBuilder<?> instance = getToggleEffect().builder(entity)
                 .ability(this)
