@@ -1,19 +1,22 @@
 package com.chaosbuffalo.mknpc.init;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
-@Mod.EventBusSubscriber(modid = MKNpc.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MKNpcAttributes {
 
-    @SubscribeEvent
-    public static void registerAttributes(RegistryEvent.Register<Attribute> event) {
-        MKCore.LOGGER.info("MKCORE REGISTER ATTRIBUTES");
-        event.getRegistry().register(NpcAttributes.AGGRO_RANGE);
+    private static final DeferredRegister<Attribute> REGISTRY =
+            DeferredRegister.create(ForgeRegistries.ATTRIBUTES, MKNpc.MODID);
+
+    public static final RegistryObject<Attribute> AGGRO_RANGE = REGISTRY.register("aggro_range",
+            () -> new RangedAttribute("attribute.name.mk.aggro_range", 5, 0, 128).setSyncable(false));
+
+    public static void register(IEventBus modBus) {
+        REGISTRY.register(modBus);
     }
 }

@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.entity.ai.sensor;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.entity.ai.memory.ThreatMapEntry;
-import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
+import com.chaosbuffalo.mknpc.init.MKNpcAttributes;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,7 +22,7 @@ public class ThreatSensor extends Sensor<MKEntity> {
 
 
     private float getAggroDistanceForEntity(LivingEntity entity) {
-        double aggroDist = entity.getAttribute(NpcAttributes.AGGRO_RANGE).getValue();
+        double aggroDist = entity.getAttribute(MKNpcAttributes.AGGRO_RANGE.get()).getValue();
         return (float) (aggroDist * aggroDist);
     }
 

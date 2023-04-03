@@ -49,19 +49,25 @@ public class MKNpc {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
 //
-        MKNpcBlocks.register();
-        MKNpcTileEntityTypes.register();
-        MKNpcEntityTypes.register();
-        MKNpcEffects.register(modBus);
+
+        setupRegistries(modBus);
         NpcDialogueUtils.setupMKNpcHandlers();
         npcDefinitionManager = new NpcDefinitionManager();
         questDefinitionManager = new QuestDefinitionManager();
-        MKNpcWorldGen.register();
 //        MKNpcWorldGen.registerStructurePieces();
 //        TestJigsawStructurePools.registerPatterns();
 //        MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::biomeSetup);
 //        MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::worldSetup);
         //make sure not to class load server specific events on client
+    }
+
+    private void setupRegistries(IEventBus modBus) {
+        MKNpcAttributes.register(modBus);
+        MKNpcBlocks.register();
+        MKNpcTileEntityTypes.register();
+        MKNpcEntityTypes.register();
+        MKNpcEffects.register(modBus);
+        MKNpcWorldGen.register();
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {

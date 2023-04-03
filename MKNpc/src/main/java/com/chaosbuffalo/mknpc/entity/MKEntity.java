@@ -29,8 +29,8 @@ import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.KiteMovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.MovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.StationaryMovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
-import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
 import com.chaosbuffalo.mknpc.entity.boss.BossStage;
+import com.chaosbuffalo.mknpc.init.MKNpcAttributes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.NpcConstants;
 import com.chaosbuffalo.targeting_api.ITargetingOwner;
@@ -265,7 +265,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return Monster.createMonsterAttributes()
                 .add(Attributes.ATTACK_DAMAGE, attackDamage)
                 .add(Attributes.MOVEMENT_SPEED, movementSpeed)
-                .add(NpcAttributes.AGGRO_RANGE, 6)
+                .add(MKNpcAttributes.AGGRO_RANGE.get(), 6)
                 .add(Attributes.ATTACK_SPEED)
                 .add(Attributes.FOLLOW_RANGE, 32.0D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0);
