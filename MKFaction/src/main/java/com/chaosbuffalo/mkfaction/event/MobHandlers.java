@@ -7,7 +7,7 @@ import com.chaosbuffalo.mkfaction.network.MobFactionAssignmentPacket;
 import com.chaosbuffalo.mkfaction.network.PacketHandler;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -20,15 +20,15 @@ public class MobHandlers {
 
     @SubscribeEvent
     public static void playerStartTracking(PlayerEvent.StartTracking event) {
-        ServerPlayer serverPlayer = (ServerPlayer) event.getPlayer();
+        ServerPlayer serverPlayer = (ServerPlayer) event.getEntity();
         event.getTarget().getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY).ifPresent(mobFaction ->
                 serverPlayer.connection.send(PacketHandler.getNetworkChannel()
                         .toVanillaPacket(new MobFactionAssignmentPacket(mobFaction), NetworkDirection.PLAY_TO_CLIENT)));
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onEntityJoinWorld(EntityJoinWorldEvent event) {
-        if (event.getWorld().isClientSide)
+    public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide)
             return;
 
         if (event.getEntity() instanceof LivingEntity && !(event.getEntity() instanceof ServerPlayer)) {

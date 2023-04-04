@@ -22,15 +22,15 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.client.gui.ForgeIngameGui;
-import net.minecraftforge.client.gui.IIngameOverlay;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class MKOverlay implements IIngameOverlay {
+public class MKOverlay implements IGuiOverlay {
 
     public static final MKOverlay INSTANCE = new MKOverlay();
 
@@ -375,7 +375,7 @@ public class MKOverlay implements IIngameOverlay {
     }
 
     @Override
-    public void render(ForgeIngameGui gui, PoseStack poseStack, float partialTick, int width, int height) {
+    public void render(ForgeGui gui, PoseStack poseStack, float partialTick, int width, int height) {
         if (mc.player == null || mc.options.hideGui)
             return;
 
@@ -405,8 +405,8 @@ public class MKOverlay implements IIngameOverlay {
         slot = drawAbilities(poseStack, cap, AbilityGroupId.Item, slot, totalSlots, partialTick);
     }
 
-    public static void skipHealth(ForgeIngameGui gui, PoseStack poseStack, float partialTick, int width, int height) {
+    public static void skipHealth(ForgeGui gui, PoseStack poseStack, float partialTick, int width, int height) {
         // Make room for our health and mana bars
-        gui.left_height += 12;
+        gui.leftHeight += 12;
     }
 }

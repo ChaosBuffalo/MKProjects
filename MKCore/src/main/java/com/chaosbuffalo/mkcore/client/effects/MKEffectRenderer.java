@@ -7,9 +7,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraftforge.client.EffectRenderer;
+import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 
-public class MKEffectRenderer extends EffectRenderer {
+public class MKEffectRenderer extends IClientMobEffectExtensions {
     protected final MKEffect effect;
 
 

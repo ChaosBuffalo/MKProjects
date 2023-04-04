@@ -14,7 +14,7 @@ import net.minecraftforge.registries.RegistryObject;
 public class CoreEntities {
 
     public static final DeferredRegister<EntityType<?>> ENTITIES =
-            DeferredRegister.create(ForgeRegistries.ENTITIES, MKCore.MOD_ID);
+            DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MKCore.MOD_ID);
 
     public static final RegistryObject<EntityType<MKAreaEffectEntity>> AREA_EFFECT = ENTITIES.register("mk_area_effect",
             () -> EntityType.Builder.<MKAreaEffectEntity>of(MKAreaEffectEntity::new, MobCategory.MISC)
