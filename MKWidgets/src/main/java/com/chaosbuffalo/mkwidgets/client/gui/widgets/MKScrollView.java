@@ -17,7 +17,6 @@ public class MKScrollView extends MKWidget {
     private int screenHeight;
     private boolean isDragging;
     private boolean clipBounds;
-    private double scaleFactor;
     private boolean doScrollLock;
     private int scrollMarginX;
     private int scrollMarginY;
@@ -27,14 +26,13 @@ public class MKScrollView extends MKWidget {
     private boolean drawScrollBars;
     private static final int SCROLL_BAR_WIDTH = 1;
 
-    public MKScrollView(int x, int y, int width, int height, double scaleFactor,
+    public MKScrollView(int x, int y, int width, int height,
                         boolean clipBounds) {
         super(x, y, width, height);
         offsetX = 0;
         offsetY = 0;
         this.clipBounds = clipBounds;
         isDragging = false;
-        this.scaleFactor = scaleFactor;
         this.doScrollLock = true;
         scrollMarginX = 0;
         scrollMarginY = 0;
@@ -44,10 +42,9 @@ public class MKScrollView extends MKWidget {
         drawScrollBars = true;
     }
 
-    public MKScrollView(int x, int y, int width, int height, boolean clipBounds) {
-        this(x, y, width, height, Minecraft.getInstance().getWindow().getGuiScale(), clipBounds);
+    public MKScrollView(int x, int y, int width, int height) {
+        this(x, y, width, height, true);
     }
-
 
     public MKScrollView setScrollVelocity(double vel) {
         scrollVelocity = vel;
@@ -205,6 +202,7 @@ public class MKScrollView extends MKWidget {
     public void draw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         if (isClipBoundsEnabled()) {
             int y1 = screenHeight - y - height - 1;
+            double scaleFactor = Minecraft.getInstance().getWindow().getGuiScale();
             RenderSystem.enableScissor((int) Math.round(x * scaleFactor), (int) Math.round(y1 * scaleFactor),
                     (int) Math.round(width * scaleFactor), (int) Math.round((height + 1) * scaleFactor));
         }

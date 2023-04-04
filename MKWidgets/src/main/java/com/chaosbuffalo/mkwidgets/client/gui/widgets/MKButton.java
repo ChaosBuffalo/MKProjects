@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import org.lwjgl.glfw.GLFW;
@@ -64,7 +63,7 @@ public class MKButton extends MKWidget {
     }
 
     public MKButton(int x, int y, int width, int height, String buttonText) {
-        this(x, y, width, height, new TextComponent(buttonText));
+        this(x, y, width, height, Component.literal(buttonText));
     }
 
     public MKButton(int x, int y, int width, int height, Component buttonText) {

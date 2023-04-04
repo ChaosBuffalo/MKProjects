@@ -12,8 +12,8 @@ public class MCWidgetContainer extends MKWidget {
     public MCWidgetContainer(int x, int y, int width, int height, AbstractWidget mcWidget, boolean canFocus) {
         super(x, y, width, height);
         this.mcWidget = mcWidget;
-        mcWidget.x = x;
-        mcWidget.y = y;
+        mcWidget.setX(x);
+        mcWidget.setY(y);
         mcWidget.setWidth(width);
         mcWidget.setHeight(height);
         setCanFocus(canFocus);
@@ -37,13 +37,13 @@ public class MCWidgetContainer extends MKWidget {
 
     @Override
     public IMKWidget setX(int newX) {
-        mcWidget.x = newX;
+        mcWidget.setX(newX);
         return super.setX(newX);
     }
 
     @Override
     public IMKWidget setY(int newY) {
-        mcWidget.y = newY;
+        mcWidget.setY(newY);
         return super.setY(newY);
     }
 

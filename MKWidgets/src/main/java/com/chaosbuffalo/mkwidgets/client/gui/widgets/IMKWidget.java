@@ -6,7 +6,6 @@ import com.chaosbuffalo.mkwidgets.client.gui.screens.IMKScreen;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -171,7 +170,7 @@ public interface IMKWidget {
     }
 
     default IMKWidget setTooltip(String newTooltip) {
-        return setTooltip(new TextComponent(newTooltip));
+        return setTooltip(Component.literal(newTooltip));
     }
 
     IMKWidget setTooltip(Component text);

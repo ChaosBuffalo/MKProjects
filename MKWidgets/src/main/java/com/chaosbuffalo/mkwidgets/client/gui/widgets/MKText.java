@@ -2,14 +2,13 @@ package com.chaosbuffalo.mkwidgets.client.gui.widgets;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.FormattedCharSequence;
+import org.joml.Matrix4f;
 
 public class MKText extends MKWidget {
 
@@ -44,7 +43,7 @@ public class MKText extends MKWidget {
     }
 
     public MKText(Font renderer, String text, int x, int y, int width, int height) {
-        this(renderer, new TextComponent(text), x, y, width, height);
+        this(renderer, Component.literal(text), x, y, width, height);
     }
 
     public MKText(Font renderer, String text, int width) {
@@ -121,7 +120,7 @@ public class MKText extends MKWidget {
     }
 
     public MKText setText(String text) {
-        return setText(new TextComponent(text));
+        return setText(Component.literal(text));
     }
 
     public MKText setText(Component text) {

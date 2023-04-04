@@ -11,7 +11,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 
 public class TestScreen extends MKScreen {
@@ -95,7 +94,7 @@ public class TestScreen extends MKScreen {
         MKButton closePopup = new MKButton("Close Popup");
         MKText reflectText = new MKText(font, "", 200).setIsCentered(true);
         MKTextFieldWidget textInput = new MKTextFieldWidget(font, xPos, yPos, 200, 20,
-                new TextComponent("test input"));
+                Component.literal("test input"));
 
         textInput.setTextChangeCallback((wid, text) -> {
             reflectText.setText(text);
@@ -197,7 +196,7 @@ public class TestScreen extends MKScreen {
 
     public MKLayout textListDemo(int xPos, int yPos) {
         MKLayout root = getRootWithTitle(xPos, yPos, "Scrollable List Demo");
-        MKScrollView scrollView = new MKScrollView(0, 0, 120, 100, false);
+        MKScrollView scrollView = new MKScrollView(0, 0, 120, 100);
         root.addWidget(scrollView);
         scrollView.setScrollVelocity(3.0);
         root.addConstraintToWidget(StackConstraint.VERTICAL, scrollView);

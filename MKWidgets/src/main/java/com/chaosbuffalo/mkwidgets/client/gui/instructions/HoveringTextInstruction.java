@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,7 @@ public class HoveringTextInstruction implements IInstruction {
     private final Vec2i mousePos;
 
     public HoveringTextInstruction(String text, Vec2i mousePos) {
-        this(new TextComponent(text), mousePos);
+        this(Component.literal(text), mousePos);
     }
 
     public HoveringTextInstruction(String text, int x, int y) {
@@ -44,7 +43,7 @@ public class HoveringTextInstruction implements IInstruction {
     }
 
     public static HoveringTextInstruction fromStrings(List<String> texts, Vec2i mousePos) {
-        return new HoveringTextInstruction(texts.stream().map(TextComponent::new).collect(Collectors.toList()), mousePos);
+        return new HoveringTextInstruction(texts.stream().map(Component::literal).collect(Collectors.toList()), mousePos);
     }
 
     public static HoveringTextInstruction fromStrings(List<String> texts, int x, int y) {
