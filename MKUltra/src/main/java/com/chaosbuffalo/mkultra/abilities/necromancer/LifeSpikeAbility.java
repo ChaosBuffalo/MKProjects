@@ -7,9 +7,8 @@ import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -104,8 +103,7 @@ public class LifeSpikeAbility extends MKAbility {
             });
 
             SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_shadow_6.get(), targetEntity.getSoundSource());
-            PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
-                    new Vec3(0.0, 1.75, 0.0), cast_particles.getValue(), targetEntity.getId()), targetEntity);
+            MKParticles.spawn(targetEntity, new Vec3(0.0, 1.75, 0.0), cast_particles.getValue());
         });
     }
 }

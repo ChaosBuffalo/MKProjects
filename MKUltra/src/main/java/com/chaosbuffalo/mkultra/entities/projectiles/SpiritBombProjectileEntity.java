@@ -4,10 +4,9 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.green_knight.SpiritBombAbility;
@@ -109,8 +108,7 @@ public class SpiritBombProjectileEntity extends SpriteTrailProjectileEntity {
                     .spawn();
             SoundSource cat = caster.getSoundSource();
             SoundUtils.serverPlaySoundAtEntity(this, MKUSounds.spell_magic_explosion.get(), cat);
-            PacketHandler.sendToTrackingAndSelf(
-                    new MKParticleEffectSpawnPacket(new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES, getId()), this);
+            MKParticles.spawn(this, new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES);
             return true;
         }
         return false;

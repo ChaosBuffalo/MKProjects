@@ -32,7 +32,7 @@ public abstract class ItemStackClientMixins {
 
     // lets us remove attributes only from the automatic tooltip generation in item stack
     @Redirect(
-            method = "Lnet/minecraft/world/item/ItemStack;getTooltipLines(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;",
+            method = "getTooltipLines(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;",
             at = @At(
                     target = "Lnet/minecraft/world/item/ItemStack;getAttributeModifiers(Lnet/minecraft/world/entity/EquipmentSlot;)Lcom/google/common/collect/Multimap;",
                     value = "INVOKE"
@@ -44,14 +44,14 @@ public abstract class ItemStackClientMixins {
             return getAttributeModifiers(equipmentSlot);
         }
 
-        if (tooltipList != null && player != null) {
+        if (tooltipList != null) {
             AttributeTooltipManager.renderTooltip(tooltipList, player, itemStack, equipmentSlot);
         }
         return ImmutableMultimap.of();
     }
 
     @ModifyVariable(
-            method = "Lnet/minecraft/world/item/ItemStack;getTooltipLines(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;",
+            method = "getTooltipLines(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;",
             at = @At("HEAD"),
             argsOnly = true
     )
@@ -61,7 +61,7 @@ public abstract class ItemStackClientMixins {
     }
 
     @ModifyVariable(
-            method = "Lnet/minecraft/world/item/ItemStack;getTooltipLines(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;",
+            method = "getTooltipLines(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;",
             at = @At("STORE"),
             index = 3,
             ordinal = 0

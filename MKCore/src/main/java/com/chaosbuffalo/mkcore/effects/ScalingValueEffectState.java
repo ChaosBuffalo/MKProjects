@@ -2,8 +2,7 @@ package com.chaosbuffalo.mkcore.effects;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.utils.MKNBTUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -89,7 +88,7 @@ public abstract class ScalingValueEffectState extends MKEffectState {
 
     protected void sendEffectParticles(Entity target) {
         if (particles != null) {
-            PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(YP, particles, target.getId()), target);
+            MKParticles.spawn(target, YP, particles);
         }
     }
 }

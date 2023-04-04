@@ -106,13 +106,13 @@ public class MKCore {
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
-        MinecraftForge.EVENT_BUS.register(new MKOverlay());
         ClientEventHandler.initKeybindings();
         PlayerPageRegistry.init();
         event.enqueueWork(CoreItems::registerItemProperties);
         ClientEventHandler.setupAttributeRenderers();
         OverlayRegistry.registerOverlayAbove(ForgeIngameGui.PLAYER_HEALTH_ELEMENT, "skip health", MKOverlay::skipHealth);
         OverlayRegistry.enableOverlay(ForgeIngameGui.PLAYER_HEALTH_ELEMENT, false);
+        OverlayRegistry.registerOverlayTop("MK", MKOverlay.INSTANCE);
     }
 
     @SubscribeEvent

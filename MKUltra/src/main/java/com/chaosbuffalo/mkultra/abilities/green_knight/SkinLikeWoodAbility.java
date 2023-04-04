@@ -8,8 +8,7 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -72,8 +71,6 @@ public class SkinLikeWoodAbility extends MKToggleAbility {
                 .infinite();
         entityData.getEffects().addEffect(instance);
 
-        PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
-                new Vec3(0.0, 1.0, 0.0), cast_particles.getValue(),
-                entity.getId()), entity);
+        MKParticles.spawn(entity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
     }
 }

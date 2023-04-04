@@ -50,9 +50,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 @Mod.EventBusSubscriber(modid = MKCore.MOD_ID, value = Dist.CLIENT)
 public class ClientEventHandler {
@@ -178,7 +178,7 @@ public class ClientEventHandler {
             Minecraft inst = Minecraft.getInstance();
             Player player = inst.player;
             if (player != null) {
-                double dist = player.getAttribute(MKAttributes.ATTACK_REACH).getValue();
+                double dist = player.getAttributeValue(MKAttributes.ATTACK_REACH);
                 float partialTicks = inst.getFrameTime();
                 HitResult result = player.pick(dist, partialTicks, false);
                 Vec3 eyePos = player.getEyePosition(partialTicks);
@@ -211,8 +211,8 @@ public class ClientEventHandler {
             if (local == null || !event.getPlayer().is(local))
                 return;
 
-            if (Minecraft.getInstance().screen instanceof IPlayerDataAwareScreen) {
-                ((IPlayerDataAwareScreen) Minecraft.getInstance().screen).onPlayerDataUpdate();
+            if (Minecraft.getInstance().screen instanceof IPlayerDataAwareScreen screen) {
+                screen.onPlayerDataUpdate();
             }
         }
     }
@@ -233,36 +233,31 @@ public class ClientEventHandler {
         AttributeTooltipManager.registerAttributeRenderer(MKAttributes.MELEE_CRIT_MULTIPLIER, ClientEventHandler::renderCritMultiplier);
     }
 
-    static List<Component> renderPoise(ItemStack stack, EquipmentSlot slotType, Player player,
-                                       Attribute attribute, AttributeModifier modifier) {
-        return Collections.singletonList(
-                AttributeTooltipManager.makeBonusOrTakeText(attribute, modifier,
-                        modifier.getAmount(), modifier.getAmount()));
+    static void renderPoise(ItemStack stack, EquipmentSlot slotType, Player player,
+                            Attribute attribute, AttributeModifier modifier, Consumer<Component> output) {
+        output.accept(AttributeTooltipManager.makePlusOrTakeText(attribute, modifier,
+                modifier.getAmount(), modifier.getAmount()));
     }
 
-    static List<Component> renderAbsolutePercentTwoDigits(ItemStack stack, EquipmentSlot slotType,
-                                                          Player player, Attribute attribute,
-                                                          AttributeModifier modifier) {
-        return Collections.singletonList(
-                AttributeTooltipManager.makeAbsoluteText(attribute, modifier,
-                        modifier.getAmount() * 100, v -> String.format("%.2f%%", v)));
+    static void renderAbsolutePercentTwoDigits(ItemStack stack, EquipmentSlot slotType, Player player,
+                                               Attribute attribute, AttributeModifier modifier,
+                                               Consumer<Component> output) {
+        output.accept(AttributeTooltipManager.makeEqualsText(attribute, modifier,
+                modifier.getAmount() * 100, v -> String.format("%.2f%%", v)));
     }
 
-    static List<Component> renderCritMultiplier(ItemStack stack, EquipmentSlot slotType,
-                                                Player player, Attribute attribute,
-                                                AttributeModifier modifier) {
+    static void renderCritMultiplier(ItemStack stack, EquipmentSlot slotType, Player player, Attribute attribute,
+                                     AttributeModifier modifier, Consumer<Component> output) {
         double value = player.getAttributeBaseValue(attribute) + modifier.getAmount();
-        return Collections.singletonList(
-                AttributeTooltipManager.makeAbsoluteText(attribute, modifier,
-                        value, v -> String.format("%.1fx", v)));
+        output.accept(AttributeTooltipManager.makeEqualsText(attribute, modifier, value,
+                v -> String.format("%.1fx", v)));
     }
 
     private static void addArmorClassTooltip(ItemTooltipEvent event) {
         if (!MKConfig.CLIENT.showArmorClassOnTooltip.get())
             return;
 
-        if (event.getItemStack().getItem() instanceof ArmorItem) {
-            ArmorItem armorItem = (ArmorItem) event.getItemStack().getItem();
+        if (event.getItemStack().getItem() instanceof ArmorItem armorItem) {
             ArmorClass armorClass = ArmorClass.getItemArmorClass(armorItem);
             if (armorClass == null) {
                 return;
@@ -291,14 +286,13 @@ public class ClientEventHandler {
         String suffix = "";
         double amount = modifier.getAmount();
         if (modifier.getOperation() == AttributeModifier.Operation.ADDITION) {
-            if (attribute instanceof MKRangedAttribute) {
-                if (((MKRangedAttribute) attribute).displayAdditionAsPercentage()) {
+            if (attribute instanceof MKRangedAttribute mkRangedAttribute) {
+                if (mkRangedAttribute.displayAdditionAsPercentage()) {
                     suffix = "%";
                     amount *= 100;
                 }
             }
-        }
-        if (modifier.getOperation() == AttributeModifier.Operation.MULTIPLY_TOTAL) {
+        } else if (modifier.getOperation() == AttributeModifier.Operation.MULTIPLY_TOTAL) {
             amount *= 100;
             suffix = "%";
         } else if (modifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE) {

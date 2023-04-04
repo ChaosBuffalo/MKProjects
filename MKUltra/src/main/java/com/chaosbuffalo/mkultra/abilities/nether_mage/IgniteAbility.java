@@ -11,9 +11,8 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.utility.MKParticleEffect;
 import com.chaosbuffalo.mkcore.effects.utility.SoundEffect;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -132,8 +131,7 @@ public class IgniteAbility extends MKAbility {
                             .ability(this);
                     targetData.getEffects().addEffect(burn);
 
-                    PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(new Vec3(0.0, 1.0, 0.0),
-                            cast_1_particles.getValue(), targetEntity.getId()), targetEntity);
+                    MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_1_particles.getValue());
                 }
             });
         });
