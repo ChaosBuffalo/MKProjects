@@ -178,7 +178,7 @@ public class ClientEventHandler {
             Minecraft inst = Minecraft.getInstance();
             Player player = inst.player;
             if (player != null) {
-                double dist = player.getAttribute(MKAttributes.ATTACK_REACH).getValue();
+                double dist = player.getAttributeValue(MKAttributes.ATTACK_REACH);
                 float partialTicks = inst.getFrameTime();
                 HitResult result = player.pick(dist, partialTicks, false);
                 Vec3 eyePos = player.getEyePosition(partialTicks);
@@ -211,8 +211,8 @@ public class ClientEventHandler {
             if (local == null || !event.getPlayer().is(local))
                 return;
 
-            if (Minecraft.getInstance().screen instanceof IPlayerDataAwareScreen) {
-                ((IPlayerDataAwareScreen) Minecraft.getInstance().screen).onPlayerDataUpdate();
+            if (Minecraft.getInstance().screen instanceof IPlayerDataAwareScreen screen) {
+                screen.onPlayerDataUpdate();
             }
         }
     }
@@ -261,8 +261,7 @@ public class ClientEventHandler {
         if (!MKConfig.CLIENT.showArmorClassOnTooltip.get())
             return;
 
-        if (event.getItemStack().getItem() instanceof ArmorItem) {
-            ArmorItem armorItem = (ArmorItem) event.getItemStack().getItem();
+        if (event.getItemStack().getItem() instanceof ArmorItem armorItem) {
             ArmorClass armorClass = ArmorClass.getItemArmorClass(armorItem);
             if (armorClass == null) {
                 return;
