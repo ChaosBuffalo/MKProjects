@@ -21,46 +21,48 @@ import javax.annotation.Nullable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.DoubleFunction;
 
 public class AttributeTooltipManager {
 
-    // Why are these protected in Item? Not sure it's worth an AT
-    protected static final UUID ATTACK_DAMAGE_MODIFIER = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
-    protected static final UUID ATTACK_SPEED_MODIFIER = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
+    // Why are these protected in Item? Not sure if it's worth an AT
+    protected static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
+    protected static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
 
     public interface ItemAttributeRenderer {
-        List<Component> render(ItemStack stack, EquipmentSlot equipmentSlotType, Player player, Attribute attribute, AttributeModifier modifier);
+        void render(ItemStack stack, EquipmentSlot equipmentSlotType, Player player, Attribute attribute,
+                    AttributeModifier modifier, Consumer<Component> output);
     }
 
     public static final DecimalFormat DECIMALFORMAT = Util.make(new DecimalFormat("#.##"), format -> {
         format.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
     });
 
-    static Map<Attribute, ItemAttributeRenderer> attributeRendererMap = new IdentityHashMap<>(60);
+    private static final Map<Attribute, ItemAttributeRenderer> attributeRendererMap = new IdentityHashMap<>(6);
 
     public static void registerAttributeRenderer(Attribute attribute, ItemAttributeRenderer renderer) {
         attributeRendererMap.put(attribute, renderer);
     }
 
-    static List<Component> renderAttribute(ItemStack stack, EquipmentSlot equipmentSlotType,
-                                           Player player, Attribute attribute,
-                                           AttributeModifier modifier) {
-        return attributeRendererMap.getOrDefault(attribute, AttributeTooltipManager::defaultAttributeRender)
-                .render(stack, equipmentSlotType, player, attribute, modifier);
+    static void renderAttribute(ItemStack stack, EquipmentSlot equipmentSlotType,
+                                Player player, Attribute attribute,
+                                AttributeModifier modifier,
+                                Consumer<Component> output) {
+        attributeRendererMap.getOrDefault(attribute, AttributeTooltipManager::defaultAttributeRender)
+                .render(stack, equipmentSlotType, player, attribute, modifier, output);
     }
 
-    static List<Component> defaultAttributeRender(ItemStack stack, EquipmentSlot equipmentSlotType,
-                                                  Player player, Attribute attribute,
-                                                  AttributeModifier modifier) {
+    static void defaultAttributeRender(ItemStack stack, EquipmentSlot equipmentSlotType, Player player,
+                                       Attribute attribute, AttributeModifier modifier, Consumer<Component> output) {
         double amount = modifier.getAmount();
         boolean absolute = false;
         if (player != null) {
-            if (modifier.getId().equals(ATTACK_DAMAGE_MODIFIER)) {
-                amount = amount + player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
-                amount = amount + EnchantmentHelper.getDamageBonus(stack, MobType.UNDEFINED);
+            if (modifier.getId().equals(BASE_ATTACK_DAMAGE_UUID)) {
+                amount += player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
+                amount += EnchantmentHelper.getDamageBonus(stack, MobType.UNDEFINED);
                 absolute = true;
-            } else if (modifier.getId().equals(ATTACK_SPEED_MODIFIER)) {
+            } else if (modifier.getId().equals(BASE_ATTACK_SPEED_UUID)) {
                 amount += player.getAttributeBaseValue(Attributes.ATTACK_SPEED);
                 absolute = true;
             }
@@ -77,28 +79,24 @@ public class AttributeTooltipManager {
             displayAmount = amount * 100.0D;
         }
 
-        if (absolute) {
-            return Collections.singletonList(makeAbsoluteText(attribute, modifier, displayAmount));
-        }
+        Component line = absolute ?
+                makeEqualsText(attribute, modifier, displayAmount) :
+                makePlusOrTakeText(attribute, modifier, amount, displayAmount);
 
-        Component line = makeBonusOrTakeText(attribute, modifier, amount, displayAmount);
-        if (line != null) {
-            return Collections.singletonList(line);
-        }
-        return Collections.emptyList();
+        output.accept(line);
     }
 
     @Nullable
-    public static MutableComponent makeBonusOrTakeText(Attribute attribute, AttributeModifier modifier,
-                                                       double amount, double displayAmount) {
-        return makeBonusOrTakeText(attribute, modifier, amount, displayAmount, DECIMALFORMAT::format);
+    public static MutableComponent makePlusOrTakeText(Attribute attribute, AttributeModifier modifier,
+                                                      double amount, double displayAmount) {
+        return makePlusOrTakeText(attribute, modifier, amount, displayAmount, DECIMALFORMAT::format);
     }
 
     @Nullable
-    public static MutableComponent makeBonusOrTakeText(Attribute attribute, AttributeModifier modifier,
-                                                       double amount, double displayAmount, DoubleFunction<String> formatter) {
+    public static MutableComponent makePlusOrTakeText(Attribute attribute, AttributeModifier modifier,
+                                                      double amount, double displayAmount, DoubleFunction<String> formatter) {
         if (amount > 0.0D) {
-            return makeBonusText(attribute, modifier, displayAmount, formatter);
+            return makePlusText(attribute, modifier, displayAmount, formatter);
         } else if (amount < 0.0D) {
             return makeTakeText(attribute, modifier, displayAmount, formatter);
         }
@@ -120,28 +118,28 @@ public class AttributeTooltipManager {
                 .withStyle(ChatFormatting.RED);
     }
 
-    public static MutableComponent makeBonusText(Attribute attribute, AttributeModifier modifier,
-                                                 double displayAmount) {
-        return makeBonusText(attribute, modifier, displayAmount, DECIMALFORMAT::format);
+    public static MutableComponent makePlusText(Attribute attribute, AttributeModifier modifier,
+                                                double displayAmount) {
+        return makePlusText(attribute, modifier, displayAmount, DECIMALFORMAT::format);
     }
 
     @Nonnull
-    public static MutableComponent makeBonusText(Attribute attribute, AttributeModifier modifier,
-                                                 double displayAmount, DoubleFunction<String> formatter) {
+    public static MutableComponent makePlusText(Attribute attribute, AttributeModifier modifier,
+                                                double displayAmount, DoubleFunction<String> formatter) {
         return new TranslatableComponent("attribute.modifier.plus." + modifier.getOperation().toValue(),
                 formatter.apply(displayAmount),
                 new TranslatableComponent(attribute.getDescriptionId()))
                 .withStyle(ChatFormatting.BLUE);
     }
 
-    public static MutableComponent makeAbsoluteText(Attribute attribute, AttributeModifier modifier,
-                                                    double displayAmount) {
-        return makeAbsoluteText(attribute, modifier, displayAmount, DECIMALFORMAT::format);
+    public static MutableComponent makeEqualsText(Attribute attribute, AttributeModifier modifier,
+                                                  double displayAmount) {
+        return makeEqualsText(attribute, modifier, displayAmount, DECIMALFORMAT::format);
     }
 
     @Nonnull
-    public static MutableComponent makeAbsoluteText(Attribute attribute, AttributeModifier modifier,
-                                                    double displayAmount, DoubleFunction<String> formatter) {
+    public static MutableComponent makeEqualsText(Attribute attribute, AttributeModifier modifier,
+                                                  double displayAmount, DoubleFunction<String> formatter) {
         return new TextComponent(" ")
                 .append(new TranslatableComponent(
                         "attribute.modifier.equals." + modifier.getOperation().toValue(),
@@ -162,7 +160,7 @@ public class AttributeTooltipManager {
             Comparator<Map.Entry<Attribute, AttributeModifier>> comp = Comparator.comparing(attr -> attr.getKey().getDescriptionId());
 
             multimap.entries().stream().sorted(comp).forEach(entry -> {
-                list.addAll(renderAttribute(stack, equipmentSlot, player, entry.getKey(), entry.getValue()));
+                renderAttribute(stack, equipmentSlot, player, entry.getKey(), entry.getValue(), list::add);
             });
         }
     }
