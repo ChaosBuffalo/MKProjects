@@ -4,10 +4,9 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.necromancer.ShadowBoltAbility;
@@ -48,8 +47,7 @@ public class ShadowBoltProjectileEntity extends SpriteTrailProjectileEntity {
         if (!this.level.isClientSide && caster instanceof LivingEntity casterLiving) {
             SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
             SoundUtils.serverPlaySoundAtEntity(this, MKUSounds.spell_dark_8.get(), cat);
-            PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
-                    new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES, getId()), this);
+            MKParticles.spawn(this, new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES);
 
             if (result.getType().equals(HitResult.Type.ENTITY)) {
                 EntityHitResult entityTrace = (EntityHitResult) result;

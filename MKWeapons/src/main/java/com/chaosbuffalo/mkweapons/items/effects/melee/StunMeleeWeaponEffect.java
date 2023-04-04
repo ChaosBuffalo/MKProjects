@@ -4,8 +4,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.status.StunEffect;
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.google.common.collect.ImmutableMap;
@@ -61,8 +60,7 @@ public class StunMeleeWeaponEffect extends BaseMeleeWeaponEffect {
             MKEffectBuilder<?> stun = StunEffect.from(attacker)
                     .timed(stunDuration * GameConstants.TICKS_PER_SECOND);
             MKCore.getEntityData(target).ifPresent(targetData -> targetData.getEffects().addEffect(stun));
-            PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
-                    new Vec3(0.0, target.getBbHeight(), 0.0), PARTICLES, target.getId()), target);
+            MKParticles.spawn(target, new Vec3(0.0, target.getBbHeight(), 0.0), PARTICLES);
         }
     }
 

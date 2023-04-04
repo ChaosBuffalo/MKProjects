@@ -3,10 +3,9 @@ package com.chaosbuffalo.mkultra.entities.projectiles;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.green_knight.CleansingSeedAbility;
@@ -87,8 +86,7 @@ public class CleansingSeedProjectileEntity extends SpriteTrailProjectileEntity {
             }
         }
 
-        PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
-                new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES, getId()), this);
+        MKParticles.spawn(this, new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES);
 
         return true;
     }

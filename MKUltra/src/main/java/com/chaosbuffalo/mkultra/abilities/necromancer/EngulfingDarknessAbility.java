@@ -7,9 +7,8 @@ import com.chaosbuffalo.mkcore.abilities.description.AbilityDescriptions;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
@@ -127,10 +126,7 @@ public class EngulfingDarknessAbility extends MKAbility {
             });
 
             SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_dark_7.get(), targetEntity.getSoundSource());
-            PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
-                            new Vec3(0.0, 1.0, 0.0), castParticles.getValue(),
-                            targetEntity.getId()),
-                    targetEntity);
+            MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), castParticles.getValue());
         });
     }
 }

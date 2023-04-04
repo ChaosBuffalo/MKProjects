@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.entity.boss;
 
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
@@ -101,19 +100,17 @@ public class BossStage {
 
     public void transition(MKEntity entity) {
         if (transitionParticles != null) {
-            MKParticleEffectSpawnPacket spawnPacket;
             switch (particleMode) {
                 case LINE_HEIGHT:
-                    spawnPacket = new MKParticleEffectSpawnPacket(new Vec3(0.0, 0.0, 0.0), transitionParticles, entity.getId());
-                    spawnPacket.addLoc(new Vec3(0.0, entity.getBbHeight() * 4.0, 0.0));
+                    MKParticles.spawn(entity, new Vec3(0.0, 0.0, 0.0), transitionParticles,
+                            p -> p.addLoc(new Vec3(0.0, entity.getBbHeight() * 4.0, 0.0)));
                     break;
                 case MIDDLE:
                 default:
-                    spawnPacket = new MKParticleEffectSpawnPacket(new Vec3(0.0, entity.getBbHeight() * 0.5, 0.0),
-                            transitionParticles, entity.getId());
+                    MKParticles.spawn(entity, new Vec3(0.0, entity.getBbHeight() * 0.5, 0.0),
+                            transitionParticles);
                     break;
             }
-            PacketHandler.sendToTrackingAndSelf(spawnPacket, entity);
             if (transitionSound != null) {
                 SoundEvent event = ForgeRegistries.SOUND_EVENTS.getValue(transitionSound);
                 if (event != null) {

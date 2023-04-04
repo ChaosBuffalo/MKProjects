@@ -6,8 +6,7 @@ import com.chaosbuffalo.mkcore.abilities.ai.conditions.MeleeSpellInterruptUseCon
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -79,10 +78,8 @@ public class YankAbility extends MKAbility {
                 targetData.getEffects().addEffect(yank);
             });
 
-            MKParticleEffectSpawnPacket spawn = new MKParticleEffectSpawnPacket(yankPos, CAST_PARTICLES);
             Vec3 targetPos = new Vec3(targetEntity.getX(), targetEntity.getY(0.6f), targetEntity.getZ());
-            spawn.addLoc(targetPos);
-            PacketHandler.sendToTrackingAndSelf(spawn, entity);
+            MKParticles.spawn(entity, yankPos, CAST_PARTICLES, p -> p.addLoc(targetPos));
         });
     }
 }

@@ -11,9 +11,8 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.RayTraceUtils;
@@ -139,9 +138,7 @@ public class ExplosiveGrowthAbility extends MKAbility {
                 }
             }
 
-            PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
-                    new Vec3(0.0, 1.0, 0.0), detonate_particles.getValue(),
-                    entHit.getId()), entHit);
+            MKParticles.spawn(entHit, new Vec3(0.0, 1.0, 0.0), detonate_particles.getValue());
         }
 
         HitResult blockHit = RayTraceUtils.rayTraceBlocks(castingEntity, from, to, false);
@@ -152,9 +149,10 @@ public class ExplosiveGrowthAbility extends MKAbility {
         casterData.getEffects().addEffect(cure);
         casterData.getEffects().addEffect(remedy);
         castingEntity.teleportTo(to.x, to.y, to.z);
-        MKParticleEffectSpawnPacket spawn = new MKParticleEffectSpawnPacket(from, CAST_PARTICLES);
-        spawn.addLoc(to);
-        PacketHandler.sendToTrackingAndSelf(spawn, castingEntity);
+        Vec3 pos = to;
+        MKParticles.spawn(castingEntity, from, CAST_PARTICLES, spawn -> {
+            spawn.addLoc(pos);
+        });
     }
 
 }

@@ -6,9 +6,8 @@ import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
@@ -100,8 +99,7 @@ public class WarpCurseAbility extends MKAbility {
             targetEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, oldAmp, false, false, true, null));
 
             SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_5.get(), targetEntity.getSoundSource());
-            PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
-                    new Vec3(0.0, 1.0, 0.0), cast_particles.getValue(), castingEntity.getId()), castingEntity);
+            MKParticles.spawn(castingEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
         });
     }
 }

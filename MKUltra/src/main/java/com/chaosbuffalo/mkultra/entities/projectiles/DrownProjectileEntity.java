@@ -3,12 +3,10 @@ package com.chaosbuffalo.mkultra.entities.projectiles;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
-import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
@@ -45,8 +43,7 @@ public class DrownProjectileEntity extends SpriteTrailProjectileEntity {
         if (!this.level.isClientSide && caster instanceof LivingEntity) {
             SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
             SoundUtils.serverPlaySoundAtEntity(this, MKUSounds.spell_water_5.get(), cat);
-            PacketHandler.sendToTrackingAndSelf(new MKParticleEffectSpawnPacket(
-                    new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES, getId()), this);
+            MKParticles.spawn(this, new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES);
 
             if (result.getType().equals(HitResult.Type.ENTITY)) {
                 EntityHitResult entityTrace = (EntityHitResult) result;
