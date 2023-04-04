@@ -31,11 +31,11 @@ public class ShaderEventHandler {
 
     @SubscribeEvent
     public static void registerShaders(RegisterShadersEvent event) throws IOException {
-        event.registerShader(new ShaderInstance(event.getResourceManager(), new ResourceLocation(MKCore.MOD_ID, "magic_particle"),
+        event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(MKCore.MOD_ID, "magic_particle"),
                 DefaultVertexFormat.PARTICLE), (p_172645_) -> {
             rendertypeMagicParticle = p_172645_;
         });
-        event.registerShader(new ShaderInstance(event.getResourceManager(), new ResourceLocation(MKCore.MOD_ID, "black_magic_particle"),
+        event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(MKCore.MOD_ID, "black_magic_particle"),
                 DefaultVertexFormat.PARTICLE), (shader) -> {
             rendertypeBlackMagicParticle = shader;
         });

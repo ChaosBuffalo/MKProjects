@@ -1,11 +1,15 @@
 package com.chaosbuffalo.mkcore.utils;
 
+import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class SoundUtils {
     public static void playSoundAtEntity(Entity entity, SoundEvent event) {
@@ -37,14 +41,18 @@ public class SoundUtils {
     public static void serverPlaySoundFromEntity(double x, double y, double z,
                                                  SoundEvent soundIn, SoundSource category, float volume, float pitch,
                                                  Entity source) {
-        net.minecraftforge.event.entity.PlaySoundAtEntityEvent event = net.minecraftforge.event.ForgeEventFactory
-                .onPlaySoundAtEntity(source, soundIn, category, volume, pitch);
+
+
+        PlayLevelSoundEvent.AtEntity event = net.minecraftforge.event.ForgeEventFactory
+                .onPlaySoundAtEntity(source, ForgeRegistries.SOUND_EVENTS.getHolder(soundIn).orElseThrow(), category, volume, pitch);
         if (event.isCanceled() || event.getSound() == null) return;
-        soundIn = event.getSound();
-        category = event.getCategory();
-        volume = event.getVolume();
+        Holder<SoundEvent> pSound = event.getSound();
+        SoundSource pSource = event.getSource();
+        float pVolume = event.getNewVolume();
+        float  pPitch = event.getNewPitch();
+
         PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> source).send(
-                new ClientboundSoundPacket(soundIn, category, x, y, z, volume, pitch));
+                new ClientboundSoundPacket(pSound, pSource, x, y, z, pVolume, pPitch, source.getLevel().random.nextLong()));
     }
 
     public static void serverPlaySoundAtEntity(Entity source, SoundEvent soundIn, SoundSource category, float volume, float pitch) {

@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKCombatFormulas;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 
 import javax.annotation.Nullable;
@@ -20,7 +21,7 @@ public class MKHealing {
         if (!MinecraftForge.EVENT_BUS.post(event)) {
             if (wouldHealHurtUndead(healSource.getSourceEntity(), target) && healSource.doesDamageUndead()) {
                 float healDamageMultiplier = MKConfig.SERVER.undeadHealDamageMultiplier.get().floatValue();
-                target.hurt(convertHealingToDamage(healSource), healDamageMultiplier * event.getAmount());
+                target.hurt(convertHealingToDamage(target.getLevel(), healSource), healDamageMultiplier * event.getAmount());
             } else {
                 float afterEfficiency = MKCore.getEntityData(target).map(targetData ->
                         MKCombatFormulas.applyHealEfficiency(targetData, event.getAmount())).orElse(event.getAmount());
@@ -29,8 +30,8 @@ public class MKHealing {
         }
     }
 
-    private static MKDamageSource convertHealingToDamage(MKHealSource healSource) {
-        return MKDamageSource.causeAbilityDamage(healSource.getDamageType(), healSource.getAbilityId(),
+    private static MKDamageSource convertHealingToDamage(Level level, MKHealSource healSource) {
+        return MKDamageSource.causeAbilityDamage(level, healSource.getDamageType(), healSource.getAbilityId(),
                 healSource.getDirectEntity(), healSource.getSourceEntity());
     }
 

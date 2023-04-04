@@ -17,7 +17,7 @@ public class MovingSoundCasting extends AbstractTickableSoundInstance {
     }
 
     public MovingSoundCasting(LivingEntity caster, SoundEvent event, SoundSource category, int castTime) {
-        super(event, category);
+        super(event, category, caster.getRandom());
         this.caster = caster;
         this.looping = true;
         this.delay = 0;

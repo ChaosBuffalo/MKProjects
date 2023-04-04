@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -42,14 +43,13 @@ public class AbilityMagicDamageEffect extends MKEffect {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
-
+            DamageSources damageSources = targetData.getEntity().getLevel().damageSources();
             DamageSource damage;
             if (activeEffect.getDirectEntity() != null) {
-                damage = DamageSource.indirectMagic(activeEffect.getDirectEntity(), activeEffect.getSourceEntity());
+                damage = damageSources.indirectMagic(activeEffect.getDirectEntity(), activeEffect.getSourceEntity());
             } else {
-                damage = DamageSource.MAGIC;
+                damage = damageSources.magic();
             }
-
             float value = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
             targetData.getEntity().hurt(damage, value);
             return true;

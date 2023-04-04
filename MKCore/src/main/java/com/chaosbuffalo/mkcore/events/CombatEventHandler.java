@@ -11,9 +11,11 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.PlayerLeftClickEmptyPacket;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -41,7 +43,7 @@ public class CombatEventHandler {
 
         DamageSource source = event.getSource();
         Entity trueSource = source.getEntity();
-        if (source == DamageSource.FALL) { // TODO: maybe just use LivingFallEvent?
+        if (source.is(DamageTypes.FALL)) { // TODO: maybe just use LivingFallEvent?
             SpellTriggers.FALL.onLivingFall(event, source, livingTarget);
         }
 
@@ -94,7 +96,7 @@ public class CombatEventHandler {
             }
         }
 
-        if (!source.isBypassArmor() && entity.isBlocking() && !hasPiercing) {
+        if (!source.is(DamageTypeTags.BYPASSES_ARMOR) && entity.isBlocking() && !hasPiercing) {
             Vec3 damageLoc = source.getSourcePosition();
             if (damageLoc != null) {
                 Vec3 lookVec = entity.getViewVector(1.0F);
@@ -134,7 +136,7 @@ public class CombatEventHandler {
                 event.setCanceled(true);
                 if (left > 0) {
                     target.hurt(dmgSource instanceof MKDamageSource ? ((MKDamageSource) dmgSource)
-                                    .setSuppressTriggers(true).bypassArmor() : dmgSource.bypassArmor(),
+                                    .setSuppressTriggers(true) : dmgSource,
                             left);
                 }
                 if (breakResult.getB()) {

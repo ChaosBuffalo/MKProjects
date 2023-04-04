@@ -87,7 +87,7 @@ public abstract class AbilityTrainingRequirement implements ISerializableAttribu
     public static <D> DataResult<AbilityTrainingRequirement> fromDynamic(Dynamic<D> dynamic) {
         Optional<ResourceLocation> optType = getType(dynamic);
         if (!optType.isPresent()) {
-            return DataResult.error(String.format("Unable to determine AbilityTrainingRequirement type (Raw: '%s')", dynamic));
+            return DataResult.error(() -> String.format("Unable to determine AbilityTrainingRequirement type (Raw: '%s')", dynamic));
         }
         ResourceLocation typeName = optType.get();
         AbilityTrainingRequirement.Deserializer deserializer = AbilityManager.getTrainingRequirementDeserializer(typeName);
@@ -96,10 +96,10 @@ public abstract class AbilityTrainingRequirement implements ISerializableAttribu
             if (requirement != null) {
                 return DataResult.success(requirement);
             } else {
-                return DataResult.error(String.format("Failed to decode AbilityTrainingRequirement of type '%s' (Raw: '%s')", typeName, dynamic));
+                return DataResult.error(() -> String.format("Failed to decode AbilityTrainingRequirement of type '%s' (Raw: '%s')", typeName, dynamic));
             }
         } else {
-            return DataResult.error(String.format("Failed to find AbilityTrainingRequirement decoder for type '%s'", typeName));
+            return DataResult.error(() -> String.format("Failed to find AbilityTrainingRequirement decoder for type '%s'", typeName));
         }
     }
 }

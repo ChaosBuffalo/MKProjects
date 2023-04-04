@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.utils;
 
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 
 public class DamageUtils {
 
@@ -10,10 +11,7 @@ public class DamageUtils {
     }
 
     public static boolean isMinecraftPhysicalDamage(DamageSource source) {
-        return !source.isFire() &&
-                !source.isExplosion() &&
-                !source.isMagic() &&
-                (source.getMsgId().equals("player") || source.getMsgId().equals("mob"));
+        return source.is(DamageTypes.MOB_ATTACK) || source.is(DamageTypes.PLAYER_ATTACK);
     }
 
     public static boolean isMeleeDamage(DamageSource source) {
@@ -26,7 +24,8 @@ public class DamageUtils {
     }
 
     public static boolean isProjectileDamage(DamageSource source) {
-        return source.isProjectile();
+
+        return source.is(DamageTypes.MOB_PROJECTILE) || source.is(DamageTypes.ARROW);
     }
 
     public static boolean isNonMKProjectileDamage(DamageSource source) {

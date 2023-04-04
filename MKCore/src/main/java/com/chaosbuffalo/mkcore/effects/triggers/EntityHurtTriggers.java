@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -44,7 +45,7 @@ public class EntityHurtTriggers extends SpellTriggers.TriggerCollectionBase {
             MKDamageSource mkDamageSource = (MKDamageSource) source;
             // we check unblockable here because if it is blockable than the armor calculation will already be applied
             // by vanilla mc, we don't want to apply armor reduction twice
-            if (mkDamageSource.isBypassArmor()) {
+            if (mkDamageSource.is(DamageTypeTags.BYPASSES_ARMOR)) {
                 event.setAmount(mkDamageSource.getMKDamageType().applyResistance(livingTarget, event.getAmount()));
             }
 

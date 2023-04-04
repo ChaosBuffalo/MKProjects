@@ -32,7 +32,8 @@ public class PlayerEquipment {
 
     public void onEquipmentChange(EquipmentSlot slot, ItemStack from, ItemStack to) {
         // Currently, we only care about swapping items so modifications like durability are ignored
-        if (ItemStack.isSameIgnoreDurability(from, to))
+        // FIXME: Find the is same item ignore durability func
+        if (ItemStack.isSameItemSameTags(from, to))
             return;
 
 //        MKCore.LOGGER.info("Equipment[{}] {} -> {}", slot, from, to);

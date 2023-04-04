@@ -14,7 +14,7 @@ public class CoreSounds {
             DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, MKCore.MOD_ID);
 
     private static RegistryObject<SoundEvent> register(String name) {
-        return SOUNDS.register(name, () -> new SoundEvent(new ResourceLocation(MKCore.MOD_ID, name)));
+        return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(MKCore.MOD_ID, name)));
     }
 
     public static final RegistryObject<SoundEvent> casting_default = register("casting_default");

@@ -3,12 +3,14 @@ package com.chaosbuffalo.mkcore.core.damage;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,9 +43,9 @@ public abstract class MKDamageSource extends DamageSource {
         return trueSource;
     }
 
-    private MKDamageSource(MKDamageType damageType,
+    private MKDamageSource(Level level, MKDamageType damageType,
                            @Nullable Entity immediateSource, @Nullable Entity trueSource) {
-        super(damageType.getId().toString());
+        super(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(CoreDamageTypes.MK_DAMAGE));
         this.immediateSource = immediateSource;
         this.trueSource = trueSource;
         this.damageType = damageType;
@@ -60,8 +62,8 @@ public abstract class MKDamageSource extends DamageSource {
         @Nullable
         protected final String damageTypeName;
 
-        private EffectDamage(MKDamageType damageType, @Nullable Entity immediateSource, @Nullable Entity trueSource, @Nullable String damageTypeName) {
-            super(damageType, immediateSource, trueSource);
+        private EffectDamage(Level level, MKDamageType damageType, @Nullable Entity immediateSource, @Nullable Entity trueSource, @Nullable String damageTypeName) {
+            super(level, damageType, immediateSource, trueSource);
             this.damageTypeName = damageTypeName;
         }
 
@@ -101,11 +103,11 @@ public abstract class MKDamageSource extends DamageSource {
         @Nullable
         private final ResourceLocation abilityId;
 
-        private AbilityDamage(MKDamageType damageType,
+        private AbilityDamage(Level level, MKDamageType damageType,
                               @Nullable Entity immediateSource,
                               @Nullable Entity trueSource,
                               @Nullable ResourceLocation abilityId) {
-            super(damageType, immediateSource, trueSource);
+            super(level, damageType, immediateSource, trueSource);
             this.abilityId = abilityId;
         }
 
@@ -168,51 +170,51 @@ public abstract class MKDamageSource extends DamageSource {
         return this;
     }
 
-    public static MKDamageSource causeAbilityDamage(MKDamageType damageType,
+    public static MKDamageSource causeAbilityDamage(Level level, MKDamageType damageType,
                                                     ResourceLocation abilityId,
                                                     @Nullable Entity immediateSource,
                                                     @Nullable Entity trueSource) {
         if (damageType.equals(CoreDamageTypes.MeleeDamage.get())) {
-            return causeMeleeDamage(abilityId, immediateSource, trueSource);
+            return causeMeleeDamage(level, abilityId, immediateSource, trueSource);
         }
-        return new AbilityDamage(damageType, immediateSource, trueSource, abilityId);
+        return new AbilityDamage(level, damageType, immediateSource, trueSource, abilityId);
     }
 
-    public static MKDamageSource causeAbilityDamage(MKDamageType damageType,
+    public static MKDamageSource causeAbilityDamage(Level level, MKDamageType damageType,
                                                     ResourceLocation abilityId,
                                                     @Nullable Entity immediateSource,
                                                     @Nullable Entity trueSource,
                                                     float modifierScaling) {
-        return causeAbilityDamage(damageType, abilityId, immediateSource, trueSource)
+        return causeAbilityDamage(level, damageType, abilityId, immediateSource, trueSource)
                 .setModifierScaling(modifierScaling);
     }
 
-    public static MKDamageSource causeEffectDamage(MKDamageType damageType, String effectType,
+    public static MKDamageSource causeEffectDamage(Level level, MKDamageType damageType, String effectType,
                                                    @Nullable Entity immediateSource,
                                                    @Nullable Entity trueSource) {
-        return new EffectDamage(damageType, immediateSource, trueSource, effectType);
+        return new EffectDamage(level, damageType, immediateSource, trueSource, effectType);
     }
 
-    public static MKDamageSource causeEffectDamage(MKDamageType damageType, String effectType,
+    public static MKDamageSource causeEffectDamage(Level level, MKDamageType damageType, String effectType,
                                                    @Nullable Entity immediateSource,
                                                    @Nullable Entity trueSource,
                                                    float modifierScaling) {
-        return causeEffectDamage(damageType, effectType, immediateSource, trueSource)
+        return causeEffectDamage(level, damageType, effectType, immediateSource, trueSource)
                 .setModifierScaling(modifierScaling);
     }
 
 
-    public static MKDamageSource causeMeleeDamage(ResourceLocation abilityId,
+    public static MKDamageSource causeMeleeDamage(Level level, ResourceLocation abilityId,
                                                   @Nullable Entity immediateSource,
                                                   @Nullable Entity trueSource) {
-        return new AbilityDamage(CoreDamageTypes.MeleeDamage.get(), immediateSource, trueSource, abilityId);
+        return new AbilityDamage(level, CoreDamageTypes.MeleeDamage.get(), immediateSource, trueSource, abilityId);
     }
 
-    public static MKDamageSource causeMeleeDamage(ResourceLocation abilityId,
+    public static MKDamageSource causeMeleeDamage(Level level, ResourceLocation abilityId,
                                                   @Nullable Entity immediateSource,
                                                   @Nullable Entity trueSource,
                                                   float modifierScaling) {
-        return causeMeleeDamage(abilityId, immediateSource, trueSource)
+        return causeMeleeDamage(level, abilityId, immediateSource, trueSource)
                 .setModifierScaling(modifierScaling);
     }
 }

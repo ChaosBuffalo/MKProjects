@@ -7,8 +7,16 @@ import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.damage.MeleeDamageType;
 import com.chaosbuffalo.mkcore.core.damage.RangedDamageType;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.damagesource.DamageScaling;
+import net.minecraft.world.damagesource.DamageSources;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 
@@ -16,6 +24,9 @@ public class CoreDamageTypes {
 
     private static final DeferredRegister<MKDamageType> REGISTRY =
             DeferredRegister.create(MKCoreRegistry.DAMAGE_TYPE_REGISTRY_NAME, MKCore.MOD_ID);
+
+    public static final ResourceKey<DamageType> MK_DAMAGE = ResourceKey.create(Registries.DAMAGE_TYPE,
+            new ResourceLocation(MKCore.MOD_ID, "mk_damage"));
 
     public static final RegistryObject<MKDamageType> FireDamage = REGISTRY.register("damage.fire",
             () -> new MKDamageType(MKAttributes.FIRE_DAMAGE, MKAttributes.FIRE_RESISTANCE,

@@ -17,7 +17,7 @@ public class CodecUtils {
         double[] aint = stream.limit(size + 1).toArray();
         if (aint.length != size) {
             String s = "Input is not a list of " + size + " doubles";
-            return aint.length >= size ? DataResult.error(s, Arrays.copyOf(aint, size)) : DataResult.error(s);
+            return aint.length >= size ? DataResult.error(() -> s, Arrays.copyOf(aint, size)) : DataResult.error(() -> s);
         } else {
             return DataResult.success(aint);
         }
@@ -32,7 +32,7 @@ public class CodecUtils {
                     return DataResult.success(list.stream().mapToDouble(element ->
                             ops.getNumberValue(element).result().get().doubleValue()));
                 }
-                return DataResult.error("Some elements are not doubles: " + input);
+                return DataResult.error(() -> "Some elements are not doubles: " + input);
             });
         }
 

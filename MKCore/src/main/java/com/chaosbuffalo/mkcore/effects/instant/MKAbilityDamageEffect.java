@@ -57,7 +57,8 @@ public class MKAbilityDamageEffect extends MKEffect {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
-            DamageSource damage = MKDamageSource.causeAbilityDamage(damageType, activeEffect.getAbilityId(),
+            DamageSource damage = MKDamageSource.causeAbilityDamage(targetData.getEntity().getLevel(),
+                    damageType, activeEffect.getAbilityId(),
                     activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getModifierScale());
 
             float value = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());

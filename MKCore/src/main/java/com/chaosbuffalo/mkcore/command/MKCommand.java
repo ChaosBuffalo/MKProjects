@@ -8,19 +8,20 @@ import net.minecraft.commands.Commands;
 public class MKCommand {
 
     public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
-        LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal("mk")
-                .then(StatCommand.register())
-                .then(CooldownCommand.register())
-                .then(AbilityCommand.register())
-                .then(EffectCommand.register())
-                .then(PersonaCommand.register())
-                .then(TalentCommand.register())
-                .then(HotBarCommand.register())
-                .then(ParticleEffectsCommand.register());
-        dispatcher.register(builder);
+//        LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal("mk")
+//                .then(StatCommand.register())
+//                .then(CooldownCommand.register())
+//                .then(AbilityCommand.register())
+//                .then(EffectCommand.register())
+//                .then(PersonaCommand.register())
+//                .then(TalentCommand.register())
+//                .then(HotBarCommand.register())
+//                .then(ParticleEffectsCommand.register());
+//        dispatcher.register(builder);
     }
 
 
+    //FIXME: figure out wtf is going on wiht commands
 //    public static void registerArguments() {
 //        ArgumentTypes.register("ability_id", AbilityIdArgument.class, new EmptyArgumentSerializer<>(AbilityIdArgument::ability));
 //        ArgumentTypes.register("ability_group", HotBarCommand.AbilityGroupArgument.class, new EmptyArgumentSerializer<>(HotBarCommand.AbilityGroupArgument::abilityGroup));

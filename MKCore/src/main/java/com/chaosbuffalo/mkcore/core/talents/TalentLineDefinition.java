@@ -81,13 +81,13 @@ public class TalentLineDefinition {
         Optional<String> nameOpt = entry.get("name").asString()
                 .resultOrPartial(error -> MKCore.LOGGER.error("Failed to deserialize talent node: {}", error));
         if (!nameOpt.isPresent()) {
-            return DataResult.error("Node did not have a name");
+            return DataResult.error(() -> "Node did not have a name");
         }
 
         ResourceLocation nodeType = new ResourceLocation(nameOpt.get());
         MKTalent talentType = MKCoreRegistry.TALENTS.getValue(nodeType);
         if (talentType == null) {
-            return DataResult.error("Node referenced unknown talent " + nodeType);
+            return DataResult.error(() -> "Node referenced unknown talent " + nodeType);
         }
 
         return DataResult.success(talentType.createNode(entry));
