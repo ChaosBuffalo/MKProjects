@@ -29,8 +29,8 @@ include 'TargetingAPI'
 project(":TargetingAPI").buildFileName = "mono.gradle"
 include 'MKWidgets'
 project(":MKWidgets").buildFileName = "mono.gradle"
-//include 'MKCore'
-//project(":MKCore").buildFileName = "mono.gradle"
+include 'MKCore'
+project(":MKCore").buildFileName = "mono.gradle"
 //include 'MKChat'
 //project(":MKChat").buildFileName = "mono.gradle"
 //include 'MKFaction'
