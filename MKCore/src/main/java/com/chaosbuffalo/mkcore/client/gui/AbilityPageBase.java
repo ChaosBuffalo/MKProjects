@@ -8,7 +8,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.MutableComponent;
 
 import javax.annotation.Nonnull;
 
@@ -58,7 +58,7 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
     }
 
     protected MKButton createManageButton() {
-        TranslatableComponent manageText = new TranslatableComponent("mkcore.gui.manage_memory");
+        MutableComponent manageText = Component.translatable("mkcore.gui.manage_memory");
         MKButton manage = new MKButton(0, 0, manageText);
         manage.setWidth(60);
 
@@ -76,10 +76,10 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
 
     @Nonnull
     protected IconText createPoolUsageText() {
-        TranslatableComponent poolUsageText = new TranslatableComponent("mkcore.gui.memory_pool",
+        MutableComponent poolUsageText = Component.translatable("mkcore.gui.memory_pool",
                 playerData.getAbilities().getCurrentPoolCount(), playerData.getAbilities().getAbilityPoolSize());
         IconText poolText = new IconText(0, 0, 16, poolUsageText, MKAbility.POOL_SLOT_ICON, font, 16, 2);
-        poolText.setTooltip(new TranslatableComponent("mkcore.gui.memory_pool_tooltip"));
+        poolText.setTooltip(Component.translatable("mkcore.gui.memory_pool_tooltip"));
         poolText.manualRecompute();
         int margins = 100 - poolText.getWidth();
         poolText.setMarginLeft(margins / 2);

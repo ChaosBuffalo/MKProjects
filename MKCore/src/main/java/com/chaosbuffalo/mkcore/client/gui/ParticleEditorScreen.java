@@ -25,8 +25,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.HitResult;
@@ -51,7 +50,7 @@ public class ParticleEditorScreen extends MKScreen {
     private boolean dirty;
 
     public ParticleEditorScreen() {
-        super(new TranslatableComponent("mk.editors.particle_editor.name"));
+        super(Component.translatable("mk.editors.particle_editor.name"));
         editing = ParticleAnimationManager.ANIMATIONS.get(
                 new ResourceLocation(MKCore.MOD_ID, "particle_anim.blue_magic")).copy();
         currentFrame = null;
@@ -183,7 +182,7 @@ public class ParticleEditorScreen extends MKScreen {
         names.setMargins(2, 2, 2, 2);
         names.doSetChildWidth(true);
         ParticleAnimationManager.PARTICLE_TYPES_FOR_EDITOR.forEach((key, value) -> {
-            MKButton button = new MKButton(0, 0, new TextComponent(key.toString()));
+            MKButton button = new MKButton(0, 0, Component.literal(key.toString()));
             button.setPressedCallback((but, click) -> {
                 setParticleType(key, value);
                 closeModal(popup);
@@ -368,7 +367,7 @@ public class ParticleEditorScreen extends MKScreen {
         prompt.setMultiline(true);
         layout.addWidget(prompt);
         MKTextFieldWidget textFieldWidget = new MKTextFieldWidget(font, xPos + 2, yPos + 24,
-                POPUP_WIDTH - 10, font.lineHeight + 2, new TextComponent(promptText));
+                POPUP_WIDTH - 10, font.lineHeight + 2, Component.literal(promptText));
         textFieldWidget.getContainedWidget().setMaxLength(500);
         layout.addWidget(textFieldWidget);
         MKButton button = new MKButton(0, 0, "Save") {

@@ -11,7 +11,7 @@ import it.unimi.dsi.fastutil.objects.Object2DoubleOpenCustomHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -125,9 +125,9 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         if (currentSkill < GameConstants.NATURAL_SKILL_MAX) {
             Player player = playerData.getEntity();
             if (player.getRandom().nextDouble() <= chanceFormula.applyAsDouble(currentSkill)) {
-                player.sendMessage(new TranslatableComponent("mkcore.skill.increase",
-                        new TranslatableComponent(attribute.getDescriptionId()), currentSkill + 1.0)
-                        .withStyle(ChatFormatting.AQUA), Util.NIL_UUID);
+                player.sendSystemMessage(Component.translatable("mkcore.skill.increase",
+                        Component.translatable(attribute.getDescriptionId()), currentSkill + 1.0)
+                        .withStyle(ChatFormatting.AQUA));
                 setSkill(attribute, currentSkill + 1.0);
             }
         }

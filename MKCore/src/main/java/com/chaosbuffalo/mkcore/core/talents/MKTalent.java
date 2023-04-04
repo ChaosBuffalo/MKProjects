@@ -4,15 +4,14 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public abstract class MKTalent extends ForgeRegistryEntry<MKTalent> {
+public abstract class MKTalent {
 
     public abstract TalentType<?> getTalentType();
 
@@ -27,12 +26,12 @@ public abstract class MKTalent extends ForgeRegistryEntry<MKTalent> {
 
     public Component getTalentName() {
         ResourceLocation talentId = getTalentId();
-        return new TranslatableComponent(String.format("%s.%s.name", talentId.getNamespace(), talentId.getPath()));
+        return Component.translatable(String.format("%s.%s.name", talentId.getNamespace(), talentId.getPath()));
     }
 
     public Component getTalentDescription(TalentRecord record) {
         ResourceLocation talentId = getTalentId();
-        TranslatableComponent comp = new TranslatableComponent(String.format("%s.%s.description", talentId.getNamespace(), talentId.getPath()));
+        MutableComponent comp = Component.translatable(String.format("%s.%s.description", talentId.getNamespace(), talentId.getPath()));
         return comp.withStyle(ChatFormatting.GRAY);
     }
 

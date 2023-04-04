@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public class LongitudinalGridStackLayoutVertical extends MKStackLayoutVertical {
     private final int gridWidth;
@@ -52,7 +52,7 @@ public class LongitudinalGridStackLayoutVertical extends MKStackLayoutVertical {
             if (i % 4 == 0) {
                 String text = String.format("%d", i / 4);
                 font.draw(matrixStack,
-                        new TextComponent(text), getX() + 2 + xPos - (font.width(text) / 2),
+                        Component.literal(text), getX() + 2 + xPos - (font.width(text) / 2),
                         getY(), gridColor);
             }
         }

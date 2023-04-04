@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
@@ -45,13 +45,13 @@ public abstract class ParticleAnimationTrack implements ISerializableAttributeCo
 
     public abstract ParticleAnimationTrack copy();
 
-    public Component getDescription() {
-        return new TranslatableComponent(String.format("%s.anim_track.%s.name",
+    public MutableComponent getDescription() {
+        return Component.translatable(String.format("%s.anim_track.%s.name",
                 getTypeName().getNamespace(), getTypeName().getPath()));
     }
 
-    public static Component getDescriptionFromType(ResourceLocation type) {
-        return new TranslatableComponent(String.format("%s.anim_track.%s.name",
+    public static MutableComponent getDescriptionFromType(ResourceLocation type) {
+        return Component.translatable(String.format("%s.anim_track.%s.name",
                 type.getNamespace(), type.getPath()));
     }
 

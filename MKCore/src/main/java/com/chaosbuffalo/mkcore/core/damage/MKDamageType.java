@@ -6,19 +6,17 @@ import com.chaosbuffalo.mkcore.core.MKCombatFormulas;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
 
 
-public class MKDamageType extends ForgeRegistryEntry<MKDamageType> {
+public class MKDamageType {
     private final Attribute damageAttribute;
     private final Attribute resistanceAttribute;
     private final Attribute critAttribute;
@@ -63,7 +61,7 @@ public class MKDamageType extends ForgeRegistryEntry<MKDamageType> {
 
     public MutableComponent getDisplayName() {
         ResourceLocation name = getId();
-        return new TranslatableComponent(String.format("%s.%s.name", name.getNamespace(), name.getPath()));
+        return Component.translatable(String.format("%s.%s.name", name.getNamespace(), name.getPath()));
     }
 
     public MutableComponent getFormattedDisplayName() {
@@ -94,16 +92,16 @@ public class MKDamageType extends ForgeRegistryEntry<MKDamageType> {
 
     public Component getEffectCritMessage(LivingEntity source, LivingEntity target, float damage,
                                           String damageType, boolean isSelf) {
-        TranslatableComponent msg;
+        MutableComponent msg;
         if (isSelf) {
-            msg = new TranslatableComponent("mkcore.crit.effect.self",
-                    new TranslatableComponent(damageType),
+            msg = Component.translatable("mkcore.crit.effect.self",
+                    Component.translatable(damageType),
                     target.getDisplayName(),
                     Math.round(damage));
         } else {
-            msg = new TranslatableComponent("mkcore.crit.effect.other",
+            msg = Component.translatable("mkcore.crit.effect.other",
                     source.getDisplayName(),
-                    new TranslatableComponent(damageType),
+                    Component.translatable(damageType),
                     target.getDisplayName(),
                     Math.round(damage));
         }
@@ -112,14 +110,14 @@ public class MKDamageType extends ForgeRegistryEntry<MKDamageType> {
 
     public Component getAbilityCritMessage(LivingEntity source, LivingEntity target, float damage,
                                            MKAbility ability, boolean isSelf) {
-        TranslatableComponent msg;
+        MutableComponent msg;
         if (isSelf) {
-            msg = new TranslatableComponent("mkcore.crit.ability.self",
+            msg = Component.translatable("mkcore.crit.ability.self",
                     ability.getAbilityName(),
                     target.getDisplayName(),
                     Math.round(damage));
         } else {
-            msg = new TranslatableComponent("mkcore.crit.ability.other",
+            msg = Component.translatable("mkcore.crit.ability.other",
                     source.getDisplayName(),
                     ability.getAbilityName(),
                     target.getDisplayName(),

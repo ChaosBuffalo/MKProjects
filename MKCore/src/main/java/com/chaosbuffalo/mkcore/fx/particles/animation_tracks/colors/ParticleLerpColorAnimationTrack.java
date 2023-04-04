@@ -5,8 +5,8 @@ import com.chaosbuffalo.mkcore.fx.particles.MKParticle;
 import com.chaosbuffalo.mkcore.fx.particles.animation_tracks.ParticleColorAnimationTrack;
 import com.chaosbuffalo.mkcore.serialization.attributes.ColorFloatAttribute;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
-import com.mojang.math.Vector3f;
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Vector3f;
 
 
 public class ParticleLerpColorAnimationTrack extends ParticleColorAnimationTrack {

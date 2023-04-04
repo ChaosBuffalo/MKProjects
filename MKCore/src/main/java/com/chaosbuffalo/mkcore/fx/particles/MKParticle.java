@@ -3,13 +3,14 @@ package com.chaosbuffalo.mkcore.fx.particles;
 import com.chaosbuffalo.mkcore.fx.particles.animation_tracks.ParticleAnimationTrack;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -131,7 +132,7 @@ public class MKParticle extends TextureSheetParticle {
         return mkMinV;
     }
 
-    public Random getRand() {
+    public RandomSource getRand() {
         return random;
     }
 

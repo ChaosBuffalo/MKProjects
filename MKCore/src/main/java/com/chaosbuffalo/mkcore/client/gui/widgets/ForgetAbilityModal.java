@@ -11,7 +11,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.*;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.MutableComponent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,9 +38,9 @@ public class ForgetAbilityModal extends MKModal {
 
         Component promptText;
         if (isLearning) {
-            promptText = new TranslatableComponent("mkcore.gui.character.forget_ability", count, tryingToLearn.getAbilityName());
+            promptText = Component.translatable("mkcore.gui.character.forget_ability", count, tryingToLearn.getAbilityName());
         } else {
-            promptText = new TranslatableComponent("mkcore.gui.character.forget");
+            promptText = Component.translatable("mkcore.gui.character.forget");
         }
         MKText prompt = new MKText(font, promptText, xPos + 6, yPos + 6);
         prompt.setWidth(width - 10);
@@ -51,7 +51,7 @@ public class ForgetAbilityModal extends MKModal {
                 height - 75, true);
 
         addWidget(scrollview);
-        TranslatableComponent text = new TranslatableComponent("mkcore.gui.character.forget_confirm");
+        MutableComponent text = Component.translatable("mkcore.gui.character.forget_confirm");
         forgetButton = new MKButton(scrollview.getX(), scrollview.getY() + scrollview.getHeight() + 10, text);
         forgetButton.setWidth(font.width(text) + 20);
         forgetButton.setX(scrollview.getX() + (scrollview.getWidth() - forgetButton.getWidth()) / 2);

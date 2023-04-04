@@ -7,7 +7,6 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 
 public class AbilityInfoWidget extends MKStackLayoutVertical {
 
@@ -42,7 +41,7 @@ public class AbilityInfoWidget extends MKStackLayoutVertical {
 
     public void setup() {
         if (screen.getSelectedAbility() == null) {
-            MKText noSelectPrompt = new MKText(fontRenderer, new TranslatableComponent("mkcore.gui.select_ability"));
+            MKText noSelectPrompt = new MKText(fontRenderer, Component.translatable("mkcore.gui.select_ability"));
             noSelectPrompt.setColor(0xffffffff);
             addWidget(noSelectPrompt);
         } else {

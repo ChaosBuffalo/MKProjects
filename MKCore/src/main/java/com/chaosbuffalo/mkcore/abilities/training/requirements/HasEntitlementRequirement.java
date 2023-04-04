@@ -9,8 +9,8 @@ import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.NoSuchElementException;
@@ -61,7 +61,7 @@ public class HasEntitlementRequirement extends AbilityTrainingRequirement {
 
     @Override
     public MutableComponent describe(MKPlayerData playerData) {
-        return new TextComponent("You must have earned: ")
+        return Component.literal("You must have earned: ")
                 .append(entitlement.getDescription());
     }
 }

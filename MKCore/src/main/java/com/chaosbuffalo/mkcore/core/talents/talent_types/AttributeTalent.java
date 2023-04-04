@@ -9,7 +9,6 @@ import com.chaosbuffalo.mkcore.core.talents.nodes.AttributeTalentNode;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -94,7 +93,7 @@ public class AttributeTalent extends MKTalent {
             totalAmount = String.format("%.2f", currentValue);
         }
         String finalAmount = String.format("%s (%s)", amount, totalAmount);
-        return new TranslatableComponent(getDescriptionTranslationKey(), finalAmount).withStyle(ChatFormatting.GRAY);
+        return Component.translatable(getDescriptionTranslationKey(), finalAmount).withStyle(ChatFormatting.GRAY);
     }
 
     public AttributeModifier createModifier(double value) {

@@ -17,8 +17,6 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import com.chaosbuffalo.mkwidgets.utils.TextureRegion;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
@@ -51,10 +49,10 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     }
 
     public enum AbilityFilter {
-        All(new TextComponent("All"), EnumSet.allOf(AbilityType.class)),
-        Basic(new TranslatableComponent("mkcore.gui.actives"), EnumSet.of(AbilityType.Basic)),
-        Passive(new TranslatableComponent("mkcore.gui.passives"), EnumSet.of(AbilityType.Passive)),
-        Ultimate(new TranslatableComponent("mkcore.gui.ultimates"), EnumSet.of(AbilityType.Ultimate));
+        All(Component.literal("All"), EnumSet.allOf(AbilityType.class)),
+        Basic(Component.translatable("mkcore.gui.actives"), EnumSet.of(AbilityType.Basic)),
+        Passive(Component.translatable("mkcore.gui.passives"), EnumSet.of(AbilityType.Passive)),
+        Ultimate(Component.translatable("mkcore.gui.ultimates"), EnumSet.of(AbilityType.Ultimate));
 
         private final Component name;
         private final EnumSet<AbilityType> accepting;
@@ -78,7 +76,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     private AbilityFilter currentFilter = AbilityFilter.All;
 
     public PersonalAbilityPage(MKPlayerData playerData) {
-        super(playerData, new TranslatableComponent("mk_character_screen.title"));
+        super(playerData, Component.translatable("mk_character_screen.title"));
     }
 
     @Override
@@ -120,7 +118,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     private void addSlotGroupWidgets(int xPos, int yPos, int xOffset, MKLayout root) {
         int slotsY = yPos + DATA_BOX_OFFSET - 28;
         int slotsX = xPos + xOffset + 4;
-        MKText activesLabel = new MKText(font, new TranslatableComponent("mkcore.gui.actives"));
+        MKText activesLabel = new MKText(font, Component.translatable("mkcore.gui.actives"));
         activesLabel.setX(slotsX);
         activesLabel.setY(slotsY - 12);
         root.addWidget(activesLabel);
@@ -132,14 +130,14 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
         MKLayout ultSlots = createAbilityGroupLayout(ultSlotsX, slotsY, AbilityGroupId.Ultimate);
         root.addWidget(ultSlots);
         ultSlots.manualRecompute();
-        MKText ultLabel = new MKText(font, new TranslatableComponent("mkcore.gui.ultimates"));
+        MKText ultLabel = new MKText(font, Component.translatable("mkcore.gui.ultimates"));
         ultLabel.setX(ultSlotsX);
         ultLabel.setY(slotsY - 12);
         root.addWidget(ultLabel);
 
         int passiveSlotX = ultSlots.getX() + ultSlots.getWidth() + 30;
         MKLayout passiveSlots = createAbilityGroupLayout(passiveSlotX, slotsY, AbilityGroupId.Passive);
-        MKText passivesLabel = new MKText(font, new TranslatableComponent("mkcore.gui.passives"));
+        MKText passivesLabel = new MKText(font, Component.translatable("mkcore.gui.passives"));
         passivesLabel.setX(passiveSlotX);
         passivesLabel.setY(slotsY - 12);
         root.addWidget(passivesLabel);
@@ -188,7 +186,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     private CycleButton<AbilityFilter> createFilterButton() {
         CycleButton<AbilityFilter> button = new CycleButton<>(
                 availableFilters,
-                f -> new TextComponent("Filter: ").append(f.getName()),
+                f -> Component.literal("Filter: ").append(f.getName()),
                 f -> {
                     currentFilter = f;
                     if (getSelectedAbility() != null && !currentFilter.accepts(getSelectedAbility().getType())) {

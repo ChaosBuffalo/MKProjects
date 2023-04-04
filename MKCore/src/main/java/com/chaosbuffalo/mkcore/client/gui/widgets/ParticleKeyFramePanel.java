@@ -9,7 +9,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.client.gui.Font;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public class ParticleKeyFramePanel extends MKScrollView {
     private ParticleKeyFrame particleKeyFrame;
@@ -81,7 +81,7 @@ public class ParticleKeyFramePanel extends MKScrollView {
                     getWidth(), particleEditor.getSpawnPattern(), font, particleEditor);
             particleEditor.setSpawnWidget(pattern);
             layout.addWidget(pattern);
-            MKText text = new MKText(font, new TextComponent("Click a current key frame or add a new one to edit"));
+            MKText text = new MKText(font, Component.literal("Click a current key frame or add a new one to edit"));
             text.setColor(0xffffffff);
             text.setWidth(layout.getWidth());
             text.setMultiline(true);

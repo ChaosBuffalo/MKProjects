@@ -12,7 +12,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -78,7 +77,7 @@ public class LearnAbilityTray extends MKStackLayoutVertical {
             reqlayout.setPaddingTop(1);
             reqScrollView.addWidget(reqlayout);
             List<Component> texts = evaluation.getRequirements().stream()
-                    .map(req -> new TextComponent("  - ")
+                    .map(req -> Component.literal("  - ")
                             .append(req.description())
                             .withStyle(req.isMet() ? ChatFormatting.DARK_GREEN : ChatFormatting.BLACK))
                     .collect(Collectors.toList());

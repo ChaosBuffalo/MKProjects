@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.InterModComms;
 
@@ -62,7 +61,7 @@ public class PlayerPageRegistry {
 
             @Override
             public Component getDisplayName() {
-                return new TranslatableComponent(String.format("mkcore.gui.character.%s", getId().getPath()));
+                return Component.translatable(String.format("mkcore.gui.character.%s", getId().getPath()));
             }
 
             @Override

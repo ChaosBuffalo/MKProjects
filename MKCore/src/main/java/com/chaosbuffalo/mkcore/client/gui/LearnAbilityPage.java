@@ -19,7 +19,7 @@ import com.chaosbuffalo.mkwidgets.utils.TextureRegion;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
@@ -36,7 +36,7 @@ public class LearnAbilityPage extends AbilityPageBase {
     private MKLayout root;
 
     public LearnAbilityPage(MKPlayerData playerData, List<AbilityTrainingEvaluation> offeredAbilities, int entityId) {
-        super(playerData, new TextComponent("Learn Abilities"));
+        super(playerData, Component.literal("Learn Abilities"));
         this.offeredAbilities = ImmutableList.copyOf(offeredAbilities);
         this.entityId = entityId;
     }

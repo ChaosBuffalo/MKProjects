@@ -4,8 +4,8 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.fx.particles.MKParticle;
 import com.chaosbuffalo.mkcore.fx.particles.animation_tracks.ParticleColorAnimationTrack;
 import com.chaosbuffalo.mkcore.serialization.attributes.ColorFloatAttribute;
-import com.mojang.math.Vector3f;
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Vector3f;
 
 public class ParticleStaticColorAnimationTrack extends ParticleColorAnimationTrack {
     protected final ColorFloatAttribute red = new ColorFloatAttribute("red", 1.0f);

@@ -6,8 +6,8 @@ import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingRequirement;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
@@ -45,7 +45,7 @@ public class ExperienceLevelRequirement extends AbilityTrainingRequirement {
 
     @Override
     public MutableComponent describe(MKPlayerData playerData) {
-        return new TextComponent(String.format("You must be at least level %d", requiredLevel.value()));
+        return Component.literal(String.format("You must be at least level %d", requiredLevel.value()));
     }
 
 

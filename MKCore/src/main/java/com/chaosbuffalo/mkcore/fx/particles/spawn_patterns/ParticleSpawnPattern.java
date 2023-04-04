@@ -12,7 +12,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -54,8 +54,8 @@ public abstract class ParticleSpawnPattern implements ISerializableAttributeCont
 
     public abstract ParticleSpawnPattern copy();
 
-    public Component getDescription() {
-        return new TranslatableComponent(String.format("%s.spawn_pattern.%s.name", type.getNamespace(), type.getPath()));
+    public MutableComponent getDescription() {
+        return Component.translatable(String.format("%s.spawn_pattern.%s.name", type.getNamespace(), type.getPath()));
     }
 
     @Override

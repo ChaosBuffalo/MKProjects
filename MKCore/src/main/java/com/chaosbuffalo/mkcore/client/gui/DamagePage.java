@@ -15,8 +15,8 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
@@ -29,7 +29,7 @@ public class DamagePage extends StatPageBase {
     protected MKScrollView scrollView;
 
     public DamagePage(MKPlayerData playerData) {
-        super(playerData, new TextComponent("Damage Types"));
+        super(playerData, Component.literal("Damage Types"));
     }
 
     @Override
@@ -101,7 +101,7 @@ public class DamagePage extends StatPageBase {
                                      LocalPlayer clientPlayer) {
         Stat<ResourceLocation> statType = Stats.CUSTOM.get(statName);
         String formattedValue = statType.format(clientPlayer.getStats().getValue(Stats.CUSTOM, statName));
-        TranslatableComponent statNameTranslated = new TranslatableComponent("stat." +
+        MutableComponent statNameTranslated = Component.translatable("stat." +
                 statType.getValue().toString().replace(':', '.'));
         MKText statText = new MKText(font, String.format("%s: %s", statNameTranslated.getString(), formattedValue));
         layout.addWidget(statText);

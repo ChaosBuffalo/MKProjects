@@ -7,9 +7,8 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
@@ -65,8 +64,8 @@ public class HeldItemRequirement extends AbilityTrainingRequirement {
     @Override
     public MutableComponent describe(MKPlayerData playerData) {
         String handName = hand == InteractionHand.MAIN_HAND ? "Main" : "Off";
-        return new TextComponent("You must be holding a ")
-                .append(new TranslatableComponent(item.getDescriptionId())) // Item.getName is client-only
-                .append(new TextComponent(String.format(" in your %s hand", handName)));
+        return Component.literal("You must be holding a ")
+                .append(Component.translatable(item.getDescriptionId())) // Item.getName is client-only
+                .append(Component.literal(String.format(" in your %s hand", handName)));
     }
 }

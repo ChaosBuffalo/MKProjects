@@ -7,7 +7,8 @@ import com.chaosbuffalo.mkcore.core.talents.handlers.AbilityGrantTalentHandler;
 import com.chaosbuffalo.mkcore.core.talents.handlers.AttributeTalentHandler;
 import com.chaosbuffalo.mkcore.core.talents.handlers.EntitlementGrantTalentTypeHandler;
 import com.chaosbuffalo.mkcore.init.CoreEntitlements;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 import java.util.function.Function;
 
@@ -52,12 +53,12 @@ public class TalentType<T extends IRecordTypeHandler<TalentRecord>> implements I
         return this;
     }
 
-    public TranslatableComponent getName() {
-        return new TranslatableComponent(name);
+    public MutableComponent getName() {
+        return Component.translatable(name);
     }
 
-    public TranslatableComponent getDisplayName() {
-        return new TranslatableComponent(displayNameKey, getName());
+    public MutableComponent getDisplayName() {
+        return Component.translatable(displayNameKey, getName());
     }
 
     public T createTypeHandler(MKPlayerData playerData) {

@@ -3,8 +3,7 @@ package com.chaosbuffalo.mkcore.core.talents;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.network.chat.BaseComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Collections;
@@ -49,8 +48,8 @@ public class TalentTreeDefinition {
         return Collections.unmodifiableMap(talentLines);
     }
 
-    public BaseComponent getName() {
-        return new TranslatableComponent(String.format("%s.%s.name", treeId.getNamespace(), treeId.getPath()));
+    public Component getName() {
+        return Component.translatable(String.format("%s.%s.name", treeId.getNamespace(), treeId.getPath()));
     }
 
     public TalentLineDefinition getLine(String name) {

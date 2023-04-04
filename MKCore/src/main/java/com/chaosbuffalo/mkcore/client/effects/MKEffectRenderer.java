@@ -9,7 +9,7 @@ import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 
-public class MKEffectRenderer extends IClientMobEffectExtensions {
+public class MKEffectRenderer implements IClientMobEffectExtensions {
     protected final MKEffect effect;
 
 

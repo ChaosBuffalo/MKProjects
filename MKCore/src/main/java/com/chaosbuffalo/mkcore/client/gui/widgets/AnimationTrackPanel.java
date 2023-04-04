@@ -61,12 +61,12 @@ public class AnimationTrackPanel extends MKStackLayoutVertical {
         tracktextName.setColor(0xffffffff);
         headerLayout.addWidget(tracktextName);
         if (track == null) {
-            MKButton setTrack = new MKButton(0, 0, 75, 20, new TranslatableComponent("mkcore.particle_editor.add_track"));
+            MKButton setTrack = new MKButton(0, 0, 75, 20, Component.translatable("mkcore.particle_editor.add_track"));
             setTrack.setPressedCallback((button, click) -> particleEditor.promptAddTrack(trackType));
             headerLayout.addWidget(setTrack);
             headerLayout.addConstraintToWidget(new OffsetConstraint(10, 0, true, false), setTrack);
         } else {
-            MKButton deleteTrack = new MKButton(0, 0, 75, 20, new TranslatableComponent("mkcore.particle_editor.delete_track"));
+            MKButton deleteTrack = new MKButton(0, 0, 75, 20, Component.translatable("mkcore.particle_editor.delete_track"));
             deleteTrack.setPressedCallback((button, click) -> particleEditor.deleteTrackButton(trackType));
             headerLayout.addWidget(deleteTrack);
             headerLayout.addConstraintToWidget(new OffsetConstraint(10, 0, true, false), deleteTrack);
@@ -75,17 +75,17 @@ public class AnimationTrackPanel extends MKStackLayoutVertical {
     }
 
     Component getTrackName() {
-        Component trackName = track == null ? new TextComponent("Empty") : track.getDescription();
+        Component trackName = track == null ? Component.literal("Empty") : track.getDescription();
         switch (trackType) {
             case COLOR:
-                return new TranslatableComponent("mkcore.particle_editor.track_type.color", trackName);
+                return Component.translatable("mkcore.particle_editor.track_type.color", trackName);
             case SCALE:
-                return new TranslatableComponent("mkcore.particle_editor.track_type.scale", trackName);
+                return Component.translatable("mkcore.particle_editor.track_type.scale", trackName);
             case MOTION:
-                return new TranslatableComponent("mkcore.particle_editor.track_type.motion", trackName);
+                return Component.translatable("mkcore.particle_editor.track_type.motion", trackName);
             case UNKNOWN:
             default:
-                return new TranslatableComponent("mkcore.particle_editor.track_type.unknown", trackName);
+                return Component.translatable("mkcore.particle_editor.track_type.unknown", trackName);
         }
     }
 

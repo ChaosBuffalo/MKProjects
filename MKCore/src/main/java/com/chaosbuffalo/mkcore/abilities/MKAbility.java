@@ -30,7 +30,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -39,7 +38,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
-public abstract class MKAbility extends ForgeRegistryEntry<MKAbility> implements ISerializableAttributeContainer {
+public abstract class MKAbility implements ISerializableAttributeContainer {
 
     private int castTime;
     private int cooldown;
