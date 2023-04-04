@@ -12,7 +12,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.client.gui.Font;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -38,7 +38,7 @@ public class TalentTreeWidget extends MKLayout {
     public void setup() {
         if (getCurrent() == null) {
             MKText noSelectPrompt = new MKText(fontRenderer,
-                    new TranslatableComponent("mkcore.gui.select_talent_tree"));
+                    Component.translatable("mkcore.gui.select_talent_tree"));
             noSelectPrompt.setColor(0xffffffff);
             addWidget(noSelectPrompt, MarginConstraint.TOP, MarginConstraint.LEFT);
             setWidth(originalWidth);

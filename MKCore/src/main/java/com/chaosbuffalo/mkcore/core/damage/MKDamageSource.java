@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -80,7 +79,7 @@ public abstract class MKDamageSource extends DamageSource {
         @Override
         public Component getLocalizedDeathMessage(LivingEntity killedEntity) {
             // FIXME: better message
-            MutableComponent comp = new TranslatableComponent("%s got dropped", killedEntity.getDisplayName());
+            MutableComponent comp = Component.translatable("%s got dropped", killedEntity.getDisplayName());
             if (trueSource != null) {
                 comp.append(" by ").append(trueSource.getDisplayName());
             } else {
@@ -89,7 +88,7 @@ public abstract class MKDamageSource extends DamageSource {
             if (damageType != null || damageTypeName != null) {
                 comp.append(" with some major ");
                 if (damageTypeName != null) {
-                    comp.append(new TranslatableComponent(damageTypeName));
+                    comp.append(Component.translatable(damageTypeName));
                 } else {
                     comp.append(damageType.getDisplayName());
                 }
@@ -124,7 +123,7 @@ public abstract class MKDamageSource extends DamageSource {
         @Override
         public Component getLocalizedDeathMessage(LivingEntity killedEntity) {
             // FIXME: better message
-            MutableComponent comp = new TranslatableComponent("%s got dropped", killedEntity.getDisplayName());
+            MutableComponent comp = Component.translatable("%s got dropped", killedEntity.getDisplayName());
             if (trueSource != null) {
                 comp.append(" by ").append(trueSource.getDisplayName());
             } else {
@@ -176,8 +175,7 @@ public abstract class MKDamageSource extends DamageSource {
         if (damageType.equals(CoreDamageTypes.MeleeDamage.get())) {
             return causeMeleeDamage(abilityId, immediateSource, trueSource);
         }
-        return (MKDamageSource) new AbilityDamage(damageType, immediateSource, trueSource, abilityId)
-                .bypassArmor();
+        return new AbilityDamage(damageType, immediateSource, trueSource, abilityId);
     }
 
     public static MKDamageSource causeAbilityDamage(MKDamageType damageType,
@@ -192,8 +190,7 @@ public abstract class MKDamageSource extends DamageSource {
     public static MKDamageSource causeEffectDamage(MKDamageType damageType, String effectType,
                                                    @Nullable Entity immediateSource,
                                                    @Nullable Entity trueSource) {
-        return (MKDamageSource) new EffectDamage(damageType, immediateSource, trueSource, effectType)
-                .bypassArmor();
+        return new EffectDamage(damageType, immediateSource, trueSource, effectType);
     }
 
     public static MKDamageSource causeEffectDamage(MKDamageType damageType, String effectType,

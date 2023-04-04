@@ -67,7 +67,7 @@ public class RayTraceUtils {
         Entity nearest = null;
         double distance = 0;
 
-        AABB bb = new AABB(new BlockPos(from), new BlockPos(to))
+        AABB bb = new AABB(from, to)
                 .expandTowards(aaExpansion.x, aaExpansion.y, aaExpansion.z)
                 .inflate(aaGrowth);
         List<E> entities = world.getEntitiesOfClass(clazz, bb, predicate);
@@ -96,7 +96,7 @@ public class RayTraceUtils {
                                                                                            final Predicate<E> filter) {
 
         Predicate<E> predicate = input -> defaultFilter.test(input) && filter.test(input);
-        AABB bb = new AABB(new BlockPos(from), new BlockPos(to))
+        AABB bb = new AABB(from, to)
                 .expandTowards(aaExpansion.x, aaExpansion.y, aaExpansion.z)
                 .inflate(aaGrowth);
         List<E> entities = world.getEntitiesOfClass(clazz, bb, predicate);

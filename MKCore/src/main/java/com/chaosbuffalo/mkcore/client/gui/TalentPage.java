@@ -13,8 +13,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import com.chaosbuffalo.mkwidgets.utils.TextureRegion;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
@@ -27,7 +26,7 @@ public class TalentPage extends PlayerPageBase {
     private ScrollingListPanelLayout talentScrollPanel;
 
     public TalentPage(MKPlayerData playerData) {
-        super(playerData, new TextComponent("Talents"));
+        super(playerData, Component.literal("Talents"));
     }
 
     @Override
@@ -105,7 +104,7 @@ public class TalentPage extends PlayerPageBase {
     private MKStackLayoutHorizontal createXpBar(MKPlayerData pData, int contentX, int contentY) {
         MKStackLayoutHorizontal xpBarTray = new MKStackLayoutHorizontal(contentX, contentY - 36, 11);
         xpBarTray.setPaddingLeft(10);
-        MKText xpBarText = new MKText(font, new TranslatableComponent("mkcore.gui.xp_bar.name"));
+        MKText xpBarText = new MKText(font, Component.translatable("mkcore.gui.xp_bar.name"));
         xpBarText.setWidth(font.width(I18n.get("mkcore.gui.xp_bar.name")));
         xpBarTray.setMarginLeft(11);
         xpBarTray.addWidget(xpBarText);

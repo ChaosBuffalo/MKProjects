@@ -16,7 +16,6 @@ import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -41,7 +40,7 @@ public class NewHeal extends MKAbility {
         Component valueStr = getHealDescription(casterData, base.value(),
                 scale.value(), level,
                 modifierScaling.value());
-        return new TranslatableComponent(getDescriptionTranslationKey(), valueStr);
+        return Component.translatable(getDescriptionTranslationKey(), valueStr);
     }
 
     @Override

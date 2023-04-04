@@ -20,20 +20,20 @@ public class MKCoreTestItems {
             DeferredRegister.create(ForgeRegistries.ITEMS, MKCore.MOD_ID);
 
     public static RegistryObject<Item> test_armor = ITEMS.register("ability_chest",
-            () -> new AbilityArmor(ArmorMaterials.IRON, EquipmentSlot.CHEST, new Item.Properties(), MKTestAbilities.TEST_NEW_BURNING_SOUL));
+            () -> new AbilityArmor(ArmorMaterials.IRON, ArmorItem.Type.CHESTPLATE, new Item.Properties(), MKTestAbilities.TEST_NEW_BURNING_SOUL));
 
 
     public static final RegistryObject<Item> ability_sword = ITEMS.register("ability_sword",
             AbilitySword::new);
 
     public static final RegistryObject<Item> ability_boots = ITEMS.register("ability_boots",
-            () -> new AbilityArmor(ArmorMaterials.IRON, EquipmentSlot.FEET, new Item.Properties(), MKTestAbilities.TEST_EMBER));
+            () -> new AbilityArmor(ArmorMaterials.IRON, ArmorItem.Type.BOOTS, new Item.Properties(), MKTestAbilities.TEST_EMBER));
 
 
     public static class AbilityArmor extends ArmorItem implements IMKAbilityProvider {
         private final Supplier<? extends MKAbility> ability;
 
-        public AbilityArmor(ArmorMaterial materialIn, EquipmentSlot slot, Properties builder, Supplier<? extends MKAbility> ability) {
+        public AbilityArmor(ArmorMaterial materialIn, ArmorItem.Type slot, Properties builder, Supplier<? extends MKAbility> ability) {
             super(materialIn, slot, builder);
             this.ability = ability;
         }
@@ -47,7 +47,7 @@ public class MKCoreTestItems {
     public static class AbilitySword extends SwordItem implements IMKAbilityProvider {
 
         public AbilitySword() {
-            super(Tiers.IRON, 3, -2.4F, (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT));
+            super(Tiers.IRON, 3, -2.4F, (new Item.Properties()));
         }
 
         @Override

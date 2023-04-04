@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.init.CoreTags;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -95,7 +94,7 @@ public class ArmorClass {
     }
 
     public Component getName() {
-        return new TranslatableComponent(getTranslationKey());
+        return Component.translatable(getTranslationKey());
     }
 
     public ResourceLocation getLocation() {

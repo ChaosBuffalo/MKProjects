@@ -11,7 +11,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -73,7 +73,7 @@ public class StatsPage extends StatPageBase {
     protected MKScrollView scrollView;
 
     public StatsPage(MKPlayerData playerData) {
-        super(playerData, new TextComponent("Stats"));
+        super(playerData, Component.literal("Stats"));
     }
 
     @Override
@@ -126,24 +126,14 @@ public class StatsPage extends StatPageBase {
                 playerData.getPersonaManager().getActivePersona().getName());
         MKText personaName = new MKText(font, personaNameText);
         stackLayout.addWidget(personaName);
-        String healthText = I18n.get("mkcore.gui.character.current_health",
+        MKText health = new MKText(font, () -> Component.translatable("mkcore.gui.character.current_health",
                 String.format("%.0f", playerData.getStats().getHealth()),
-                String.format("%.0f", playerData.getStats().getMaxHealth()));
-        MKText health = new MKText(font, healthText);
-        String manaText = I18n.get("mkcore.gui.character.current_mana",
+                String.format("%.0f", playerData.getStats().getMaxHealth()))
+        );
+        MKText mana = new MKText(font, () -> Component.translatable("mkcore.gui.character.current_mana",
                 String.format("%.0f", playerData.getStats().getMana()),
-                String.format("%.0f", playerData.getStats().getMaxMana()));
-        MKText mana = new MKText(font, manaText);
-        addPreDrawRunnable(() -> {
-            mana.setText(I18n.get("mkcore.gui.character.current_mana",
-                    String.format("%.0f", playerData.getStats().getMana()),
-                    String.format("%.0f", playerData.getStats().getMaxMana())));
-        });
-        addPreDrawRunnable(() -> {
-            health.setText(I18n.get("mkcore.gui.character.current_health",
-                    String.format("%.0f", playerData.getStats().getHealth()),
-                    String.format("%.0f", playerData.getStats().getMaxHealth())));
-        });
+                String.format("%.0f", playerData.getStats().getMaxMana()))
+        );
         stackLayout.addWidget(health);
         stackLayout.addWidget(mana);
     }

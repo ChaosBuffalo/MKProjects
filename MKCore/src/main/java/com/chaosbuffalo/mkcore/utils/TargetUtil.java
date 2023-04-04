@@ -24,7 +24,7 @@ public class TargetUtil {
                                                                Vec3 from, Vec3 to, Vec3 expansion,
                                                                float growth, final Predicate<E> filter) {
         Predicate<E> predicate = e -> defaultFilter.test(e) && filter.test(e);
-        AABB bb = new AABB(new BlockPos(from), new BlockPos(to))
+        AABB bb = new AABB(from, to)
                 .expandTowards(expansion.x, expansion.y, expansion.z)
                 .inflate(growth);
         return mainEntity.getCommandSenderWorld().getEntitiesOfClass(clazz, bb, predicate);

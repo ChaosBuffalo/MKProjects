@@ -70,6 +70,7 @@ public class MKCore {
         modBus.addListener(this::modifyAttributesEvent);
         // Register the processIMC method for modloading
         modBus.addListener(this::processIMC);
+        modBus.addListener(ClientEventHandler::registerKeyBinding);
         MKCoreRegistry.register(modBus);
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
@@ -83,7 +84,7 @@ public class MKCore {
     private void setup(final FMLCommonSetupEvent event) {
         // some preinit code
         PacketHandler.setupHandler();
-        MKCommand.registerArguments();
+//        MKCommand.registerArguments();
         ParticleAnimationManager.setupDeserializers();
         AbilityManager.setupDeserializers();
     }
@@ -106,13 +107,13 @@ public class MKCore {
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
-        ClientEventHandler.initKeybindings();
         PlayerPageRegistry.init();
         event.enqueueWork(CoreItems::registerItemProperties);
         ClientEventHandler.setupAttributeRenderers();
-        GuiOverlayManager.registerOverlayAbove(ForgeGui.PLAYER_HEALTH_ELEMENT, "skip health", MKOverlay::skipHealth);
-        GuiOverlayManager.enableOverlay(ForgeGui.PLAYER_HEALTH_ELEMENT, false);
-        GuiOverlayManager.registerOverlayTop("MK", MKOverlay.INSTANCE);
+        //FIXME: think this moved to an event
+//        GuiOverlayManager.registerOverlayAbove(ForgeGui.PLAYER_HEALTH_ELEMENT, "skip health", MKOverlay::skipHealth);
+//        GuiOverlayManager.enableOverlay(ForgeGui.PLAYER_HEALTH_ELEMENT, false);
+//        GuiOverlayManager.registerOverlayTop("MK", MKOverlay.INSTANCE);
     }
 
     @SubscribeEvent

@@ -17,9 +17,8 @@ import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -41,8 +40,8 @@ public class EmberAbility extends MKAbility {
     @Override
     protected Component getAbilityDescription(IMKEntityData casterData) {
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(), damage.value(), 0.0f, 0, 1.0f);
-        Component burn = new TextComponent(burnTime.valueAsString()).withStyle(ChatFormatting.UNDERLINE);
-        return new TranslatableComponent(getDescriptionTranslationKey(), damageStr, burn);
+        Component burn = Component.literal(burnTime.valueAsString()).withStyle(ChatFormatting.UNDERLINE);
+        return Component.translatable(getDescriptionTranslationKey(), damageStr, burn);
     }
 
     @Override
@@ -59,7 +58,7 @@ public class EmberAbility extends MKAbility {
     @Override
     public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft) {
         super.continueCastClient(castingEntity, casterData, castTimeLeft);
-        Random rand = castingEntity.getRandom();
+        RandomSource rand = castingEntity.getRandom();
         castingEntity.getCommandSenderWorld().addParticle(ParticleTypes.LAVA,
                 castingEntity.getX(), castingEntity.getY() + 0.5F, castingEntity.getZ(),
                 rand.nextFloat() / 2.0F, 5.0E-5D, rand.nextFloat() / 2.0F);

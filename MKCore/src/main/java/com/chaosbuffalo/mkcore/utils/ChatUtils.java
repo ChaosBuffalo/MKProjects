@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkcore.utils;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.entity.player.Player;
 
 public class ChatUtils {
@@ -19,7 +18,7 @@ public class ChatUtils {
     }
 
     public static void sendMessageWithBrackets(Player playerEntity, String message) {
-        sendMessageWithBrackets(playerEntity, new TextComponent(message));
+        sendMessageWithBrackets(playerEntity, Component.literal(message));
     }
 
     public static void sendMessageWithBrackets(Player playerEntity, Component message) {
@@ -32,7 +31,7 @@ public class ChatUtils {
     }
 
     public static void sendMessage(Player playerEntity, String format) {
-        sendMessage(playerEntity, new TextComponent(format));
+        sendMessage(playerEntity, Component.literal(format));
     }
 
     public static void sendMessage(Player playerEntity, Component message) {

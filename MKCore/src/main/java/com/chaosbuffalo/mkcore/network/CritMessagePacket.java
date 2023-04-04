@@ -8,7 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -141,18 +141,18 @@ public class CritMessagePacket {
             switch (packet.type) {
                 case MELEE_CRIT:
                     if (isSelf) {
-                        player.sendMessage(new TranslatableComponent("mkcore.crit.melee.self",
+                        player.sendSystemMessage(Component.translatable("mkcore.crit.melee.self",
                                 target.getDisplayName(),
                                 livingSource.getMainHandItem().getHoverName(),
                                 Math.round(packet.critDamage)
-                        ).withStyle(ChatFormatting.DARK_RED), Util.NIL_UUID);
+                        ).withStyle(ChatFormatting.DARK_RED));
                     } else {
-                        player.sendMessage(new TranslatableComponent("mkcore.crit.melee.other",
+                        player.sendSystemMessage(Component.translatable("mkcore.crit.melee.other",
                                 livingSource.getDisplayName(),
                                 target.getDisplayName(),
                                 livingSource.getMainHandItem().getHoverName(),
                                 Math.round(packet.critDamage)
-                        ).withStyle(ChatFormatting.DARK_RED), Util.NIL_UUID);
+                        ).withStyle(ChatFormatting.DARK_RED));
                     }
                     break;
                 case MK_CRIT:
@@ -162,24 +162,24 @@ public class CritMessagePacket {
                     if (ability == null || mkDamageType == null) {
                         break;
                     }
-                    player.sendMessage(mkDamageType.getAbilityCritMessage(livingSource, (LivingEntity) target, packet.critDamage, ability, isSelf), Util.NIL_UUID);
+                    player.sendSystemMessage(mkDamageType.getAbilityCritMessage(livingSource, (LivingEntity) target, packet.critDamage, ability, isSelf));
                     break;
                 case PROJECTILE_CRIT:
                     Entity projectile = player.getCommandSenderWorld().getEntity(packet.projectileId);
                     if (projectile != null) {
                         if (isSelf) {
-                            player.sendMessage(new TranslatableComponent("mkcore.crit.projectile.self",
+                            player.sendSystemMessage(Component.translatable("mkcore.crit.projectile.self",
                                     target.getDisplayName(),
                                     projectile.getDisplayName(),
                                     Math.round(packet.critDamage)
-                            ).withStyle(ChatFormatting.LIGHT_PURPLE), Util.NIL_UUID);
+                            ).withStyle(ChatFormatting.LIGHT_PURPLE));
                         } else {
-                            player.sendMessage(new TranslatableComponent("mkcore.crit.projectile.other",
+                            player.sendSystemMessage(Component.translatable("mkcore.crit.projectile.other",
                                     livingSource.getDisplayName(),
                                     target.getDisplayName(),
                                     projectile.getDisplayName(),
                                     Math.round(packet.critDamage)
-                            ).withStyle(ChatFormatting.LIGHT_PURPLE), Util.NIL_UUID);
+                            ).withStyle(ChatFormatting.LIGHT_PURPLE));
                         }
                     }
                     break;
@@ -188,7 +188,7 @@ public class CritMessagePacket {
                     if (mkDamageType == null) {
                         break;
                     }
-                    player.sendMessage(mkDamageType.getEffectCritMessage(livingSource, (LivingEntity) target, packet.critDamage, packet.typeName, isSelf), Util.NIL_UUID);
+                    player.sendSystemMessage(mkDamageType.getEffectCritMessage(livingSource, (LivingEntity) target, packet.critDamage, packet.typeName, isSelf));
                     break;
             }
         }

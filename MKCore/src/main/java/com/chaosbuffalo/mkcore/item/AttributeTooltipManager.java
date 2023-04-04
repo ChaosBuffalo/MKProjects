@@ -5,8 +5,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -112,9 +110,9 @@ public class AttributeTooltipManager {
     public static MutableComponent makeTakeText(Attribute attribute, AttributeModifier modifier,
                                                 double displayAmount, DoubleFunction<String> formatter) {
         displayAmount = displayAmount * -1.0D;
-        return new TranslatableComponent("attribute.modifier.take." + modifier.getOperation().toValue(),
+        return Component.translatable("attribute.modifier.take." + modifier.getOperation().toValue(),
                 formatter.apply(displayAmount),
-                new TranslatableComponent(attribute.getDescriptionId()))
+                Component.translatable(attribute.getDescriptionId()))
                 .withStyle(ChatFormatting.RED);
     }
 
@@ -126,9 +124,9 @@ public class AttributeTooltipManager {
     @Nonnull
     public static MutableComponent makePlusText(Attribute attribute, AttributeModifier modifier,
                                                 double displayAmount, DoubleFunction<String> formatter) {
-        return new TranslatableComponent("attribute.modifier.plus." + modifier.getOperation().toValue(),
+        return Component.translatable("attribute.modifier.plus." + modifier.getOperation().toValue(),
                 formatter.apply(displayAmount),
-                new TranslatableComponent(attribute.getDescriptionId()))
+                Component.translatable(attribute.getDescriptionId()))
                 .withStyle(ChatFormatting.BLUE);
     }
 
@@ -140,11 +138,11 @@ public class AttributeTooltipManager {
     @Nonnull
     public static MutableComponent makeEqualsText(Attribute attribute, AttributeModifier modifier,
                                                   double displayAmount, DoubleFunction<String> formatter) {
-        return new TextComponent(" ")
-                .append(new TranslatableComponent(
+        return Component.literal(" ")
+                .append(Component.translatable(
                         "attribute.modifier.equals." + modifier.getOperation().toValue(),
                         formatter.apply(displayAmount),
-                        new TranslatableComponent(attribute.getDescriptionId()))
+                        Component.translatable(attribute.getDescriptionId()))
                 )
                 .withStyle(ChatFormatting.DARK_GREEN);
     }
@@ -154,8 +152,8 @@ public class AttributeTooltipManager {
                                      EquipmentSlot equipmentSlot) {
         Multimap<Attribute, AttributeModifier> multimap = stack.getAttributeModifiers(equipmentSlot);
         if (!multimap.isEmpty()) {
-            list.add(TextComponent.EMPTY);
-            list.add(new TranslatableComponent("item.modifiers." + equipmentSlot.getName()).withStyle(ChatFormatting.GRAY));
+            list.add(Component.literal(""));
+            list.add(Component.translatable("item.modifiers." + equipmentSlot.getName()).withStyle(ChatFormatting.GRAY));
 
             Comparator<Map.Entry<Attribute, AttributeModifier>> comp = Comparator.comparing(attr -> attr.getKey().getDescriptionId());
 

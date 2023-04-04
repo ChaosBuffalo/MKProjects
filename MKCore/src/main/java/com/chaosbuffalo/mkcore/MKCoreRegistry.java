@@ -57,20 +57,15 @@ public class MKCoreRegistry {
     @SubscribeEvent
     public static void createRegistries(NewRegistryEvent event) {
         event.create(new RegistryBuilder<MKAbility>()
-                .setName(ABILITY_REGISTRY_NAME)
-                .setType(MKAbility.class), r -> ABILITIES = r);
+                .setName(ABILITY_REGISTRY_NAME), r -> ABILITIES = r);
         event.create(new RegistryBuilder<MKDamageType>()
-                .setName(DAMAGE_TYPE_REGISTRY_NAME)
-                .setType(MKDamageType.class), r -> DAMAGE_TYPES = r);
+                .setName(DAMAGE_TYPE_REGISTRY_NAME), r -> DAMAGE_TYPES = r);
         event.create(new RegistryBuilder<MKEffect>()
-                .setName(EFFECT_REGISTRY_NAME)
-                .setType(MKEffect.class), r -> EFFECTS = r);
+                .setName(EFFECT_REGISTRY_NAME), r -> EFFECTS = r);
         event.create(new RegistryBuilder<MKTalent>()
-                .setName(TALENT_REGISTRY_NAME)
-                .setType(MKTalent.class), r -> TALENTS = r);
+                .setName(TALENT_REGISTRY_NAME), r -> TALENTS = r);
         event.create(new RegistryBuilder<MKEntitlement>()
-                .setName(ENTITLEMENT_REGISTRY_NAME)
-                .setType(MKEntitlement.class), r -> ENTITLEMENTS = r);
+                .setName(ENTITLEMENT_REGISTRY_NAME), r -> ENTITLEMENTS = r);
     }
 
     public static void register(IEventBus modBus) {

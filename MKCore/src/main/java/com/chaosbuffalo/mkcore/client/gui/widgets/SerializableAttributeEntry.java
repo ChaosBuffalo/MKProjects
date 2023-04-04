@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKTextFieldWidget;
 import net.minecraft.client.gui.Font;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.function.Consumer;
 
@@ -21,7 +21,7 @@ public class SerializableAttributeEntry extends MKStackLayoutHorizontal {
         MKText nameText = new MKText(renderer, attr.getName(), 100);
         nameText.setColor(0xffffffff);
         MKTextFieldWidget textField = new MKTextFieldWidget(renderer, x, y, 50, renderer.lineHeight + 2,
-                new TextComponent(attr.getName()));
+                Component.translatable(attr.getName()));
         textField.setText(attr.valueAsString());
         textField.getContainedWidget().moveCursorToStart();
         textField.setSubmitCallback((wid, str) -> {

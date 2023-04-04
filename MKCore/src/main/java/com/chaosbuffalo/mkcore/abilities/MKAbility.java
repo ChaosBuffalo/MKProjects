@@ -76,10 +76,10 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
                                           float scale, float level, float modifierScaling) {
         float bonus = casterData.getStats().getDamageTypeBonus(damageType) * modifierScaling;
         float abilityDamage = damage + (scale * level) + bonus;
-        MutableComponent damageStr = TextComponent.EMPTY.copy();
-        damageStr.append(new TextComponent(NUMBER_FORMATTER.format(abilityDamage)).withStyle(ChatFormatting.BOLD));
+        MutableComponent damageStr = Component.literal("");
+        damageStr.append(Component.literal(NUMBER_FORMATTER.format(abilityDamage)).withStyle(ChatFormatting.BOLD));
         if (bonus != 0) {
-            damageStr.append(new TextComponent(String.format(" (+%s)", NUMBER_FORMATTER.format(bonus))).withStyle(ChatFormatting.BOLD));
+            damageStr.append(Component.literal(String.format(" (+%s)", NUMBER_FORMATTER.format(bonus))).withStyle(ChatFormatting.BOLD));
         }
         damageStr.append(" ").append(damageType.getFormattedDisplayName());
         return damageStr;
@@ -88,10 +88,10 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     protected MutableComponent formatEffectValue(float damage, float levelScale, float level, float bonus, float scaleMod) {
         float value = damage + (levelScale * level) + (bonus * scaleMod);
-        MutableComponent damageStr = TextComponent.EMPTY.copy();
-        damageStr.append(new TextComponent(NUMBER_FORMATTER.format(value)).withStyle(ChatFormatting.BOLD));
+        MutableComponent damageStr = Component.literal("");
+        damageStr.append(Component.literal(NUMBER_FORMATTER.format(value)).withStyle(ChatFormatting.BOLD));
         if (bonus != 0) {
-            damageStr.append(new TextComponent(String.format(" (+%s)", NUMBER_FORMATTER.format(bonus))).withStyle(ChatFormatting.BOLD));
+            damageStr.append(Component.literal(String.format(" (+%s)", NUMBER_FORMATTER.format(bonus))).withStyle(ChatFormatting.BOLD));
         }
         return damageStr;
     }
@@ -109,8 +109,8 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     protected Component getSkillDescription(IMKEntityData casterData) {
         Component skillList = ComponentUtils.formatList(getSkillAttributes(),
-                attr -> new TranslatableComponent(attr.getDescriptionId()));
-        return new TranslatableComponent("mkcore.ability.description.skill", skillList);
+                attr -> Component.translatable(attr.getDescriptionId()));
+        return Component.translatable("mkcore.ability.description.skill", skillList);
     }
 
     public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
@@ -133,24 +133,24 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     protected Component getCooldownDescription(IMKEntityData casterData) {
         float seconds = (float) casterData.getStats().getAbilityCooldown(this) / GameConstants.TICKS_PER_SECOND;
-        return new TranslatableComponent("mkcore.ability.description.cooldown", seconds);
+        return Component.translatable("mkcore.ability.description.cooldown", seconds);
     }
 
     protected Component getCastTimeDescription(IMKEntityData casterData) {
         int castTicks = casterData.getStats().getAbilityCastTime(this);
         float seconds = (float) castTicks / GameConstants.TICKS_PER_SECOND;
         Component time = castTicks > 0 ?
-                new TranslatableComponent("mkcore.ability.description.seconds", seconds) :
-                new TranslatableComponent("mkcore.ability.description.instant");
-        return new TranslatableComponent("mkcore.ability.description.cast_time", time);
+                Component.translatable("mkcore.ability.description.seconds", seconds) :
+                Component.translatable("mkcore.ability.description.instant");
+        return Component.translatable("mkcore.ability.description.cast_time", time);
     }
 
     protected Component getManaCostDescription(IMKEntityData casterData) {
-        return new TranslatableComponent("mkcore.ability.description.mana_cost", getManaCost(casterData));
+        return Component.translatable("mkcore.ability.description.mana_cost", getManaCost(casterData));
     }
 
     protected Component getAbilityDescription(IMKEntityData casterData) {
-        return new TranslatableComponent(getDescriptionTranslationKey());
+        return Component.translatable(getDescriptionTranslationKey());
     }
 
     public void setUseCondition(AbilityUseCondition useCondition) {
@@ -186,7 +186,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     public Component getAbilityName() {
-        return new TranslatableComponent(getTranslationKey());
+        return Component.translatable(getTranslationKey());
     }
 
     protected String getTranslationKey() {
@@ -321,7 +321,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     public Component getTargetContextLocalization() {
-        return new TranslatableComponent("mkcore.ability_description.target_type",
+        return Component.translatable("mkcore.ability_description.target_type",
                 getTargetContext().getLocalizedDescription());
     }
 

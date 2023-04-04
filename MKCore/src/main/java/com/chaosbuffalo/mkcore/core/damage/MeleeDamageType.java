@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -20,14 +20,14 @@ public class MeleeDamageType extends MKDamageType {
     @Override
     public Component getAbilityCritMessage(LivingEntity source, LivingEntity target, float damage,
                                            MKAbility ability, boolean isSelf) {
-        TranslatableComponent msg;
+        MutableComponent msg;
         if (isSelf) {
-            msg = new TranslatableComponent("mkcore.crit.melee.self",
+            msg = Component.translatable("mkcore.crit.melee.self",
                     target.getDisplayName(),
                     source.getMainHandItem().getHoverName(),
                     Math.round(damage));
         } else {
-            msg = new TranslatableComponent("mkcore.crit.melee.other",
+            msg = Component.translatable("mkcore.crit.melee.other",
                     source.getDisplayName(),
                     target.getDisplayName(),
                     source.getMainHandItem().getHoverName(),

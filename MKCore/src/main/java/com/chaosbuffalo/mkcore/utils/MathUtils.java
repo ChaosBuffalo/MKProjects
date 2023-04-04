@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkcore.utils;
 
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector4f;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
 
 public class MathUtils {
 
@@ -26,9 +26,10 @@ public class MathUtils {
         return str.matches("^([+-]?[1-9]\\d*|0)$");
     }
 
+    //FIXME: not certain if this was correct translation from mc to joml, also do we even use this?
     public static Vec3 getTranslation(Matrix4f mat, Vec3 vecIn) {
         Vector4f vec = new Vector4f((float) vecIn.x(), (float) vecIn.y(), (float) vecIn.z(), 1.0f);
-        vec.transform(mat);
+        vec = mat.transform(vec);
         return new Vec3(vec.x(), vec.y(), vec.z());
     }
 

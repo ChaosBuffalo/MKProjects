@@ -317,7 +317,7 @@ public class MKActiveEffect {
         }
 
         @Override
-        public boolean isNoCounter() {
+        public boolean isInfiniteDuration() {
             return effectInstance.getBehaviour().isInfinite();
         }
 
@@ -325,7 +325,7 @@ public class MKActiveEffect {
         public int getDuration() {
             // Even though we override getIsPotionDurationMax we still need a large number so the
             // in-game GUI doesn't flash continuously
-            if (isNoCounter())
+            if (isInfiniteDuration())
                 return Integer.MAX_VALUE;
             return effectInstance.getBehaviour().getDuration();
         }

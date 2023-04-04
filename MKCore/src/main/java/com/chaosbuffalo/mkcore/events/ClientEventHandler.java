@@ -23,7 +23,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -38,8 +37,8 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.common.MinecraftForge;
@@ -63,12 +62,13 @@ public class ClientEventHandler {
     private static KeyMapping[] ultimateAbilityBinds;
     private static KeyMapping itemAbilityBind;
 
-    public static void initKeybindings() {
+
+    public static void registerKeyBinding(RegisterKeyMappingsEvent evt) {
         playerMenuBind = new KeyMapping("key.hud.playermenu", GLFW.GLFW_KEY_J, "key.mkcore.category");
-        ClientRegistry.registerKeyBinding(playerMenuBind);
+        evt.register(playerMenuBind);
 
         particleEditorBind = new KeyMapping("key.hud.particle_editor", GLFW.GLFW_KEY_KP_ADD, "key.mkcore.category");
-        ClientRegistry.registerKeyBinding(particleEditorBind);
+        evt.register(particleEditorBind);
 
         activeAbilityBinds = new KeyMapping[GameConstants.MAX_BASIC_ABILITIES];
         for (int i = 0; i < GameConstants.MAX_BASIC_ABILITIES; i++) {
@@ -77,7 +77,7 @@ public class ClientEventHandler {
             KeyMapping bind = new KeyMapping(bindName, KeyConflictContext.IN_GAME, KeyModifier.ALT,
                     InputConstants.getKey(key, 0), "key.mkcore.abilitybar");
 
-            ClientRegistry.registerKeyBinding(bind);
+            evt.register(bind);
             activeAbilityBinds[i] = bind;
         }
 
@@ -88,7 +88,7 @@ public class ClientEventHandler {
             KeyMapping bind = new KeyMapping(bindName, KeyConflictContext.IN_GAME, KeyModifier.ALT,
                     InputConstants.getKey(key, 0), "key.mkcore.abilitybar");
 
-            ClientRegistry.registerKeyBinding(bind);
+            evt.register(bind);
             ultimateAbilityBinds[i] = bind;
         }
 
@@ -96,7 +96,7 @@ public class ClientEventHandler {
         int defaultItemKey = GLFW.GLFW_KEY_8;
         itemAbilityBind = new KeyMapping("key.hud.item_ability", KeyConflictContext.IN_GAME, KeyModifier.ALT,
                 InputConstants.getKey(defaultItemKey, 0), "key.mkcore.abilitybar");
-        ClientRegistry.registerKeyBinding(itemAbilityBind);
+        evt.register(itemAbilityBind);
     }
 
     public static float getTotalGlobalCooldown() {
@@ -109,20 +109,21 @@ public class ClientEventHandler {
     }
 
     @SubscribeEvent
-    public static void onMouseEvent(InputEvent.MouseInputEvent event) {
+    public static void onMouseEvent(InputEvent.MouseButton event) {
         handleInputEvent();
     }
 
-    @SubscribeEvent
-    public static void onRawMouseEvent(InputEvent.RawMouseEvent event) {
-        Minecraft minecraft = Minecraft.getInstance();
-        MKCore.getEntityData(minecraft.player).ifPresent(playerData -> {
-            if (playerData.getEffects().isEffectActive(CoreEffects.STUN.get()) &&
-                    minecraft.screen == null) {
-                event.setCanceled(true);
-            }
-        });
-    }
+    // FIXME: Stun maybe needs to be done differently raw mouse event seems gone
+//    @SubscribeEvent
+//    public static void onRawMouseEvent(InputEvent.RawMouseEvent event) {
+//        Minecraft minecraft = Minecraft.getInstance();
+//        MKCore.getEntityData(minecraft.player).ifPresent(playerData -> {
+//            if (playerData.getEffects().isEffectActive(CoreEffects.STUN.get()) &&
+//                    minecraft.screen == null) {
+//                event.setCanceled(true);
+//            }
+//        });
+//    }
 
     static void handleAbilityBarPressed(MKPlayerData player, AbilityGroupId group, int slot) {
         if (player.getAbilityExecutor().isOnGlobalCooldown() ||
@@ -263,19 +264,19 @@ public class ClientEventHandler {
                 return;
             }
 
-            event.getToolTip().add(new TranslatableComponent("mkcore.gui.item.armor_class.name")
+            event.getToolTip().add(Component.translatable("mkcore.gui.item.armor_class.name")
                     .append(": ")
                     .append(armorClass.getName()));
 
             if (MKConfig.CLIENT.showArmorClassEffectsOnTooltip.get()) {
                 List<Component> tooltip = event.getToolTip();
                 if (Screen.hasShiftDown()) {
-                    armorClass.getPositiveModifierMap(armorItem.getSlot())
+                    armorClass.getPositiveModifierMap(armorItem.getEquipmentSlot())
                             .forEach(((attribute, modifier) -> addAttributeToTooltip(tooltip, attribute, modifier, ChatFormatting.GREEN)));
-                    armorClass.getNegativeModifierMap(armorItem.getSlot())
+                    armorClass.getNegativeModifierMap(armorItem.getEquipmentSlot())
                             .forEach(((attribute, modifier) -> addAttributeToTooltip(tooltip, attribute, modifier, ChatFormatting.RED)));
                 } else {
-                    tooltip.add(new TranslatableComponent("mkcore.gui.item.armor_class.effect_prompt"));
+                    tooltip.add(Component.translatable("mkcore.gui.item.armor_class.effect_prompt"));
                 }
             }
         }
@@ -301,10 +302,10 @@ public class ClientEventHandler {
         }
         String prefix = amount > 0 ? "+" : "";
 
-        Component component = new TranslatableComponent("mkcore.gui.item.armor_class.effect.name")
+        Component component = Component.translatable("mkcore.gui.item.armor_class.effect.name")
                 .withStyle(color)
                 .append(String.format(": %s%.2f%s ", prefix, amount, suffix))
-                .append(new TranslatableComponent(attribute.getDescriptionId()));
+                .append(Component.translatable(attribute.getDescriptionId()));
 
         tooltip.add(component);
     }

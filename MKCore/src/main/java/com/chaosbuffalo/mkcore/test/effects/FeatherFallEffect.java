@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.effects.*;
 import com.chaosbuffalo.mkcore.test.MKTestEffects;
 import net.minecraft.Util;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
@@ -27,7 +27,7 @@ public class FeatherFallEffect extends MKEffect {
             if (targetData.getEffects().isEffectActive(this)) {
                 event.setAmount(0.0f);
                 if (entity instanceof Player) {
-                    entity.sendMessage(new TextComponent("My legs are OK"), Util.NIL_UUID);
+                    entity.sendSystemMessage(Component.translatable("My legs are OK"));
                 }
             }
         });

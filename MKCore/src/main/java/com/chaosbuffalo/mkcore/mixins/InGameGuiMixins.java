@@ -5,7 +5,7 @@ import com.chaosbuffalo.targeting_api.Targeting;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -17,6 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.HitResult;
+import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -47,18 +48,18 @@ public abstract class InGameGuiMixins extends GuiComponent {
      */
 
     @Overwrite
-    protected void renderCrosshair(PoseStack matrixStack) {
+    public void renderCrosshair(PoseStack matrixStack) {
         Options options = this.minecraft.options;
         if (options.getCameraType().isFirstPerson()) {
             if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR || this.canRenderCrosshairForSpectator(this.minecraft.hitResult)) {
-                if (options.renderDebug && !options.hideGui && !this.minecraft.player.isReducedDebugInfo() && !options.reducedDebugInfo) {
+                if (options.renderDebug && !options.hideGui && !this.minecraft.player.isReducedDebugInfo() && !options.reducedDebugInfo().get()) {
                     Camera camera = this.minecraft.gameRenderer.getMainCamera();
                     PoseStack posestack = RenderSystem.getModelViewStack();
                     posestack.pushPose();
 
-                    posestack.translate((double) (this.screenWidth / 2), (double) (this.screenHeight / 2), (double) this.getBlitOffset());
-                    posestack.mulPose(Vector3f.XN.rotationDegrees(camera.getXRot()));
-                    posestack.mulPose(Vector3f.YP.rotationDegrees(camera.getYRot()));
+                    posestack.translate((float)(this.screenWidth / 2), (float)(this.screenHeight / 2), 0.0F);
+                    posestack.mulPose(Axis.XN.rotationDegrees(camera.getXRot()));
+                    posestack.mulPose(Axis.YP.rotationDegrees(camera.getYRot()));
                     posestack.scale(-1.0F, -1.0F, -1.0F);
                     RenderSystem.applyModelViewMatrix();
                     RenderSystem.renderCrosshair(10);
@@ -70,8 +71,8 @@ public abstract class InGameGuiMixins extends GuiComponent {
                     Vector3f color = getColorForSituation();
                     RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
                     RenderSystem.setShaderColor(color.x(), color.y(), color.z(), 1.0f);
-                    this.blit(matrixStack, (this.screenWidth - 15) / 2, (this.screenHeight - 15) / 2, 0, 0, 15, 15);
-                    if (this.minecraft.options.attackIndicator == AttackIndicatorStatus.CROSSHAIR) {
+                    blit(matrixStack, (this.screenWidth - 15) / 2, (this.screenHeight - 15) / 2, 0, 0, 15, 15);
+                    if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
                         float f = this.minecraft.player.getAttackStrengthScale(0.0F);
                         boolean shouldDrawAttackIndicator = false;
                         Optional<Entity> pointedEntity = MKCore.getPlayer(minecraft.player).map(x -> x.getCombatExtension().getPointedEntity()).orElse(Optional.empty());
@@ -83,11 +84,11 @@ public abstract class InGameGuiMixins extends GuiComponent {
                         int j = this.screenHeight / 2 - 7 + 16;
                         int k = this.screenWidth / 2 - 8;
                         if (shouldDrawAttackIndicator) {
-                            this.blit(matrixStack, k, j, 68, 94, 16, 16);
+                            blit(matrixStack, k, j, 68, 94, 16, 16);
                         } else if (f < 1.0F) {
                             int l = (int) (f * 17.0F);
-                            this.blit(matrixStack, k, j, 36, 94, 16, 4);
-                            this.blit(matrixStack, k, j, 52, 94, l, 4);
+                            blit(matrixStack, k, j, 36, 94, 16, 4);
+                            blit(matrixStack, k, j, 52, 94, l, 4);
                         }
                     }
                     RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);

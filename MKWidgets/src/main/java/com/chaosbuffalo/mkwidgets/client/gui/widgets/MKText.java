@@ -33,6 +33,10 @@ public class MKText extends MKWidget {
         this(renderer, text, 200, renderer.lineHeight);
     }
 
+    public MKText(Font renderer, Supplier<Component> text) {
+        this(renderer, text, 0, 0, 200, renderer.lineHeight);
+    }
+
     public MKText(Font renderer, Component text, int x, int y) {
         this(renderer, () -> text, x, y, 200, renderer.lineHeight);
     }
