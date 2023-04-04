@@ -81,7 +81,7 @@ public class InputHandler {
     }
 
     @SubscribeEvent
-    public static void onKeyEvent(InputEvent.KeyInputEvent event) {
+    public static void onKeyEvent(InputEvent.Key event) {
         handleInputEvent();
     }
 }

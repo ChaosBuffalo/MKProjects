@@ -12,6 +12,8 @@ import net.minecraftforge.registries.RegistryObject;
 
 import java.util.function.Supplier;
 
+import net.minecraft.world.item.Item.Properties;
+
 public class MKCoreTestItems {
 
     public static final DeferredRegister<Item> ITEMS =

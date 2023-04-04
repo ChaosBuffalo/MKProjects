@@ -30,7 +30,7 @@ public class FactionDefaultManager extends SingleJsonFileReloadListener {
     }
 
     public static Optional<ResourceLocation> getDefaultFaction(Entity entity) {
-        return getDefaultFaction(ForgeRegistries.ENTITIES.getKey(entity.getType()));
+        return getDefaultFaction(ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()));
     }
 
     private void addReloadListener(AddReloadListenerEvent event) {

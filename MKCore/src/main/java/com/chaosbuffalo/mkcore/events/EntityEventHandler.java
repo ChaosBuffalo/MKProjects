@@ -20,7 +20,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.scores.Team;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerXpEvent;
@@ -35,8 +35,8 @@ import java.util.stream.Collectors;
 public class EntityEventHandler {
 
     @SubscribeEvent
-    public static void onLivingUpdate(LivingEvent.LivingUpdateEvent event) {
-        LivingEntity living = event.getEntityLiving();
+    public static void onLivingUpdate(LivingEvent.LivingTickEvent event) {
+        LivingEntity living = event.getEntity();
 
         if (living instanceof Player) {
             living.getCapability(CoreCapabilities.PLAYER_CAPABILITY).ifPresent(MKPlayerData::update);
@@ -58,7 +58,7 @@ public class EntityEventHandler {
     }
 
     @SubscribeEvent
-    public static void onEntityJoinWorld(EntityJoinWorldEvent event) {
+    public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
         if (event.getEntity().getCommandSenderWorld().isClientSide())
             return;
 
@@ -69,7 +69,7 @@ public class EntityEventHandler {
 
     @SubscribeEvent
     public static void onPlayerGainXP(PlayerXpEvent.XpChange event) {
-        MKCore.getPlayer(event.getPlayer()).ifPresent(data -> {
+        MKCore.getPlayer(event.getEntity()).ifPresent(data -> {
             data.getTalents().addTalentXp(event.getAmount());
         });
     }
@@ -99,9 +99,9 @@ public class EntityEventHandler {
 
         int rangeSq = MKConfig.SERVER.partyXpShareDistance.get().intValue();
 
-        if (event.getPlayer() instanceof ServerPlayer) {
-            ServerPlayer serverPlayer = (ServerPlayer) event.getPlayer();
-            Team team = event.getPlayer().getTeam();
+        if (event.getEntity() instanceof ServerPlayer) {
+            ServerPlayer serverPlayer = (ServerPlayer) event.getEntity();
+            Team team = event.getEntity().getTeam();
             MinecraftServer server = serverPlayer.getServer();
             if (team != null && server != null) {
                 List<Player> playersInRange = team.getPlayers().stream()
@@ -132,7 +132,7 @@ public class EntityEventHandler {
 
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
-        Player player = event.getPlayer();
+        Player player = event.getEntity();
         Player oldPlayer = event.getOriginal();
 
         oldPlayer.reviveCaps();
@@ -145,8 +145,8 @@ public class EntityEventHandler {
     @SubscribeEvent
     public static void onStartTracking(PlayerEvent.StartTracking event) {
 //        MKCore.LOGGER.info("StartTracking {} {}", event.getTarget(), event.getTarget().getEntityId());
-        if (event.getPlayer() instanceof ServerPlayer) {
-            ServerPlayer playerEntity = (ServerPlayer) event.getPlayer();
+        if (event.getEntity() instanceof ServerPlayer) {
+            ServerPlayer playerEntity = (ServerPlayer) event.getEntity();
 
             MKCore.getEntityData(event.getTarget()).ifPresent(targetData -> targetData.onPlayerStartTracking(playerEntity));
             if (event.getTarget() instanceof IUpdateEngineProvider) {

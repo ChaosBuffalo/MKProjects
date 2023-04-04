@@ -19,7 +19,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.EffectRenderer;
+import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLLoader;
@@ -272,7 +272,7 @@ public abstract class MKEffect extends ForgeRegistryEntry<MKEffect> {
             return Collections.emptyList();
         }
 
-        public void initializeClient(Consumer<EffectRenderer> consumer) {
+        public void initializeClient(Consumer<IClientMobEffectExtensions> consumer) {
             consumer.accept(new MKEffectRenderer(effect));
         }
     }

@@ -104,7 +104,7 @@ public class ClientEventHandler {
     }
 
     @SubscribeEvent
-    public static void onKeyEvent(InputEvent.KeyInputEvent event) {
+    public static void onKeyEvent(InputEvent.Key event) {
         handleInputEvent();
     }
 
@@ -220,7 +220,7 @@ public class ClientEventHandler {
     @SubscribeEvent
     public static void doArmorClassTooltip(ItemTooltipEvent event) {
         // Don't do anything during the initial search tree population
-        if (event.getPlayer() == null)
+        if (event.getEntity() == null)
             return;
 
         addArmorClassTooltip(event);
@@ -323,7 +323,7 @@ public class ClientEventHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onAttackReplacement(InputEvent.ClickInputEvent event) {
+    public static void onAttackReplacement(InputEvent.InteractionKeyMappingTriggered event) {
         if (event.isAttack() && event.getHand() == InteractionHand.MAIN_HAND) {
             Minecraft inst = Minecraft.getInstance();
             Player player = inst.player;

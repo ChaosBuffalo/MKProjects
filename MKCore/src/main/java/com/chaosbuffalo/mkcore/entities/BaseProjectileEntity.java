@@ -27,6 +27,8 @@ import net.minecraftforge.network.NetworkHooks;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import net.minecraft.world.entity.Entity.RemovalReason;
+
 public abstract class BaseProjectileEntity extends Projectile implements IClientUpdatable, IEntityAdditionalSpawnData {
 
     @Nullable

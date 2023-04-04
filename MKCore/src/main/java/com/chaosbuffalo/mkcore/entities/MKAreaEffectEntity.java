@@ -23,6 +23,8 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.world.entity.Entity.RemovalReason;
+
 public class MKAreaEffectEntity extends AreaEffectCloud implements IEntityAdditionalSpawnData {
 
     private static final float DEFAULT_RADIUS = 3.0f;

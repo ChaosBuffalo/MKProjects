@@ -26,6 +26,8 @@ import net.minecraftforge.network.NetworkHooks;
 import javax.annotation.Nullable;
 import java.util.*;
 
+import net.minecraft.world.entity.Entity.RemovalReason;
+
 public abstract class BaseEffectEntity extends Entity implements IEntityAdditionalSpawnData {
     protected final List<WorldAreaEffectEntry> effects;
     protected final int WAIT_LAG = 5;

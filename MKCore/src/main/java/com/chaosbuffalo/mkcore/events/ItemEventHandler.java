@@ -47,16 +47,16 @@ public class ItemEventHandler {
 
     @SubscribeEvent
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
-        if (event.getEntityLiving().getCommandSenderWorld().isClientSide()) {
+        if (event.getEntity().getCommandSenderWorld().isClientSide()) {
             return;
         }
-        if (event.getEntityLiving() instanceof Player) {
-            MKCore.getPlayer(event.getEntityLiving()).ifPresent((playerData) -> {
+        if (event.getEntity() instanceof Player) {
+            MKCore.getPlayer(event.getEntity()).ifPresent((playerData) -> {
                 playerData.getEquipment().onEquipmentChange(event.getSlot(), event.getFrom(), event.getTo());
                 SpellTriggers.LIVING_EQUIPMENT_CHANGE.onEquipmentChange(event, playerData, playerData.getEntity());
             });
         } else {
-            MKCore.getEntityData(event.getEntityLiving()).ifPresent(entityData -> {
+            MKCore.getEntityData(event.getEntity()).ifPresent(entityData -> {
                 SpellTriggers.LIVING_EQUIPMENT_CHANGE.onEquipmentChange(event, entityData, entityData.getEntity());
             });
         }

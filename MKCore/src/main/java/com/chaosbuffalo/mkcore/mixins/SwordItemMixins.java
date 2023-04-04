@@ -8,6 +8,8 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 
+import net.minecraft.world.item.Item.Properties;
+
 @Mixin(SwordItem.class)
 public abstract class SwordItemMixins extends TieredItem {
 

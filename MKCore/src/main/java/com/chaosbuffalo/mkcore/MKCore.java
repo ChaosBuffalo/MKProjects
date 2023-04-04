@@ -23,8 +23,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.gui.ForgeIngameGui;
-import net.minecraftforge.client.gui.OverlayRegistry;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AddReloadListenerEvent;
@@ -110,9 +110,9 @@ public class MKCore {
         PlayerPageRegistry.init();
         event.enqueueWork(CoreItems::registerItemProperties);
         ClientEventHandler.setupAttributeRenderers();
-        OverlayRegistry.registerOverlayAbove(ForgeIngameGui.PLAYER_HEALTH_ELEMENT, "skip health", MKOverlay::skipHealth);
-        OverlayRegistry.enableOverlay(ForgeIngameGui.PLAYER_HEALTH_ELEMENT, false);
-        OverlayRegistry.registerOverlayTop("MK", MKOverlay.INSTANCE);
+        GuiOverlayManager.registerOverlayAbove(ForgeGui.PLAYER_HEALTH_ELEMENT, "skip health", MKOverlay::skipHealth);
+        GuiOverlayManager.enableOverlay(ForgeGui.PLAYER_HEALTH_ELEMENT, false);
+        GuiOverlayManager.registerOverlayTop("MK", MKOverlay.INSTANCE);
     }
 
     @SubscribeEvent

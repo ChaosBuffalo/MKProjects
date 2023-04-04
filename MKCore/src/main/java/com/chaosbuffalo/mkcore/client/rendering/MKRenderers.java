@@ -11,7 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.ParticleFactoryRegisterEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +27,7 @@ public class MKRenderers {
     }
 
     @SubscribeEvent
-    public static void registerParticleFactory(ParticleFactoryRegisterEvent evt) {
+    public static void registerParticleFactory(RegisterParticleProvidersEvent evt) {
         Minecraft.getInstance().particleEngine.register(CoreParticles.MAGIC_CROSS.get(),
                 defaultMagicFactory());
         Minecraft.getInstance().particleEngine.register(CoreParticles.MAGIC_CLOVER.get(),
