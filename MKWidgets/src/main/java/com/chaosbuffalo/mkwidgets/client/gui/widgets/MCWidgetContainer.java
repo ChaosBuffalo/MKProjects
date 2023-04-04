@@ -55,7 +55,7 @@ public class MCWidgetContainer extends MKWidget {
 
     @Override
     public void draw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
-        mcWidget.renderButton(matrixStack, mouseX, mouseY, partialTicks);
+        mcWidget.render(matrixStack, mouseX, mouseY, partialTicks);
     }
 
     @Override

@@ -8,17 +8,20 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraftforge.common.util.Lazy;
 import org.joml.Matrix4f;
+
+import java.util.function.Supplier;
 
 public class MKText extends MKWidget {
 
-    public Component text;
+    public Supplier<Component> text;
     private final Font fontRenderer;
     public int color;
     public boolean isMultiline;
     public boolean isCentered;
 
-    public MKText(Font renderer, Component text, int x, int y, int width, int height) {
+    public MKText(Font renderer, Supplier<Component> text, int x, int y, int width, int height) {
         super(x, y, width, height);
         this.color = 0;
         this.fontRenderer = renderer;
@@ -31,7 +34,7 @@ public class MKText extends MKWidget {
     }
 
     public MKText(Font renderer, Component text, int x, int y) {
-        this(renderer, text, x, y, 200, renderer.lineHeight);
+        this(renderer, () -> text, x, y, 200, renderer.lineHeight);
     }
 
     public MKText(Font renderer, String text) {
@@ -43,7 +46,7 @@ public class MKText extends MKWidget {
     }
 
     public MKText(Font renderer, String text, int x, int y, int width, int height) {
-        this(renderer, Component.literal(text), x, y, width, height);
+        this(renderer, Lazy.of(() -> Component.literal(text)), x, y, width, height);
     }
 
     public MKText(Font renderer, String text, int width) {
@@ -86,7 +89,7 @@ public class MKText extends MKWidget {
 
     private int drawInternalDuplicate(Font font, FormattedCharSequence seq, float x, float y, int color, Matrix4f mat, boolean shadow) {
         MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-        int i = font.drawInBatch(seq, x, y, color, shadow, mat, buffer, false, 0, 15728880);
+        int i = font.drawInBatch(seq, x, y, color, shadow, mat, buffer, Font.DisplayMode.NORMAL, 0, 15728880);
         buffer.endBatch();
         return i;
     }
@@ -120,17 +123,22 @@ public class MKText extends MKWidget {
     }
 
     public MKText setText(String text) {
-        return setText(Component.literal(text));
+        return setText(Lazy.of(() -> Component.literal(text)));
     }
 
     public MKText setText(Component text) {
+        return setText(() -> text);
+    }
+
+    public MKText setText(Supplier<Component> text) {
         this.text = text;
         updateLabel();
         return this;
     }
 
+
     public Component getText() {
-        return text;
+        return text.get();
     }
 
     public MKText setMultiline(boolean multiline) {

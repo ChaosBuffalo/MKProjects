@@ -72,7 +72,7 @@ public class MKTextFieldWidget extends MCWidgetContainer {
     @Override
     public void onFocus() {
         super.onFocus();
-        getContainedWidget().setFocus(true);
+        getContainedWidget().setFocused(true);
     }
 
     @Override
@@ -93,6 +93,6 @@ public class MKTextFieldWidget extends MCWidgetContainer {
         super.onFocusLost();
         onSubmitText(getContainedWidget().getValue());
         getContainedWidget().setHighlightPos(getContainedWidget().getCursorPosition());
-        getContainedWidget().setFocus(false);
+        getContainedWidget().setFocused(false);
     }
 }
