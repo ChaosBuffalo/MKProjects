@@ -1,7 +1,7 @@
 {
   "parent": "mkweapons:item/spear_base_blocking",
   "textures": {
-    "0": "mkweapons:items/gold_tool",
-    "particle": "mkweapons:items/gold_tool"
+    "0": "mkweapons:item/gold_tool",
+    "particle": "mkweapons:item/gold_tool"
   }
 }

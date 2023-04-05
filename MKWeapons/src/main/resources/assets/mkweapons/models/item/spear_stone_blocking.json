@@ -1,7 +1,7 @@
 {
   "parent": "mkweapons:item/spear_base_blocking",
   "textures": {
-    "0": "mkweapons:items/stone_tool",
-    "particle": "mkweapons:items/stone_tool"
+    "0": "mkweapons:item/stone_tool",
+    "particle": "mkweapons:item/stone_tool"
   }
 }

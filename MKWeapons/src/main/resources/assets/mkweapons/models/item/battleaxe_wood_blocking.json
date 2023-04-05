@@ -1,7 +1,7 @@
 {
   "parent": "mkweapons:item/battleaxe_base_blocking",
   "textures": {
-    "0": "mkweapons:items/wood_tool",
-    "particle": "mkweapons:items/wood_tool"
+    "0": "mkweapons:item/wood_tool",
+    "particle": "mkweapons:item/wood_tool"
   }
 }

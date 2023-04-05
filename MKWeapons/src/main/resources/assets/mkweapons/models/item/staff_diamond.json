@@ -1,15 +1,15 @@
 {
   "parent": "mkweapons:item/staff_base",
-  "textures": {
-    "0": "mkweapons:items/diamond_tool",
-    "particle": "mkweapons:items/diamond_tool"
-  },
   "overrides": [
     {
+      "model": "mkweapons:item/staff_diamond_blocking",
       "predicate": {
         "minecraft:blocking": 1.0
-      },
-      "model": "mkweapons:item/staff_diamond_blocking"
+      }
     }
-  ]
+  ],
+  "textures": {
+    "0": "mkweapons:item/diamond_tool",
+    "particle": "mkweapons:item/diamond_tool"
+  }
 }

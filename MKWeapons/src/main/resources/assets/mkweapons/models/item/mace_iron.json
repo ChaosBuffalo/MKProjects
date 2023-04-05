@@ -1,15 +1,15 @@
 {
   "parent": "mkweapons:item/mace_base",
-  "textures": {
-    "0": "mkweapons:items/iron_tool",
-    "particle": "mkweapons:items/iron_tool"
-  },
   "overrides": [
     {
+      "model": "mkweapons:item/mace_iron_blocking",
       "predicate": {
         "minecraft:blocking": 1.0
-      },
-      "model": "mkweapons:item/mace_iron_blocking"
+      }
     }
-  ]
+  ],
+  "textures": {
+    "0": "mkweapons:item/iron_tool",
+    "particle": "mkweapons:item/iron_tool"
+  }
 }

@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
-import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
@@ -42,10 +41,10 @@ public class MKWeaponModelProvider extends ItemModelProvider {
         makeSimpleItem(MKWeaponsItems.SilverEarring.get());
     }
 
-    private void makeSimpleItem(Item item) {
+    private ItemModelBuilder makeSimpleItem(Item item) {
         String path = ForgeRegistries.ITEMS.getKey(item).getPath();
-        singleTexture(path, new ResourceLocation(MKWeapons.MODID, "jewelry_base"), "layer0",
-                modLoc(String.format("items/%s", path)));
+        return singleTexture(path, new ResourceLocation(MKWeapons.MODID, "jewelry_base"), "layer0",
+                modLoc(String.format("item/%s", path)));
     }
 
     private void makeBowModels(MKBow bow) {
@@ -55,13 +54,13 @@ public class MKWeaponModelProvider extends ItemModelProvider {
             String subPath = String.format("%s_%s", path, subModel);
             getBuilder(subPath)
                     .parent(getExistingFile(modLoc(String.format("item/longbow_base_%s", subModel))))
-                    .texture("0", modLoc(String.format("items/%s_tool", bow.getMKTier().getName())))
-                    .texture("particle", modLoc(String.format("items/%s_tool", bow.getMKTier().getName())));
+                    .texture("0", modLoc(String.format("item/%s_tool", bow.getMKTier().getName())))
+                    .texture("particle", modLoc(String.format("item/%s_tool", bow.getMKTier().getName())));
         }
         ItemModelBuilder builder = getBuilder(path)
                 .parent(getExistingFile(modLoc("item/longbow_base")))
-                .texture("0", modLoc(String.format("items/%s_tool", bow.getMKTier().getName())))
-                .texture("particle", modLoc(String.format("items/%s_tool", bow.getMKTier().getName())));
+                .texture("0", modLoc(String.format("item/%s_tool", bow.getMKTier().getName())))
+                .texture("particle", modLoc(String.format("item/%s_tool", bow.getMKTier().getName())));
         int index = 0;
         Map<String, Tuple<Integer, Double>> subModelKeys = new HashMap<>();
         subModelKeys.put("pulling_0", new Tuple<>(1, -1.0));
@@ -88,16 +87,16 @@ public class MKWeaponModelProvider extends ItemModelProvider {
                 String subPath = String.format("%s_%s", path, subModel);
                 getBuilder(subPath)
                         .parent(getExistingFile(modLoc(String.format("item/%s_base_%s", weapon.getWeaponType().getName().getPath(), subModel))))
-                        .texture("0", modLoc(String.format("items/%s_tool", weapon.getMKTier().getName())))
-                        .texture("particle", modLoc(String.format("items/%s_tool", weapon.getMKTier().getName())));
+                        .texture("0", modLoc(String.format("item/%s_tool", weapon.getMKTier().getName())))
+                        .texture("particle", modLoc(String.format("item/%s_tool", weapon.getMKTier().getName())));
             }
         }
 
 
         ItemModelBuilder builder = getBuilder(path)
                 .parent(getExistingFile(modLoc(String.format("item/%s_base", weapon.getWeaponType().getName().getPath()))))
-                .texture("0", modLoc(String.format("items/%s_tool", weapon.getMKTier().getName())))
-                .texture("particle", modLoc(String.format("items/%s_tool", weapon.getMKTier().getName())));
+                .texture("0", modLoc(String.format("item/%s_tool", weapon.getMKTier().getName())))
+                .texture("particle", modLoc(String.format("item/%s_tool", weapon.getMKTier().getName())));
 
         Map<String, Tuple<Integer, Double>> subModelKeys = new HashMap<>();
         subModelKeys.put("blocking", new Tuple<>(1, -1.0));

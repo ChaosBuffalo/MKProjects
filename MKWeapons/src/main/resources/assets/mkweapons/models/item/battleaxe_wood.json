@@ -1,15 +1,15 @@
 {
   "parent": "mkweapons:item/battleaxe_base",
-  "textures": {
-    "0": "mkweapons:items/wood_tool",
-    "particle": "mkweapons:items/wood_tool"
-  },
   "overrides": [
     {
+      "model": "mkweapons:item/battleaxe_wood_blocking",
       "predicate": {
         "minecraft:blocking": 1.0
-      },
-      "model": "mkweapons:item/battleaxe_wood_blocking"
+      }
     }
-  ]
+  ],
+  "textures": {
+    "0": "mkweapons:item/wood_tool",
+    "particle": "mkweapons:item/wood_tool"
+  }
 }

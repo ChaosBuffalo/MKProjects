@@ -1,6 +1,6 @@
 {
   "parent": "mkweapons:item/jewelry_base",
   "textures": {
-    "layer0": "mkweapons:items/gold_earring"
+    "layer0": "mkweapons:item/gold_earring"
   }
 }
