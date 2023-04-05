@@ -1,18 +1,15 @@
 package com.chaosbuffalo.mkchat.capabilities;
 
-import com.chaosbuffalo.mkchat.ChatConstants;
 import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
 import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
+import com.chaosbuffalo.mkchat.dialogue.DialogueUtils;
 import com.chaosbuffalo.mkchat.event.PlayerNpcDialogueTreeGatherEvent;
 import com.chaosbuffalo.mkcore.GameConstants;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.protocol.game.ClientboundChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -177,15 +174,12 @@ public class NpcDialogueHandler implements INpcDialogue {
         if (server == null)
             return;
 
-        Component hail = new TextComponent("<")
+        Component hail = Component.literal("<")
                 .append(player.getDisplayName())
                 .append("> Hail, ")
                 .append(getEntity().getDisplayName());
 
-        server.getPlayerList().broadcast(null,
-                player.getX(), player.getY(), player.getZ(), ChatConstants.CHAT_RADIUS,
-                player.getLevel().dimension(),
-                new ClientboundChatPacket(hail, ChatType.CHAT, player.getUUID()));
+        DialogueUtils.sendMessageToAllAround(player.getServer(), player, hail);
     }
 
     @Override

@@ -9,15 +9,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
-import net.minecraft.data.HashCache;
 import net.minecraft.resources.ResourceLocation;
 
-import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.CompletableFuture;
 
 public class DialogueDataProvider implements DataProvider {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
@@ -28,8 +27,11 @@ public class DialogueDataProvider implements DataProvider {
     }
 
     @Override
-    public void run(@Nonnull HashCache cache) {
-        writeDialogue(getTestTree(), cache);
+    public CompletableFuture<?> run(CachedOutput pOutput) {
+
+        writeDialogue(getTestTree(), pOutput);
+
+        return CompletableFuture.allOf();
     }
 
     private DialogueTree getTestTree() {
@@ -79,17 +81,13 @@ public class DialogueDataProvider implements DataProvider {
     }
 
 
-    public void writeDialogue(DialogueTree dialogue, @Nonnull HashCache cache) {
-        Path outputFolder = this.generator.getOutputFolder();
+    public CompletableFuture<?> writeDialogue(DialogueTree dialogue, CachedOutput cachedOutput) {
+        Path outputFolder = generator.getPackOutput().getOutputFolder();
         ResourceLocation key = dialogue.getDialogueName();
         Path local = Paths.get("data", key.getNamespace(), DialogueManager.DEFINITION_FOLDER, key.getPath() + ".json");
         Path path = outputFolder.resolve(local);
-        try {
-            JsonElement element = dialogue.serialize(JsonOps.INSTANCE);
-            DataProvider.save(GSON, cache, element, path);
-        } catch (IOException e) {
-            MKChat.LOGGER.error("Couldn't write dialogue to file {}", path, e);
-        }
+        JsonElement element = dialogue.serialize(JsonOps.INSTANCE);
+        return DataProvider.saveStable(cachedOutput, element, path);
     }
 
     @Override

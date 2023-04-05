@@ -14,8 +14,6 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -55,10 +53,10 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
     private static final BiFunction<String, DialogueTree, Component> contextProvider =
             (name, tree) -> {
                 if (contextProviders.containsKey(name)) {
-                    return new ContextAwareTextComponent("mkchat.simple_context.msg", (context) ->
+                    return DialogueContextComponent.create("mkchat.simple_context.msg", (context) ->
                             Lists.newArrayList(contextProviders.get(name).apply(context)));
                 } else {
-                    return new TextComponent(String.format("{context:%s}", name));
+                    return Component.literal(String.format("{context:%s}", name));
                 }
             };
 
@@ -68,7 +66,7 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
                 if (prompt != null) {
                     return prompt.getPromptLink();
                 } else {
-                    return new TextComponent(String.format("{prompt:%s}", name));
+                    return Component.literal(String.format("{prompt:%s}", name));
                 }
             };
 
@@ -77,9 +75,9 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
                 ResourceLocation itemId = new ResourceLocation(name);
                 Item item = ForgeRegistries.ITEMS.getValue(itemId);
                 if (item != null) {
-                    return new TranslatableComponent(item.getDescriptionId());
+                    return Component.translatable(item.getDescriptionId());
                 } else {
-                    return new TextComponent(String.format("{item:%s}", name));
+                    return Component.literal(String.format("{item:%s}", name));
                 }
             };
 
@@ -166,16 +164,16 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
             if (textComponentProviders.containsKey(requestSplit[0])) {
                 return textComponentProviders.get(requestSplit[0]).apply(requestSplit[1], tree);
             } else {
-                return new TextComponent("{" + request + "}");
+                return Component.literal("{" + request + "}");
             }
         } else {
-            return new TextComponent("{" + request + "}");
+            return Component.literal("{" + request + "}");
         }
     }
 
     public static Component parseDialogueMessage(String text, DialogueTree tree) {
         String parsing = text;
-        MutableComponent component = new TextComponent("");
+        MutableComponent component = Component.empty();
         while (!parsing.isEmpty()) {
             if (parsing.contains("{") && parsing.contains("}")) {
                 int index = parsing.indexOf("{");

@@ -11,7 +11,6 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.LivingEntity;
@@ -114,7 +113,7 @@ public class DialoguePrompt extends DialogueObject {
     }
 
     public Component getPromptLink() {
-        return new TextComponent("[")
+        return Component.literal("[")
                 .append(getHighlightedText())
                 .append("]")
                 .withStyle(ChatFormatting.AQUA)
@@ -127,8 +126,8 @@ public class DialoguePrompt extends DialogueObject {
 
     public static <D> DataResult<DialoguePrompt> fromDynamic(Dynamic<D> dynamic) {
         Optional<String> nameResult = decodeKey(dynamic);
-        if (!nameResult.isPresent()) {
-            return DataResult.error("Failed to decode dialogue response id");
+        if (nameResult.isEmpty()) {
+            return DataResult.error(() -> "Failed to decode dialogue response id");
         }
 
         DialoguePrompt prompt = new DialoguePrompt(nameResult.get());
@@ -136,7 +135,7 @@ public class DialoguePrompt extends DialogueObject {
         if (prompt.isValid()) {
             return DataResult.success(prompt);
         }
-        return DataResult.error(String.format("Unable to decode dialogue prompt: %s", nameResult.get()));
+        return DataResult.error(() -> String.format("Unable to decode dialogue prompt: %s", nameResult.get()));
     }
 
     public static <D> DialoguePrompt fromDynamicField(OptionalDynamic<D> dynamic) {

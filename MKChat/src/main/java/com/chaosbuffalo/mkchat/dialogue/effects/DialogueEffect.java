@@ -42,12 +42,12 @@ public abstract class DialogueEffect implements IDynamicMapTypedSerializer {
     public static <D> DataResult<DialogueEffect> fromDynamic(Dynamic<D> dynamic) {
         Optional<ResourceLocation> type = getType(dynamic);
         if (!type.isPresent()) {
-            return DataResult.error(String.format("Failed to decode dialogue effect id: %s", dynamic));
+            return DataResult.error(() -> String.format("Failed to decode dialogue effect id: %s", dynamic));
         }
 
         DialogueEffect effect = DialogueManager.getDialogueEffect(type.get());
         if (effect == null) {
-            return DataResult.error(String.format("Unable to decode dialogue effect: %s", type.get()));
+            return DataResult.error(() -> String.format("Unable to decode dialogue effect: %s", type.get()));
         }
         effect.deserialize(dynamic);
         return DataResult.success(effect);

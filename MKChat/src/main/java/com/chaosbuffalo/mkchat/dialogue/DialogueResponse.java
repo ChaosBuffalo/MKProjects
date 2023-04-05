@@ -60,7 +60,7 @@ public class DialogueResponse {
     public static <D> DataResult<DialogueResponse> fromDynamic(Dynamic<D> dynamic) {
         Optional<String> name = decodeKey(dynamic);
         if (!name.isPresent()) {
-            return DataResult.error(String.format("Failed to decode dialogue response id: %s", dynamic));
+            return DataResult.error(() -> String.format("Failed to decode dialogue response id: %s", dynamic));
         }
 
         DialogueResponse resp = new DialogueResponse(name.get());
@@ -68,7 +68,7 @@ public class DialogueResponse {
         if (resp.isValid()) {
             return DataResult.success(resp);
         }
-        return DataResult.error(String.format("Unable to decode dialogue response: %s", name.get()));
+        return DataResult.error(() -> String.format("Unable to decode dialogue response: %s", name.get()));
     }
 
     public static <D> DialogueResponse fromDynamicField(OptionalDynamic<D> dynamic) {
