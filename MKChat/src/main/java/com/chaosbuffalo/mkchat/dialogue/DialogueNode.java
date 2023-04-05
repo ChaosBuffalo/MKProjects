@@ -52,7 +52,7 @@ public class DialogueNode extends DialogueObject {
 
         DialogueContext context = new DialogueContext(speaker, player, this);
 
-        DialogueContextComponent.process(getMessage(), context, msg::append);
+        msg.append(DialogueContextComponent.evaluate(getMessage(), context));
         return msg;
     }
 
