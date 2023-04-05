@@ -6,10 +6,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 
 public class OOCCommand {
@@ -21,11 +21,11 @@ public class OOCCommand {
     static int handleMessage(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         String msg = StringArgumentType.getString(ctx, "msg");
         ServerPlayer player = ctx.getSource().getPlayerOrException();
-        TextComponent oocMessage = new TextComponent(String.format("[OOC]<%s>: %s",
+        MutableComponent oocMessage = Component.literal(String.format("[OOC]<%s>: %s",
                 ctx.getSource().getPlayerOrException().getName().getString(), msg));
         oocMessage.withStyle(ChatFormatting.DARK_GREEN);
         player.getLevel().players().forEach(
-                playerEntity -> playerEntity.sendMessage(oocMessage, Util.NIL_UUID));
+                playerEntity -> playerEntity.sendSystemMessage(oocMessage));
         return Command.SINGLE_SUCCESS;
     }
 

@@ -66,13 +66,13 @@ public abstract class DialogueCondition implements IDynamicMapTypedSerializer {
     @Nonnull
     public static <D> DataResult<DialogueCondition> fromDynamic(Dynamic<D> dynamic) {
         Optional<ResourceLocation> type = getType(dynamic);
-        if (!type.isPresent()) {
-            return DataResult.error(String.format("Failed to decode dialogue condition id: %s", dynamic));
+        if (type.isEmpty()) {
+            return DataResult.error(() -> String.format("Failed to decode dialogue condition id: %s", dynamic));
         }
 
         DialogueCondition cond = DialogueManager.getDialogueCondition(type.get());
         if (cond == null) {
-            return DataResult.error(String.format("Unable to decode dialogue condition: %s", type.get()));
+            return DataResult.error(() -> String.format("Unable to decode dialogue condition: %s", type.get()));
         }
         cond.deserialize(dynamic);
         return DataResult.success(cond);

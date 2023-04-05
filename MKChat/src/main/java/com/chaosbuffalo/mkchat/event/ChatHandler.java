@@ -3,9 +3,8 @@ package com.chaosbuffalo.mkchat.event;
 import com.chaosbuffalo.mkchat.ChatConstants;
 import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.capabilities.INpcDialogue;
+import com.chaosbuffalo.mkchat.dialogue.DialogueUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.ChatType;
-import net.minecraft.network.protocol.game.ClientboundChatPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.AABB;
@@ -27,17 +26,15 @@ public class ChatHandler {
     public static void handleServerChat(ServerChatEvent event) {
         ServerPlayer player = event.getPlayer();
         if (player.getServer() != null) {
-            player.getServer().getPlayerList().broadcast(null,
-                    player.getX(), player.getY(), player.getZ(), ChatConstants.CHAT_RADIUS,
-                    player.getLevel().dimension(),
-                    new ClientboundChatPacket(event.getComponent(), ChatType.CHAT, player.getUUID()));
+
+            DialogueUtils.sendMessageToAllAround(player.getServer(), player, event.getMessage());
 
             List<Mob> entities = player.getLevel().getEntitiesOfClass(Mob.class,
                     getChatBoundingBox(player, ChatConstants.NPC_CHAT_RADIUS),
                     x -> x.getSensing().hasLineOfSight(player) && INpcDialogue.get(x).map(INpcDialogue::hasDialogue).orElse(false));
 
             for (Mob entity : entities) {
-                INpcDialogue.get(entity).ifPresent(cap -> cap.receiveMessage(player, event.getMessage()));
+                INpcDialogue.get(entity).ifPresent(cap -> cap.receiveMessage(player, event.getMessage().getString()));
             }
         }
         event.setCanceled(true);

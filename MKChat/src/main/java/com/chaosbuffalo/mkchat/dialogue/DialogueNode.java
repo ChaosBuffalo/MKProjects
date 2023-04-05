@@ -10,7 +10,6 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -47,18 +46,13 @@ public class DialogueNode extends DialogueObject {
 
     public MutableComponent getSpeakerMessage(LivingEntity speaker, ServerPlayer player) {
         // Generate a string that looks like: "<speaker_name> {message}"
-        MutableComponent msg = new TextComponent("<")
+        MutableComponent msg = Component.literal("<")
                 .append(speaker.getDisplayName())
                 .append("> ");
 
         DialogueContext context = new DialogueContext(speaker, player, this);
-        getMessage().getSiblings().stream().map(comp -> {
-            if (comp instanceof ContextAwareTextComponent) {
-                return ((ContextAwareTextComponent) comp).getContextFormattedTextComponent(context);
-            } else {
-                return comp.copy();
-            }
-        }).forEach(msg::append);
+
+        DialogueContextComponent.process(getMessage(), context, msg::append);
         return msg;
     }
 
@@ -86,8 +80,8 @@ public class DialogueNode extends DialogueObject {
 
     public static <D> DataResult<DialogueNode> fromDynamic(Dynamic<D> dynamic) {
         Optional<String> name = decodeKey(dynamic);
-        if (!name.isPresent()) {
-            return DataResult.error(String.format("Failed to decode dialogue node id: %s", dynamic));
+        if (name.isEmpty()) {
+            return DataResult.error(() -> String.format("Failed to decode dialogue node id: %s", dynamic));
         }
 
         DialogueNode prompt = new DialogueNode(name.get());
@@ -95,7 +89,7 @@ public class DialogueNode extends DialogueObject {
         if (prompt.isValid()) {
             return DataResult.success(prompt);
         }
-        return DataResult.error(String.format("Unable to decode dialogue node: %s", name.get()));
+        return DataResult.error(() -> String.format("Unable to decode dialogue node: %s", name.get()));
     }
 
     public static <D> DialogueNode fromDynamicField(OptionalDynamic<D> dynamic) {

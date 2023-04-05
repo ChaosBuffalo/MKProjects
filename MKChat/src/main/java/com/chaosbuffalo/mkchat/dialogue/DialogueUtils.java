@@ -1,10 +1,8 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
+import com.chaosbuffalo.mkchat.ChatConstants;
 import com.chaosbuffalo.mkchat.MKChat;
-import net.minecraft.Util;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,11 +15,12 @@ public class DialogueUtils {
 
     public static void sendMessageToAllAround(MinecraftServer server, LivingEntity source,
                                               Component message) {
-        server.getPlayerList().broadcast(null,
-                source.getX(), source.getY(), source.getZ(), CHAT_RADIUS,
-                source.getCommandSenderWorld().dimension(),
-                new ClientboundChatPacket(message, ChatType.CHAT, Util.NIL_UUID));
 
+        server.getPlayerList().getPlayers().forEach(sp -> {
+            if (sp.distanceToSqr(source) < ChatConstants.CHAT_RADIUS_SQ) {
+                sp.sendSystemMessage(message);
+            }
+        });
     }
 
     public static String getItemNameProvider(Item item) {

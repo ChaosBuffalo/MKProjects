@@ -31,8 +31,8 @@ include 'MKWidgets'
 project(":MKWidgets").buildFileName = "mono.gradle"
 include 'MKCore'
 project(":MKCore").buildFileName = "mono.gradle"
-//include 'MKChat'
-//project(":MKChat").buildFileName = "mono.gradle"
+include 'MKChat'
+project(":MKChat").buildFileName = "mono.gradle"
 //include 'MKFaction'
 //project(":MKFaction").buildFileName = "mono.gradle"
 //include 'MKWeapons'
