@@ -31,11 +31,11 @@ public class MKArmorItem extends ArmorItem implements IMKArmor {
     private final Multimap<Attribute, AttributeModifier> attributeMap;
 
 
-    public MKArmorItem(ArmorMaterial materialIn, EquipmentSlot slot, Properties builderIn,
+    public MKArmorItem(ArmorMaterial materialIn, ArmorItem.Type type, Properties builderIn,
                        IArmorEffect... armorEffects) {
-        super(materialIn, slot, builderIn);
+        super(materialIn, type, builderIn);
         ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
-        UUID uuid = ARMOR_MODIFIERS[slot.getIndex()];
+        UUID uuid = ARMOR_MODIFIERS[type.getSlot().getIndex()];
         builder.put(Attributes.ARMOR, new AttributeModifier(uuid, "Armor modifier", getDefense(),
                 AttributeModifier.Operation.ADDITION));
         builder.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(uuid, "Armor toughness", getToughness(),
@@ -44,7 +44,7 @@ public class MKArmorItem extends ArmorItem implements IMKArmor {
             builder.put(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(uuid, "Armor knockback resistance",
                     knockbackResistance, AttributeModifier.Operation.ADDITION));
         }
-        buildAttributes(builder, slot, materialIn, uuid);
+        buildAttributes(builder, type.getSlot(), materialIn, uuid);
         this.attributeMap = builder.build();
         this.armorEffects = Arrays.asList(armorEffects);
     }
@@ -113,6 +113,6 @@ public class MKArmorItem extends ArmorItem implements IMKArmor {
 
     @Override
     public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot equipmentSlot) {
-        return equipmentSlot == this.slot ? this.attributeMap : super.getDefaultAttributeModifiers(equipmentSlot);
+        return equipmentSlot == this.type.getSlot() ? this.attributeMap : super.getDefaultAttributeModifiers(equipmentSlot);
     }
 }

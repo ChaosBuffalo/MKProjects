@@ -80,7 +80,7 @@ public class ArmorDataHandler implements IArmorData {
         Multimap<Attribute, AttributeModifier> modifiers = getItemStack().getItem().getDefaultAttributeModifiers(slot);
         Multimap<Attribute, AttributeModifier> newMods = HashMultimap.create();
         newMods.putAll(modifiers);
-        if (slot == getArmorItem().getSlot()) {
+        if (slot == getArmorItem().getType().getSlot()) {
             for (IArmorEffect armorEffect : getArmorEffects()) {
                 if (armorEffect instanceof ItemModifierEffect) {
                     ItemModifierEffect modEffect = (ItemModifierEffect) armorEffect;

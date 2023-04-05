@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
@@ -48,7 +49,7 @@ public class LootConstructor implements IDynamicMapSerializer {
         this.randomizedOptions.addAll(options);
     }
 
-    public ItemStack constructItem(Random random, double difficulty) {
+    public ItemStack constructItem(RandomSource random, double difficulty) {
         if (item.isEmpty() || slot.equals(LootSlotManager.INVALID)) {
             return ItemStack.EMPTY;
         }

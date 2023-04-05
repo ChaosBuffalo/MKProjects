@@ -64,28 +64,28 @@ public class MKWeaponsEventHandler {
         if (event.getSlot() == EquipmentSlot.MAINHAND) {
             if (from instanceof IMKWeapon) {
                 ((IMKWeapon) from).getWeaponEffects(event.getFrom()).forEach(
-                        eff -> eff.onEntityUnequip(event.getEntityLiving())
+                        eff -> eff.onEntityUnequip(event.getEntity())
                 );
             }
             if (to instanceof IMKWeapon) {
                 ((IMKWeapon) to).getWeaponEffects(event.getTo()).forEach(
-                        eff -> eff.onEntityEquip(event.getEntityLiving())
+                        eff -> eff.onEntityEquip(event.getEntity())
                 );
             }
         }
         if (from instanceof IMKArmor) {
             ((IMKArmor) from).getArmorEffects(event.getFrom()).forEach(
-                    eff -> eff.onEntityUnequip(event.getEntityLiving())
+                    eff -> eff.onEntityUnequip(event.getEntity())
             );
         }
         if (to instanceof IMKArmor) {
             ((IMKArmor) to).getArmorEffects(event.getTo()).forEach(
-                    eff -> eff.onEntityEquip(event.getEntityLiving())
+                    eff -> eff.onEntityEquip(event.getEntity())
             );
         }
-        if (!(event.getEntityLiving() instanceof ServerPlayer))
+        if (!(event.getEntity() instanceof ServerPlayer))
             return;
-        ServerPlayer player = (ServerPlayer) event.getEntityLiving();
+        ServerPlayer player = (ServerPlayer) event.getEntity();
         checkShieldRestriction(player);
     }
 
@@ -106,7 +106,7 @@ public class MKWeaponsEventHandler {
 
     @SubscribeEvent
     public static void onPostCombatEvent(PostAttackEvent event) {
-        LivingEntity entity = event.getEntityLiving();
+        LivingEntity entity = event.getEntity();
         ItemStack mainHand = entity.getMainHandItem();
         if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon) {
             Item item = mainHand.getItem();
@@ -118,10 +118,10 @@ public class MKWeaponsEventHandler {
 
     @SubscribeEvent
     public static void onLivingCast(EntityAbilityEvent.EntityCompleteAbilityEvent event) {
-        List<MKCurioItemHandler> curios = MKAccessory.getMKCurios(event.getEntityLiving());
+        List<MKCurioItemHandler> curios = MKAccessory.getMKCurios(event.getEntity());
         for (MKCurioItemHandler handler : curios) {
             for (IAccessoryEffect effect : handler.getEffects()) {
-                effect.livingCompleteAbility(event.getEntityLiving(), event.getEntityData(), handler.getAccessory(),
+                effect.livingCompleteAbility(event.getEntity(), event.getEntityData(), handler.getAccessory(),
                         handler.getStack(), event.getAbility());
             }
         }
@@ -130,7 +130,7 @@ public class MKWeaponsEventHandler {
 
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
-        LivingEntity livingTarget = event.getEntityLiving();
+        LivingEntity livingTarget = event.getEntity();
         if (livingTarget.level.isClientSide)
             return;
         DamageSource source = event.getSource();

@@ -14,6 +14,6 @@ public class MKWCuriosExtension {
                 () -> SlotTypePreset.RING.getMessageBuilder().size(2).build());
         InterModComms.sendTo(CuriosApi.MODID, SlotTypeMessage.REGISTER_TYPE,
                 () -> new SlotTypeMessage.Builder("earring").priority(220).icon(
-                        new ResourceLocation(MKWeapons.MODID, "item/empty_earring_slot")).size(2).build());
+                        new ResourceLocation(MKWeapons.MODID, "slot/empty_earring_slot")).size(2).build());
     }
 }

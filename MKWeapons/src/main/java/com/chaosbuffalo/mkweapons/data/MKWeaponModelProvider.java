@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.Item;
@@ -21,7 +22,7 @@ import java.util.Map;
 
 public class MKWeaponModelProvider extends ItemModelProvider {
 
-    public MKWeaponModelProvider(DataGenerator generator, ExistingFileHelper existingFileHelper) {
+    public MKWeaponModelProvider(PackOutput generator, ExistingFileHelper existingFileHelper) {
         super(generator, MKWeapons.MODID, existingFileHelper);
     }
 

@@ -19,20 +19,20 @@ public class MKWeaponsClientEventHandler {
         Item item = event.getItemStack().getItem();
         if (item instanceof MKMeleeWeapon) {
             ((MKMeleeWeapon) item).addToTooltip(event.getItemStack(),
-                    event.getPlayer() != null ? event.getPlayer().getCommandSenderWorld() : null, event.getToolTip());
+                    event.getEntity() != null ? event.getEntity().getCommandSenderWorld() : null, event.getToolTip());
         }
         if (item instanceof MKBow) {
             ((MKBow) item).addToTooltip(event.getItemStack(),
-                    event.getPlayer() != null ? event.getPlayer().getCommandSenderWorld() : null, event.getToolTip());
+                    event.getEntity() != null ? event.getEntity().getCommandSenderWorld() : null, event.getToolTip());
         }
         if (item instanceof MKArmorItem) {
             ((MKArmorItem) item).addToTooltip(event.getItemStack(),
-                    event.getPlayer() != null ? event.getPlayer().getCommandSenderWorld() : null, event.getToolTip());
+                    event.getEntity() != null ? event.getEntity().getCommandSenderWorld() : null, event.getToolTip());
         }
 
         if (item instanceof MKAccessory) {
             ((MKAccessory) item).addToTooltip(event.getItemStack(),
-                    event.getPlayer() != null ? event.getPlayer().getCommandSenderWorld() : null, event.getToolTip());
+                    event.getEntity() != null ? event.getEntity().getCommandSenderWorld() : null, event.getToolTip());
         }
 
     }

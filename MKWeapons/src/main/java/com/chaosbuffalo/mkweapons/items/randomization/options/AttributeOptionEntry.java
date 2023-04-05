@@ -10,7 +10,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -87,7 +86,7 @@ public class AttributeOptionEntry {
         if (modifier.getOperation() != AttributeModifier.Operation.ADDITION) {
             amount *= 100.0f;
         }
-        return new TranslatableComponent(translationKey, I18n.get(attribute.getDescriptionId()), amount).withStyle(ChatFormatting.GRAY);
+        return Component.translatable(translationKey, I18n.get(attribute.getDescriptionId()), amount).withStyle(ChatFormatting.GRAY);
     }
 
     public <D> void deserialize(Dynamic<D> dynamic) {

@@ -12,7 +12,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -76,9 +75,9 @@ public class RestoreManaOnCastEffect extends BaseAccessoryEffect {
             if (roll >= (1.0 - getChance())) {
                 float mana = ability.getManaCost(entityData) * getPercentage();
                 playerData.getStats().addMana(mana);
-                playerData.getEntity().sendMessage(new TranslatableComponent(
+                playerData.getEntity().sendSystemMessage(Component.translatable(
                         "mkweapons.accessory_effect.restore_mana.message",
-                        stack.getHoverName()), Util.NIL_UUID);
+                        stack.getHoverName()));
             }
         }
     }
@@ -87,7 +86,7 @@ public class RestoreManaOnCastEffect extends BaseAccessoryEffect {
     public void addInformation(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
         super.addInformation(stack, worldIn, tooltip);
         if (Screen.hasShiftDown()) {
-            tooltip.add(new TranslatableComponent("mkweapons.accessory_effect.restore_mana.description",
+            tooltip.add(Component.translatable("mkweapons.accessory_effect.restore_mana.description",
                     MKAbility.PERCENT_FORMATTER.format(getChance()), MKAbility.PERCENT_FORMATTER.format(getPercentage())));
         }
     }

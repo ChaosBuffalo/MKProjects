@@ -5,6 +5,8 @@ import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
 import com.chaosbuffalo.mkweapons.command.WeaponsCommands;
 import com.chaosbuffalo.mkweapons.event.MKWeaponsEventHandler;
 import com.chaosbuffalo.mkweapons.extensions.MKWCuriosExtension;
+import com.chaosbuffalo.mkweapons.init.MKWeaponEffects;
+import com.chaosbuffalo.mkweapons.init.MKWeaponsCommands;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsParticles;
 import com.chaosbuffalo.mkweapons.items.effects.IWeaponEffectsExtension;
@@ -48,6 +50,8 @@ public class MKWeapons {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
         MKWeaponsParticles.register(FMLJavaModLoadingContext.get().getModEventBus());
         MKWeaponsItems.register(FMLJavaModLoadingContext.get().getModEventBus());
+        MKWeaponsCommands.register(FMLJavaModLoadingContext.get().getModEventBus());
+        MKWeaponEffects.register(FMLJavaModLoadingContext.get().getModEventBus());
         weaponTypeManager = new WeaponTypeManager();
         lootTierManager = new LootTierManager();
 

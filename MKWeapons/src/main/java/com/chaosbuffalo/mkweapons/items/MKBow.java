@@ -15,8 +15,6 @@ import com.google.common.collect.Multimap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -46,10 +44,9 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
     private final float baseDrawTime;
     private final float baseLaunchVel;
 
-    public MKBow(ResourceLocation location, Properties builder, MKTier tier, float baseDrawTime,
+    public MKBow(Properties builder, MKTier tier, float baseDrawTime,
                  float baseLaunchVel, IRangedWeaponEffect... weaponEffects) {
         super(builder);
-        setRegistryName(location);
         this.baseDrawTime = baseDrawTime;
         this.baseLaunchVel = baseLaunchVel;
         this.weaponEffects.addAll(Arrays.asList(weaponEffects));
@@ -202,7 +199,7 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
 
     public void addToTooltip(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
         if (getMKTier().getAttackDamageBonus() > 0) {
-            tooltip.add(new TranslatableComponent("mkweapons.bow_extra_damage.description",
+            tooltip.add(Component.translatable("mkweapons.bow_extra_damage.description",
                     getMKTier().getAttackDamageBonus()).withStyle(ChatFormatting.GRAY));
         }
         for (IRangedWeaponEffect weaponEffect : getWeaponEffects(stack)) {

@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkweapons.items.randomization.slots;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 public class RandomizationSlot implements IRandomizationSlot {
@@ -32,7 +31,7 @@ public class RandomizationSlot implements IRandomizationSlot {
 
     @Override
     public Component getDisplayName() {
-        return new TranslatableComponent(String.format("%s.randomization_slot.%s.name",
+        return Component.translatable(String.format("%s.randomization_slot.%s.name",
                 getName().getNamespace(), getName().getPath())).withStyle(getTextColor());
     }
 }

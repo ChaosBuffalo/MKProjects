@@ -7,8 +7,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
@@ -23,14 +21,14 @@ public class PrefixNameOption extends BaseRandomizationOption {
     }
 
     public PrefixNameOption() {
-        this(new TextComponent(""));
+        this(Component.literal(""));
     }
 
 
     @Override
     public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
 
-        stack.setHoverName(new TranslatableComponent("mkweapons.prefix.format", name, stack.getItem().getName(stack)));
+        stack.setHoverName(Component.translatable("mkweapons.prefix.format", name, stack.getItem().getName(stack)));
     }
 
     @Override
@@ -43,6 +41,6 @@ public class PrefixNameOption extends BaseRandomizationOption {
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
         name = dynamic.get("name").map(x -> x.asString().result().map(Component.Serializer::fromJson)
-                .orElse(new TextComponent("default"))).result().orElse(new TextComponent("default"));
+                .orElse(Component.literal("default"))).result().orElse(Component.literal("default"));
     }
 }

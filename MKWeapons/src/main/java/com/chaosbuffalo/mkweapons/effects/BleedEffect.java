@@ -10,33 +10,22 @@ import com.chaosbuffalo.mkcore.fx.ParticleEffects;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.ParticleEffectSpawnPacket;
-import com.chaosbuffalo.mkweapons.MKWeapons;
+import com.chaosbuffalo.mkweapons.init.MKWeaponEffects;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsParticles;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = MKWeapons.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+
 public class BleedEffect extends MKEffect {
 
-    public static final BleedEffect INSTANCE = new BleedEffect();
-
-    @SubscribeEvent
-    public static void register(RegistryEvent.Register<MKEffect> event) {
-        event.getRegistry().register(INSTANCE);
-    }
-
-    private BleedEffect() {
+    public BleedEffect() {
         super(MobEffectCategory.HARMFUL);
-        setRegistryName("effect.bleed_damage");
     }
 
     public static MKEffectBuilder<?> from(LivingEntity caster, int maxStacks, float base, float scale, float modScale) {
-        return INSTANCE.builder(caster).state(s -> {
+        return MKWeaponEffects.BLEED_DAMAGE.get().builder(caster).state(s -> {
             s.setMaxStacks(maxStacks);
             s.setScalingParameters(base, scale, modScale);
         });
@@ -64,7 +53,7 @@ public class BleedEffect extends MKEffect {
             float damage = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
             //MKWeapons.LOGGER.info("bleed damage {} {} from {}", damage, activeEffect, source);
             LivingEntity target = targetData.getEntity();
-            target.hurt(MKDamageSource.causeEffectDamage(CoreDamageTypes.BleedDamage.get(), "mkweapons.effect.bleed",
+            target.hurt(MKDamageSource.causeEffectDamage(target.getLevel(), CoreDamageTypes.BleedDamage.get(), "mkweapons.effect.bleed",
                     activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getModifierScale()), damage);
 
             PacketHandler.sendToTrackingAndSelf(

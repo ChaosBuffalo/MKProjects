@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkweapons.client.particle.BloodDripParticle;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsParticles;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ParticleFactoryRegisterEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.Mod;
 public class MKWeaponsRenderers {
 
     @SubscribeEvent
-    public static void registerParticleFactory(ParticleFactoryRegisterEvent evt) {
+    public static void registerParticleFactory(RegisterParticleProvidersEvent evt) {
         Minecraft.getInstance().particleEngine.register(MKWeaponsParticles.DRIPPING_BLOOD.get(),
                 BloodDripParticle.BloodDripFactory::new);
     }

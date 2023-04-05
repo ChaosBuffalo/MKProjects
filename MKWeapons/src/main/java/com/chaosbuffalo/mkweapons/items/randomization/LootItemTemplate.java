@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -69,7 +70,7 @@ public class LootItemTemplate implements IDynamicMapSerializer {
     }
 
     @Nullable
-    public LootConstructor generateConstructorForTemplateName(Random random, ResourceLocation templateName) {
+    public LootConstructor generateConstructorForTemplateName(RandomSource random, ResourceLocation templateName) {
         RandomizationTemplate template = getTemplate(templateName);
         if (template != null) {
             return generateConstructorForTemplate(random, template);
@@ -79,7 +80,7 @@ public class LootItemTemplate implements IDynamicMapSerializer {
     }
 
     @Nullable
-    public LootConstructor generateConstructor(Random random) {
+    public LootConstructor generateConstructor(RandomSource random) {
         RandomizationTemplate template = chooseTemplate(random);
         if (template != null) {
             return generateConstructorForTemplate(random, template);
@@ -88,7 +89,7 @@ public class LootItemTemplate implements IDynamicMapSerializer {
         }
     }
 
-    public LootConstructor generateConstructorForTemplate(Random random, RandomizationTemplate template) {
+    public LootConstructor generateConstructorForTemplate(RandomSource random, RandomizationTemplate template) {
         ItemStack stack = chooseItem(random).copy();
         List<IRandomizationOption> chosenOptions = new ArrayList<>();
         for (IRandomizationSlot randomizationSlot : template.getRandomizationSlots()) {
@@ -122,7 +123,7 @@ public class LootItemTemplate implements IDynamicMapSerializer {
         addItemStack(item, 1.0);
     }
 
-    public ItemStack chooseItem(Random random) {
+    public ItemStack chooseItem(RandomSource random) {
         if (potentialItems.isEmpty()) {
             return ItemStack.EMPTY;
         } else {
@@ -135,7 +136,7 @@ public class LootItemTemplate implements IDynamicMapSerializer {
     }
 
     @Nullable
-    public RandomizationTemplate chooseTemplate(Random random) {
+    public RandomizationTemplate chooseTemplate(RandomSource random) {
         RandomCollection<RandomizationTemplate> choices = new RandomCollection<>();
         for (RandomizationTemplateEntry entry : templates.values()) {
             choices.add(entry.weight, entry.template);

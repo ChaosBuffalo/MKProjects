@@ -17,7 +17,7 @@ import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -66,13 +66,13 @@ public class LootGenCommand {
                         }
                     }
                 } else {
-                    player.sendMessage(new TextComponent("No LootConstructor generated."), Util.NIL_UUID);
+                    player.sendSystemMessage(Component.literal("No LootConstructor generated."));
                 }
             } else {
-                player.sendMessage(new TextComponent("Loot Slot Not Found."), Util.NIL_UUID);
+                player.sendSystemMessage(Component.literal("Loot Slot Not Found."));
             }
         } else {
-            player.sendMessage(new TextComponent("Loot Tier Not Found."), Util.NIL_UUID);
+            player.sendSystemMessage(Component.literal("Loot Tier Not Found."));
         }
         return Command.SINGLE_SUCCESS;
     }

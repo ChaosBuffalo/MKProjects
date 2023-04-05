@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -36,7 +35,7 @@ public abstract class BaseItemEffect implements IItemEffect {
 
     @Override
     public void addInformation(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
-        tooltip.add(new TranslatableComponent(String.format("%s.%s.name",
+        tooltip.add(Component.translatable(String.format("%s.%s.name",
                 this.getTypeName().getNamespace(), this.getTypeName().getPath())).withStyle(color));
     }
 

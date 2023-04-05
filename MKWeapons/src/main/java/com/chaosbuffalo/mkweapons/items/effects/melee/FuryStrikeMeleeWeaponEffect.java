@@ -8,7 +8,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -32,8 +31,8 @@ public class FuryStrikeMeleeWeaponEffect extends SwingMeleeWeaponEffect {
     public void addInformation(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
         super.addInformation(stack, worldIn, tooltip);
         if (Screen.hasShiftDown()) {
-            tooltip.add(new TextComponent(I18n.get("mkweapons.weapon_effect.fury_strike.description",
-                    getPerHit() * 100.0f, getNumberOfHits())));
+            tooltip.add(Component.translatable("mkweapons.weapon_effect.fury_strike.description",
+                    getPerHit() * 100.0f, getNumberOfHits()));
         }
     }
 

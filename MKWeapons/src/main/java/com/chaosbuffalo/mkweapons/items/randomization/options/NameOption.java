@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
@@ -22,7 +21,7 @@ public class NameOption extends BaseRandomizationOption {
     }
 
     public NameOption() {
-        this(new TextComponent("default"));
+        this(Component.literal("default"));
     }
 
 
@@ -41,6 +40,6 @@ public class NameOption extends BaseRandomizationOption {
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
         name = dynamic.get("name").map(x -> x.asString().result().map(Component.Serializer::fromJson)
-                .orElse(new TextComponent("default"))).result().orElse(new TextComponent("default"));
+                .orElse(Component.literal("default"))).result().orElse(Component.literal("default"));
     }
 }

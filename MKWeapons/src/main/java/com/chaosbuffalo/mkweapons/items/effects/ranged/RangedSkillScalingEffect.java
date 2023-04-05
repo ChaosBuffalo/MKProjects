@@ -12,7 +12,6 @@ import com.mojang.serialization.DynamicOps;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -60,12 +59,12 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
 
     @Override
     public void addInformation(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
-        tooltip.add(new TranslatableComponent(skill.getDescriptionId()).withStyle(color));
+        tooltip.add(Component.translatable(skill.getDescriptionId()).withStyle(color));
         if (Screen.hasShiftDown()) {
             float skillLevel = ClientUtils.getClientSkillLevel(skill);
             double bonus = skillLevel * baseDamage;
-            tooltip.add(new TranslatableComponent("mkweapons.weapon_effect.ranged_skill_scaling.description",
-                    new TranslatableComponent(skill.getDescriptionId()), MKAbility.NUMBER_FORMATTER.format(bonus)));
+            tooltip.add(Component.translatable("mkweapons.weapon_effect.ranged_skill_scaling.description",
+                    Component.translatable(skill.getDescriptionId()), MKAbility.NUMBER_FORMATTER.format(bonus)));
         }
     }
 

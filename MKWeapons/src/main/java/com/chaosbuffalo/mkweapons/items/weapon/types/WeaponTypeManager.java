@@ -72,10 +72,10 @@ public class WeaponTypeManager extends SimpleJsonResourceReloadListener {
     @SubscribeEvent
     public void playerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
         MKWeapons.LOGGER.debug("Player logged in weapon type manager");
-        if (event.getPlayer() instanceof ServerPlayer) {
+        if (event.getEntity() instanceof ServerPlayer) {
             SyncWeaponTypesPacket updatePacket = new SyncWeaponTypesPacket(MeleeWeaponTypes.WEAPON_TYPES.values());
-            MKWeapons.LOGGER.debug("Sending {} update packet", event.getPlayer());
-            PacketHandler.sendMessage(updatePacket, (ServerPlayer) event.getPlayer());
+            MKWeapons.LOGGER.debug("Sending {} update packet", event.getEntity());
+            PacketHandler.sendMessage(updatePacket, (ServerPlayer) event.getEntity());
         }
     }
 

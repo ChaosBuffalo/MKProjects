@@ -10,6 +10,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -26,7 +27,7 @@ public class LootTier implements IDynamicMapSerializer {
     }
 
     @Nullable
-    public LootItemTemplate chooseItemTemplate(Random random, LootSlot slot) {
+    public LootItemTemplate chooseItemTemplate(RandomSource random, LootSlot slot) {
         List<LootItemTemplateEntry> slotOptions = potentialItemsForSlot.getOrDefault(slot, EMPTY_CHOICES);
         if (slotOptions.isEmpty()) {
             return null;
@@ -40,7 +41,7 @@ public class LootTier implements IDynamicMapSerializer {
     }
 
     @Nullable
-    public LootConstructor generateConstructorForSlot(Random random, LootSlot slot) {
+    public LootConstructor generateConstructorForSlot(RandomSource random, LootSlot slot) {
         LootItemTemplate template = chooseItemTemplate(random, slot);
         if (template == null) {
             return null;

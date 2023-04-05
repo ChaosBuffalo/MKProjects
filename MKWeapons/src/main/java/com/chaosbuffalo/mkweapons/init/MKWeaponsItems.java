@@ -19,16 +19,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tiers;
 import net.minecraftforge.common.Tags;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.*;
@@ -56,25 +55,25 @@ public class MKWeaponsItems {
     public static Map<MKTier, Map<IMeleeWeaponType, Item>> WEAPON_LOOKUP = new HashMap<>();
 
     public static RegistryObject<Item> Haft = REGISTRY.register("haft",
-            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MATERIALS)));
+            () -> new Item(new Item.Properties()));
 
     public static RegistryObject<Item> CopperRing = REGISTRY.register("copper_ring",
-            () -> new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT)));
+            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
     public static RegistryObject<Item> GoldRing = REGISTRY.register("gold_ring",
-            () -> new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT)));
+            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
     public static RegistryObject<Item> RoseGoldRing = REGISTRY.register("rose_gold_ring",
-            () -> new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT)));
+            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
     public static RegistryObject<Item> SilverRing = REGISTRY.register("silver_ring",
-            () -> new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT)));
+            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
     public static RegistryObject<Item> SilverEarring = REGISTRY.register("silver_earring",
-            () -> new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT)));
+            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
     public static RegistryObject<Item> GoldEarring = REGISTRY.register("gold_earring",
-            () -> new MKAccessory(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT)));
+            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
     public static void putWeaponForLookup(MKTier tier, IMeleeWeaponType weaponType, Item item) {
         WEAPON_LOOKUP.putIfAbsent(tier, new HashMap<>());
@@ -86,7 +85,10 @@ public class MKWeaponsItems {
     }
 
     @SubscribeEvent
-    public static void registerItems(RegistryEvent.Register<Item> evt) {
+    public static void registerItems(RegisterEvent evt) {
+        if (evt.getRegistryKey() != ForgeRegistries.ITEMS.getRegistryKey()) {
+            return;
+        }
         MeleeWeaponTypes.registerWeaponTypes();
         Set<Tuple<String, MKTier>> materials = new HashSet<>();
         materials.add(new Tuple<>("iron", IRON_TIER));
@@ -97,31 +99,32 @@ public class MKWeaponsItems {
         WEAPON_LOOKUP.clear();
         for (Tuple<String, MKTier> mat : materials) {
             for (IMeleeWeaponType weaponType : MeleeWeaponTypes.WEAPON_TYPES.values()) {
-                MKMeleeWeapon weapon = new MKMeleeWeapon(new ResourceLocation(MKWeapons.MODID,
-                        String.format("%s_%s", weaponType.getName().getPath(), mat.getA())), mat.getB(), weaponType,
-                        (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT));
+                MKMeleeWeapon weapon = new MKMeleeWeapon(mat.getB(), weaponType,
+                        (new Item.Properties()));
                 WEAPONS.add(weapon);
                 WeaponTypeManager.addMeleeWeapon(weapon);
                 putWeaponForLookup(mat.getB(), weaponType, weapon);
-                evt.getRegistry().register(weapon);
+                evt.register(ForgeRegistries.ITEMS.getRegistryKey(), new ResourceLocation(MKWeapons.MODID,
+                        String.format("%s_%s", weaponType.getName().getPath(), mat.getA())), () -> weapon);
             }
             RangedModifierEffect rangedMods = new RangedModifierEffect();
             rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT,
                     new AttributeModifier(RANGED_WEP_UUID, "Bow Crit", 0.05, AttributeModifier.Operation.ADDITION));
             rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT_MULTIPLIER,
                     new AttributeModifier(RANGED_WEP_UUID, "Bow Crit", 0.25, AttributeModifier.Operation.ADDITION));
-            MKBow bow = new MKBow(new ResourceLocation(MKWeapons.MODID, String.format("longbow_%s", mat.getA())),
-                    new Item.Properties().durability(mat.getB().getUses() * 3).tab(CreativeModeTab.TAB_COMBAT), mat.getB(),
+            MKBow bow = new MKBow(
+                    new Item.Properties().durability(mat.getB().getUses() * 3), mat.getB(),
                     GameConstants.TICKS_PER_SECOND * 2.5f, 4.0f,
                     new RapidFireRangedWeaponEffect(7, .10f),
                     rangedMods
             );
             BOWS.add(bow);
-            evt.getRegistry().register(bow);
+            evt.register(ForgeRegistries.ITEMS.getRegistryKey(),
+                    new ResourceLocation(MKWeapons.MODID, String.format("longbow_%s", mat.getA())), () -> bow);
         }
         TestNBTWeaponEffectItem testNBTWeaponEffectItem = new TestNBTWeaponEffectItem(new Item.Properties());
-        testNBTWeaponEffectItem.setRegistryName(MKWeapons.MODID, "test_nbt_effect");
-        evt.getRegistry().register(testNBTWeaponEffectItem);
+        evt.register(ForgeRegistries.ITEMS.getRegistryKey(),
+                new ResourceLocation(MKWeapons.MODID, "test_nbt_effect"), () -> testNBTWeaponEffectItem);
     }
 
     public static void registerItemProperties() {

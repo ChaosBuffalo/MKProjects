@@ -21,8 +21,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -58,7 +56,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
     protected static final UUID BLOCK_EFFICIENCY_MODIFIER = UUID.fromString("da287a85-0c12-459c-97a5-faea98bc3d6f");
     public static final Set<ToolAction> SWORD_ACTIONS = ImmutableSet.of(ToolActions.SWORD_DIG);
 
-    public MKMeleeWeapon(ResourceLocation weaponName, MKTier tier, IMeleeWeaponType weaponType, Properties builder) {
+    public MKMeleeWeapon(MKTier tier, IMeleeWeaponType weaponType, Properties builder) {
         super(tier, Math.round(weaponType.getDamageForTier(tier) - tier.getAttackDamageBonus()), weaponType.getAttackSpeed(), builder);
         this.weaponType = weaponType;
         this.mkTier = tier;
@@ -66,7 +64,6 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
         recalculateModifiers();
         weaponEffects.addAll(tier.getMeleeWeaponEffects());
         weaponEffects.addAll(weaponType.getWeaponEffects());
-        setRegistryName(weaponName);
     }
 
     protected void recalculateModifiers() {
@@ -214,10 +211,10 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
 
     public void addToTooltip(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
         if (getWeaponType().isTwoHanded()) {
-            tooltip.add(new TranslatableComponent("mkweapons.two_handed.name")
+            tooltip.add(Component.translatable("mkweapons.two_handed.name")
                     .withStyle(ChatFormatting.GRAY));
             if (Screen.hasShiftDown()) {
-                tooltip.add(new TranslatableComponent("mkweapons.two_handed.description"));
+                tooltip.add(Component.translatable("mkweapons.two_handed.description"));
             }
         }
         for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
@@ -225,7 +222,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
         }
         MKAbility ability = getAbility(stack);
         if (ability != null) {
-            tooltip.add(new TranslatableComponent("mkweapons.grants_ability",
+            tooltip.add(Component.translatable("mkweapons.grants_ability",
                     ability.getAbilityName()).withStyle(ChatFormatting.GOLD));
         }
     }
