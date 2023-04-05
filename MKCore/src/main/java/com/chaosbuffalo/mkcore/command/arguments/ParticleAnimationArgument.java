@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 public class ParticleAnimationArgument implements ArgumentType<ResourceLocation> {
 
-    public static ParticleAnimationArgument ParticleAnimation() {
+    public static ParticleAnimationArgument particleAnimation() {
         return new ParticleAnimationArgument();
     }
 

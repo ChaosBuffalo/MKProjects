@@ -22,8 +22,8 @@ public class ParticleEffectsCommand {
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("pe")
                 .then(Commands.literal("addBoneAnimation")
-                        .then(Commands.argument("particleAnimation", ParticleAnimationArgument.ParticleAnimation())
-                                .then(Commands.argument("bone", BipedBoneArgument.BipedBone())
+                        .then(Commands.argument("particleAnimation", ParticleAnimationArgument.particleAnimation())
+                                .then(Commands.argument("bone", BipedBoneArgument.bipedBone())
                                         .executes(ParticleEffectsCommand::addEffectInstance)
                                 )
                         )

@@ -8,29 +8,15 @@ import net.minecraft.commands.Commands;
 public class MKCommand {
 
     public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
-//        LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal("mk")
-//                .then(StatCommand.register())
-//                .then(CooldownCommand.register())
-//                .then(AbilityCommand.register())
-//                .then(EffectCommand.register())
-//                .then(PersonaCommand.register())
-//                .then(TalentCommand.register())
-//                .then(HotBarCommand.register())
-//                .then(ParticleEffectsCommand.register());
-//        dispatcher.register(builder);
+        LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal("mk")
+                .then(StatCommand.register())
+                .then(CooldownCommand.register())
+                .then(AbilityCommand.register())
+                .then(EffectCommand.register())
+                .then(PersonaCommand.register())
+                .then(TalentCommand.register())
+                .then(HotBarCommand.register())
+                .then(ParticleEffectsCommand.register());
+        dispatcher.register(builder);
     }
-
-
-    //FIXME: figure out wtf is going on wiht commands
-//    public static void registerArguments() {
-//        ArgumentTypes.register("ability_id", AbilityIdArgument.class, new EmptyArgumentSerializer<>(AbilityIdArgument::ability));
-//        ArgumentTypes.register("ability_group", HotBarCommand.AbilityGroupArgument.class, new EmptyArgumentSerializer<>(HotBarCommand.AbilityGroupArgument::abilityGroup));
-//        ArgumentTypes.register("talent_id", TalentIdArgument.class, new EmptyArgumentSerializer<>(TalentIdArgument::talentId));
-//        ArgumentTypes.register("talent_tree_id", TalentTreeIdArgument.class, new EmptyArgumentSerializer<>(TalentTreeIdArgument::talentTreeId));
-//        ArgumentTypes.register("talent_line_id", TalentLineIdArgument.class, new EmptyArgumentSerializer<>(TalentLineIdArgument::talentLine));
-//        ArgumentTypes.register("bone_id", BipedBoneArgument.class, new EmptyArgumentSerializer<>(BipedBoneArgument::BipedBone));
-//        ArgumentTypes.register("particle_animation_id", ParticleAnimationArgument.class, new EmptyArgumentSerializer<>(ParticleAnimationArgument::ParticleAnimation));
-//        ArgumentTypes.register("ability_source_type_id", AbilitySourceTypeArgument.class, new EmptyArgumentSerializer<>(AbilitySourceTypeArgument::abilitySourceType));
-//    }
-
 }

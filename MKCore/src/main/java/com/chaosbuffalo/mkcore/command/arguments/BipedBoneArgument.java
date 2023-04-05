@@ -35,7 +35,7 @@ public class BipedBoneArgument implements ArgumentType<String> {
         bones.add(BipedSkeleton.HEAD_BONE_NAME);
     }
 
-    public static BipedBoneArgument BipedBone() {
+    public static BipedBoneArgument bipedBone() {
         return new BipedBoneArgument();
     }
 
