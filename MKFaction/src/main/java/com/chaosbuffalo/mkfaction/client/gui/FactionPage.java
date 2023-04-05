@@ -16,7 +16,6 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.InterModComms;
 
@@ -28,7 +27,7 @@ public class FactionPage extends PlayerPageBase {
     protected MKScrollView scrollView;
 
     public FactionPage(MKPlayerData playerData) {
-        super(playerData, new TextComponent("Factions"));
+        super(playerData, Component.literal("Factions"));
     }
 
     @Override
@@ -97,7 +96,7 @@ public class FactionPage extends PlayerPageBase {
 
         @Override
         public Component getDisplayName() {
-            return new TextComponent("Factions");
+            return Component.literal("Factions");
         }
 
         @Override

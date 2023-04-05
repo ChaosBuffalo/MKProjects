@@ -6,19 +6,18 @@ import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mkfaction.client.gui.FactionPage;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionStatus;
-import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
@@ -36,10 +35,12 @@ public class InputHandler {
             GLFW.GLFW_KEY_P,
             "key.mkfaction.category");
 
-    public static void registerKeybinds() {
-        ClientRegistry.registerKeyBinding(CON_KEY_BIND);
-        ClientRegistry.registerKeyBinding(FACTION_PANEL_KEY_BIND);
+
+    public static void registerKeyBinding(RegisterKeyMappingsEvent evt) {
+        evt.register(CON_KEY_BIND);
+        evt.register(FACTION_PANEL_KEY_BIND);
     }
+
 
     @Nullable
     public static <E extends Entity> EntityHitResult getLookingAtNonPlayer(Class<E> clazz,
@@ -61,12 +62,12 @@ public class InputHandler {
                 target.getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY).ifPresent(mobFaction ->
                         player.getCapability(FactionCapabilities.PLAYER_FACTION_CAPABILITY).ifPresent(playerFaction -> {
                             PlayerFactionStatus status = playerFaction.getFactionStatus(mobFaction);
-                            MutableComponent msg = new TranslatableComponent(status.getTranslationKey() + ".con",
+                            MutableComponent msg = Component.translatable(status.getTranslationKey() + ".con",
                                     target.getName()).withStyle(status.getColor());
                             if (player.isCreative()) {
                                 msg.append(String.format(" (%s)", mobFaction.getFactionName()));
                             }
-                            player.sendMessage(msg, Util.NIL_UUID);
+                            player.sendSystemMessage(msg);
                         }));
             }
         }
@@ -76,7 +77,7 @@ public class InputHandler {
     }
 
     @SubscribeEvent
-    public static void onMouseEvent(InputEvent.MouseInputEvent event) {
+    public static void onMouseEvent(InputEvent.MouseButton event) {
         handleInputEvent();
     }
 

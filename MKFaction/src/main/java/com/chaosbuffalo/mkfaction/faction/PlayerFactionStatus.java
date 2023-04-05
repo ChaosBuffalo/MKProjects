@@ -2,8 +2,8 @@ package com.chaosbuffalo.mkfaction.faction;
 
 import com.chaosbuffalo.targeting_api.Targeting;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -50,7 +50,7 @@ public enum PlayerFactionStatus {
     }
 
     public MutableComponent getDefaultDisplayName() {
-        return new TranslatableComponent(getTranslationKey());
+        return Component.translatable(getTranslationKey());
     }
 
     public ChatFormatting getColor() {

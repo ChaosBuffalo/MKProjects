@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkfaction.command.FactionCommand;
 import com.chaosbuffalo.mkfaction.event.InputHandler;
 import com.chaosbuffalo.mkfaction.faction.FactionDefaultManager;
 import com.chaosbuffalo.mkfaction.faction.FactionManager;
+import com.chaosbuffalo.mkfaction.init.FactionCommands;
 import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mkfaction.network.PacketHandler;
 import net.minecraftforge.api.distmarker.Dist;
@@ -31,13 +32,14 @@ public class MKFactionMod {
 
     public MKFactionMod() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
         // Register the enqueueIMC method for modloading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
         MinecraftForge.EVENT_BUS.register(this);
         MKFactions.register(FMLJavaModLoadingContext.get().getModEventBus());
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(InputHandler::registerKeyBinding);
         factionManager = new FactionManager();
         factionDefaultManager = new FactionDefaultManager();
+        FactionCommands.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
 
@@ -45,12 +47,8 @@ public class MKFactionMod {
         LOGGER.debug("MKFactionMod.setup");
         PacketHandler.setupHandler();
         TargetingHooks.registerHooks();
-        FactionCommand.registerArgumentTypes();
     }
 
-    private void clientSetup(final FMLClientSetupEvent event) {
-        InputHandler.registerKeybinds();
-    }
 
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {

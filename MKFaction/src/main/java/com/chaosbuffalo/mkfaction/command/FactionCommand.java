@@ -17,8 +17,6 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.synchronization.ArgumentTypes;
-import net.minecraft.commands.synchronization.EmptyArgumentSerializer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -54,9 +52,6 @@ public class FactionCommand {
         dispatcher.register(builder);
     }
 
-    public static void registerArgumentTypes() {
-        ArgumentTypes.register("faction_id", FactionIdArgument.class, new EmptyArgumentSerializer<>(FactionIdArgument::new));
-    }
 
     private static String describeEntry(PlayerFactionEntry entry) {
         return String.format("%s: %d (%s)", entry.getFactionName(), entry.getFactionScore(), entry.getFactionStatus());

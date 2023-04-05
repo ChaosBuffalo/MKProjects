@@ -7,20 +7,18 @@ import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class MKFaction extends ForgeRegistryEntry<MKFaction> {
+public class MKFaction {
     public static final ResourceLocation INVALID_FACTION = new ResourceLocation(MKFactionMod.MODID, "faction.invalid");
     private final Set<ResourceLocation> allies;
     private final Set<ResourceLocation> enemies;
@@ -56,13 +54,13 @@ public class MKFaction extends ForgeRegistryEntry<MKFaction> {
     }
 
     public MutableComponent getDisplayName() {
-        return new TranslatableComponent(getTranslationKey());
+        return Component.translatable(getTranslationKey());
     }
 
     public MutableComponent getStatusName(PlayerFactionStatus status) {
         String customName = customStatusNames.get(status);
         if (customName != null) {
-            return new TextComponent(customName);
+            return Component.literal(customName);
         }
         return status.getDefaultDisplayName();
     }

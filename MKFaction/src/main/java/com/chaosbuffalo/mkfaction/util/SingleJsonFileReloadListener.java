@@ -32,20 +32,19 @@ public abstract class SingleJsonFileReloadListener extends SimplePreparableReloa
 
     @Override
     protected JsonObject prepare(ResourceManager resourceManagerIn, ProfilerFiller profilerIn) {
-        try (
-                Resource iresource = resourceManagerIn.getResource(getLoc());
-                InputStream inputstream = iresource.getInputStream();
+
+        return resourceManagerIn.getResource(getLoc()).map(x -> {
+            try (
+                InputStream inputstream = x.open();
+            ) {
                 Reader reader = new BufferedReader(new InputStreamReader(inputstream, StandardCharsets.UTF_8));
-        ) {
-            JsonObject jsonobject = GsonHelper.fromJson(this.gson, reader, JsonObject.class);
-            if (jsonobject != null) {
-                return jsonobject;
-            } else {
-                LOGGER.error("Couldn't load data file {} as it's null or empty", loc);
+                return GsonHelper.fromJson(this.gson, reader, JsonObject.class);
+            } catch (IllegalArgumentException | IOException | JsonParseException jsonparseexception) {
+                LOGGER.error("Couldn't parse data file {}", loc, jsonparseexception);
             }
-        } catch (IllegalArgumentException | IOException | JsonParseException jsonparseexception) {
-            LOGGER.error("Couldn't parse data file {}", loc, jsonparseexception);
-        }
-        return null;
+            return null;
+        }).orElse(null);
+
+
     }
 }

@@ -27,7 +27,6 @@ public class MKFactionRegistry {
     @SubscribeEvent
     public static void createRegistries(NewRegistryEvent event) {
         event.create(new RegistryBuilder<MKFaction>()
-                .setName(FACTION_REGISTRY_NAME)
-                .setType(MKFaction.class), r -> FACTION_REGISTRY = r);
+                .setName(FACTION_REGISTRY_NAME), r -> FACTION_REGISTRY = r);
     }
 }
