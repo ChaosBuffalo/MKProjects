@@ -39,6 +39,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.common.MinecraftForge;
@@ -124,6 +126,13 @@ public class ClientEventHandler {
 //            }
 //        });
 //    }
+
+    @SubscribeEvent
+    public static void onOverlayRender(RenderGuiOverlayEvent.Pre event) {
+        if (event.getOverlay().id() == VanillaGuiOverlay.PLAYER_HEALTH.id()) {
+            event.setCanceled(true);
+        }
+    }
 
     static void handleAbilityBarPressed(MKPlayerData player, AbilityGroupId group, int slot) {
         if (player.getAbilityExecutor().isOnGlobalCooldown() ||
