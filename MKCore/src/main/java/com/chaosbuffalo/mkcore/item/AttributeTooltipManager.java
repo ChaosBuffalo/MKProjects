@@ -81,7 +81,9 @@ public class AttributeTooltipManager {
                 makeEqualsText(attribute, modifier, displayAmount) :
                 makePlusOrTakeText(attribute, modifier, amount, displayAmount);
 
-        output.accept(line);
+        if (line != null) {
+            output.accept(line);
+        }
     }
 
     @Nullable
