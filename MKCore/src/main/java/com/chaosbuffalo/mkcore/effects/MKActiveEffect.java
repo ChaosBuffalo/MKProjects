@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -310,6 +311,12 @@ public class MKActiveEffect {
         public MKMobEffectInstance(MKActiveEffect effectInstance) {
             super(effectInstance.getEffect().getVanillaWrapper());
             this.effectInstance = effectInstance;
+        }
+
+        @Override
+        public MobEffect getEffect() {
+            // Stop the call to the MobEffects registry
+            return effectInstance.getEffect().getVanillaWrapper();
         }
 
         public MKActiveEffect getEffectInstance() {
