@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.core.IMKAbilityProvider;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
@@ -60,8 +61,8 @@ public class PlayerEquipment {
             currentMainAbility = null;
         }
 
-        if (to.getItem() instanceof IMKAbilityProvider) {
-            currentMainAbility = ((IMKAbilityProvider) to.getItem()).getAbility(to);
+        if (to.getItem() instanceof IMKAbilityProvider provider) {
+            currentMainAbility = provider.getAbility(to);
             if (currentMainAbility != null) {
                 playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).setSlot(0, currentMainAbility.getAbilityId());
             }
@@ -115,10 +116,11 @@ public class PlayerEquipment {
         if (newItem.isEmpty())
             return;
 
-        if (newItem.getItem() instanceof IMKAbilityProvider) {
-            MKAbility ability = ((IMKAbilityProvider) newItem.getItem()).getAbility(newItem);
+        if (newItem.getItem() instanceof IMKAbilityProvider provider) {
+            MKAbility ability = provider.getAbility(newItem);
             if (ability != null) {
-                playerData.getAbilities().learnAbility(ability, AbilitySource.forEquipmentSlot(newItem.getEquipmentSlot()));
+                EquipmentSlot slot = LivingEntity.getEquipmentSlotForItem(newItem);
+                playerData.getAbilities().learnAbility(ability, AbilitySource.forEquipmentSlot(slot));
             }
         }
     }
@@ -127,10 +129,11 @@ public class PlayerEquipment {
         if (oldItem.isEmpty())
             return;
 
-        if (oldItem.getItem() instanceof IMKAbilityProvider) {
-            MKAbility ability = ((IMKAbilityProvider) oldItem.getItem()).getAbility(oldItem);
+        if (oldItem.getItem() instanceof IMKAbilityProvider provider) {
+            MKAbility ability = provider.getAbility(oldItem);
             if (ability != null) {
-                playerData.getAbilities().unlearnAbility(ability.getAbilityId(), AbilitySource.forEquipmentSlot(oldItem.getEquipmentSlot()));
+                EquipmentSlot slot = LivingEntity.getEquipmentSlotForItem(oldItem);
+                playerData.getAbilities().unlearnAbility(ability.getAbilityId(), AbilitySource.forEquipmentSlot(slot));
             }
         }
     }
