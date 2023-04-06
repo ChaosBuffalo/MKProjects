@@ -205,7 +205,7 @@ def replaceResources = tasks.register("replaceResources", Copy) {
 }
 
 processResources {
-    duplicatesStrategy = DuplicatesStrategy.FAIL
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     exclude('META-INF/mods.toml')
     configure { finalizedBy(replaceResources) }
 }
