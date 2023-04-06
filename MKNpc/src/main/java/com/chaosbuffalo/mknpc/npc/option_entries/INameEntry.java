@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.MutableComponent;
 
 public interface INameEntry {
 
-    TextComponent getName();
+    MutableComponent getName();
 }

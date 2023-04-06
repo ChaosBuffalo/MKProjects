@@ -14,8 +14,7 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.objectives.ITradeObjectiveHandler;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import net.minecraft.Util;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -106,9 +105,9 @@ public class QuestGiverInventoryContainer extends ChestMenu {
             }
         }
         for (ItemStack is : nonEmpty) {
-            TextComponent name = new TextComponent(String.format("<%s>", entity.getDisplayName().getString()));
-            playerIn.sendMessage(new TranslatableComponent("mknpc.quest.trade.dont_need", name,
-                    playerIn.getName(), is.getCount(), is.getHoverName()), Util.NIL_UUID);
+            Component name = Component.literal(String.format("<%s>", entity.getDisplayName().getString()));
+            playerIn.sendSystemMessage(Component.translatable("mknpc.quest.trade.dont_need", name,
+                    playerIn.getName(), is.getCount(), is.getHoverName()));
             playerIn.getInventory().placeItemBackInInventory(is, true);
         }
     }

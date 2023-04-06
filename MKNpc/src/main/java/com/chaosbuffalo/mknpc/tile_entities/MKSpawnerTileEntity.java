@@ -289,7 +289,7 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
                 final double finDiff = difficultyValue;
                 MKNpc.getNpcData(entity).ifPresent((cap) -> {
                     cap.setMKSpawned(true);
-                    cap.setSpawnPos(new BlockPos(spawnPos).above());
+                    cap.setSpawnPos(BlockPos.containing(spawnPos).above());
                     if (notableIds.containsKey(definition.getDefinitionName())) {
                         cap.setNotableUUID(notableIds.get(definition.getDefinitionName()));
                     }

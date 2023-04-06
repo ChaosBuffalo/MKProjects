@@ -10,7 +10,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.StructureFeatureManager;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -80,8 +79,8 @@ public class StructureUtils {
     }
 
     public static Optional<List<StructureStart>> getStructuresOverlaps(Entity entity) {
-        if (entity.getCommandSenderWorld() instanceof ServerLevel) {
-            StructureFeatureManager manager = ((ServerLevel) entity.getCommandSenderWorld()).structureFeatureManager();
+        if (entity.getCommandSenderWorld() instanceof ServerLevel serverLevel) {
+            var manager = serverLevel.structureManager();
             return Optional.of(WorldStructureHandler.MK_STRUCTURE_CACHE.stream().map(
                             x -> manager.getStructureAt(entity.blockPosition(), x)).filter(x -> x != StructureStart.INVALID_START)
                     .collect(Collectors.toList()));

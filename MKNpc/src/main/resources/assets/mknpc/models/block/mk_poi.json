@@ -7,6 +7,7 @@
 		"2": "mknpc:blocks/poi_block_top",
 		"particle": "mknpc:blocks/poi_block"
 	},
+	"render_type": "minecraft:cutout",
 	"elements": [
 		{
 			"from": [0, 0, 0],

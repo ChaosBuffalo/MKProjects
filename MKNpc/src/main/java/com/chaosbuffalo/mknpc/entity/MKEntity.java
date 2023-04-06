@@ -379,9 +379,10 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     @Override
-    public void killed(ServerLevel world, LivingEntity killedEntity) {
-        super.killed(world, killedEntity);
+    public boolean wasKilled(ServerLevel world, LivingEntity killedEntity) {
+        super.wasKilled(world, killedEntity);
         enterNonCombatMovementState();
+        return true;
     }
 
     public MKMeleeAttackGoal getMeleeAttackGoal() {
@@ -619,7 +620,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             if (nonCombatBehavior.getBehaviorType() == PetNonCombatBehavior.Behavior.FOLLOW) {
                 nonCombatBehavior.getEntity().ifPresent(x -> MovementStrategyController.enterFollowMode(this, 2, x));
             } else if (nonCombatBehavior.getBehaviorType() == PetNonCombatBehavior.Behavior.GUARD) {
-                nonCombatBehavior.getPos().ifPresent(x -> getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT.get(), new BlockPos(x)));
+                nonCombatBehavior.getPos().ifPresent(x -> getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT.get(), BlockPos.containing(x)));
             }
         } else {
             switch (getNonCombatMoveType()) {
@@ -694,7 +695,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     @Override
     public float getWalkTargetValue(BlockPos pos, LevelReader worldIn) {
-        return 0.5F - worldIn.getBrightness(pos);
+        return -worldIn.getPathfindingCostFromLightLevels(pos);
     }
 
 

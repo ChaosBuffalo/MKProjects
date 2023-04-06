@@ -11,8 +11,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -28,14 +28,14 @@ public class NpcClientEventHandler {
     private static KeyMapping questMenuBind;
     private static int ticks = -1;
 
-    public static void initKeybindings() {
-        questMenuBind = new KeyMapping("key.hud.questmenu", GLFW.GLFW_KEY_K, "key.mknpc.category");
-        ClientRegistry.registerKeyBinding(questMenuBind);
+    @SubscribeEvent
+    public static void onKeyEvent(InputEvent.Key event) {
+        handleInputEvent();
     }
 
-    @SubscribeEvent
-    public static void onKeyEvent(InputEvent.KeyInputEvent event) {
-        handleInputEvent();
+    public static void registerKeyBinding(RegisterKeyMappingsEvent event) {
+        questMenuBind = new KeyMapping("key.hud.questmenu", GLFW.GLFW_KEY_K, "key.mknpc.category");
+        event.register(questMenuBind);
     }
 
     public static void handleInputEvent() {

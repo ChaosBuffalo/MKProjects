@@ -1,0 +1,7 @@
+{
+  "type": "mknpc:mk_jigsaw",
+  "allowSpawns": true,
+  "biomes": "#mknpc:has_test_structures",
+  "spawn_overrides": {},
+  "step": "surface_structures"
+}

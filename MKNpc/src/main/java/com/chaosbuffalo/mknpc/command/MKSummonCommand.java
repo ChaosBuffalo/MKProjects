@@ -9,17 +9,13 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -48,16 +44,17 @@ public class MKSummonCommand {
             Entity entity = definition.createEntity(player.getLevel(), player.position(), difficulty_value);
             if (entity != null) {
                 player.getLevel().addFreshEntity(entity);
-                if (entity instanceof Mob) {
-                    ((Mob) entity).finalizeSpawn(player.getLevel(), player.getLevel().getCurrentDifficultyAt(
-                            new BlockPos(entity.position())), MobSpawnType.COMMAND, null, null);
-                }
+                // TODO: fix spawn
+//                if (entity instanceof Mob) {
+//                    ((Mob) entity).finalizeSpawn(player.getLevel(), player.getLevel().getCurrentDifficultyAt(
+//                            player.blockPosition(), MobSpawnType.COMMAND, null, null);
+//                }
             } else {
-                player.sendMessage(new TextComponent(String.format("Failed to summon: %s",
-                        definition_id.toString())), Util.NIL_UUID);
+                player.sendSystemMessage(Component.literal(String.format("Failed to summon: %s",
+                        definition_id.toString())));
             }
         } else {
-            player.sendMessage(new TextComponent("Definition not found."), Util.NIL_UUID);
+            player.sendSystemMessage(Component.literal("Definition not found."));
         }
         return Command.SINGLE_SUCCESS;
     }

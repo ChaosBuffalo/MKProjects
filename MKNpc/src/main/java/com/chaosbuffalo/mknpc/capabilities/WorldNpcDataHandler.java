@@ -15,10 +15,11 @@ import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSingleJigsawPiece;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSinglePoolElement;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -28,12 +29,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -92,12 +91,14 @@ public class WorldNpcDataHandler implements IWorldNpcData {
 
     @Override
     public void setupStructureDataIfAbsent(StructureStart start, Level world) {
-        StructureFeature<?> struct = start.getFeature().feature;
+        Structure struct = start.getStructure();
         StructureData structureData = new StructureData(world.dimension(),
                 start.getChunkPos().x, start.getChunkPos().z, start.getBoundingBox(), start.getPieces().stream().map(
                 this::getComponentDataFromPiece).collect(Collectors.toList()));
 
-        MKStructureEntry structureEntry = new MKStructureEntry(this, ForgeRegistries.STRUCTURE_FEATURES.getKey(struct),
+
+        MKStructureEntry structureEntry = new MKStructureEntry(this,
+                world.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(struct),
                 IStructureStartMixin.getInstanceIdFromStart(start), structureData);
         indexStructureEntry(structureEntry);
     }
@@ -191,9 +192,9 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         Level structureWorld = structurePlaced.getStructureWorld();
         if (structureWorld instanceof ServerLevel) {
             ServerLevel world = (ServerLevel) structureWorld;
-            ConfiguredStructureFeature<?, MKJigsawStructure> struct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structurePlaced.getStructureName());
+            MKJigsawStructure struct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structurePlaced.getStructureName());
             if (struct != null) {
-                StructureStart start = world.structureFeatureManager().getStructureAt(structurePlaced.getGlobalBlockPos().pos(), struct);
+                StructureStart start = world.structureManager().getStructureAt(structurePlaced.getGlobalBlockPos().pos(), struct);
                 structureData = new StructureData(structurePlaced.getStructureWorld().dimension(),
                         start.getChunkPos().x, start.getChunkPos().z, start.getBoundingBox(), start.getPieces().stream().map(
                         this::getComponentDataFromPiece).collect(Collectors.toList()));
@@ -213,8 +214,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     private StructureComponentData getComponentDataFromPiece(StructurePiece piece) {
         ResourceLocation pieceName = MKNpcWorldGen.UNKNOWN_PIECE;
         if (piece instanceof PoolElementStructurePiece) {
-            if (((PoolElementStructurePiece) piece).getElement() instanceof MKSingleJigsawPiece) {
-                MKSingleJigsawPiece mkPiece = ((MKSingleJigsawPiece) ((PoolElementStructurePiece) piece).getElement());
+            if (((PoolElementStructurePiece) piece).getElement() instanceof MKSinglePoolElement mkPiece) {
                 pieceName = mkPiece.getPieceEither().left().orElse(MKNpcWorldGen.UNKNOWN_PIECE);
             }
         }

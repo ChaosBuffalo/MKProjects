@@ -3,9 +3,8 @@ package com.chaosbuffalo.mknpc.quest.rewards;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
@@ -26,7 +25,7 @@ public class XpReward extends QuestReward {
 
     @Override
     public MutableComponent getDescription() {
-        return new TranslatableComponent("mknpc.quest_reward.xp.name", xpAmount.value());
+        return Component.translatable("mknpc.quest_reward.xp.name", xpAmount.value());
     }
 
     @Override
@@ -37,7 +36,7 @@ public class XpReward extends QuestReward {
     @Override
     public void grantReward(Player player) {
         player.giveExperiencePoints(xpAmount.value());
-        player.sendMessage(new TranslatableComponent("mknpc.quest_reward.xp.message", xpAmount.value())
-                .withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
+        player.sendSystemMessage(Component.translatable("mknpc.quest_reward.xp.message", xpAmount.value())
+                .withStyle(ChatFormatting.GOLD));
     }
 }

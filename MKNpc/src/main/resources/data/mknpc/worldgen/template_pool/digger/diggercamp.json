@@ -1,26 +1,35 @@
 {
-  "name": "mknpc:digger/diggercamp",
-  "fallback": "minecraft:empty",
   "elements": [
     {
-      "weight": 1,
       "element": {
-        "location": "mknpc:digger/diggertentdbl1",
-        "projection": "rigid",
+        "bWaterLog": false,
         "element_type": "mknpc:mk_single_jigsaw",
-        "processors": [],
-        "bWaterLog": false
-      }
+        "location": "mknpc:digger/diggertentdbl1",
+        "processors": {
+          "processors": []
+        },
+        "projection": "rigid"
+      },
+      "weight": 1
     },
     {
-      "weight": 1,
       "element": {
-        "location": "mknpc:digger/diggertentsgl1",
-        "projection": "rigid",
+        "bWaterLog": false,
         "element_type": "mknpc:mk_single_jigsaw",
-        "processors": [],
-        "bWaterLog": false
-      }
+        "location": "mknpc:digger/diggertentsgl1",
+        "processors": {
+          "processors": []
+        },
+        "projection": "rigid"
+      },
+      "weight": 1
+    },
+    {
+      "element": {
+        "element_type": "minecraft:empty_pool_element"
+      },
+      "weight": 2
     }
-  ]
+  ],
+  "fallback": "minecraft:empty"
 }

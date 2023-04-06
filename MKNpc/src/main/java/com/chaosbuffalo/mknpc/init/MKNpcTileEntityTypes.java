@@ -11,7 +11,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class MKNpcTileEntityTypes {
     public static final DeferredRegister<BlockEntityType<?>> TILES =
-            DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, MKNpc.MODID);
+            DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MKNpc.MODID);
     public static final RegistryObject<BlockEntityType<MKSpawnerTileEntity>> MK_SPAWNER_TILE_ENTITY_TYPE =
             TILES.register("mk_spawner", () -> BlockEntityType.Builder.of(
                     MKSpawnerTileEntity::new, MKNpcBlocks.MK_SPAWNER_BLOCK.get()).build(null));

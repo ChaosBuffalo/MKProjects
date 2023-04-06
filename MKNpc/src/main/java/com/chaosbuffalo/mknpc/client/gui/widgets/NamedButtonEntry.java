@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.client.gui.widgets;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.client.gui.Font;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public class NamedButtonEntry extends CenteringHorizontalLayout {
     private final MKButton button;
@@ -22,7 +22,7 @@ public class NamedButtonEntry extends CenteringHorizontalLayout {
 
     public void updateButtonText(String newText) {
         button.setWidth(Math.max(fontRenderer.width(newText), 100));
-        button.buttonText = new TextComponent(newText);
+        button.buttonText = Component.literal(newText);
     }
 
     public MKButton getButton() {

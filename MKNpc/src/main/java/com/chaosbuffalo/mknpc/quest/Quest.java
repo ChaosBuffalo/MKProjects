@@ -21,7 +21,6 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
@@ -37,7 +36,7 @@ public class Quest {
     private final List<QuestRequirement> requirements;
     private String questName;
     private MutableComponent description;
-    public static final MutableComponent defaultDescription = new TextComponent("Placeholder Quest Description");
+    public static final MutableComponent defaultDescription = Component.literal("Placeholder Quest Description");
 
     public Quest(String questName, MutableComponent description) {
         this.questName = questName;

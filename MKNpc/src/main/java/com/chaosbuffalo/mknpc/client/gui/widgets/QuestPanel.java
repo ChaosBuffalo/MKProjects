@@ -13,7 +13,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +47,7 @@ public class QuestPanel extends MKLayout {
     public void setup() {
         if (currentChain == null) {
             MKText noSelectPrompt = new MKText(fontRenderer,
-                    new TranslatableComponent("mknpc.gui.select_quest"));
+                    Component.translatable("mknpc.gui.select_quest"));
             addConstraintToWidget(MarginConstraint.TOP, noSelectPrompt);
             addConstraintToWidget(MarginConstraint.LEFT, noSelectPrompt);
             noSelectPrompt.setColor(0xffffffff);
@@ -75,7 +75,7 @@ public class QuestPanel extends MKLayout {
                 quest_desc.setMultiline(true);
                 quest_desc.setWidth(getWidth() - 10);
                 questLayout.addWidget(quest_desc);
-                MKText objectiveName = new MKText(fontRenderer, new TranslatableComponent("mknpc.gui.objectives.name").withStyle(ChatFormatting.BOLD));
+                MKText objectiveName = new MKText(fontRenderer, Component.translatable("mknpc.gui.objectives.name").withStyle(ChatFormatting.BOLD));
                 objectiveName.setColor(!current.isComplete() ? 0xffffffff : 0x99ffffff);
                 questLayout.addWidget(objectiveName);
                 for (PlayerQuestObjectiveData obj : current.getObjectives()) {
@@ -92,7 +92,7 @@ public class QuestPanel extends MKLayout {
                 }
                 List<PlayerQuestReward> rewards = current.getQuestRewards();
                 if (rewards.size() > 0) {
-                    MKText rewardName = new MKText(fontRenderer, new TranslatableComponent("mknpc.gui.rewards.name").withStyle(ChatFormatting.BOLD));
+                    MKText rewardName = new MKText(fontRenderer, Component.translatable("mknpc.gui.rewards.name").withStyle(ChatFormatting.BOLD));
                     rewardName.setColor(!isComplete ? 0xffffffff : 0x99ffffff);
                     questLayout.addWidget(rewardName);
                     for (PlayerQuestReward reward : rewards) {

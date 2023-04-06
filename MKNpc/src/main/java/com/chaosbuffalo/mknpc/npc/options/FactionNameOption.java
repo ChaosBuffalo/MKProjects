@@ -11,8 +11,10 @@ import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
@@ -43,7 +45,7 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
 
     @Override
     @Nullable
-    public TextComponent getEntityName(NpcDefinition definition, Level world, UUID spawnId) {
+    public MutableComponent getEntityName(NpcDefinition definition, Level world, UUID spawnId) {
         return world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).map(
                 cap -> {
                     if (!cap.hasEntityOptionEntry(definition, this, spawnId)) {
@@ -53,9 +55,9 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
                     if (entry instanceof INameEntry) {
                         return ((INameEntry) entry).getName();
                     } else {
-                        return new TextComponent("Name Error");
+                        return Component.literal("Name Error");
                     }
-                }).orElse(new TextComponent("Name Error"));
+                }).orElse(Component.literal("Name Error"));
     }
 
     @Nullable
@@ -76,7 +78,7 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
 
 
     @Nullable
-    private static <T> T getRandomEntry(Random random, Set<T> set) {
+    private static <T> T getRandomEntry(RandomSource random, Set<T> set) {
         List<T> list = new ArrayList<>(set);
         if (list.size() <= 0) {
             return null;
@@ -85,7 +87,7 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Random random) {
+    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
         String name = "";
         if (title != null) {
             name += title;

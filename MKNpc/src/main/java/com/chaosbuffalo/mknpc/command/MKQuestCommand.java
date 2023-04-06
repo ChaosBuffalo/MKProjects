@@ -13,12 +13,11 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -78,7 +77,8 @@ public class MKQuestCommand {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         ResourceLocation definition_id = ctx.getArgument("quest", ResourceLocation.class);
         QuestDefinition definition = QuestDefinitionManager.getDefinition(definition_id);
-        BlockPos pos = new BlockPos(player.position());
+
+        BlockPos pos = player.blockPosition();
         if (definition != null) {
             MinecraftServer server = player.getServer();
             if (server != null) {
@@ -88,14 +88,14 @@ public class MKQuestCommand {
                             .map(x -> x.buildQuest(definition, pos)).orElse(Optional.empty());
                     if (quest.isPresent()) {
                         QuestChainInstance newQuest = quest.get().instance;
-                        player.sendMessage(new TextComponent(String.format("Generated quest: %s", newQuest.getQuestId().toString())), Util.NIL_UUID);
+                        player.sendSystemMessage(Component.literal(String.format("Generated quest: %s", newQuest.getQuestId().toString())));
                         return Command.SINGLE_SUCCESS;
                     }
                 }
             }
-            player.sendMessage(new TextComponent("Failed to generate quest"), Util.NIL_UUID);
+            player.sendSystemMessage(Component.literal("Failed to generate quest"));
         } else {
-            player.sendMessage(new TextComponent("Definition not found."), Util.NIL_UUID);
+            player.sendSystemMessage(Component.literal("Definition not found."));
         }
         return Command.SINGLE_SUCCESS;
     }

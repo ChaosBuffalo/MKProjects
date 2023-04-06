@@ -17,18 +17,11 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = MKNpc.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class RenderRegistry {
-
-    @SubscribeEvent
-    public static void registerModels(ModelRegistryEvent evt) {
-        ItemBlockRenderTypes.setRenderLayer(MKNpcBlocks.MK_SPAWNER_BLOCK.get(), RenderType.cutout());
-        ItemBlockRenderTypes.setRenderLayer(MKNpcBlocks.MK_POI_BLOCK.get(), RenderType.cutout());
-    }
 
     @SubscribeEvent
     public static void registerModels(EntityRenderersEvent.RegisterRenderers evt) {

@@ -17,8 +17,8 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -51,7 +51,7 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
 
     public void addItemStack(ItemStack stack) {
         neededItems.add(stack);
-        setDescription(neededItems.stream().map(x -> new TranslatableComponent("mknpc.trade.item_needed",
+        setDescription(neededItems.stream().map(x -> Component.translatable("mknpc.trade.item_needed",
                 x.getCount(), x.getHoverName())).collect(Collectors.toList()));
     }
 
@@ -97,8 +97,8 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
     @Override
     public void onPlayerTradeSuccess(Player player, PlayerQuestObjectiveData objectiveData,
                                      QuestData questData, PlayerQuestChainInstance playerChain, LivingEntity trader) {
-        player.sendMessage(new TranslatableComponent("mknpc.quest.trade.accepted",
-                trader.getDisplayName()).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
+        player.sendSystemMessage(Component.translatable("mknpc.quest.trade.accepted",
+                trader.getDisplayName()).withStyle(ChatFormatting.GOLD));
         signalCompleted(objectiveData);
     }
 

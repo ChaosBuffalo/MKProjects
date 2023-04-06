@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mknpc.inventories.QuestGiverInventoryContainer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -19,7 +18,7 @@ public class EntityTradeContainer implements MenuProvider {
 
     @Override
     public Component getDisplayName() {
-        return new TranslatableComponent("mknpc.quest.trade_container", entity.getName());
+        return Component.translatable("mknpc.quest.trade_container", entity.getName());
     }
 
     @Nullable

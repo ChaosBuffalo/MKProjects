@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.dialogue;
 
 import com.chaosbuffalo.mkchat.MKChat;
-import com.chaosbuffalo.mkchat.dialogue.ContextAwareTextComponent;
+import com.chaosbuffalo.mkchat.dialogue.DialogueContextComponent;
 import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.IDialogueExtension;
@@ -15,7 +15,6 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.GrantEntitlementEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.InterModComms;
 
@@ -32,7 +31,7 @@ public class NPCDialogueExtension implements IDialogueExtension {
     }
 
     private static final BiFunction<String, DialogueTree, Component> notableProvider =
-            (name, tree) -> new ContextAwareTextComponent("mkchat.simple_context.msg", (context) -> {
+            (name, tree) -> DialogueContextComponent.create("mkchat.simple_context.msg", (context) -> {
                 if (context.getPlayer().getServer() != null) {
                     Level overworld = context.getPlayer().getServer().getLevel(Level.OVERWORLD);
                     if (overworld != null) {
@@ -42,12 +41,12 @@ public class NPCDialogueExtension implements IDialogueExtension {
                                     if (entry != null) {
                                         return entry.getName();
                                     } else {
-                                        return new TextComponent(String.format("notable:%s", name));
+                                        return Component.literal(String.format("notable:%s", name));
                                     }
-                                }).orElse(new TextComponent(String.format("notable:%s", name))));
+                                }).orElse(Component.literal(String.format("notable:%s", name))));
                     }
                 }
-                return Collections.singletonList(new TextComponent(String.format("notable:%s", name)));
+                return Collections.singletonList(Component.literal(String.format("notable:%s", name)));
             });
 
     @Override

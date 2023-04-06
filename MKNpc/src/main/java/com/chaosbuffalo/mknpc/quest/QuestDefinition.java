@@ -16,7 +16,6 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
@@ -36,7 +35,7 @@ public class QuestDefinition {
     private final Map<String, Quest> questIndex;
     private boolean repeatable;
     private Component questName;
-    private static final Component defaultQuestName = new TextComponent("Default");
+    private static final Component defaultQuestName = Component.literal("Default");
     private final List<QuestRequirement> requirements;
     private QuestMode mode;
     private DialogueTree startQuestTree;

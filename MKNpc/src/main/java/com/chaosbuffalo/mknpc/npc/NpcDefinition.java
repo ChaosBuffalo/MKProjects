@@ -8,7 +8,8 @@ import com.chaosbuffalo.mknpc.npc.options.*;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -157,7 +158,7 @@ public class NpcDefinition {
         return entityType;
     }
 
-    public TextComponent getNameForEntity(Level world, UUID spawnId) {
+    public MutableComponent getNameForEntity(Level world, UUID spawnId) {
         for (NpcDefinitionOption option : options.values()) {
             if (option instanceof INameProvider) {
                 return ((INameProvider) option).getEntityName(this, world, spawnId);
@@ -166,7 +167,7 @@ public class NpcDefinition {
         if (hasParent()) {
             return getParent().getNameForEntity(world, spawnId);
         } else {
-            return new TextComponent("Name Error");
+            return Component.literal("Name Error");
         }
     }
 
@@ -260,7 +261,7 @@ public class NpcDefinition {
 
     @Nullable
     public Entity createEntity(Level world, Vec3 pos, UUID uuid, double difficultyValue) {
-        EntityType<?> type = ForgeRegistries.ENTITIES.getValue(getEntityType());
+        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(getEntityType());
         if (type != null) {
             Entity entity = type.create(world);
             if (entity == null) {

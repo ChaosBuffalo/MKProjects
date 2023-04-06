@@ -6,7 +6,8 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -17,7 +18,7 @@ import java.util.UUID;
 public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
 
     private GlobalPos location;
-    private TextComponent name;
+    private MutableComponent name;
     private ResourceLocation definition;
     private UUID structureId;
     private UUID spawnerId;
@@ -52,7 +53,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
         return notableId;
     }
 
-    public TextComponent getName() {
+    public MutableComponent getName() {
         return name;
     }
 
@@ -70,7 +71,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
         tag.putUUID("structureId", structureId);
         tag.putUUID("notableId", notableId);
         tag.putString("definition", definition.toString());
-        tag.putString("name", name.getContents());
+        tag.putString("name", name.getString());
         return tag;
     }
 
@@ -81,7 +82,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
         spawnerId = nbt.getUUID("spawnerId");
         structureId = nbt.getUUID("structureId");
         definition = new ResourceLocation(nbt.getString("definition"));
-        name = new TextComponent(nbt.getString("name"));
+        name = Component.literal(nbt.getString("name"));
         notableId = nbt.getUUID("notableId");
     }
 }

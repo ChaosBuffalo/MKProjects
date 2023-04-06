@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 
 import java.util.*;
@@ -24,7 +25,7 @@ public class EquipmentOption extends WorldPermanentOption {
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Random random) {
+    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
         EquipmentOptionEntry equipmentEntry = new EquipmentOptionEntry();
         for (Map.Entry<EquipmentSlot, List<NpcItemChoice>> entry : itemChoices.entrySet()) {
             RandomCollection<NpcItemChoice> slotChoices = new RandomCollection<>();

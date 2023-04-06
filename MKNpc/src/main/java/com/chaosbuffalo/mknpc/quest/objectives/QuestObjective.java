@@ -16,7 +16,6 @@ import com.mojang.serialization.DynamicOps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
 
     private static final String TYPE_NAME_FIELD = "objectiveType";
     public final static ResourceLocation INVALID_OPTION = new ResourceLocation(MKNpc.MODID, "quest_objective.invalid");
-    protected static final MutableComponent defaultDescription = new TextComponent("Placeholder");
+    protected static final MutableComponent defaultDescription = Component.literal("Placeholder");
 
     private final List<ISerializableAttribute<?>> attributes;
     private final ResourceLocation typeName;

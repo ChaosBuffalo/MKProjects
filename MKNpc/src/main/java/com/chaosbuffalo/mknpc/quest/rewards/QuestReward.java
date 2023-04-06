@@ -9,7 +9,6 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
@@ -20,7 +19,7 @@ import java.util.List;
 public abstract class QuestReward implements ISerializableAttributeContainer, IDynamicMapTypedSerializer {
     private static final String TYPE_NAME_FIELD = "rewardType";
     public final static ResourceLocation INVALID_OPTION = new ResourceLocation(MKNpc.MODID, "quest_reward.invalid");
-    protected static final MutableComponent defaultDescription = new TextComponent("Placeholder");
+    protected static final MutableComponent defaultDescription = Component.literal("Placeholder");
     private MutableComponent description;
     private final ResourceLocation typeName;
     private final List<ISerializableAttribute<?>> attributes = new ArrayList<>();

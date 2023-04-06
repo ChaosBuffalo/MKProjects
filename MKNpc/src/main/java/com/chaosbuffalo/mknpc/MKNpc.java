@@ -50,6 +50,7 @@ public class MKNpc {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+        modBus.addListener(NpcClientEventHandler::registerKeyBinding);
 //
 
         setupRegistries(modBus);
@@ -66,12 +67,13 @@ public class MKNpc {
     private void setupRegistries(IEventBus modBus) {
         MKNpcAttributes.register(modBus);
         MKNpcBlocks.register();
+        NpcCommands.register(modBus);
         MKNpcTileEntityTypes.register();
         MKNpcEntityTypes.register();
         MKNpcEffects.register(modBus);
         MKMemoryModuleTypes.register(modBus);
         MKSensorTypes.register(modBus);
-        MKNpcWorldGen.register();
+        MKNpcWorldGen.register(modBus);
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
@@ -107,7 +109,6 @@ public class MKNpc {
 
     private void setup(final FMLCommonSetupEvent event) {
         PacketHandler.setupHandler();
-        NpcCommands.registerArguments();
 //        MKNpcWorldGen.registerStructurePoolTypes();
     }
 
@@ -127,7 +128,6 @@ public class MKNpc {
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
-        NpcClientEventHandler.initKeybindings();
     }
 
     public static LazyOptional<? extends IEntityNpcData> getNpcData(Entity entity) {

@@ -5,6 +5,6 @@ import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementTy
 
 public class MKJigsawDeserializers {
 
-    public static final StructurePoolElementType<MKSingleJigsawPiece> MK_SINGLE_JIGSAW_DESERIALIZER = StructurePoolElementType.
-            register("mk_single_jigsaw", MKSingleJigsawPiece.codec);
+    public static final StructurePoolElementType<MKSinglePoolElement> MK_SINGLE_JIGSAW_DESERIALIZER = StructurePoolElementType.
+            register("mk_single_jigsaw", MKSinglePoolElement.codec);
 }

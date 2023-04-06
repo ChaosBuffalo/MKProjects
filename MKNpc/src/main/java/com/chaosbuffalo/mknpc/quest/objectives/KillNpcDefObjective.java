@@ -13,8 +13,8 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -62,7 +62,7 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
 
     private MutableComponent getDescriptionWithKillCount(int count) {
         NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefinition.getValue());
-        return new TranslatableComponent("mknpc.objective.kill_npc_def.desc", def.getDisplayName(),
+        return Component.translatable("mknpc.objective.kill_npc_def.desc", def.getDisplayName(),
                 count, this.count.value());
     }
 
@@ -81,7 +81,7 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
             currentCount++;
             objectiveData.putInt("killCount", currentCount);
             objectiveData.setDescription(getDescriptionWithKillCount(currentCount));
-            player.sendMessage(getDescriptionWithKillCount(currentCount).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
+            player.sendSystemMessage(getDescriptionWithKillCount(currentCount).withStyle(ChatFormatting.GOLD));
             if (currentCount == count.value()) {
                 signalCompleted(objectiveData);
             }

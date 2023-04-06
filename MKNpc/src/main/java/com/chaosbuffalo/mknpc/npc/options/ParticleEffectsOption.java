@@ -53,7 +53,7 @@ public class ParticleEffectsOption extends SimpleOption<List<ParticleEffectInsta
                 inst.deserialize(x);
                 return DataResult.success(inst);
             }
-            return DataResult.error(String.format("Failed to decode effect type %s", type.toString()));
+            return DataResult.error(() -> String.format("Failed to decode effect type %s", type.toString()));
         });
         for (DataResult<ParticleEffectInstance> data : decoded) {
             data.result().ifPresent(val::add);

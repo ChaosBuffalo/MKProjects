@@ -11,8 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -43,8 +42,8 @@ public class GrantEntitlementEffect extends DialogueEffect {
         if (entitlement != null) {
             MKCore.getPlayer(serverPlayerEntity).ifPresent(x -> x.getEntitlements()
                     .addEntitlement(new EntitlementInstance(entitlement, UUID.randomUUID())));
-            serverPlayerEntity.sendMessage(new TranslatableComponent("mknpc.grant_entitlement.message",
-                    entitlement.getDescription()).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
+            serverPlayerEntity.sendSystemMessage(Component.translatable("mknpc.grant_entitlement.message",
+                    entitlement.getDescription()).withStyle(ChatFormatting.GOLD));
         }
     }
 

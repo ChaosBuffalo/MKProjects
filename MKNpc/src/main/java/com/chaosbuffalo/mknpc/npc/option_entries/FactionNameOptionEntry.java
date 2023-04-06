@@ -1,7 +1,8 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -37,7 +38,7 @@ public class FactionNameOptionEntry implements INpcOptionEntry, INameEntry {
     }
 
     @Override
-    public TextComponent getName() {
-        return new TextComponent(name);
+    public MutableComponent getName() {
+        return Component.literal(name);
     }
 }

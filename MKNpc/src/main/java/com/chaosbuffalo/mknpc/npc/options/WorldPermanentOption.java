@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 
 import java.util.Random;
@@ -43,7 +44,7 @@ public abstract class WorldPermanentOption extends NpcDefinitionOption {
         return worldNpcData.getEntityOptionEntry(definition, this, entityId);
     }
 
-    protected abstract INpcOptionEntry makeOptionEntry(NpcDefinition definition, Random random);
+    protected abstract INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random);
 
     protected void generateWorldEntry(NpcDefinition definition, UUID spawnId, IWorldNpcData worldNpcData) {
         worldNpcData.addEntityOptionEntry(definition, this, spawnId,

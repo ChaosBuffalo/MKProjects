@@ -6,7 +6,6 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Inventory;
@@ -198,7 +197,7 @@ public class ChestNpcDataHandler implements IChestNpcData {
 
     @Override
     public Component getDisplayName() {
-        return new TextComponent("Quest Chest");
+        return Component.literal("Quest Chest");
     }
 
     @Nullable

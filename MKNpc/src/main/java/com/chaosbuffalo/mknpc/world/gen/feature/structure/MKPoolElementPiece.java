@@ -4,7 +4,6 @@ import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.StructureFeatureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -12,7 +11,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 import java.util.Random;
 import java.util.UUID;
@@ -21,7 +20,7 @@ public class MKPoolElementPiece extends PoolElementStructurePiece implements IMK
     private final ResourceLocation structureName;
     private UUID instanceId;
 
-    public MKPoolElementPiece(StructureManager templateManager, StructurePoolElement jigsawPiece, BlockPos blockPos,
+    public MKPoolElementPiece(StructureTemplateManager templateManager, StructurePoolElement jigsawPiece, BlockPos blockPos,
                               int groundLevelDelta, Rotation rotation, BoundingBox boundingBox,
                               ResourceLocation structureName) {
         super(templateManager, jigsawPiece, blockPos, groundLevelDelta, rotation, boundingBox);
@@ -51,19 +50,19 @@ public class MKPoolElementPiece extends PoolElementStructurePiece implements IMK
     }
 
 
-    @Override
-    public void place(WorldGenLevel seedReader, StructureFeatureManager structureManager,
-                      ChunkGenerator chunkGenerator, Random random, BoundingBox boundingBox,
-                      BlockPos blockPos, boolean bool) {
-
-        if (element instanceof IMKJigsawPiece) {
-            ((IMKJigsawPiece) element).mkPlace(this.structureManager, seedReader, structureManager, chunkGenerator,
-                    this.position, blockPos, this.rotation, boundingBox, random, bool, this);
-        } else {
-            super.place(seedReader, structureManager, chunkGenerator, random,
-                    boundingBox, blockPos, bool);
-        }
-    }
+//    @Override
+//    public void place(WorldGenLevel seedReader, StructureFeatureManager structureManager,
+//                      ChunkGenerator chunkGenerator, Random random, BoundingBox boundingBox,
+//                      BlockPos blockPos, boolean bool) {
+//
+//        if (element instanceof IMKJigsawPiece) {
+//            ((IMKJigsawPiece) element).mkPlace(this.structureManager, seedReader, structureManager, chunkGenerator,
+//                    this.position, blockPos, this.rotation, boundingBox, random, bool, this);
+//        } else {
+//            super.place(seedReader, structureManager, chunkGenerator, random,
+//                    boundingBox, blockPos, bool);
+//        }
+//    }
 
     @Override
     public ResourceLocation getStructureName() {

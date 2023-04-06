@@ -12,7 +12,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,17 +43,17 @@ public class MKStructureCommands {
             if (starts.isPresent()) {
                 List<StructureStart> s = starts.get();
                 if (s.isEmpty()) {
-                    player.sendMessage(new TranslatableComponent("mknpc.command.not_in_struct"), Util.NIL_UUID);
+                    player.sendSystemMessage(Component.translatable("mknpc.command.not_in_struct"));
                 } else {
                     s.forEach(start -> {
-                        ResourceLocation featureName = ForgeRegistries.STRUCTURE_FEATURES.getKey(start.getFeature().feature);
-                        player.sendMessage(new TranslatableComponent("mknpc.command.in_struct",
-                                featureName, IStructureStartMixin.getInstanceIdFromStart(start)), Util.NIL_UUID);
+                        ResourceLocation featureName = ctx.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(start.getStructure());
+                        player.sendSystemMessage(Component.translatable("mknpc.command.in_struct",
+                                featureName, IStructureStartMixin.getInstanceIdFromStart(start)));
                     });
                 }
 
             } else {
-                player.sendMessage(new TranslatableComponent("mknpc.command.not_in_struct"), Util.NIL_UUID);
+                player.sendSystemMessage(Component.translatable("mknpc.command.not_in_struct"));
             }
 
 
@@ -70,7 +71,7 @@ public class MKStructureCommands {
             if (starts.isPresent()) {
                 List<StructureStart> s = starts.get();
                 if (s.isEmpty()) {
-                    player.sendMessage(new TranslatableComponent("mknpc.command.not_in_struct"), Util.NIL_UUID);
+                    player.sendSystemMessage(Component.translatable("mknpc.command.not_in_struct"));
                 } else {
                     Level overworld = server.getLevel(Level.OVERWORLD);
                     if (overworld != null) {
@@ -79,36 +80,36 @@ public class MKStructureCommands {
                                     s.forEach(start -> {
                                         UUID startId = IStructureStartMixin.getInstanceIdFromStart(start);
                                         MKStructureEntry entry = cap.getStructureData(startId);
-                                        ResourceLocation featureName = ForgeRegistries.STRUCTURE_FEATURES.getKey(start.getFeature().feature);
+                                        ResourceLocation featureName = ctx.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(start.getStructure());
                                         if (entry != null) {
                                             Map<String, List<PointOfInterestEntry>> pois = entry.getPointsOfInterest();
                                             if (pois.entrySet().stream().allMatch(m -> m.getValue().isEmpty())) {
-                                                player.sendMessage(new TranslatableComponent(
+                                                player.sendSystemMessage(Component.translatable(
                                                         "mknpc.command.pois_struct_no_poi",
-                                                        featureName, startId), Util.NIL_UUID);
+                                                        featureName, startId));
                                             } else {
-                                                player.sendMessage(new TranslatableComponent("mknpc.command.pois_for_struct",
-                                                        featureName, startId), Util.NIL_UUID);
+                                                player.sendSystemMessage(Component.translatable("mknpc.command.pois_for_struct",
+                                                        featureName, startId));
                                                 pois.forEach((key, value) -> value.forEach(
-                                                        poi -> player.sendMessage(new TranslatableComponent(
+                                                        poi -> player.sendSystemMessage(Component.translatable(
                                                                 "mknpc.command.pois_struct_desc",
-                                                                key, poi.getLocation().toString()), Util.NIL_UUID)));
+                                                                key, poi.getLocation().toString()))));
                                             }
                                         } else {
-                                            player.sendMessage(new TranslatableComponent(
+                                            player.sendSystemMessage(Component.translatable(
                                                     "mknpc.command.pois_struct_not_found",
-                                                    featureName, startId), Util.NIL_UUID);
+                                                    featureName, startId));
                                         }
                                     });
                                 });
                     } else {
-                        player.sendMessage(new TranslatableComponent("mknpc.command.cant_find_cap"), Util.NIL_UUID);
+                        player.sendSystemMessage(Component.translatable("mknpc.command.cant_find_cap"));
                     }
 
                 }
 
             } else {
-                player.sendMessage(new TranslatableComponent("mknpc.command.not_in_struct"), Util.NIL_UUID);
+                player.sendSystemMessage(Component.translatable("mknpc.command.not_in_struct"));
             }
 
 

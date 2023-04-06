@@ -163,11 +163,11 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
     @SuppressWarnings("unused")
     @SubscribeEvent
     public void playerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getPlayer() instanceof ServerPlayer) {
+        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             NpcDefinitionClientUpdatePacket updatePacket = new NpcDefinitionClientUpdatePacket(
                     CLIENT_DEFINITIONS.values());
-            MKNpc.LOGGER.info("Sending {} update packet", event.getPlayer());
-            ((ServerPlayer) event.getPlayer()).connection.send(
+            MKNpc.LOGGER.info("Sending {} update packet", event.getEntity());
+            serverPlayer.connection.send(
                     PacketHandler.getNetworkChannel().toVanillaPacket(
                             updatePacket, NetworkDirection.PLAY_TO_CLIENT));
         }

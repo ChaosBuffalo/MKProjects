@@ -8,9 +8,8 @@ import com.chaosbuffalo.mkcore.serialization.attributes.RegistryEntryAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
@@ -37,7 +36,7 @@ public class GrantEntitlementReward extends QuestReward {
 
     @Override
     public MutableComponent getDescription() {
-        return new TranslatableComponent("mknpc.quest_reward.entitlement.message", entitlement.getDescription());
+        return Component.translatable("mknpc.quest_reward.entitlement.message", entitlement.getDescription());
     }
 
     @Override
@@ -58,8 +57,8 @@ public class GrantEntitlementReward extends QuestReward {
         if (entitlement != null) {
             MKCore.getPlayer(player).ifPresent(x -> x.getEntitlements()
                     .addEntitlement(new EntitlementInstance(entitlement, UUID.randomUUID())));
-            player.sendMessage(new TranslatableComponent("mknpc.grant_entitlement.message",
-                    entitlement.getDescription()).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
+            player.sendSystemMessage(Component.translatable("mknpc.grant_entitlement.message",
+                    entitlement.getDescription()).withStyle(ChatFormatting.GOLD));
         }
     }
 }

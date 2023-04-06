@@ -18,8 +18,6 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import com.chaosbuffalo.mkwidgets.utils.TextureRegion;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.InterModComms;
 
@@ -31,7 +29,7 @@ public class QuestPage extends PlayerPageBase {
     private PlayerQuestChainInstance currentQuest;
 
     public QuestPage(MKPlayerData playerData) {
-        super(playerData, new TextComponent("Quest Log"));
+        super(playerData, Component.literal("Quest Log"));
     }
 
     @Override
@@ -118,7 +116,7 @@ public class QuestPage extends PlayerPageBase {
 
         @Override
         public Component getDisplayName() {
-            return new TranslatableComponent("mknpc.gui.page.quests.name");
+            return Component.translatable("mknpc.gui.page.quests.name");
         }
 
         @Override

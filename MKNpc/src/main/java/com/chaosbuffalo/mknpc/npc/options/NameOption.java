@@ -2,7 +2,8 @@ package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -18,14 +19,14 @@ public class NameOption extends StringOption implements INameProvider {
     }
 
     @Override
-    public TextComponent getEntityName(NpcDefinition definition, Level world, UUID spawnId) {
-        return new TextComponent(getValue());
+    public MutableComponent getEntityName(NpcDefinition definition, Level world, UUID spawnId) {
+        return Component.literal(getValue());
     }
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, String value) {
         if (!value.isEmpty()) {
-            entity.setCustomName(new TextComponent(value));
+            entity.setCustomName(Component.literal(value));
         }
     }
 

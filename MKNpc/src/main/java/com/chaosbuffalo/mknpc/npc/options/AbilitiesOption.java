@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ public class AbilitiesOption extends WorldPermanentOption {
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Random random) {
+    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
         List<NpcAbilityEntry> finalChoices = new ArrayList<>();
         for (NpcAbilityEntry entry : abilities) {
             if (random.nextDouble() <= entry.getChance()) {

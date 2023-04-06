@@ -14,8 +14,8 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -46,13 +46,13 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
                                             LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = getInstanceData(quest);
-            boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
+            boolean applies = event.getEntity().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
                     x -> x.getNotableUUID().equals(objData.getUuid())).orElse(false);
             if (applies) {
                 objectiveData.putBool("hasKilled", true);
                 objectiveData.removeBlockPos("npcPos");
-                player.sendMessage(new TranslatableComponent("mknpc.objective.kill_notable.complete",
-                        event.getEntityLiving().getDisplayName()).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
+                player.sendSystemMessage(Component.translatable("mknpc.objective.kill_notable.complete",
+                        event.getEntity().getDisplayName()).withStyle(ChatFormatting.GOLD));
                 signalCompleted(objectiveData);
                 playerChain.notifyDirty();
                 return true;
@@ -90,7 +90,7 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
         PlayerQuestObjectiveData newObj = playerDataFactory();
         NotableNpcEntry notable = worldData.getNotableNpc(objData.getUuid());
         if (notable != null) {
-            newObj.setDescription((new TranslatableComponent("mknpc.objective.kill_notable.desc", notable.getName())));
+            newObj.setDescription(Component.translatable("mknpc.objective.kill_notable.desc", notable.getName()));
             newObj.putBlockPos("npcPos", notable.getLocation());
         }
         newObj.putBool("hasKilled", false);

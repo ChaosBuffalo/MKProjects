@@ -20,8 +20,6 @@ import com.chaosbuffalo.mknpc.quest.objectives.IContainerObjectiveHandler;
 import com.chaosbuffalo.mknpc.quest.objectives.IKillObjectiveHandler;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.utils.NpcConstants;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.IControlNaturalSpawns;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -33,18 +31,14 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.StructureFeatureManager;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
-import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.world.ChunkEvent;
-import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -55,7 +49,7 @@ import net.minecraftforge.fml.common.Mod;
 public class EntityHandler {
 
     @SubscribeEvent
-    public static void onEntityJoinWorld(EntityJoinWorldEvent event) {
+    public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
         MKNpc.getNpcData(event.getEntity()).ifPresent((cap) -> {
             if (cap.wasMKSpawned()) {
                 event.setCanceled(true);
@@ -70,9 +64,9 @@ public class EntityHandler {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onEntityDamage(LivingDamageEvent event) {
         if (event.getSource() instanceof MKDamageSource) {
-            if (event.getEntityLiving() instanceof Player) {
+            if (event.getEntity() instanceof Player) {
                 if (!(event.getSource().getEntity() instanceof Player)) {
-                    event.setAmount((float) (event.getAmount() * MKNpc.getDifficultyScale(event.getEntityLiving())));
+                    event.setAmount((float) (event.getAmount() * MKNpc.getDifficultyScale(event.getEntity())));
                 }
                 //add threat to pets here
 
@@ -82,9 +76,9 @@ public class EntityHandler {
 
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event) {
-        if (!event.getWorld().isClientSide()) {
-            MinecraftServer server = event.getWorld().getServer();
-            Level level = (Level) event.getWorld();
+        if (!event.getLevel().isClientSide()) {
+            MinecraftServer server = event.getLevel().getServer();
+            Level level = (Level) event.getLevel();
             if (server == null || level == null) {
                 return;
             }
@@ -105,14 +99,14 @@ public class EntityHandler {
         if (event.isCanceled()) {
             return;
         }
-        if (event.getPlayer().level.isClientSide) {
+        if (event.getEntity().level.isClientSide) {
             return;
         }
-        MinecraftServer server = event.getPlayer().getServer();
+        MinecraftServer server = event.getEntity().getServer();
         if (server == null) {
             return;
         }
-        Level world = event.getWorld();
+        Level world = event.getLevel();
         BlockPos pos = event.getHitVec().getBlockPos();
         if (world.getBlockState(pos).getBlock() instanceof ChestBlock) {
             BlockEntity te = world.getBlockEntity(pos);
@@ -124,9 +118,9 @@ public class EntityHandler {
                 te.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(
                         chestCap -> {
                             overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
-                                    worldData -> processLootChestEvents(event.getPlayer(), chestCap, worldData));
-                            if (chestCap.hasQuestInventoryForPlayer(event.getPlayer()) && !event.getPlayer().isShiftKeyDown()) {
-                                event.getPlayer().openMenu(chestCap);
+                                    worldData -> processLootChestEvents(event.getEntity(), chestCap, worldData));
+                            if (chestCap.hasQuestInventoryForPlayer(event.getEntity()) && !event.getEntity().isShiftKeyDown()) {
+                                event.getEntity().openMenu(chestCap);
                                 event.setCanceled(true);
                             }
                         });
@@ -136,7 +130,7 @@ public class EntityHandler {
 
     @SubscribeEvent
     public static void onExperienceDrop(LivingExperienceDropEvent event) {
-        int bonusXp = MKNpc.getNpcData(event.getEntityLiving()).map(IEntityNpcData::getBonusXp).orElse(0);
+        int bonusXp = MKNpc.getNpcData(event.getEntity()).map(IEntityNpcData::getBonusXp).orElse(0);
         event.setDroppedExperience(event.getDroppedExperience() + bonusXp);
     }
 
@@ -169,18 +163,18 @@ public class EntityHandler {
 
     @SubscribeEvent
     public static void onSetupDialogue(PlayerNpcDialogueTreeGatherEvent event) {
-        if (event.getPlayer().level.isClientSide) {
+        if (event.getEntity().level.isClientSide) {
             return;
         }
-        MinecraftServer server = event.getPlayer().getServer();
+        MinecraftServer server = event.getEntity().getServer();
         if (server == null) {
             return;
         }
         Level overWorld = server.getLevel(Level.OVERWORLD);
-        MKNpc.LOGGER.debug("Setting up dialogue between {} and {}", event.getSpeaker(), event.getPlayer());
+        MKNpc.LOGGER.debug("Setting up dialogue between {} and {}", event.getSpeaker(), event.getEntity());
         if (overWorld != null) {
             overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
-                    worldData -> MKNpc.getPlayerQuestData(event.getPlayer()).ifPresent(x -> x.getQuestChains().forEach(
+                    worldData -> MKNpc.getPlayerQuestData(event.getEntity()).ifPresent(x -> x.getQuestChains().forEach(
                             pQuestChain -> {
                                 QuestChainInstance questChainInstance = worldData.getQuest(pQuestChain.getQuestId());
                                 if (questChainInstance != null) {
@@ -193,7 +187,7 @@ public class EntityHandler {
     }
 
     private static void handleKillEntityForPlayer(Player player, LivingDeathEvent event, IWorldNpcData worldData) {
-        MKNpc.getNpcData(event.getEntityLiving()).ifPresent(x -> {
+        MKNpc.getNpcData(event.getEntity()).ifPresent(x -> {
             if (x.getStructureId().isPresent()) {
                 worldData.getStructureManager().onNpcDeath(x);
             }
@@ -227,13 +221,12 @@ public class EntityHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDeathEvent(LivingDeathEvent event) {
-        if (event.isCanceled() || event.getEntityLiving().level.isClientSide) {
+        if (event.isCanceled() || event.getEntity().level.isClientSide) {
             return;
         }
-        MKNpc.getNpcData(event.getEntityLiving()).ifPresent(npcData ->
+        MKNpc.getNpcData(event.getEntity()).ifPresent(npcData ->
                 npcData.getDeathReceiver().ifPresent(receiver -> receiver.onEntityDeath(npcData, event)));
-        if (event.getSource().getEntity() instanceof Player) {
-            Player player = (Player) event.getSource().getEntity();
+        if (event.getSource().getEntity() instanceof Player player) {
             MinecraftServer server = player.getServer();
             if (server == null) {
                 return;
@@ -259,36 +252,61 @@ public class EntityHandler {
 
 
     @SubscribeEvent
-    public static void onEntityTick(LivingEvent.LivingUpdateEvent event) {
-        MKNpc.getNpcData(event.getEntityLiving()).ifPresent(IEntityNpcData::tick);
+    public static void onEntityTick(LivingEvent.LivingTickEvent event) {
+        MKNpc.getNpcData(event.getEntity()).ifPresent(IEntityNpcData::tick);
     }
 
     @SubscribeEvent
     public static void onLootDrop(LivingDropsEvent event) {
         if (event.isRecentlyHit()) {
-            MKNpc.getNpcData(event.getEntityLiving()).ifPresent(x -> x.handleExtraLoot(
+            MKNpc.getNpcData(event.getEntity()).ifPresent(x -> x.handleExtraLoot(
                     event.getLootingLevel(), event.getDrops(), event.getSource()));
         }
     }
 
-    @SubscribeEvent
-    public static void onLivingSpawn(LivingSpawnEvent.CheckSpawn event) {
-        if (event.getSpawnReason() == MobSpawnType.NATURAL && stopSpawningForClassification(event.getEntityLiving())) {
-            BlockPos spawnPos = new BlockPos(event.getX(), event.getY(), event.getZ());
-            if (event.getWorld() instanceof ServerLevel) {
-                StructureFeatureManager manager = ((ServerLevel) event.getWorld()).structureFeatureManager();
-                for (ConfiguredStructureFeature<?, MKJigsawStructure> structure : WorldStructureHandler.MK_STRUCTURE_CACHE) {
-                    if (!((IControlNaturalSpawns) structure.feature).doesAllowSpawns()) {
-                        StructureStart start = manager.getStructureAt(spawnPos, structure);
-                        if (start != StructureStart.INVALID_START) {
-                            event.setResult(Event.Result.DENY);
-                        }
-                    }
-                }
+    public static void onLivingSpawn(MobSpawnEvent.FinalizeSpawn event) {
+        if (event.getLevel() instanceof ServerLevel serverLevel) {
+            if (event.getSpawnType() == MobSpawnType.NATURAL && stopSpawningForClassification(event.getEntity())) {
+//                serverLevel.structureManager().get
             }
-        }
 
+
+//            BlockPos spawnPos = new BlockPos(event.getX(), event.getY(), event.getZ());
+
+//            if (event.getWorld() instanceof ServerLevel) {
+//                StructureFeatureManager manager = ((ServerLevel) event.getWorld()).structureFeatureManager();
+//                for (ConfiguredStructureFeature<?, MKJigsawStructure> structure : WorldStructureHandler.MK_STRUCTURE_CACHE) {
+//                    if (!((IControlNaturalSpawns) structure.feature).doesAllowSpawns()) {
+//                        StructureStart start = manager.getStructureAt(spawnPos, structure);
+//                        if (start != StructureStart.INVALID_START) {
+//                            event.setResult(Event.Result.DENY);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+        }
     }
+
+    // FIXME: new spawn event
+//    @SubscribeEvent
+//    public static void onLivingSpawn(LivingSpawnEvent.CheckSpawn event) {
+//        if (event.getSpawnReason() == MobSpawnType.NATURAL && stopSpawningForClassification(event.getEntityLiving())) {
+//            BlockPos spawnPos = new BlockPos(event.getX(), event.getY(), event.getZ());
+//            if (event.getWorld() instanceof ServerLevel) {
+//                StructureFeatureManager manager = ((ServerLevel) event.getWorld()).structureFeatureManager();
+//                for (ConfiguredStructureFeature<?, MKJigsawStructure> structure : WorldStructureHandler.MK_STRUCTURE_CACHE) {
+//                    if (!((IControlNaturalSpawns) structure.feature).doesAllowSpawns()) {
+//                        StructureStart start = manager.getStructureAt(spawnPos, structure);
+//                        if (start != StructureStart.INVALID_START) {
+//                            event.setResult(Event.Result.DENY);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//    }
 
     private static boolean stopSpawningForClassification(LivingEntity entity) {
         return (entity.getClassification(false) == MobCategory.MONSTER);
@@ -296,7 +314,7 @@ public class EntityHandler {
 
     @SubscribeEvent
     public static void onHealEvent(MKAbilityHealEvent event) {
-        LivingEntity healed = event.getEntityLiving();
+        LivingEntity healed = event.getEntity();
         LivingEntity source = event.getHealSource().getSourceEntity();
         if (source != null && !(source instanceof Player && ((Player) source).isCreative())) {
             EntityEffectBuilder.PointEffectBuilder.createPointEffectOnEntity(source, healed, Vec3.ZERO)

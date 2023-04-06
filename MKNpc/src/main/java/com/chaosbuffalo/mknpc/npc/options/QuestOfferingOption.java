@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +33,7 @@ public class QuestOfferingOption extends WorldPermanentOption {
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Random random) {
+    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
         return new QuestOptionsEntry(questOfferings);
     }
 

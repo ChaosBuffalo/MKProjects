@@ -14,10 +14,8 @@ import com.chaosbuffalo.mknpc.quest.data.objective.EmptyInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -65,10 +63,10 @@ public class KillWithAbilityObjective extends QuestObjective<EmptyInstanceData> 
 
     private MutableComponent getDescriptionWithKillCount(int count) {
         return this.ability.resolve().map(
-                        x -> new TranslatableComponent("mknpc.objective.kill_w_ability.desc", x.getAbilityName(),
+                        x -> Component.translatable("mknpc.objective.kill_w_ability.desc", x.getAbilityName(),
                                 count, this.count.value()))
-                .orElse(new TranslatableComponent("mknpc.objective.kill_w_ability.desc",
-                        new TextComponent("Ability Not Found"), count, this.count.value()));
+                .orElse(Component.translatable("mknpc.objective.kill_w_ability.desc",
+                        Component.literal("Ability Not Found"), count, this.count.value()));
     }
 
     @Override
@@ -81,14 +79,13 @@ public class KillWithAbilityObjective extends QuestObjective<EmptyInstanceData> 
     @Override
     public boolean onPlayerKillNpcDefEntity(Player player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
                                             LivingDeathEvent event, QuestData questData, PlayerQuestChainInstance playerChain) {
-        if (event.getSource() instanceof MKDamageSource.AbilityDamage && !isComplete(objectiveData)) {
-            MKDamageSource.AbilityDamage src = (MKDamageSource.AbilityDamage) event.getSource();
+        if (event.getSource() instanceof MKDamageSource.AbilityDamage src && !isComplete(objectiveData)) {
             int currentCount = objectiveData.getInt("killCount");
             if (src.getAbilityId() != null && src.getAbilityId().equals(ability.getValue())) {
                 currentCount++;
                 objectiveData.putInt("killCount", currentCount);
                 objectiveData.setDescription(getDescriptionWithKillCount(currentCount));
-                player.sendMessage(getDescriptionWithKillCount(currentCount).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
+                player.sendSystemMessage(getDescriptionWithKillCount(currentCount).withStyle(ChatFormatting.GOLD));
                 if (currentCount == count.value()) {
                     signalCompleted(objectiveData);
                 }

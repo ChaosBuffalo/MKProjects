@@ -89,7 +89,7 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
                     final double finDiff = difficultyValue;
                     MKNpc.getNpcData(entity).ifPresent((cap) -> {
                         cap.setMKSpawned(true);
-                        cap.setSpawnPos(new BlockPos(pos).above());
+                        cap.setSpawnPos(BlockPos.containing(pos).above());
                         cap.setNotableUUID(npcId);
                         cap.setStructureId(entry.getStructureId());
                         cap.setDifficultyValue(finDiff);

@@ -9,7 +9,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKModal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.function.Consumer;
 
@@ -96,7 +96,7 @@ public class SpawnOptionEntry extends CenteringHorizontalLayout {
 
     public void updateButtonText(String newText) {
         button.setWidth(Math.max(fontRenderer.width(newText), 100));
-        button.buttonText = new TextComponent(newText);
+        button.buttonText = Component.literal(newText);
     }
 
     public MKButton getButton() {

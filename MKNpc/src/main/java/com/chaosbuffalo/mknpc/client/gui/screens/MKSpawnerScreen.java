@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 
 public class MKSpawnerScreen extends MKScreen {
@@ -33,7 +33,7 @@ public class MKSpawnerScreen extends MKScreen {
     private final MKSpawnerTileEntity spawnerTileEntity;
 
     public MKSpawnerScreen(MKSpawnerTileEntity spawnerTileEntity) {
-        super(new TextComponent("MK Spawner Screen"));
+        super(Component.literal("MK Spawner Screen"));
         this.spawnerTileEntity = spawnerTileEntity;
     }
 

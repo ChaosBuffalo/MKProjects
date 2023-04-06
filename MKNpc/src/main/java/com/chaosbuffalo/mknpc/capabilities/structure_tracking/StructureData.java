@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.capabilities.structure_tracking;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -66,7 +67,7 @@ public class StructureData implements INBTSerializable<CompoundTag> {
     public void deserializeNBT(CompoundTag nbt) {
         chunkX = nbt.getInt("chunkX");
         chunkZ = nbt.getInt("chunkY");
-        worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(nbt.getString("world")));
+        worldKey = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(nbt.getString("world")));
         int[] boundsArr = nbt.getIntArray("bounds");
         boundingBox = new BoundingBox(boundsArr[0], boundsArr[1], boundsArr[2], boundsArr[3], boundsArr[4], boundsArr[5]);
         ListTag comps = nbt.getList("components", Tag.TAG_COMPOUND);

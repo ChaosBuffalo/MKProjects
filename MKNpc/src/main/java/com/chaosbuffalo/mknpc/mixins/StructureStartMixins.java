@@ -5,7 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKPoolElementPiece;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
@@ -24,10 +24,10 @@ public abstract class StructureStartMixins implements IStructureStartMixin {
 
     protected UUID instanceId;
 
-    @Inject(method = "Lnet/minecraft/world/level/levelgen/structure/StructureStart;<init>(Lnet/minecraft/world/level/levelgen/feature/ConfiguredStructureFeature;Lnet/minecraft/world/level/ChunkPos;ILnet/minecraft/world/level/levelgen/structure/pieces/PiecesContainer;)V",
+    @Inject(method = "<init>(Lnet/minecraft/world/level/levelgen/structure/Structure;Lnet/minecraft/world/level/ChunkPos;ILnet/minecraft/world/level/levelgen/structure/pieces/PiecesContainer;)V",
             at = @At("RETURN"),
             locals = LocalCapture.CAPTURE_FAILHARD)
-    protected void proxyInit(ConfiguredStructureFeature<?, ?> feature, ChunkPos chunkPos, int references,
+    protected void proxyInit(Structure feature, ChunkPos chunkPos, int references,
                              PiecesContainer piecesContainer, CallbackInfo ci) {
         instanceId = UUID.randomUUID();
         for (StructurePiece piece : piecesContainer.pieces()) {
@@ -37,7 +37,7 @@ public abstract class StructureStartMixins implements IStructureStartMixin {
         }
     }
 
-    @Inject(method = "Lnet/minecraft/world/level/levelgen/structure/StructureStart;createTag(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceSerializationContext;Lnet/minecraft/world/level/ChunkPos;)Lnet/minecraft/nbt/CompoundTag;",
+    @Inject(method = "createTag(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceSerializationContext;Lnet/minecraft/world/level/ChunkPos;)Lnet/minecraft/nbt/CompoundTag;",
             at = @At(target = "Lnet/minecraft/nbt/CompoundTag;put(Ljava/lang/String;Lnet/minecraft/nbt/Tag;)Lnet/minecraft/nbt/Tag;", value = "INVOKE"),
             locals = LocalCapture.CAPTURE_FAILHARD)
     private void createTag(StructurePieceSerializationContext p_192661_, ChunkPos p_192662_, CallbackInfoReturnable<CompoundTag> cir, CompoundTag compoundtag) {
@@ -50,6 +50,17 @@ public abstract class StructureStartMixins implements IStructureStartMixin {
 //    private void proxyPostProcess(WorldGenLevel p_73584_, StructureFeatureManager p_73585_, ChunkGenerator p_73586_, Random p_73587_, BoundingBox p_73588_, ChunkPos p_73589_, CallbackInfoReturnable<StructurePiece> cir, StructurePiece piece) {
 //
 //    }
+
+    @Inject(method = "loadStaticStart(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceSerializationContext;Lnet/minecraft/nbt/CompoundTag;J)Lnet/minecraft/world/level/levelgen/structure/StructureStart;",
+            at = @At("RETURN"),
+            locals = LocalCapture.CAPTURE_FAILHARD)
+    private static void loadStaticStart(StructurePieceSerializationContext piecescontainer, CompoundTag tag, long chunkpos, CallbackInfoReturnable<StructureStart> cir, String s) {
+        if (cir.getReturnValue() != null) {
+            if ((Object) cir.getReturnValue() instanceof IStructureStartMixin) {
+                ((IStructureStartMixin) (Object) cir.getReturnValue()).loadAdditional(tag);
+            }
+        }
+    }
 
     @Override
     public UUID getInstanceId() {
