@@ -2,25 +2,31 @@ package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
 import com.chaosbuffalo.mknpc.world.gen.StructureUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 import java.util.Random;
+import java.util.UUID;
 
 public interface IMKJigsawPiece {
 
 
-//    boolean mkPlace(StructureManager templateManager, WorldGenLevel seedReader, StructureFeatureManager structureManager,
-//                    ChunkGenerator chunkGenerator, BlockPos structurePos, BlockPos blockPos, Rotation rot,
-//                    BoundingBox boundingBox, Random rand, boolean bool, MKPoolElementPiece parent);
+    boolean mkPlace(StructureTemplateManager pStructureTemplateManager, WorldGenLevel pLevel, StructureManager pStructureManager,
+                    ChunkGenerator pGenerator, BlockPos p_227340_, BlockPos p_227341_, Rotation pRotation,
+                    BoundingBox pBox, RandomSource pRandom, boolean p_227345_, ResourceLocation name, UUID uuid);
 
-    default void mkHandleDataMarker(LevelAccessor worldIn, StructureTemplate.StructureBlockInfo blockInfo, BlockPos pos, Rotation rotationIn,
-                                    Random rand, BoundingBox boundingBox, MKPoolElementPiece parent) {
+    default void mkHandleDataMarker(LevelAccessor worldIn, StructureTemplate.StructureBlockInfo blockInfo,
+                                    BlockPos pos, Rotation rotationIn,
+                                    RandomSource rand, BoundingBox boundingBox, ResourceLocation structureName, UUID instanceId) {
         StructureUtils.handleMKDataMarker(blockInfo.nbt.getString("metadata"), pos, worldIn, rand, boundingBox,
-                parent.getStructureName(), parent.getInstanceId());
+                structureName, instanceId);
     }
 }

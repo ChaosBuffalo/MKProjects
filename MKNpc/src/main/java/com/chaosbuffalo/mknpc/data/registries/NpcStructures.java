@@ -28,12 +28,13 @@ public class NpcStructures {
     public static void bootstrap(BootstapContext<Structure> context) {
         HolderGetter<Biome> biomes = context.lookup(Registries.BIOME);
 
-        context.register(TEST_JIGSAW, new MKJigsawStructure(
-                structure(
-                        biomes.getOrThrow(NpcTags.Biomes.HAS_TEST_STRUCTURES),
-                        GenerationStep.Decoration.SURFACE_STRUCTURES,
-                        TerrainAdjustment.NONE),
-                true));
+//        context.register(TEST_JIGSAW, new MKJigsawStructure(
+//                structure(
+//                        biomes.getOrThrow(NpcTags.Biomes.HAS_TEST_STRUCTURES),
+//                        GenerationStep.Decoration.SURFACE_STRUCTURES,
+//                        TerrainAdjustment.NONE),
+//                true,
+//                new ResourceLocation(MKNpc.MODID, "test_jigsaw")));
     }
 
     public static Structure.StructureSettings structure(HolderSet<Biome> biomes, GenerationStep.Decoration step, TerrainAdjustment adjustment) {

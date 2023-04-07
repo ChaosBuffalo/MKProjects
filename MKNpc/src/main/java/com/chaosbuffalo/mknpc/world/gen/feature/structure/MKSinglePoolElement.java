@@ -14,6 +14,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
@@ -24,6 +25,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class MKSinglePoolElement extends SinglePoolElement implements IMKJigsawPiece {
@@ -57,6 +59,10 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKJigsawP
         return this.template.map(p_210433_::getOrCreate, Function.identity());
     }
 
+    public void setStructureStart(StructureStart start, UUID instanceId) {
+
+    }
+
     @Override
     protected StructurePlaceSettings getSettings(Rotation pRotation, BoundingBox pBoundingBox, boolean p_210423_) {
         StructurePlaceSettings settings = super.getSettings(pRotation, pBoundingBox, p_210423_);
@@ -74,32 +80,6 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKJigsawP
         super.handleDataMarker(pLevel, pBlockInfo, pPos, pRotation, pRandom, pBox);
     }
 
-    //    @Override
-//    public boolean mkPlace(StructureManager templateManager, WorldGenLevel seedReader, StructureFeatureManager structureManager,
-//                           ChunkGenerator chunkGenerator, BlockPos structurePos, BlockPos blockPos, Rotation rot,
-//                           BoundingBox boundingBox, Random rand, boolean keepJigsaw, MKPoolElementPiece parent) {
-//        StructureTemplate template = this.getTemplate(templateManager);
-//        StructurePlaceSettings placementsettings = this.getSettings(rot, boundingBox, keepJigsaw);
-//        placementsettings.popProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
-////        placementsettings.addProcessor(BlockIgnoreStructureProcessor.AIR_AND_STRUCTURE_BLOCK);
-//        placementsettings.keepLiquids = doWaterlog();
-//        if (!template.placeInWorld(seedReader, structurePos, blockPos, placementsettings, rand, 18)) {
-//            return false;
-//        } else {
-//            List<StructureTemplate.StructureBlockInfo> dataMarkers = this.getDataMarkers(templateManager, structurePos, rot, false);
-//            StructurePlaceSettings processSettings = placementsettings.copy();
-////            processSettings.removeProcessor(BlockIgnoreStructureProcessor.STRUCTURE_BLOCK);
-//            for (StructureTemplate.StructureBlockInfo blockinfo : StructureTemplate.processBlockInfos(
-//                    seedReader, structurePos, blockPos, processSettings,
-//                    dataMarkers, template)) {
-//                if (boundingBox.isInside(blockinfo.pos)) {
-//                    mkHandleDataMarker(seedReader, blockinfo, blockinfo.pos, rot, rand, boundingBox, parent);
-//                }
-//            }
-//            return true;
-//        }
-//    }
-
 
     @Override
     public StructurePoolElementType<?> getType() {
@@ -108,5 +88,23 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKJigsawP
 
     public static Function<StructureTemplatePool.Projection, StructurePoolElement> getMKSingleJigsaw(ResourceLocation pieceName, boolean doWaterlog) {
         return (placementBehaviour) -> new MKSinglePoolElement(Either.left(pieceName), EMPTY, placementBehaviour, doWaterlog);
+    }
+
+    @Override
+    public boolean mkPlace(StructureTemplateManager pStructureTemplateManager, WorldGenLevel pLevel,
+                           StructureManager pStructureManager, ChunkGenerator pGenerator,
+                           BlockPos p_227340_, BlockPos p_227341_, Rotation pRotation, BoundingBox pBox,
+                           RandomSource pRandom, boolean p_227345_, ResourceLocation name, UUID instanceId) {
+        StructureTemplate structuretemplate = this.getTemplate(pStructureTemplateManager);
+        StructurePlaceSettings structureplacesettings = this.getSettings(pRotation, pBox, p_227345_);
+        if (!structuretemplate.placeInWorld(pLevel, p_227340_, p_227341_, structureplacesettings, pRandom, 18)) {
+            return false;
+        } else {
+            for(StructureTemplate.StructureBlockInfo structureBlockInfo : StructureTemplate.processBlockInfos(pLevel, p_227340_, p_227341_, structureplacesettings, this.getDataMarkers(pStructureTemplateManager, p_227340_, pRotation, false), structuretemplate)) {
+                mkHandleDataMarker(pLevel, structureBlockInfo, p_227340_, pRotation, pRandom, pBox, name, instanceId);
+            }
+
+            return true;
+        }
     }
 }

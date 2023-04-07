@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.init;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKPoolElementPiece;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSinglePoolElement;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -33,9 +32,6 @@ public class MKNpcWorldGen {
 
     public static final RegistryObject<StructureType<MKJigsawStructure>> MK_STRUCTURE_TYPE = STRUCTURE_TYPE_REGISTRY.register("mk_jigsaw",
             () -> () -> MKJigsawStructure.CODEC);
-
-    public static RegistryObject<StructurePieceType> MK_JIGSAW_PIECE_TYPE = STRUCTURE_PIECE_REGISTRY.register("mk_jigsaw",
-            () -> MKPoolElementPiece::new);
 
     public static final RegistryObject<StructurePoolElementType<MKSinglePoolElement>> MK_SINGLE_JIGSAW_DESERIALIZER =
             STRUCTURE_POOL_REGISTRY.register("mk_single_jigsaw", () -> () -> MKSinglePoolElement.codec);

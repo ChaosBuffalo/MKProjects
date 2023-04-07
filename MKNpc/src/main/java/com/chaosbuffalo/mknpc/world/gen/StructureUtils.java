@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -39,7 +40,7 @@ public class StructureUtils {
         }
     }
 
-    public static void handleMKDataMarker(String function, BlockPos pos, LevelAccessor worldIn, Random rand, BoundingBox sbb,
+    public static void handleMKDataMarker(String function, BlockPos pos, LevelAccessor worldIn, RandomSource rand, BoundingBox sbb,
                                           ResourceLocation structureName, UUID instanceId) {
         if (function.equals("mkspawner")) {
             BlockEntity tileentity = worldIn.getBlockEntity(pos.below());
