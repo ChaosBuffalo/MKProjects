@@ -47,12 +47,12 @@ public class NpcStructurePools {
                 ImmutableList.of(
                         Pair.of(MKSinglePoolElement.getMKSingleJigsaw(DIGGER_BIG_1, false), 1)
                 ),
-                StructureTemplatePool.Projection.RIGID));
+                StructureTemplatePool.Projection.TERRAIN_MATCHING));
 
         pContext.register(DIGGER_ROAD_POOL, new StructureTemplatePool(empty,
                 ImmutableList.of(
                         Pair.of(MKSinglePoolElement.getMKSingleJigsaw(DIGGER_ROAD_1, false), 1)
                 ),
-                StructureTemplatePool.Projection.RIGID));
+                StructureTemplatePool.Projection.TERRAIN_MATCHING));
     }
 }

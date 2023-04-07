@@ -6,33 +6,12 @@
       "value": "wither_stray"
     },
     {
-      "optionType": "mknpc:attributes",
-      "attributes": [
-        {
-          "attributeName": "minecraft:generic.max_health",
-          "value": 100.0
-        }
-      ]
-    },
-    {
       "optionType": "mknpc:mk_size",
-      "value": 0.75
+      "value": 0.50
     },
     {
       "optionType": "mknpc:faction",
       "value": "mkfaction:undead"
-    },
-    {
-      "optionType": "mknpc:equipment",
-      "slotOptions": {
-        "mainhand": [
-          {
-            "weight": 5.0,
-            "dropChance": 1.1,
-            "item": "{id: \"mkweapons:longbow_iron\", Count: 1b, tag: {Damage: 0}}"
-          }
-        ]
-      }
     }
   ]
 }

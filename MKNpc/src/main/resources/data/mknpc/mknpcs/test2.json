@@ -6,9 +6,9 @@
       "value": true
     },
     {
+      "hasLastName": true,
       "optionType": "mknpc:faction_name",
-      "title": "Chief",
-      "hasLastName": true
+      "title": "Chief"
     },
     {
       "optionType": "mknpc:faction",

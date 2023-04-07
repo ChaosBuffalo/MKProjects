@@ -1,14 +1,14 @@
 {
-  "entityType": "mknpc:zombified_piglin",
+  "entityType": "mknpc:green_lady",
   "options": [
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 100.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:dialogue",
@@ -23,28 +23,14 @@
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 5.0,
             "dropChance": 1.1,
-            "item": "{id: \"mkweapons:katana_iron\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:katana_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 5.0
           },
           {
-            "weight": 10.0,
             "dropChance": 1.1,
-            "item": "{id: \"mkweapons:dagger_iron\", Count: 1b, tag: {Damage: 0}}"
-          }
-        ],
-        "chest": [
-          {
-            "weight": 5.0,
-            "dropChance": 1.1,
-            "item": "{id: \"minecraft:golden_chestplate\", Count: 1b, tag: {Damage: 0}}"
-          }
-        ],
-        "head": [
-          {
-            "weight": 5.0,
-            "dropChance": 1.1,
-            "item": "{id: \"minecraft:golden_helmet\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:dagger_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 10.0
           }
         ]
       }
