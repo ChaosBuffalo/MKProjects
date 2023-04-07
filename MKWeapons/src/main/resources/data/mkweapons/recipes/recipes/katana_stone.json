@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "H": {
+      "item": "mkweapons:haft"
+    },
+    "I": {
+      "tag": "forge:cobblestone"
+    }
+  },
+  "pattern": [
+    "  I",
+    " I ",
+    "H  "
+  ],
+  "result": {
+    "item": "mkweapons:katana_stone"
+  },
+  "show_notification": true
+}

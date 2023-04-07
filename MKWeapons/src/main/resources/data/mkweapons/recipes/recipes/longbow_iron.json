@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "H": {
+      "item": "mkweapons:haft"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "S": {
+      "tag": "forge:string"
+    }
+  },
+  "pattern": [
+    " IS",
+    "H S",
+    " IS"
+  ],
+  "result": {
+    "item": "mkweapons:longbow_iron"
+  },
+  "show_notification": true
+}

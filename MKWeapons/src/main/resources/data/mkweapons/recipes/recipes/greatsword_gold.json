@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "H": {
+      "item": "mkweapons:haft"
+    },
+    "I": {
+      "tag": "forge:ingots/gold"
+    }
+  },
+  "pattern": [
+    " I ",
+    " I ",
+    "IHI"
+  ],
+  "result": {
+    "item": "mkweapons:greatsword_gold"
+  },
+  "show_notification": true
+}
