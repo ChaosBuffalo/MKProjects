@@ -2,12 +2,14 @@ package com.chaosbuffalo.mknpc.mixins;
 
 
 import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.IMKPoolPiece;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.levelgen.structure.*;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructurePiece;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import org.spongepowered.asm.mixin.Final;
@@ -20,15 +22,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.UUID;
 
 @Mixin(StructureStart.class)
 public abstract class StructureStartMixins implements IStructureStartMixin {
 
-    @Shadow public abstract List<StructurePiece> getPieces();
-
-    @Shadow @Final private PiecesContainer pieceContainer;
+    @Shadow
+    @Final
+    private PiecesContainer pieceContainer;
     protected UUID instanceId;
     @Nullable
     protected ResourceLocation structureName;
@@ -36,20 +37,19 @@ public abstract class StructureStartMixins implements IStructureStartMixin {
     @Inject(method = "<init>(Lnet/minecraft/world/level/levelgen/structure/Structure;Lnet/minecraft/world/level/ChunkPos;ILnet/minecraft/world/level/levelgen/structure/pieces/PiecesContainer;)V",
             at = @At("RETURN"),
             locals = LocalCapture.CAPTURE_FAILHARD)
-    protected void proxyInit(Structure feature, ChunkPos chunkPos, int references,
+    protected void proxyInit(Structure structure, ChunkPos chunkPos, int references,
                              PiecesContainer piecesContainer, CallbackInfo ci) {
         instanceId = UUID.randomUUID();
-        if (feature instanceof MKJigsawStructure) {
-            structureName = ((MKJigsawStructure) feature).getStructureName();
+        if (structure instanceof MKJigsawStructure jigsawStructure) {
+            structureName = jigsawStructure.getStructureName();
             setStartDataForPieces(piecesContainer);
         }
-
     }
 
     private void setStartDataForPieces(PiecesContainer pieces) {
         for (StructurePiece piece : pieces.pieces()) {
-            if (piece instanceof IMKPoolPiece) {
-                ((IMKPoolPiece) piece).setStart(instanceId, structureName);
+            if (piece instanceof IMKPoolPiece poolPiece) {
+                poolPiece.setStart(instanceId, structureName);
             }
         }
     }
@@ -59,7 +59,7 @@ public abstract class StructureStartMixins implements IStructureStartMixin {
             locals = LocalCapture.CAPTURE_FAILHARD)
     private void createTag(StructurePieceSerializationContext p_192661_, ChunkPos p_192662_, CallbackInfoReturnable<CompoundTag> cir, CompoundTag compoundtag) {
         compoundtag.putUUID("instanceId", instanceId);
-        if (structureName != null){
+        if (structureName != null) {
             compoundtag.putString("structureName", structureName.toString());
         }
     }
@@ -69,7 +69,7 @@ public abstract class StructureStartMixins implements IStructureStartMixin {
             at = @At("RETURN"),
             locals = LocalCapture.CAPTURE_FAILHARD)
     private static void loadStaticStart(StructurePieceSerializationContext piecescontainer, CompoundTag tag, long chunkpos, CallbackInfoReturnable<StructureStart> cir, String s) {
-        if (cir.getReturnValue() != null) {
+        if (cir.getReturnValue() != null && cir.getReturnValue().isValid()) {
             if ((Object) cir.getReturnValue() instanceof IStructureStartMixin) {
                 ((IStructureStartMixin) (Object) cir.getReturnValue()).loadAdditional(tag);
             }

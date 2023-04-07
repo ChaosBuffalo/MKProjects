@@ -1,8 +1,6 @@
 package com.chaosbuffalo.mknpc.data.registries;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.data.NpcTags;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;

@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.data;
 
-import com.chaosbuffalo.mknpc.data.generators.tags.NpcBiomeTagsProvider;
 import com.chaosbuffalo.mknpc.data.generators.NpcRegistrySets;
+import com.chaosbuffalo.mknpc.data.generators.tags.NpcBiomeTagsProvider;
 import com.chaosbuffalo.mknpc.data.generators.tags.NpcStructureTagsProvider;
 import net.minecraft.DetectedVersion;
 import net.minecraft.core.HolderLookup;

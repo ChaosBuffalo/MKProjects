@@ -6,7 +6,7 @@
   "mixins": [
     "StructureStartMixins",
     "LivingRendererMixins",
-    "StructureMixins"
+    "PoolElementPieceMixins"
   ],
   "client": [
     "LivingRendererMixins"

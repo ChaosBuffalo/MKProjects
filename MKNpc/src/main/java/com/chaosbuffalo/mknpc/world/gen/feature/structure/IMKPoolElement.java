@@ -13,10 +13,9 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
-import java.util.Random;
 import java.util.UUID;
 
-public interface IMKJigsawPiece {
+public interface IMKPoolElement {
 
 
     boolean mkPlace(StructureTemplateManager pStructureTemplateManager, WorldGenLevel pLevel, StructureManager pStructureManager,

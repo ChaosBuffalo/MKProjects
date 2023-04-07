@@ -24,7 +24,6 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
-import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -34,47 +33,37 @@ import java.util.function.Function;
 
 public class MKJigsawStructure extends Structure implements IControlNaturalSpawns {
 
-    public static final Codec<MKJigsawStructure> CODEC = RecordCodecBuilder.<MKJigsawStructure>mapCodec((p_227640_) ->
-            p_227640_.group(settingsCodec(p_227640_),
-                    StructureTemplatePool.CODEC.fieldOf("start_pool").forGetter((s) -> {
-                        return s.startPool;
-                    }), ResourceLocation.CODEC.optionalFieldOf("start_jigsaw_name").forGetter((p_227654_) -> {
-                        return p_227654_.startJigsawName;
-                    }), Codec.intRange(0, 7).fieldOf("size").forGetter((p_227652_) -> {
-                        return p_227652_.maxDepth;
-                    }), HeightProvider.CODEC.fieldOf("start_height").forGetter((p_227649_) -> {
-                        return p_227649_.startHeight;
-                    }), Codec.BOOL.fieldOf("use_expansion_hack").forGetter((p_227646_) -> {
-                        return p_227646_.useExpansionHack;
-                    }), Heightmap.Types.CODEC.optionalFieldOf("project_start_to_heightmap").forGetter((p_227644_) -> {
-                        return p_227644_.projectStartToHeightmap;
-                    }), Codec.intRange(1, 128).fieldOf("max_distance_from_center").forGetter((p_227642_) -> {
-                        return p_227642_.maxDistanceFromCenter;
-                    }),
-                    Codec.BOOL.fieldOf("allowSpawns").forGetter(s -> s.allowSpawns),
-                    ResourceLocation.CODEC.fieldOf("structureName").forGetter(MKJigsawStructure::getStructureName)
-            ).apply(p_227640_, MKJigsawStructure::new)).flatXmap(verifyRange(), verifyRange()).codec();
+    public static final Codec<MKJigsawStructure> CODEC = RecordCodecBuilder.<MKJigsawStructure>mapCodec(builder ->
+            builder.group(settingsCodec(builder),
+                    StructureTemplatePool.CODEC.fieldOf("start_pool")
+                            .forGetter(s -> s.startPool),
+                    ResourceLocation.CODEC.optionalFieldOf("start_jigsaw_name")
+                            .forGetter(s -> s.startJigsawName),
+                    Codec.intRange(0, 7).fieldOf("size")
+                            .forGetter(s -> s.maxDepth),
+                    HeightProvider.CODEC.fieldOf("start_height")
+                            .forGetter(s -> s.startHeight),
+                    Codec.BOOL.fieldOf("use_expansion_hack")
+                            .forGetter(s -> s.useExpansionHack),
+                    Heightmap.Types.CODEC.optionalFieldOf("project_start_to_heightmap")
+                            .forGetter(s -> s.projectStartToHeightmap),
+                    Codec.intRange(1, 128).fieldOf("max_distance_from_center")
+                            .forGetter(s -> s.maxDistanceFromCenter),
+                    Codec.BOOL.fieldOf("allowSpawns")
+                            .forGetter(s -> s.allowSpawns),
+                    ResourceLocation.CODEC.fieldOf("structureName")
+                            .forGetter(MKJigsawStructure::getStructureName)
+            ).apply(builder, MKJigsawStructure::new)).flatXmap(verifyRange(), verifyRange()).codec();
 
     private static Function<MKJigsawStructure, DataResult<MKJigsawStructure>> verifyRange() {
-        return (p_275183_) -> {
-            byte b0;
-            switch (p_275183_.terrainAdaptation()) {
-                case NONE:
-                    b0 = 0;
-                    break;
-                case BURY:
-                case BEARD_THIN:
-                case BEARD_BOX:
-                    b0 = 12;
-                    break;
-                default:
-                    throw new IncompatibleClassChangeError();
-            }
-
-            int i = b0;
-            return p_275183_.maxDistanceFromCenter + i > 128 ? DataResult.error(() -> {
-                return "Structure size including terrain adaptation must not exceed 128";
-            }) : DataResult.success(p_275183_);
+        return structure -> {
+            int i = switch (structure.terrainAdaptation()) {
+                case NONE -> 0;
+                case BURY, BEARD_THIN, BEARD_BOX -> 12;
+            };
+            return structure.maxDistanceFromCenter + i > 128 ?
+                    DataResult.error(() -> "Structure size including terrain adaptation must not exceed 128") :
+                    DataResult.success(structure);
         };
     }
 
@@ -144,7 +133,6 @@ public class MKJigsawStructure extends Structure implements IControlNaturalSpawn
         this.exitMessage = msg;
         return this;
     }
-
 
 
     public void onStructureActivate(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {

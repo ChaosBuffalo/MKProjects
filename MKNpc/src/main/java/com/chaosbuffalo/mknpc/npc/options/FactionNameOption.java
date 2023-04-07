@@ -18,7 +18,10 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public class FactionNameOption extends WorldPermanentOption implements INameProvider {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "faction_name");

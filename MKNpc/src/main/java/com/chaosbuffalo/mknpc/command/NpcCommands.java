@@ -1,7 +1,5 @@
 package com.chaosbuffalo.mknpc.command;
 
-import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.command.arguments.AbilityIdArgument;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;

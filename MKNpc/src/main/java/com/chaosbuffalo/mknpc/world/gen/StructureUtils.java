@@ -20,7 +20,6 @@ import net.minecraft.world.level.levelgen.structure.StructureStart;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,9 +43,8 @@ public class StructureUtils {
                                           ResourceLocation structureName, UUID instanceId) {
         if (function.equals("mkspawner")) {
             BlockEntity tileentity = worldIn.getBlockEntity(pos.below());
-            if (tileentity instanceof MKSpawnerTileEntity) {
+            if (tileentity instanceof MKSpawnerTileEntity spawner) {
                 worldIn.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-                MKSpawnerTileEntity spawner = (MKSpawnerTileEntity) tileentity;
                 spawner.regenerateSpawnID();
                 spawner.setStructureName(structureName);
                 spawner.setStructureId(instanceId);
@@ -69,8 +67,7 @@ public class StructureUtils {
             worldIn.destroyBlock(pos, false);
             worldIn.setBlock(pos, MKNpcBlocks.MK_POI_BLOCK.get().defaultBlockState(), 3);
             BlockEntity tile = worldIn.getBlockEntity(pos);
-            if (tile instanceof MKPoiTileEntity) {
-                MKPoiTileEntity poi = (MKPoiTileEntity) tile;
+            if (tile instanceof MKPoiTileEntity poi) {
                 poi.regenerateId();
                 poi.setStructureId(instanceId);
                 poi.setStructureName(structureName);

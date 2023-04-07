@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.capabilities;
 
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import net.minecraft.core.registries.Registries;

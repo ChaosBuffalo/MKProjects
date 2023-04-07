@@ -9,7 +9,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 
-import java.util.Random;
 import java.util.UUID;
 
 public abstract class WorldPermanentOption extends NpcDefinitionOption {

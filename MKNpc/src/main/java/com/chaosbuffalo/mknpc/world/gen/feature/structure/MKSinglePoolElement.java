@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-public class MKSinglePoolElement extends SinglePoolElement implements IMKJigsawPiece {
+public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolElement {
     private static final Holder<StructureProcessorList> EMPTY = Holder.direct(new StructureProcessorList(List.of()));
 
     public static final Codec<MKSinglePoolElement> codec = RecordCodecBuilder.create((builder) ->
@@ -36,7 +36,7 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKJigsawP
                             Codec.BOOL.fieldOf("bWaterLog").forGetter(MKSinglePoolElement::doWaterlog))
                     .apply(builder, MKSinglePoolElement::new));
 
-    private boolean bWaterlogBlocks;
+    private final boolean bWaterlogBlocks;
 
     protected MKSinglePoolElement(Either<ResourceLocation, StructureTemplate> templateEither,
                                   Holder<StructureProcessorList> structureProcessor,
@@ -100,7 +100,7 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKJigsawP
         if (!structuretemplate.placeInWorld(pLevel, p_227340_, p_227341_, structureplacesettings, pRandom, 18)) {
             return false;
         } else {
-            for(StructureTemplate.StructureBlockInfo structureBlockInfo : StructureTemplate.processBlockInfos(pLevel, p_227340_, p_227341_, structureplacesettings, this.getDataMarkers(pStructureTemplateManager, p_227340_, pRotation, false), structuretemplate)) {
+            for (StructureTemplate.StructureBlockInfo structureBlockInfo : StructureTemplate.processBlockInfos(pLevel, p_227340_, p_227341_, structureplacesettings, this.getDataMarkers(pStructureTemplateManager, p_227340_, pRotation, false), structuretemplate)) {
                 mkHandleDataMarker(pLevel, structureBlockInfo, p_227340_, pRotation, pRandom, pBox, name, instanceId);
             }
 

@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.mixins;
 
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.IMKJigsawPiece;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.IMKPoolElement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.IMKPoolPiece;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -9,7 +9,8 @@ import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.structure.*;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import org.spongepowered.asm.mixin.Final;
@@ -21,10 +22,6 @@ import java.util.UUID;
 
 @Mixin(PoolElementStructurePiece.class)
 public abstract class PoolElementPieceMixins implements IMKPoolPiece {
-
-    @Shadow
-    @Final
-    protected StructurePoolElement element;
 
     @Shadow
     public abstract StructurePoolElement getElement();
@@ -44,6 +41,7 @@ public abstract class PoolElementPieceMixins implements IMKPoolPiece {
     @Override
     public void setStart(UUID instanceId, ResourceLocation structureName) {
         this.instanceId = instanceId;
+        this.structureName = structureName;
     }
 
     /**
@@ -53,8 +51,8 @@ public abstract class PoolElementPieceMixins implements IMKPoolPiece {
     public void place(WorldGenLevel pLevel, StructureManager pStructureManager, ChunkGenerator pGenerator,
                       RandomSource pRandom, BoundingBox pBox, BlockPos pPos, boolean pKeepJigsaws) {
 
-        if (getElement() instanceof IMKJigsawPiece) {
-            ((IMKJigsawPiece) element).mkPlace(structureTemplateManager, pLevel, pStructureManager, pGenerator,
+        if (getElement() instanceof IMKPoolElement poolElement) {
+            poolElement.mkPlace(structureTemplateManager, pLevel, pStructureManager, pGenerator,
                     position, pPos, rotation, pBox, pRandom, pKeepJigsaws, structureName, instanceId);
         } else {
             getElement().place(structureTemplateManager, pLevel, pStructureManager, pGenerator, position, pPos, rotation,
