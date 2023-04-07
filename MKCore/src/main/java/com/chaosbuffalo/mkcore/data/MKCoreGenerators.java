@@ -1,24 +1,18 @@
-package com.chaosbuffalo.mkcore;
+package com.chaosbuffalo.mkcore.data;
 
-import com.chaosbuffalo.mkcore.abilities.AbilityManager;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.talents.TalentLineDefinition;
-import com.chaosbuffalo.mkcore.core.talents.TalentManager;
 import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;
 import com.chaosbuffalo.mkcore.core.talents.nodes.AttributeTalentNode;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
-import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleKeyFrame;
 import com.chaosbuffalo.mkcore.fx.particles.animation_tracks.motions.BrownianMotionTrack;
 import com.chaosbuffalo.mkcore.fx.particles.animation_tracks.motions.OrbitingInPlaneMotionTrack;
 import com.chaosbuffalo.mkcore.init.CoreTags;
 import com.chaosbuffalo.mkcore.init.CoreTalents;
-import com.google.gson.JsonElement;
-import com.mojang.serialization.JsonOps;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.*;
 import net.minecraft.data.tags.ItemTagsProvider;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.common.data.BlockTagsProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -28,13 +22,10 @@ import net.minecraftforge.data.event.GatherDataEvent;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
-public class DataGenerators {
+public class MKCoreGenerators {
 
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {
@@ -44,63 +35,25 @@ public class DataGenerators {
             MKBlockTagsProvider blockTagsProvider = new MKBlockTagsProvider(generator.getPackOutput(),
                     event.getLookupProvider(), MKCore.MOD_ID, event.getExistingFileHelper());
             generator.addProvider(true, blockTagsProvider);
-            generator.addProvider(true, new AbilityDataGenerator(generator, MKCore.MOD_ID));
+            generator.addProvider(true, new MKAbilityProvider.FromMod(generator, MKCore.MOD_ID));
             generator.addProvider(true, new ArmorClassItemTagProvider(generator,
                     event.getLookupProvider(), blockTagsProvider, event.getExistingFileHelper()));
-            generator.addProvider(true, new CoreTestTreeGenerator(generator));
-            generator.addProvider(true, new CoreParticleAnimGenerator(generator));
+            generator.addProvider(true, new CoreTalentTreeProvider(generator));
+            generator.addProvider(true, new CoreParticleProvider(generator));
         }
     }
 
-    public abstract static class ParticleAnimationDataGenerator implements DataProvider {
-        private final DataGenerator generator;
 
-        public ParticleAnimationDataGenerator(DataGenerator generator) {
-            this.generator = generator;
-        }
 
-        public CompletableFuture<?> writeDefinition(ResourceLocation name, ParticleAnimation animation, CachedOutput pOutput) {
-            Path outputFolder = this.generator.getPackOutput().getOutputFolder();
-            Path local = Paths.get("data", name.getNamespace(),
-                    ParticleAnimationManager.DEFINITION_FOLDER, name.getPath() + ".json");
-            Path path = outputFolder.resolve(local);
-            JsonElement element = animation.serialize(JsonOps.INSTANCE);
-            return DataProvider.saveStable(pOutput, element, path);
-        }
-    }
+    public static class CoreParticleProvider extends ParticleAnimationProvider {
 
-    public abstract static class TalentTreeDataGenerator implements DataProvider {
-        private final DataGenerator generator;
-
-        public TalentTreeDataGenerator(DataGenerator generator) {
-            this.generator = generator;
-        }
-
-        public CompletableFuture<?> writeDefinition(TalentTreeDefinition definition, CachedOutput pOutput) {
-            Path outputFolder = this.generator.getPackOutput().getOutputFolder();
-            ResourceLocation key = definition.getTreeId();
-            Path local = Paths.get("data", key.getNamespace(), TalentManager.DEFINITION_FOLDER, key.getPath() + ".json");
-            Path path = outputFolder.resolve(local);
-            JsonElement element = definition.serialize(JsonOps.INSTANCE);
-            return DataProvider.saveStable(pOutput, element, path);
-        }
-    }
-
-    public static class CoreParticleAnimGenerator extends ParticleAnimationDataGenerator {
-
-        public CoreParticleAnimGenerator(DataGenerator generator) {
-            super(generator);
+        public CoreParticleProvider(DataGenerator generator) {
+            super(generator, MKCore.MOD_ID);
         }
 
         @Override
         public CompletableFuture<?> run(CachedOutput pOutput) {
             return writeBlueMagicTest(pOutput);
-        }
-
-        @Nonnull
-        @Override
-        public String getName() {
-            return "MKCore Particle Animations";
         }
 
         public CompletableFuture<?> writeBlueMagicTest(CachedOutput pOutput) {
@@ -124,14 +77,14 @@ public class DataGenerators {
                             .withScale(.01f, 0.0f)
                             .withMotion(new BrownianMotionTrack(5, 0.025f))
                     );
-            return writeDefinition(MKCore.makeRL("particle_anim.blue_magic"), anim, pOutput);
+            return writeAnimation(MKCore.makeRL("particle_anim.blue_magic"), anim, pOutput);
         }
     }
 
-    public static class CoreTestTreeGenerator extends TalentTreeDataGenerator {
+    public static class CoreTalentTreeProvider extends TalentTreeProvider {
 
-        public CoreTestTreeGenerator(DataGenerator generator) {
-            super(generator);
+        public CoreTalentTreeProvider(DataGenerator generator) {
+            super(generator, MKCore.MOD_ID);
         }
 
         @Override
@@ -143,49 +96,9 @@ public class DataGenerators {
             test.addLine(line);
             return writeDefinition(test, pOutput);
         }
-
-        @Nonnull
-        @Override
-        public String getName() {
-            return "MKCore Talent Trees";
-        }
     }
 
-    public static class AbilityDataGenerator implements DataProvider {
-        private final DataGenerator generator;
-        private final String modId;
-
-        public AbilityDataGenerator(DataGenerator generator, String modId) {
-            this.generator = generator;
-            this.modId = modId;
-        }
-
-
-        @Override
-        public CompletableFuture<?> run(CachedOutput pOutput) {
-            Path outputFolder = this.generator.getPackOutput().getOutputFolder();
-            return CompletableFuture.allOf(
-                    MKCoreRegistry.ABILITIES.getEntries().stream()
-                            .filter(entry -> entry.getKey().location().getNamespace().equals(modId))
-                            .map(entry -> {
-                                ResourceLocation key = entry.getKey().location();
-                                MKAbility ability = entry.getValue();
-                                String name = key.getPath().substring(8); // skip ability.
-                                Path local = Paths.get("data", key.getNamespace(), AbilityManager.DEFINITION_FOLDER, name + ".json");
-                                Path path = outputFolder.resolve(local);
-                                JsonElement element = ability.serializeDynamic(JsonOps.INSTANCE);
-                                return DataProvider.saveStable(pOutput, element, path);
-                            }).collect(Collectors.toList()).toArray(CompletableFuture[]::new));
-        }
-
-        @Nonnull
-        @Override
-        public String getName() {
-            return String.format("MK Abilities : %s", modId);
-        }
-    }
-
-    static class MKBlockTagsProvider extends BlockTagsProvider {
+    public static class MKBlockTagsProvider extends BlockTagsProvider {
 
 
         public MKBlockTagsProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider,

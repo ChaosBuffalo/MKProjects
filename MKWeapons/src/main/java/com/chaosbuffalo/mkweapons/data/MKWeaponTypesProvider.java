@@ -1,48 +1,32 @@
 package com.chaosbuffalo.mkweapons.data;
 
+import com.chaosbuffalo.mkcore.data.MKDataProvider;
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DataProvider;
-import net.minecraft.data.HashCache;
-import net.minecraft.data.PackOutput;
+import net.minecraft.data.*;
+import net.minecraft.resources.ResourceLocation;
 
-import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
-//public class MKWeaponTypesProvider implements DataProvider {
-//    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-//    private final DataGenerator generator;
-//
-//    public MKWeaponTypesProvider(PackOutput generator) {
-//        this.generator = generator;
-//    }
-//
-//    @Override
-//    public void run(@Nonnull HashCache cache) {
-//        Path outputFolder = this.generator.getOutputFolder();
-//        MeleeWeaponTypes.WEAPON_TYPES.keySet().forEach(key -> {
-//            IMeleeWeaponType type = MeleeWeaponTypes.getWeaponType(key);
-//            MKWeapons.LOGGER.info("Dumping weapon {}", key);
-//            Path path = outputFolder.resolve("data/" + key.getNamespace() + "/melee_weapon_types/" + key.getPath() + ".json");
-//            try {
-//                JsonElement element = type.serialize(JsonOps.INSTANCE);
-//                DataProvider.save(GSON, cache, element, path);
-//            } catch (IOException e) {
-//                MKWeapons.LOGGER.error("Couldn't write weapon type {}", path, e);
-//            }
-//        });
-//    }
-//
-//    @Nonnull
-//    @Override
-//    public String getName() {
-//        return "MKWeapons Weapon Types";
-//    }
-//}
+public class MKWeaponTypesProvider extends MKDataProvider {
+
+    public MKWeaponTypesProvider(DataGenerator generator) {
+        super(generator, MKWeapons.MODID, "Weapon Types");
+    }
+
+    @Override
+    public CompletableFuture<?> run(CachedOutput pOutput) {
+        Path outputFolder = this.generator.getPackOutput().getOutputFolder();
+        return CompletableFuture.allOf(MeleeWeaponTypes.WEAPON_TYPES.entrySet().stream()
+                .map(entry -> {
+                    ResourceLocation key = entry.getKey();
+                    JsonElement element = entry.getValue().serialize(JsonOps.INSTANCE);
+                    Path path = outputFolder.resolve("data/" + key.getNamespace() + "/melee_weapon_types/" + key.getPath() + ".json");
+                    return DataProvider.saveStable(pOutput, element, path);
+                }).collect(Collectors.toList()).toArray(CompletableFuture[]::new));
+    }
+}
