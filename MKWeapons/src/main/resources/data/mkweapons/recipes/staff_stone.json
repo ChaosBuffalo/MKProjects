@@ -1,19 +1,21 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "H": {
+      "item": "mkweapons:haft"
+    },
+    "I": {
+      "tag": "forge:cobblestone"
+    }
+  },
   "pattern": [
     "  I",
     " H ",
     "I  "
   ],
-  "key": {
-    "I": {
-      "tag": "forge:cobblestone"
-    },
-    "H": {
-      "item": "mkweapons:haft"
-    }
-  },
   "result": {
     "item": "mkweapons:staff_stone"
-  }
+  },
+  "show_notification": true
 }

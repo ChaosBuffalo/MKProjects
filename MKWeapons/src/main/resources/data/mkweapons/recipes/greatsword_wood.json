@@ -1,19 +1,21 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "H": {
+      "item": "mkweapons:haft"
+    },
+    "I": {
+      "tag": "minecraft:planks"
+    }
+  },
   "pattern": [
     " I ",
     " I ",
     "IHI"
   ],
-  "key": {
-    "I": {
-      "tag": "minecraft:planks"
-    },
-    "H": {
-      "item": "mkweapons:haft"
-    }
-  },
   "result": {
     "item": "mkweapons:greatsword_wood"
-  }
+  },
+  "show_notification": true
 }

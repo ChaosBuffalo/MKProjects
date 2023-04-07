@@ -1,19 +1,21 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "H": {
+      "item": "mkweapons:haft"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    }
+  },
   "pattern": [
     " I ",
     " H ",
     " H "
   ],
-  "key": {
-    "I": {
-      "tag": "forge:ingots/iron"
-    },
-    "H": {
-      "item": "mkweapons:haft"
-    }
-  },
   "result": {
     "item": "mkweapons:mace_iron"
-  }
+  },
+  "show_notification": true
 }

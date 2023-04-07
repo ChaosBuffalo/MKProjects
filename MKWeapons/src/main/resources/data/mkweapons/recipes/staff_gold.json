@@ -1,19 +1,21 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "H": {
+      "item": "mkweapons:haft"
+    },
+    "I": {
+      "tag": "forge:ingots/gold"
+    }
+  },
   "pattern": [
     "  I",
     " H ",
     "I  "
   ],
-  "key": {
-    "I": {
-      "tag": "forge:ingots/gold"
-    },
-    "H": {
-      "item": "mkweapons:haft"
-    }
-  },
   "result": {
     "item": "mkweapons:staff_gold"
-  }
+  },
+  "show_notification": true
 }

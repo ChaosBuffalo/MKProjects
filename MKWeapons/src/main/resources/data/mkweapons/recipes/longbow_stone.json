@@ -1,10 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [
-    " IS",
-    "H S",
-    " IS"
-  ],
+  "category": "equipment",
   "key": {
     "H": {
       "item": "mkweapons:haft"
@@ -16,7 +12,13 @@
       "tag": "forge:string"
     }
   },
+  "pattern": [
+    " IS",
+    "H S",
+    " IS"
+  ],
   "result": {
     "item": "mkweapons:longbow_stone"
-  }
+  },
+  "show_notification": true
 }

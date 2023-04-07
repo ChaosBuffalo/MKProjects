@@ -1,9 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "I",
-    "S"
-  ],
+  "category": "equipment",
   "key": {
     "I": {
       "tag": "forge:gems/diamond"
@@ -12,7 +9,12 @@
       "item": "minecraft:stick"
     }
   },
+  "pattern": [
+    "I",
+    "S"
+  ],
   "result": {
     "item": "mkweapons:dagger_diamond"
-  }
+  },
+  "show_notification": true
 }
