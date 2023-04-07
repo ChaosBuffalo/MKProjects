@@ -2,10 +2,10 @@
 	"parent": "block/block",
 	"credit": "Made with Blockbench",
 	"textures": {
-		"0": "mknpc:blocks/poi_block",
-		"1": "mknpc:blocks/poi_block_bot",
-		"2": "mknpc:blocks/poi_block_top",
-		"particle": "mknpc:blocks/poi_block"
+		"0": "mknpc:block/poi_block",
+		"1": "mknpc:block/poi_block_bot",
+		"2": "mknpc:block/poi_block_top",
+		"particle": "mknpc:block/poi_block"
 	},
 	"render_type": "minecraft:cutout",
 	"elements": [

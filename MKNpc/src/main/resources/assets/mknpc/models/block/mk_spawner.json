@@ -2,8 +2,8 @@
   "parent": "block/thin_block",
   "ambientocclusion": false,
   "textures": {
-    "particle": "mknpc:blocks/mk_spawner_top",
-    "overlay": "mknpc:blocks/mk_spawner_top"
+    "particle": "mknpc:block/mk_spawner_top",
+    "overlay": "mknpc:block/mk_spawner_top"
   },
   "render_type": "minecraft:cutout",
   "elements": [
