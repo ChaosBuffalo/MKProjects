@@ -27,12 +27,14 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import javax.annotation.Nonnull;
@@ -300,12 +302,14 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
                 if (entity instanceof MKEntity) {
                     ((MKEntity) entity).setNonCombatMoveType(getMoveType());
                 }
-                if (entity instanceof Mob && getLevel() instanceof ServerLevel) {
-                    ((Mob) entity).finalizeSpawn((ServerLevel) getLevel(), getLevel().getCurrentDifficultyAt(
-                            entity.blockPosition()), MobSpawnType.SPAWNER, null, null);
+                if (entity instanceof Mob mobEnt && getLevel() instanceof ServerLevel serverLevel) {
+                    ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
+                            serverLevel.getCurrentDifficultyAt(getBlockPos()),
+                            MobSpawnType.SPAWNER, null, null);
                 }
 
             }
+
         }
     }
 

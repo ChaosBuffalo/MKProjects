@@ -19,12 +19,14 @@ import com.mojang.serialization.DynamicOps;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.ForgeEventFactory;
 
 import java.util.UUID;
 
@@ -97,9 +99,10 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
                     if (entity instanceof MKEntity) {
                         ((MKEntity) entity).setNonCombatMoveType(moveType);
                     }
-                    if (entity instanceof Mob && world instanceof ServerLevelAccessor) {
-                        ((Mob) entity).finalizeSpawn((ServerLevelAccessor) world, world.getCurrentDifficultyAt(
-                                entity.blockPosition()), MobSpawnType.SPAWNER, null, null);
+                    if (entity instanceof Mob mobEnt && world instanceof ServerLevelAccessor serverLevel) {
+                        ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
+                                serverLevel.getCurrentDifficultyAt(x.getLocation().pos()),
+                                MobSpawnType.SPAWNER, null, null);
                     }
 
                 }
