@@ -273,8 +273,8 @@ public class NpcDefinition {
                 cap.setSpawnID(uuid);
             });
             applyDefinition(entity, difficultyValue);
-            if (entity instanceof MKEntity) {
-                ((MKEntity) entity).postDefinitionApply(this);
+            if (entity instanceof MKEntity mkEntity) {
+                mkEntity.postDefinitionApply(this);
             }
             return entity;
         }

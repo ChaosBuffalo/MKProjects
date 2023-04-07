@@ -20,7 +20,7 @@ public class PointOfInterestEntry implements INBTSerializable<CompoundTag> {
     private UUID pointId;
 
     public PointOfInterestEntry(MKPoiTileEntity entity) {
-        this.location = entity.getGlobalBlockPos();
+        this.location = entity.getGlobalPos();
         this.label = entity.getPoiTag();
         this.structureId = entity.getStructureId();
         this.pointId = entity.getPoiID();

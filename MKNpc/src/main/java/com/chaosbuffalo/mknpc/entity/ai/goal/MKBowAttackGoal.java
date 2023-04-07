@@ -82,8 +82,8 @@ public class MKBowAttackGoal extends Goal {
     public int getDrawTime() {
         ItemStack item = entity.getMainHandItem();
         float drawTime;
-        if (item.getItem() instanceof MKBow) {
-            drawTime = ((MKBow) item.getItem()).getDrawTime(item, entity);
+        if (item.getItem() instanceof MKBow mkBow) {
+            drawTime = mkBow.getDrawTime(item, entity);
         } else {
             drawTime = 20.0f;
         }
@@ -101,8 +101,7 @@ public class MKBowAttackGoal extends Goal {
 
     public float getLaunchVelocity(float powerFactor) {
         ItemStack item = entity.getMainHandItem();
-        if (item.getItem() instanceof MKBow) {
-            MKBow mkBow = (MKBow) item.getItem();
+        if (item.getItem() instanceof MKBow mkBow) {
             float launchVel = mkBow.getLaunchVelocity(item, entity);
             return powerFactor * launchVel;
         } else {
@@ -112,8 +111,7 @@ public class MKBowAttackGoal extends Goal {
 
     public float getLaunchPower(int useTicks) {
         ItemStack item = entity.getMainHandItem();
-        if (item.getItem() instanceof MKBow) {
-            MKBow mkBow = (MKBow) item.getItem();
+        if (item.getItem() instanceof MKBow mkBow) {
             return mkBow.getPowerFactor(useTicks, item, entity);
         } else {
             return BowItem.getPowerForTime(useTicks);

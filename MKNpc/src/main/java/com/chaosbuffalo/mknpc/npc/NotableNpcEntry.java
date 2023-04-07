@@ -25,7 +25,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
     private UUID notableId;
 
     public NotableNpcEntry(NpcDefinition definition, MKSpawnerTileEntity spawner) {
-        this.location = spawner.getGlobalBlockPos();
+        this.location = spawner.getGlobalPos();
         this.name = definition.getNameForEntity(spawner.getLevel(), spawner.getSpawnUUID());
         this.definition = definition.getDefinitionName();
         this.structureId = spawner.getStructureId();

@@ -31,8 +31,8 @@ public class LivingRendererMixins {
     @ModifyConstant(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             constant = @Constant(floatValue = 0.15f))
     private float modifyTransparency(float value) {
-        if (toRender instanceof MKEntity) {
-            return ((MKEntity) toRender).getTranslucency();
+        if (toRender instanceof MKEntity mkEntity) {
+            return mkEntity.getTranslucency();
         }
         return value;
     }

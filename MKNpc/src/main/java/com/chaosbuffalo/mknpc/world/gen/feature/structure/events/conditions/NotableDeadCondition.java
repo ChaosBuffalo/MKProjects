@@ -33,16 +33,18 @@ public class NotableDeadCondition extends StructureEventCondition {
 
     @Override
     public boolean meetsCondition(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
-        return allNotables.value() ? entry.getAllNotablesOfType(npcDefinition.getValue()).stream()
-                .allMatch(x -> checkSpawnerDead(x, world)) : entry.getFirstNotableOfType(npcDefinition.getValue())
-                .map(x -> checkSpawnerDead(x, world)).orElse(false);
+        return allNotables.value() ?
+                entry.getAllNotablesOfType(npcDefinition.getValue()).stream()
+                        .allMatch(x -> checkSpawnerDead(x, world)) :
+                entry.getFirstNotableOfType(npcDefinition.getValue())
+                        .map(x -> checkSpawnerDead(x, world)).orElse(false);
     }
 
     private boolean checkSpawnerDead(NotableNpcEntry entry, Level world) {
         if (world.dimension() == entry.getLocation().dimension()) {
             BlockEntity entity = world.getBlockEntity(entry.getLocation().pos());
-            if (entity instanceof MKSpawnerTileEntity) {
-                return ((MKSpawnerTileEntity) entity).isOnRespawnTimer();
+            if (entity instanceof MKSpawnerTileEntity spawner) {
+                return spawner.isOnRespawnTimer();
             }
         }
         return false;

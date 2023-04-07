@@ -16,7 +16,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
@@ -31,7 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class MKJigsawStructure extends Structure implements IControlNaturalSpawns {
+public class MKJigsawStructure extends Structure {
 
     public static final Codec<MKJigsawStructure> CODEC = RecordCodecBuilder.<MKJigsawStructure>mapCodec(builder ->
             builder.group(settingsCodec(builder),
@@ -49,8 +48,6 @@ public class MKJigsawStructure extends Structure implements IControlNaturalSpawn
                             .forGetter(s -> s.projectStartToHeightmap),
                     Codec.intRange(1, 128).fieldOf("max_distance_from_center")
                             .forGetter(s -> s.maxDistanceFromCenter),
-                    Codec.BOOL.fieldOf("allowSpawns")
-                            .forGetter(s -> s.allowSpawns),
                     ResourceLocation.CODEC.fieldOf("structureName")
                             .forGetter(MKJigsawStructure::getStructureName)
             ).apply(builder, MKJigsawStructure::new)).flatXmap(verifyRange(), verifyRange()).codec();
@@ -75,7 +72,6 @@ public class MKJigsawStructure extends Structure implements IControlNaturalSpawn
     private final Optional<Heightmap.Types> projectStartToHeightmap;
     private final int maxDistanceFromCenter;
 
-    private final boolean allowSpawns;
     @Nullable
     private Component enterMessage;
     @Nullable
@@ -86,9 +82,8 @@ public class MKJigsawStructure extends Structure implements IControlNaturalSpawn
     public MKJigsawStructure(StructureSettings pSettings, Holder<StructureTemplatePool> templatePool,
                              Optional<ResourceLocation> startJigsawName, int maxDepth, HeightProvider heightProvider,
                              boolean useExpansionHack, Optional<Heightmap.Types> heightmapTypes, int maxDistanceFromCenter,
-                             boolean allowSpawns, ResourceLocation structureName) {
+                             ResourceLocation structureName) {
         super(pSettings);
-        this.allowSpawns = allowSpawns;
         this.structureName = structureName;
         this.startPool = templatePool;
         this.startJigsawName = startJigsawName;
@@ -99,6 +94,11 @@ public class MKJigsawStructure extends Structure implements IControlNaturalSpawn
         this.maxDistanceFromCenter = maxDistanceFromCenter;
     }
 
+    @Override
+    public StructureType<?> type() {
+        return MKNpcWorldGen.MK_STRUCTURE_TYPE.get();
+    }
+
     public ResourceLocation getStructureName() {
         return structureName;
     }
@@ -106,9 +106,10 @@ public class MKJigsawStructure extends Structure implements IControlNaturalSpawn
     @Override
     public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext pContext) {
         ChunkPos chunkpos = pContext.chunkPos();
-        int i = this.startHeight.sample(pContext.random(), new WorldGenerationContext(pContext.chunkGenerator(), pContext.heightAccessor()));
-        BlockPos blockpos = new BlockPos(chunkpos.getMinBlockX(), i, chunkpos.getMinBlockZ());
-        return JigsawPlacement.addPieces(pContext, this.startPool, this.startJigsawName, this.maxDepth, blockpos, this.useExpansionHack, this.projectStartToHeightmap, this.maxDistanceFromCenter);
+        int startY = this.startHeight.sample(pContext.random(), new WorldGenerationContext(pContext.chunkGenerator(), pContext.heightAccessor()));
+        BlockPos startPos = new BlockPos(chunkpos.getMinBlockX(), startY, chunkpos.getMinBlockZ());
+        return JigsawPlacement.addPieces(pContext, startPool, startJigsawName, maxDepth, startPos,
+                useExpansionHack, projectStartToHeightmap, maxDistanceFromCenter);
     }
 
 
@@ -117,12 +118,6 @@ public class MKJigsawStructure extends Structure implements IControlNaturalSpawn
         events.put(name, event);
         return this;
     }
-
-    @Override
-    public boolean doesAllowSpawns() {
-        return allowSpawns;
-    }
-
 
     public MKJigsawStructure setEnterMessage(Component msg) {
         this.enterMessage = msg;
@@ -168,13 +163,7 @@ public class MKJigsawStructure extends Structure implements IControlNaturalSpawn
                 checkAndExecuteEvent(ev, entry, activeStructure, world);
             }
         }
-
     }
-
-//    @Override
-//    public boolean canGenerate(RegistryAccess p_197172_, ChunkGenerator p_197173_, BiomeSource p_197174_, StructureManager p_197175_, long p_197176_, ChunkPos p_197177_, JigsawConfiguration p_197178_, LevelHeightAccessor p_197179_, Predicate<Holder<Biome>> p_197180_) {
-//        return this.pieceGenerator.createGenerator(new PieceGeneratorSupplier.Context<>(p_197173_, p_197174_, p_197176_, p_197177_, p_197178_, p_197179_, p_197180_, p_197175_, p_197172_)).isPresent();
-//    }
 
     protected void checkAndExecuteEvent(StructureEvent ev, MKStructureEntry entry,
                                         WorldStructureManager.ActiveStructure activeStructure, Level world) {
@@ -205,17 +194,6 @@ public class MKJigsawStructure extends Structure implements IControlNaturalSpawn
         if (getExitMessage() != null) {
             player.sendSystemMessage(getExitMessage());
         }
-    }
-
-    @Override
-    public GenerationStep.Decoration step() {
-        return GenerationStep.Decoration.SURFACE_STRUCTURES;
-    }
-
-
-    @Override
-    public StructureType<?> type() {
-        return MKNpcWorldGen.MK_STRUCTURE_TYPE.get();
     }
 
     @Nullable

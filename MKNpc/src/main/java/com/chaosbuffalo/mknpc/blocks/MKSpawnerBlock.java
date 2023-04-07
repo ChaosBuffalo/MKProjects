@@ -153,9 +153,9 @@ public class MKSpawnerBlock extends BaseEntityBlock {
             if (!worldIn.isClientSide() && player.isCreative()) {
                 if (player.isShiftKeyDown()) {
                     worldIn.setBlockAndUpdate(pos, state.setValue(ORIENTATION, getNextOrientation(state.getValue(ORIENTATION))));
-                    BlockEntity spawner = worldIn.getBlockEntity(pos);
-                    if (spawner instanceof MKSpawnerTileEntity) {
-                        ((MKSpawnerTileEntity) spawner).clearSpawn();
+                    BlockEntity entity = worldIn.getBlockEntity(pos);
+                    if (entity instanceof MKSpawnerTileEntity spawner) {
+                        spawner.clearSpawn();
                     }
                 } else {
                     ((ServerPlayer) player).connection.send(

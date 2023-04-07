@@ -23,7 +23,6 @@ public class MKJigsawBuilder {
     private boolean useExpansionHack;
     private Optional<Heightmap.Types> heightmapTypes;
     private int maxDistFromCenter;
-    private boolean allowSpawns;
 
     public MKJigsawBuilder(ResourceLocation name, Structure.StructureSettings settings,
                            Holder<StructureTemplatePool> templatePool) {
@@ -36,7 +35,6 @@ public class MKJigsawBuilder {
         useExpansionHack = true;
         heightmapTypes = Optional.of(Heightmap.Types.WORLD_SURFACE_WG);
         maxDistFromCenter = 80;
-        allowSpawns = false;
     }
 
     public MKJigsawBuilder setStartJigsawName(Optional<ResourceLocation> startJigsawName) {
@@ -60,7 +58,6 @@ public class MKJigsawBuilder {
     }
 
     public MKJigsawBuilder setAllowSpawns(boolean allowSpawns) {
-        this.allowSpawns = allowSpawns;
         return this;
     }
 
@@ -76,6 +73,6 @@ public class MKJigsawBuilder {
 
     public MKJigsawStructure build() {
         return new MKJigsawStructure(settings, templatePool, startJigsawName, maxDepth, heightProvider,
-                useExpansionHack, heightmapTypes, maxDistFromCenter, allowSpawns, name);
+                useExpansionHack, heightmapTypes, maxDistFromCenter, name);
     }
 }

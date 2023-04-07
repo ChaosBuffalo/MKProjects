@@ -6,40 +6,38 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.StructurePiece;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class StructureData implements INBTSerializable<CompoundTag> {
 
-    private int chunkX;
-    private int chunkZ;
+    private ChunkPos chunkPos;
     private BoundingBox boundingBox;
     private final List<StructureComponentData> components;
     private ResourceKey<Level> worldKey;
 
-    public StructureData(ResourceKey<Level> worldKey, int chunkX, int chunkZ, BoundingBox bounds, List<StructureComponentData> data) {
-        this.chunkX = chunkX;
-        this.chunkZ = chunkZ;
-        this.boundingBox = bounds;
-        this.components = new ArrayList<>();
+    public StructureData(ResourceKey<Level> worldKey, StructureStart start,
+                         Function<StructurePiece, StructureComponentData> pieceDataFactory) {
         this.worldKey = worldKey;
-        components.addAll(data);
+        this.chunkPos = start.getChunkPos();
+        this.boundingBox = start.getBoundingBox();
+        this.components = start.getPieces().stream().map(pieceDataFactory).toList();
     }
 
     public StructureData() {
         this.components = new ArrayList<>();
     }
 
-    public int getChunkX() {
-        return chunkX;
-    }
-
-    public int getChunkZ() {
-        return chunkZ;
+    public ChunkPos getChunkPos() {
+        return chunkPos;
     }
 
     public BoundingBox getBoundingBox() {
@@ -49,8 +47,8 @@ public class StructureData implements INBTSerializable<CompoundTag> {
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-        tag.putInt("chunkX", chunkX);
-        tag.putInt("chunkY", chunkZ);
+        tag.putInt("chunkX", chunkPos.x);
+        tag.putInt("chunkY", chunkPos.z);
         int[] boundsArr = {boundingBox.minX(), boundingBox.minY(), boundingBox.minZ(), boundingBox.maxX(), boundingBox.maxY(), boundingBox.maxZ()};
         tag.putIntArray("bounds", boundsArr);
         ListTag comps = new ListTag();
@@ -64,8 +62,9 @@ public class StructureData implements INBTSerializable<CompoundTag> {
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
-        chunkX = nbt.getInt("chunkX");
-        chunkZ = nbt.getInt("chunkY");
+        int chunkX = nbt.getInt("chunkX");
+        int chunkZ = nbt.getInt("chunkY");
+        chunkPos = new ChunkPos(chunkX, chunkZ);
         worldKey = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(nbt.getString("world")));
         int[] boundsArr = nbt.getIntArray("bounds");
         boundingBox = new BoundingBox(boundsArr[0], boundsArr[1], boundsArr[2], boundsArr[3], boundsArr[4], boundsArr[5]);

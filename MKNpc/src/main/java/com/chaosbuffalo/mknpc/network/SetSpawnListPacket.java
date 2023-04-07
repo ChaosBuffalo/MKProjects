@@ -59,8 +59,7 @@ public class SetSpawnListPacket {
                 return;
             }
             BlockEntity tileEntity = entity.getLevel().getBlockEntity(tileEntityLoc);
-            if (tileEntity instanceof MKSpawnerTileEntity) {
-                MKSpawnerTileEntity spawner = (MKSpawnerTileEntity) tileEntity;
+            if (tileEntity instanceof MKSpawnerTileEntity spawner) {
                 setSpawnerFromPacket(spawner);
             }
         });

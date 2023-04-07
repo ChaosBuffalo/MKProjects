@@ -18,10 +18,9 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class StructureUtils {
 
@@ -76,14 +75,15 @@ public class StructureUtils {
         }
     }
 
-    public static Optional<List<StructureStart>> getStructuresOverlaps(Entity entity) {
+    public static List<StructureStart> getStructuresOverlaps(Entity entity) {
         if (entity.getCommandSenderWorld() instanceof ServerLevel serverLevel) {
             var manager = serverLevel.structureManager();
-            return Optional.of(WorldStructureHandler.MK_STRUCTURE_CACHE.stream().map(
-                            x -> manager.getStructureAt(entity.blockPosition(), x)).filter(x -> x != StructureStart.INVALID_START)
-                    .collect(Collectors.toList()));
+            return WorldStructureHandler.MK_STRUCTURE_CACHE.stream()
+                    .map(x -> manager.getStructureAt(entity.blockPosition(), x))
+                    .filter(StructureStart::isValid)
+                    .toList();
         } else {
-            return Optional.empty();
+            return Collections.emptyList();
         }
     }
 }

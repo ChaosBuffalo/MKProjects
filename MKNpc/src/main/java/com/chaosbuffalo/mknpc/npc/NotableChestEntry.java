@@ -21,7 +21,7 @@ public class NotableChestEntry implements INBTSerializable<CompoundTag> {
     private UUID chestId;
 
     public NotableChestEntry(IChestNpcData data) {
-        this.location = data.getGlobalBlockPos();
+        this.location = data.getGlobalPos();
         this.label = data.getChestLabel();
         this.structureId = data.getStructureId();
         this.chestId = data.getChestId();

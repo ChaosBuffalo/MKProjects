@@ -3,11 +3,11 @@
   "options": [
     {
       "optionType": "mknpc:render_group",
-      "value": "wither_stray"
+      "value": "wither_king"
     },
     {
       "optionType": "mknpc:mk_size",
-      "value": 0.50
+      "value": 0.25
     },
     {
       "optionType": "mknpc:faction",

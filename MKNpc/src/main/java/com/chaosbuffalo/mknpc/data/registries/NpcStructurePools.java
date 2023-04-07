@@ -37,21 +37,21 @@ public class NpcStructurePools {
         Holder<StructureTemplatePool> empty = holderGetter.getOrThrow(Pools.EMPTY);
         pContext.register(DIGGER_CAMP_POOL, new StructureTemplatePool(empty,
                 ImmutableList.of(
-                        Pair.of(MKSinglePoolElement.getMKSingleJigsaw(DIGGER_TENT_DBL_1, false), 1),
-                        Pair.of(MKSinglePoolElement.getMKSingleJigsaw(DIGGER_TENT_SGL_1, false), 1),
+                        Pair.of(MKSinglePoolElement.forTemplate(DIGGER_TENT_DBL_1, false), 1),
+                        Pair.of(MKSinglePoolElement.forTemplate(DIGGER_TENT_SGL_1, false), 1),
                         Pair.of(StructurePoolElement.empty(), 2)
                 ),
                 StructureTemplatePool.Projection.RIGID));
 
         pContext.register(DIGGER_BASE_POOL, new StructureTemplatePool(empty,
                 ImmutableList.of(
-                        Pair.of(MKSinglePoolElement.getMKSingleJigsaw(DIGGER_BIG_1, false), 1)
+                        Pair.of(MKSinglePoolElement.forTemplate(DIGGER_BIG_1, false), 1)
                 ),
-                StructureTemplatePool.Projection.TERRAIN_MATCHING));
+                StructureTemplatePool.Projection.RIGID));
 
         pContext.register(DIGGER_ROAD_POOL, new StructureTemplatePool(empty,
                 ImmutableList.of(
-                        Pair.of(MKSinglePoolElement.getMKSingleJigsaw(DIGGER_ROAD_1, false), 1)
+                        Pair.of(MKSinglePoolElement.forTemplate(DIGGER_ROAD_1, false), 1)
                 ),
                 StructureTemplatePool.Projection.TERRAIN_MATCHING));
     }

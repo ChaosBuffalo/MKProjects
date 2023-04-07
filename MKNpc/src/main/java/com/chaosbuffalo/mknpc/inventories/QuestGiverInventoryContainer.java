@@ -81,14 +81,14 @@ public class QuestGiverInventoryContainer extends ChestMenu {
                                         PlayerQuestData playerData = chain.getQuestData(currentQuest.getQuestName());
                                         PlayerQuestObjectiveData playerObj = playerData.getObjective(obj.getObjectiveName());
                                         QuestData questData = questChain.getQuestChainData().getQuestData(questName);
-                                        if (obj instanceof ITradeObjectiveHandler) {
-                                            if (((ITradeObjectiveHandler) obj).canTradeWith(entity, playerIn, playerObj,
+                                        if (obj instanceof ITradeObjectiveHandler tradeObj) {
+                                            if (tradeObj.canTradeWith(entity, playerIn, playerObj,
                                                     questData, chain)) {
-                                                int[] matches = ((ITradeObjectiveHandler) obj).findMatches(nonEmpty);
+                                                int[] matches = tradeObj.findMatches(nonEmpty);
                                                 if (matches == null) {
                                                     continue;
                                                 } else {
-                                                    ((ITradeObjectiveHandler) obj).onPlayerTradeSuccess(playerIn,
+                                                    tradeObj.onPlayerTradeSuccess(playerIn,
                                                             playerObj, questData, chain, entity);
                                                     questChain.signalQuestProgress(worldData, playerQuest, currentQuest, chain, false);
                                                     return;

@@ -100,13 +100,13 @@ public class ChestNpcDataHandler implements IChestNpcData {
     }
 
     @Override
-    public GlobalPos getGlobalBlockPos() {
+    public GlobalPos getGlobalPos() {
         return GlobalPos.of(entity.getLevel().dimension(), entity.getBlockPos());
     }
 
     @Nullable
     @Override
-    public Level getStructureWorld() {
+    public Level getStructureLevel() {
         return getTileEntity().getLevel();
     }
 

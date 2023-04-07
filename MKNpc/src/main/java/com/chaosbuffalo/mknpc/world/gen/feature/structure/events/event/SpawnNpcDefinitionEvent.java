@@ -19,7 +19,6 @@ import com.mojang.serialization.DynamicOps;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
@@ -77,38 +76,39 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
     @Override
     public void execute(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
         NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefinition.getValue());
-        if (def != null) {
-            entry.getFirstPoiWithTag(poiTag.getValue()).ifPresent(x -> {
-                UUID npcId = entry.getCustomData().computeUUID(getEventName());
-                Vec3 pos = Vec3.atBottomCenterOf(x.getLocation().pos());
-                double difficultyValue = WorldUtils.getDifficultyForGlobalPos(x.getLocation());
-                Entity entity = def.createEntity(world, pos, npcId, difficultyValue);
-                if (entity != null) {
-                    entry.getFirstPoiWithTag(faceTag.getValue()).ifPresent(face -> {
-                        entity.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(face.getLocation().pos()));
-                    });
-                    world.addFreshEntity(entity);
-                    final double finDiff = difficultyValue;
-                    MKNpc.getNpcData(entity).ifPresent((cap) -> {
-                        cap.setMKSpawned(true);
-                        cap.setSpawnPos(BlockPos.containing(pos).above());
-                        cap.setNotableUUID(npcId);
-                        cap.setStructureId(entry.getStructureId());
-                        cap.setDifficultyValue(finDiff);
-                    });
-                    if (entity instanceof MKEntity) {
-                        ((MKEntity) entity).setNonCombatMoveType(moveType);
-                    }
-                    if (entity instanceof Mob mobEnt && world instanceof ServerLevelAccessor serverLevel) {
-                        ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
-                                serverLevel.getCurrentDifficultyAt(x.getLocation().pos()),
-                                MobSpawnType.SPAWNER, null, null);
-                    }
-
-                }
-
-            });
+        if (def == null) {
+            return;
         }
+        entry.getFirstPoiWithTag(poiTag.getValue()).ifPresent(x -> {
+            UUID npcId = entry.getCustomData().computeUUID(getEventName());
+            Vec3 pos = Vec3.atBottomCenterOf(x.getLocation().pos());
+            double difficultyValue = WorldUtils.getDifficultyForGlobalPos(x.getLocation());
+            Entity entity = def.createEntity(world, pos, npcId, difficultyValue);
+            if (entity != null) {
+                entry.getFirstPoiWithTag(faceTag.getValue()).ifPresent(face -> {
+                    entity.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(face.getLocation().pos()));
+                });
+                final double finDiff = difficultyValue;
+                MKNpc.getNpcData(entity).ifPresent((cap) -> {
+                    cap.setMKSpawned(true);
+                    cap.setSpawnPos(BlockPos.containing(pos).above());
+                    cap.setNotableUUID(npcId);
+                    cap.setStructureId(entry.getStructureId());
+                    cap.setDifficultyValue(finDiff);
+                });
+                if (entity instanceof MKEntity mkEntity) {
+                    mkEntity.setNonCombatMoveType(moveType);
+                }
+                if (entity instanceof Mob mobEnt && world instanceof ServerLevelAccessor serverLevel) {
+                    var spawnData = ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
+                            serverLevel.getCurrentDifficultyAt(x.getLocation().pos()),
+                            MobSpawnType.SPAWNER, null, null);
+                    if (spawnData != null) {
+                        world.addFreshEntity(entity);
+                    }
+                }
+            }
+        });
 
     }
 }

@@ -27,8 +27,7 @@ public class OpenMKSpawnerPacket extends SetSpawnListPacket {
         if (Minecraft.getInstance().player != null) {
             Level world = Minecraft.getInstance().player.getCommandSenderWorld();
             BlockEntity tileEntity = world.getBlockEntity(tileEntityLoc);
-            if (tileEntity instanceof MKSpawnerTileEntity) {
-                MKSpawnerTileEntity spawner = (MKSpawnerTileEntity) tileEntity;
+            if (tileEntity instanceof MKSpawnerTileEntity spawner) {
                 setSpawnerFromPacket(spawner);
                 Minecraft.getInstance().setScreen(new MKSpawnerScreen(spawner));
             }

@@ -14,7 +14,6 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
@@ -45,6 +44,11 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolEle
         bWaterlogBlocks = waterlogBlocks;
     }
 
+    @Override
+    public StructurePoolElementType<?> getType() {
+        return MKNpcWorldGen.MK_SINGLE_JIGSAW_DESERIALIZER.get();
+    }
+
     public boolean doWaterlog() {
         return bWaterlogBlocks;
     }
@@ -57,10 +61,6 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolEle
 
     private StructureTemplate getTemplate(StructureTemplateManager p_210433_) {
         return this.template.map(p_210433_::getOrCreate, Function.identity());
-    }
-
-    public void setStructureStart(StructureStart start, UUID instanceId) {
-
     }
 
     @Override
@@ -80,13 +80,7 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolEle
         super.handleDataMarker(pLevel, pBlockInfo, pPos, pRotation, pRandom, pBox);
     }
 
-
-    @Override
-    public StructurePoolElementType<?> getType() {
-        return MKNpcWorldGen.MK_SINGLE_JIGSAW_DESERIALIZER.get();
-    }
-
-    public static Function<StructureTemplatePool.Projection, StructurePoolElement> getMKSingleJigsaw(ResourceLocation pieceName, boolean doWaterlog) {
+    public static Function<StructureTemplatePool.Projection, StructurePoolElement> forTemplate(ResourceLocation pieceName, boolean doWaterlog) {
         return (placementBehaviour) -> new MKSinglePoolElement(Either.left(pieceName), EMPTY, placementBehaviour, doWaterlog);
     }
 

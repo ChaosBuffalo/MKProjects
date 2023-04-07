@@ -22,8 +22,8 @@ public class OpenLearnAbilitiesEffect extends DialogueEffect {
 
     @Override
     public void applyEffect(ServerPlayer serverPlayerEntity, LivingEntity livingEntity, DialogueNode dialogueNode) {
-        if (livingEntity instanceof IAbilityTrainingEntity) {
-            ((IAbilityTrainingEntity) livingEntity).openTrainingGui(serverPlayerEntity);
+        if (livingEntity instanceof IAbilityTrainingEntity trainingEntity) {
+            trainingEntity.openTrainingGui(serverPlayerEntity);
         }
     }
 }

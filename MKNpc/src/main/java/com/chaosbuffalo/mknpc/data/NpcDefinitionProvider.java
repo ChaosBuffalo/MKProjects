@@ -9,7 +9,6 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.resources.ResourceLocation;
 
-
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 

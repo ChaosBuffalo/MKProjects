@@ -93,16 +93,13 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     public void setupStructureDataIfAbsent(StructureStart start, Level world) {
         Structure struct = start.getStructure();
         StructureData structureData = new StructureData(world.dimension(),
-                start.getChunkPos().x, start.getChunkPos().z, start.getBoundingBox(), start.getPieces().stream().map(
-                this::getComponentDataFromPiece).collect(Collectors.toList()));
-
+                start, this::getComponentDataFromPiece);
 
         MKStructureEntry structureEntry = new MKStructureEntry(this,
                 world.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(struct),
                 IStructureStartMixin.getInstanceIdFromStart(start), structureData);
         indexStructureEntry(structureEntry);
     }
-
 
     @Override
     public PointOfInterestEntry getPointOfInterest(UUID id) {
@@ -189,15 +186,14 @@ public class WorldNpcDataHandler implements IWorldNpcData {
 
     private MKStructureEntry computeStructureEntry(IStructurePlaced structurePlaced) {
         StructureData structureData = null;
-        Level structureWorld = structurePlaced.getStructureWorld();
-        if (structureWorld instanceof ServerLevel) {
-            ServerLevel world = (ServerLevel) structureWorld;
+        Level structureWorld = structurePlaced.getStructureLevel();
+        if (structureWorld instanceof ServerLevel serverLevel) {
             MKJigsawStructure struct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structurePlaced.getStructureName());
             if (struct != null) {
-                StructureStart start = world.structureManager().getStructureAt(structurePlaced.getGlobalBlockPos().pos(), struct);
-                structureData = new StructureData(structurePlaced.getStructureWorld().dimension(),
-                        start.getChunkPos().x, start.getChunkPos().z, start.getBoundingBox(), start.getPieces().stream().map(
-                        this::getComponentDataFromPiece).collect(Collectors.toList()));
+                StructureStart start = serverLevel.structureManager()
+                        .getStructureAt(structurePlaced.getGlobalPos().pos(), struct);
+                structureData = new StructureData(structureWorld.dimension(),
+                        start, this::getComponentDataFromPiece);
             }
 
         }
@@ -213,8 +209,8 @@ public class WorldNpcDataHandler implements IWorldNpcData {
 
     private StructureComponentData getComponentDataFromPiece(StructurePiece piece) {
         ResourceLocation pieceName = MKNpcWorldGen.UNKNOWN_PIECE;
-        if (piece instanceof PoolElementStructurePiece) {
-            if (((PoolElementStructurePiece) piece).getElement() instanceof MKSinglePoolElement mkPiece) {
+        if (piece instanceof PoolElementStructurePiece structurePiece) {
+            if (structurePiece.getElement() instanceof MKSinglePoolElement mkPiece) {
                 pieceName = mkPiece.getPieceEither().left().orElse(MKNpcWorldGen.UNKNOWN_PIECE);
             }
         }

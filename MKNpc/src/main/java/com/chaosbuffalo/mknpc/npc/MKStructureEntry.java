@@ -41,8 +41,6 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         this.structureName = structureName;
         this.structureId = structureId;
         this.structureData = structureData;
-
-
     }
 
     public AbilityTracker getCooldownTracker() {
@@ -63,11 +61,10 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
 
     public ChunkPos getChunkPos() {
         if (structureData != null) {
-            return new ChunkPos(structureData.getChunkX(), structureData.getChunkZ());
+            return structureData.getChunkPos();
         } else {
-            return new ChunkPos(0, 0);
+            return ChunkPos.ZERO;
         }
-
     }
 
     public MKStructureEntry(WorldNpcDataHandler worldData) {
@@ -262,6 +259,5 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         if (nbt.contains("cooldowns")) {
             cooldownTracker.deserialize(nbt.getCompound("cooldowns"));
         }
-
     }
 }

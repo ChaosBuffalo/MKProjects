@@ -27,7 +27,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -122,13 +121,13 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
     }
 
     @Override
-    public GlobalPos getGlobalBlockPos() {
+    public GlobalPos getGlobalPos() {
         return GlobalPos.of(getLevel().dimension(), getBlockPos());
     }
 
     @Override
     @Nullable
-    public Level getStructureWorld() {
+    public Level getStructureLevel() {
         return getLevel();
     }
 
@@ -287,7 +286,7 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
                         rot,
                         0.0f);
                 entity.setYHeadRot(rot);
-                getLevel().addFreshEntity(entity);
+
                 final double finDiff = difficultyValue;
                 MKNpc.getNpcData(entity).ifPresent((cap) -> {
                     cap.setMKSpawned(true);
@@ -299,13 +298,16 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
                     cap.setDifficultyValue(finDiff);
                     cap.setDeathReceiver(this);
                 });
-                if (entity instanceof MKEntity) {
-                    ((MKEntity) entity).setNonCombatMoveType(getMoveType());
+                if (entity instanceof MKEntity mkEntity) {
+                    mkEntity.setNonCombatMoveType(getMoveType());
                 }
                 if (entity instanceof Mob mobEnt && getLevel() instanceof ServerLevel serverLevel) {
-                    ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
+                    var spawnData = ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
                             serverLevel.getCurrentDifficultyAt(getBlockPos()),
                             MobSpawnType.SPAWNER, null, null);
+                    if (spawnData != null) {
+                        getLevel().addFreshEntity(entity);
+                    }
                 }
 
             }

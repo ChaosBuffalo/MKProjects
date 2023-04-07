@@ -75,13 +75,13 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
 
 
     @Override
-    public GlobalPos getGlobalBlockPos() {
+    public GlobalPos getGlobalPos() {
         return GlobalPos.of(getLevel().dimension(), getBlockPos());
     }
 
     @Override
     @Nullable
-    public Level getStructureWorld() {
+    public Level getStructureLevel() {
         return getLevel();
     }
 

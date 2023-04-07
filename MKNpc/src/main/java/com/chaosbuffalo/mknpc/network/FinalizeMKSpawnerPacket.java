@@ -37,16 +37,16 @@ public class FinalizeMKSpawnerPacket {
                 return;
             }
             BlockEntity tileEntity = entity.getLevel().getBlockEntity(tileEntityLoc);
-            if (tileEntity instanceof MKSpawnerTileEntity) {
+            if (tileEntity instanceof MKSpawnerTileEntity spawner) {
                 BlockState dataState = Blocks.STRUCTURE_BLOCK.getStateForPlacement(null);
                 if (dataState != null) {
                     entity.getLevel().setBlock(tileEntityLoc.above(), dataState, 3);
                     BlockEntity other = entity.getLevel().getBlockEntity(tileEntityLoc.above());
-                    if (other instanceof StructureBlockEntity) {
-                        ((StructureBlockEntity) other).setMetaData("mkspawner");
+                    if (other instanceof StructureBlockEntity structureBlock) {
+                        structureBlock.setMetaData("mkspawner");
                     }
                 }
-                ((MKSpawnerTileEntity) tileEntity).clearSpawn();
+                spawner.clearSpawn();
             }
         });
         ctx.setPacketHandled(true);

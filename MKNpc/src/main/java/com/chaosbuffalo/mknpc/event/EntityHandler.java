@@ -24,11 +24,8 @@ import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.ChestBlock;
@@ -49,7 +46,7 @@ import net.minecraftforge.fml.common.Mod;
 public class EntityHandler {
 
     @SubscribeEvent
-    public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
+    public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
         MKNpc.getNpcData(event.getEntity()).ifPresent((cap) -> {
             if (cap.wasMKSpawned()) {
                 event.setCanceled(true);
@@ -90,9 +87,7 @@ public class EntityHandler {
                 }
             });
         }
-
     }
-
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onEntityInteract(PlayerInteractEvent.RightClickBlock event) {
@@ -145,12 +140,11 @@ public class EntityHandler {
                         Quest currentQuest = questChain.getDefinition().getQuest(questName);
                         if (currentQuest != null) {
                             for (QuestObjective<?> obj : currentQuest.getObjectives()) {
-                                if (obj instanceof IContainerObjectiveHandler) {
-                                    IContainerObjectiveHandler iObj = (IContainerObjectiveHandler) obj;
+                                if (obj instanceof IContainerObjectiveHandler containerObj) {
                                     PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
                                     PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
                                     QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
-                                    if (iObj.onLootChest(player, pObj, qData, chestCap)) {
+                                    if (containerObj.onLootChest(player, pObj, qData, chestCap)) {
                                         questChain.signalQuestProgress(worldData, x, currentQuest, pQuestChain, false);
                                         return;
                                     }
@@ -203,11 +197,11 @@ public class EntityHandler {
                                 Quest currentQuest = questChain.getDefinition().getQuest(questName);
                                 if (currentQuest != null) {
                                     for (QuestObjective<?> obj : currentQuest.getObjectives()) {
-                                        if (obj instanceof IKillObjectiveHandler) {
+                                        if (obj instanceof IKillObjectiveHandler killObj) {
                                             PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
                                             PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
                                             QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
-                                            if (((IKillObjectiveHandler) obj).onPlayerKillNpcDefEntity(player, pObj, def, event, qData, pQuestChain)) {
+                                            if (killObj.onPlayerKillNpcDefEntity(player, pObj, def, event, qData, pQuestChain)) {
                                                 questChain.signalQuestProgress(worldData, pData, currentQuest, pQuestChain, false);
                                             }
                                         }
@@ -240,9 +234,9 @@ public class EntityHandler {
                 Team team = player.getTeam();
                 if (team != null) {
                     for (String s : team.getPlayers()) {
-                        ServerPlayer serverplayerentity = server.getPlayerList().getPlayerByName(s);
-                        if (serverplayerentity != null && !serverplayerentity.equals(player)) {
-                            handleKillEntityForPlayer(serverplayerentity, event, worldNpcData);
+                        ServerPlayer member = server.getPlayerList().getPlayerByName(s);
+                        if (member != null && !member.equals(player)) {
+                            handleKillEntityForPlayer(member, event, worldNpcData);
                         }
                     }
                 }
@@ -264,66 +258,16 @@ public class EntityHandler {
         }
     }
 
-    public static void onLivingSpawn(MobSpawnEvent.FinalizeSpawn event) {
-        if (event.getLevel() instanceof ServerLevel serverLevel) {
-            if (event.getSpawnType() == MobSpawnType.NATURAL && stopSpawningForClassification(event.getEntity())) {
-//                serverLevel.structureManager().get
-            }
-
-
-//            BlockPos spawnPos = new BlockPos(event.getX(), event.getY(), event.getZ());
-
-//            if (event.getWorld() instanceof ServerLevel) {
-//                StructureFeatureManager manager = ((ServerLevel) event.getWorld()).structureFeatureManager();
-//                for (ConfiguredStructureFeature<?, MKJigsawStructure> structure : WorldStructureHandler.MK_STRUCTURE_CACHE) {
-//                    if (!((IControlNaturalSpawns) structure.feature).doesAllowSpawns()) {
-//                        StructureStart start = manager.getStructureAt(spawnPos, structure);
-//                        if (start != StructureStart.INVALID_START) {
-//                            event.setResult(Event.Result.DENY);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-        }
-    }
-
-    // FIXME: new spawn event
-//    @SubscribeEvent
-//    public static void onLivingSpawn(LivingSpawnEvent.CheckSpawn event) {
-//        if (event.getSpawnReason() == MobSpawnType.NATURAL && stopSpawningForClassification(event.getEntityLiving())) {
-//            BlockPos spawnPos = new BlockPos(event.getX(), event.getY(), event.getZ());
-//            if (event.getWorld() instanceof ServerLevel) {
-//                StructureFeatureManager manager = ((ServerLevel) event.getWorld()).structureFeatureManager();
-//                for (ConfiguredStructureFeature<?, MKJigsawStructure> structure : WorldStructureHandler.MK_STRUCTURE_CACHE) {
-//                    if (!((IControlNaturalSpawns) structure.feature).doesAllowSpawns()) {
-//                        StructureStart start = manager.getStructureAt(spawnPos, structure);
-//                        if (start != StructureStart.INVALID_START) {
-//                            event.setResult(Event.Result.DENY);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//    }
-
-    private static boolean stopSpawningForClassification(LivingEntity entity) {
-        return (entity.getClassification(false) == MobCategory.MONSTER);
-    }
-
     @SubscribeEvent
     public static void onHealEvent(MKAbilityHealEvent event) {
         LivingEntity healed = event.getEntity();
         LivingEntity source = event.getHealSource().getSourceEntity();
-        if (source != null && !(source instanceof Player && ((Player) source).isCreative())) {
+        if (source != null && !(source instanceof Player player && player.isCreative())) {
             EntityEffectBuilder.PointEffectBuilder.createPointEffectOnEntity(source, healed, Vec3.ZERO)
                     .radius(10.0f)
                     .effect(HealingThreatEffect.from(source, healed, event.getAmount() * NpcConstants.HEALING_THREAT_MULTIPLIER),
                             TargetingContexts.ENEMY)
                     .spawn();
         }
-
-
     }
 }

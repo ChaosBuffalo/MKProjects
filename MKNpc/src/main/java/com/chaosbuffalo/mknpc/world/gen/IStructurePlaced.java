@@ -21,8 +21,8 @@ public interface IStructurePlaced {
 
     void setStructureId(UUID structureId);
 
-    GlobalPos getGlobalBlockPos();
+    GlobalPos getGlobalPos();
 
     @Nullable
-    Level getStructureWorld();
+    Level getStructureLevel();
 }

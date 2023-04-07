@@ -21,12 +21,12 @@ public class CapabilityHandler {
     @SuppressWarnings("unused")
     @SubscribeEvent
     public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> e) {
-        if (e.getObject() instanceof LivingEntity) {
-            if (e.getObject() instanceof Player) {
-                PlayerQuestingDataProvider provider = new PlayerQuestingDataProvider((Player) e.getObject());
+        if (e.getObject() instanceof LivingEntity livingEntity) {
+            if (e.getObject() instanceof Player player) {
+                PlayerQuestingDataProvider provider = new PlayerQuestingDataProvider(player);
                 attachCap(NpcCapabilities.MK_QUEST_CAP_ID, provider, e);
             } else {
-                EntityNpcDataProvider provider = new EntityNpcDataProvider((LivingEntity) e.getObject());
+                EntityNpcDataProvider provider = new EntityNpcDataProvider(livingEntity);
                 attachCap(NpcCapabilities.MK_NPC_CAP_ID, provider, e);
             }
         }
