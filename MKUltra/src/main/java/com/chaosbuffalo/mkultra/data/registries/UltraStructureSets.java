@@ -30,7 +30,7 @@ public class UltraStructureSets {
         context.register(INTRO_CASTLE,
                 new StructureSet(structures.getOrThrow(UltraStructures.INTRO_CASTLE),
                         new StaticPlacement(0, 0,
-                                new StructurePlacement.ExclusionZone(sets.getOrThrow(INTRO_CASTLE), 10))));
+                                new StructurePlacement.ExclusionZone(sets.getOrThrow(INTRO_CASTLE), 0))));
 
 
         context.register(DESERT_TEMPLE_VILLAGE,
@@ -40,11 +40,5 @@ public class UltraStructureSets {
         context.register(NECROTIDE_ALTER,
                 new StructureSet(structures.getOrThrow(UltraStructures.NECROTIDE_ALTER),
                         new RandomSpreadStructurePlacement(50, 24, RandomSpreadType.LINEAR, 132321313)));
-
-//        context.register()
-//        writeSet(new StructureSetData(IntroCastleJigsawStructure.INTRO_CASTLE_SET_NAME,
-//                new RandomSpreadStructurePlacement(2, 1, RandomSpreadType.LINEAR, 34222645))
-//                .withStructure(IntroCastleJigsawStructure.INTRO_CASTLE_STRUCTURE_NAME, 1), cache);
-
     }
 }

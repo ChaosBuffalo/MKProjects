@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkultra.data_generators;
+package com.chaosbuffalo.mkultra.data.generators;
 
 import com.chaosbuffalo.mkcore.core.talents.TalentLineDefinition;
 import com.chaosbuffalo.mkcore.core.talents.TalentNode;

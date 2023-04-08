@@ -6,13 +6,13 @@
       "value": "nether_mage_1"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 150.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:dialogue",
@@ -25,9 +25,9 @@
           "ability": "mkultra:ability.ember",
           "reqs": [
             {
-              "reqType": "mkcore:training_req.has_entitlement",
               "attributes": {},
-              "entitlement": "mkultra:nether_mage.intro.tier_1"
+              "entitlement": "mkultra:nether_mage.intro.tier_1",
+              "reqType": "mkcore:training_req.has_entitlement"
             }
           ]
         },
@@ -35,9 +35,9 @@
           "ability": "mkultra:ability.fire_armor",
           "reqs": [
             {
-              "reqType": "mkcore:training_req.has_entitlement",
               "attributes": {},
-              "entitlement": "mkultra:nether_mage.intro.tier_1"
+              "entitlement": "mkultra:nether_mage.intro.tier_1",
+              "reqType": "mkcore:training_req.has_entitlement"
             }
           ]
         }
@@ -48,9 +48,9 @@
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:staff_wood\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:staff_wood\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -63,31 +63,31 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.ember",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.ember"
+          "priority": 1
         },
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.fireball",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.fireball"
+          "priority": 2
         },
         {
-          "priority": 3,
+          "abilityName": "mkultra:ability.flame_wave",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.flame_wave"
+          "priority": 3
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
-      "minor_skills": [
-        "mkcore:alteration",
-        "mkcore:abjuration",
-        "mkcore:conjuration",
-        "mkcore:evocation"
-      ],
       "major_skills": [],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:evocation",
+        "mkcore:alteration",
+        "mkcore:conjuration"
+      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
@@ -97,19 +97,19 @@
       "value": 0.9
     },
     {
+      "hasLastName": false,
       "optionType": "mknpc:faction_name",
-      "title": "Initiate",
-      "hasLastName": false
+      "title": "Initiate"
     },
     {
       "optionType": "mknpc:faction",
       "value": "mkultra:nether_mages"
     },
     {
-      "optionType": "mknpc:offer_quests",
       "offerings": [
         "mkultra:nether_mage_intro"
-      ]
+      ],
+      "optionType": "mknpc:offer_quests"
     }
   ]
 }

@@ -6,49 +6,49 @@
       "value": "zombie_pig_trooper"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 50.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:name",
       "value": "Crumbling Trooper"
     },
     {
-      "optionType": "mknpc:extra_loot",
-      "noLootChance": 0.1,
       "dropChances": 2,
-      "noLootIncrease": 0.25,
       "lootOptions": [
         {
           "lootSlotName": "mkweapons:items",
           "lootSlotTier": "mkultra:zombie_trooper",
           "weight": 1.0
         }
-      ]
+      ],
+      "noLootChance": 0.1,
+      "noLootIncrease": 0.25,
+      "optionType": "mknpc:extra_loot"
     },
     {
       "optionType": "mknpc:equipment",
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:longsword_stone\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:longsword_stone\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           },
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:warhammer_stone\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:warhammer_stone\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           },
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:mace_stone\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:mace_stone\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -57,32 +57,32 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 3,
+          "abilityName": "mkultra:ability.sever_tendon",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.sever_tendon"
+          "priority": 3
         },
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.ember",
           "chance": 0.5,
-          "abilityName": "mkultra:ability.ember"
+          "priority": 2
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
-      "minor_skills": [
-        "mkcore:one_hand_pierce",
-        "mkcore:two_hand_slash",
-        "mkcore:two_hand_blunt",
-        "mkcore:one_hand_slash",
-        "mkcore:one_hand_blunt",
-        "mkcore:two_hand_pierce"
-      ],
       "major_skills": [],
+      "minor_skills": [
+        "mkcore:two_hand_slash",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:one_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:one_hand_pierce"
+      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
-        "mkcore:arete",
         "mkcore:pneuma",
-        "mkcore:pankration"
+        "mkcore:pankration",
+        "mkcore:arete"
       ]
     },
     {

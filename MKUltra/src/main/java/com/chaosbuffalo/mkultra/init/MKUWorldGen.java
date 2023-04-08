@@ -23,12 +23,6 @@ public class MKUWorldGen {
             STRUCTURE_PLACEMENT_REGISTRY.register("static_placement",
                     () -> () -> StaticPlacement.CODEC);
 
-//    public static final RegistryObject<StructureFeature<JigsawConfiguration>> INTRO_CASTLE = STRUCTURE_REGISTRY.register("intro_castle",
-//            () -> new IntroCastleJigsawStructure(JigsawConfiguration.CODEC, 0, true, true, false));
-//
-//    public static final RegistryObject<StructureFeature<JigsawConfiguration>> DESERT_TEMPLE_VILLAGE_STRUCTURE = STRUCTURE_REGISTRY.register("desert_temple_village",
-//            () -> new MKJigsawStructure(JigsawConfiguration.CODEC, 0, true, true, (x) -> true, false));
-//
 //    public static final RegistryObject<StructureFeature<JigsawConfiguration>> NECROTIDE_ALTER = STRUCTURE_REGISTRY.register("necrotide_alter",
 //            () -> new MKJigsawStructure(JigsawConfiguration.CODEC, 0, true, true, (piece) -> true, false)
 //                    .addEvent("summon_golem", new SpawnNpcDefinitionEvent(new ResourceLocation(MKUltra.MODID, "necrotide_golem"),

@@ -1,11 +1,11 @@
 {
-  "cooldown": 700,
-  "manaCost": 8.0,
-  "castTime": 40,
   "attributes": {
     "baseDuration": 8,
     "cast_particles": "mkultra:inspire_cast",
-    "scaleDuration": 2,
-    "casting_particles": "mkultra:inspire_casting"
-  }
+    "casting_particles": "mkultra:inspire_casting",
+    "scaleDuration": 2
+  },
+  "castTime": 40,
+  "cooldown": 700,
+  "manaCost": 8.0
 }

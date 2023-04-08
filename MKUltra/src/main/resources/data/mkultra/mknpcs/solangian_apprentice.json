@@ -6,22 +6,22 @@
       "value": "cleric_2"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 100.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:equipment",
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:mace_iron\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:mace_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -34,28 +34,28 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.heal",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.heal"
+          "priority": 1
         },
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.smite",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.smite"
+          "priority": 2
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
+      "major_skills": [
+        "mkcore:restoration",
+        "mkcore:alteration"
+      ],
       "minor_skills": [
-        "mkcore:necromancy",
         "mkcore:abjuration",
+        "mkcore:necromancy",
         "mkcore:evocation"
       ],
-      "major_skills": [
-        "mkcore:alteration",
-        "mkcore:restoration"
-      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:two_hand_blunt",
         "mkcore:one_hand_blunt"
@@ -66,9 +66,9 @@
       "value": 0.85
     },
     {
+      "hasLastName": false,
       "optionType": "mknpc:faction_name",
-      "title": "Apprentice",
-      "hasLastName": false
+      "title": "Apprentice"
     },
     {
       "optionType": "mknpc:faction",

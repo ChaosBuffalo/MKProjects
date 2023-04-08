@@ -1,10 +1,9 @@
 {
   "attributes": {
-    "base": 4.0,
     "casting_particles": "mkcore:fx.casting.empty",
-    "scale": 4.0
+    "npc": "mkultra:hyborean_sorcerer_queen"
   },
-  "castTime": 0,
+  "castTime": 100,
   "cooldown": 20,
   "manaCost": 1.0
 }

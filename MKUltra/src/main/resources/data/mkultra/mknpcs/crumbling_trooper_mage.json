@@ -6,39 +6,39 @@
       "value": "zombie_pig_magus"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 30.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:name",
       "value": "Crumbling Trooper Mage"
     },
     {
-      "optionType": "mknpc:extra_loot",
-      "noLootChance": 0.1,
       "dropChances": 2,
-      "noLootIncrease": 0.25,
       "lootOptions": [
         {
           "lootSlotName": "mkweapons:items",
           "lootSlotTier": "mkultra:zombie_trooper",
           "weight": 1.0
         }
-      ]
+      ],
+      "noLootChance": 0.1,
+      "noLootIncrease": 0.25,
+      "optionType": "mknpc:extra_loot"
     },
     {
       "optionType": "mknpc:equipment",
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -47,26 +47,26 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.fireball",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.fireball"
+          "priority": 1
         },
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.ember",
           "chance": 0.5,
-          "abilityName": "mkultra:ability.ember"
+          "priority": 2
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
-      "minor_skills": [
-        "mkcore:alteration",
-        "mkcore:abjuration",
-        "mkcore:conjuration",
-        "mkcore:evocation"
-      ],
       "major_skills": [],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:evocation",
+        "mkcore:alteration",
+        "mkcore:conjuration"
+      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]

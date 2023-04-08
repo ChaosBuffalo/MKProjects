@@ -1,0 +1,14 @@
+{
+  "attributes": {
+    "base": 10.0,
+    "cast_particles": "mkultra:lifespike_cast",
+    "casting_particles": "mkultra:lifespike_casting",
+    "healModScaling": 0.5,
+    "healScaling": 1.0,
+    "modifierScaling": 1.0,
+    "scale": 2.0
+  },
+  "castTime": 40,
+  "cooldown": 600,
+  "manaCost": 10.0
+}

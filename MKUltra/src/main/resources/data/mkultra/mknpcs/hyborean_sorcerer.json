@@ -6,13 +6,13 @@
       "value": "sorcerer"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 40.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:name",
@@ -23,9 +23,9 @@
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -34,31 +34,31 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.fire_armor",
           "chance": 0.5,
-          "abilityName": "mkultra:ability.fire_armor"
+          "priority": 2
         },
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.fireball",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.fireball"
+          "priority": 1
         },
         {
-          "priority": 3,
+          "abilityName": "mkultra:ability.ember",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.ember"
+          "priority": 3
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
-      "minor_skills": [
-        "mkcore:alteration",
-        "mkcore:abjuration",
-        "mkcore:conjuration",
-        "mkcore:evocation"
-      ],
       "major_skills": [],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:evocation",
+        "mkcore:alteration",
+        "mkcore:conjuration"
+      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]

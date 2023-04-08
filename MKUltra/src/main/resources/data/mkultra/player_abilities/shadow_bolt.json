@@ -1,13 +1,13 @@
 {
   "attributes": {
-    "baseDamage": 4.0,
-    "casting_particles": "mkultra:cleansing_seed_casting",
+    "baseDamage": 8.0,
+    "casting_particles": "mkultra:shadow_bolt_casting",
     "modifierScaling": 1.0,
     "projectileInaccuracy": 0.2,
     "projectileSpeed": 1.25,
     "scaleDamage": 4.0
   },
-  "castTime": 15,
+  "castTime": 20,
   "cooldown": 160,
-  "manaCost": 4.0
+  "manaCost": 7.0
 }

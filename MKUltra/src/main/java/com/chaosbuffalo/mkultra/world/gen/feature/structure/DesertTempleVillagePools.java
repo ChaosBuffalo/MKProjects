@@ -19,14 +19,16 @@ public class DesertTempleVillagePools {
     public static final ResourceKey<StructureTemplatePool> DESERT_TEMPLE_VILLAGE_BASE =
             UltraStructurePools.createKey("desert_temple_village");
 
+    public static final ResourceKey<StructureTemplatePool> DESERT_TEMPLE_STREETS =
+            UltraStructurePools.createKey("desert_temple_streets");
 
-    public static final int GEN_DEPTH = 6;
+    public static final ResourceKey<StructureTemplatePool> DESERT_TEMPLES =
+            UltraStructurePools.createKey("desert_temples");
 
     private static class Templates {
         private static final ResourceLocation DESERT_TEMPLE_VILLAGE_WELL = new ResourceLocation(MKUltra.MODID, "desert_temple_village/desert_well");
         private static final ResourceLocation DESERT_TEMPLE_STREET_1 = new ResourceLocation(MKUltra.MODID, "desert_temple_village/desert_temple_road_1");
         private static final ResourceLocation DESERT_TEMPLE_SMALL = new ResourceLocation(MKUltra.MODID, "desert_temple_village/cleric_temple_small");
-
     }
 
     public static void register(BootstapContext<StructureTemplatePool> pContext, String pName, StructureTemplatePool pValue) {
@@ -42,34 +44,15 @@ public class DesertTempleVillagePools {
                         Pair.of(MKSinglePoolElement.forTemplate(Templates.DESERT_TEMPLE_VILLAGE_WELL, true), 1)
                 ),
                 StructureTemplatePool.Projection.TERRAIN_MATCHING));
-        register(pContext, "desert_temple_streets", new StructureTemplatePool(empty,
+        pContext.register(DESERT_TEMPLE_STREETS, new StructureTemplatePool(empty,
                 ImmutableList.of(
                         Pair.of(MKSinglePoolElement.forTemplate(Templates.DESERT_TEMPLE_STREET_1, true), 1)
                 ),
                 StructureTemplatePool.Projection.TERRAIN_MATCHING));
-        register(pContext, "desert_temples", new StructureTemplatePool(empty,
+        pContext.register(DESERT_TEMPLES, new StructureTemplatePool(empty,
                 ImmutableList.of(
                         Pair.of(MKSinglePoolElement.forTemplate(Templates.DESERT_TEMPLE_SMALL, false), 1)
                 ),
                 StructureTemplatePool.Projection.RIGID));
     }
-
-//        public static final StructureTemplatePool DESERT_TEMPLE_VILLAGE_BASE =
-//            new StructureTemplatePool(new ResourceLocation(MKUltra.MODID, "desert_temple_village"),
-//                    new ResourceLocation("empty"), ImmutableList.of(
-//                    Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DESERT_TEMPLE_VILLAGE_WELL, true), 1)), StructureTemplatePool.Projection.TERRAIN_MATCHING);
-
-//    public static final StructureTemplatePool DESERT_TEMPLE_STREETS = new StructureTemplatePool(new ResourceLocation(MKUltra.MODID, "desert_temple_streets"), new ResourceLocation("empty"),
-//            ImmutableList.of(
-//                    Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DESERT_TEMPLE_STREET_1, true), 1)
-//            ),
-//            StructureTemplatePool.Projection.TERRAIN_MATCHING);
-
-//    public static final StructureTemplatePool DESERT_TEMPLES = new StructureTemplatePool(new ResourceLocation(MKUltra.MODID, "desert_temples"), new ResourceLocation("empty"),
-//            ImmutableList.of(
-//                    Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DESERT_TEMPLE_SMALL, false), 1)
-//            ),
-//            StructureTemplatePool.Projection.RIGID);
-
-
 }

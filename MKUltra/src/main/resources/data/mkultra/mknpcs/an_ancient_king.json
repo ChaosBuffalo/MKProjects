@@ -6,7 +6,6 @@
       "value": "ancient_king"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
@@ -24,7 +23,8 @@
           "attributeName": "mkcore:pankration",
           "value": 2.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:name",
@@ -35,14 +35,14 @@
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:battleaxe_iron\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:battleaxe_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           },
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:greatsword_iron\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:greatsword_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -51,56 +51,56 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.natures_remedy",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.natures_remedy"
+          "priority": 2
         },
         {
-          "priority": 3,
+          "abilityName": "mkultra:ability.sever_tendon",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.sever_tendon"
+          "priority": 3
         },
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.heal",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.heal"
+          "priority": 1
         },
         {
-          "priority": 4,
+          "abilityName": "mkultra:ability.power_word_summon",
           "chance": 0.5,
-          "abilityName": "mkultra:ability.power_word_summon"
+          "priority": 4
         },
         {
-          "priority": 5,
+          "abilityName": "mkultra:ability.explosive_growth",
           "chance": 0.5,
-          "abilityName": "mkultra:ability.explosive_growth"
+          "priority": 5
         },
         {
-          "priority": 6,
+          "abilityName": "mkultra:ability.fireball",
           "chance": 0.5,
-          "abilityName": "mkultra:ability.fireball"
+          "priority": 6
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
+      "major_skills": [
+        "mkcore:two_hand_slash",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:one_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:one_hand_pierce"
+      ],
       "minor_skills": [
-        "mkcore:alteration",
+        "mkcore:restoration",
         "mkcore:abjuration",
         "mkcore:pankration",
-        "mkcore:restoration"
+        "mkcore:alteration"
       ],
-      "major_skills": [
-        "mkcore:one_hand_pierce",
-        "mkcore:two_hand_slash",
-        "mkcore:two_hand_blunt",
-        "mkcore:one_hand_slash",
-        "mkcore:one_hand_blunt",
-        "mkcore:two_hand_pierce"
-      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
-        "mkcore:arete",
         "mkcore:pneuma",
+        "mkcore:arete",
         "mkcore:evocation"
       ]
     },
@@ -113,9 +113,9 @@
       "value": "mkfaction:undead"
     },
     {
-      "optionType": "mknpc:mk_combo",
+      "cooldown": 10,
       "count": 2,
-      "cooldown": 10
+      "optionType": "mknpc:mk_combo"
     }
   ]
 }

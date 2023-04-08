@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkultra.data_generators;
+package com.chaosbuffalo.mkultra.data.generators;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mknpc.npc.options.SkillOption;
@@ -6,7 +6,7 @@ import com.chaosbuffalo.mknpc.npc.options.SkillOption;
 public class MKUNpcGenUtils {
 
 
-    enum NpcSkillClass {
+    public enum NpcSkillClass {
         CLERIC,
         NECROMANCER,
         FIGHTER,
