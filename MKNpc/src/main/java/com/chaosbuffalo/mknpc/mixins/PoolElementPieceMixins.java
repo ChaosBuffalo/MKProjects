@@ -46,6 +46,7 @@ public abstract class PoolElementPieceMixins implements IMKPoolPiece {
 
     /**
      * @author kovak
+     * @reason call our custom mkPlace function to pass structure metadata
      */
     @Overwrite
     public void place(WorldGenLevel pLevel, StructureManager pStructureManager, ChunkGenerator pGenerator,

@@ -18,12 +18,14 @@ public class NecrotideAlterPools {
 
     public static ResourceKey<StructureTemplatePool> BASE =
             UltraStructurePools.createKey("necrotide_alter/base");
+    public static ResourceKey<StructureTemplatePool> TOWERS =
+            UltraStructurePools.createKey("necrotide_alter/towers");
 
-    private static final ResourceLocation BASE_NAME = new ResourceLocation(MKUltra.MODID, "necrotide_alter/base");
-    private static final ResourceLocation TOWER_LEFT = new ResourceLocation(MKUltra.MODID, "necrotide_alter/tower_left");
-    private static final ResourceLocation TOWER_RIGHT = new ResourceLocation(MKUltra.MODID, "necrotide_alter/tower_right");
-
-    public static final int GEN_DEPTH = 7;
+    private static class Templates {
+        private static final ResourceLocation BASE_NAME = new ResourceLocation(MKUltra.MODID, "necrotide_alter/base");
+        private static final ResourceLocation TOWER_LEFT = new ResourceLocation(MKUltra.MODID, "necrotide_alter/tower_left");
+        private static final ResourceLocation TOWER_RIGHT = new ResourceLocation(MKUltra.MODID, "necrotide_alter/tower_right");
+    }
 
     public static void register(BootstapContext<StructureTemplatePool> pContext, String pName, StructureTemplatePool pValue) {
         pContext.register(UltraStructurePools.createKey(pName), pValue);
@@ -35,31 +37,14 @@ public class NecrotideAlterPools {
 
         pContext.register(BASE, new StructureTemplatePool(empty,
                 ImmutableList.of(
-                        Pair.of(MKSinglePoolElement.forTemplate(BASE_NAME, false), 1)
+                        Pair.of(MKSinglePoolElement.forTemplate(Templates.BASE_NAME, false), 1)
                 ),
                 StructureTemplatePool.Projection.TERRAIN_MATCHING));
-        register(pContext, "necrotide_alter/towers", new StructureTemplatePool(empty,
+        pContext.register(TOWERS, new StructureTemplatePool(empty,
                 ImmutableList.of(
-                        Pair.of(MKSinglePoolElement.forTemplate(TOWER_LEFT, false), 1),
-                        Pair.of(MKSinglePoolElement.forTemplate(TOWER_RIGHT, false), 1)
+                        Pair.of(MKSinglePoolElement.forTemplate(Templates.TOWER_LEFT, false), 1),
+                        Pair.of(MKSinglePoolElement.forTemplate(Templates.TOWER_RIGHT, false), 1)
                 ),
                 StructureTemplatePool.Projection.TERRAIN_MATCHING));
     }
-
-//    public static final StructureTemplatePool BASE = new StructureTemplatePool(
-//            new ResourceLocation(MKUltra.MODID, "necrotide_alter/base"),
-//            new ResourceLocation("empty"),
-//            ImmutableList.of(
-//                    Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(BASE_NAME, false), 1)),
-//            StructureTemplatePool.Projection.TERRAIN_MATCHING);
-//
-//    public static final StructureTemplatePool TOWERS = new StructureTemplatePool(
-//            new ResourceLocation(MKUltra.MODID, "necrotide_alter/towers"),
-//            new ResourceLocation("empty"),
-//            ImmutableList.of(
-//                    Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(TOWER_LEFT, false), 1),
-//                    Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(TOWER_RIGHT, false), 1)
-//            ),
-//            StructureTemplatePool.Projection.RIGID);
-
 }

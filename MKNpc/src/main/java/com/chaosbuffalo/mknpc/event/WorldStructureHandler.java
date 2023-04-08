@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -50,9 +51,9 @@ public class WorldStructureHandler {
                 IWorldNpcData over = overOpt.get();
                 WorldStructureManager activeStructures = over.getStructureManager();
                 for (ServerPlayer player : sWorld.players()) {
-                    List<StructureStart> starts = WorldStructureHandler.MK_STRUCTURE_CACHE.stream().map(
-                                    x -> manager.getStructureAt(player.blockPosition(), x))
-                            .filter(x -> x != StructureStart.INVALID_START)
+                    List<StructureStart> starts = MK_STRUCTURE_INDEX.values().stream()
+                            .map(x -> manager.getStructureAt(player.blockPosition(), x))
+                            .filter(StructureStart::isValid)
                             .toList();
                     for (StructureStart start : starts) {
                         over.setupStructureDataIfAbsent(start, ev.level);
@@ -68,16 +69,21 @@ public class WorldStructureHandler {
 
     public static void cacheStructures(MinecraftServer server) {
         server.registryAccess().registry(Registries.STRUCTURE).ifPresent(registry -> {
-            MK_STRUCTURE_CACHE = registry.entrySet().stream()
-                    .filter(x -> x.getValue() instanceof MKJigsawStructure)
-                    .map(x -> (MKJigsawStructure) x.getValue())
-                    .collect(Collectors.toList());
+//            MK_STRUCTURE_CACHE = registry.holders().map(Holder::get)
+//                    .filter(x -> x instanceof MKJigsawStructure)
+//                    .map(x -> (MKJigsawStructure)x)
+//                    .toList();
             MK_STRUCTURE_INDEX.clear();
-            MK_STRUCTURE_CACHE.forEach(x -> {
-                ResourceLocation featureName = server.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(x);
-                MKNpc.LOGGER.info("Caching MK Structure {}", featureName);
-                MK_STRUCTURE_INDEX.put(featureName, x);
+//            var reg = server.registryAccess().registryOrThrow(Registries.STRUCTURE);
+            registry.holders().filter(r -> r.get() instanceof MKJigsawStructure).forEach(r -> {
+                MKNpc.LOGGER.info("Caching MK Structure {}", r.key().location());
+                MK_STRUCTURE_INDEX.put(r.key().location(), (MKJigsawStructure) r.get());
             });
+//            MK_STRUCTURE_CACHE.forEach(x -> {
+//                ResourceLocation featureName = registry.getKey(x);
+//
+//                MK_STRUCTURE_INDEX.put(featureName, x);
+//            });
         });
 
     }

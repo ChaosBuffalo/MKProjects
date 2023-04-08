@@ -13,7 +13,7 @@ import java.util.function.BiConsumer;
 
 public class WorldStructureManager {
 
-    public class ActivePlayerEntry {
+    public static class ActivePlayerEntry {
         public int ticksSinceSeen;
         public final ServerPlayer player;
 
@@ -23,7 +23,7 @@ public class WorldStructureManager {
         }
     }
 
-    public class ActiveStructure {
+    public static class ActiveStructure {
         private int ticksEmpty = 0;
         private final UUID structureId;
         private final Map<UUID, ActivePlayerEntry> activePlayers;

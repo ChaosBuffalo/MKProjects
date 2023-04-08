@@ -49,6 +49,7 @@ public class EntityHandler {
     public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
         MKNpc.getNpcData(event.getEntity()).ifPresent((cap) -> {
             if (cap.wasMKSpawned()) {
+                // FIXME: why did this start breaking
                 event.setCanceled(true);
             } else {
                 if (cap.needsDefinitionApplied()) {

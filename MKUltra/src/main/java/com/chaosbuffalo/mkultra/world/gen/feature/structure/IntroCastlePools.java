@@ -15,19 +15,20 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public class IntroCastlePools {
-    private static final ResourceLocation GREEN_KNIGHT_ISLAND =template("intro_castle/green_knight_island");
-    private static final ResourceLocation CASTLE_TOP = template("intro_castle/castle_top");
-    private static final ResourceLocation CASTLE_BASE = template("intro_castle/castle_base");
-
-    private static ResourceLocation template(String name) {
-        return new ResourceLocation(MKUltra.MODID, name);
-    }
-
-    public static final int GEN_DEPTH = 7;
 
     public static final ResourceKey<StructureTemplatePool> ISLAND_POOL = UltraStructurePools.createKey("intro_castle.green_knight_island");
     public static final ResourceKey<StructureTemplatePool> INTRO_CASTLE_TOP = UltraStructurePools.createKey("intro_castle.castle_top");
     public static final ResourceKey<StructureTemplatePool> INTRO_CASTLE_BASE = UltraStructurePools.createKey("intro_castle.castle_base");
+
+    private static class Templates {
+        private static final ResourceLocation GREEN_KNIGHT_ISLAND = template("intro_castle/green_knight_island");
+        private static final ResourceLocation CASTLE_TOP = template("intro_castle/castle_top");
+        private static final ResourceLocation CASTLE_BASE = template("intro_castle/castle_base");
+
+        private static ResourceLocation template(String name) {
+            return new ResourceLocation(MKUltra.MODID, name);
+        }
+    }
 
 
     public static void registerPools(BootstapContext<StructureTemplatePool> pContext) {
@@ -37,17 +38,17 @@ public class IntroCastlePools {
 
         pContext.register(ISLAND_POOL, new StructureTemplatePool(empty,
                 ImmutableList.of(
-                        Pair.of(MKSinglePoolElement.forTemplate(GREEN_KNIGHT_ISLAND, false), 1)
+                        Pair.of(MKSinglePoolElement.forTemplate(Templates.GREEN_KNIGHT_ISLAND, false), 1)
                 ),
                 StructureTemplatePool.Projection.RIGID));
         pContext.register(INTRO_CASTLE_TOP, new StructureTemplatePool(empty,
                 ImmutableList.of(
-                        Pair.of(MKSinglePoolElement.forTemplate(CASTLE_TOP, false), 1)
+                        Pair.of(MKSinglePoolElement.forTemplate(Templates.CASTLE_TOP, false), 1)
                 ),
                 StructureTemplatePool.Projection.RIGID));
         pContext.register(INTRO_CASTLE_BASE, new StructureTemplatePool(empty,
                 ImmutableList.of(
-                        Pair.of(MKSinglePoolElement.forTemplate(CASTLE_BASE, false), 1)
+                        Pair.of(MKSinglePoolElement.forTemplate(Templates.CASTLE_BASE, false), 1)
                 ),
                 StructureTemplatePool.Projection.RIGID));
     }

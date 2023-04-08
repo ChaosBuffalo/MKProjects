@@ -90,7 +90,7 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
                 });
                 final double finDiff = difficultyValue;
                 MKNpc.getNpcData(entity).ifPresent((cap) -> {
-                    cap.setMKSpawned(true);
+//                    cap.setMKSpawned(true);
                     cap.setSpawnPos(BlockPos.containing(pos).above());
                     cap.setNotableUUID(npcId);
                     cap.setStructureId(entry.getStructureId());
@@ -100,13 +100,12 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
                     mkEntity.setNonCombatMoveType(moveType);
                 }
                 if (entity instanceof Mob mobEnt && world instanceof ServerLevelAccessor serverLevel) {
-                    var spawnData = ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
+                    ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
                             serverLevel.getCurrentDifficultyAt(x.getLocation().pos()),
                             MobSpawnType.SPAWNER, null, null);
-                    if (spawnData != null) {
-                        world.addFreshEntity(entity);
-                    }
                 }
+                world.addFreshEntity(entity);
+                MKNpc.getNpcData(entity).ifPresent(cap -> cap.setMKSpawned(true));
             }
         });
 

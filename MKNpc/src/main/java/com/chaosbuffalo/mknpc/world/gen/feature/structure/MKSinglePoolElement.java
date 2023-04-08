@@ -18,10 +18,7 @@ import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import net.minecraft.world.level.levelgen.structure.templatesystem.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -59,25 +56,25 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolEle
     }
 
 
-    private StructureTemplate getTemplate(StructureTemplateManager p_210433_) {
-        return this.template.map(p_210433_::getOrCreate, Function.identity());
+    private StructureTemplate getTemplate(StructureTemplateManager pStructureTemplateManager) {
+        return this.template.map(pStructureTemplateManager::getOrCreate, Function.identity());
     }
 
     @Override
-    protected StructurePlaceSettings getSettings(Rotation pRotation, BoundingBox pBoundingBox, boolean p_210423_) {
-        StructurePlaceSettings settings = super.getSettings(pRotation, pBoundingBox, p_210423_);
+    protected StructurePlaceSettings getSettings(Rotation pRotation, BoundingBox pBoundingBox, boolean keepJigsaws) {
+        StructurePlaceSettings settings = super.getSettings(pRotation, pBoundingBox, keepJigsaws);
         settings.keepLiquids = doWaterlog();
         return settings;
     }
 
     @Override
     public boolean place(StructureTemplateManager pStructureTemplateManager, WorldGenLevel pLevel, StructureManager pStructureManager, ChunkGenerator pGenerator, BlockPos p_227306_, BlockPos p_227307_, Rotation pRotation, BoundingBox pBox, RandomSource pRandom, boolean p_227311_) {
-        return super.place(pStructureTemplateManager, pLevel, pStructureManager, pGenerator, p_227306_, p_227307_, pRotation, pBox, pRandom, p_227311_);
+        throw new IllegalStateException("Should not get here. Did the mixins fail?");
     }
 
     @Override
     public void handleDataMarker(LevelAccessor pLevel, StructureTemplate.StructureBlockInfo pBlockInfo, BlockPos pPos, Rotation pRotation, RandomSource pRandom, BoundingBox pBox) {
-        super.handleDataMarker(pLevel, pBlockInfo, pPos, pRotation, pRandom, pBox);
+        throw new IllegalStateException("Should not get here. Did the mixins fail?");
     }
 
     public static Function<StructureTemplatePool.Projection, StructurePoolElement> forTemplate(ResourceLocation pieceName, boolean doWaterlog) {
@@ -87,18 +84,30 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolEle
     @Override
     public boolean mkPlace(StructureTemplateManager pStructureTemplateManager, WorldGenLevel pLevel,
                            StructureManager pStructureManager, ChunkGenerator pGenerator,
-                           BlockPos p_227340_, BlockPos p_227341_, Rotation pRotation, BoundingBox pBox,
-                           RandomSource pRandom, boolean p_227345_, ResourceLocation name, UUID instanceId) {
-        StructureTemplate structuretemplate = this.getTemplate(pStructureTemplateManager);
-        StructurePlaceSettings structureplacesettings = this.getSettings(pRotation, pBox, p_227345_);
-        if (!structuretemplate.placeInWorld(pLevel, p_227340_, p_227341_, structureplacesettings, pRandom, 18)) {
+                           BlockPos piecePosition, BlockPos firstPieceBottomCenter, Rotation pRotation, BoundingBox pBox,
+                           RandomSource pRandom, boolean pKeepJigsaws, ResourceLocation name, UUID instanceId) {
+        StructureTemplate template = this.getTemplate(pStructureTemplateManager);
+        StructurePlaceSettings settings = this.getSettings(pRotation, pBox, pKeepJigsaws);
+        if (!template.placeInWorld(pLevel, piecePosition, firstPieceBottomCenter, settings, pRandom, 18)) {
             return false;
         } else {
-            for (StructureTemplate.StructureBlockInfo structureBlockInfo : StructureTemplate.processBlockInfos(pLevel, p_227340_, p_227341_, structureplacesettings, this.getDataMarkers(pStructureTemplateManager, p_227340_, pRotation, false), structuretemplate)) {
-                mkHandleDataMarker(pLevel, structureBlockInfo, p_227340_, pRotation, pRandom, pBox, name, instanceId);
+            var dataMarkers = this.getDataMarkers(pStructureTemplateManager, piecePosition, pRotation, false);
+
+            // Need to pop this so processBlockInfos doesn't filter all data structure blocks
+            settings.popProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
+            var dataBlocks = StructureTemplate.processBlockInfos(pLevel, piecePosition, firstPieceBottomCenter, settings, dataMarkers, template);
+            for (var markerBlock : dataBlocks) {
+                if (pBox.isInside(markerBlock.pos)) {
+                    mkHandleDataMarker(pLevel, markerBlock, piecePosition, pRotation, pRandom, pBox, name, instanceId);
+                }
             }
 
             return true;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "MKSingle[" + this.template + "]";
     }
 }
