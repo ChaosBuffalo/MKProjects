@@ -23,7 +23,6 @@ import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -81,7 +80,7 @@ public class WhirlwindBladesAbility extends MKAbility {
         Component maxDamage = getDamageDescription(entityData,
                 CoreDamageTypes.MeleeDamage.get(), base.value(), scale.value(), level,
                 modifierScaling.value() * numberOfCasts * perTick.value());
-        return new TranslatableComponent(getDescriptionTranslationKey(), NUMBER_FORMATTER.format(periodSeconds), INTEGER_FORMATTER.format(castSeconds),
+        return Component.translatable(getDescriptionTranslationKey(), NUMBER_FORMATTER.format(periodSeconds), INTEGER_FORMATTER.format(castSeconds),
                 PERCENT_FORMATTER.format(perTick.value()), baseDamage, maxDamage);
     }
 

@@ -12,7 +12,6 @@ import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.targeting_api.Targeting;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -33,8 +32,7 @@ public abstract class PositionFlurryAbility extends MKAbility {
 
     @Override
     protected Component getAbilityDescription(IMKEntityData entityData) {
-
-        return new TranslatableComponent("mkultra.ability.flurry.description",
+        return Component.translatable("mkultra.ability.flurry.description",
                 abilityToCast.get().getAbilityName(),
                 NUMBER_FORMATTER.format(getDistance(entityData.getEntity())),
                 NUMBER_FORMATTER.format(convertDurationToSeconds(tickRate.value())));

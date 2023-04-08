@@ -1,14 +1,15 @@
 {
-  "defaultPlayerScore": 1000,
   "allies": [
     "mkfaction:domesticated_animals",
     "mkfaction:villagers"
   ],
+  "defaultPlayerScore": 1000,
   "enemies": [
     "mkfaction:hostile_animals",
     "mkfaction:monsters",
     "mkultra:imperial_dead",
     "mkfaction:undead",
+    "mkultra:necrotide_cultists",
     "mkultra:hyborean_dead",
     "mkfaction:illagers"
   ],

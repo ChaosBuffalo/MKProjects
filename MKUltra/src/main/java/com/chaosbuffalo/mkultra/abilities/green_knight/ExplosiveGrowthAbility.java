@@ -26,7 +26,6 @@ import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -80,7 +79,7 @@ public class ExplosiveGrowthAbility extends MKAbility {
                 scaleDamage.value(),
                 getSkillLevel(entityData.getEntity(), MKAttributes.PANKRATION),
                 modifierScaling.value());
-        return new TranslatableComponent(getDescriptionTranslationKey(), damageStr);
+        return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
 
     @Override
@@ -132,7 +131,7 @@ public class ExplosiveGrowthAbility extends MKAbility {
                     break;
                 }
                 case ENEMY: {
-                    entHit.hurt(MKDamageSource.causeMeleeDamage(getAbilityId(), castingEntity, castingEntity), damage);
+                    entHit.hurt(MKDamageSource.causeMeleeDamage(castingEntity.getLevel(), getAbilityId(), castingEntity, castingEntity), damage);
                     SoundUtils.serverPlaySoundAtEntity(entHit, MKUSounds.spell_earth_1.get(), cat);
                     break;
                 }

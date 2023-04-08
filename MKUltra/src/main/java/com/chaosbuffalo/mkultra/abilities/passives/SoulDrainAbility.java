@@ -8,7 +8,6 @@ import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.LivingEntity;
 
 public class SoulDrainAbility extends MKPassiveAbility {
@@ -34,6 +33,6 @@ public class SoulDrainAbility extends MKPassiveAbility {
     @Override
     protected Component getAbilityDescription(IMKEntityData entityData) {
         float value = getDrainValue(entityData.getEntity());
-        return new TranslatableComponent(getDescriptionTranslationKey(), value);
+        return Component.translatable(getDescriptionTranslationKey(), value);
     }
 }

@@ -24,7 +24,7 @@ import net.minecraftforge.registries.RegistryObject;
 @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MKUEntities {
 
-    public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITIES, MKUltra.MODID);
+    public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MKUltra.MODID);
 
     public static final RegistryObject<EntityType<MKGolemEntity>> GOLEM_TYPE = REGISTRY.register("golem",
             () -> EntityType.Builder.of(MKGolemEntity::new, MobCategory.MONSTER)

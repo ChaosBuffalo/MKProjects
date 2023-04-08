@@ -20,7 +20,6 @@ import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -64,7 +63,7 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
         float level = getSkillLevel(casterData.getEntity(), MKAttributes.CONJURATION);
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         Component detonateStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), detonateBase.value(), detonateScale.value(), level, modifierScaling.value());
-        return new TranslatableComponent(getDescriptionTranslationKey(),
+        return Component.translatable(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(radius.value()),
                 damageStr,
                 NUMBER_FORMATTER.format(convertDurationToSeconds(tickRate.value())),

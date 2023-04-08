@@ -7,10 +7,9 @@ import com.chaosbuffalo.mkweapons.items.armor.MKArmorItem;
 import com.chaosbuffalo.mkweapons.items.effects.armor.ArmorModifierEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
 import com.google.common.collect.Lists;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -66,51 +65,51 @@ public final class MKUItems {
                             "Bonus", 0.10, AttributeModifier.Operation.MULTIPLY_TOTAL)));
 
     public static RegistryObject<Item> greenKnightHelmet = REGISTRY.register("green_knight_helmet",
-            () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, EquipmentSlot.HEAD,
-                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT), new ArmorModifierEffect(gkHelmetAttrs)));
+            () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.HELMET,
+                    (new Item.Properties()), new ArmorModifierEffect(gkHelmetAttrs)));
 
     public static RegistryObject<Item> greenKnightLeggings = REGISTRY.register("green_knight_leggings",
-            () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, EquipmentSlot.LEGS,
-                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT), new ArmorModifierEffect(gkLegsAttrs)));
+            () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.LEGGINGS,
+                    (new Item.Properties()), new ArmorModifierEffect(gkLegsAttrs)));
 
     public static RegistryObject<Item> greenKnightChestplate = REGISTRY.register("green_knight_chestplate",
-            () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, EquipmentSlot.CHEST,
-                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT), new ArmorModifierEffect(gkChestAttrs)));
+            () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.CHESTPLATE,
+                    (new Item.Properties()), new ArmorModifierEffect(gkChestAttrs)));
 
     public static RegistryObject<Item> greenKnightBoots = REGISTRY.register("green_knight_boots",
-            () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, EquipmentSlot.FEET,
-                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT), new ArmorModifierEffect(gkBootsAttrs)));
+            () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.BOOTS,
+                    (new Item.Properties()), new ArmorModifierEffect(gkBootsAttrs)));
 
     public static RegistryObject<Item> corruptedPigIronPlate = REGISTRY.register("corrupted_pig_iron_plate",
-            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+            () -> new Item(new Item.Properties()));
 
     public static RegistryObject<Item> trooperKnightHelmet = REGISTRY.register("trooper_knight_helmet",
-            () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, EquipmentSlot.HEAD,
-                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT)));
+            () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, ArmorItem.Type.HELMET,
+                    (new Item.Properties())));
 
     public static RegistryObject<Item> trooperKnightLeggings = REGISTRY.register("trooper_knight_leggings",
-            () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, EquipmentSlot.LEGS,
-                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT)));
+            () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, ArmorItem.Type.LEGGINGS,
+                    (new Item.Properties())));
 
     public static RegistryObject<Item> trooperKnightChestplate = REGISTRY.register("trooper_knight_chestplate",
-            () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, EquipmentSlot.CHEST,
-                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT)));
+            () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, ArmorItem.Type.CHESTPLATE,
+                    (new Item.Properties())));
 
     public static RegistryObject<Item> trooperKnightBoots = REGISTRY.register("trooper_knight_boots",
-            () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, EquipmentSlot.FEET,
-                    (new Item.Properties()).tab(CreativeModeTab.TAB_COMBAT)));
+            () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, ArmorItem.Type.BOOTS,
+                    (new Item.Properties())));
 
     public static RegistryObject<Item> destroyedTrooperHelmet = REGISTRY.register("destroyed_trooper_helmet",
-            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+            () -> new Item(new Item.Properties()));
 
     public static RegistryObject<Item> destroyedTrooperLeggings = REGISTRY.register("destroyed_trooper_leggings",
-            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+            () -> new Item(new Item.Properties()));
 
     public static RegistryObject<Item> destroyedTrooperChestplate = REGISTRY.register("destroyed_trooper_chestplate",
-            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+            () -> new Item(new Item.Properties()));
 
     public static RegistryObject<Item> destroyedTrooperBoots = REGISTRY.register("destroyed_trooper_boots",
-            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+            () -> new Item(new Item.Properties()));
 
     public static void register(IEventBus bus) {
         REGISTRY.register(bus);

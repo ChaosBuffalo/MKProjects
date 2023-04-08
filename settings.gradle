@@ -39,5 +39,5 @@ include 'MKWeapons'
 project(":MKWeapons").buildFileName = "mono.gradle"
 include 'MKNpc'
 project(":MKNpc").buildFileName = 'mono.gradle'
-//include 'MKUltra'
-//project(":MKUltra").buildFileName = 'mono.gradle'
+include 'MKUltra'
+project(":MKUltra").buildFileName = 'mono.gradle'

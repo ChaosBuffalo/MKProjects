@@ -20,7 +20,6 @@ import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -73,7 +72,7 @@ public class EngulfingDarknessAbility extends MKAbility {
                 CoreDamageTypes.ShadowDamage.get(), baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
         float dotDur = convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()));
         float shadowbringerDur = convertDurationToSeconds(shadowbringerDuration.value());
-        return new TranslatableComponent(getDescriptionTranslationKey(),
+        return Component.translatable(getDescriptionTranslationKey(),
                 dotStr, NUMBER_FORMATTER.format(convertDurationToSeconds(EngulfingDarknessEffect.DEFAULT_PERIOD)),
                 NUMBER_FORMATTER.format(dotDur), PERCENT_FORMATTER.format(getShadowbringerChance(entityData)), NUMBER_FORMATTER.format(shadowbringerDur));
     }

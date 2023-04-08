@@ -23,7 +23,6 @@ import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -53,7 +52,7 @@ public class YaupAbility extends MKAbility {
     protected Component getSkillDescription(IMKEntityData casterData) {
         float level = getSkillLevel(casterData.getEntity(), MKAttributes.ARETE);
         int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
-        return new TranslatableComponent(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(duration));
+        return Component.translatable(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(duration));
     }
 
     @Override

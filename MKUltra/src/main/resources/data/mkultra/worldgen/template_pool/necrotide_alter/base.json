@@ -1,18 +1,17 @@
 {
-  "name": "mkultra:necrotide_alter/base",
-  "fallback": "minecraft:empty",
   "elements": [
     {
-      "weight": 1,
       "element": {
+        "bWaterLog": false,
+        "element_type": "mknpc:mk_single_jigsaw",
         "location": "mkultra:necrotide_alter/base",
         "processors": {
           "processors": []
         },
-        "projection": "terrain_matching",
-        "bWaterLog": false,
-        "element_type": "mknpc:mk_single_jigsaw"
-      }
+        "projection": "terrain_matching"
+      },
+      "weight": 1
     }
-  ]
+  ],
+  "fallback": "minecraft:empty"
 }

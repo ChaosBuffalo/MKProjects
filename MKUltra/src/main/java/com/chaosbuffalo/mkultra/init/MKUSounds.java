@@ -125,7 +125,7 @@ public class MKUSounds {
 
     public static SoundEvent createSound(String name) {
         ResourceLocation r_name = new ResourceLocation(MKUltra.MODID, name);
-        SoundEvent event = new SoundEvent(r_name);
+        SoundEvent event = SoundEvent.createVariableRangeEvent(r_name);
         return event;
     }
 

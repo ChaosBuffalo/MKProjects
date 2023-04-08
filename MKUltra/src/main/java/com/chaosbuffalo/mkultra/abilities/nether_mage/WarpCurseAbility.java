@@ -18,7 +18,6 @@ import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -52,7 +51,7 @@ public class WarpCurseAbility extends MKAbility {
         int duration = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value());
         Component valueStr = getDamageDescription(entityData,
                 CoreDamageTypes.ShadowDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
-        return new TranslatableComponent(getDescriptionTranslationKey(), valueStr,
+        return Component.translatable(getDescriptionTranslationKey(), valueStr,
                 WarpCurseEffect.DEFAULT_PERIOD / 20,
                 duration / 20);
     }
@@ -96,7 +95,7 @@ public class WarpCurseAbility extends MKAbility {
 
             int oldAmp = Math.round(level);
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> targetData.getEffects().addEffect(warpCast));
-            targetEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, oldAmp, false, false, true, null));
+            targetEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, oldAmp, false, false, true));
 
             SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_5.get(), targetEntity.getSoundSource());
             MKParticles.spawn(castingEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());

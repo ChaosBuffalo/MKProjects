@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "type": "mkultra:static_placement",
+    "chunkX": 0,
+    "chunkZ": 0,
+    "salt": 0
+  },
+  "structures": [
+    {
+      "structure": "mkultra:intro_castle",
+      "weight": 1
+    }
+  ]
+}

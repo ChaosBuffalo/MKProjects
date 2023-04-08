@@ -16,7 +16,6 @@ import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -61,7 +60,7 @@ public class FireballAbility extends MKAbility {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(), baseDamage.value(),
                 scaleDamage.value(), skillLevel,
                 modifierScaling.value());
-        return new TranslatableComponent(getDescriptionTranslationKey(), damageStr, getExplosionRadius(),
+        return Component.translatable(getDescriptionTranslationKey(), damageStr, getExplosionRadius(),
                 (skillLevel + 1) * .1f * 100.0f, skillLevel + 1);
     }
 

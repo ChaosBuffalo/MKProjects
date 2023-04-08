@@ -22,7 +22,6 @@ import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -94,7 +93,7 @@ public class MKEntitySummonAbility extends MKAbility {
                     pet.getEntity().setNonCombatMoveType(MKEntity.NonCombatMoveType.STATIONARY);
                     MKNpc.getNpcData(pet.getEntity()).ifPresent(x -> x.setMKSpawned(true));
                     pet.getEntity().getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY).ifPresent(x -> x.setFactionName(MKFaction.INVALID_FACTION));
-                    Component newName = new TranslatableComponent("mkultra.pet_name_format", castingEntity.getName(), pet.getEntity().getName());
+                    Component newName = Component.translatable("mkultra.pet_name_format", castingEntity.getName(), pet.getEntity().getName());
                     pet.getEntity().setCustomName(newName);
                 } else {
                     if (entity != null) {

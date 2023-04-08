@@ -16,7 +16,6 @@ import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -50,7 +49,7 @@ public class CleansingSeedAbility extends MKAbility {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.NatureDamage.get(), baseDamage.value(),
                 scaleDamage.value(), getSkillLevel(entityData.getEntity(), MKAttributes.RESTORATION),
                 modifierScaling.value());
-        return new TranslatableComponent(getDescriptionTranslationKey(), damageStr);
+        return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
 
     @Nullable
