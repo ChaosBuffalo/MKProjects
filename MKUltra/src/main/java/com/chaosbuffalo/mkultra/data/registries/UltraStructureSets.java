@@ -15,9 +15,9 @@ import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement
 
 public class UltraStructureSets {
 
-    public static final ResourceKey<StructureSet> INTRO_CASTLE = UltraStructureSets.createKey("intro_castle");
-    public static ResourceKey<StructureSet> DESERT_TEMPLE_VILLAGE = createKey("desert_temple_village");
-    public static ResourceKey<StructureSet> NECROTIDE_ALTER = createKey("necrotide_alter");
+    public static final ResourceKey<StructureSet> INTRO_CASTLE = createKey("intro_castle");
+    public static final ResourceKey<StructureSet> DESERT_TEMPLE_VILLAGE = createKey("desert_temple_village");
+    public static final ResourceKey<StructureSet> NECROTIDE_ALTER = createKey("necrotide_alter");
 
     public static ResourceKey<StructureSet> createKey(String name) {
         return ResourceKey.create(Registries.STRUCTURE_SET, new ResourceLocation(MKUltra.MODID, name));

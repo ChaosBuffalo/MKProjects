@@ -1,101 +1,101 @@
 {
   "slotItems": {
-    "mkweapons:rings": [
+    "mkweapons:earrings": [
       {
-        "weight": 10.0,
         "template": {
-          "potentialItems": [
+          "lootSlot": "mkweapons:earrings",
+          "options": [
             {
-              "itemStack": "{id: \"mkweapons:silver_ring\", Count: 1b}",
+              "modifiers": [
+                {
+                  "Amount": 0.25,
+                  "AttributeName": "mkcore:mana_regen",
+                  "Name": "mkultra:trooper_magus",
+                  "Operation": 0,
+                  "maxValue": 2.5,
+                  "minValue": 0.25
+                }
+              ],
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 1.0
+            },
+            {
+              "name": "{\"text\":\"Earring of Quickening Thoughts\"}",
+              "randomizationType": "mkweapons:name",
+              "slotName": "mkweapons:randomization.name",
               "weight": 1.0
             }
           ],
-          "lootSlot": "mkweapons:rings",
-          "options": [
-            {
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0,
-              "modifiers": [
-                {
-                  "Name": "mkultra:trooper_magus",
-                  "Amount": 4.0,
-                  "Operation": 0,
-                  "AttributeName": "mkcore:max_mana",
-                  "minValue": 4.0,
-                  "maxValue": 20.0
-                }
-              ]
-            },
-            {
-              "randomizationType": "mkweapons:name",
-              "slotName": "mkweapons:randomization.name",
-              "weight": 1.0,
-              "name": "{\"text\":\"Ring of Minor Mana\"}"
-            }
-          ],
-          "templates": [
-            {
-              "template": {
-                "templateType": "mkultra:ring",
-                "slots": [
-                  "mkweapons:randomization.attributes",
-                  "mkweapons:randomization.name"
-                ]
-              },
-              "weight": 15.0
-            }
-          ]
-        }
-      }
-    ],
-    "mkweapons:earrings": [
-      {
-        "weight": 10.0,
-        "template": {
           "potentialItems": [
             {
               "itemStack": "{id: \"mkweapons:silver_earring\", Count: 1b}",
               "weight": 1.0
             }
           ],
-          "lootSlot": "mkweapons:earrings",
+          "templates": [
+            {
+              "template": {
+                "slots": [
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.name"
+                ],
+                "templateType": "mkultra:earring"
+              },
+              "weight": 15.0
+            }
+          ]
+        },
+        "weight": 10.0
+      }
+    ],
+    "mkweapons:rings": [
+      {
+        "template": {
+          "lootSlot": "mkweapons:rings",
           "options": [
             {
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0,
               "modifiers": [
                 {
+                  "Amount": 4.0,
+                  "AttributeName": "mkcore:max_mana",
                   "Name": "mkultra:trooper_magus",
-                  "Amount": 0.25,
                   "Operation": 0,
-                  "AttributeName": "mkcore:mana_regen",
-                  "minValue": 0.25,
-                  "maxValue": 2.5
+                  "maxValue": 20.0,
+                  "minValue": 4.0
                 }
-              ]
+              ],
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 1.0
             },
             {
+              "name": "{\"text\":\"Ring of Minor Mana\"}",
               "randomizationType": "mkweapons:name",
               "slotName": "mkweapons:randomization.name",
-              "weight": 1.0,
-              "name": "{\"text\":\"Earring of Quickening Thoughts\"}"
+              "weight": 1.0
+            }
+          ],
+          "potentialItems": [
+            {
+              "itemStack": "{id: \"mkweapons:silver_ring\", Count: 1b}",
+              "weight": 1.0
             }
           ],
           "templates": [
             {
               "template": {
-                "templateType": "mkultra:earring",
                 "slots": [
                   "mkweapons:randomization.attributes",
                   "mkweapons:randomization.name"
-                ]
+                ],
+                "templateType": "mkultra:ring"
               },
               "weight": 15.0
             }
           ]
-        }
+        },
+        "weight": 10.0
       }
     ]
   }

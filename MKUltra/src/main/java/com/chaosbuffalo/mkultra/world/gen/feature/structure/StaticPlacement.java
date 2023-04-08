@@ -9,6 +9,7 @@ import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class StaticPlacement extends StructurePlacement {
@@ -21,29 +22,27 @@ public class StaticPlacement extends StructurePlacement {
 
     private final ChunkPos chunkPos;
 
-
     public StaticPlacement(Vec3i pLocateOffset, StructurePlacement.FrequencyReductionMethod pFrequencyReductionMethod, float pFrequency, int pSalt, Optional<StructurePlacement.ExclusionZone> pExclusionZone, int chunkX, int chunkZ) {
         super(pLocateOffset, pFrequencyReductionMethod, pFrequency, pSalt, pExclusionZone);
         this.chunkPos = new ChunkPos(chunkX, chunkZ);
     }
 
     public StaticPlacement(int chunkX, int chunkZ) {
-        super(Vec3i.ZERO, FrequencyReductionMethod.DEFAULT, 1f, 0, Optional.empty());
-        this.chunkPos = new ChunkPos(chunkX, chunkZ);
+        this(chunkX, chunkZ, null);
     }
 
-    public StaticPlacement(int chunkX, int chunkZ, ExclusionZone zone) {
-        super(Vec3i.ZERO, FrequencyReductionMethod.DEFAULT, 1f, 0, Optional.of(zone));
+    public StaticPlacement(int chunkX, int chunkZ, @Nullable ExclusionZone zone) {
+        super(Vec3i.ZERO, FrequencyReductionMethod.DEFAULT, 1f, 0, Optional.ofNullable(zone));
         this.chunkPos = new ChunkPos(chunkX, chunkZ);
-    }
-
-    @Override
-    protected boolean isPlacementChunk(ChunkGeneratorStructureState pStructureState, int pX, int pZ) {
-        return pX == chunkPos.x && pZ == chunkPos.z;
     }
 
     @Override
     public StructurePlacementType<?> type() {
         return MKUWorldGen.STATIC_PLACEMENT.get();
+    }
+
+    @Override
+    protected boolean isPlacementChunk(ChunkGeneratorStructureState pStructureState, int pX, int pZ) {
+        return pX == chunkPos.x && pZ == chunkPos.z;
     }
 }
