@@ -19,6 +19,7 @@ import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.entity.ai.controller.MovementStrategyController;
 import com.chaosbuffalo.mknpc.entity.ai.goal.*;
@@ -497,6 +498,11 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         });
         enterNonCombatMovementState();
         return entityData;
+    }
+
+    @Override
+    public boolean shouldBeSaved() {
+        return !MKNpc.getNpcData(this).map(IEntityNpcData::wasMKSpawned).orElse(false);
     }
 
     @Override
