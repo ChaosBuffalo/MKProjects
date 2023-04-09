@@ -28,10 +28,7 @@ import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(modid = MKNpc.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class WorldStructureHandler {
-
-    public static List<MKJigsawStructure> MK_STRUCTURE_CACHE;
     public static final Map<ResourceLocation, MKJigsawStructure> MK_STRUCTURE_INDEX = new HashMap<>();
-
 
     @SubscribeEvent
     public static void serverStarted(final ServerStartedEvent event) {
@@ -41,14 +38,8 @@ public class WorldStructureHandler {
     @SubscribeEvent
     public static void onWorldTick(TickEvent.LevelTickEvent ev) {
         if (ev.phase == TickEvent.Phase.END && ev.level instanceof ServerLevel sWorld) {
-            Level overworld = sWorld.getServer().getLevel(Level.OVERWORLD);
-            if (overworld == null) {
-                return;
-            }
-            Optional<IWorldNpcData> overOpt = overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).resolve();
-            if (overOpt.isPresent()) {
+            MKNpc.getOverworldData(ev.level).ifPresent(over -> {
                 StructureManager manager = sWorld.structureManager();
-                IWorldNpcData over = overOpt.get();
                 WorldStructureManager activeStructures = over.getStructureManager();
                 for (ServerPlayer player : sWorld.players()) {
                     List<StructureStart> starts = MK_STRUCTURE_INDEX.values().stream()
@@ -63,27 +54,17 @@ public class WorldStructureHandler {
                 if (ev.level.dimension() == Level.OVERWORLD) {
                     over.update();
                 }
-            }
+            });
         }
     }
 
     public static void cacheStructures(MinecraftServer server) {
         server.registryAccess().registry(Registries.STRUCTURE).ifPresent(registry -> {
-//            MK_STRUCTURE_CACHE = registry.holders().map(Holder::get)
-//                    .filter(x -> x instanceof MKJigsawStructure)
-//                    .map(x -> (MKJigsawStructure)x)
-//                    .toList();
             MK_STRUCTURE_INDEX.clear();
-//            var reg = server.registryAccess().registryOrThrow(Registries.STRUCTURE);
             registry.holders().filter(r -> r.get() instanceof MKJigsawStructure).forEach(r -> {
                 MKNpc.LOGGER.info("Caching MK Structure {}", r.key().location());
                 MK_STRUCTURE_INDEX.put(r.key().location(), (MKJigsawStructure) r.get());
             });
-//            MK_STRUCTURE_CACHE.forEach(x -> {
-//                ResourceLocation featureName = registry.getKey(x);
-//
-//                MK_STRUCTURE_INDEX.put(featureName, x);
-//            });
         });
 
     }

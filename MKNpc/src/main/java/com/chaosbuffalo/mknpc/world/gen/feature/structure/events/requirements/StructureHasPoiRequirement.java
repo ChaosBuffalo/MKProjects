@@ -7,6 +7,8 @@ import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
+import java.util.Optional;
+
 public class StructureHasPoiRequirement extends StructureEventRequirement {
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID,
             "struct_requirement.has_poi");

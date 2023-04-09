@@ -47,8 +47,7 @@ public interface IWorldNpcData extends INBTSerializable<CompoundTag> {
 
     WorldStructureManager getStructureManager();
 
-    @Nullable
-    MKStructureEntry getStructureData(UUID structId);
+    Optional<MKStructureEntry> getStructureData(UUID structId);
 
     @Nullable
     QuestChainInstance getQuest(UUID questId);

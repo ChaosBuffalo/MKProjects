@@ -5,10 +5,12 @@ import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.capabilities.PointOfInterestEntry;
 import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
 import com.chaosbuffalo.mknpc.capabilities.structure_tracking.StructureData;
+import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.utils.NBTSerializableMappedData;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -259,5 +261,9 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         if (nbt.contains("cooldowns")) {
             cooldownTracker.deserialize(nbt.getCompound("cooldowns"));
         }
+    }
+
+    public Optional<MKJigsawStructure> getStructure() {
+        return Optional.ofNullable(WorldStructureHandler.MK_STRUCTURE_INDEX.get(structureName));
     }
 }

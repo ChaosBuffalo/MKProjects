@@ -21,6 +21,7 @@ import net.minecraft.world.level.levelgen.structure.StructureStart;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class MKStructureCommands {
@@ -68,7 +69,7 @@ public class MKStructureCommands {
                 overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(cap -> {
                     starts.forEach(start -> {
                         UUID startId = IStructureStartMixin.getInstanceIdFromStart(start);
-                        MKStructureEntry entry = cap.getStructureData(startId);
+                        Optional<MKStructureEntry> entry = cap.getStructureData(startId);
                         ResourceLocation featureName = ctx.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(start.getStructure());
                         if (entry != null) {
                             Map<String, List<PointOfInterestEntry>> pois = entry.getPointsOfInterest();

@@ -253,8 +253,8 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     }
 
     @Override
-    public MKStructureEntry getStructureData(UUID structId) {
-        return structureIndex.get(structId);
+    public Optional<MKStructureEntry> getStructureData(UUID structId) {
+        return Optional.ofNullable(structureIndex.get(structId));
     }
 
     protected boolean hasStructureInstance(UUID structureId) {
