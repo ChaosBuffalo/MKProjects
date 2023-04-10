@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.entities;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
+import com.chaosbuffalo.mkcore.sync.EntityUpdateEngine;
 import com.chaosbuffalo.mkcore.utils.RayTraceUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.EntityType;
@@ -18,6 +19,7 @@ public class LineEffectEntity extends BaseEffectEntity {
     private Vec3 startPoint;
     private Vec3 endPoint;
 
+
     public LineEffectEntity(EntityType<? extends LineEffectEntity> entityType, Level world) {
         super(entityType, world);
     }
@@ -29,6 +31,14 @@ public class LineEffectEntity extends BaseEffectEntity {
 
     public void setStartPoint(Vec3 startPoint) {
         this.startPoint = startPoint;
+    }
+
+    public Vec3 getStartPoint() {
+        return startPoint;
+    }
+
+    public Vec3 getEndPoint() {
+        return endPoint;
     }
 
     public void setEndPoint(Vec3 endPoint) {

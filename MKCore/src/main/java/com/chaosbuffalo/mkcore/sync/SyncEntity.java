@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class SyncEntity<T extends Entity> implements ISyncObject {
     private final String name;
@@ -20,10 +21,18 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
         set(value);
     }
 
+    public boolean isValid() {
+        return value != null;
+    }
+
     public void set(T value) {
         this.value = value;
         this.dirty = true;
         parentNotifier.notifyUpdate(this);
+    }
+
+    public Optional<T> target() {
+        return Optional.ofNullable(get());
     }
 
     @Nullable

@@ -16,6 +16,7 @@ import com.chaosbuffalo.mkultra.abilities.necromancer.ShadowPulseAbility;
 import com.chaosbuffalo.mkultra.abilities.nether_mage.*;
 import com.chaosbuffalo.mkultra.abilities.passives.LifeSiphonAbility;
 import com.chaosbuffalo.mkultra.abilities.passives.SoulDrainAbility;
+import com.chaosbuffalo.mkultra.abilities.structure.NecrotideGolemBeam;
 import com.chaosbuffalo.mkultra.abilities.wet_wizard.DrownAbility;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -27,10 +28,10 @@ public class MKUAbilities {
 
     public static final DeferredRegister<MKAbility> REGISTRY = DeferredRegister.create(MKCoreRegistry.ABILITY_REGISTRY_NAME, MKUltra.MODID);
     //misc
-    public static final net.minecraftforge.registries.RegistryObject<WrathBeamAbility> WRATH_BEAM = REGISTRY.register("ability.wrath_beam", WrathBeamAbility::new);
-    public static net.minecraftforge.registries.RegistryObject<WrathBeamFlurryAbility> WRATH_BEAM_FLURRY = REGISTRY.register("ability.wrath_beam_flurry", WrathBeamFlurryAbility::new);
-    public static final net.minecraftforge.registries.RegistryObject<SeverTendonAbility> SEVER_TENDON = REGISTRY.register("ability.sever_tendon", SeverTendonAbility::new);
-    public static final net.minecraftforge.registries.RegistryObject<FireballAbility> FIREBALL = REGISTRY.register("ability.fireball", FireballAbility::new);
+    public static final RegistryObject<WrathBeamAbility> WRATH_BEAM = REGISTRY.register("ability.wrath_beam", WrathBeamAbility::new);
+    public static final RegistryObject<WrathBeamFlurryAbility> WRATH_BEAM_FLURRY = REGISTRY.register("ability.wrath_beam_flurry", WrathBeamFlurryAbility::new);
+    public static final RegistryObject<SeverTendonAbility> SEVER_TENDON = REGISTRY.register("ability.sever_tendon", SeverTendonAbility::new);
+    public static final RegistryObject<FireballAbility> FIREBALL = REGISTRY.register("ability.fireball", FireballAbility::new);
     public static final RegistryObject<ShadowPulseFlurryAbility> SHADOW_PUlSE_FLURRY = REGISTRY.register("ability.shadow_pulse_flurry", ShadowPulseFlurryAbility::new);
 
     //necromancer
@@ -75,6 +76,8 @@ public class MKUAbilities {
     //talents
     public static final net.minecraftforge.registries.RegistryObject<LifeSiphonAbility> LIFE_SIPHON = REGISTRY.register("ability.life_siphon", LifeSiphonAbility::new);
     public static final net.minecraftforge.registries.RegistryObject<SoulDrainAbility> SOUL_DRAIN = REGISTRY.register("ability.soul_drain", SoulDrainAbility::new);
+
+    public static final RegistryObject<NecrotideGolemBeam> NECROTIDE_GOLEM_BEAM = REGISTRY.register("ability.necrotide_golem_beam", NecrotideGolemBeam::new);
 
 
     public static void register(IEventBus bus) {

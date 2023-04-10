@@ -12,7 +12,7 @@ public abstract class StructureAbility extends MKAbility {
 
     @Override
     public AbilityType getType() {
-        return AbilityType.STRUCTURE;
+        return AbilityType.Structure;
     }
 
     public Optional<MKStructureEntry> getStructure(LivingEntity caster) {

@@ -1,15 +1,21 @@
 package com.chaosbuffalo.mkcore.effects;
 
 import com.chaosbuffalo.mkcore.entities.BaseEffectEntity;
+import com.chaosbuffalo.mkcore.entities.BlockAnchoredLineEffectEntity;
 import com.chaosbuffalo.mkcore.entities.LineEffectEntity;
 import com.chaosbuffalo.mkcore.entities.PointEffectEntity;
 import com.chaosbuffalo.targeting_api.TargetingContext;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.Lazy;
+
+import java.util.function.Supplier;
 
 public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
 
@@ -149,5 +155,40 @@ public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
 
     public static PointEffectBuilder createPointEffect(LivingEntity caster, Vec3 position) {
         return new PointEffectBuilder(caster, position);
+    }
+
+    public static class BlockAnchoredLineEffectBuilder extends EntityEffectBuilder<BlockAnchoredLineEffectEntity> {
+
+        private BlockAnchoredLineEffectBuilder(LivingEntity caster, Vec3 position) {
+            super(caster, position);
+        }
+
+        @Override
+        protected BlockAnchoredLineEffectEntity createEntity(Level world, Vec3 pos) {
+            return new BlockAnchoredLineEffectEntity(world, pos);
+        }
+
+        public BlockAnchoredLineEffectBuilder setBlockSupplier(Supplier<Block> blockSupplier) {
+            effect.setBlock(blockSupplier);
+            return this;
+        }
+
+        public BlockAnchoredLineEffectBuilder setBlock(Block block) {
+            return setBlockSupplier(Lazy.of(() -> block));
+        }
+
+        public BlockAnchoredLineEffectBuilder setRange(float range) {
+            effect.setRange(range);
+            return this;
+        }
+
+        public BlockAnchoredLineEffectBuilder setTargetContext(TargetingContext context) {
+            effect.setTargetContext(context);
+            return this;
+        }
+    }
+
+    public static BlockAnchoredLineEffectBuilder createBlockAnchoredEffect(LivingEntity caster, Vec3 position) {
+        return new BlockAnchoredLineEffectBuilder(caster, position);
     }
 }
