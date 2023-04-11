@@ -97,7 +97,8 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 500.0)));
         def.addOption(new NameOption().setValue("A Necrotide Construction"));
         def.addOption(new AbilitiesOption()
-                .withAbilityOption(MKUAbilities.SHADOW_BOLT.get(), 1, 1.0)
+                .withAbilityOption(MKUAbilities.SHADOW_BOLT.get(), 2, 1.0)
+                .withAbilityOption(MKUAbilities.NECROTIDE_GOLEM_BEAM.get(), 1, 1.0)
         );
         def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.NECROMANCER));
         def.addOption(new NotableOption());

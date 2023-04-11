@@ -1,6 +1,9 @@
 package com.chaosbuffalo.mkultra.data.registries;
 
 import com.chaosbuffalo.mknpc.data.MKJigsawBuilder;
+import com.chaosbuffalo.mknpc.entity.MKEntity;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.event.SpawnNpcDefinitionEvent;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.data.UltraTags;
 import com.chaosbuffalo.mkultra.world.gen.feature.structure.DesertTempleVillagePools;
@@ -53,7 +56,12 @@ public class UltraStructures {
                 new MKJigsawBuilder(NECROTIDE_ALTER.location(),
                         emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_NECROTIDE_ALTER),
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE),
-                        templates.getOrThrow(NecrotideAlterPools.BASE)).build());
+                        templates.getOrThrow(NecrotideAlterPools.BASE))
+                        .addEvent("summon_golem", new SpawnNpcDefinitionEvent(
+                                new ResourceLocation(MKUltra.MODID, "necrotide_golem"),
+                                "golem_spawn", "golem_look", MKEntity.NonCombatMoveType.STATIONARY)
+                                .addNotableDeadCondition(new ResourceLocation(MKUltra.MODID, "skeletal_lock"), true)
+                                .addTrigger(StructureEvent.EventTrigger.ON_DEATH)).build());
     }
 
     public static Structure.StructureSettings structure(HolderSet<Biome> biomes, GenerationStep.Decoration step, TerrainAdjustment adjustment) {

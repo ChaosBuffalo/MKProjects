@@ -24,14 +24,19 @@
         {
           "abilityName": "mkultra:ability.shadow_bolt",
           "chance": 1.0,
+          "priority": 2
+        },
+        {
+          "abilityName": "mkultra:ability.necrotide_golem_beam",
+          "chance": 1.0,
           "priority": 1
         }
       ]
     },
     {
       "major_skills": [
-        "mkcore:necromancy",
-        "mkcore:conjuration"
+        "mkcore:conjuration",
+        "mkcore:necromancy"
       ],
       "minor_skills": [
         "mkcore:abjuration",

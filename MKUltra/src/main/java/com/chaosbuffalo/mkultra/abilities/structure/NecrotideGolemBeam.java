@@ -2,6 +2,8 @@ package com.chaosbuffalo.mkultra.abilities.structure;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
+import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
+import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.MeleeUseCondition;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -18,6 +20,7 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Blocks;
@@ -36,7 +39,12 @@ public class NecrotideGolemBeam extends StructureAbility {
     protected final IntAttribute charge_time = new IntAttribute("charge_time", GameConstants.TICKS_PER_SECOND * 2);
     @Override
     public TargetingContext getTargetContext() {
-        return TargetingContexts.SELF;
+        return TargetingContexts.ENEMY;
+    }
+
+    @Override
+    public AbilityTargetSelector getTargetSelector() {
+        return AbilityTargeting.PBAOE;
     }
 
     public NecrotideGolemBeam() {
@@ -47,19 +55,25 @@ public class NecrotideGolemBeam extends StructureAbility {
         addAttributes(pulse_particles, wait_particles, poi_name, tickRate, duration, charge_time);
 //        addAttributes(base, scale, modifierScaling, baseDuration, scaleDuration, cast_particles);
         setUseCondition(new MeleeUseCondition(this));
-        addSkillAttribute(MKAttributes.EVOCATION);
+        addSkillAttribute(MKAttributes.NECROMANCY);
+    }
+
+    @Override
+    public float getDistance(LivingEntity entity) {
+        return 30.0f;
     }
 
     @Override
     public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
         super.endCast(castingEntity, casterData, context);
-       getStructure(castingEntity).ifPresent(entry -> entry.getPoisWithTag("golem_lantern").forEach(
+       getStructure(castingEntity).ifPresent(entry -> entry.getFirstPoiWithTag("golem_lantern").ifPresent(
                poi -> {
-                   var builder = EntityEffectBuilder.createBlockAnchoredEffect(castingEntity, Vec3.atCenterOf(poi.getLocation().pos()));
+                   BlockPos pos = poi.getLocation().pos().below(2);
+                   var builder = EntityEffectBuilder.createBlockAnchoredEffect(castingEntity, Vec3.atCenterOf(pos));
                    builder.setBlock(Blocks.SOUL_LANTERN);
                    MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_fire_7.get(), castingEntity.getSoundSource())
                            .ability(this);
-                   castingEntity.getLevel().setBlockAndUpdate(poi.getLocation().pos(), Blocks.SOUL_LANTERN.defaultBlockState());
+                   castingEntity.getLevel().setBlockAndUpdate(pos, Blocks.SOUL_LANTERN.defaultBlockState());
                    builder.setRange(10.0f)
                            .setTargetContext(TargetingContexts.ENEMY)
                            .setParticles(new BaseEffectEntity.ParticleDisplay(pulse_particles.getValue(),

@@ -16,5 +16,6 @@
   "start_pool": "mknpc:digger/diggerbase",
   "step": "surface_structures",
   "structureName": "mknpc:test_jigsaw",
+  "structure_events": {},
   "use_expansion_hack": true
 }

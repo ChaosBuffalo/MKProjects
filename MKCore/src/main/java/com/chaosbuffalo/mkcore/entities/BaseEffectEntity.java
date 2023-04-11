@@ -102,6 +102,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         super(entityType, world);
         this.effects = new ArrayList<>();
         particles = null;
+        noPhysics = true;
     }
 
     @Override

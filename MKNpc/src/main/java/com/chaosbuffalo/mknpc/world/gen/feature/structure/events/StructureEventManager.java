@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.feature.structure.events;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.NotableDeadCondition;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.StructureEventCondition;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.event.SpawnNpcDefinitionEvent;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureEventRequirement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureHasNotableRequirement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureHasPoiRequirement;
@@ -17,6 +18,7 @@ public class StructureEventManager {
     public static final Map<ResourceLocation, Supplier<StructureEventRequirement>> REQ_DESERIALIZERS = new HashMap<>();
     public static final Map<ResourceLocation, Supplier<StructureEventCondition>> COND_DESERIALIZERS = new HashMap<>();
     public static final Map<ResourceLocation, Supplier<StructureEvent>> EVENT_DESERIALIZERS = new HashMap<>();
+
 
     public static void putRequirementDeserializer(ResourceLocation name,
                                                   Supplier<StructureEventRequirement> function) {
@@ -37,6 +39,7 @@ public class StructureEventManager {
         putRequirementDeserializer(StructureHasPoiRequirement.TYPE_NAME, StructureHasPoiRequirement::new);
         putRequirementDeserializer(StructureHasNotableRequirement.TYPE_NAME, StructureHasNotableRequirement::new);
         putConditionDeserializer(NotableDeadCondition.TYPE_NAME, NotableDeadCondition::new);
+        putEventDeserializer(SpawnNpcDefinitionEvent.TYPE_NAME, SpawnNpcDefinitionEvent::new);
     }
 
     @Nullable

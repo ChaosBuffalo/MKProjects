@@ -45,6 +45,6 @@ public class NecrotideAlterPools {
                         Pair.of(MKSinglePoolElement.forTemplate(Templates.TOWER_LEFT, false), 1),
                         Pair.of(MKSinglePoolElement.forTemplate(Templates.TOWER_RIGHT, false), 1)
                 ),
-                StructureTemplatePool.Projection.TERRAIN_MATCHING));
+                StructureTemplatePool.Projection.RIGID));
     }
 }

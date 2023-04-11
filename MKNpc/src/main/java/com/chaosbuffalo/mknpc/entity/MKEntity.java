@@ -193,6 +193,14 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     @Override
+    public void tick() {
+        super.tick();
+        if (!this.level.isClientSide()) {
+            updateEngine.syncUpdates();
+        }
+    }
+
+    @Override
     public boolean isInvisibleTo(Player player) {
         return !isGhost() && super.isInvisibleTo(player);
     }

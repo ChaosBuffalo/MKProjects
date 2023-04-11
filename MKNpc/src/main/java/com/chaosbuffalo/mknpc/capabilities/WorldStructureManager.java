@@ -3,11 +3,10 @@ package com.chaosbuffalo.mknpc.capabilities;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.entity.Entity;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -23,16 +22,38 @@ public class WorldStructureManager {
         }
     }
 
+    public static class ActiveEntityEntry {
+        private final Entity entity;
+        private final String eventName;
+
+        public ActiveEntityEntry(Entity entity, String eventName) {
+            this.entity = entity;
+            this.eventName = eventName;
+        }
+
+        public String getEventName() {
+            return eventName;
+        }
+
+        public Entity getEntity() {
+            return entity;
+        }
+    }
+
     public static class ActiveStructure {
         private int ticksEmpty = 0;
         private final UUID structureId;
         private final Map<UUID, ActivePlayerEntry> activePlayers;
+
+
+        private final Map<UUID, ActiveEntityEntry> entities;
         private final int PLAYER_TIMEOUT = 20 * 5;
         private final int EMPTY_TIMEOUT = 20 * 60;
         private final BiConsumer<ServerPlayer, ActiveStructure> playerRemoveCallback;
 
         public ActiveStructure(UUID structureId, BiConsumer<ServerPlayer, ActiveStructure> removalCallback) {
             this.activePlayers = new HashMap<>();
+            this.entities = new HashMap<>();
             this.structureId = structureId;
             this.playerRemoveCallback = removalCallback;
         }
@@ -45,8 +66,25 @@ public class WorldStructureManager {
             return structureId;
         }
 
+        public void addEntity(UUID id, Entity entity, String eventName) {
+            entities.put(id, new ActiveEntityEntry(entity, eventName));
+        }
+
+        public void entityDied(UUID id) {
+            entities.remove(id);
+        }
+
+        @Nullable
+        public ActiveEntityEntry getActiveEntity(UUID id) {
+            return entities.get(id);
+        }
+
         private void addPlayer(ServerPlayer player) {
             activePlayers.put(player.getUUID(), new ActivePlayerEntry(player));
+        }
+
+        public boolean hasActiveEntity(UUID id) {
+            return entities.containsKey(id);
         }
 
         private void removePlayer(UUID uuid) {
@@ -142,6 +180,15 @@ public class WorldStructureManager {
                     entry.ifPresent(structureEntry ->
                             structureEntry.getStructure().ifPresent(structure ->
                                     structure.onNpcDeath(structureEntry, activeStruct, npcData)));
+                    ActiveEntityEntry entEntry = activeStruct.getActiveEntity(npcData.getNotableUUID());
+                    if (entEntry != null) {
+                        entry.ifPresent(structureEntry ->
+                                structureEntry.getStructure().ifPresent(structure ->
+                                        structure.onTrackedEntityDeath(structureEntry, activeStruct, npcData,
+                                                entEntry.getEventName())));
+                        activeStruct.entityDied(npcData.getNotableUUID());
+                    }
+
                 }
             }
         });

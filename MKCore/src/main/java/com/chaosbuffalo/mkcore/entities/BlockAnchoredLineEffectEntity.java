@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.entities;
 
+import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.core.player.SyncComponent;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
@@ -8,6 +9,7 @@ import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.sync.EntityUpdateEngine;
 import com.chaosbuffalo.mkcore.sync.SyncEntity;
 import com.chaosbuffalo.mkcore.sync.SyncVec3;
+import com.chaosbuffalo.mkcore.sync.UpdateEngine;
 import com.chaosbuffalo.mkcore.utils.RayTraceUtils;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
@@ -34,7 +36,7 @@ import java.util.Comparator;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class BlockAnchoredLineEffectEntity extends BaseEffectEntity{
+public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements IUpdateEngineProvider{
 
     private BlockPos startPos;
     private Supplier<Block> block;
@@ -48,6 +50,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity{
     protected final SyncEntity<LivingEntity> target = new SyncEntity<>("target", null, LivingEntity.class);
     protected final SyncVec3 startPoint = new SyncVec3("start_point", Vec3.ZERO);
     protected final SyncVec3 endPoint = new SyncVec3("end_point", Vec3.ZERO);
+    protected Vec3 prevEndPoint;
     public BlockAnchoredLineEffectEntity(EntityType<? extends BlockAnchoredLineEffectEntity> entityType, Level world) {
         super(entityType, world);
         engine = new EntityUpdateEngine(this);
@@ -55,6 +58,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity{
         targeting.addPublic(target);
         targeting.addPublic(startPoint);
         targeting.addPublic(endPoint);
+        endPoint.setCallback(this::onEndPointUpdate);
     }
 
     public BlockAnchoredLineEffectEntity(Level level, Vec3 pos) {
@@ -63,7 +67,12 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity{
         setStartPoint(pos);
         startPos = BlockPos.containing(pos);
         setEndPoint(Vec3.atCenterOf(startPos.below()));
+        prevEndPoint = endPoint.get();
         beamSpeed = 2.5f;
+    }
+
+    protected void onEndPointUpdate(Vec3 prev) {
+        prevEndPoint = prev;
     }
 
     public void setTargetContext(TargetingContext context) {
@@ -78,15 +87,22 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity{
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         if (RANGE.equals(key)) {
             this.refreshDimensions();
-            this.setBoundingBox(this.dimensions.makeBoundingBox(getX(), getY(), getZ()));
+            this.setBoundingBox(this.dimensions.makeBoundingBox(getX(), getY() - getRange(), getZ()));
         }
         super.onSyncedDataUpdated(key);
     }
 
     @Override
+    public void setPos(double p_20210_, double p_20211_, double p_20212_) {
+        // we're going to skip setting the bounding box here as our entity is stationary and the base update logic
+        // sets an entities position every 60 ticks
+        this.setPosRaw(p_20210_, p_20211_, p_20212_);
+    }
+
+    @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
-        this.getEntityData().define(RANGE, 10.0F);
+        this.getEntityData().define(RANGE, 0.0F);
     }
 
     @Override
@@ -118,12 +134,13 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity{
         if (!target.isValid()) {
             lookForTarget();
         }
+        engine.syncUpdates();
         return target.target().map(tar -> {
-            if (tar.distanceToSqr(startPoint.get()) > getRange() * getRange()) {
+            if (!getBoundingBox().intersects(tar.getBoundingBox())) {
                 target.set(null);
                 return false;
             } else {
-                Vec3 dir = endPoint.get().subtract(tar.position()).normalize();
+                Vec3 dir = tar.position().subtract(endPoint.get()).normalize();
                 setEndPoint(endPoint.get().add(dir.scale(beamSpeed / GameConstants.FTICKS_PER_SECOND)));
                 return super.serverUpdate();
             }
@@ -132,7 +149,9 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity{
 
     protected void lookForTarget() {
         getPotentialTargets().stream().min(Comparator.comparingDouble(
-                ent -> ent.distanceToSqr(startPoint.get()))).ifPresent(target::set);
+                ent -> ent.distanceToSqr(startPoint.get()))).ifPresent(tar -> {
+                    target.set(tar);
+        });
     }
 
     @Override
@@ -150,7 +169,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity{
 
 
     protected boolean potentialTargetCheck(LivingEntity e) {
-        return super.entityCheck(e) && Targeting.isValidTarget(context, getOwner(), e);
+        return Targeting.isValidTarget(context, getOwner(), e);
     }
 
     @Nonnull
@@ -163,7 +182,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity{
     protected void spawnClientParticles(ParticleDisplay display) {
         ParticleAnimation anim = ParticleAnimationManager.getAnimation(display.getParticles());
         if (anim != null) {
-            anim.spawn(getCommandSenderWorld(), startPoint.get(), Collections.singletonList(endPoint.get()));
+            anim.spawn(getCommandSenderWorld(), startPoint.get(), Collections.singletonList(prevEndPoint.lerp(endPoint.get(), 0.5)));
         }
     }
 
@@ -207,5 +226,10 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity{
             ResourceLocation blockKey = additionalData.readResourceLocation();
             block = Lazy.of(() -> ForgeRegistries.BLOCKS.getValue(blockKey));
         }
+    }
+
+    @Override
+    public UpdateEngine getUpdateEngine() {
+        return engine;
     }
 }

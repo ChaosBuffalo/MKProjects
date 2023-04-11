@@ -33,6 +33,8 @@ public class MKUAbilities {
     public static final RegistryObject<FireballAbility> FIREBALL = REGISTRY.register("ability.fireball", FireballAbility::new);
     public static final RegistryObject<ShadowPulseFlurryAbility> SHADOW_PUlSE_FLURRY = REGISTRY.register("ability.shadow_pulse_flurry", ShadowPulseFlurryAbility::new);
 
+    public static final RegistryObject<NecrotideGolemBeam> NECROTIDE_GOLEM_BEAM = REGISTRY.register("ability.necrotide_golem_beam", NecrotideGolemBeam::new);
+
     //necromancer
     public static final RegistryObject<MKEntitySummonAbility> TEST_SUMMON = REGISTRY.register("ability.test_summon",
             () -> new MKEntitySummonAbility(new ResourceLocation(MKUltra.MODID, "hyborean_sorcerer_queen"), MKAttributes.NECROMANCY));
@@ -75,8 +77,6 @@ public class MKUAbilities {
     //talents
     public static final RegistryObject<LifeSiphonAbility> LIFE_SIPHON = REGISTRY.register("ability.life_siphon", LifeSiphonAbility::new);
     public static final RegistryObject<SoulDrainAbility> SOUL_DRAIN = REGISTRY.register("ability.soul_drain", SoulDrainAbility::new);
-
-    public static final RegistryObject<NecrotideGolemBeam> NECROTIDE_GOLEM_BEAM = REGISTRY.register("ability.necrotide_golem_beam", NecrotideGolemBeam::new);
 
 
     public static void register(IEventBus bus) {

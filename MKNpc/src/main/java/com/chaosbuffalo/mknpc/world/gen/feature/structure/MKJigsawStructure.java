@@ -6,11 +6,17 @@ import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEventManager;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class MKJigsawStructure extends Structure {
 
@@ -49,7 +56,9 @@ public class MKJigsawStructure extends Structure {
                     Codec.intRange(1, 128).fieldOf("max_distance_from_center")
                             .forGetter(s -> s.maxDistanceFromCenter),
                     ResourceLocation.CODEC.fieldOf("structureName")
-                            .forGetter(MKJigsawStructure::getStructureName)
+                            .forGetter(MKJigsawStructure::getStructureName),
+                    CompoundTag.CODEC.fieldOf("structure_events")
+                            .forGetter(MKJigsawStructure::getNbt)
             ).apply(builder, MKJigsawStructure::new)).flatXmap(verifyRange(), verifyRange()).codec();
 
     private static Function<MKJigsawStructure, DataResult<MKJigsawStructure>> verifyRange() {
@@ -82,7 +91,7 @@ public class MKJigsawStructure extends Structure {
     public MKJigsawStructure(StructureSettings pSettings, Holder<StructureTemplatePool> templatePool,
                              Optional<ResourceLocation> startJigsawName, int maxDepth, HeightProvider heightProvider,
                              boolean useExpansionHack, Optional<Heightmap.Types> heightmapTypes, int maxDistanceFromCenter,
-                             ResourceLocation structureName) {
+                             ResourceLocation structureName, CompoundTag structureNbt) {
         super(pSettings);
         this.structureName = structureName;
         this.startPool = templatePool;
@@ -92,7 +101,39 @@ public class MKJigsawStructure extends Structure {
         this.useExpansionHack = useExpansionHack;
         this.projectStartToHeightmap = heightmapTypes;
         this.maxDistanceFromCenter = maxDistanceFromCenter;
+        loadNbt(structureNbt);
     }
+
+    public CompoundTag getNbt() {
+        CompoundTag tag = new CompoundTag();
+        if (!events.isEmpty()) {
+            ListTag structureEvents = new ListTag();
+            for (StructureEvent event : events.values()) {
+                structureEvents.add(event.serialize(NbtOps.INSTANCE));
+            }
+            tag.put("structure_events", structureEvents);
+        }
+        return tag;
+    }
+
+    public void loadNbt(CompoundTag tag) {
+        if (tag.contains("structure_events")) {
+            ListTag evList = tag.getList("structure_events", Tag.TAG_COMPOUND);
+            for (int i = 0; i < evList.size(); i++) {
+                CompoundTag evTag = evList.getCompound(i);
+                Dynamic<?> dyn = new Dynamic<>(NbtOps.INSTANCE, evTag);
+                ResourceLocation type = StructureEvent.getType(dyn);
+                Supplier<StructureEvent> supplier = StructureEventManager.getEventDeserializer(type);
+                if (supplier != null) {
+                    StructureEvent ev = supplier.get();
+                    ev.deserialize(dyn);
+                    addEvent(ev.getEventName(), ev);
+                }
+            }
+        }
+    }
+
+
 
     @Override
     public StructureType<?> type() {
@@ -169,7 +210,18 @@ public class MKJigsawStructure extends Structure {
                                         WorldStructureManager.ActiveStructure activeStructure, Level world) {
         if (!entry.getCooldownTracker().hasTimer(ev.getTimerName()) && ev.meetsConditions(entry, activeStructure, world)) {
             ev.execute(entry, activeStructure, world);
-            entry.getCooldownTracker().setTimer(ev.getTimerName(), ev.getCooldown());
+            if (ev.startsCooldownImmediately()) {
+                entry.getCooldownTracker().setTimer(ev.getTimerName(), ev.getCooldown());
+            }
+
+        }
+    }
+
+    public void onTrackedEntityDeath(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, IEntityNpcData npcData,
+                                     String eventName) {
+        StructureEvent ev = events.get(eventName);
+        if (ev != null) {
+            ev.onTrackedEntityDeath(entry, activeStructure, npcData);
         }
     }
 

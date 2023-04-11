@@ -266,4 +266,8 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
     public Optional<MKJigsawStructure> getStructure() {
         return Optional.ofNullable(WorldStructureHandler.MK_STRUCTURE_INDEX.get(structureName));
     }
+
+    public void reset() {
+        cooldownTracker.removeAll();
+    }
 }

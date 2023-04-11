@@ -6,11 +6,13 @@ import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
 import com.chaosbuffalo.mkcore.serialization.attributes.ISerializableAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.StructureEventCondition;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureEventRequirement;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.Level;
 
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public abstract class StructureEvent implements ISerializableAttributeContainer, IDynamicMapTypedSerializer {
     private static final String TYPE_ENTRY_NAME = "structEventType";
@@ -29,6 +32,12 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
     protected final List<StructureEventCondition> conditions = new ArrayList<>();
     protected ResourceLocation timerName;
     protected final IntAttribute eventTimer = new IntAttribute("cooldown", 10 * GameConstants.TICKS_PER_SECOND * 60);
+
+    protected boolean startsCooldown;
+
+    public boolean startsCooldownImmediately() {
+        return startsCooldown;
+    }
 
     public enum EventTrigger {
         ON_TICK,
@@ -43,6 +52,7 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
         this.typeName = typeName;
         setEventName("name_not_found");
         addAttribute(eventTimer);
+        startsCooldown = true;
     }
 
     public StructureEvent setEventName(String eventName) {
@@ -102,12 +112,18 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
         attributes.addAll(Arrays.asList(iSerializableAttributes));
     }
 
+    public void onTrackedEntityDeath(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure,
+                                     IEntityNpcData npcData) {
+
+    }
+
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         builder.put(ops.createString("attributes"), serializeAttributeMap(ops));
         builder.put(ops.createString("requirements"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("conditions"), ops.createList(conditions.stream().map(x -> x.serialize(ops))));
-        builder.put(ops.createString("eventName"), ops.createString(getEventName()));
+        builder.put(ops.createString("event_name"), ops.createString(getEventName()));
+        builder.put(ops.createString("triggers"), ops.createList(triggers.stream().map(x -> ops.createInt(x.ordinal()))));
     }
 
     public List<StructureEventRequirement> getRequirements() {
@@ -149,7 +165,9 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
             }
         });
         conds.forEach(x -> x.ifPresent(this::addCondition));
-        setEventName(dynamic.get("eventName").asString("name_not_found"));
+        setEventName(dynamic.get("event_name").asString("name_not_found"));
+        triggers.clear();
+        triggers.addAll(dynamic.get("triggers").asIntStream().mapToObj(x -> EventTrigger.values()[x]).collect(Collectors.toSet()));
     }
 
     public boolean meetsRequirements(MKStructureEntry entry,
