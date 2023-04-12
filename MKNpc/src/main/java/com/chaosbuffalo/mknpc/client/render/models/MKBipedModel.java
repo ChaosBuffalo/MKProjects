@@ -75,6 +75,7 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
         if (animation != null) {
             animation.apply(entityIn);
         }
+
     }
 
     public AdditionalBipedAnimation<MKEntity> getAdditionalAnimation(T entityIn) {

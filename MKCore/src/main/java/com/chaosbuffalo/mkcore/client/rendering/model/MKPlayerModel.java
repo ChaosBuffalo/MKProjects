@@ -29,6 +29,10 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
                 animation.apply(entityIn);
             }
         });
+        this.leftPants.copyFrom(this.leftLeg);
+        this.rightPants.copyFrom(this.rightLeg);
+        this.leftSleeve.copyFrom(this.leftArm);
+        this.rightSleeve.copyFrom(this.rightArm);
     }
 
 
