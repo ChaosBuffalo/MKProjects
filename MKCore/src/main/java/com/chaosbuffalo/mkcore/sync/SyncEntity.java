@@ -61,7 +61,7 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
         if (tag.contains(name)) {
             int id = tag.getInt(name);
             if (id != -1) {
-                Entity ent = ClientHandler.handleClient(tag.getId());
+                Entity ent = ClientHandler.handleClient(id);
                 if (clazz.isInstance(ent)) {
                     value = clazz.cast(ent);
                 } else {
