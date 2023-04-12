@@ -61,7 +61,9 @@ public class UltraStructures {
                                 new ResourceLocation(MKUltra.MODID, "necrotide_golem"),
                                 "golem_spawn", "golem_look", MKEntity.NonCombatMoveType.STATIONARY)
                                 .addNotableDeadCondition(new ResourceLocation(MKUltra.MODID, "skeletal_lock"), true)
-                                .addTrigger(StructureEvent.EventTrigger.ON_DEATH)).build());
+                                .addTrigger(StructureEvent.EventTrigger.ON_DEATH)
+                                .addTrigger(StructureEvent.EventTrigger.ON_ACTIVATE)
+                        ).build());
     }
 
     public static Structure.StructureSettings structure(HolderSet<Biome> biomes, GenerationStep.Decoration step, TerrainAdjustment adjustment) {

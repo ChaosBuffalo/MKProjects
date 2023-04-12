@@ -6,10 +6,7 @@ import com.chaosbuffalo.mkcore.core.player.SyncComponent;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
-import com.chaosbuffalo.mkcore.sync.EntityUpdateEngine;
-import com.chaosbuffalo.mkcore.sync.SyncEntity;
-import com.chaosbuffalo.mkcore.sync.SyncVec3;
-import com.chaosbuffalo.mkcore.sync.UpdateEngine;
+import com.chaosbuffalo.mkcore.sync.*;
 import com.chaosbuffalo.mkcore.utils.RayTraceUtils;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
@@ -44,13 +41,16 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
 
     private static final EntityDataAccessor<Float> RANGE = SynchedEntityData.defineId(
             BlockAnchoredLineEffectEntity.class, EntityDataSerializers.FLOAT);
-    private float beamSpeed;
     private final EntityUpdateEngine engine;
     private final SyncComponent targeting = new SyncComponent("targeting");
     protected final SyncEntity<LivingEntity> target = new SyncEntity<>("target", null, LivingEntity.class);
     protected final SyncVec3 startPoint = new SyncVec3("start_point", Vec3.ZERO);
     protected final SyncVec3 endPoint = new SyncVec3("end_point", Vec3.ZERO);
+
+    protected final SyncFloat beamSpeed = new SyncFloat("beam_speed", 2.5f);
+
     protected Vec3 prevEndPoint;
+    protected int lastTickReceive;
     public BlockAnchoredLineEffectEntity(EntityType<? extends BlockAnchoredLineEffectEntity> entityType, Level world) {
         super(entityType, world);
         engine = new EntityUpdateEngine(this);
@@ -68,11 +68,11 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
         startPos = BlockPos.containing(pos);
         setEndPoint(Vec3.atCenterOf(startPos.below()));
         prevEndPoint = endPoint.get();
-        beamSpeed = 2.5f;
     }
 
     protected void onEndPointUpdate(Vec3 prev) {
         prevEndPoint = prev;
+        lastTickReceive = tickCount;
     }
 
     public void setTargetContext(TargetingContext context) {
@@ -122,7 +122,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     }
 
     public BlockAnchoredLineEffectEntity setBeamSpeed(float beamSpeed) {
-        this.beamSpeed = beamSpeed;
+        this.beamSpeed.set(beamSpeed);
         return this;
     }
 
@@ -141,7 +141,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
                 return false;
             } else {
                 Vec3 dir = tar.position().subtract(endPoint.get()).normalize();
-                setEndPoint(endPoint.get().add(dir.scale(beamSpeed / GameConstants.FTICKS_PER_SECOND)));
+                setEndPoint(endPoint.get().add(dir.scale(beamSpeed.get() / GameConstants.FTICKS_PER_SECOND)));
                 return super.serverUpdate();
             }
         }).orElse(false);
@@ -182,7 +182,8 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     protected void spawnClientParticles(ParticleDisplay display) {
         ParticleAnimation anim = ParticleAnimationManager.getAnimation(display.getParticles());
         if (anim != null) {
-            anim.spawn(getCommandSenderWorld(), startPoint.get(), Collections.singletonList(prevEndPoint.lerp(endPoint.get(), 0.5)));
+            anim.spawn(getCommandSenderWorld(), startPoint.get(),
+                    Collections.singletonList(prevEndPoint.lerp(endPoint.get(), Math.min((tickCount - lastTickReceive) / 10.0f, 1.0f))));
         }
     }
 

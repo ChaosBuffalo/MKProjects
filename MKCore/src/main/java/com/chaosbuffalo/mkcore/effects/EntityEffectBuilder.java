@@ -173,6 +173,11 @@ public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
             return this;
         }
 
+        public BlockAnchoredLineEffectBuilder setBeamSpeed(float speed) {
+            effect.setBeamSpeed(speed);
+            return this;
+        }
+
         public BlockAnchoredLineEffectBuilder setBlock(Block block) {
             return setBlockSupplier(Lazy.of(() -> block));
         }
