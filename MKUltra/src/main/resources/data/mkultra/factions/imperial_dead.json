@@ -1,8 +1,8 @@
 {
-  "defaultPlayerScore": -5000,
   "allies": [
     "mkfaction:undead"
   ],
+  "defaultPlayerScore": -5000,
   "enemies": [
     "mkfaction:domesticated_animals",
     "mkultra:green_knights",

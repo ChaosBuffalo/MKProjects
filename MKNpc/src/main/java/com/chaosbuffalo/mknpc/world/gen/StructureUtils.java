@@ -41,8 +41,8 @@ public class StructureUtils {
     public static void handleMKDataMarker(String function, BlockPos pos, LevelAccessor worldIn, RandomSource rand, BoundingBox sbb,
                                           ResourceLocation structureName, UUID instanceId) {
         if (function.equals("mkspawner")) {
-            BlockEntity tileentity = worldIn.getBlockEntity(pos.below());
-            if (tileentity instanceof MKSpawnerTileEntity spawner) {
+            BlockEntity blockEntity = worldIn.getBlockEntity(pos.below());
+            if (blockEntity instanceof MKSpawnerTileEntity spawner) {
                 worldIn.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
                 spawner.regenerateSpawnID();
                 spawner.setStructureName(structureName);
@@ -50,14 +50,16 @@ public class StructureUtils {
             }
         } else if (function.startsWith("mkcontainer")) {
             String[] names = function.split("#", 2);
-            String labels = names[1];
-            BlockEntity tileEntity = worldIn.getBlockEntity(pos.below());
-            if (tileEntity instanceof ChestBlockEntity) {
+            BlockEntity blockEntity = worldIn.getBlockEntity(pos.below());
+            if (blockEntity instanceof ChestBlockEntity) {
                 worldIn.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-                tileEntity.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(x -> {
+                blockEntity.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(x -> {
                     x.setStructureId(instanceId);
                     x.setStructureName(structureName);
-                    x.generateChestId(labels);
+                    if (names.length == 2) {
+                        String labels = names[1];
+                        x.generateChestId(labels);
+                    }
                 });
             }
         } else if (function.startsWith("mkpoi")) {
@@ -65,8 +67,8 @@ public class StructureUtils {
             String tag = names[1];
             worldIn.destroyBlock(pos, false);
             worldIn.setBlock(pos, MKNpcBlocks.MK_POI_BLOCK.get().defaultBlockState(), 3);
-            BlockEntity tile = worldIn.getBlockEntity(pos);
-            if (tile instanceof MKPoiTileEntity poi) {
+            BlockEntity blockEntity = worldIn.getBlockEntity(pos);
+            if (blockEntity instanceof MKPoiTileEntity poi) {
                 poi.regenerateId();
                 poi.setStructureId(instanceId);
                 poi.setStructureName(structureName);
@@ -78,7 +80,7 @@ public class StructureUtils {
     public static List<StructureStart> getStructuresOverlaps(Entity entity) {
         if (entity.getCommandSenderWorld() instanceof ServerLevel serverLevel) {
             var manager = serverLevel.structureManager();
-            return WorldStructureHandler.MK_STRUCTURE_CACHE.stream()
+            return WorldStructureHandler.MK_STRUCTURE_INDEX.values().stream()
                     .map(x -> manager.getStructureAt(entity.blockPosition(), x))
                     .filter(StructureStart::isValid)
                     .toList();

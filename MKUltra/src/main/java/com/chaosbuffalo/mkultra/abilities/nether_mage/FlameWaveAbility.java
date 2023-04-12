@@ -22,7 +22,6 @@ import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -61,7 +60,7 @@ public class FlameWaveAbility extends MKAbility {
                 level, modifierScaling.value());
         int dur = Math.round(baseDuration.value() + scaleDuration.value() * level);
         float mult = damageBoost.value() * 100.0f;
-        return new TranslatableComponent(getDescriptionTranslationKey(), dmgStr, mult, dur);
+        return Component.translatable(getDescriptionTranslationKey(), dmgStr, mult, dur);
     }
 
     @Override

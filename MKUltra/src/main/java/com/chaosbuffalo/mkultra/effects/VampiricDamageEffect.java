@@ -94,7 +94,7 @@ public class VampiricDamageEffect extends MKEffect {
         }
 
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
-            DamageSource damage = MKDamageSource.causeAbilityDamage(this.damageType, activeEffect.getAbilityId(),
+            DamageSource damage = MKDamageSource.causeAbilityDamage(targetData.getEntity().getLevel(), this.damageType, activeEffect.getAbilityId(),
                     activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), this.getModifierScale());
             float value = this.getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
             targetData.getEntity().hurt(damage, value);

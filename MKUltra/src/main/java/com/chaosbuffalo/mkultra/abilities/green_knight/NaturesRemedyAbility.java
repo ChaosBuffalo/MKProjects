@@ -18,7 +18,6 @@ import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -65,7 +64,7 @@ public class NaturesRemedyAbility extends MKAbility {
         Component damageStr = getHealDescription(entityData, baseValue.value(),
                 scaleValue.value(), level, modifierScaling.value());
         int duration = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
-        return new TranslatableComponent(getDescriptionTranslationKey(), damageStr, duration);
+        return Component.translatable(getDescriptionTranslationKey(), damageStr, duration);
     }
 
     @Nullable

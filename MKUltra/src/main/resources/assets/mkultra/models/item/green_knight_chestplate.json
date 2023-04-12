@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "mkultra:items/green_knight_chestplate"
+    "layer0": "mkultra:item/green_knight_chestplate"
   }
 }

@@ -6,13 +6,13 @@
       "value": "destroyed_skeletal_mage"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 50.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:name",
@@ -23,9 +23,9 @@
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -34,41 +34,41 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.fireball",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.fireball"
+          "priority": 1
         },
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.ember",
           "chance": 0.75,
-          "abilityName": "mkultra:ability.ember"
+          "priority": 2
         },
         {
-          "priority": 3,
+          "abilityName": "mkultra:ability.flame_wave",
           "chance": 0.5,
-          "abilityName": "mkultra:ability.flame_wave"
+          "priority": 3
         },
         {
-          "priority": 4,
+          "abilityName": "mkultra:ability.smite",
           "chance": 0.25,
-          "abilityName": "mkultra:ability.smite"
+          "priority": 4
         },
         {
-          "priority": 5,
+          "abilityName": "mkultra:ability.fire_armor",
           "chance": 0.75,
-          "abilityName": "mkultra:ability.fire_armor"
+          "priority": 5
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
-      "minor_skills": [
-        "mkcore:alteration",
-        "mkcore:abjuration",
-        "mkcore:conjuration",
-        "mkcore:evocation"
-      ],
       "major_skills": [],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:evocation",
+        "mkcore:alteration",
+        "mkcore:conjuration"
+      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]

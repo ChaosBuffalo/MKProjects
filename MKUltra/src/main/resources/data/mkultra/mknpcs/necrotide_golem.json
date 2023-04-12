@@ -6,13 +6,13 @@
       "value": "necrotide_golem"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 500.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:name",
@@ -22,23 +22,28 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.shadow_bolt",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.shadow_bolt"
+          "priority": 2
+        },
+        {
+          "abilityName": "mkultra:ability.necrotide_golem_beam",
+          "chance": 1.0,
+          "priority": 1
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
-      "minor_skills": [
-        "mkcore:evocation",
-        "mkcore:alteration",
-        "mkcore:abjuration"
-      ],
       "major_skills": [
         "mkcore:conjuration",
         "mkcore:necromancy"
       ],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:evocation",
+        "mkcore:alteration"
+      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]

@@ -6,22 +6,22 @@
       "value": "temple_guard_2"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 300.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:equipment",
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:spear_gold\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:spear_gold\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -34,41 +34,41 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.heal",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.heal"
+          "priority": 1
         },
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.smite",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.smite"
+          "priority": 2
         },
         {
-          "priority": 3,
+          "abilityName": "mkultra:ability.sever_tendon",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.sever_tendon"
+          "priority": 3
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
+      "major_skills": [
+        "mkcore:two_hand_slash",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:one_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:one_hand_pierce"
+      ],
       "minor_skills": [
-        "mkcore:alteration",
+        "mkcore:restoration",
         "mkcore:abjuration",
         "mkcore:pankration",
-        "mkcore:restoration"
+        "mkcore:alteration"
       ],
-      "major_skills": [
-        "mkcore:one_hand_pierce",
-        "mkcore:two_hand_slash",
-        "mkcore:two_hand_blunt",
-        "mkcore:one_hand_slash",
-        "mkcore:one_hand_blunt",
-        "mkcore:two_hand_pierce"
-      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
-        "mkcore:arete",
         "mkcore:pneuma",
+        "mkcore:arete",
         "mkcore:evocation"
       ]
     },
@@ -77,9 +77,9 @@
       "value": 1.0
     },
     {
+      "hasLastName": false,
       "optionType": "mknpc:faction_name",
-      "title": "Temple Guard",
-      "hasLastName": false
+      "title": "Temple Guard"
     },
     {
       "optionType": "mknpc:faction",

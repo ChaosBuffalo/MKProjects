@@ -24,6 +24,7 @@ public class MKRenderers {
         event.registerEntityRenderer(CoreEntities.AREA_EFFECT.get(), EntityMKAreaEffectRenderer::new);
         event.registerEntityRenderer(CoreEntities.LINE_EFFECT.get(), BaseEffectEntityRenderer::new);
         event.registerEntityRenderer(CoreEntities.POINT_EFFECT.get(), BaseEffectEntityRenderer::new);
+        event.registerEntityRenderer(CoreEntities.BLOCK_ANCHORED_LINE_EFFECT.get(), BaseEffectEntityRenderer::new);
     }
 
     @SubscribeEvent

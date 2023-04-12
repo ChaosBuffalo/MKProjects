@@ -20,7 +20,6 @@ import net.minecraftforge.fml.InterModComms;
 
 import java.util.Collections;
 import java.util.UUID;
-import java.util.function.BiFunction;
 
 
 public class NPCDialogueExtension implements IDialogueExtension {
@@ -30,24 +29,25 @@ public class NPCDialogueExtension implements IDialogueExtension {
         InterModComms.sendTo(MKChat.MODID, MKChat.REGISTER_DIALOGUE_EXTENSION, NPCDialogueExtension::new);
     }
 
-    private static final BiFunction<String, DialogueTree, Component> notableProvider =
-            (name, tree) -> DialogueContextComponent.create("mkchat.simple_context.msg", (context) -> {
-                if (context.getPlayer().getServer() != null) {
-                    Level overworld = context.getPlayer().getServer().getLevel(Level.OVERWORLD);
-                    if (overworld != null) {
-                        return Collections.singletonList(overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
-                                .map(x -> {
-                                    NotableNpcEntry entry = x.getNotableNpc(UUID.fromString(name));
-                                    if (entry != null) {
-                                        return entry.getName();
-                                    } else {
-                                        return Component.literal(String.format("notable:%s", name));
-                                    }
-                                }).orElse(Component.literal(String.format("notable:%s", name))));
-                    }
+    private static Component notable(String name, DialogueTree tree) {
+        return DialogueContextComponent.create("mkchat.simple_context.msg", (context) -> {
+            if (context.getPlayer().getServer() != null) {
+                Level overworld = context.getPlayer().getServer().getLevel(Level.OVERWORLD);
+                if (overworld != null) {
+                    return Collections.singletonList(overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
+                            .map(x -> {
+                                NotableNpcEntry entry = x.getNotableNpc(UUID.fromString(name));
+                                if (entry != null) {
+                                    return entry.getName();
+                                } else {
+                                    return Component.literal(String.format("notable:%s", name));
+                                }
+                            }).orElse(Component.literal(String.format("notable:%s", name))));
                 }
-                return Collections.singletonList(Component.literal(String.format("notable:%s", name)));
-            });
+            }
+            return Collections.singletonList(Component.literal(String.format("notable:%s", name)));
+        });
+    }
 
     @Override
     public void registerDialogueExtension() {
@@ -67,6 +67,6 @@ public class NPCDialogueExtension implements IDialogueExtension {
         DialogueManager.putConditionDeserializer(ObjectivesCompleteCondition.conditionTypeName, ObjectivesCompleteCondition::new);
         DialogueManager.putConditionDeserializer(HasEntitlementCondition.conditionTypeName, HasEntitlementCondition::new);
         DialogueManager.putConditionDeserializer(CanStartQuestCondition.conditionTypeName, CanStartQuestCondition::new);
-        DialogueManager.putTextComponentProvider("notable", notableProvider);
+        DialogueManager.putTextComponentProvider("notable", NPCDialogueExtension::notable);
     }
 }

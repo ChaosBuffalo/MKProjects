@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "mkultra:items/destroyed_trooper_helmet"
+    "layer0": "mkultra:item/destroyed_trooper_helmet"
   }
 }

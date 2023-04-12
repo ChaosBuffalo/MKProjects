@@ -6,13 +6,13 @@
       "value": "ghost_1"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 100.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:name",
@@ -23,20 +23,20 @@
       "value": true
     },
     {
-      "optionType": "mknpc:skills",
-      "minor_skills": [
-        "mkcore:one_hand_pierce",
-        "mkcore:two_hand_slash",
-        "mkcore:two_hand_blunt",
-        "mkcore:one_hand_slash",
-        "mkcore:one_hand_blunt",
-        "mkcore:two_hand_pierce"
-      ],
       "major_skills": [],
+      "minor_skills": [
+        "mkcore:two_hand_slash",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:one_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:one_hand_pierce"
+      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
-        "mkcore:arete",
         "mkcore:pneuma",
-        "mkcore:pankration"
+        "mkcore:pankration",
+        "mkcore:arete"
       ]
     },
     {

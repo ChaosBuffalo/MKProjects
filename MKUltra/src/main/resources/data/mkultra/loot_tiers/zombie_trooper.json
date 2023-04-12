@@ -2,8 +2,9 @@
   "slotItems": {
     "mkweapons:items": [
       {
-        "weight": 10.0,
         "template": {
+          "lootSlot": "mkweapons:items",
+          "options": [],
           "potentialItems": [
             {
               "itemStack": "{id: \"mkultra:corrupted_pig_iron_plate\", Count: 1b}",
@@ -26,18 +27,17 @@
               "weight": 1.0
             }
           ],
-          "lootSlot": "mkweapons:items",
-          "options": [],
           "templates": [
             {
               "template": {
-                "templateType": "mkultra:empty",
-                "slots": []
+                "slots": [],
+                "templateType": "mkultra:empty"
               },
               "weight": 1.0
             }
           ]
-        }
+        },
+        "weight": 10.0
       }
     ]
   }

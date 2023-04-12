@@ -152,6 +152,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
             Map<ResourceLocation, List<MKStructureEntry>> possibilities = structuresNeeded.keySet().stream()
                     .map(x -> new Pair<>(x, structureToInstanceIndex.get(x)))
                     .map(x -> x.mapSecond(ids -> ids.stream().map(structureIndex::get)
+                            .filter(Objects::nonNull)
                             .filter(definition::doesStructureMeetRequirements)))
                     .collect(Collectors.toMap(Pair::getFirst, pair -> pair.getSecond().collect(Collectors.toList())));
             if (possibilities.entrySet().stream().allMatch(x -> x.getValue().size() >= structuresNeeded.get(x.getKey()))) {
@@ -252,8 +253,8 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     }
 
     @Override
-    public MKStructureEntry getStructureData(UUID structId) {
-        return structureIndex.get(structId);
+    public Optional<MKStructureEntry> getStructureData(UUID structId) {
+        return Optional.ofNullable(structureIndex.get(structId));
     }
 
     protected boolean hasStructureInstance(UUID structureId) {

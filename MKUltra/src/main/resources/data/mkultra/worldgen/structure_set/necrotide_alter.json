@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 132321313,
+    "separation": 24,
+    "spacing": 50
+  },
+  "structures": [
+    {
+      "structure": "mkultra:necrotide_alter",
+      "weight": 1
+    }
+  ]
+}

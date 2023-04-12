@@ -6,13 +6,13 @@
       "value": "green_smith"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 400.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:name",
@@ -23,9 +23,9 @@
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:warhammer_iron\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:warhammer_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -34,14 +34,14 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.skin_like_wood",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.skin_like_wood"
+          "priority": 1
         },
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.natures_remedy",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.natures_remedy"
+          "priority": 2
         }
       ]
     },
@@ -50,24 +50,24 @@
       "value": true
     },
     {
-      "optionType": "mknpc:skills",
+      "major_skills": [
+        "mkcore:two_hand_slash",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:one_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:one_hand_pierce"
+      ],
       "minor_skills": [
-        "mkcore:alteration",
+        "mkcore:restoration",
         "mkcore:abjuration",
         "mkcore:pankration",
-        "mkcore:restoration"
+        "mkcore:alteration"
       ],
-      "major_skills": [
-        "mkcore:one_hand_pierce",
-        "mkcore:two_hand_slash",
-        "mkcore:two_hand_blunt",
-        "mkcore:one_hand_slash",
-        "mkcore:one_hand_blunt",
-        "mkcore:two_hand_pierce"
-      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
-        "mkcore:arete",
         "mkcore:pneuma",
+        "mkcore:arete",
         "mkcore:evocation"
       ]
     },
@@ -80,10 +80,10 @@
       "value": "mkultra:green_knights"
     },
     {
-      "optionType": "mknpc:offer_quests",
       "offerings": [
         "mkultra:trooper_armor"
-      ]
+      ],
+      "optionType": "mknpc:offer_quests"
     }
   ]
 }

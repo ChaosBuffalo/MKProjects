@@ -102,6 +102,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         super(entityType, world);
         this.effects = new ArrayList<>();
         particles = null;
+        noPhysics = true;
     }
 
     @Override
@@ -185,7 +186,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         }
     }
 
-    private void clientUpdate() {
+    protected void clientUpdate() {
         ParticleDisplay display = isWaiting() ? waitingParticles : particles;
         if (display != null && display.shouldTick(tickCount, isWaiting() ? 0 : waitTime)) {
             spawnClientParticles(display);
@@ -258,7 +259,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
 
     protected abstract Collection<LivingEntity> getEntitiesInBounds();
 
-    private boolean serverUpdate() {
+    protected boolean serverUpdate() {
         if (tickCount > waitTime + duration + WAIT_LAG + 1) {
             return true;
         }

@@ -20,7 +20,6 @@ import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -57,7 +56,7 @@ public class FireArmorAbility extends MKAbility {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.ABJURATION);
         float amount = MKUEffects.FIRE_ARMOR.get().getPerLevel() * (level + 1) * 100.0f;
         int duration = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
-        return new TranslatableComponent(getDescriptionTranslationKey(), amount,
+        return Component.translatable(getDescriptionTranslationKey(), amount,
                 CoreDamageTypes.FireDamage.get().getFormattedDisplayName(), duration);
     }
 
@@ -74,8 +73,8 @@ public class FireArmorAbility extends MKAbility {
         int duration = getBuffDuration(data, level, baseDuration.value(), scaleDuration.value());
 
         int oldAmp = Math.round(level);
-        MobEffectInstance fireResist = new MobEffectInstance(MobEffects.FIRE_RESISTANCE, duration, oldAmp, false, false, true, null);
-        MobEffectInstance absorb = new MobEffectInstance(MobEffects.ABSORPTION, duration, oldAmp, false, false, true, null);
+        MobEffectInstance fireResist = new MobEffectInstance(MobEffects.FIRE_RESISTANCE, duration, oldAmp, false, false, true);
+        MobEffectInstance absorb = new MobEffectInstance(MobEffects.ABSORPTION, duration, oldAmp, false, false, true);
 
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, cast_particles.getValue(), true, new Vec3(0.0, 1.0, 0.0))
                 .ability(this);

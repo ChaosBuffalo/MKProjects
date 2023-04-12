@@ -6,7 +6,6 @@
       "value": "sorcerer_queen"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
@@ -16,7 +15,8 @@
           "attributeName": "mkcore:evocation",
           "value": 3.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:name",
@@ -27,9 +27,9 @@
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:katana_iron\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:katana_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -38,46 +38,46 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 5,
+          "abilityName": "mkultra:ability.fire_armor",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.fire_armor"
+          "priority": 5
         },
         {
-          "priority": 6,
+          "abilityName": "mkultra:ability.fireball",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.fireball"
+          "priority": 6
         },
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.ember",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.ember"
+          "priority": 1
         },
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.ignite",
           "chance": 0.5,
-          "abilityName": "mkultra:ability.ignite"
+          "priority": 2
         },
         {
-          "priority": 3,
+          "abilityName": "mkultra:ability.flame_wave",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.flame_wave"
+          "priority": 3
         },
         {
-          "priority": 4,
+          "abilityName": "mkultra:ability.warp_curse",
           "chance": 0.5,
-          "abilityName": "mkultra:ability.warp_curse"
+          "priority": 4
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
-      "minor_skills": [
-        "mkcore:alteration",
-        "mkcore:abjuration",
-        "mkcore:conjuration",
-        "mkcore:evocation"
-      ],
       "major_skills": [],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:evocation",
+        "mkcore:alteration",
+        "mkcore:conjuration"
+      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
@@ -91,9 +91,9 @@
       "value": "mkfaction:undead"
     },
     {
-      "optionType": "mknpc:mk_combo",
+      "cooldown": 60,
       "count": 5,
-      "cooldown": 60
+      "optionType": "mknpc:mk_combo"
     }
   ]
 }

@@ -19,13 +19,13 @@ public interface IMKPoolElement {
 
 
     boolean mkPlace(StructureTemplateManager pStructureTemplateManager, WorldGenLevel pLevel, StructureManager pStructureManager,
-                    ChunkGenerator pGenerator, BlockPos p_227340_, BlockPos p_227341_, Rotation pRotation,
-                    BoundingBox pBox, RandomSource pRandom, boolean p_227345_, ResourceLocation name, UUID uuid);
+                    ChunkGenerator pGenerator, BlockPos piecePosition, BlockPos firstPieceBottomCenter, Rotation pRotation,
+                    BoundingBox pBox, RandomSource pRandom, boolean pKeepJigsaws, ResourceLocation name, UUID uuid);
 
     default void mkHandleDataMarker(LevelAccessor worldIn, StructureTemplate.StructureBlockInfo blockInfo,
-                                    BlockPos pos, Rotation rotationIn,
+                                    BlockPos structureStartPos, Rotation rotationIn,
                                     RandomSource rand, BoundingBox boundingBox, ResourceLocation structureName, UUID instanceId) {
-        StructureUtils.handleMKDataMarker(blockInfo.nbt.getString("metadata"), pos, worldIn, rand, boundingBox,
+        StructureUtils.handleMKDataMarker(blockInfo.nbt.getString("metadata"), blockInfo.pos, worldIn, rand, boundingBox,
                 structureName, instanceId);
     }
 }

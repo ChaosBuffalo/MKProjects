@@ -3,8 +3,11 @@ package com.chaosbuffalo.mkcore.sync;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.UUID;
 
 public class SyncEntity<T extends Entity> implements ISyncObject {
     private final String name;
@@ -20,10 +23,22 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
         set(value);
     }
 
+    public boolean isValid() {
+        return value != null;
+    }
+
     public void set(T value) {
+        boolean isPrev = this.value == value;
         this.value = value;
-        this.dirty = true;
-        parentNotifier.notifyUpdate(this);
+        if (!isPrev) {
+            this.dirty = true;
+            parentNotifier.notifyUpdate(this);
+        }
+
+    }
+
+    public Optional<T> target() {
+        return Optional.ofNullable(get());
     }
 
     @Nullable
@@ -46,7 +61,7 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
         if (tag.contains(name)) {
             int id = tag.getInt(name);
             if (id != -1) {
-                Entity ent = ClientHandler.handleClient(tag.getId());
+                Entity ent = ClientHandler.handleClient(id);
                 if (clazz.isInstance(ent)) {
                     value = clazz.cast(ent);
                 } else {

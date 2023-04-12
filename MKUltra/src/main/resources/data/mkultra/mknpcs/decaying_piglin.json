@@ -6,13 +6,13 @@
       "value": "zombie_pig"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 20.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:name",
@@ -23,33 +23,33 @@
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           },
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"minecraft:air\", Count: 1b}"
+            "item": "{id: \"minecraft:air\", Count: 1b}",
+            "weight": 1.0
           }
         ]
       }
     },
     {
-      "optionType": "mknpc:skills",
-      "minor_skills": [
-        "mkcore:one_hand_pierce",
-        "mkcore:two_hand_slash",
-        "mkcore:two_hand_blunt",
-        "mkcore:one_hand_slash",
-        "mkcore:one_hand_blunt",
-        "mkcore:two_hand_pierce"
-      ],
       "major_skills": [],
+      "minor_skills": [
+        "mkcore:two_hand_slash",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:one_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:one_hand_pierce"
+      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
-        "mkcore:arete",
         "mkcore:pneuma",
-        "mkcore:pankration"
+        "mkcore:pankration",
+        "mkcore:arete"
       ]
     },
     {

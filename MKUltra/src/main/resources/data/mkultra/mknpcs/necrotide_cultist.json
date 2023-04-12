@@ -6,50 +6,50 @@
       "value": "necrotide_cultist_skull_1"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 125.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.shadow_bolt",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.shadow_bolt"
+          "priority": 1
         },
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.drown",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.drown"
+          "priority": 2
         },
         {
-          "priority": 3,
+          "abilityName": "mkultra:ability.shadow_pulse",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.shadow_pulse"
+          "priority": 3
         },
         {
-          "priority": 4,
+          "abilityName": "mkultra:ability.test_summon",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.test_summon"
+          "priority": 4
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
-      "minor_skills": [
-        "mkcore:alteration",
-        "mkcore:abjuration",
-        "mkcore:evocation"
-      ],
       "major_skills": [
         "mkcore:necromancy",
         "mkcore:conjuration"
       ],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:evocation",
+        "mkcore:alteration"
+      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
@@ -59,9 +59,9 @@
       "value": 1.05
     },
     {
+      "hasLastName": false,
       "optionType": "mknpc:faction_name",
-      "title": "Cultist",
-      "hasLastName": false
+      "title": "Cultist"
     },
     {
       "optionType": "mknpc:faction",

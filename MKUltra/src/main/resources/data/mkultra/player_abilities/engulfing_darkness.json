@@ -1,0 +1,17 @@
+{
+  "attributes": {
+    "base_dot_damage": 2.0,
+    "base_duration": 10,
+    "cast_particles": "mkultra:engulfing_darkness_cast",
+    "casting_particles": "mkultra:shadow_bolt_casting",
+    "dot_cast_particles": "mkultra:engulfing_darkness_tick",
+    "dot_modifier_scaling": 0.2,
+    "scale_dot_damage": 2.0,
+    "scale_duration": 1,
+    "shadowbringer_chance": 0.02,
+    "shadowbringer_duration": 200
+  },
+  "castTime": 30,
+  "cooldown": 80,
+  "manaCost": 5.0
+}

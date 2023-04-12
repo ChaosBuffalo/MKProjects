@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mknpc.data;
 
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
 import net.minecraft.core.Holder;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
@@ -10,6 +12,7 @@ import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 public class MKJigsawBuilder {
@@ -23,6 +26,8 @@ public class MKJigsawBuilder {
     private boolean useExpansionHack;
     private Optional<Heightmap.Types> heightmapTypes;
     private int maxDistFromCenter;
+
+    private final HashMap<String, StructureEvent> events = new HashMap<>();
 
     public MKJigsawBuilder(ResourceLocation name, Structure.StructureSettings settings,
                            Holder<StructureTemplatePool> templatePool) {
@@ -57,6 +62,12 @@ public class MKJigsawBuilder {
         return this;
     }
 
+    public MKJigsawBuilder addEvent(String name, StructureEvent event) {
+        event.setEventName(name);
+        events.put(name, event);
+        return this;
+    }
+
     public MKJigsawBuilder setAllowSpawns(boolean allowSpawns) {
         return this;
     }
@@ -72,7 +83,11 @@ public class MKJigsawBuilder {
     }
 
     public MKJigsawStructure build() {
-        return new MKJigsawStructure(settings, templatePool, startJigsawName, maxDepth, heightProvider,
-                useExpansionHack, heightmapTypes, maxDistFromCenter, name);
+        var struct = new MKJigsawStructure(settings, templatePool, startJigsawName, maxDepth, heightProvider,
+                useExpansionHack, heightmapTypes, maxDistFromCenter, name, new CompoundTag());
+        for (var entry : events.entrySet()) {
+            struct.addEvent(entry.getKey(), entry.getValue());
+        }
+        return struct;
     }
 }

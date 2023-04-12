@@ -286,10 +286,8 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
                         rot,
                         0.0f);
                 entity.setYHeadRot(rot);
-
                 final double finDiff = difficultyValue;
                 MKNpc.getNpcData(entity).ifPresent((cap) -> {
-                    cap.setMKSpawned(true);
                     cap.setSpawnPos(BlockPos.containing(spawnPos).above());
                     if (notableIds.containsKey(definition.getDefinitionName())) {
                         cap.setNotableUUID(notableIds.get(definition.getDefinitionName()));
@@ -302,16 +300,13 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
                     mkEntity.setNonCombatMoveType(getMoveType());
                 }
                 if (entity instanceof Mob mobEnt && getLevel() instanceof ServerLevel serverLevel) {
-                    var spawnData = ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
+                    ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
                             serverLevel.getCurrentDifficultyAt(getBlockPos()),
                             MobSpawnType.SPAWNER, null, null);
-                    if (spawnData != null) {
-                        getLevel().addFreshEntity(entity);
-                    }
                 }
-
+                getLevel().addFreshEntity(entity);
+                MKNpc.getNpcData(entity).ifPresent(cap -> cap.setMKSpawned(true));
             }
-
         }
     }
 

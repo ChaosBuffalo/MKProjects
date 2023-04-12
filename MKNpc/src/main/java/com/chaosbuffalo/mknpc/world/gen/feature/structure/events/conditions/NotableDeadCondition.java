@@ -12,6 +12,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+import java.util.Optional;
+
 public class NotableDeadCondition extends StructureEventCondition {
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID,
             "struct_condition.notable_dead");

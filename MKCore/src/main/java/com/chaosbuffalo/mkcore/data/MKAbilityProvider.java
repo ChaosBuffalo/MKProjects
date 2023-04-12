@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkcore.data;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilityManager;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
-import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.data.CachedOutput;
@@ -14,7 +13,6 @@ import net.minecraft.resources.ResourceLocation;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 public abstract class MKAbilityProvider extends MKDataProvider {
 
@@ -44,7 +42,7 @@ public abstract class MKAbilityProvider extends MKDataProvider {
                     MKCoreRegistry.ABILITIES.getEntries().stream()
                             .filter(entry -> entry.getKey().location().getNamespace().equals(getModId()))
                             .map(entry -> writeAbility(entry.getKey().location(), entry.getValue(), pOutput))
-                            .collect(Collectors.toList()).toArray(CompletableFuture[]::new));
+                            .toList().toArray(CompletableFuture[]::new));
         }
     }
 }

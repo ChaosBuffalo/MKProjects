@@ -3,5 +3,7 @@ package com.chaosbuffalo.mkcore.core;
 public enum AbilityType {
     Basic,
     Passive,
-    Ultimate
+    Ultimate,
+    Npc,
+    Structure
 }

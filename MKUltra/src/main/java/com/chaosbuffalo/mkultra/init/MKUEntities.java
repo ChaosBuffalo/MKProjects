@@ -15,7 +15,6 @@ import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -24,7 +23,7 @@ import net.minecraftforge.registries.RegistryObject;
 @Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MKUEntities {
 
-    public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITIES, MKUltra.MODID);
+    public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MKUltra.MODID);
 
     public static final RegistryObject<EntityType<MKGolemEntity>> GOLEM_TYPE = REGISTRY.register("golem",
             () -> EntityType.Builder.of(MKGolemEntity::new, MobCategory.MONSTER)
@@ -33,7 +32,7 @@ public class MKUEntities {
 
 
     public static final String ORC_NAME = "orc";
-    public static final net.minecraftforge.registries.RegistryObject<EntityType<OrcEntity>> ORC_TYPE = REGISTRY.register(ORC_NAME,
+    public static final RegistryObject<EntityType<OrcEntity>> ORC_TYPE = REGISTRY.register(ORC_NAME,
             () -> EntityType.Builder.of(OrcEntity::new, MobCategory.CREATURE)
                     .sized(EntityType.ZOMBIE.getWidth(), EntityType.ZOMBIE.getHeight())
                     .build(new ResourceLocation(MKUltra.MODID, ORC_NAME).toString()));

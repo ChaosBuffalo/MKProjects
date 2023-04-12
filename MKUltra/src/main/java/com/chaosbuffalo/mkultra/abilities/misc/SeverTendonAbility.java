@@ -19,7 +19,6 @@ import com.chaosbuffalo.mkweapons.init.MKWeaponsParticles;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
@@ -51,7 +50,7 @@ public class SeverTendonAbility extends MKAbility {
         Component dotStr = getDamageDescription(entityData,
                 CoreDamageTypes.BleedDamage.get(), baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
         int periodSeconds = SeverTendonEffect.DEFAULT_PERIOD / 20;
-        return new TranslatableComponent(getDescriptionTranslationKey(), valueStr,
+        return Component.translatable(getDescriptionTranslationKey(), valueStr,
                 getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / 20,
                 dotStr, periodSeconds, (level + 1) * .05f * 100.0f);
     }

@@ -18,7 +18,6 @@ import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -58,7 +57,7 @@ public class LifeSpikeAbility extends MKAbility {
         float bonus = entityData.getStats().getDamageTypeBonus(CoreDamageTypes.ShadowDamage.get()) * modifierScaling.value();
         float healing = (base.value() + scale.value() * level + bonus) * healScaling.value();
         Component healStr = getHealDescription(entityData, healing, 0.0f, 0.0f, healModScaling.value());
-        return new TranslatableComponent(getDescriptionTranslationKey(), valueStr, healStr);
+        return Component.translatable(getDescriptionTranslationKey(), valueStr, healStr);
     }
 
     @Override

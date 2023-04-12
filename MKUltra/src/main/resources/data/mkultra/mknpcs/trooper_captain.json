@@ -6,24 +6,21 @@
       "value": "skeletal_trooper"
     },
     {
+      "hasLastName": true,
       "optionType": "mknpc:faction_name",
-      "title": "Captain",
-      "hasLastName": true
+      "title": "Captain"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 100.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
-      "optionType": "mknpc:extra_loot",
-      "noLootChance": 0.2,
       "dropChances": 2,
-      "noLootIncrease": 0.25,
       "lootOptions": [
         {
           "lootSlotName": "mkweapons:main_hand",
@@ -35,26 +32,29 @@
           "lootSlotTier": "mkultra:trooper_captain",
           "weight": 3.0
         }
-      ]
+      ],
+      "noLootChance": 0.2,
+      "noLootIncrease": 0.25,
+      "optionType": "mknpc:extra_loot"
     },
     {
       "optionType": "mknpc:equipment",
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:greatsword_stone\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:greatsword_stone\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           },
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:katana_stone\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:katana_stone\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           },
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:warhammer_stone\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:warhammer_stone\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -67,41 +67,41 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.heal",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.heal"
+          "priority": 2
         },
         {
-          "priority": 3,
+          "abilityName": "mkultra:ability.furious_brooding",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.furious_brooding"
+          "priority": 3
         },
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.smite",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.smite"
+          "priority": 1
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
+      "major_skills": [
+        "mkcore:two_hand_slash",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:one_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:one_hand_pierce"
+      ],
       "minor_skills": [
-        "mkcore:alteration",
+        "mkcore:restoration",
         "mkcore:abjuration",
         "mkcore:pankration",
-        "mkcore:restoration"
+        "mkcore:alteration"
       ],
-      "major_skills": [
-        "mkcore:one_hand_pierce",
-        "mkcore:two_hand_slash",
-        "mkcore:two_hand_blunt",
-        "mkcore:one_hand_slash",
-        "mkcore:one_hand_blunt",
-        "mkcore:two_hand_pierce"
-      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
-        "mkcore:arete",
         "mkcore:pneuma",
+        "mkcore:arete",
         "mkcore:evocation"
       ]
     },
@@ -122,9 +122,9 @@
       "value": "mkultra:imperial_dead"
     },
     {
-      "optionType": "mknpc:mk_combo",
+      "cooldown": 10,
       "count": 3,
-      "cooldown": 10
+      "optionType": "mknpc:mk_combo"
     }
   ]
 }

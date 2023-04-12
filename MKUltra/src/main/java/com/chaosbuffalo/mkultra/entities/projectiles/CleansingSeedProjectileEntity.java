@@ -75,7 +75,7 @@ public class CleansingSeedProjectileEntity extends SpriteTrailProjectileEntity {
                         break;
                     }
                     case ENEMY: {
-                        target.hurt(MKDamageSource.causeAbilityDamage(CoreDamageTypes.NatureDamage.get(),
+                        target.hurt(MKDamageSource.causeAbilityDamage(getLevel(), CoreDamageTypes.NatureDamage.get(),
                                         ability.getAbilityId(), this, caster,
                                         ability.getModifierScaling()),
                                 ability.getDamageForLevel(getSkillLevel()));

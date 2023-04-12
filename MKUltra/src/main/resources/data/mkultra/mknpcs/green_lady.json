@@ -6,13 +6,13 @@
       "value": "green_lady"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 400.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:dialogue",
@@ -25,9 +25,9 @@
           "ability": "mkultra:ability.skin_like_wood",
           "reqs": [
             {
-              "reqType": "mkcore:training_req.has_entitlement",
               "attributes": {},
-              "entitlement": "mkultra:green_knight.tier_1"
+              "entitlement": "mkultra:green_knight.tier_1",
+              "reqType": "mkcore:training_req.has_entitlement"
             }
           ]
         },
@@ -35,9 +35,9 @@
           "ability": "mkultra:ability.natures_remedy",
           "reqs": [
             {
-              "reqType": "mkcore:training_req.has_entitlement",
               "attributes": {},
-              "entitlement": "mkultra:green_knight.tier_1"
+              "entitlement": "mkultra:green_knight.tier_1",
+              "reqType": "mkcore:training_req.has_entitlement"
             }
           ]
         },
@@ -45,9 +45,9 @@
           "ability": "mkultra:ability.spirit_bomb",
           "reqs": [
             {
-              "reqType": "mkcore:training_req.has_entitlement",
               "attributes": {},
-              "entitlement": "mkultra:green_knight.tier_2"
+              "entitlement": "mkultra:green_knight.tier_2",
+              "reqType": "mkcore:training_req.has_entitlement"
             }
           ]
         },
@@ -55,9 +55,9 @@
           "ability": "mkultra:ability.cleansing_seed",
           "reqs": [
             {
-              "reqType": "mkcore:training_req.has_entitlement",
               "attributes": {},
-              "entitlement": "mkultra:green_knight.tier_2"
+              "entitlement": "mkultra:green_knight.tier_2",
+              "reqType": "mkcore:training_req.has_entitlement"
             }
           ]
         },
@@ -65,9 +65,9 @@
           "ability": "mkultra:ability.explosive_growth",
           "reqs": [
             {
-              "reqType": "mkcore:training_req.has_entitlement",
               "attributes": {},
-              "entitlement": "mkultra:green_knight.tier_3"
+              "entitlement": "mkultra:green_knight.tier_3",
+              "reqType": "mkcore:training_req.has_entitlement"
             }
           ]
         }
@@ -81,29 +81,29 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.skin_like_wood",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.skin_like_wood"
+          "priority": 1
         },
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.natures_remedy",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.natures_remedy"
+          "priority": 2
         },
         {
-          "priority": 4,
+          "abilityName": "mkultra:ability.spirit_bomb",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.spirit_bomb"
+          "priority": 4
         },
         {
-          "priority": 3,
+          "abilityName": "mkultra:ability.natures_remedy",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.explosive_growth"
+          "priority": 3
         },
         {
-          "priority": 5,
+          "abilityName": "mkultra:ability.cleansing_seed",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.cleansing_seed"
+          "priority": 5
         }
       ]
     },
@@ -112,16 +112,16 @@
       "value": true
     },
     {
-      "optionType": "mknpc:skills",
+      "major_skills": [
+        "mkcore:restoration",
+        "mkcore:alteration"
+      ],
       "minor_skills": [
-        "mkcore:necromancy",
         "mkcore:abjuration",
+        "mkcore:necromancy",
         "mkcore:evocation"
       ],
-      "major_skills": [
-        "mkcore:alteration",
-        "mkcore:restoration"
-      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:two_hand_blunt",
         "mkcore:one_hand_blunt"
@@ -136,10 +136,10 @@
       "value": "mkultra:green_knights"
     },
     {
-      "optionType": "mknpc:offer_quests",
       "offerings": [
         "mkultra:intro_quest"
-      ]
+      ],
+      "optionType": "mknpc:offer_quests"
     }
   ]
 }

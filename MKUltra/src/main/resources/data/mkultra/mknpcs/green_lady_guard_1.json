@@ -6,13 +6,13 @@
       "value": "green_lady_guard_1"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 150.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:name",
@@ -23,37 +23,37 @@
       "slotOptions": {
         "chest": [
           {
-            "weight": 1.0,
             "dropChance": 0.05,
-            "item": "{id: \"mkultra:green_knight_chestplate\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkultra:green_knight_chestplate\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ],
         "feet": [
           {
-            "weight": 1.0,
             "dropChance": 0.05,
-            "item": "{id: \"mkultra:green_knight_boots\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkultra:green_knight_boots\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ],
         "head": [
           {
-            "weight": 1.0,
             "dropChance": 0.05,
-            "item": "{id: \"mkultra:green_knight_helmet\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkultra:green_knight_helmet\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ],
         "legs": [
           {
-            "weight": 1.0,
             "dropChance": 0.05,
-            "item": "{id: \"mkultra:green_knight_leggings\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkultra:green_knight_leggings\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ],
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:battleaxe_stone\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:battleaxe_stone\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -62,29 +62,29 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.skin_like_wood",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.skin_like_wood"
+          "priority": 1
         },
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.natures_remedy",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.natures_remedy"
+          "priority": 2
         },
         {
-          "priority": 4,
+          "abilityName": "mkultra:ability.spirit_bomb",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.spirit_bomb"
+          "priority": 4
         },
         {
-          "priority": 3,
+          "abilityName": "mkultra:ability.explosive_growth",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.explosive_growth"
+          "priority": 3
         },
         {
-          "priority": 5,
+          "abilityName": "mkultra:ability.cleansing_seed",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.cleansing_seed"
+          "priority": 5
         }
       ]
     },
@@ -93,24 +93,24 @@
       "value": true
     },
     {
-      "optionType": "mknpc:skills",
+      "major_skills": [
+        "mkcore:two_hand_slash",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:one_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:one_hand_pierce"
+      ],
       "minor_skills": [
-        "mkcore:alteration",
+        "mkcore:restoration",
         "mkcore:abjuration",
         "mkcore:pankration",
-        "mkcore:restoration"
+        "mkcore:alteration"
       ],
-      "major_skills": [
-        "mkcore:one_hand_pierce",
-        "mkcore:two_hand_slash",
-        "mkcore:two_hand_blunt",
-        "mkcore:one_hand_slash",
-        "mkcore:one_hand_blunt",
-        "mkcore:two_hand_pierce"
-      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
-        "mkcore:arete",
         "mkcore:pneuma",
+        "mkcore:arete",
         "mkcore:evocation"
       ]
     },

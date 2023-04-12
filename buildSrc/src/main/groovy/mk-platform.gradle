@@ -33,7 +33,7 @@ dependencies {
     testAnnotationProcessor("org.spongepowered:mixin:${mixin_version}:processor")
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+//sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 def jarAttrs = [
         "Specification-Title": mod_id,

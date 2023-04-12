@@ -6,7 +6,6 @@
       "value": "burning_skeleton"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
@@ -24,17 +23,15 @@
           "attributeName": "mkcore:bleed_resistance",
           "value": 1.25
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:name",
       "value": "Burning Revenant"
     },
     {
-      "optionType": "mknpc:extra_loot",
-      "noLootChance": 0.1,
       "dropChances": 1,
-      "noLootIncrease": 0.0,
       "lootOptions": [
         {
           "lootSlotName": "mkweapons:main_hand",
@@ -51,16 +48,19 @@
           "lootSlotTier": "mkultra:burning_skeleton",
           "weight": 2.0
         }
-      ]
+      ],
+      "noLootChance": 0.1,
+      "noLootIncrease": 0.0,
+      "optionType": "mknpc:extra_loot"
     },
     {
       "optionType": "mknpc:equipment",
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -78,19 +78,19 @@
               "optionType": "mknpc:temp_abilities",
               "options": [
                 {
-                  "priority": 3,
+                  "abilityName": "mkultra:ability.fire_armor",
                   "chance": 1.0,
-                  "abilityName": "mkultra:ability.fire_armor"
+                  "priority": 3
                 },
                 {
-                  "priority": 2,
+                  "abilityName": "mkultra:ability.fireball",
                   "chance": 1.0,
-                  "abilityName": "mkultra:ability.fireball"
+                  "priority": 2
                 },
                 {
-                  "priority": 1,
+                  "abilityName": "mkultra:ability.wrath_beam",
                   "chance": 1.0,
-                  "abilityName": "mkultra:ability.wrath_beam"
+                  "priority": 1
                 }
               ]
             }
@@ -103,33 +103,33 @@
               "optionType": "mknpc:temp_abilities",
               "options": [
                 {
-                  "priority": 3,
+                  "abilityName": "mkultra:ability.fireball",
                   "chance": 1.0,
-                  "abilityName": "mkultra:ability.fireball"
+                  "priority": 3
                 },
                 {
-                  "priority": 1,
+                  "abilityName": "mkultra:ability.wrath_beam_flurry",
                   "chance": 1.0,
-                  "abilityName": "mkultra:ability.wrath_beam_flurry"
+                  "priority": 1
                 }
               ]
             }
           ],
-          "transitionParticles": "mkultra:wrath_skeleton_transition",
           "particleMode": 1,
+          "transitionParticles": "mkultra:wrath_skeleton_transition",
           "transitionSound": "mkultra:spell_dark_8"
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
-      "minor_skills": [
-        "mkcore:alteration",
-        "mkcore:abjuration",
-        "mkcore:conjuration",
-        "mkcore:evocation"
-      ],
       "major_skills": [],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:evocation",
+        "mkcore:alteration",
+        "mkcore:conjuration"
+      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
@@ -151,11 +151,11 @@
       "value": [
         {
           "type": "mkcore:effect_instance.bone",
-          "instanceUUID": "3e7496f1-f5bf-45e6-b8e5-64192633ae9f",
           "attributes": {
-            "particleAnimName": "mkultra:burning_skeleton_head",
-            "boneName": "head"
-          }
+            "boneName": "head",
+            "particleAnimName": "mkultra:burning_skeleton_head"
+          },
+          "instanceUUID": "3e7496f1-f5bf-45e6-b8e5-64192633ae9f"
         }
       ]
     }

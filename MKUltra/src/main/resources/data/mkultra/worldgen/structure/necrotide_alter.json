@@ -1,0 +1,68 @@
+{
+  "type": "mknpc:mk_jigsaw",
+  "biomes": "#mkultra:has_necrotide_alter",
+  "max_distance_from_center": 80,
+  "project_start_to_heightmap": "WORLD_SURFACE_WG",
+  "size": 7,
+  "spawn_overrides": {
+    "monster": {
+      "bounding_box": "piece",
+      "spawns": []
+    }
+  },
+  "start_height": {
+    "absolute": 0
+  },
+  "start_pool": "mkultra:necrotide_alter/base",
+  "step": "surface_structures",
+  "structureName": "mkultra:necrotide_alter",
+  "structure_events": {
+    "structure_events": [
+      {
+        "attributes": {
+          "cooldown": 12000,
+          "faceTag": "golem_look",
+          "npcDefinition": "mkultra:necrotide_golem",
+          "poiTag": "golem_spawn"
+        },
+        "conditions": [
+          {
+            "attributes": {
+              "allNotables": 1,
+              "npcDefinition": "mkultra:skeletal_lock"
+            },
+            "structCondType": "mknpc:struct_condition.notable_dead"
+          }
+        ],
+        "event_name": "summon_golem",
+        "moveType": 0,
+        "requirements": [
+          {
+            "attributes": {
+              "poiName": "golem_spawn"
+            },
+            "structReqType": "mknpc:struct_requirement.has_poi"
+          },
+          {
+            "attributes": {
+              "poiName": "golem_look"
+            },
+            "structReqType": "mknpc:struct_requirement.has_poi"
+          },
+          {
+            "attributes": {
+              "npcDefinition": "mkultra:skeletal_lock"
+            },
+            "structReqType": "mknpc:struct_requirement.has_notable"
+          }
+        ],
+        "structEventType": "mknpc:struct_event.spawn_npc",
+        "triggers": [
+          1,
+          2
+        ]
+      }
+    ]
+  },
+  "use_expansion_hack": true
+}

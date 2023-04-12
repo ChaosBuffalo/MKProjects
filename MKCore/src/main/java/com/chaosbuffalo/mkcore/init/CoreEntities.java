@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.init;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.entities.BlockAnchoredLineEffectEntity;
 import com.chaosbuffalo.mkcore.entities.LineEffectEntity;
 import com.chaosbuffalo.mkcore.entities.MKAreaEffectEntity;
 import com.chaosbuffalo.mkcore.entities.PointEffectEntity;
@@ -37,6 +38,17 @@ public class CoreEntities {
                     .noSummon()
                     .noSave()
                     .build("mk_line_effect"));
+
+    public static final RegistryObject<EntityType<BlockAnchoredLineEffectEntity>> BLOCK_ANCHORED_LINE_EFFECT = ENTITIES.register("mk_block_line_effect",
+            () -> EntityType.Builder.<BlockAnchoredLineEffectEntity>of(BlockAnchoredLineEffectEntity::new, MobCategory.MISC)
+                    .fireImmune()
+                    .sized(0, 0)
+                    .setTrackingRange(5)
+                    .setUpdateInterval(10)
+                    .setShouldReceiveVelocityUpdates(true)
+                    .noSummon()
+                    .noSave()
+                    .build("mk_block_line_effect"));
 
     public static final RegistryObject<EntityType<PointEffectEntity>> POINT_EFFECT = ENTITIES.register("mk_point_effect",
             () -> EntityType.Builder.<PointEffectEntity>of(PointEffectEntity::new, MobCategory.MISC)

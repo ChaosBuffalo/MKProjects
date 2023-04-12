@@ -226,6 +226,9 @@ public class QuestDefinition {
     }
 
     public boolean doesStructureMeetRequirements(MKStructureEntry entry) {
+        if (entry == null) {
+            return false;
+        }
         return questChain.stream().allMatch(x -> x.isStructureRelevant(entry));
     }
 

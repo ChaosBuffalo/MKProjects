@@ -19,6 +19,7 @@ import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.entity.ai.controller.MovementStrategyController;
 import com.chaosbuffalo.mknpc.entity.ai.goal.*;
@@ -38,6 +39,8 @@ import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -72,6 +75,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -186,6 +190,14 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             stage.apply(this);
         }
         bossStages.add(stage);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (!this.level.isClientSide()) {
+            updateEngine.syncUpdates();
+        }
     }
 
     @Override
@@ -494,6 +506,11 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         });
         enterNonCombatMovementState();
         return entityData;
+    }
+
+    @Override
+    public boolean shouldBeSaved() {
+        return !MKNpc.getNpcData(this).map(IEntityNpcData::wasMKSpawned).orElse(false);
     }
 
     @Override
@@ -807,4 +824,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
+    @Override
+    public Packet<ClientGamePacketListener> getAddEntityPacket() {
+        return NetworkHooks.getEntitySpawningPacket(this);
+    }
 }

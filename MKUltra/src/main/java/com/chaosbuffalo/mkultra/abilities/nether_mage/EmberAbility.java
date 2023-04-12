@@ -19,7 +19,6 @@ import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -59,7 +58,7 @@ public class EmberAbility extends MKAbility {
                 CoreDamageTypes.FireDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         Component dotStr = getDamageDescription(entityData,
                 CoreDamageTypes.FireDamage.get(), baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
-        return new TranslatableComponent(getDescriptionTranslationKey(), valueStr,
+        return Component.translatable(getDescriptionTranslationKey(), valueStr,
                 NUMBER_FORMATTER.format(convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()))),
                 dotStr, NUMBER_FORMATTER.format(convertDurationToSeconds(BurnEffect.DEFAULT_PERIOD)));
     }

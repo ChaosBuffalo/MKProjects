@@ -6,13 +6,13 @@
       "value": "cleric_1"
     },
     {
-      "optionType": "mknpc:attributes",
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 500.0
         }
-      ]
+      ],
+      "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:ability_trainings",
@@ -21,9 +21,9 @@
           "ability": "mkultra:ability.heal",
           "reqs": [
             {
-              "reqType": "mkcore:training_req.has_entitlement",
               "attributes": {},
-              "entitlement": "mkultra:cleric.tier_1"
+              "entitlement": "mkultra:cleric.tier_1",
+              "reqType": "mkcore:training_req.has_entitlement"
             }
           ]
         },
@@ -31,9 +31,9 @@
           "ability": "mkultra:ability.smite",
           "reqs": [
             {
-              "reqType": "mkcore:training_req.has_entitlement",
               "attributes": {},
-              "entitlement": "mkultra:cleric.tier_1"
+              "entitlement": "mkultra:cleric.tier_1",
+              "reqType": "mkcore:training_req.has_entitlement"
             }
           ]
         },
@@ -41,9 +41,9 @@
           "ability": "mkultra:ability.galvanize",
           "reqs": [
             {
-              "reqType": "mkcore:training_req.has_entitlement",
               "attributes": {},
-              "entitlement": "mkultra:cleric.tier_2"
+              "entitlement": "mkultra:cleric.tier_2",
+              "reqType": "mkcore:training_req.has_entitlement"
             }
           ]
         },
@@ -51,9 +51,9 @@
           "ability": "mkultra:ability.power_word_summon",
           "reqs": [
             {
-              "reqType": "mkcore:training_req.has_entitlement",
               "attributes": {},
-              "entitlement": "mkultra:cleric.tier_2"
+              "entitlement": "mkultra:cleric.tier_2",
+              "reqType": "mkcore:training_req.has_entitlement"
             }
           ]
         },
@@ -61,9 +61,9 @@
           "ability": "mkultra:ability.inspire",
           "reqs": [
             {
-              "reqType": "mkcore:training_req.has_entitlement",
               "attributes": {},
-              "entitlement": "mkultra:cleric.tier_3"
+              "entitlement": "mkultra:cleric.tier_3",
+              "reqType": "mkcore:training_req.has_entitlement"
             }
           ]
         }
@@ -74,9 +74,9 @@
       "slotOptions": {
         "mainhand": [
           {
-            "weight": 1.0,
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:mace_gold\", Count: 1b, tag: {Damage: 0}}"
+            "item": "{id: \"mkweapons:mace_gold\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
           }
         ]
       }
@@ -89,43 +89,43 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "priority": 1,
+          "abilityName": "mkultra:ability.heal",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.heal"
+          "priority": 1
         },
         {
-          "priority": 2,
+          "abilityName": "mkultra:ability.smite",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.smite"
+          "priority": 2
         },
         {
-          "priority": 3,
+          "abilityName": "mkultra:ability.galvanize",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.galvanize"
+          "priority": 3
         },
         {
-          "priority": 4,
+          "abilityName": "mkultra:ability.power_word_summon",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.power_word_summon"
+          "priority": 4
         },
         {
-          "priority": 5,
+          "abilityName": "mkultra:ability.inspire",
           "chance": 1.0,
-          "abilityName": "mkultra:ability.inspire"
+          "priority": 5
         }
       ]
     },
     {
-      "optionType": "mknpc:skills",
+      "major_skills": [
+        "mkcore:restoration",
+        "mkcore:alteration"
+      ],
       "minor_skills": [
-        "mkcore:necromancy",
         "mkcore:abjuration",
+        "mkcore:necromancy",
         "mkcore:evocation"
       ],
-      "major_skills": [
-        "mkcore:alteration",
-        "mkcore:restoration"
-      ],
+      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:two_hand_blunt",
         "mkcore:one_hand_blunt"
@@ -136,9 +136,9 @@
       "value": 1.05
     },
     {
+      "hasLastName": false,
       "optionType": "mknpc:faction_name",
-      "title": "Cleric",
-      "hasLastName": false
+      "title": "Cleric"
     },
     {
       "optionType": "mknpc:faction",

@@ -1,18 +1,17 @@
 {
-  "name": "mkultra:desert_temple_streets",
-  "fallback": "minecraft:empty",
   "elements": [
     {
-      "weight": 1,
       "element": {
+        "bWaterLog": true,
+        "element_type": "mknpc:mk_single_jigsaw",
         "location": "mkultra:desert_temple_village/desert_temple_road_1",
         "processors": {
           "processors": []
         },
-        "projection": "terrain_matching",
-        "bWaterLog": true,
-        "element_type": "mknpc:mk_single_jigsaw"
-      }
+        "projection": "terrain_matching"
+      },
+      "weight": 1
     }
-  ]
+  ],
+  "fallback": "minecraft:empty"
 }

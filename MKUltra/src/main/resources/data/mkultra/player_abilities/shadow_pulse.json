@@ -1,0 +1,21 @@
+{
+  "attributes": {
+    "base": 1.0,
+    "baseGravity": 0.25,
+    "casting_particles": "mkultra:shadow_bolt_casting",
+    "detonateBase": 5.0,
+    "detonateScale": 5.0,
+    "duration": 20,
+    "modifierScaling": 1.0,
+    "pulse_particles": "mkultra:shadow_pulse_detonate",
+    "radius": 1.5,
+    "scale": 0.25,
+    "scaleGravity": 0.0,
+    "tickRate": 4,
+    "waitTime": 12,
+    "wait_particles": "mkultra:shadow_pulse_wait"
+  },
+  "castTime": 20,
+  "cooldown": 200,
+  "manaCost": 5.0
+}

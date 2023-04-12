@@ -1,0 +1,14 @@
+{
+  "attributes": {
+    "baseBurnDamage": 4.0,
+    "baseDuration": 10,
+    "burn_cast_particles": "mkultra:drown_effect",
+    "casting_particles": "mkultra:ember_casting",
+    "dotModifierScaling": 0.2,
+    "scaleBurnDamage": 2.0,
+    "scaleDuration": 2
+  },
+  "castTime": 20,
+  "cooldown": 200,
+  "manaCost": 5.0
+}

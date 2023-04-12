@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribut
 import com.chaosbuffalo.mkcore.serialization.attributes.StringAttribute;
 import com.chaosbuffalo.mkcore.utils.WorldUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.ForgeEventFactory;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class SpawnNpcDefinitionEvent extends StructureEvent {
@@ -42,6 +44,7 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
     public SpawnNpcDefinitionEvent() {
         super(TYPE_NAME);
         addAttributes(npcDefinition, poiTag, faceTag);
+        startsCooldown = false;
     }
 
     public SpawnNpcDefinitionEvent(ResourceLocation npcDef, String spawnLocation, String faceTagIn,
@@ -62,9 +65,21 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
     }
 
     @Override
+    public void onTrackedEntityDeath(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure,
+                                     IEntityNpcData npcData) {
+        entry.getCooldownTracker().setTimer(getTimerName(), getCooldown());
+    }
+
+    @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
         moveType = MKEntity.NonCombatMoveType.values()[dynamic.get("moveType").asInt(0)];
+    }
+
+    @Override
+    public boolean meetsConditions(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
+        return !activeStructure.hasActiveEntity(entry.getCustomData().computeUUID(getEventName())) &&
+                super.meetsConditions(entry, activeStructure, world);
     }
 
     @Override
@@ -90,7 +105,7 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
                 });
                 final double finDiff = difficultyValue;
                 MKNpc.getNpcData(entity).ifPresent((cap) -> {
-                    cap.setMKSpawned(true);
+//                    cap.setMKSpawned(true);
                     cap.setSpawnPos(BlockPos.containing(pos).above());
                     cap.setNotableUUID(npcId);
                     cap.setStructureId(entry.getStructureId());
@@ -100,13 +115,13 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
                     mkEntity.setNonCombatMoveType(moveType);
                 }
                 if (entity instanceof Mob mobEnt && world instanceof ServerLevelAccessor serverLevel) {
-                    var spawnData = ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
+                    ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
                             serverLevel.getCurrentDifficultyAt(x.getLocation().pos()),
                             MobSpawnType.SPAWNER, null, null);
-                    if (spawnData != null) {
-                        world.addFreshEntity(entity);
-                    }
                 }
+                world.addFreshEntity(entity);
+                MKNpc.getNpcData(entity).ifPresent(cap -> cap.setMKSpawned(true));
+                activeStructure.addEntity(npcId, entity, getEventName());
             }
         });
 
