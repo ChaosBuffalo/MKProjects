@@ -27,6 +27,7 @@ import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -43,7 +44,11 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
             BlockAnchoredLineEffectEntity.class, EntityDataSerializers.FLOAT);
     private final EntityUpdateEngine engine;
     private final SyncComponent targeting = new SyncComponent("targeting");
-    protected final SyncEntity<LivingEntity> target = new SyncEntity<>("target", null, LivingEntity.class);
+
+    @Nullable
+    protected LivingEntity target;
+
+    protected final SyncBool hasEntity = new SyncBool("has_entity", false);
     protected final SyncVec3 startPoint = new SyncVec3("start_point", Vec3.ZERO);
     protected final SyncVec3 endPoint = new SyncVec3("end_point", Vec3.ZERO);
 
@@ -55,7 +60,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
         super(entityType, world);
         engine = new EntityUpdateEngine(this);
         targeting.attach(engine);
-        targeting.addPublic(target);
+        targeting.addPublic(hasEntity);
         targeting.addPublic(startPoint);
         targeting.addPublic(endPoint);
         endPoint.setCallback(this::onEndPointUpdate);
@@ -107,7 +112,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
 
     @Override
     protected void clientUpdate() {
-        if (!target.isValid()) {
+        if (!hasEntity.get()) {
             return;
         }
         super.clientUpdate();
@@ -131,26 +136,29 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
         if (!(getLevel().getBlockState(startPos).getBlock() == block.get())){
             return true;
         }
-        if (!target.isValid()) {
+        if (target == null) {
             lookForTarget();
         }
         engine.syncUpdates();
-        return target.target().map(tar -> {
-            if (!getBoundingBox().intersects(tar.getBoundingBox())) {
-                target.set(null);
+        if (target != null) {
+            if (!getBoundingBox().intersects(target.getBoundingBox())) {
+                target = null;
+                hasEntity.set(false);
                 return false;
             } else {
-                Vec3 dir = tar.position().subtract(endPoint.get()).normalize();
+                Vec3 dir = target.position().subtract(endPoint.get()).normalize();
                 setEndPoint(endPoint.get().add(dir.scale(beamSpeed.get() / GameConstants.FTICKS_PER_SECOND)));
                 return super.serverUpdate();
             }
-        }).orElse(false);
+        }
+        return false;
     }
 
     protected void lookForTarget() {
         getPotentialTargets().stream().min(Comparator.comparingDouble(
                 ent -> ent.distanceToSqr(startPoint.get()))).ifPresent(tar -> {
-                    target.set(tar);
+                    target = tar;
+                    hasEntity.set(true);
         });
     }
 

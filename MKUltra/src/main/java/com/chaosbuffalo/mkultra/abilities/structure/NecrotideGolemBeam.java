@@ -41,7 +41,7 @@ public class NecrotideGolemBeam extends StructureAbility {
     protected final FloatAttribute base = new FloatAttribute("base", 3.0f);
     protected final FloatAttribute scale = new FloatAttribute("scale", 3.0f);
     protected final FloatAttribute modifierScaling = new FloatAttribute("modifier_scaling", 1.0f);
-    protected final FloatAttribute beamSpeed = new FloatAttribute("beam_speed", 1.5f);
+    protected final FloatAttribute beamSpeed = new FloatAttribute("beam_speed", 1.85f);
     protected final FloatAttribute beamSpeedScale = new FloatAttribute("beam_speed_scale", 0.025f);
     protected final IntAttribute charge_time = new IntAttribute("charge_time", GameConstants.TICKS_PER_SECOND * 2);
     @Override

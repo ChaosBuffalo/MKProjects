@@ -59,28 +59,16 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
     @Override
     public void deserializeUpdate(CompoundTag tag) {
         if (tag.contains(name)) {
-            CompoundTag update = tag.getCompound(name);
-            boolean isPlayer = update.getBoolean("is_player");
-            if (isPlayer) {
-                UUID id = update.getUUID("player");
-                Entity ent = ClientHandler.handleClient(id);
+            int id = tag.getInt(name);
+            if (id != -1) {
+                Entity ent = ClientHandler.handleClient(tag.getId());
                 if (clazz.isInstance(ent)) {
                     value = clazz.cast(ent);
                 } else {
                     value = null;
                 }
             } else {
-                int id = update.getInt("mob");
-                if (id != -1) {
-                    Entity ent = ClientHandler.handleClient(tag.getId());
-                    if (clazz.isInstance(ent)) {
-                        value = clazz.cast(ent);
-                    } else {
-                        value = null;
-                    }
-                } else {
-                    value = null;
-                }
+                value = null;
             }
         }
     }
@@ -95,15 +83,7 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
 
     @Override
     public void serializeFull(CompoundTag tag) {
-        CompoundTag newTag = new CompoundTag();
-        if (value instanceof Player) {
-            newTag.putBoolean("is_player", true);
-            newTag.putUUID("player", value.getUUID());
-        } else {
-            newTag.putBoolean("is_player", false);
-            newTag.putInt("mob", value != null ? value.getId() : -1);
-        }
-        tag.put(name, newTag);
+        tag.putInt(name, value != null ? value.getId() : -1);
         dirty = false;
     }
 
@@ -113,13 +93,6 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
             if (mc.level == null)
                 return null;
             return mc.level.getEntity(entityId);
-        }
-
-        public static Entity handleClient(UUID playerId) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.level == null)
-                return null;
-            return mc.level.getPlayerByUUID(playerId);
         }
     }
 }
