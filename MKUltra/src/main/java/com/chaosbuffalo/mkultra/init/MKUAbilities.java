@@ -38,6 +38,9 @@ public class MKUAbilities {
     //necromancer
     public static final RegistryObject<MKEntitySummonAbility> TEST_SUMMON = REGISTRY.register("ability.test_summon",
             () -> new MKEntitySummonAbility(new ResourceLocation(MKUltra.MODID, "hyborean_sorcerer_queen"), MKAttributes.NECROMANCY));
+
+    public static final RegistryObject<MKEntitySummonAbility> NECROTIDE_WARRIOR_SUMMON = REGISTRY.register("ability.necrotide_warrior_summon",
+            () -> new MKEntitySummonAbility(new ResourceLocation(MKUltra.MODID, "necrotide_skeletal_warrior"), MKAttributes.NECROMANCY));
     public static final RegistryObject<ShadowPulseAbility> SHADOW_PULSE = REGISTRY.register("ability.shadow_pulse", ShadowPulseAbility::new);
     public static final RegistryObject<ShadowBoltAbility> SHADOW_BOLT = REGISTRY.register("ability.shadow_bolt", ShadowBoltAbility::new);
     public static final RegistryObject<LifeSpikeAbility> LIFE_SPIKE = REGISTRY.register("ability.life_spike", LifeSpikeAbility::new);

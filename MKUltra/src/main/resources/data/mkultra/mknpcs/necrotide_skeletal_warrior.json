@@ -3,7 +3,7 @@
   "options": [
     {
       "optionType": "mknpc:render_group",
-      "value": "honor_guard"
+      "value": "basic"
     },
     {
       "attributes": [
@@ -16,7 +16,7 @@
     },
     {
       "optionType": "mknpc:name",
-      "value": "Undying Honor Guard"
+      "value": "Skeleton Warrior"
     },
     {
       "optionType": "mknpc:equipment",
@@ -29,7 +29,17 @@
           },
           {
             "dropChance": 0.0,
+            "item": "{id: \"mkweapons:spear_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
             "item": "{id: \"mkweapons:greatsword_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"mkweapons:longsword_iron\", Count: 1b, tag: {Damage: 0}}",
             "weight": 1.0
           },
           {
@@ -41,21 +51,6 @@
       }
     },
     {
-      "optionType": "mknpc:abilities",
-      "options": [
-        {
-          "abilityName": "mkultra:ability.natures_remedy",
-          "chance": 1.0,
-          "priority": 2
-        },
-        {
-          "abilityName": "mkultra:ability.sever_tendon",
-          "chance": 1.0,
-          "priority": 3
-        }
-      ]
-    },
-    {
       "major_skills": [
         "mkcore:two_hand_blunt",
         "mkcore:two_hand_pierce",
@@ -65,16 +60,12 @@
         "mkcore:one_hand_slash"
       ],
       "minor_skills": [
-        "mkcore:alteration",
-        "mkcore:pankration",
-        "mkcore:restoration",
-        "mkcore:abjuration"
+        "mkcore:pankration"
       ],
       "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:pneuma",
-        "mkcore:arete",
-        "mkcore:evocation"
+        "mkcore:arete"
       ]
     },
     {
@@ -83,12 +74,7 @@
     },
     {
       "optionType": "mknpc:faction",
-      "value": "mkfaction:undead"
-    },
-    {
-      "cooldown": 30,
-      "count": 4,
-      "optionType": "mknpc:mk_combo"
+      "value": "mkultra:necrotide_cultists"
     }
   ]
 }

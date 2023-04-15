@@ -25,15 +25,20 @@
           "abilityName": "mkultra:ability.shadow_bolt",
           "chance": 1.0,
           "priority": 1
+        },
+        {
+          "abilityName": "mkultra:ability.shadow_pulse",
+          "chance": 1.0,
+          "priority": 2
         }
       ]
     },
     {
       "major_skills": [],
       "minor_skills": [
+        "mkcore:alteration",
         "mkcore:abjuration",
         "mkcore:evocation",
-        "mkcore:alteration",
         "mkcore:conjuration"
       ],
       "optionType": "mknpc:skills",

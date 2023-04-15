@@ -84,18 +84,18 @@
     },
     {
       "major_skills": [
-        "mkcore:two_hand_slash",
-        "mkcore:one_hand_slash",
         "mkcore:two_hand_blunt",
-        "mkcore:one_hand_blunt",
         "mkcore:two_hand_pierce",
-        "mkcore:one_hand_pierce"
+        "mkcore:one_hand_blunt",
+        "mkcore:two_hand_slash",
+        "mkcore:one_hand_pierce",
+        "mkcore:one_hand_slash"
       ],
       "minor_skills": [
-        "mkcore:restoration",
-        "mkcore:abjuration",
+        "mkcore:alteration",
         "mkcore:pankration",
-        "mkcore:alteration"
+        "mkcore:restoration",
+        "mkcore:abjuration"
       ],
       "optionType": "mknpc:skills",
       "remedial_skills": [

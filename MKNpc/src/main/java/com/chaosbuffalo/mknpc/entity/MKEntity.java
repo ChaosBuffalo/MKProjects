@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
+import com.chaosbuffalo.mkchat.dialogue.DialogueUtils;
 import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
@@ -18,6 +19,7 @@ import com.chaosbuffalo.mkcore.sync.EntityUpdateEngine;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
+import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
@@ -39,6 +41,7 @@ import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -104,8 +107,13 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private final EntityTradeContainer entityTradeContainer;
     private final List<BossStage> bossStages = new ArrayList<>();
     private int currentStage;
+
+    @Nullable
+    protected Component battlecry;
     @Nullable
     private PetNonCombatBehavior nonCombatBehavior;
+
+    protected static final int BATTLECRY_COOLDOWN = GameConstants.TICKS_PER_SECOND * 60;
 
 
     public enum CombatMoveType {
@@ -163,6 +171,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         currentStage = 0;
         visualCastState = VisualCastState.NONE;
         castingAbility = null;
+        battlecry = null;
         lungeSpeed = .25;
         updateEngine = new EntityUpdateEngine(this);
         animSync.attach(updateEngine);
@@ -362,7 +371,29 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
+    public void setBattlecry(@Nullable Component battlecry) {
+        this.battlecry = battlecry;
+    }
+
+    protected void maybeDoBattlecry(LivingEntity target) {
+        if (getServer() == null || battlecry == null) {
+            return;
+        }
+        getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY).ifPresent(faction -> {
+            if (faction.hasFaction()) {
+                MKCore.getEntityData(target).ifPresent(entityData -> {
+                    if (entityData.getStats().getTimer(faction.getBattlecryName()) <= 0) {
+                        DialogueUtils.sendMessageToAllAround(getServer(), this,
+                                DialogueUtils.getSpeakerMessage(this, battlecry));
+                        entityData.getStats().setTimer(faction.getBattlecryName(), BATTLECRY_COOLDOWN);
+                    }
+                });
+            }
+        });
+    }
+
     public void callForHelp(LivingEntity entity, float threatVal) {
+        maybeDoBattlecry(entity);
         brain.getMemory(MKMemoryModuleTypes.ALLIES.get()).ifPresent(x -> {
             x.forEach(ent -> {
                 if (ent.distanceToSqr(this) < 9.0) {

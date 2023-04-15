@@ -7,4 +7,8 @@ import net.minecraftforge.common.util.INBTSerializable;
 public interface INpcOptionEntry extends INBTSerializable<CompoundTag> {
 
     void applyToEntity(Entity entity);
+
+    default boolean isValid() {
+        return true;
+    }
 }

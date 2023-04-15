@@ -27,6 +27,8 @@ public class MKFaction {
     private final EnumMap<PlayerFactionStatus, String> customStatusNames = new EnumMap<>(PlayerFactionStatus.class);
     private int defaultPlayerScore;
 
+    private final FactionGreetings greetings;
+
     public MKFaction(int defaultPlayerScore) {
         this(defaultPlayerScore, new HashSet<>(), new HashSet<>());
     }
@@ -38,6 +40,7 @@ public class MKFaction {
         this.defaultPlayerScore = defaultPlayerScore;
         this.firstNames = new HashSet<>();
         this.lastNames = new HashSet<>();
+        greetings = new FactionGreetings(this);
     }
 
     public ResourceLocation getId() {
@@ -51,6 +54,10 @@ public class MKFaction {
         } else {
             return "faction.mkfaction.invalid.name";
         }
+    }
+
+    public FactionGreetings getGreetings() {
+        return greetings;
     }
 
     public MutableComponent getDisplayName() {
@@ -141,6 +148,7 @@ public class MKFaction {
             customStatusNames.forEach((status, name) -> nameBuilder.put(ops.createString(status.name()), ops.createString(name)));
             builder.put(ops.createString("statusNames"), ops.createMap(nameBuilder.build()));
         }
+        builder.put(ops.createString("greetings"), greetings.serialize(ops));
         return ops.createMap(builder.build());
     }
 
@@ -158,6 +166,8 @@ public class MKFaction {
 
         lastNames.clear();
         deserializeNameList(dynamic, "lastNames", lastNames::add);
+
+        dynamic.get("greetings").get().result().ifPresent(greetings::deserialize);
 
         customStatusNames.clear();
         dynamic.get("statusNames").asMap(this::getStringOrThrow, this::getStringOrThrow).forEach((keyString, value) -> {

@@ -1,22 +1,22 @@
 {
-  "entityType": "mkultra:zombified_piglin",
+  "entityType": "mkultra:hyborean_skeleton",
   "options": [
     {
       "optionType": "mknpc:render_group",
-      "value": "zombie_pig"
+      "value": "hyborean_archer"
     },
     {
       "attributes": [
         {
           "attributeName": "minecraft:generic.max_health",
-          "value": 15.0
+          "value": 30.0
         }
       ],
       "optionType": "mknpc:attributes"
     },
     {
       "optionType": "mknpc:name",
-      "value": "Shambling Archer"
+      "value": "Skeleton Archer"
     },
     {
       "optionType": "mknpc:equipment",
@@ -24,7 +24,7 @@
         "mainhand": [
           {
             "dropChance": 0.0,
-            "item": "{id: \"minecraft:bow\", Count: 1b, tag: {Damage: 0}}",
+            "item": "{id: \"mkweapons:longbow_iron\", Count: 1b, tag: {Damage: 0}}",
             "weight": 1.0
           }
         ]
@@ -48,15 +48,11 @@
     },
     {
       "optionType": "mknpc:mk_size",
-      "value": 0.85
-    },
-    {
-      "optionType": "mknpc:experience",
-      "value": 5
+      "value": 0.95
     },
     {
       "optionType": "mknpc:faction",
-      "value": "mkultra:imperial_dead"
+      "value": "mkultra:necrotide_cultists"
     }
   ]
 }

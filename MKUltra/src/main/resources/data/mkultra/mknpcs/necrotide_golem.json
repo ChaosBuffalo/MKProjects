@@ -35,13 +35,13 @@
     },
     {
       "major_skills": [
-        "mkcore:conjuration",
-        "mkcore:necromancy"
+        "mkcore:necromancy",
+        "mkcore:conjuration"
       ],
       "minor_skills": [
+        "mkcore:alteration",
         "mkcore:abjuration",
-        "mkcore:evocation",
-        "mkcore:alteration"
+        "mkcore:evocation"
       ],
       "optionType": "mknpc:skills",
       "remedial_skills": [

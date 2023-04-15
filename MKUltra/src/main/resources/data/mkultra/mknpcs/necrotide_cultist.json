@@ -33,7 +33,7 @@
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.test_summon",
+          "abilityName": "mkultra:ability.necrotide_warrior_summon",
           "chance": 1.0,
           "priority": 4
         }
@@ -45,14 +45,17 @@
         "mkcore:conjuration"
       ],
       "minor_skills": [
+        "mkcore:alteration",
         "mkcore:abjuration",
-        "mkcore:evocation",
-        "mkcore:alteration"
+        "mkcore:evocation"
       ],
       "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
+    },
+    {
+      "optionType": "mknpc:faction_battlecry"
     },
     {
       "optionType": "mknpc:mk_size",

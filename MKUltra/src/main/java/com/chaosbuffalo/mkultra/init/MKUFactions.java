@@ -2,9 +2,11 @@ package com.chaosbuffalo.mkultra.init;
 
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.FactionConstants;
+import com.chaosbuffalo.mkfaction.faction.FactionGreetings;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mkultra.MKUltra;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -82,8 +84,45 @@ public class MKUFactions {
                     getDefaultGoodFactionSet(), getDefaultBadFactionSet())));
 
     public static RegistryObject<MKFaction> NECROTIDE_CULTISTS = REGISTRY.register("necrotide_cultists",
-            () -> setupMongolianNames(new MKFaction(FactionConstants.ENEMY_THRESHOLD,
-                    new HashSet<>(), getDefaultGoodFactionSet())));
+            () -> setupNecrotideGreetings(setupMongolianNames(new MKFaction(FactionConstants.ENEMY_THRESHOLD,
+                    new HashSet<>(), getDefaultGoodFactionSet()))));
+
+    public static MKFaction setupNecrotideGreetings(MKFaction faction) {
+        faction.getGreetings()
+                .addGreeting(FactionGreetings.GreetingType.BATTLECRY,
+                        Component.literal("All was once water, all will return to water in.. the… end…"))
+                .addGreeting(FactionGreetings.GreetingType.BATTLECRY,
+                        Component.literal("Where we are standing right now was once the sea floor, show some respect!"))
+                .addGreeting(FactionGreetings.GreetingType.BATTLECRY,
+                        Component.literal("Imagine the wonders that swam overhead as the crustaceans skittered!"))
+                .addGreeting(FactionGreetings.GreetingType.BATTLECRY,
+                        Component.literal("Perhaps you'll be able to breathe underwater!"))
+                .addGreeting(FactionGreetings.GreetingType.BATTLECRY,
+                        Component.literal("Everything will drown when her waters return!"))
+                .addGreeting(FactionGreetings.GreetingType.BATTLECRY,
+                        Component.literal("When it's quiet I can still hear her, the soft undulation of her sunken currents, oh… to sink beneath the waves…"))
+                .addGreeting(FactionGreetings.GreetingType.BATTLECRY,
+                        Component.literal("When you go deep enough everything becomes shadow!"))
+                .addGreeting(FactionGreetings.GreetingType.BATTLECRY,
+                        Component.literal("The fish will clean your bones!"))
+                .addGreeting(FactionGreetings.GreetingType.BATTLECRY,
+                        Component.literal("In my more lucid moments… I see him… the burning one… there is no water… there is no ocean…I can't hide from t-the t-truth… arrhgghaaaaa!!"))
+                .addGreeting(FactionGreetings.GreetingType.OUTSIDER,
+                        Component.literal("My time is limited, the ocean calls, what business do you have with me?"))
+                .addGreeting(FactionGreetings.GreetingType.FRIENDLY,
+                        Component.literal("Where we are standing right now was once the sea floor, don't you think it's captivating?"))
+                .addGreeting(FactionGreetings.GreetingType.FRIENDLY,
+                        Component.literal("There are many truths that sank into the waters long ago and were lost to time."))
+                .addGreeting(FactionGreetings.GreetingType.FRIENDLY,
+                        Component.literal("Forgotten in darkness, we seek to delve into the depths for hidden knowledge."))
+                .addGreeting(FactionGreetings.GreetingType.MEMBER,
+                        Component.literal("Together we drift on dark currents from the past."))
+                .addGreeting(FactionGreetings.GreetingType.MEMBER, 
+                        Component.literal("Can you hear the call of her long forgotten waters as I do?"))
+                .addGreeting(FactionGreetings.GreetingType.MEMBER,
+                        Component.literal("In my dreams I follow her call into the depths beyond the light of the so-called sun."));
+        return faction;
+    }
 
 
     private static MKFaction setupMongolianNames(MKFaction faction) {

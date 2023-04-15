@@ -72,9 +72,9 @@
     {
       "major_skills": [],
       "minor_skills": [
+        "mkcore:alteration",
         "mkcore:abjuration",
         "mkcore:evocation",
-        "mkcore:alteration",
         "mkcore:conjuration"
       ],
       "optionType": "mknpc:skills",

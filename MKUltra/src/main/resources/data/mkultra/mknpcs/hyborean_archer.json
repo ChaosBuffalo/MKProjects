@@ -35,14 +35,14 @@
         "mkcore:marksmanship"
       ],
       "minor_skills": [
-        "mkcore:one_hand_slash",
         "mkcore:one_hand_blunt",
-        "mkcore:one_hand_pierce"
+        "mkcore:one_hand_pierce",
+        "mkcore:one_hand_slash"
       ],
       "optionType": "mknpc:skills",
       "remedial_skills": [
-        "mkcore:pneuma",
         "mkcore:pankration",
+        "mkcore:pneuma",
         "mkcore:arete"
       ]
     },

@@ -47,12 +47,12 @@
     },
     {
       "major_skills": [
-        "mkcore:restoration",
-        "mkcore:alteration"
+        "mkcore:alteration",
+        "mkcore:restoration"
       ],
       "minor_skills": [
-        "mkcore:abjuration",
         "mkcore:necromancy",
+        "mkcore:abjuration",
         "mkcore:evocation"
       ],
       "optionType": "mknpc:skills",
