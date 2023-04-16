@@ -109,4 +109,9 @@ public class EntityUtils {
         return false;
 
     }
+
+    public static void mkDiscard(Entity entity) {
+        MKCore.getEntityData(entity).ifPresent(data -> data.getPets().onDeath(Entity.RemovalReason.DISCARDED));
+        entity.remove(Entity.RemovalReason.DISCARDED);
+    }
 }

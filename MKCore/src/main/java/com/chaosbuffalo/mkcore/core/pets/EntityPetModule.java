@@ -101,10 +101,10 @@ public class EntityPetModule implements IPlayerSyncComponentProvider {
         return sync;
     }
 
-    public void onDeath() {
+    public void onDeath(Entity.RemovalReason reason) {
         pets.values().forEach(x -> {
             if (x.getEntity() != null) {
-                x.getEntity().remove(Entity.RemovalReason.KILLED);
+                x.getEntity().remove(reason);
             }
         });
     }

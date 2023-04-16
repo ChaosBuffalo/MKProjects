@@ -25,7 +25,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
 
 public class DrownAbility extends MKAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "ember_casting");
+    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "drown_casting");
     public static final ResourceLocation TICK_PARTICLES = new ResourceLocation(MKUltra.MODID, "drown_effect");
     protected final FloatAttribute baseDot = new FloatAttribute("baseBurnDamage", 4.0f);
     protected final FloatAttribute scaleDot = new FloatAttribute("scaleBurnDamage", 2.0f);

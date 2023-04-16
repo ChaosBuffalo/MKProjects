@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.pets.MKPet;
 import com.chaosbuffalo.mkcore.core.pets.PetNonCombatBehavior;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
+import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
@@ -97,7 +98,7 @@ public class MKEntitySummonAbility extends MKAbility {
                     pet.getEntity().setCustomName(newName);
                 } else {
                     if (entity != null) {
-                        entity.remove(Entity.RemovalReason.DISCARDED);
+                        EntityUtils.mkDiscard(entity);
                     }
                     MKUltra.LOGGER.error("Summon Ability {} failed to cast npc: {} to a MKEntity", getAbilityId(), npcDefintion.getValue());
                 }
@@ -110,7 +111,7 @@ public class MKEntitySummonAbility extends MKAbility {
                 casterData.getPets().getPet(getAbilityId()).ifPresent(x -> {
                     if (tar.equals(x.getEntity())) {
                         if (castingEntity.isShiftKeyDown()) {
-                            x.getEntity().remove(Entity.RemovalReason.DISCARDED);
+                            EntityUtils.mkDiscard(x.getEntity());
                             casterData.getPets().removePet(x);
                         } else {
                             x.getEntity().setNoncombatBehavior(new PetNonCombatBehavior(castingEntity));

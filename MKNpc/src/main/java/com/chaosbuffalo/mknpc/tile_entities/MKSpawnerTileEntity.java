@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mknpc.tile_entities;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.WorldUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.blocks.MKSpawnerBlock;
@@ -342,7 +344,7 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
 
     public void clearSpawn() {
         if (entity != null) {
-            entity.remove(Entity.RemovalReason.DISCARDED);
+            EntityUtils.mkDiscard(entity);
             entity = null;
         }
         ticksSinceDeath = 0;
@@ -399,7 +401,7 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
                 if (isAlive) {
                     ticksSincePlayer++;
                     if (ticksSincePlayer > IDLE_TIME) {
-                        entity.remove(Entity.RemovalReason.DISCARDED);
+                        EntityUtils.mkDiscard(entity);
                         this.entity = null;
                         ticksSinceDeath = 0;
                         ticksSincePlayer = 0;
