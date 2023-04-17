@@ -13,6 +13,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -84,11 +85,11 @@ public class SkillOption extends NpcDefinitionOption {
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("minor_skills"), ops.createList(minorSkills.stream()
-                .map(x -> ops.createString(skillId(x)))));
+                .map(SkillOption::skillId).sorted().map(ops::createString)));
         builder.put(ops.createString("major_skills"), ops.createList(majorSkills.stream()
-                .map(x -> ops.createString(skillId(x)))));
+                .map(SkillOption::skillId).sorted().map(ops::createString)));
         builder.put(ops.createString("remedial_skills"), ops.createList(remedialSkills.stream()
-                .map(x -> ops.createString(skillId(x)))));
+                .map(SkillOption::skillId).sorted().map(ops::createString)));
     }
 
     public SkillOption addMajorSkill(Attribute skill) {

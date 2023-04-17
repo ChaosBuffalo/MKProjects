@@ -52,20 +52,20 @@
     },
     {
       "major_skills": [
+        "mkcore:one_hand_blunt",
+        "mkcore:one_hand_pierce",
+        "mkcore:one_hand_slash",
         "mkcore:two_hand_blunt",
         "mkcore:two_hand_pierce",
-        "mkcore:one_hand_blunt",
-        "mkcore:two_hand_slash",
-        "mkcore:one_hand_pierce",
-        "mkcore:one_hand_slash"
+        "mkcore:two_hand_slash"
       ],
       "minor_skills": [
         "mkcore:pankration"
       ],
       "optionType": "mknpc:skills",
       "remedial_skills": [
-        "mkcore:pneuma",
-        "mkcore:arete"
+        "mkcore:arete",
+        "mkcore:pneuma"
       ]
     },
     {

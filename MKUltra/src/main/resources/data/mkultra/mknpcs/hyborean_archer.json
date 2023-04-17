@@ -41,9 +41,9 @@
       ],
       "optionType": "mknpc:skills",
       "remedial_skills": [
+        "mkcore:arete",
         "mkcore:pankration",
-        "mkcore:pneuma",
-        "mkcore:arete"
+        "mkcore:pneuma"
       ]
     },
     {

@@ -51,14 +51,14 @@
         "mkcore:restoration"
       ],
       "minor_skills": [
-        "mkcore:necromancy",
         "mkcore:abjuration",
-        "mkcore:evocation"
+        "mkcore:evocation",
+        "mkcore:necromancy"
       ],
       "optionType": "mknpc:skills",
       "remedial_skills": [
-        "mkcore:two_hand_blunt",
-        "mkcore:one_hand_blunt"
+        "mkcore:one_hand_blunt",
+        "mkcore:two_hand_blunt"
       ]
     },
     {
