@@ -6,13 +6,19 @@
   "defaultPlayerScore": 1000,
   "enemies": [
     "mkfaction:hostile_animals",
+    "mkfaction:illagers",
     "mkfaction:monsters",
-    "mkultra:imperial_dead",
     "mkfaction:undead",
-    "mkultra:necrotide_cultists",
     "mkultra:hyborean_dead",
-    "mkfaction:illagers"
+    "mkultra:imperial_dead",
+    "mkultra:necrotide_cultists"
   ],
   "firstNames": [],
+  "greetings": {
+    "battlecries": [],
+    "friendly_greetings": [],
+    "member_greetings": [],
+    "outsider_greetings": []
+  },
   "lastNames": []
 }

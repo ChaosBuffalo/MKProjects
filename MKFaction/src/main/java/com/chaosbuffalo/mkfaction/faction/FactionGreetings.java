@@ -1,25 +1,24 @@
 package com.chaosbuffalo.mkfaction.faction;
 
 import com.chaosbuffalo.mkcore.serialization.IDynamicMapSerializer;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.network.chat.Component;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class FactionGreetings implements IDynamicMapSerializer {
 
-    private final Set<Component> battlecries;
-    private final Set<Component> outsiderGreetings;
-    private final Set<Component> friendlyGreetings;
-    private final Set<Component> memberGreetings;
+    private final List<Component> battlecries;
+    private final List<Component> outsiderGreetings;
+    private final List<Component> friendlyGreetings;
+    private final List<Component> memberGreetings;
 
-    private final Set<Component> EMPTY = ImmutableSet.of();
+    private final List<Component> EMPTY = ImmutableList.of();
 
     public enum GreetingType {
         OUTSIDER,
@@ -31,14 +30,14 @@ public class FactionGreetings implements IDynamicMapSerializer {
     private final MKFaction faction;
 
     public FactionGreetings(MKFaction faction) {
-        battlecries = new HashSet<>();
-        outsiderGreetings = new HashSet<>();
-        friendlyGreetings = new HashSet<>();
-        memberGreetings = new HashSet<>();
+        battlecries = new ArrayList<>();
+        outsiderGreetings = new ArrayList<>();
+        friendlyGreetings = new ArrayList<>();
+        memberGreetings = new ArrayList<>();
         this.faction = faction;
     }
 
-    protected Set<Component> getGreetingsForType(GreetingType type) {
+    protected List<Component> getGreetingsForType(GreetingType type) {
         switch (type) {
             case MEMBER -> {
                 return memberGreetings;
@@ -56,8 +55,8 @@ public class FactionGreetings implements IDynamicMapSerializer {
         return EMPTY;
     }
 
-    public Optional<Set<Component>> getGreetingsWithMembers(GreetingType type) {
-        Set<Component> greetings = getGreetingsForType(type);
+    public Optional<List<Component>> getGreetingsWithMembers(GreetingType type) {
+        List<Component> greetings = getGreetingsForType(type);
         return greetings.size() > 0 ? Optional.of(greetings) : Optional.empty();
     }
 

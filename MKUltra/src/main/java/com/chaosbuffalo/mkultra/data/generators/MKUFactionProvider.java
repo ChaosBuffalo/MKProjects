@@ -23,7 +23,9 @@ public class MKUFactionProvider extends MKFactionDataProvider {
                 writeFaction(MKUFactions.HYBOREAN_DEAD.get(), pCachedOutput),
                 writeFaction(MKUFactions.IMPERIAL_DEAD.get(), pCachedOutput),
                 writeFaction(MKUFactions.SEE_OF_SOLANG.get(), pCachedOutput),
-                writeFaction(MKUFactions.NETHER_MAGES.get(), pCachedOutput)
+                writeFaction(MKUFactions.NETHER_MAGES.get(), pCachedOutput),
+                writeFaction(MKUFactions.NECROTIDE_CULTISTS.get(), pCachedOutput),
+                writeFaction(MKUFactions.GHOSTS_OF_HYBORIA.get(), pCachedOutput)
         );
     }
 }

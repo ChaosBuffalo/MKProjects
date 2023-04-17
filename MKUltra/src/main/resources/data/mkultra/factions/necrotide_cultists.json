@@ -1,15 +1,9 @@
 {
-  "allies": [
+  "allies": [],
+  "defaultPlayerScore": -5000,
+  "enemies": [
     "mkfaction:domesticated_animals",
     "mkfaction:villagers"
-  ],
-  "defaultPlayerScore": 1000,
-  "enemies": [
-    "mkfaction:hostile_animals",
-    "mkfaction:illagers",
-    "mkfaction:monsters",
-    "mkfaction:undead",
-    "mkultra:necrotide_cultists"
   ],
   "firstNames": [
     "A'uchu",
@@ -265,10 +259,30 @@
     "Yisungge"
   ],
   "greetings": {
-    "battlecries": [],
-    "friendly_greetings": [],
-    "member_greetings": [],
-    "outsider_greetings": []
+    "battlecries": [
+      "{\"text\":\"All was once water, all will return to water in.. the… end…\"}",
+      "{\"text\":\"Where we are standing right now was once the sea floor, show some respect!\"}",
+      "{\"text\":\"Imagine the wonders that swam overhead as the crustaceans skittered!\"}",
+      "{\"text\":\"Perhaps you'll be able to breathe underwater!\"}",
+      "{\"text\":\"Everything will drown when her waters return!\"}",
+      "{\"text\":\"When it's quiet I can still hear her, the soft undulation of her sunken currents, oh… to sink beneath the waves…\"}",
+      "{\"text\":\"When you go deep enough everything becomes shadow!\"}",
+      "{\"text\":\"The fish will clean your bones!\"}",
+      "{\"text\":\"In my more lucid moments… I see him… the burning one… there is no water… there is no ocean…I can't hide from t-the t-truth… arrhgghaaaaa!!\"}"
+    ],
+    "friendly_greetings": [
+      "{\"text\":\"Where we are standing right now was once the sea floor, don't you think it's captivating?\"}",
+      "{\"text\":\"There are many truths that sank into the waters long ago and were lost to time.\"}",
+      "{\"text\":\"Forgotten in darkness, we seek to delve into the depths for hidden knowledge.\"}"
+    ],
+    "member_greetings": [
+      "{\"text\":\"Together we drift on dark currents from the past.\"}",
+      "{\"text\":\"Can you hear the call of her long forgotten waters as I do?\"}",
+      "{\"text\":\"In my dreams I follow her call into the depths beyond the light of the so-called sun.\"}"
+    ],
+    "outsider_greetings": [
+      "{\"text\":\"My time is limited, the ocean calls, what business do you have with me?\"}"
+    ]
   },
   "lastNames": []
 }

@@ -139,10 +139,12 @@ public class MKFaction {
     public <D> D serialize(DynamicOps<D> ops) {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("defaultPlayerScore"), ops.createInt(defaultPlayerScore));
-        builder.put(ops.createString("allies"), ops.createList(allies.stream().map(x -> ops.createString(x.toString()))));
-        builder.put(ops.createString("enemies"), ops.createList(enemies.stream().map(x -> ops.createString(x.toString()))));
-        builder.put(ops.createString("firstNames"), ops.createList(firstNames.stream().map(ops::createString)));
-        builder.put(ops.createString("lastNames"), ops.createList(lastNames.stream().map(ops::createString)));
+        builder.put(ops.createString("allies"), ops.createList(allies.stream()
+                .map(ResourceLocation::toString).sorted().map(ops::createString)));
+        builder.put(ops.createString("enemies"), ops.createList(enemies.stream()
+                .map(ResourceLocation::toString).sorted().map(ops::createString)));
+        builder.put(ops.createString("firstNames"), ops.createList(firstNames.stream().sorted().map(ops::createString)));
+        builder.put(ops.createString("lastNames"), ops.createList(lastNames.stream().sorted().map(ops::createString)));
         if (customStatusNames.size() > 0) {
             ImmutableMap.Builder<D, D> nameBuilder = ImmutableMap.builder();
             customStatusNames.forEach((status, name) -> nameBuilder.put(ops.createString(status.name()), ops.createString(name)));

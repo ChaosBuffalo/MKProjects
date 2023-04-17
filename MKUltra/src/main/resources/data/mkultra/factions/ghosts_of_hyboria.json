@@ -1,0 +1,13 @@
+{
+  "allies": [],
+  "defaultPlayerScore": 0,
+  "enemies": [],
+  "firstNames": [],
+  "greetings": {
+    "battlecries": [],
+    "friendly_greetings": [],
+    "member_greetings": [],
+    "outsider_greetings": []
+  },
+  "lastNames": []
+}

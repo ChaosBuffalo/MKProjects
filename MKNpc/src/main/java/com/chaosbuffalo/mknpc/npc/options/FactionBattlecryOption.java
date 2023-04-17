@@ -12,9 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class FactionBattlecryOption extends WorldPermanentOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "faction_battlecry");
@@ -26,9 +24,8 @@ public class FactionBattlecryOption extends WorldPermanentOption {
 
 
     @Nullable
-    private static <T> T getRandomEntry(RandomSource random, Set<T> set) {
-        List<T> list = new ArrayList<>(set);
-        if (list.size() <= 0) {
+    private static <T> T getRandomEntry(RandomSource random, List<T> list) {
+        if (list.isEmpty()) {
             return null;
         }
         return list.get(random.nextInt(list.size()));
