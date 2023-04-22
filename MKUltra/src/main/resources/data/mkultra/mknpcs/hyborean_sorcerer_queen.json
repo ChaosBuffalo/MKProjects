@@ -12,7 +12,11 @@
           "value": 110.0
         },
         {
-          "attributeName": "mkcore:evocation",
+          "attributeName": "mkcore:max_mana",
+          "value": 110.0
+        },
+        {
+          "attributeName": "mkcore:mana_regen",
           "value": 3.0
         }
       ],

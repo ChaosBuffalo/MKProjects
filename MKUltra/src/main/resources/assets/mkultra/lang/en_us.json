@@ -99,5 +99,7 @@
   "mkultra.ability.life_spike.description": "Strikes the target with a blast of dark energy causing %s and transferring %s health to the caster.",
   "mkultra.pet_name_format": "%s's %s",
   "faction.mkultra.necrotide_cultists.name": "Necrotide Cultists",
-  "mkultra.ability.shadow_pulse_flurry.name": "Shadow Pulse Flurry"
+  "mkultra.ability.shadow_pulse_flurry.name": "Shadow Pulse Flurry",
+  "mkultra.ability.seafury.name": "Seafury",
+  "mkultra.ability.seafury.description": "Places a line of %s eruptions down at the target position %s blocks apart, causing %s after %s seconds to targets within %s blocks."
 }

@@ -22,6 +22,14 @@
         {
           "attributeName": "mkcore:bleed_resistance",
           "value": 1.25
+        },
+        {
+          "attributeName": "mkcore:max_mana",
+          "value": 250.0
+        },
+        {
+          "attributeName": "mkcore:mana_regen",
+          "value": 2.0
         }
       ],
       "optionType": "mknpc:attributes"

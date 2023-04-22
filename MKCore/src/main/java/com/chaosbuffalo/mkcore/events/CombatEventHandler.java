@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.events;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.core.damage.IMKDamageSourceExtensions;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
@@ -86,7 +87,6 @@ public class CombatEventHandler {
     }
 
     private static boolean canBlock(DamageSource source, LivingEntity entity) {
-
         Entity sourceEntity = source.getDirectEntity();
         boolean hasPiercing = false;
         if (sourceEntity instanceof AbstractArrow) {
@@ -95,8 +95,12 @@ public class CombatEventHandler {
                 hasPiercing = true;
             }
         }
-
-        if (!source.is(DamageTypeTags.BYPASSES_ARMOR) && entity.isBlocking() && !hasPiercing) {
+        if (source instanceof IMKDamageSourceExtensions mkSrc) {
+            if (!mkSrc.canBlock()) {
+                return false;
+            }
+        }
+        if (!source.is(DamageTypeTags.BYPASSES_SHIELD) && entity.isBlocking() && !hasPiercing) {
             Vec3 damageLoc = source.getSourcePosition();
             if (damageLoc != null) {
                 Vec3 lookVec = entity.getViewVector(1.0F);
@@ -113,31 +117,33 @@ public class CombatEventHandler {
 
     @SubscribeEvent
     public static void onLivingAttackEvent(LivingAttackEvent event) {
-        Entity target = event.getEntity();
+        LivingEntity target = event.getEntity();
         if (target.level.isClientSide)
             return;
 
         DamageSource dmgSource = event.getSource();
         Entity source = dmgSource.getEntity();
 
-        if (canBlock(dmgSource, event.getEntity())) {
-            MKCore.getPlayer(target).ifPresent(playerData -> {
-                Tuple<Float, Boolean> breakResult = playerData.getStats().handlePoiseDamage(event.getAmount());
+        if (canBlock(dmgSource, target)) {
+            MKCore.getEntityData(target).ifPresent(targetData -> {
+                Tuple<Float, Boolean> breakResult = targetData.getStats().handlePoiseDamage(event.getAmount());
                 float left = breakResult.getA();
                 if (!(dmgSource instanceof MKDamageSource)) {
                     // correct for if we're a vanilla damage source and we're going to bypass armor so pre-apply armor
                     if (DamageUtils.isProjectileDamage(dmgSource)) {
-                        left = CoreDamageTypes.RangedDamage.get().applyResistance(event.getEntity(), left);
+                        left = CoreDamageTypes.RangedDamage.get().applyResistance(target, left);
                     } else {
-                        left = CoreDamageTypes.MeleeDamage.get().applyResistance(event.getEntity(), left);
+                        left = CoreDamageTypes.MeleeDamage.get().applyResistance(target, left);
                     }
 
                 }
+                // need to stop remainder damage from being blockable
                 event.setCanceled(true);
                 if (left > 0) {
-                    target.hurt(dmgSource instanceof MKDamageSource ? ((MKDamageSource) dmgSource)
-                                    .setSuppressTriggers(true) : dmgSource,
-                            left);
+                    if (dmgSource instanceof IMKDamageSourceExtensions mkSrc) {
+                        mkSrc.setCanBlock(false);
+                    }
+                    target.hurt(dmgSource, left);
                 }
                 if (breakResult.getB()) {
                     SoundUtils.serverPlaySoundAtEntity(event.getEntity(),
@@ -146,9 +152,11 @@ public class CombatEventHandler {
                     if (event.getEntity().getTicksUsingItem() <= 6) {
                         SoundUtils.serverPlaySoundAtEntity(event.getEntity(),
                                 CoreSounds.parry.get(), event.getEntity().getSoundSource());
-                        playerData.getSkills().tryIncreaseSkill(MKAttributes.BLOCK);
+                        MKCore.getPlayer(target).ifPresent(
+                                playerData -> playerData.getSkills().tryIncreaseSkill(MKAttributes.BLOCK));
                     } else {
-                        playerData.getSkills().tryScaledIncreaseSkill(MKAttributes.BLOCK, 0.5);
+                        MKCore.getPlayer(target).ifPresent(
+                                playerData -> playerData.getSkills().tryScaledIncreaseSkill(MKAttributes.BLOCK, 0.5));
                         if (dmgSource.getDirectEntity() instanceof AbstractArrow) {
                             SoundUtils.serverPlaySoundAtEntity(event.getEntity(),
                                     CoreSounds.arrow_block.get(), event.getEntity().getSoundSource());

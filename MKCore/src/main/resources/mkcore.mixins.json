@@ -7,7 +7,8 @@
     "LivingEntityMixins",
     "MobEntityMixins",
     "ShieldItemMixins",
-    "SwordItemMixins"
+    "SwordItemMixins",
+    "DamageSourceMixins"
   ],
   "injectors": {
     "maxShiftBy": 2

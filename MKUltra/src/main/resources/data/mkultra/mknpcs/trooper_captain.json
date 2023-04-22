@@ -15,6 +15,14 @@
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 100.0
+        },
+        {
+          "attributeName": "mkcore:max_mana",
+          "value": 100.0
+        },
+        {
+          "attributeName": "mkcore:mana_regen",
+          "value": 2.0
         }
       ],
       "optionType": "mknpc:attributes"

@@ -108,6 +108,10 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private final List<BossStage> bossStages = new ArrayList<>();
     private int currentStage;
 
+    private int blockDelay;
+    private int blockHold;
+    private int blockCooldown;
+
     @Nullable
     protected Component battlecry;
     @Nullable
@@ -173,6 +177,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         castingAbility = null;
         battlecry = null;
         lungeSpeed = .25;
+        blockCooldown = GameConstants.TICKS_PER_SECOND * 2;
+        blockDelay = GameConstants.TICKS_PER_SECOND / 2;
+        blockHold = GameConstants.TICKS_PER_SECOND * 2;
         updateEngine = new EntityUpdateEngine(this);
         animSync.attach(updateEngine);
         particleEffectTracker = ParticleEffectInstanceTracker.getTracker(this);
@@ -199,6 +206,30 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             stage.apply(this);
         }
         bossStages.add(stage);
+    }
+
+    public int getBlockDelay() {
+        return blockDelay;
+    }
+
+    public int getBlockHold() {
+        return blockHold;
+    }
+
+    public int getBlockCooldown() {
+        return blockCooldown;
+    }
+
+    public void setBlockDelay(int blockDelay) {
+        this.blockDelay = blockDelay;
+    }
+
+    public void setBlockHold(int blockHold) {
+        this.blockHold = blockHold;
+    }
+
+    public void setBlockCooldown(int blockCooldown) {
+        this.blockCooldown = blockCooldown;
     }
 
     @Override
@@ -348,15 +379,18 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(7, new LookAtThreatTargetGoal(this));
-        this.targetSelector.addGoal(3, new MKTargetGoal(this, true, true));
-        this.goalSelector.addGoal(0, new ReturnToSpawnGoal(this));
-        this.goalSelector.addGoal(2, new MovementGoal(this));
+        int priority = 0;
+        this.goalSelector.addGoal(priority++, new ReturnToSpawnGoal(this));
+        this.goalSelector.addGoal(priority++, new FloatGoal(this));
+        this.goalSelector.addGoal(priority++, new MovementGoal(this));
+        this.goalSelector.addGoal(priority++, new UseAbilityGoal(this));
+        this.goalSelector.addGoal(priority++, new MKBowAttackGoal(this, 5, 15.0f));
+        this.goalSelector.addGoal(priority++, new MKBlockGoal(this));
         this.meleeAttackGoal = new MKMeleeAttackGoal(this);
-        this.goalSelector.addGoal(4, new MKBowAttackGoal(this, 5, 15.0f));
-        this.goalSelector.addGoal(5, meleeAttackGoal);
-        this.goalSelector.addGoal(3, new UseAbilityGoal(this));
-        this.goalSelector.addGoal(1, new FloatGoal(this));
+        this.goalSelector.addGoal(priority++, meleeAttackGoal);
+        this.goalSelector.addGoal(priority++, new LookAtThreatTargetGoal(this));
+        this.targetSelector.addGoal(3, new MKTargetGoal(this, true, true));
+
     }
 
     public boolean avoidsWater() {

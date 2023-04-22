@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.entities.PointEffectEntity;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -52,6 +53,11 @@ public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
         return this;
     }
 
+    public EntityEffectBuilder<T> setPreDelay(int preDelay) {
+        effect.setPreDelay(preDelay);
+        return this;
+    }
+
     public EntityEffectBuilder<T> setParticles(ResourceLocation animation) {
         effect.setParticles(animation);
         return this;
@@ -84,6 +90,11 @@ public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
 
     public EntityEffectBuilder<T> effect(MobEffectInstance effect, TargetingContext targetContext) {
         this.effect.addEffect(effect, targetContext);
+        return this;
+    }
+
+    public EntityEffectBuilder<T> tickSound(SoundEvent event) {
+        this.effect.setTickSound(event);
         return this;
     }
 

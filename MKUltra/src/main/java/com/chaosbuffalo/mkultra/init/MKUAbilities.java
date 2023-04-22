@@ -33,6 +33,8 @@ public class MKUAbilities {
     public static final RegistryObject<FireballAbility> FIREBALL = REGISTRY.register("ability.fireball", FireballAbility::new);
     public static final RegistryObject<ShadowPulseFlurryAbility> SHADOW_PUlSE_FLURRY = REGISTRY.register("ability.shadow_pulse_flurry", ShadowPulseFlurryAbility::new);
 
+    public static final RegistryObject<SeafuryAbility> SEAFURY = REGISTRY.register("ability.seafury", SeafuryAbility::new);
+
     public static final RegistryObject<NecrotideGolemBeam> NECROTIDE_GOLEM_BEAM = REGISTRY.register("ability.necrotide_golem_beam", NecrotideGolemBeam::new);
 
     //necromancer

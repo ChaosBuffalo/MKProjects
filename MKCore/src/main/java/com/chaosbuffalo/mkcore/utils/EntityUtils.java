@@ -114,4 +114,11 @@ public class EntityUtils {
         MKCore.getEntityData(entity).ifPresent(data -> data.getPets().onDeath(Entity.RemovalReason.DISCARDED));
         entity.remove(Entity.RemovalReason.DISCARDED);
     }
+
+    public static boolean isInFrontOf(Entity a, Entity b) {
+        Vec3 lookVec = a.getViewVector(1.0F);
+        Vec3 damageDir = b.position().vectorTo(a.position()).normalize();
+        damageDir = new Vec3(damageDir.x, 0.0D, damageDir.z);
+        return damageDir.dot(lookVec) < 0.0D;
+    }
 }
