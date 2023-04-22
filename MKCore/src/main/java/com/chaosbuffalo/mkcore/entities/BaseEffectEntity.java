@@ -224,18 +224,9 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         buffer.writeInt(waitTime);
         buffer.writeInt(tickCount);
         buffer.writeInt(preDelay);
-        buffer.writeBoolean(tickSound != null);
-        if (tickSound != null) {
-            buffer.writeResourceLocation(ForgeRegistries.SOUND_EVENTS.getKey(tickSound));
-        }
-        buffer.writeBoolean(particles != null);
-        if (particles != null) {
-            particles.write(buffer);
-        }
-        buffer.writeBoolean(waitingParticles != null);
-        if (waitingParticles != null) {
-            waitingParticles.write(buffer);
-        }
+        buffer.writeNullable(tickSound, (buf, x) -> buf.writeRegistryIdUnsafe(ForgeRegistries.SOUND_EVENTS, x));
+        buffer.writeNullable(particles, (buf, x) -> x.write(buf));
+        buffer.writeNullable(waitingParticles, (buf, x) -> x.write(buf));
     }
 
     @Override
@@ -248,18 +239,9 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         waitTime = additionalData.readInt();
         tickCount = additionalData.readInt();
         preDelay = additionalData.readInt();
-        boolean hasTickSound = additionalData.readBoolean();
-        if (hasTickSound) {
-            tickSound = ForgeRegistries.SOUND_EVENTS.getValue(additionalData.readResourceLocation());
-        }
-        boolean hasParticles = additionalData.readBoolean();
-        if (hasParticles) {
-            particles = ParticleDisplay.read(additionalData);
-        }
-        boolean hasWaiting = additionalData.readBoolean();
-        if (hasWaiting) {
-            waitingParticles = ParticleDisplay.read(additionalData);
-        }
+        tickSound = additionalData.readNullable(x -> x.readRegistryIdUnsafe(ForgeRegistries.SOUND_EVENTS));
+        particles = additionalData.readNullable(ParticleDisplay::read);
+        waitingParticles = additionalData.readNullable(ParticleDisplay::read);
     }
 
     public void setOwner(@Nullable LivingEntity ownerIn) {

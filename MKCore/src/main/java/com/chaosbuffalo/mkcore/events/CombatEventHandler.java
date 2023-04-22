@@ -14,7 +14,6 @@ import com.chaosbuffalo.mkcore.network.PlayerLeftClickEmptyPacket;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -127,7 +126,7 @@ public class CombatEventHandler {
 
         if (canBlock(dmgSource, target)) {
             MKCore.getEntityData(target).ifPresent(targetData -> {
-                IMKEntityStats.BlockResult breakResult = targetData.getStats().handlePoiseDamage(event.getAmount());
+                IMKEntityStats.BlockResult breakResult = targetData.getStats().tryPoiseBlock(event.getAmount());
                 float left = breakResult.damageLeft();
                 if (!(dmgSource instanceof MKDamageSource)) {
                     // correct for if we're a vanilla damage source and we're going to bypass armor so pre-apply armor
@@ -143,6 +142,9 @@ public class CombatEventHandler {
                 if (left > 0) {
                     if (dmgSource instanceof IMKDamageSourceExtensions mkSrc) {
                         mkSrc.setCanBlock(false);
+                    }
+                    if (dmgSource instanceof MKDamageSource mk) {
+                        mk.setSuppressTriggers(true);
                     }
                     target.hurt(dmgSource, left);
                 }

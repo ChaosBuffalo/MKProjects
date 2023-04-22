@@ -4,13 +4,12 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Tuple;
 
 public interface IMKEntityStats {
 
     float getDamageTypeBonus(MKDamageType damageType);
 
-    void setMana(float value, boolean sendUpdate);
+    void setMana(float value);
 
     float getPoise();
 
@@ -19,8 +18,6 @@ public interface IMKEntityStats {
     void setMaxPoise(float max);
 
     void setPoise(float value);
-
-    void setPoise(float value, boolean sendUpdate);
 
     float getMaxMana();
 
@@ -58,7 +55,7 @@ public interface IMKEntityStats {
 
     record BlockResult(float damageLeft, boolean poiseBroke) {};
 
-    BlockResult handlePoiseDamage(float damageIn);
+    BlockResult tryPoiseBlock(float damageIn);
 
     float getAbilityManaCost(MKAbility ability);
 

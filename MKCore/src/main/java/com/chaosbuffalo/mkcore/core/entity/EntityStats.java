@@ -11,7 +11,6 @@ import com.chaosbuffalo.mkcore.sync.SyncFloat;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -54,11 +53,11 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
         return mana.get();
     }
 
+    @Override
     public void setMana(float value) {
         setMana(value, true);
     }
 
-    @Override
     public void setMana(float value, boolean sendUpdate) {
         // Here we're using isAddedToWorld as a proxy to know that attribute deserialization is done and max mana is available
         if (getEntity().isAddedToWorld()) {
@@ -88,7 +87,6 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
         setPoise(value, true);
     }
 
-    @Override
     public void setPoise(float value, boolean sendUpdate) {
         if (getEntity().isAddedToWorld()) {
             value = Mth.clamp(value, 0, getMaxPoise());
@@ -256,7 +254,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
     }
 
     @Override
-    public BlockResult handlePoiseDamage(float damageIn) {
+    public BlockResult tryPoiseBlock(float damageIn) {
         float blockPortion = (float) (requiredAttribute(MKAttributes.BLOCK_EFFICIENCY).getValue() * damageIn);
         float remainder = damageIn - blockPortion;
         float poise = getPoise();
