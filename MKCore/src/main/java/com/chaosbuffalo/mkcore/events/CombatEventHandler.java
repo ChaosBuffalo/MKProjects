@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.events;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
+import com.chaosbuffalo.mkcore.core.IMKEntityStats;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.damage.IMKDamageSourceExtensions;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
@@ -126,8 +127,8 @@ public class CombatEventHandler {
 
         if (canBlock(dmgSource, target)) {
             MKCore.getEntityData(target).ifPresent(targetData -> {
-                Tuple<Float, Boolean> breakResult = targetData.getStats().handlePoiseDamage(event.getAmount());
-                float left = breakResult.getA();
+                IMKEntityStats.BlockResult breakResult = targetData.getStats().handlePoiseDamage(event.getAmount());
+                float left = breakResult.damageLeft();
                 if (!(dmgSource instanceof MKDamageSource)) {
                     // correct for if we're a vanilla damage source and we're going to bypass armor so pre-apply armor
                     if (DamageUtils.isProjectileDamage(dmgSource)) {
@@ -145,7 +146,7 @@ public class CombatEventHandler {
                     }
                     target.hurt(dmgSource, left);
                 }
-                if (breakResult.getB()) {
+                if (breakResult.poiseBroke()) {
                     SoundUtils.serverPlaySoundAtEntity(event.getEntity(),
                             CoreSounds.block_break.get(), event.getEntity().getSoundSource());
                 } else {

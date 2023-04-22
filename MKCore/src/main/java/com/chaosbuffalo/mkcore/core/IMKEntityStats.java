@@ -56,7 +56,9 @@ public interface IMKEntityStats {
 
     boolean consumeMana(float amount);
 
-    Tuple<Float, Boolean> handlePoiseDamage(float damageIn);
+    record BlockResult(float damageLeft, boolean poiseBroke) {};
+
+    BlockResult handlePoiseDamage(float damageIn);
 
     float getAbilityManaCost(MKAbility ability);
 

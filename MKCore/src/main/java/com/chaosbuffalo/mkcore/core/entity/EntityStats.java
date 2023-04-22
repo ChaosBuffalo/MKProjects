@@ -256,19 +256,19 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
     }
 
     @Override
-    public Tuple<Float, Boolean> handlePoiseDamage(float damageIn) {
+    public BlockResult handlePoiseDamage(float damageIn) {
         float blockPortion = (float) (requiredAttribute(MKAttributes.BLOCK_EFFICIENCY).getValue() * damageIn);
         float remainder = damageIn - blockPortion;
         float poise = getPoise();
         if (blockPortion >= poise) {
             breakPoise();
-            return new Tuple<>(remainder + blockPortion - poise, true);
+            return new BlockResult(remainder + blockPortion - poise, true);
         } else {
             if (getEntity().getTicksUsingItem() < 6) {
                 blockPortion *= 0.25f;
             }
             setPoise(poise - blockPortion);
-            return new Tuple<>(remainder, false);
+            return new BlockResult(remainder, false);
         }
     }
 
