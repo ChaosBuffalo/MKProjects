@@ -7,11 +7,13 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.SwordItem;
 import net.minecraftforge.common.ToolActions;
 
 import java.util.EnumSet;
@@ -56,7 +58,8 @@ public class MKBlockGoal extends Goal {
     }
 
     public boolean shouldConsiderBlocking(LivingEntity target) {
-        return MKCore.getEntityData(target).map(
+        //FIXME: maybe tag our swords with the sword tag and use tags here
+        return target.getMainHandItem().getItem() instanceof SwordItem && MKCore.getEntityData(target).map(
                 cap -> !target.isBlocking() && cap.getCombatExtension().getEntityTicksSinceLastSwing() >=
                         EntityUtils.getCooldownPeriod(target)).orElse(false);
     }
@@ -91,7 +94,7 @@ public class MKBlockGoal extends Goal {
                 return false;
             }
             LivingEntity target = targetOpt.get();
-            if (EntityUtils.isInFrontOf(entity, target) && isInMeleeRange(target) && shouldConsiderBlocking(target)) {
+            if (EntityUtils.isInFrontOf(target, entity) && isInMeleeRange(target) && shouldConsiderBlocking(target)) {
                 this.target = target;
                 return true;
             }

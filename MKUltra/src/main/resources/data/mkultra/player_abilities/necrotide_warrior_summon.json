@@ -1,0 +1,9 @@
+{
+  "attributes": {
+    "casting_particles": "mkcore:fx.casting.empty",
+    "npc": "mkultra:necrotide_skeletal_warrior"
+  },
+  "castTime": 100,
+  "cooldown": 20,
+  "manaCost": 1.0
+}

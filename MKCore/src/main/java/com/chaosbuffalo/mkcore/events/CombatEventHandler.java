@@ -95,10 +95,8 @@ public class CombatEventHandler {
                 hasPiercing = true;
             }
         }
-        if (source instanceof IMKDamageSourceExtensions mkSrc) {
-            if (!mkSrc.canBlock()) {
-                return false;
-            }
+        if (DamageUtils.wasBlocked(source)) {
+            return false;
         }
         if (!source.is(DamageTypeTags.BYPASSES_SHIELD) && entity.isBlocking() && !hasPiercing) {
             Vec3 damageLoc = source.getSourcePosition();

@@ -1,6 +1,9 @@
 package com.chaosbuffalo.mkcore.mixins;
 
+import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
+import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -21,21 +24,8 @@ public abstract class LivingEntityMixins {
     @Shadow
     public abstract boolean isDamageSourceBlocked(DamageSource damageSourceIn);
 
-    @Shadow
-    public abstract boolean isUsingItem();
 
-    @Shadow
-    protected ItemStack useItem;
-
-    @Shadow
-    protected int useItemRemaining;
-
-    @Shadow
-    @Nullable
-    public abstract DamageSource getLastDamageSource();
-
-    @Shadow
-    public abstract boolean hurt(DamageSource damageSrc, float damageAmount);
+    @Shadow public abstract void knockback(double pStrength, double pX, double pZ);
 
     // disable player blocking as we handle it ourselves
     @Redirect(
@@ -47,6 +37,22 @@ public abstract class LivingEntityMixins {
             return false;
         } else {
             return isDamageSourceBlocked(damageSourceIn);
+        }
+    }
+
+    @Redirect(
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"),
+            method = "Lnet/minecraft/world/entity/LivingEntity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"
+    )
+    private void knockbackProxy(LivingEntity entity, double strength, double x, double z) {
+        if (DamageUtils.isMeleeDamage(damageSource) && damageSource.getDirectEntity() != null
+                && !DamageUtils.wasBlocked(damageSource)
+                && !EntityUtils.isInFrontOf(entity, damageSource.getDirectEntity()))
+        {
+            knockback(strength, x, z);
+            MKCore.LOGGER.info("Performing knockback");
+        } else {
+            MKCore.LOGGER.info("skipping knockback");
         }
     }
 

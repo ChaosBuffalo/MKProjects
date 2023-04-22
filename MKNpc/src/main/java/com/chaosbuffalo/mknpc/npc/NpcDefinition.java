@@ -188,7 +188,7 @@ public class NpcDefinition {
         }
         MKCore.getEntityData(entity).ifPresent(cap -> {
             cap.getStats().setPoise(cap.getStats().getMaxPoise());
-            cap.getStats().setMana(cap.getStats().getMaxMana(), false);
+            cap.getStats().setMana(cap.getStats().getMaxMana());
         });
     }
 

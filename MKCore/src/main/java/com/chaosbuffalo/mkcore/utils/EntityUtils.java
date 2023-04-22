@@ -46,8 +46,15 @@ public class EntityUtils {
     }
 
     public static double getCooldownPeriod(LivingEntity entity) {
-        return 1.0D / entity.getAttribute(Attributes.ATTACK_SPEED).getValue() *
-                GameConstants.TICKS_PER_SECOND;
+        //FIXME: quick hack to make it so that unarmed mobs arent attacking 4x a second,
+        // if we add an unarmed skill we should scale attack speed for mobs by it
+        if (entity.getMainHandItem().isEmpty()) {
+            return GameConstants.TICKS_PER_SECOND;
+        } else {
+            return 1.0D / entity.getAttribute(Attributes.ATTACK_SPEED).getValue() *
+                    GameConstants.TICKS_PER_SECOND;
+        }
+
     }
 
     public static void shootArrow(LivingEntity source, AbstractArrow arrowEntity, LivingEntity target, float launchVelocity) {
