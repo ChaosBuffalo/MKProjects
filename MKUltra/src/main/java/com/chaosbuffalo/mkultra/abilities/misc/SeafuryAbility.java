@@ -22,8 +22,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Function;
 
 public class SeafuryAbility extends PositionTargetingAbility {
     private static final ResourceLocation WAIT_PARTICLES = new ResourceLocation(MKUltra.MODID, "seafury_wait");
@@ -55,8 +58,8 @@ public class SeafuryAbility extends PositionTargetingAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData casterData) {
-        float level = getSkillLevel(casterData.getEntity(), MKAttributes.EVOCATION);
+    public Component getAbilityDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
+        float level = skillSupplier.apply(MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.NatureDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(iterations.value()),
@@ -72,10 +75,10 @@ public class SeafuryAbility extends PositionTargetingAbility {
     }
 
     @Override
-    public void castAtPosition(IMKEntityData casterData, Vec3 position) {
+    public void castAtPosition(IMKEntityData casterData, Vec3 position, Function<Attribute, Float> skillSupplier) {
         LivingEntity castingEntity = casterData.getEntity();
         Vec3 dir = position.subtract(castingEntity.position()).normalize();
-        float level = getSkillLevel(castingEntity, MKAttributes.EVOCATION);
+        float level = skillSupplier.apply(MKAttributes.EVOCATION);
         for (int i = 0; i < iterations.value(); i++) {
             int delay = step_delay.value() * i;
             Vec3 pos = position.add(dir.scale(step.value() * i));

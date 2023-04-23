@@ -19,8 +19,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 
 import javax.annotation.Nullable;
+import java.util.function.Function;
 
 public class SpiritBombAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_casting");
@@ -79,19 +81,19 @@ public class SpiritBombAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData) {
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.NatureDamage.get(),
                 baseDamage.value(),
                 scaleDamage.value(),
-                getSkillLevel(entityData.getEntity(), MKAttributes.EVOCATION),
+                skillSupplier.apply(MKAttributes.EVOCATION),
                 modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        super.endCast(entity, data, context);
-        float level = getSkillLevel(entity, MKAttributes.EVOCATION);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
+        super.endCast(entity, data, context, skillSupplier);
+        float level = skillSupplier.apply(MKAttributes.EVOCATION);
         SpiritBombProjectileEntity proj = new SpiritBombProjectileEntity(MKUEntities.SPIRIT_BOMB_TYPE.get(), entity.level);
         proj.setOwner(entity);
         proj.setSkillLevel(level);

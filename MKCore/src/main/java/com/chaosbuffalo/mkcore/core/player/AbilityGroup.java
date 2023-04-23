@@ -141,7 +141,8 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         MKCore.LOGGER.debug("onAbilityRemoved({})", abilityId);
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
         if (ability instanceof MKToggleAbility) {
-            ((MKToggleAbility) ability).removeEffect(playerData.getEntity(), playerData);
+            ((MKToggleAbility) ability).removeEffect(playerData.getEntity(), playerData,
+                    attr -> MKAbility.getSkillLevel(playerData.getEntity(), attr));
         }
     }
 
@@ -282,7 +283,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         for (int i = 0; i < getMaximumSlotCount(); i++) {
             MKAbilityInfo abilityInfo = getAbilityInfo(i);
             if (abilityInfo != null && abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
-                toggle.removeEffect(playerData.getEntity(), playerData);
+                toggle.removeEffect(playerData.getEntity(), playerData, attr -> MKAbility.getSkillLevel(playerData.getEntity(), attr));
             }
         }
     }

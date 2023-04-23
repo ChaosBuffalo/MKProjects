@@ -23,9 +23,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.function.Function;
 
 public class WrathBeamAbility extends PositionTargetingAbility {
     private static final ResourceLocation PULSE_PARTICLES = new ResourceLocation(MKUltra.MODID, "wrath_beam_pulse");
@@ -52,8 +54,8 @@ public class WrathBeamAbility extends PositionTargetingAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData casterData) {
-        float level = getSkillLevel(casterData.getEntity(), MKAttributes.EVOCATION);
+    public Component getAbilityDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
+        float level = skillSupplier.apply(MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), damageStr,
                 NUMBER_FORMATTER.format(convertDurationToSeconds(breakDuration.value())),
@@ -78,9 +80,9 @@ public class WrathBeamAbility extends PositionTargetingAbility {
     }
 
     @Override
-    public void castAtPosition(IMKEntityData casterData, Vec3 position) {
+    public void castAtPosition(IMKEntityData casterData, Vec3 position, Function<Attribute, Float> skillSupplier) {
         LivingEntity castingEntity = casterData.getEntity();
-        float level = getSkillLevel(castingEntity, MKAttributes.EVOCATION);
+        float level = skillSupplier.apply(MKAttributes.EVOCATION);
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.FireDamage.get(),
                         base.value(), scale.value(), modifierScaling.value())
                 .ability(this)

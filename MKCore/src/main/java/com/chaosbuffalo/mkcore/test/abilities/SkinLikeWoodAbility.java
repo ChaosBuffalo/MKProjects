@@ -8,6 +8,9 @@ import com.chaosbuffalo.mkcore.test.MKTestEffects;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+
+import java.util.function.Function;
 
 public class SkinLikeWoodAbility extends MKToggleAbility {
     public SkinLikeWoodAbility() {
@@ -27,8 +30,8 @@ public class SkinLikeWoodAbility extends MKToggleAbility {
     }
 
     @Override
-    public void applyEffect(LivingEntity castingEntity, IMKEntityData casterData) {
-        super.applyEffect(castingEntity, casterData);
+    public void applyEffect(LivingEntity castingEntity, IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
+        super.applyEffect(castingEntity, casterData, skillSupplier);
 
         MKEffectBuilder<?> instance = getToggleEffect().builder(castingEntity)
                 .amplify(2)

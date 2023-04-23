@@ -9,6 +9,9 @@ import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+
+import java.util.function.Function;
 
 public class LifeSiphonAbility extends MKPassiveAbility {
     protected final FloatAttribute base = new FloatAttribute("base", 4.0f);
@@ -31,8 +34,8 @@ public class LifeSiphonAbility extends MKPassiveAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData) {
-        float level = getSkillLevel(entityData.getEntity(), MKAttributes.NECROMANCY);
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+        float level = skillSupplier.apply(MKAttributes.NECROMANCY);
         Component valueStr = getHealDescription(entityData, base.value(), scale.value(), level, modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), valueStr);
     }

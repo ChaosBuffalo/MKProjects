@@ -17,7 +17,10 @@ import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.function.Function;
 
 public class NewHeal extends MKAbility {
     protected final FloatAttribute base = new FloatAttribute("base", 5.0f);
@@ -35,8 +38,8 @@ public class NewHeal extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData casterData) {
-        float level = getSkillLevel(casterData.getEntity(), MKAttributes.RESTORATION);
+    public Component getAbilityDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
+        float level = skillSupplier.apply(MKAttributes.RESTORATION);
         Component valueStr = getHealDescription(casterData, base.value(),
                 scale.value(), level,
                 modifierScaling.value());
@@ -64,9 +67,9 @@ public class NewHeal extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
-        super.endCast(castingEntity, casterData, context);
-        float level = getSkillLevel(castingEntity, MKAttributes.RESTORATION);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
+        super.endCast(castingEntity, casterData, context, skillSupplier);
+        float level = skillSupplier.apply(MKAttributes.RESTORATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {
                 MKEffectBuilder<?> heal = MKTestEffects.NEW_HEAL.get().builder(castingEntity)

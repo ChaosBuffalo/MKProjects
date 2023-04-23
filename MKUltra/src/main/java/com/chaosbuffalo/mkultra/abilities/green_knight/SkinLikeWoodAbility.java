@@ -19,9 +19,11 @@ import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.function.Function;
 
 public class SkinLikeWoodAbility extends MKToggleAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "skin_like_wood_casting");
@@ -60,9 +62,9 @@ public class SkinLikeWoodAbility extends MKToggleAbility {
     }
 
     @Override
-    public void applyEffect(LivingEntity entity, IMKEntityData entityData) {
-        super.applyEffect(entity, entityData);
-        float level = getSkillLevel(entity, MKAttributes.ABJURATION);
+    public void applyEffect(LivingEntity entity, IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+        super.applyEffect(entity, entityData, skillSupplier);
+        float level = skillSupplier.apply(MKAttributes.ABJURATION);
         SoundUtils.serverPlaySoundAtEntity(entity, MKUSounds.spell_earth_7.get(), entity.getSoundSource());
 
         MKEffectBuilder<?> instance = getToggleEffect().builder(entity)

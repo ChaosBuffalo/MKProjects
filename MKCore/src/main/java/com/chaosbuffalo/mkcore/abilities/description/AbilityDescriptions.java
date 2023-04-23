@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class AbilityDescriptions {
 
@@ -39,7 +40,8 @@ public class AbilityDescriptions {
         return desc;
     }
 
-    public static List<Component> getEffectModifiers(MKEffect effect, IMKEntityData casterData, boolean showName) {
+    public static List<Component> getEffectModifiers(MKEffect effect, IMKEntityData casterData, boolean showName,
+                                                     Function<Attribute, Float> skillSupplier) {
         if (effect.getAttributeModifierMap().isEmpty()) {
             return Collections.emptyList();
         }
@@ -52,7 +54,7 @@ public class AbilityDescriptions {
         for (Map.Entry<Attribute, MKEffect.Modifier> entry : effect.getAttributeModifierMap().entrySet()) {
             MKEffect.Modifier modifier = entry.getValue();
             double value = effect.calculateModifierValue(modifier, 1,
-                    modifier.skill != null ? MKAbility.getSkillLevel(casterData.getEntity(), modifier.skill) : 0.0f);
+                    modifier.skill != null ? skillSupplier.apply(modifier.skill) : 0.0f);
             desc.add(Component.literal("    ")
                     .append(Component.translatable(entry.getKey().getDescriptionId()))
                     .append(String.format(": %s%s ", value > 0 ? "+" : "",

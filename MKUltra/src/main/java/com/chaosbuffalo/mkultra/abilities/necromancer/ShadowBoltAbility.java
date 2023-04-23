@@ -20,8 +20,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 
 import javax.annotation.Nullable;
+import java.util.function.Function;
 
 public class ShadowBoltAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_casting");
@@ -61,8 +63,8 @@ public class ShadowBoltAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData) {
-        float skillLevel = getSkillLevel(entityData.getEntity(), MKAttributes.EVOCATION);
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+        float skillLevel = skillSupplier.apply(MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.ShadowDamage.get(), baseDamage.value(),
                 scaleDamage.value(), skillLevel,
                 modifierScaling.value());
@@ -100,9 +102,9 @@ public class ShadowBoltAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        super.endCast(entity, data, context);
-        float level = getSkillLevel(entity, MKAttributes.EVOCATION);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
+        super.endCast(entity, data, context, skillSupplier);
+        float level = skillSupplier.apply(MKAttributes.EVOCATION);
         if (data.getEffects().isEffectActive(MKUEffects.SHADOWBRINGER.get())) {
             data.getEffects().removeEffect(MKUEffects.SHADOWBRINGER.get());
         }

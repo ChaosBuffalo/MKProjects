@@ -30,12 +30,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Function;
 
 public class ExplosiveGrowthAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "explosive_growth_casting");
@@ -74,10 +76,10 @@ public class ExplosiveGrowthAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData) {
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.MeleeDamage.get(), baseDamage.value(),
                 scaleDamage.value(),
-                getSkillLevel(entityData.getEntity(), MKAttributes.PANKRATION),
+                skillSupplier.apply(MKAttributes.PANKRATION),
                 modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
@@ -99,10 +101,10 @@ public class ExplosiveGrowthAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
-        super.endCast(castingEntity, casterData, context);
-        float restoLevel = getSkillLevel(castingEntity, MKAttributes.RESTORATION);
-        float pankrationLevel = getSkillLevel(castingEntity, MKAttributes.PANKRATION);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
+        super.endCast(castingEntity, casterData, context, skillSupplier);
+        float restoLevel = skillSupplier.apply(MKAttributes.RESTORATION);
+        float pankrationLevel = skillSupplier.apply(MKAttributes.PANKRATION);
 
         SoundSource cat = castingEntity instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
         float damage = baseDamage.value() + scaleDamage.value() * pankrationLevel;
