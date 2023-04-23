@@ -31,7 +31,7 @@ public class LifeSiphonAbility extends MKPassiveAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
+    public Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.NECROMANCY);
         Component valueStr = getHealDescription(entityData, base.value(), scale.value(), level, modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), valueStr);

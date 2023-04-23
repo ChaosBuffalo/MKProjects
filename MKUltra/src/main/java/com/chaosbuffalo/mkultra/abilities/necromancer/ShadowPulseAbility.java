@@ -59,7 +59,7 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
 
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData casterData) {
+    public Component getAbilityDescription(IMKEntityData casterData) {
         float level = getSkillLevel(casterData.getEntity(), MKAttributes.CONJURATION);
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         Component detonateStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), detonateBase.value(), detonateScale.value(), level, modifierScaling.value());
@@ -88,7 +88,8 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
     }
 
     @Override
-    public void castAtPosition(LivingEntity castingEntity, Vec3 position) {
+    public void castAtPosition(IMKEntityData casterData, Vec3 position) {
+        LivingEntity castingEntity = casterData.getEntity();
         Vec3 pulseOffset = new Vec3(0.0, 0.5, 0.0);
         Vec3 pulsePos = position.add(pulseOffset);
         float level = getSkillLevel(castingEntity, MKAttributes.CONJURATION);

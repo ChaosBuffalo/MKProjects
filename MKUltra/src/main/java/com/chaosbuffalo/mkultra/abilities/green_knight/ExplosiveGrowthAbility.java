@@ -74,7 +74,7 @@ public class ExplosiveGrowthAbility extends MKAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
+    public Component getAbilityDescription(IMKEntityData entityData) {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.MeleeDamage.get(), baseDamage.value(),
                 scaleDamage.value(),
                 getSkillLevel(entityData.getEntity(), MKAttributes.PANKRATION),

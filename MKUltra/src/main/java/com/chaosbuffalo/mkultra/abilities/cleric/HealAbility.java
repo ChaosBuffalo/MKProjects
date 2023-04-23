@@ -41,7 +41,7 @@ public class HealAbility extends MKAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
+    public Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.RESTORATION);
         Component valueStr = getHealDescription(entityData, base.value(),
                 scale.value(), level, modifierScaling.value());

@@ -55,7 +55,7 @@ public class SeafuryAbility extends PositionTargetingAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData casterData) {
+    public Component getAbilityDescription(IMKEntityData casterData) {
         float level = getSkillLevel(casterData.getEntity(), MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.NatureDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(),
@@ -72,7 +72,8 @@ public class SeafuryAbility extends PositionTargetingAbility {
     }
 
     @Override
-    public void castAtPosition(LivingEntity castingEntity, Vec3 position) {
+    public void castAtPosition(IMKEntityData casterData, Vec3 position) {
+        LivingEntity castingEntity = casterData.getEntity();
         Vec3 dir = position.subtract(castingEntity.position()).normalize();
         float level = getSkillLevel(castingEntity, MKAttributes.EVOCATION);
         for (int i = 0; i < iterations.value(); i++) {

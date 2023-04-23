@@ -48,7 +48,7 @@ public class DrownAbility extends MKAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
+    public Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.CONJURATION);
         Component dotStr = getDamageDescription(entityData,
                 CoreDamageTypes.NatureDamage.get(), baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());

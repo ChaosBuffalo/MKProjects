@@ -55,7 +55,7 @@ public class FireballAbility extends MKAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
+    public Component getAbilityDescription(IMKEntityData entityData) {
         float skillLevel = getSkillLevel(entityData.getEntity(), MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(), baseDamage.value(),
                 scaleDamage.value(), skillLevel,

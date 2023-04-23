@@ -149,7 +149,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return Component.translatable("mkcore.ability.description.mana_cost", getManaCost(casterData));
     }
 
-    protected Component getAbilityDescription(IMKEntityData casterData) {
+    public Component getAbilityDescription(IMKEntityData casterData) {
         return Component.translatable(getDescriptionTranslationKey());
     }
 

@@ -22,8 +22,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Random;
-
 public class EmberAbility extends MKAbility {
     private static final ResourceLocation TEST_PARTICLES = new ResourceLocation(MKCore.MOD_ID, "beam_effect");
     protected final FloatAttribute damage = new FloatAttribute("damage", 6.0f);
@@ -38,7 +36,7 @@ public class EmberAbility extends MKAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData casterData) {
+    public Component getAbilityDescription(IMKEntityData casterData) {
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(), damage.value(), 0.0f, 0, 1.0f);
         Component burn = Component.literal(burnTime.valueAsString()).withStyle(ChatFormatting.UNDERLINE);
         return Component.translatable(getDescriptionTranslationKey(), damageStr, burn);

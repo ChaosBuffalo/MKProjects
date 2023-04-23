@@ -42,7 +42,7 @@ public class SmiteAbility extends MKAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
+    public Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.EVOCATION);
         Component valueStr = getDamageDescription(entityData,
                 CoreDamageTypes.HolyDamage.get(), base.value(), scale.value(), level, modifierScaling.value());

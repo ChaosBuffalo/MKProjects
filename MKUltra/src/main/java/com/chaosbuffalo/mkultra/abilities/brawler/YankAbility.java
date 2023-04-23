@@ -37,7 +37,7 @@ public class YankAbility extends MKAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
+    public Component getAbilityDescription(IMKEntityData entityData) {
         float level = getSkillLevel(entityData.getEntity(), MKAttributes.PANKRATION);
         String value = NUMBER_FORMATTER.format(base.value() + scale.value() * level);
         return Component.translatable(getDescriptionTranslationKey(), value);

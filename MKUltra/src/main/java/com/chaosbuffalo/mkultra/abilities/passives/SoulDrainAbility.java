@@ -31,7 +31,7 @@ public class SoulDrainAbility extends MKPassiveAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
+    public Component getAbilityDescription(IMKEntityData entityData) {
         float value = getDrainValue(entityData.getEntity());
         return Component.translatable(getDescriptionTranslationKey(), value);
     }
