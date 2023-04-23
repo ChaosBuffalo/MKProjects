@@ -14,7 +14,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.abilities.misc.PositionTargetingAbility;
+import com.chaosbuffalo.mkcore.abilities.PositionTargetingAbility;
 import com.chaosbuffalo.mkultra.effects.PullEffect;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.TargetingContext;

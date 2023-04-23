@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkultra.abilities.misc;
+package com.chaosbuffalo.mkcore.abilities;
 
 import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
