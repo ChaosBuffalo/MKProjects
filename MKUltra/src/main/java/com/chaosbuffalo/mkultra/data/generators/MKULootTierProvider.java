@@ -62,25 +62,7 @@ public class MKULootTierProvider extends LootTierProvider {
                 RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.NAME_SLOT), 10);
         tier.addItemTemplate(weaponTemplate, 10);
         return tier;
-
-
     }
-
-//    LootTier tier = new LootTier(new ResourceLocation(MKUltra.MODID, "trooper_captain"));
-//    LootItemTemplate katana = new LootItemTemplate(LootSlotManager.MAIN_HAND);
-//        katana.addItem(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.KATANA_TYPE));
-//    MeleeEffectOption meleeEffect = new MeleeEffectOption();
-//        meleeEffect.addEffect(new UndeadDamageMeleeWeaponEffect(1.25f));
-//        katana.addRandomizationOption(meleeEffect);
-//    NameOption name = new NameOption(Component.literal("Stinging Blade"));
-//        katana.addRandomizationOption(name);
-//    introCastleAttrs(tier, katana);
-//        katana.addTemplate(new RandomizationTemplate(new ResourceLocation(MKUltra.MODID, "blade"),
-//    RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.NAME_SLOT), 10);
-//        katana.addTemplate(new RandomizationTemplate(new ResourceLocation(MKUltra.MODID, "blade_crit"),
-//    RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.NAME_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT), 1);
-//        tier.addItemTemplate(katana, 5);
-//    addEarringOfMinorHealth(tier, 10);
 
     private LootTier burningSkeletonLoot() {
         LootTier tier = new LootTier(new ResourceLocation(MKUltra.MODID, "burning_skeleton"));
