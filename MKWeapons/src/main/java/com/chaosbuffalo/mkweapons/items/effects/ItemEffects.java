@@ -38,6 +38,7 @@ public class ItemEffects {
         addWeaponEffectDeserializer(AccessoryModifierEffect.NAME, AccessoryModifierEffect::new);
         addWeaponEffectDeserializer(SkillScalingEffect.NAME, SkillScalingEffect::new);
         addWeaponEffectDeserializer(RangedSkillScalingEffect.NAME, RangedSkillScalingEffect::new);
+        addWeaponEffectDeserializer(OnHitAbilityEffect.NAME, OnHitAbilityEffect::new);
     }
 
     @Nullable

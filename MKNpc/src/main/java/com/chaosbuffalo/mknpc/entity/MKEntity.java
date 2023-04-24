@@ -322,7 +322,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
                 .add(MKNpcAttributes.AGGRO_RANGE.get(), 6)
                 .add(Attributes.ATTACK_SPEED)
                 .add(Attributes.FOLLOW_RANGE, 32.0D)
-                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0);
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.5);
     }
 
     @Override
