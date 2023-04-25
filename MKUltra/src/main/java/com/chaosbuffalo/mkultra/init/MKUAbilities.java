@@ -14,6 +14,7 @@ import com.chaosbuffalo.mkultra.abilities.necromancer.LifeSpikeAbility;
 import com.chaosbuffalo.mkultra.abilities.necromancer.ShadowBoltAbility;
 import com.chaosbuffalo.mkultra.abilities.necromancer.ShadowPulseAbility;
 import com.chaosbuffalo.mkultra.abilities.nether_mage.*;
+import com.chaosbuffalo.mkultra.abilities.passives.GreenSoulAbility;
 import com.chaosbuffalo.mkultra.abilities.passives.LifeSiphonAbility;
 import com.chaosbuffalo.mkultra.abilities.passives.SoulDrainAbility;
 import com.chaosbuffalo.mkultra.abilities.structure.NecrotideGolemBeam;
@@ -61,6 +62,8 @@ public class MKUAbilities {
     public static final RegistryObject<NaturesRemedyAbility> NATURES_REMEDY = REGISTRY.register("ability.natures_remedy", NaturesRemedyAbility::new);
     public static final RegistryObject<ExplosiveGrowthAbility> EXPLOSIVE_GROWTH = REGISTRY.register("ability.explosive_growth", ExplosiveGrowthAbility::new);
     public static final RegistryObject<CleansingSeedAbility> CLEANSING_SEED = REGISTRY.register("ability.cleansing_seed", CleansingSeedAbility::new);
+
+    public static final RegistryObject<GreenSoulAbility> GREEN_SOUL = REGISTRY.register("ability.green_soul", GreenSoulAbility::new);
 
     //cleric
     public static final RegistryObject<SmiteAbility> SMITE = REGISTRY.register("ability.smite", SmiteAbility::new);

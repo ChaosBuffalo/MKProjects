@@ -101,5 +101,7 @@
   "faction.mkultra.necrotide_cultists.name": "Necrotide Cultists",
   "mkultra.ability.shadow_pulse_flurry.name": "Shadow Pulse Flurry",
   "mkultra.ability.seafury.name": "Seafury",
-  "mkultra.ability.seafury.description": "Places a line of %s eruptions down at the target position %s blocks apart, causing %s after %s seconds to targets within %s blocks."
+  "mkultra.ability.seafury.description": "Places a line of %s eruptions down at the target position %s blocks apart, causing %s after %s seconds to targets within %s blocks.",
+  "mkultra.ability.green_soul.name": "Green Soul",
+  "mkultra.ability.green_soul.description": "Infuses you with the indomitable spirit of a Green Knight, increasing health and armor."
 }

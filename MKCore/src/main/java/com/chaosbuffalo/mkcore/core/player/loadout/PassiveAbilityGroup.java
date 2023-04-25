@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 
 
 public class PassiveAbilityGroup extends AbilityGroup {
@@ -51,6 +52,16 @@ public class PassiveAbilityGroup extends AbilityGroup {
     public void onPersonaDeactivated() {
         super.onPersonaDeactivated();
         removeAllPassiveTalents();
+    }
+
+    public void onSkillUpdate(Attribute skill) {
+        getAbilities().forEach(id -> {
+            MKAbilityInfo info = playerData.getAbilities().getKnownAbility(id);
+            if (info != null && info.getAbility().getSkillAttributes().contains(skill)) {
+                removePassive(id);
+                activatePassive(id);
+            }
+        });
     }
 
     private void activatePassive(ResourceLocation abilityId) {

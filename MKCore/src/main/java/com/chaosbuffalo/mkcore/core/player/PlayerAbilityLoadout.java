@@ -38,6 +38,10 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
         return sync;
     }
 
+    public PassiveAbilityGroup getPassiveAbilityGroup() {
+        return passiveAbilityGroup;
+    }
+
     @Nonnull
     public AbilityGroup getAbilityGroup(AbilityGroupId group) {
         return abilityGroups.get(group);
