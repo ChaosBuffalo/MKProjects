@@ -48,7 +48,7 @@ public class TalentButton extends MKButton {
         MKTalent talent = record.getNode().getTalent();
         tooltip.add(talent.getTalentName());
         tooltip.add(talent.getTalentTypeName());
-        tooltip.add(talent.getTalentDescription(record));
+        talent.describeTalent(record, tooltip::add);
     }
 
 

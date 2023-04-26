@@ -14,6 +14,7 @@ import com.chaosbuffalo.mknpc.quest.objectives.TradeItemsObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.quest.rewards.GrantEntitlementReward;
 import com.chaosbuffalo.mknpc.quest.rewards.MKLootReward;
+import com.chaosbuffalo.mknpc.quest.rewards.TalentTreeReward;
 import com.chaosbuffalo.mknpc.quest.rewards.XpReward;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructures;
@@ -606,6 +607,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 )
                 .reward(new XpReward(100))
                 .reward(new GrantEntitlementReward(MKUEntitlements.GreenKnightTier3.get()))
+                .reward(new TalentTreeReward(new ResourceLocation(MKUltra.MODID, "green_knight_talents")))
                 .quest();
         def.addQuest(killBurning);
 

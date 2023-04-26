@@ -103,5 +103,12 @@
   "mkultra.ability.seafury.name": "Seafury",
   "mkultra.ability.seafury.description": "Places a line of %s eruptions down at the target position %s blocks apart, causing %s after %s seconds to targets within %s blocks.",
   "mkultra.ability.green_soul.name": "Green Soul",
-  "mkultra.ability.green_soul.description": "Infuses you with the indomitable spirit of a Green Knight, increasing health and armor."
+  "mkultra.ability.green_soul.description": "Infuses you with the indomitable spirit of a Green Knight, increasing health and armor.",
+  "mkultra.talent.green_soul.name": "Green Soul",
+  "mkultra.talent.green_soul.description": "Grants the Green Soul passive ability.",
+  "mkultra.talent_tree.green_knight_talents.name": "Green Knight",
+  "mkultra.talent.soul_drain.name": "Soul Drain",
+  "mkultra.talent.soul_drain.description": "Grants the Soul Drain passive ability.",
+  "mkultra.talent.life_siphon.name": "Life Siphon",
+  "mkultra.talent.life_siphon.description": "Grants the Life Siphon passive ability."
 }

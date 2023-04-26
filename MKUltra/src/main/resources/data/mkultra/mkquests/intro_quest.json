@@ -900,6 +900,12 @@
             "entitlement": "mkultra:green_knight.tier_3"
           },
           "rewardType": "mknpc:quest_reward.entitlement"
+        },
+        {
+          "attributes": {
+            "tree_name": "mkultra:green_knight_talents"
+          },
+          "rewardType": "mknpc:quest_reward.talent_tree"
         }
       ]
     }

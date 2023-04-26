@@ -40,7 +40,7 @@ public abstract class PositionFlurryAbility extends MKAbility {
     public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
         super.buildDescription(casterData, consumer);
         abilityToCast.ifPresent(x -> {
-            consumer.accept(x.getAbilityName().plainCopy().withStyle(ChatFormatting.UNDERLINE).withStyle(ChatFormatting.GRAY));
+            consumer.accept(x.getAbilityName().withStyle(ChatFormatting.UNDERLINE).withStyle(ChatFormatting.GRAY));
             consumer.accept(x.getAbilityDescription(casterData, attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr))
                     .plainCopy().withStyle(ChatFormatting.GRAY));
         });

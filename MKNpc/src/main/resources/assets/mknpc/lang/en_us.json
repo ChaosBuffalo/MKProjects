@@ -29,5 +29,8 @@
   "mknpc.command.pois_struct_desc": "POI: %s at %s",
   "mknpc.debug.enter_structure": "Entered structure %s (ID: %s)",
   "mknpc.debug.exit_structure": "Exited structure %s (ID: %s)",
-  "mknpc.command.reset_struct": "Resetting structure %s (ID: %s)"
+  "mknpc.command.reset_struct": "Resetting structure %s (ID: %s)",
+  "mknpc.quest_reward.talent_tree_grant": "Unlocked Talent Tree: %s",
+  "mknpc.quest_reward.talent_tree_grant.message": "Unlocks the %s Talent Tree",
+  "mknpc.quest_reward.talent_tree_grant.message.error": "Unlocks the [Not Found] Talent Tree"
 }

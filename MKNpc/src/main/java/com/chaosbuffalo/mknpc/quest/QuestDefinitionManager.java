@@ -4,10 +4,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.quest.objectives.*;
 import com.chaosbuffalo.mknpc.quest.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
-import com.chaosbuffalo.mknpc.quest.rewards.GrantEntitlementReward;
-import com.chaosbuffalo.mknpc.quest.rewards.MKLootReward;
-import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
-import com.chaosbuffalo.mknpc.quest.rewards.XpReward;
+import com.chaosbuffalo.mknpc.quest.rewards.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -95,6 +92,7 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
         putObjectiveDeserializer(QuestLootNpcObjective.NAME, QuestLootNpcObjective::new);
         putObjectiveDeserializer(QuestLootNotableObjective.NAME, QuestLootNotableObjective::new);
         putObjectiveDeserializer(KillWithAbilityObjective.NAME, KillWithAbilityObjective::new);
+        putRewardDeserializer(TalentTreeReward.TYPE_NAME, TalentTreeReward::new);
     }
 
     @Override

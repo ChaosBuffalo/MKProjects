@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 public abstract class MKTalent {
@@ -27,6 +28,10 @@ public abstract class MKTalent {
     public Component getTalentName() {
         ResourceLocation talentId = getTalentId();
         return Component.translatable(String.format("%s.%s.name", talentId.getNamespace(), talentId.getPath()));
+    }
+
+    public void describeTalent(TalentRecord record, Consumer<Component> consumer) {
+        consumer.accept(getTalentDescription(record));
     }
 
     public Component getTalentDescription(TalentRecord record) {
