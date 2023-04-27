@@ -10,6 +10,14 @@
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 125.0
+        },
+        {
+          "attributeName": "mkcore:max_mana",
+          "value": 125.0
+        },
+        {
+          "attributeName": "mkcore:mana_regen",
+          "value": 3.0
         }
       ],
       "optionType": "mknpc:attributes"
@@ -33,7 +41,7 @@
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.test_summon",
+          "abilityName": "mkultra:ability.necrotide_warrior_summon",
           "chance": 1.0,
           "priority": 4
         }
@@ -41,18 +49,21 @@
     },
     {
       "major_skills": [
-        "mkcore:necromancy",
-        "mkcore:conjuration"
+        "mkcore:conjuration",
+        "mkcore:necromancy"
       ],
       "minor_skills": [
         "mkcore:abjuration",
-        "mkcore:evocation",
-        "mkcore:alteration"
+        "mkcore:alteration",
+        "mkcore:evocation"
       ],
       "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
+    },
+    {
+      "optionType": "mknpc:faction_battlecry"
     },
     {
       "optionType": "mknpc:mk_size",

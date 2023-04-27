@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.talents.TalentLineDefinition;
 import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import com.chaosbuffalo.mkcore.core.talents.TalentTreeRecord;
@@ -23,8 +24,9 @@ public class TalentTreeWidget extends MKLayout {
     private final int originalWidth;
     private final int originalHeight;
     private final Supplier<TalentTreeRecord> recordSupplier;
+    private final IMKEntityData entityData;
 
-    public TalentTreeWidget(int x, int y, int width, int height,
+    public TalentTreeWidget(IMKEntityData entityData, int x, int y, int width, int height,
                             Font fontRenderer, Supplier<TalentTreeRecord> recordSupplier) {
         super(x, y, width, height);
         this.fontRenderer = fontRenderer;
@@ -32,6 +34,7 @@ public class TalentTreeWidget extends MKLayout {
         this.originalHeight = height;
         this.recordSupplier = recordSupplier;
         setMargins(6, 6, 6, 6);
+        this.entityData = entityData;
         setup();
     }
 
@@ -80,7 +83,7 @@ public class TalentTreeWidget extends MKLayout {
                         );
                         addWidget(rect);
                     }
-                    TalentButton button = new TalentButton(talentIndex, name, record,
+                    TalentButton button = new TalentButton(entityData, talentIndex, name, record,
                             getX() + talentXOffset + spacePerColumn * i + columnOffsetTotal,
                             getY() + talentIndex * talentButtonHeight + talentButtonYMargin
                     );

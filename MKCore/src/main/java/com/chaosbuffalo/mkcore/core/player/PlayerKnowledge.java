@@ -23,6 +23,7 @@ public class PlayerKnowledge implements IPlayerSyncComponentProvider {
         addSyncChild(talentKnowledge);
         addSyncChild(loadout);
         skills = new PlayerSkills(playerData);
+        skills.addCallback(loadout.getPassiveAbilityGroup()::onSkillUpdate);
     }
 
     public PlayerSkills getSkills() {

@@ -3,8 +3,10 @@ package com.chaosbuffalo.mkchat.dialogue;
 import com.chaosbuffalo.mkchat.ChatConstants;
 import com.chaosbuffalo.mkchat.MKChat;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -21,6 +23,15 @@ public class DialogueUtils {
                 sp.sendSystemMessage(message);
             }
         });
+    }
+
+    public static MutableComponent getSpeakerMessage(LivingEntity speaker, Component message) {
+        // Generate a string that looks like: "<speaker_name> {message}", doesn't have the dialogue node formatting
+        MutableComponent msg = Component.literal("<")
+                .append(speaker.getDisplayName())
+                .append("> ");
+        msg.append(message);
+        return msg;
     }
 
     public static String getItemNameProvider(Item item) {

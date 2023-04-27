@@ -26,9 +26,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class YaupAbility extends MKAbility {
     public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "yaup_cast");
@@ -49,8 +51,8 @@ public class YaupAbility extends MKAbility {
     }
 
     @Override
-    protected Component getSkillDescription(IMKEntityData casterData) {
-        float level = getSkillLevel(casterData.getEntity(), MKAttributes.ARETE);
+    protected Component getSkillDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
+        float level = skillSupplier.apply(MKAttributes.ARETE);
         int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(duration));
     }
@@ -58,7 +60,8 @@ public class YaupAbility extends MKAbility {
     @Override
     public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
         super.buildDescription(casterData, consumer);
-        AbilityDescriptions.getEffectModifiers(MKUEffects.YAUP.get(), casterData, false).forEach(consumer);
+        AbilityDescriptions.getEffectModifiers(MKUEffects.YAUP.get(), casterData, false,
+                attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)).forEach(consumer);
     }
 
     @Override
@@ -82,9 +85,9 @@ public class YaupAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        super.endCast(entity, data, context);
-        float level = getSkillLevel(entity, MKAttributes.ARETE);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
+        super.endCast(entity, data, context, skillSupplier);
+        float level = skillSupplier.apply(MKAttributes.ARETE);
         MKEffectBuilder<?> yaup = YaupEffect.from(entity, level, getBuffDuration(data, level, baseDuration.value(), scaleDuration.value()));
         MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_buff_attack_4.get(), entity.getSoundSource())
                 .ability(this);

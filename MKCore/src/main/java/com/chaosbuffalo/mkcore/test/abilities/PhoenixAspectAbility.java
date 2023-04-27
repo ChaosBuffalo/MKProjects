@@ -19,7 +19,10 @@ import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.function.Function;
 
 public class PhoenixAspectAbility extends MKAbility {
     public static int BASE_DURATION = 60;
@@ -53,8 +56,8 @@ public class PhoenixAspectAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
-        super.endCast(castingEntity, casterData, context);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
+        super.endCast(castingEntity, casterData, context, skillSupplier);
         int level = 1;
 
         // What to do for each target hit

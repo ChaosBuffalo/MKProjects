@@ -19,6 +19,11 @@ public class MKUTalents {
     public static RegistryObject<PassiveTalent> LIFE_SIPHON_TALENT = TALENTS.register("talent.life_siphon",
             () -> new PassiveTalent(MKUAbilities.LIFE_SIPHON));
 
+    public static RegistryObject<PassiveTalent> GREEN_SOUL_TALENT = TALENTS.register("talent.green_soul",
+            () -> new PassiveTalent(MKUAbilities.GREEN_SOUL));
+
+
+
     public static void register(IEventBus modBus) {
         TALENTS.register(modBus);
     }

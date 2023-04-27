@@ -54,7 +54,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
     protected static final UUID CRIT_MULT_MODIFIER = UUID.fromString("11fc07d2-7844-44f2-94ad-02479cff424d");
     protected static final UUID MAX_POISE_MODIFIER = UUID.fromString("fbc2bba2-27d6-4de8-8962-2febb418c718");
     protected static final UUID BLOCK_EFFICIENCY_MODIFIER = UUID.fromString("da287a85-0c12-459c-97a5-faea98bc3d6f");
-    public static final Set<ToolAction> SWORD_ACTIONS = ImmutableSet.of(ToolActions.SWORD_DIG);
+    public static final Set<ToolAction> SWORD_ACTIONS = ImmutableSet.of(ToolActions.SWORD_DIG, ToolActions.SHIELD_BLOCK);
 
     public MKMeleeWeapon(MKTier tier, IMeleeWeaponType weaponType, Properties builder) {
         super(tier, Math.round(weaponType.getDamageForTier(tier) - tier.getAttackDamageBonus()), weaponType.getAttackSpeed(), builder);

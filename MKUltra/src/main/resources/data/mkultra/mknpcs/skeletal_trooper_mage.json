@@ -10,6 +10,14 @@
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 50.0
+        },
+        {
+          "attributeName": "mkcore:max_mana",
+          "value": 50.0
+        },
+        {
+          "attributeName": "mkcore:mana_regen",
+          "value": 2.0
         }
       ],
       "optionType": "mknpc:attributes"
@@ -64,9 +72,9 @@
       "major_skills": [],
       "minor_skills": [
         "mkcore:abjuration",
-        "mkcore:evocation",
         "mkcore:alteration",
-        "mkcore:conjuration"
+        "mkcore:conjuration",
+        "mkcore:evocation"
       ],
       "optionType": "mknpc:skills",
       "remedial_skills": [

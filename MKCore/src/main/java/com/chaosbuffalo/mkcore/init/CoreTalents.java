@@ -105,6 +105,50 @@ public class CoreTalents {
                     MKAttributes.HEAL_BONUS,
                     UUID.fromString("711e57c3-cf2a-4fb5-a503-3dff0a1e007d")));
 
+    public static final RegistryObject<AttributeTalent> MAX_POISE_TALENT = TALENTS.register("talent.max_poise",
+            () -> new AttributeTalent(
+                    MKAttributes.MAX_POISE,
+                    UUID.fromString("71f00038-664a-484b-b543-6429f1478212"))
+                    .setRequiresStatRefresh(true)
+                    .setDefaultPerRank(1));
+
+    public static final RegistryObject<AttributeTalent> POISE_REGEN_TALENT = TALENTS.register("talent.poise_regen",
+            () -> new AttributeTalent(
+                    MKAttributes.POISE_REGEN,
+                    UUID.fromString("449864cf-64f0-4f00-8009-cf2a9aa2e46f"))
+                    .setRequiresStatRefresh(true)
+                    .setDefaultPerRank(0.25));
+
+    public static final RegistryObject<AttributeTalent> BLOCK_EFFICIENCY_TALENT = TALENTS.register("talent.block_efficiency",
+            () -> new AttributeTalent(
+                    MKAttributes.BLOCK_EFFICIENCY,
+                    UUID.fromString("5e56c509-9f69-4fae-b0eb-368a4c80545a"))
+                    .setRequiresStatRefresh(true)
+                    .setDisplayAsPercentage(true)
+                    .setDefaultPerRank(0.01));
+
+    public static final RegistryObject<AttributeTalent> POISE_BREAK_CD_TALENT = TALENTS.register("talent.poise_break_cd",
+            () -> new AttributeTalent(
+                    MKAttributes.POISE_BREAK_CD,
+                    UUID.fromString("6fa0e9ce-20f8-47a6-90ef-aa89012d05fc"))
+                    .setRequiresStatRefresh(true)
+                    .setDefaultPerRank(-0.25));
+
+    public static final RegistryObject<AttributeTalent> HEAL_EFFICIENCY_TALENT = TALENTS.register("talent.heal_efficiency",
+            () -> new AttributeTalent(
+                    MKAttributes.HEAL_EFFICIENCY,
+                    UUID.fromString("c8db3f1f-e8f5-44ef-a34c-01f615748160"))
+                    .setRequiresStatRefresh(true)
+                    .setDisplayAsPercentage(true)
+                    .setDefaultPerRank(0.01));
+
+    public static final RegistryObject<AttributeTalent> NATURE_DAMAGE_TALENT = TALENTS.register("talent.nature_damage",
+            () -> new AttributeTalent(
+                    MKAttributes.NATURE_DAMAGE,
+                    UUID.fromString("15e92270-e033-4de9-85ca-55f3195ab808"))
+                    .setRequiresStatRefresh(true)
+                    .setDefaultPerRank(1));
+
 
     public static final RegistryObject<EntitlementGrantTalent> ABILITY_SLOT_TALENT = TALENTS.register("talent.ability_slot",
             () -> new EntitlementGrantTalent(TalentType.BASIC_SLOT));

@@ -46,8 +46,15 @@ public class EntityUtils {
     }
 
     public static double getCooldownPeriod(LivingEntity entity) {
-        return 1.0D / entity.getAttribute(Attributes.ATTACK_SPEED).getValue() *
-                GameConstants.TICKS_PER_SECOND;
+        //FIXME: quick hack to make it so that unarmed mobs arent attacking 4x a second,
+        // if we add an unarmed skill we should scale attack speed for mobs by it
+        if (entity.getMainHandItem().isEmpty()) {
+            return GameConstants.TICKS_PER_SECOND;
+        } else {
+            return 1.0D / entity.getAttribute(Attributes.ATTACK_SPEED).getValue() *
+                    GameConstants.TICKS_PER_SECOND;
+        }
+
     }
 
     public static void shootArrow(LivingEntity source, AbstractArrow arrowEntity, LivingEntity target, float launchVelocity) {
@@ -108,5 +115,17 @@ public class EntityUtils {
         }
         return false;
 
+    }
+
+    public static void mkDiscard(Entity entity) {
+        MKCore.getEntityData(entity).ifPresent(data -> data.getPets().onDeath(Entity.RemovalReason.DISCARDED));
+        entity.remove(Entity.RemovalReason.DISCARDED);
+    }
+
+    public static boolean isInFrontOf(Entity a, Entity b) {
+        Vec3 lookVec = a.getViewVector(1.0F);
+        Vec3 damageDir = b.position().vectorTo(a.position()).normalize();
+        damageDir = new Vec3(damageDir.x, 0.0D, damageDir.z);
+        return damageDir.dot(lookVec) < 0.0D;
     }
 }

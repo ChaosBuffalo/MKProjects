@@ -22,7 +22,8 @@ public class WorldPermanentSpawnConfiguration implements INBTSerializable<Compou
     }
 
     public boolean hasAttributeEntry(ResourceLocation definitionName, ResourceLocation optionName) {
-        return definitionMap.containsKey(definitionName) && definitionMap.get(definitionName).containsKey(optionName);
+        return definitionMap.containsKey(definitionName) && definitionMap.get(definitionName).containsKey(optionName)
+                && definitionMap.get(definitionName).get(optionName).isValid();
     }
 
     public INpcOptionEntry getOptionEntry(NpcDefinition definition, WorldPermanentOption option) {

@@ -9,6 +9,9 @@ import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+
+import java.util.function.Function;
 
 public class SoulDrainAbility extends MKPassiveAbility {
     protected final FloatAttribute base = new FloatAttribute("base", 4.0f);
@@ -25,14 +28,14 @@ public class SoulDrainAbility extends MKPassiveAbility {
         return MKUEffects.SOUL_DRAIN.get();
     }
 
-    public float getDrainValue(LivingEntity entity) {
-        float skillLevel = MKAbility.getSkillLevel(entity, MKAttributes.EVOCATION);
+    public float getDrainValue(Function<Attribute, Float> skillSupplier) {
+        float skillLevel = skillSupplier.apply(MKAttributes.EVOCATION);
         return base.value() + scale.value() * skillLevel;
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
-        float value = getDrainValue(entityData.getEntity());
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+        float value = getDrainValue(skillSupplier);
         return Component.translatable(getDescriptionTranslationKey(), value);
     }
 }

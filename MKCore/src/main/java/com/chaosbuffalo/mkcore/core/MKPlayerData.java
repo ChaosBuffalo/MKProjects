@@ -12,6 +12,7 @@ import com.chaosbuffalo.mkcore.sync.PlayerUpdateEngine;
 import com.chaosbuffalo.mkcore.sync.UpdateEngine;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nonnull;
@@ -146,7 +147,7 @@ public class MKPlayerData implements IMKEntityData {
 
     private void onDeath() {
         getEffects().onDeath();
-        getPets().onDeath();
+        getPets().onDeath(Entity.RemovalReason.KILLED);
     }
 
     public void update() {

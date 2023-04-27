@@ -29,8 +29,38 @@ public class MKUTalentTreeProvider extends TalentTreeProvider {
     @Override
     public CompletableFuture<?> run(CachedOutput pOutput) {
         return CompletableFuture.allOf(
-                generateCoreTree(pOutput)
+                generateCoreTree(pOutput),
+                generateGreenKnightTree(pOutput)
         );
+    }
+
+    private CompletableFuture<?> generateGreenKnightTree(CachedOutput pOutput) {
+        TalentTreeDefinition tree = new TalentTreeDefinition(new ResourceLocation(MKUltra.MODID, "green_knight_talents"));
+        tree.setVersion(1);
+        TalentLineDefinition line = new TalentLineDefinition(tree, "a");
+        line.addNode(new AttributeTalentNode(CoreTalents.MAX_HEALTH_TALENT, 3, 4.0));
+        line.addNode(new AttributeTalentNode(CoreTalents.MAX_POISE_TALENT, 2, 2.0));
+        line.addNode(new AttributeTalentNode(CoreTalents.POISE_REGEN_TALENT, 2, 0.25));
+        line.addNode(new AttributeTalentNode(CoreTalents.POISE_BREAK_CD_TALENT, 2, -0.5));
+        line.addNode(new AttributeTalentNode(CoreTalents.POISE_REGEN_TALENT, 2, 0.25));
+        TalentLineDefinition soul = new TalentLineDefinition(tree, "b");
+        tree.addLine(line);
+        soul.addNode(new AttributeTalentNode(CoreTalents.MAX_HEALTH_TALENT, 3, 4.0));
+        soul.addNode(new EntitlementGrantTalentNode(CoreTalents.POOL_COUNT_TALENT, UUID.fromString("40525592-c013-46f7-84da-1543d5a28cfc")));
+        soul.addNode(new AttributeTalentNode(CoreTalents.MAX_POISE_TALENT, 3, 2.0));
+        soul.addNode(new AttributeTalentNode(CoreTalents.NATURE_DAMAGE_TALENT, 5, 1));
+        soul.addNode(new AttributeTalentNode(CoreTalents.HEAL_EFFICIENCY_TALENT, 5, 0.02));
+        soul.addNode(new AttributeTalentNode(CoreTalents.ARMOR_TALENT, 5, 1.0));
+        soul.addNode(new TalentNode(MKUTalents.GREEN_SOUL_TALENT.get()));
+        tree.addLine(soul);
+        TalentLineDefinition healing = new TalentLineDefinition(tree, "c");
+        healing.addNode(new AttributeTalentNode(CoreTalents.MAX_HEALTH_TALENT, 3, 4.0));
+        healing.addNode(new AttributeTalentNode(CoreTalents.HEAL_BONUS_TALENT, 2, 1.0));
+        healing.addNode(new AttributeTalentNode(CoreTalents.MAX_MANA_TALENT, 3, 2.0));
+        healing.addNode(new AttributeTalentNode(CoreTalents.MAX_POISE_TALENT, 2, 2.0));
+        healing.addNode(new AttributeTalentNode(CoreTalents.MANA_REGEN_TALENT, 1, 0.5));
+        tree.addLine(healing);
+        return writeDefinition(tree, pOutput);
     }
 
 
@@ -38,7 +68,7 @@ public class MKUTalentTreeProvider extends TalentTreeProvider {
         TalentTreeDefinition tree = new TalentTreeDefinition(new ResourceLocation(MKUltra.MODID, "core_talents"));
         tree.setVersion(2);
         tree.setDefault(true);
-        TalentLineDefinition line = new TalentLineDefinition(tree, "tanking");
+        TalentLineDefinition line = new TalentLineDefinition(tree, "a");
         line.addNode(new EntitlementGrantTalentNode(CoreTalents.ABILITY_SLOT_TALENT, UUID.fromString("119917ea-b852-4cb5-8bfe-2cdad488f279")));
         line.addNode(new AttributeTalentNode(CoreTalents.MAX_HEALTH_TALENT, 2, 5.0));
         line.addNode(new AttributeTalentNode(CoreTalents.ARMOR_TALENT, 2, 1.0));
@@ -49,7 +79,7 @@ public class MKUTalentTreeProvider extends TalentTreeProvider {
         line.addNode(new EntitlementGrantTalentNode(CoreTalents.PASSIVE_ABILITY_SLOT_TALENT, UUID.fromString("95725b31-da3a-4a3e-b6cc-e5036a6e9a87")));
         line.addNode(new TalentNode(MKUTalents.LIFE_SIPHON_TALENT.get()));
         tree.addLine(line);
-        TalentLineDefinition magic = new TalentLineDefinition(tree, "magic");
+        TalentLineDefinition magic = new TalentLineDefinition(tree, "b");
         magic.addNode(new EntitlementGrantTalentNode(CoreTalents.ABILITY_SLOT_TALENT, UUID.fromString("2e1ff629-b139-4303-831d-1c1bc5ebc21e")));
         magic.addNode(new AttributeTalentNode(CoreTalents.MAX_MANA_TALENT, 2, 5.0));
         magic.addNode(new AttributeTalentNode(CoreTalents.MANA_REGEN_TALENT, 2, 0.25));
@@ -66,7 +96,7 @@ public class MKUTalentTreeProvider extends TalentTreeProvider {
         magic.addNode(new EntitlementGrantTalentNode(CoreTalents.POOL_COUNT_TALENT, UUID.fromString("93de6f66-4d6d-4721-b774-b12ee92be288")));
         magic.addNode(new EntitlementGrantTalentNode(CoreTalents.ULTIMATE_ABILITY_SLOT_TALENT, UUID.fromString("ecfaa441-35c7-46ce-aa67-f8372bc4fd7d")));
         tree.addLine(magic);
-        TalentLineDefinition heal = new TalentLineDefinition(tree, "healing");
+        TalentLineDefinition heal = new TalentLineDefinition(tree, "c");
         heal.addNode(new EntitlementGrantTalentNode(CoreTalents.ABILITY_SLOT_TALENT, UUID.fromString("3a31b74d-cf08-451f-a483-8eb9e47ce89b")));
         heal.addNode(new AttributeTalentNode(CoreTalents.MANA_REGEN_TALENT, 2, 0.5));
         heal.addNode(new AttributeTalentNode(CoreTalents.HEAL_BONUS_TALENT, 2, 2.0));

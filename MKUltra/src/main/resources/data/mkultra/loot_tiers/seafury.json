@@ -1,0 +1,55 @@
+{
+  "slotItems": {
+    "mkweapons:main_hand": [
+      {
+        "template": {
+          "lootSlot": "mkweapons:main_hand",
+          "options": [
+            {
+              "effects": [
+                {
+                  "ability": "mkultra:ability.seafury",
+                  "chance": 0.5,
+                  "itemEffectType": "mkweapons:weapon_effect.on_hit_ability",
+                  "skill_level": 10.0
+                }
+              ],
+              "randomizationType": "mkweapons:melee_effect",
+              "slotName": "mkweapons:randomization.effect",
+              "weight": 1.0
+            },
+            {
+              "name": "{\"text\":\"Seafury Blade\"}",
+              "randomizationType": "mkweapons:name",
+              "slotName": "mkweapons:randomization.name",
+              "weight": 1.0
+            }
+          ],
+          "potentialItems": [
+            {
+              "itemStack": "{id: \"mkweapons:katana_iron\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            },
+            {
+              "itemStack": "{id: \"mkweapons:longsword_iron\", Count: 1b, tag: {Damage: 0}}",
+              "weight": 1.0
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "slots": [
+                  "mkweapons:randomization.effect",
+                  "mkweapons:randomization.name"
+                ],
+                "templateType": "mkultra:seafury_blade"
+              },
+              "weight": 10.0
+            }
+          ]
+        },
+        "weight": 10.0
+      }
+    ]
+  }
+}

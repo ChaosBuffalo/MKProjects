@@ -90,6 +90,8 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
         putOptionDeserializer(TempAbilitiesOption.NAME, TempAbilitiesOption::new);
         putOptionDeserializer(GhostOption.NAME, GhostOption::new);
         putOptionDeserializer(SkillOption.NAME, SkillOption::new);
+        putOptionDeserializer(FactionBattlecryOption.NAME, FactionBattlecryOption::new);
+        putOptionEntryDeserializer(FactionBattlecryOption.NAME, FactionBattlecryOptionEntry::new);
     }
 
     public static void putOptionDeserializer(ResourceLocation optionName,

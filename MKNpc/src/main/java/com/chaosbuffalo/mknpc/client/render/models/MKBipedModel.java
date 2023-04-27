@@ -32,6 +32,7 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
         super(modelPart, renderSupplier);
     }
 
+
     public static MeshDefinition createBodyLayer(ModelArgs args) {
         return HumanoidModel.createMesh(args.deformation, 0.0f);
     }
@@ -55,6 +56,7 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
     @Override
     public void setupAnim(T entityIn, float limbSwing, float limbSwingAmount,
                           float ageInTicks, float netHeadYaw, float headPitch) {
+
         super.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
         // bow pose stuff from skeleton
         ItemStack itemstack = entityIn.getMainHandItem();

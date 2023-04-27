@@ -19,7 +19,10 @@ import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.function.Function;
 
 public class HealingRain extends MKAbility {
     public static float BASE_AMOUNT = 2.0f;
@@ -59,8 +62,9 @@ public class HealingRain extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, context);
+    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context,
+                             Function<Attribute, Float> skillSupplier) {
+        super.continueCast(castingEntity, casterData, castTimeLeft, context, skillSupplier);
         int tickSpeed = 5;
         if (castTimeLeft % tickSpeed == 0) {
             int level = 0;

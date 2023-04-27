@@ -12,7 +12,11 @@
           "value": 110.0
         },
         {
-          "attributeName": "mkcore:evocation",
+          "attributeName": "mkcore:max_mana",
+          "value": 110.0
+        },
+        {
+          "attributeName": "mkcore:mana_regen",
           "value": 3.0
         }
       ],
@@ -73,9 +77,9 @@
       "major_skills": [],
       "minor_skills": [
         "mkcore:abjuration",
-        "mkcore:evocation",
         "mkcore:alteration",
-        "mkcore:conjuration"
+        "mkcore:conjuration",
+        "mkcore:evocation"
       ],
       "optionType": "mknpc:skills",
       "remedial_skills": [

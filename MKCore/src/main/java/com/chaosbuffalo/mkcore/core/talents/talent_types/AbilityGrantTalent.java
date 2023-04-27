@@ -1,9 +1,16 @@
 package com.chaosbuffalo.mkcore.core.talents.talent_types;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.talents.MKTalent;
+import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import com.chaosbuffalo.mkcore.core.talents.TalentType;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class AbilityGrantTalent extends MKTalent {
@@ -22,6 +29,14 @@ public class AbilityGrantTalent extends MKTalent {
     @Override
     public TalentType<?> getTalentType() {
         return talentType;
+    }
+
+    @Override
+    public void describeTalent(IMKEntityData entityData, TalentRecord record, Consumer<Component> consumer) {
+        super.describeTalent(entityData, record, consumer);
+        consumer.accept(ability.get().getAbilityName());
+        ability.get().buildDescription(entityData, consumer);
+
     }
 
     @Override

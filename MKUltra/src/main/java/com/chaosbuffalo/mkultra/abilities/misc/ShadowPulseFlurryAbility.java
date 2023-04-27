@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkultra.abilities.misc;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.abilities.PositionFlurryAbility;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.MeleeUseCondition;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkultra.MKUltra;

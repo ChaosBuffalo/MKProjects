@@ -1,0 +1,17 @@
+{
+  "attributes": {
+    "base": 3.0,
+    "casting_particles": "mkcore:fx.casting.empty",
+    "charge_time": 40,
+    "duration": 40,
+    "modifier_scaling": 1.0,
+    "poi_name": "golem_lantern",
+    "pulse_particles": "mkultra:necrotide_golem_beam",
+    "scale": 3.0,
+    "tick_rate": 10,
+    "wait_particles": "mkultra:necrotide_golem_beam_wait"
+  },
+  "castTime": 60,
+  "cooldown": 900,
+  "manaCost": 8.0
+}

@@ -23,7 +23,10 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.function.Function;
 
 public class WarpCurseAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "warp_curse_casting");
@@ -46,8 +49,8 @@ public class WarpCurseAbility extends MKAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
-        float level = getSkillLevel(entityData.getEntity(), MKAttributes.ALTERATON);
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+        float level = skillSupplier.apply(MKAttributes.ALTERATON);
         int duration = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value());
         Component valueStr = getDamageDescription(entityData,
                 CoreDamageTypes.ShadowDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
@@ -82,10 +85,10 @@ public class WarpCurseAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
-        super.endCast(castingEntity, casterData, context);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
+        super.endCast(castingEntity, casterData, context, skillSupplier);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            float level = getSkillLevel(castingEntity, MKAttributes.ALTERATON);
+            float level = skillSupplier.apply(MKAttributes.ALTERATON);
             int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
             MKEffectBuilder<?> warpCast = WarpCurseEffect.from(castingEntity, base.value(), scale.value(),
                             modifierScaling.value(), cast_particles.getValue())

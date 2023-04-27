@@ -23,9 +23,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+
+import java.util.function.Function;
 
 public class DrownAbility extends MKAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "ember_casting");
+    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "drown_casting");
     public static final ResourceLocation TICK_PARTICLES = new ResourceLocation(MKUltra.MODID, "drown_effect");
     protected final FloatAttribute baseDot = new FloatAttribute("baseBurnDamage", 4.0f);
     protected final FloatAttribute scaleDot = new FloatAttribute("scaleBurnDamage", 2.0f);
@@ -48,8 +51,8 @@ public class DrownAbility extends MKAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
-        float level = getSkillLevel(entityData.getEntity(), MKAttributes.CONJURATION);
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+        float level = skillSupplier.apply(MKAttributes.CONJURATION);
         Component dotStr = getDamageDescription(entityData,
                 CoreDamageTypes.NatureDamage.get(), baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(),
@@ -92,9 +95,9 @@ public class DrownAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        super.endCast(entity, data, context);
-        float level = getSkillLevel(entity, MKAttributes.CONJURATION);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
+        super.endCast(entity, data, context, skillSupplier);
+        float level = skillSupplier.apply(MKAttributes.CONJURATION);
         DrownProjectileEntity proj = new DrownProjectileEntity(MKUEntities.DROWN_TYPE.get(), entity.level);
         proj.setOwner(entity);
         proj.setSkillLevel(level);

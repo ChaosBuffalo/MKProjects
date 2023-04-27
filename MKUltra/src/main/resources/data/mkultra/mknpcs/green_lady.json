@@ -10,6 +10,14 @@
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 400.0
+        },
+        {
+          "attributeName": "mkcore:max_mana",
+          "value": 400.0
+        },
+        {
+          "attributeName": "mkcore:mana_regen",
+          "value": 10.0
         }
       ],
       "optionType": "mknpc:attributes"
@@ -113,18 +121,18 @@
     },
     {
       "major_skills": [
-        "mkcore:restoration",
-        "mkcore:alteration"
+        "mkcore:alteration",
+        "mkcore:restoration"
       ],
       "minor_skills": [
         "mkcore:abjuration",
-        "mkcore:necromancy",
-        "mkcore:evocation"
+        "mkcore:evocation",
+        "mkcore:necromancy"
       ],
       "optionType": "mknpc:skills",
       "remedial_skills": [
-        "mkcore:two_hand_blunt",
-        "mkcore:one_hand_blunt"
+        "mkcore:one_hand_blunt",
+        "mkcore:two_hand_blunt"
       ]
     },
     {

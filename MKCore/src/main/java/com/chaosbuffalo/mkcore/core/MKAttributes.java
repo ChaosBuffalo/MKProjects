@@ -298,7 +298,6 @@ public class MKAttributes {
         consumer.accept(BLEED_RESISTANCE);
         consumer.accept(RANGED_DAMAGE);
         consumer.accept(RANGED_RESISTANCE);
-
         consumer.accept(ABJURATION);
         consumer.accept(ALTERATON);
         consumer.accept(CONJURATION);
@@ -319,17 +318,16 @@ public class MKAttributes {
         consumer.accept(TWO_HAND_SLASH);
         consumer.accept(ONE_HAND_SLASH);
         consumer.accept(BLOCK);
-
         consumer.accept(MAX_POISE);
         consumer.accept(POISE_REGEN);
         consumer.accept(POISE_BREAK_CD);
         consumer.accept(BLOCK_EFFICIENCY);
         consumer.accept(HEAL_EFFICIENCY);
+        consumer.accept(MAX_MANA);
+        consumer.accept(MANA_REGEN);
     }
 
     public static void iteratePlayerAttributes(Consumer<Attribute> consumer) {
-        consumer.accept(MAX_MANA);
-        consumer.accept(MANA_REGEN);
         consumer.accept(MELEE_CRIT);
         consumer.accept(MELEE_CRIT_MULTIPLIER);
         consumer.accept(SPELL_CRIT);

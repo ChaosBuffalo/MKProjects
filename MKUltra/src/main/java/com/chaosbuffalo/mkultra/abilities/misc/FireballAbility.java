@@ -19,8 +19,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 
 import javax.annotation.Nullable;
+import java.util.function.Function;
 
 public class FireballAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_casting");
@@ -55,8 +57,8 @@ public class FireballAbility extends MKAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
-        float skillLevel = getSkillLevel(entityData.getEntity(), MKAttributes.EVOCATION);
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+        float skillLevel = skillSupplier.apply(MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(), baseDamage.value(),
                 scaleDamage.value(), skillLevel,
                 modifierScaling.value());
@@ -95,9 +97,9 @@ public class FireballAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        super.endCast(entity, data, context);
-        float level = getSkillLevel(entity, MKAttributes.EVOCATION);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
+        super.endCast(entity, data, context, skillSupplier);
+        float level = skillSupplier.apply(MKAttributes.EVOCATION);
         FireballProjectileEntity proj = new FireballProjectileEntity(MKUEntities.FIREBALL_TYPE.get(), entity.level);
         proj.setOwner(entity);
         proj.setSkillLevel(level);

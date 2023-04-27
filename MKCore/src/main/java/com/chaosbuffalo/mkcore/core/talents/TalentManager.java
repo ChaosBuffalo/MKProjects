@@ -30,6 +30,7 @@ public class TalentManager extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     private final Map<ResourceLocation, TalentTreeDefinition> talentTreeMap = new HashMap<>();
+    public static final ResourceLocation INVALID_TREE = new ResourceLocation(MKCore.MOD_ID, "talent_tree.invalid");
     private Collection<TalentTreeDefinition> defaultTrees;
 
     public TalentManager() {

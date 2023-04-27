@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.core.talents;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -9,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 public abstract class MKTalent {
@@ -27,6 +29,10 @@ public abstract class MKTalent {
     public Component getTalentName() {
         ResourceLocation talentId = getTalentId();
         return Component.translatable(String.format("%s.%s.name", talentId.getNamespace(), talentId.getPath()));
+    }
+
+    public void describeTalent(IMKEntityData entityData, TalentRecord record, Consumer<Component> consumer) {
+        consumer.accept(getTalentDescription(record));
     }
 
     public Component getTalentDescription(TalentRecord record) {

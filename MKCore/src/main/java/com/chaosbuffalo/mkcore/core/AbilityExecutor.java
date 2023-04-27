@@ -214,7 +214,7 @@ public class AbilityExecutor {
     protected void completeAbility(MKAbility ability, MKAbilityInfo info, AbilityContext context) {
         // Finish the cast
         consumeResource(ability);
-        ability.endCast(entityData.getEntity(), entityData, context);
+        ability.endCast(entityData.getEntity(), entityData, context, (attr) -> MKAbility.getSkillLevel(entityData.getEntity(), attr));
         if (completeAbilityCallback != null) {
             completeAbilityCallback.accept(ability);
         }
@@ -310,7 +310,8 @@ public class AbilityExecutor {
 
         @Override
         void activeTick() {
-            ability.continueCast(executor.entityData.getEntity(), executor.entityData, castTicks, abilityContext);
+            ability.continueCast(executor.entityData.getEntity(), executor.entityData, castTicks, abilityContext,
+                    (attr) -> MKAbility.getSkillLevel(executor.entityData.getEntity(), attr));
         }
 
         @Override
@@ -381,12 +382,12 @@ public class AbilityExecutor {
         if (info != null) {
             // If this is a toggle ability we must re-apply the effect to make sure it's working at the proper rank
             if (toggle.isEffectActive(entityData)) {
-                toggle.removeEffect(entity, entityData);
-                toggle.applyEffect(entity, entityData);
+                toggle.removeEffect(entity, entityData, attr -> MKAbility.getSkillLevel(entity, attr));
+                toggle.applyEffect(entity, entityData, attr -> MKAbility.getSkillLevel(entity, attr));
             }
         } else {
             // Unlearning, remove the effect
-            toggle.removeEffect(entity, entityData);
+            toggle.removeEffect(entity, entityData, attr -> MKAbility.getSkillLevel(entity, attr));
         }
     }
 
@@ -399,7 +400,7 @@ public class AbilityExecutor {
         // This can also be called when rebuilding the activeToggleMap after transferring dimensions and in that case
         // ability will be the same as current
         if (current != null && current != ability) {
-            current.removeEffect(entityData.getEntity(), entityData);
+            current.removeEffect(entityData.getEntity(), entityData, attr -> MKAbility.getSkillLevel(entityData.getEntity(), attr));
             setCooldown(current.getAbilityId(), entityData.getStats().getAbilityCooldown(current));
         }
         activeToggleMap.put(groupId, ability);

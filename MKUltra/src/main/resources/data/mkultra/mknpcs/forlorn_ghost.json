@@ -10,6 +10,14 @@
         {
           "attributeName": "minecraft:generic.max_health",
           "value": 100.0
+        },
+        {
+          "attributeName": "mkcore:max_mana",
+          "value": 100.0
+        },
+        {
+          "attributeName": "mkcore:mana_regen",
+          "value": 3.0
         }
       ],
       "optionType": "mknpc:attributes"
@@ -25,18 +33,18 @@
     {
       "major_skills": [],
       "minor_skills": [
-        "mkcore:two_hand_slash",
+        "mkcore:one_hand_blunt",
+        "mkcore:one_hand_pierce",
         "mkcore:one_hand_slash",
         "mkcore:two_hand_blunt",
-        "mkcore:one_hand_blunt",
         "mkcore:two_hand_pierce",
-        "mkcore:one_hand_pierce"
+        "mkcore:two_hand_slash"
       ],
       "optionType": "mknpc:skills",
       "remedial_skills": [
-        "mkcore:pneuma",
+        "mkcore:arete",
         "mkcore:pankration",
-        "mkcore:arete"
+        "mkcore:pneuma"
       ]
     },
     {

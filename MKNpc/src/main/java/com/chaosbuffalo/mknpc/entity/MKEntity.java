@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
+import com.chaosbuffalo.mkchat.dialogue.DialogueUtils;
 import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
@@ -18,6 +19,7 @@ import com.chaosbuffalo.mkcore.sync.EntityUpdateEngine;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
+import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
@@ -39,6 +41,7 @@ import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -104,8 +107,17 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private final EntityTradeContainer entityTradeContainer;
     private final List<BossStage> bossStages = new ArrayList<>();
     private int currentStage;
+
+    private int blockDelay;
+    private int blockHold;
+    private int blockCooldown;
+
+    @Nullable
+    protected Component battlecry;
     @Nullable
     private PetNonCombatBehavior nonCombatBehavior;
+
+    protected static final int BATTLECRY_COOLDOWN = GameConstants.TICKS_PER_SECOND * 60;
 
 
     public enum CombatMoveType {
@@ -163,7 +175,11 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         currentStage = 0;
         visualCastState = VisualCastState.NONE;
         castingAbility = null;
+        battlecry = null;
         lungeSpeed = .25;
+        blockCooldown = GameConstants.TICKS_PER_SECOND * 2;
+        blockDelay = GameConstants.TICKS_PER_SECOND / 2;
+        blockHold = GameConstants.TICKS_PER_SECOND * 2;
         updateEngine = new EntityUpdateEngine(this);
         animSync.attach(updateEngine);
         particleEffectTracker = ParticleEffectInstanceTracker.getTracker(this);
@@ -190,6 +206,30 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             stage.apply(this);
         }
         bossStages.add(stage);
+    }
+
+    public int getBlockDelay() {
+        return blockDelay;
+    }
+
+    public int getBlockHold() {
+        return blockHold;
+    }
+
+    public int getBlockCooldown() {
+        return blockCooldown;
+    }
+
+    public void setBlockDelay(int blockDelay) {
+        this.blockDelay = blockDelay;
+    }
+
+    public void setBlockHold(int blockHold) {
+        this.blockHold = blockHold;
+    }
+
+    public void setBlockCooldown(int blockCooldown) {
+        this.blockCooldown = blockCooldown;
     }
 
     @Override
@@ -282,7 +322,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
                 .add(MKNpcAttributes.AGGRO_RANGE.get(), 6)
                 .add(Attributes.ATTACK_SPEED)
                 .add(Attributes.FOLLOW_RANGE, 32.0D)
-                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0);
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.5);
     }
 
     @Override
@@ -339,15 +379,18 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(7, new LookAtThreatTargetGoal(this));
-        this.targetSelector.addGoal(3, new MKTargetGoal(this, true, true));
-        this.goalSelector.addGoal(0, new ReturnToSpawnGoal(this));
-        this.goalSelector.addGoal(2, new MovementGoal(this));
+        int priority = 0;
+        this.goalSelector.addGoal(priority++, new ReturnToSpawnGoal(this));
+        this.goalSelector.addGoal(priority++, new FloatGoal(this));
+        this.goalSelector.addGoal(priority++, new MovementGoal(this));
+        this.goalSelector.addGoal(priority++, new UseAbilityGoal(this));
+        this.goalSelector.addGoal(priority++, new MKBowAttackGoal(this, 5, 15.0f));
+        this.goalSelector.addGoal(priority++, new MKBlockGoal(this));
         this.meleeAttackGoal = new MKMeleeAttackGoal(this);
-        this.goalSelector.addGoal(4, new MKBowAttackGoal(this, 5, 15.0f));
-        this.goalSelector.addGoal(5, meleeAttackGoal);
-        this.goalSelector.addGoal(3, new UseAbilityGoal(this));
-        this.goalSelector.addGoal(1, new FloatGoal(this));
+        this.goalSelector.addGoal(priority++, meleeAttackGoal);
+        this.goalSelector.addGoal(priority++, new LookAtThreatTargetGoal(this));
+        this.targetSelector.addGoal(3, new MKTargetGoal(this, true, true));
+
     }
 
     public boolean avoidsWater() {
@@ -362,7 +405,29 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
+    public void setBattlecry(@Nullable Component battlecry) {
+        this.battlecry = battlecry;
+    }
+
+    protected void maybeDoBattlecry(LivingEntity target) {
+        if (getServer() == null || battlecry == null) {
+            return;
+        }
+        getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY).ifPresent(faction -> {
+            if (faction.hasFaction()) {
+                MKCore.getEntityData(target).ifPresent(entityData -> {
+                    if (entityData.getStats().getTimer(faction.getBattlecryName()) <= 0) {
+                        DialogueUtils.sendMessageToAllAround(getServer(), this,
+                                DialogueUtils.getSpeakerMessage(this, battlecry));
+                        entityData.getStats().setTimer(faction.getBattlecryName(), BATTLECRY_COOLDOWN);
+                    }
+                });
+            }
+        });
+    }
+
     public void callForHelp(LivingEntity entity, float threatVal) {
+        maybeDoBattlecry(entity);
         brain.getMemory(MKMemoryModuleTypes.ALLIES.get()).ifPresent(x -> {
             x.forEach(ent -> {
                 if (ent.distanceToSqr(this) < 9.0) {

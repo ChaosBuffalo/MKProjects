@@ -220,5 +220,17 @@
   "mkcore.anim_track.particle_anim.flip_motion.name": "Flip",
   "attribute.name.mk.heal_efficiency": "Heal Efficiency",
   "mkcore.ability_target.position_include_entities": "Single Target or Point In World",
-  "mkcore.spawn_pattern.particle_spawn_pattern.cone.name": "Cone"
+  "mkcore.spawn_pattern.particle_spawn_pattern.cone.name": "Cone",
+  "mkcore.talent.max_poise.name": "Max Poise",
+  "mkcore.talent.max_poise.description": "Increases your max poise by %s",
+  "mkcore.talent.poise_regen.name": "Poise Regen",
+  "mkcore.talent.poise_regen.description": "Increases your poise regeneration by %s",
+  "mkcore.talent.block_efficiency.name": "Block Efficiency",
+  "mkcore.talent.block_efficiency.description": "Increases your block efficiency by %s",
+  "mkcore.talent.poise_break_cd.name": "Poise Break Cooldown",
+  "mkcore.talent.poise_break_cd.description": "Decreases your poise break cooldown by %s seconds",
+  "mkcore.talent.heal_efficiency.name": "Heal Efficiency",
+  "mkcore.talent.heal_efficiency.description": "Increases your healing efficiency by %s",
+  "mkcore.talent.nature_damage.name": "Nature Damage",
+  "mkcore.talent.nature_damage.description": "Increases your nature damage by %s"
 }

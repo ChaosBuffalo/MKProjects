@@ -27,10 +27,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Function;
 
 public class StunningShoutAbility extends MKAbility {
     public static final ResourceLocation TICK_PARTICLES = new ResourceLocation(MKUltra.MODID, "stunning_shout_tick");
@@ -67,8 +69,8 @@ public class StunningShoutAbility extends MKAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
-        float level = getSkillLevel(entityData.getEntity(), MKAttributes.PNEUMA);
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+        float level = skillSupplier.apply(MKAttributes.PNEUMA);
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.BleedDamage.get(), baseDamage.value(),
                 scaleDamage.value(), level, modifierScaling.value());
         int dur = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
@@ -87,9 +89,10 @@ public class StunningShoutAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
-        super.endCast(castingEntity, casterData, context);
-        float level = getSkillLevel(castingEntity, MKAttributes.PNEUMA);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context,
+                        Function<Attribute, Float> skillSupplier) {
+        super.endCast(castingEntity, casterData, context, skillSupplier);
+        float level = skillSupplier.apply(MKAttributes.PNEUMA);
 
 
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.BleedDamage.get(),

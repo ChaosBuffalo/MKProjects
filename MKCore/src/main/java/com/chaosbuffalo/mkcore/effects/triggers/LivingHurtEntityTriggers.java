@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.damage.IMKDamageSourceExtensions;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.fx.ParticleEffects;
@@ -101,13 +102,21 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
                 MAGIC_TAG, livingHurtEntityMagicTriggers);
     }
 
+    private boolean wasBlocked(MKDamageSource source) {
+        if (source instanceof IMKDamageSourceExtensions ext) {
+            return !ext.canBlock();
+        }
+        return false;
+    }
+
     private void calculateMKDamage(LivingHurtEvent event, LivingEntity livingTarget,
                                    LivingEntity livingSource, IMKEntityData sourceData,
                                    MKDamageSource source, String typeTag,
                                    List<Trigger> playerHurtTriggers) {
         Entity immediate = source.getDirectEntity() != null ? source.getDirectEntity() : livingSource;
         float newDamage = source.getMKDamageType().applyDamage(livingSource, livingTarget, immediate, event.getAmount(), source.getModifierScaling());
-        if (source.getMKDamageType().rollCrit(livingSource, livingTarget, immediate)) {
+        boolean notBlocked = !wasBlocked(source);
+        if (notBlocked && source.getMKDamageType().rollCrit(livingSource, livingTarget, immediate)) {
             newDamage = source.getMKDamageType().applyCritDamage(livingSource, livingTarget, immediate, newDamage);
             switch (source.getOrigination()) {
                 case MK_ABILITY:
@@ -120,7 +129,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         }
         event.setAmount(newDamage);
 
-        if (playerHurtTriggers.size() == 0 || startTrigger(livingSource, typeTag))
+        if (!notBlocked || playerHurtTriggers.size() == 0 || startTrigger(livingSource, typeTag))
             return;
         playerHurtTriggers.forEach(f -> f.apply(event, source, livingTarget, livingSource, sourceData));
         endTrigger(livingSource, typeTag);

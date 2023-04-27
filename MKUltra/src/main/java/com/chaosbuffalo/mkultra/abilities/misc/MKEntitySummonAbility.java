@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.pets.MKPet;
 import com.chaosbuffalo.mkcore.core.pets.PetNonCombatBehavior;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
+import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
@@ -30,6 +31,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
+import java.util.function.Function;
 
 public class MKEntitySummonAbility extends MKAbility {
     protected final ResourceLocationAttribute npcDefintion = new ResourceLocationAttribute("npc", NpcDefinitionManager.INVALID_NPC_DEF);
@@ -72,8 +74,8 @@ public class MKEntitySummonAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
-        super.endCast(castingEntity, casterData, context);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
+        super.endCast(castingEntity, casterData, context, skillSupplier);
         TargetUtil.LivingOrPosition target = context.getMemory(MKAbilityMemories.ABILITY_POSITION_TARGET).orElse(null);
         if (target == null) {
             return;
@@ -84,7 +86,7 @@ public class MKEntitySummonAbility extends MKAbility {
                 UUID id = casterData instanceof MKPlayerData playerData ?
                         playerData.getPersonaManager().getActivePersona().getPersonaId() :
                         MKNpc.getNpcData(castingEntity).map(IEntityNpcData::getSpawnID).orElse(castingEntity.getUUID());
-                Entity entity = def.createEntity(castingEntity.getCommandSenderWorld(), target.getPosition().get(), id, getSkillLevel(castingEntity, summoningSkill));
+                Entity entity = def.createEntity(castingEntity.getCommandSenderWorld(), target.getPosition().get(), id, skillSupplier.apply(summoningSkill));
                 MKPet<MKEntity> pet = MKPet.makePetFromEntity(MKEntity.class, getAbilityId(), entity);
                 if (pet.getEntity() != null) {
                     casterData.getPets().addPet(pet);
@@ -97,7 +99,7 @@ public class MKEntitySummonAbility extends MKAbility {
                     pet.getEntity().setCustomName(newName);
                 } else {
                     if (entity != null) {
-                        entity.remove(Entity.RemovalReason.DISCARDED);
+                        EntityUtils.mkDiscard(entity);
                     }
                     MKUltra.LOGGER.error("Summon Ability {} failed to cast npc: {} to a MKEntity", getAbilityId(), npcDefintion.getValue());
                 }
@@ -110,7 +112,7 @@ public class MKEntitySummonAbility extends MKAbility {
                 casterData.getPets().getPet(getAbilityId()).ifPresent(x -> {
                     if (tar.equals(x.getEntity())) {
                         if (castingEntity.isShiftKeyDown()) {
-                            x.getEntity().remove(Entity.RemovalReason.DISCARDED);
+                            EntityUtils.mkDiscard(x.getEntity());
                             casterData.getPets().removePet(x);
                         } else {
                             x.getEntity().setNoncombatBehavior(new PetNonCombatBehavior(castingEntity));

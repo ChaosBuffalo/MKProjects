@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.utils;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -35,7 +36,7 @@ public class SoundUtils {
         if (event == null) {
             return;
         }
-        entity.level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), event, cat, volume, pitch);
+        entity.level.playSound(Minecraft.getInstance().player, entity.getX(), entity.getY(), entity.getZ(), event, cat, volume, pitch);
     }
 
     public static void serverPlaySoundFromEntity(double x, double y, double z,

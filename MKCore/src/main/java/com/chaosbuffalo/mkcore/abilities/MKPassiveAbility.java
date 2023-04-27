@@ -32,8 +32,9 @@ public abstract class MKPassiveAbility extends MKAbility {
     public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
         consumer.accept(Component.translatable("mkcore.ability.description.passive"));
         consumer.accept(getTargetContextLocalization());
-        consumer.accept(getAbilityDescription(casterData));
-        AbilityDescriptions.getEffectModifiers(getPassiveEffect(), casterData, false).forEach(consumer);
+        consumer.accept(getAbilityDescription(casterData, attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)));
+        AbilityDescriptions.getEffectModifiers(getPassiveEffect(), casterData, false,
+                attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)).forEach(consumer);
     }
 
     @Override

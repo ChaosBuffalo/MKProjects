@@ -26,9 +26,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.function.Function;
 
 
 public class WhirlwindBladesAbility extends MKAbility {
@@ -70,8 +72,8 @@ public class WhirlwindBladesAbility extends MKAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
-        float level = getSkillLevel(entityData.getEntity(), MKAttributes.PANKRATION);
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+        float level = skillSupplier.apply(MKAttributes.PANKRATION);
         Component baseDamage = getDamageDescription(entityData,
                 CoreDamageTypes.MeleeDamage.get(), base.value(), scale.value(), level, 0.0f);
         float periodSeconds = 6.0f / GameConstants.TICKS_PER_SECOND;
@@ -106,11 +108,12 @@ public class WhirlwindBladesAbility extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, context);
+    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context,
+                             Function<Attribute, Float> skillSupplier) {
+        super.continueCast(castingEntity, casterData, castTimeLeft, context, skillSupplier);
         int tickSpeed = 6;
         if (castTimeLeft % tickSpeed == 0) {
-            float level = getSkillLevel(castingEntity, MKAttributes.PANKRATION);
+            float level = skillSupplier.apply(MKAttributes.PANKRATION);
             int totalDuration = getCastTime(casterData);
             int count = (totalDuration - castTimeLeft) / tickSpeed;
             float baseAmount = perTick.value();

@@ -21,10 +21,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.DoubleUnaryOperator;
 
 public class PlayerSkills implements IMKSerializable<CompoundTag> {
@@ -36,6 +34,8 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
 
     private final MKPlayerData playerData;
     private final Object2DoubleMap<Attribute> skillValues = new Object2DoubleOpenCustomHashMap<>(Util.identityStrategy());
+
+    private final List<Consumer<Attribute>> skillChangeCallbacks = new ArrayList<>();
     private static final Map<Attribute, SkillChangeHandler> skillChangeHandlers = Util.make(() -> {
         Map<Attribute, SkillChangeHandler> map = new HashMap<>(8);
         map.put(MKAttributes.BLOCK, PlayerSkills::onBlockChange);
@@ -51,6 +51,10 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
 
     public PlayerSkills(MKPlayerData playerData) {
         this.playerData = playerData;
+    }
+
+    public void addCallback(Consumer<Attribute> cb) {
+        skillChangeCallbacks.add(cb);
     }
 
     private static void onBlockChange(MKPlayerData playerData, double value) {
@@ -106,6 +110,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         if (handler != null) {
             handler.onSkillChange(playerData, skillLevel);
         }
+        skillChangeCallbacks.forEach(x -> x.accept(attribute));
     }
 
     private double getSkillValue(Attribute attribute) {

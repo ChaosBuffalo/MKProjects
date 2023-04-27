@@ -68,7 +68,9 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 writeDefinition(generateNecrotideCultistAcolyte(), cache),
                 writeDefinition(generateNecrotideCultist(), cache),
                 writeDefinition(generateSkeletalLock(), cache),
-                writeDefinition(generateNecrotideGolem(), cache)
+                writeDefinition(generateNecrotideGolem(), cache),
+                writeDefinition(generateNecrotideSkeletalArcher(), cache),
+                writeDefinition(generateNecrotideSkeletalWarrior(), cache)
         );
     }
 
@@ -78,10 +80,15 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.NECROTIDE_CULTISTS_NAME));
         def.addOption(new RenderGroupOption().setValue(MKUSkeletons.BASIC_NAME));
         def.addOption(new MKSizeOption().setValue(1.0f));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 50.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 50.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 50.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.0))
+        );
         def.addOption(new NameOption().setValue("A Skeletal Lock"));
         def.addOption(new AbilitiesOption()
                 .withAbilityOption(MKUAbilities.SHADOW_BOLT.get(), 1, 1.0)
+                .withAbilityOption(MKUAbilities.SHADOW_PULSE.get(), 2, 1.0)
         );
         def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.MAGE));
         def.addOption(new NotableOption());
@@ -94,7 +101,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.NECROTIDE_CULTISTS_NAME));
         def.addOption(new RenderGroupOption().setValue(MKUGolems.NECROTIDE_GOLEM_NAME));
         def.addOption(new MKSizeOption().setValue(1.25f));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 500.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 500.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 500.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 5.0))
+        );
         def.addOption(new NameOption().setValue("A Necrotide Construction"));
         def.addOption(new AbilitiesOption()
                 .withAbilityOption(MKUAbilities.SHADOW_BOLT.get(), 2, 1.0)
@@ -111,7 +122,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.NECROTIDE_CULTISTS_NAME));
         def.addOption(new RenderGroupOption().setValue(MKUHumans.NECROTIDE_CULTIST_1_NAME));
         def.addOption(new MKSizeOption().setValue(0.95f));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 50.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 50.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 50.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.0))
+        );
         def.addOption(new NameOption().setValue("A Necrotide Acolyte"));
         def.addOption(new AbilitiesOption()
                 .withAbilityOption(MKUAbilities.SHADOW_BOLT.get(), 1, 1.0)
@@ -119,6 +134,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 .withAbilityOption(MKUAbilities.SHADOW_PULSE.get(), 3, 0.5)
         );
         def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.MAGE));
+        def.addOption(new FactionBattlecryOption());
         return def;
     }
 
@@ -128,17 +144,77 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.NECROTIDE_CULTISTS_NAME));
         def.addOption(new RenderGroupOption().setValue(MKUHumans.NECROTIDE_CULTIST_SKULL_1_NAME));
         def.addOption(new MKSizeOption().setValue(1.05f));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 125.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 125.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 125.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 3.0))
+        );
         def.addOption(new FactionNameOption().setTitle("Cultist"));
         def.addOption(new AbilitiesOption()
                 .withAbilityOption(MKUAbilities.SHADOW_BOLT.get(), 1, 1.0)
                 .withAbilityOption(MKUAbilities.DROWN.get(), 2, 1.0)
                 .withAbilityOption(MKUAbilities.SHADOW_PULSE.get(), 3, 1.0)
-                .withAbilityOption(MKUAbilities.TEST_SUMMON.get(), 4, 1.0)
+                .withAbilityOption(MKUAbilities.NECROTIDE_WARRIOR_SUMMON.get(), 4, 1.0)
         );
         def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.NECROMANCER));
+        def.addOption(new FactionBattlecryOption());
         return def;
     }
+
+    private NpcDefinition generateNecrotideSkeletalWarrior() {
+        NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "necrotide_skeletal_warrior"),
+                MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
+        def.addOption(new FactionOption().setValue(MKUFactions.NECROTIDE_CULTISTS_NAME));
+        def.addOption(new MKSizeOption().setValue(1.0f));
+        def.addOption(new RenderGroupOption().setValue(MKUSkeletons.BASIC_NAME));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 65.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 65.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.0))
+        );
+        def.addOption(new NameOption().setValue("Skeleton Warrior"));
+        EquipmentOption equipOption = new EquipmentOption();
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkweapons:battleaxe_iron"))), 1.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkweapons:spear_iron"))), 1.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkweapons:greatsword_iron"))), 1.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkweapons:longsword_iron"))), 1.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkweapons:warhammer_iron"))), 1.0, 0.0f));
+        def.addOption(equipOption);
+        def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.WARRIOR));
+        return def;
+    }
+
+    private NpcDefinition generateNecrotideSkeletalArcher() {
+        NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "necrotide_skeletal_archer"),
+                MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
+        def.addOption(new FactionOption().setValue(MKUFactions.NECROTIDE_CULTISTS_NAME));
+        def.addOption(new MKSizeOption().setValue(0.95f));
+        def.addOption(new RenderGroupOption().setValue(MKUSkeletons.HYBOREAN_ARCHER_NAME));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 30.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 30.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 1.0))
+        );
+        def.addOption(new NameOption().setValue("Skeleton Archer"));
+        EquipmentOption equipOption = new EquipmentOption();
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkweapons:longbow_iron"))), 1.0, 0.0f));
+        def.addOption(equipOption);
+        def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.ARCHER));
+        return def;
+    }
+
 
     private NpcDefinition generateClericAcolyte() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "solangian_acolyte"),
@@ -146,7 +222,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.SEE_OF_SOLANG_NAME));
         def.addOption(new RenderGroupOption().setValue(MKUHumans.CLERIC_1_NAME));
         def.addOption(new MKSizeOption().setValue(1.05f));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 150.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 150.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 150.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 3.5))
+        );
         def.addOption(new FactionNameOption().setTitle("Acolyte"));
         def.addOption(new NotableOption());
         def.addOption(new AbilitiesOption()
@@ -175,7 +255,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.SEE_OF_SOLANG_NAME));
         def.addOption(new RenderGroupOption().setValue(MKUHumans.CLERIC_1_NAME));
         def.addOption(new MKSizeOption().setValue(1.05f));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 500.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 500.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 500.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 5.0))
+        );
         def.addOption(new FactionNameOption().setTitle("Cleric"));
         def.addOption(new NotableOption());
         def.addOption(new AbilitiesOption()
@@ -209,7 +293,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.SEE_OF_SOLANG_NAME));
         def.addOption(new RenderGroupOption().setValue(MKUHumans.GHOST_1_NAME));
         def.addOption(new MKSizeOption().setValue(1.0f));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 100.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 100.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 100.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 3.0))
+        );
         def.addOption(new NameOption().setValue("Forlorn Ghost"));
         def.addOption(new NotableOption());
         def.addOption(new GhostOption().setValue(1.0f));
@@ -232,7 +320,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.SEE_OF_SOLANG_NAME));
         def.addOption(new RenderGroupOption().setValue(MKUHumans.TEMPLE_GUARD_2_NAME));
         def.addOption(new MKSizeOption().setValue(1.0f));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 300.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 300.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 300.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 4.0))
+        );
         def.addOption(new FactionNameOption().setTitle("Temple Guard"));
         def.addOption(new NotableOption());
         def.addOption(new AbilitiesOption()
@@ -255,7 +347,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.SEE_OF_SOLANG_NAME));
         def.addOption(new RenderGroupOption().setValue(MKUHumans.TEMPLE_GUARD_1_NAME));
         def.addOption(new MKSizeOption().setValue(1.0f));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 250.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 250.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 250.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 3.0))
+        );
         def.addOption(new FactionNameOption().setTitle("Temple Guard"));
         def.addOption(new NotableOption());
         def.addOption(new AbilitiesOption()
@@ -277,7 +373,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.SEE_OF_SOLANG_NAME));
         def.addOption(new RenderGroupOption().setValue(MKUHumans.CLERIC_2_NAME));
         def.addOption(new MKSizeOption().setValue(0.85f));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 100.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 100.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 100.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.5))
+        );
         def.addOption(new FactionNameOption().setTitle("Apprentice"));
         def.addOption(new NotableOption());
         def.addOption(new AbilitiesOption()
@@ -299,7 +399,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.NETHER_MAGE_NAME));
         def.addOption(new RenderGroupOption().setValue(MKUHumans.NETHER_MAGE_1_NAME));
         def.addOption(new MKSizeOption().setValue(0.90f));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 150.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 150.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 150.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 3.0))
+        );
         def.addOption(new FactionNameOption().setTitle("Initiate"));
         def.addOption(new NotableOption());
         def.addOption(new AbilitiesOption()
@@ -333,6 +437,8 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 .addAttributeEntry(new NpcAttributeEntry(Attributes.ARMOR, 10.0))
                 .addAttributeEntry(new NpcAttributeEntry(Attributes.ATTACK_DAMAGE, 5.0))
                 .addAttributeEntry(new NpcAttributeEntry(MKAttributes.BLEED_RESISTANCE, 1.25))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 250.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.0))
         );
         def.addOption(new NameOption().setValue("Burning Revenant"));
         EquipmentOption equipOption = new EquipmentOption();
@@ -385,7 +491,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
         def.addOption(new MKSizeOption().setValue(0.9f));
         def.addOption(new RenderGroupOption().setValue(MKUPiglins.ZOMBIE_PIG_NAME));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 20.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 20.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 20.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 1.0))
+        );
         def.addOption(new NameOption().setValue("Decaying Zombie"));
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
@@ -405,7 +515,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
         def.addOption(new MKSizeOption().setValue(0.85f));
         def.addOption(new RenderGroupOption().setValue(MKUPiglins.ZOMBIE_PIG_NAME));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 15.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 15.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 15.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 1.0))
+        );
         def.addOption(new NameOption().setValue("Shambling Archer"));
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
@@ -422,7 +536,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
         def.addOption(new MKSizeOption().setValue(0.95f));
         def.addOption(new RenderGroupOption().setValue(MKUPiglins.ZOMBIE_PIG_MAGUS_NAME));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 30.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 30.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 30.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 1.0))
+        );
         def.addOption(new NameOption().setValue("Crumbling Trooper Mage"));
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
@@ -452,7 +570,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new MKSizeOption().setValue(1.0f));
         def.addOption(new RenderGroupOption().setValue(MKUPiglins.DESTROYED_SKELETAL_TROOPER_NAME));
         def.addOption(new MKComboSettingsOption().setComboDelay(20).setComboCount(3));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 180.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 180.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 180.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.0))
+        );
         def.addOption(new NameOption().setValue("Trooper Executioner"));
         def.addOption(new LungeSpeedOption().setValue(0.75));
         def.addOption(new NotableOption());
@@ -485,7 +607,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
         def.addOption(new MKSizeOption().setValue(1.0f));
         def.addOption(new RenderGroupOption().setValue(MKUPiglins.SKELETAL_MAGE_NAME));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 150.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 150.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 150.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 3.0))
+        );
         def.addOption(new FactionNameOption().setTitle("Imperial Magus").setHasLastName(true));
         def.addOption(new NotableOption());
         def.addOption(new LungeSpeedOption().setValue(0.5));
@@ -524,7 +650,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new MKSizeOption().setValue(1.2f));
         def.addOption(new RenderGroupOption().setValue(MKUPiglins.SKELETAL_TROOPER_NAME));
         def.addOption(new MKComboSettingsOption().setComboDelay(10).setComboCount(3));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 100.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 100.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 100.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.0))
+        );
         def.addOption(new FactionNameOption().setTitle("Captain").setHasLastName(true));
         def.addOption(new LungeSpeedOption().setValue(1.0));
         def.addOption(new NotableOption());
@@ -563,7 +693,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
         def.addOption(new MKSizeOption().setValue(1.0f));
         def.addOption(new RenderGroupOption().setValue(MKUPiglins.DESTROYED_SKELETAL_MAGE_NAME));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 50.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 50.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 50.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.0))
+        );
         def.addOption(new NameOption().setValue("Skeletal Magus"));
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
@@ -596,7 +730,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKUFactions.IMPERIAL_DEAD_NAME));
         def.addOption(new MKSizeOption().setValue(1.1f));
         def.addOption(new RenderGroupOption().setValue(MKUPiglins.ZOMBIE_PIG_TROOPER_NAME));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 50.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 50.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 50.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 1.0))
+        );
         def.addOption(new NameOption().setValue("Crumbling Trooper"));
         def.addOption(new LungeSpeedOption().setValue(0.35));
         EquipmentOption equipOption = new EquipmentOption();
@@ -633,7 +771,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new MKSizeOption().setValue(1.0f));
         def.addOption(new RenderGroupOption().setValue(MKUSkeletons.HYBOREAN_WARRIOR_NAME));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 30.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 30.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 30.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 1.0))
+        );
         def.addOption(new NameOption().setValue("Hyborean Warrior"));
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
@@ -662,7 +804,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new MKSizeOption().setValue(0.95f));
         def.addOption(new RenderGroupOption().setValue(MKUSkeletons.HYBOREAN_ARCHER_NAME));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 25.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 25.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 25.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 1.0))
+        );
         def.addOption(new NameOption().setValue("Decaying Archer"));
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
@@ -681,7 +827,8 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new RenderGroupOption().setValue(MKUSkeletons.SORCERER_QUEEN_NAME));
         def.addOption(new AttributesOption()
                 .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 110.0))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.EVOCATION, 3))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 110.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 3.0))
         );
         def.addOption(new NameOption().setValue("Hyborean Sorcerer Queen"));
         EquipmentOption equipOption = new EquipmentOption();
@@ -710,9 +857,8 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new RenderGroupOption().setValue(MKUSkeletons.ANCIENT_KING_NAME));
         def.addOption(new AttributesOption()
                 .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 165.0))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.EVOCATION, 2))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.RESTORATION, 1))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.PANKRATION, 2))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 165.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 3.0))
         );
         def.addOption(new NameOption().setValue("An Ancient King"));
         EquipmentOption equipOption = new EquipmentOption();
@@ -743,7 +889,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new MKSizeOption().setValue(0.9f));
         def.addOption(new RenderGroupOption().setValue(MKUSkeletons.SORCERER_NAME));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 40.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 40.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 40.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.0))
+        );
         def.addOption(new NameOption().setValue("Hyborean Sorcerer"));
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
@@ -765,7 +915,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new MKSizeOption().setValue(1.0f));
         def.addOption(new RenderGroupOption().setValue(MKUSkeletons.HONOR_GUARD_NAME));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 65.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 65.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 65.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 1.0))
+        );
         def.addOption(new NameOption().setValue("Undying Honor Guard"));
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
@@ -797,7 +951,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 .withAbilityOption(MKUAbilities.SKIN_LIKE_WOOD.get(), 1, 1.0)
                 .withAbilityOption(MKUAbilities.NATURES_REMEDY.get(), 2, 1.0)
         );
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 400.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 400.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 400.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 4.0))
+        );
         def.addOption(new NameOption().setValue("Green Smith"));
         def.addOption(new NotableOption());
         EquipmentOption equipOption = new EquipmentOption();
@@ -832,7 +990,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 .withAbilityOption(MKUAbilities.CLEANSING_SEED.get(), 5, 1.0)
         );
         def.addOption(new DialogueOption().setValue(new ResourceLocation(MKUltra.MODID, "open_abilities")));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 400.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 400.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 400.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 10.0))
+        );
         def.addOption(new NameOption().setValue("Green Lady"));
         def.addOption(new NotableOption());
         def.addOption(new QuestOfferingOption(new ResourceLocation("mkultra", "intro_quest")));
@@ -854,7 +1016,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 .withAbilityOption(MKUAbilities.CLEANSING_SEED.get(), 5, 1.0)
         );
 //        def.addOption(new DialogueOption().setValue(new ResourceLocation(MKUltra.MODID, "open_abilities")));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 150.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 150.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 150.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 4.0))
+        );
         def.addOption(new NameOption().setValue("Green Guardian"));
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.HEAD,
@@ -888,7 +1054,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 .withAbilityOption(MKUAbilities.CLEANSING_SEED.get(), 5, 1.0)
         );
 //        def.addOption(new DialogueOption().setValue(new ResourceLocation(MKUltra.MODID, "open_abilities")));
-        def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 150.0)));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 150.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 150.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 4.0))
+        );
         def.addOption(new NameOption().setValue("Green Knight"));
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.HEAD,

@@ -1,0 +1,88 @@
+{
+  "entityType": "mkultra:hyborean_skeleton",
+  "options": [
+    {
+      "optionType": "mknpc:render_group",
+      "value": "basic"
+    },
+    {
+      "attributes": [
+        {
+          "attributeName": "minecraft:generic.max_health",
+          "value": 65.0
+        },
+        {
+          "attributeName": "mkcore:max_mana",
+          "value": 65.0
+        },
+        {
+          "attributeName": "mkcore:mana_regen",
+          "value": 2.0
+        }
+      ],
+      "optionType": "mknpc:attributes"
+    },
+    {
+      "optionType": "mknpc:name",
+      "value": "Skeleton Warrior"
+    },
+    {
+      "optionType": "mknpc:equipment",
+      "slotOptions": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"mkweapons:battleaxe_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"mkweapons:spear_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"mkweapons:greatsword_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"mkweapons:longsword_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"mkweapons:warhammer_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "major_skills": [
+        "mkcore:one_hand_blunt",
+        "mkcore:one_hand_pierce",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:two_hand_slash"
+      ],
+      "minor_skills": [
+        "mkcore:pankration"
+      ],
+      "optionType": "mknpc:skills",
+      "remedial_skills": [
+        "mkcore:arete",
+        "mkcore:pneuma"
+      ]
+    },
+    {
+      "optionType": "mknpc:mk_size",
+      "value": 1.0
+    },
+    {
+      "optionType": "mknpc:faction",
+      "value": "mkultra:necrotide_cultists"
+    }
+  ]
+}

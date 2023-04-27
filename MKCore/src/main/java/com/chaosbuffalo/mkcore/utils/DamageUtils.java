@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.utils;
 
+import com.chaosbuffalo.mkcore.core.damage.IMKDamageSourceExtensions;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -8,6 +9,14 @@ public class DamageUtils {
 
     public static boolean isMKDamage(DamageSource source) {
         return source instanceof MKDamageSource;
+    }
+
+    public static boolean wasBlocked(DamageSource source) {
+        if (source instanceof IMKDamageSourceExtensions ext) {
+            return !ext.canBlock();
+        } else {
+            return false;
+        }
     }
 
     public static boolean isMinecraftPhysicalDamage(DamageSource source) {

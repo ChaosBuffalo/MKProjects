@@ -30,6 +30,9 @@ public class MKUSkeletons {
     public static final ModelLook BURNING_SKELETON = new ModelLook(ModelStyles.CLOTHES_ONLY_STYLE,
             SkeletonStyles.WITHER_SKELETON_TEXTURES, MKUClothes.IRON_PONCHO);
 
+    public static final ModelLook SEAWOVEN_SKELETON = new ModelLook(ModelStyles.CLOTHES_ONLY_STYLE,
+            SkeletonStyles.WITHER_SKELETON_TEXTURES, MKUClothes.SEAWOVEN_PONCHO);
+
     public static final Map<String, ModelLook> SKELETON_STYLES = new HashMap<>();
 
     public static final String ANCIENT_KING_NAME = "ancient_king";
@@ -48,6 +51,8 @@ public class MKUSkeletons {
 
     public static final String BASIC_NAME = "basic";
 
+    public static final String SEAWOVEN_NAME = "seawoven";
+
     public static final ModelLook BASIC = new ModelLook(ModelStyles.BASIC_STYLE, SkeletonStyles.SKELETON_TEXTURES);
 
     static {
@@ -59,7 +64,6 @@ public class MKUSkeletons {
         SKELETON_STYLES.put(HYBOREAN_WARRIOR_NAME, HYBOREAN_WARRIOR);
         SKELETON_STYLES.put(BURNING_NAME, BURNING_SKELETON);
         SKELETON_STYLES.put(BASIC_NAME, BASIC);
-
-
+        SKELETON_STYLES.put(SEAWOVEN_NAME, SEAWOVEN_SKELETON);
     }
 }

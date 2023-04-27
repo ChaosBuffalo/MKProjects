@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.npc;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
@@ -176,10 +177,19 @@ public class NpcDefinition {
             apply(entity, order, difficultyValue);
         }
         applyDifficultyScaling(entity, difficultyValue);
+
+        //We need to apply equipment before the tick so that the following operations reflect correct values
+
+
         // hack to make sure we're at our new max health
-        if (entity instanceof LivingEntity) {
-            ((LivingEntity) entity).setHealth(((LivingEntity) entity).getMaxHealth());
+        if (entity instanceof LivingEntity living) {
+            living.setHealth(living.getMaxHealth());
+            living.detectEquipmentUpdates();
         }
+        MKCore.getEntityData(entity).ifPresent(cap -> {
+            cap.getStats().setPoise(cap.getStats().getMaxPoise());
+            cap.getStats().setMana(cap.getStats().getMaxMana());
+        });
     }
 
     private void applyDifficultyScaling(Entity entity, double difficultyValue) {

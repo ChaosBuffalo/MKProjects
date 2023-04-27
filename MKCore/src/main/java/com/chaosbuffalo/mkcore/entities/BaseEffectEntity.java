@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.WorldAreaEffectEntry;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
+import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
@@ -14,6 +15,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
@@ -28,6 +30,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 import net.minecraft.world.entity.Entity.RemovalReason;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public abstract class BaseEffectEntity extends Entity implements IEntityAdditionalSpawnData {
     protected final List<WorldAreaEffectEntry> effects;
@@ -37,6 +40,11 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
     protected int duration = 600;
     protected int waitTime = 20;
     protected int tickRate = 5;
+    protected int preDelay = 0;
+
+    @Nullable
+    protected SoundEvent tickSound;
+
     @Nullable
     protected ParticleDisplay particles;
     @Nullable
@@ -79,7 +87,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
                     return ticksExisted - offset == 0;
                 case CONTINUOUS:
                 default:
-                    return ticksExisted % getTickRate() == 0;
+                    return (ticksExisted - offset) > 0 && (ticksExisted - offset) % getTickRate() == 0;
 
             }
         }
@@ -103,6 +111,14 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         this.effects = new ArrayList<>();
         particles = null;
         noPhysics = true;
+    }
+
+    public void setTickSound(@Nullable SoundEvent tickSound) {
+        this.tickSound = tickSound;
+    }
+
+    public void setPreDelay(int preDelay) {
+        this.preDelay = preDelay;
     }
 
     @Override
@@ -178,7 +194,6 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
             }
         }
     }
-
     protected void spawnClientParticles(ParticleDisplay display) {
         ParticleAnimation anim = ParticleAnimationManager.getAnimation(display.getParticles());
         if (anim != null) {
@@ -187,10 +202,19 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
     }
 
     protected void clientUpdate() {
-        ParticleDisplay display = isWaiting() ? waitingParticles : particles;
-        if (display != null && display.shouldTick(tickCount, isWaiting() ? 0 : waitTime)) {
-            spawnClientParticles(display);
+        if (isPreDelay()) {
+            return;
+        } else {
+            boolean isWaiting = isWaiting();
+            ParticleDisplay display = isWaiting ? waitingParticles : particles;
+            if (display != null && display.shouldTick(tickCount, isWaiting ? preDelay : waitTime + preDelay)) {
+                if (tickSound != null && !isWaiting) {
+                    SoundUtils.playSoundAtEntity(this, tickSound);
+                }
+                spawnClientParticles(display);
+            }
         }
+
     }
 
     @Override
@@ -199,14 +223,10 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         buffer.writeInt(tickRate);
         buffer.writeInt(waitTime);
         buffer.writeInt(tickCount);
-        buffer.writeBoolean(particles != null);
-        if (particles != null) {
-            particles.write(buffer);
-        }
-        buffer.writeBoolean(waitingParticles != null);
-        if (waitingParticles != null) {
-            waitingParticles.write(buffer);
-        }
+        buffer.writeInt(preDelay);
+        buffer.writeNullable(tickSound, (buf, x) -> buf.writeRegistryIdUnsafe(ForgeRegistries.SOUND_EVENTS, x));
+        buffer.writeNullable(particles, (buf, x) -> x.write(buf));
+        buffer.writeNullable(waitingParticles, (buf, x) -> x.write(buf));
     }
 
     @Override
@@ -218,14 +238,10 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         tickRate = additionalData.readInt();
         waitTime = additionalData.readInt();
         tickCount = additionalData.readInt();
-        boolean hasParticles = additionalData.readBoolean();
-        if (hasParticles) {
-            particles = ParticleDisplay.read(additionalData);
-        }
-        boolean hasWaiting = additionalData.readBoolean();
-        if (hasWaiting) {
-            waitingParticles = ParticleDisplay.read(additionalData);
-        }
+        preDelay = additionalData.readInt();
+        tickSound = additionalData.readNullable(x -> x.readRegistryIdUnsafe(ForgeRegistries.SOUND_EVENTS));
+        particles = additionalData.readNullable(ParticleDisplay::read);
+        waitingParticles = additionalData.readNullable(ParticleDisplay::read);
     }
 
     public void setOwner(@Nullable LivingEntity ownerIn) {
@@ -245,8 +261,12 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         return this.owner;
     }
 
+    protected boolean isPreDelay() {
+        return tickCount < preDelay;
+    }
+
     public boolean isWaiting() {
-        return tickCount < waitTime;
+        return tickCount > preDelay && tickCount < preDelay + waitTime;
     }
 
     @Nullable
@@ -260,7 +280,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
     protected abstract Collection<LivingEntity> getEntitiesInBounds();
 
     protected boolean serverUpdate() {
-        if (tickCount > waitTime + duration + WAIT_LAG + 1) {
+        if (tickCount > preDelay + waitTime + duration + WAIT_LAG + 1) {
             return true;
         }
         IMKEntityData entityData = getOwnerData();
@@ -268,11 +288,13 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
             return true;
 
         // lets recalc waiting to include a wait lag so that the server isnt damaging before the client responds
-        boolean stillWaiting = tickCount <= waitTime + WAIT_LAG;
+        boolean stillWaiting = tickCount <= preDelay + waitTime + WAIT_LAG;
 
         if (stillWaiting) {
             return false;
         }
+
+
 
         reapplicationDelayMap.entrySet().removeIf(entry -> tickCount >= entry.getValue());
 
@@ -281,17 +303,21 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
             return false;
         }
 
+
         Collection<LivingEntity> result = getEntitiesInBounds();
+
 
         if (result.isEmpty()) {
             return false;
         }
 
+
+
         for (LivingEntity target : result) {
             reapplicationDelayMap.put(target, tickCount + tickRate);
             MKCore.getEntityData(target).ifPresent(targetData ->
                     effects.forEach(entry -> {
-                        if (entry.getTickStart() <= tickCount - waitTime - WAIT_LAG) {
+                        if (entry.getTickStart() <= tickCount - preDelay - waitTime - WAIT_LAG) {
                             entry.apply(entityData, targetData);
                         }
                     }));

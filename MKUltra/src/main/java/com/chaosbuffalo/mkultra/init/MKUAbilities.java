@@ -14,6 +14,7 @@ import com.chaosbuffalo.mkultra.abilities.necromancer.LifeSpikeAbility;
 import com.chaosbuffalo.mkultra.abilities.necromancer.ShadowBoltAbility;
 import com.chaosbuffalo.mkultra.abilities.necromancer.ShadowPulseAbility;
 import com.chaosbuffalo.mkultra.abilities.nether_mage.*;
+import com.chaosbuffalo.mkultra.abilities.passives.GreenSoulAbility;
 import com.chaosbuffalo.mkultra.abilities.passives.LifeSiphonAbility;
 import com.chaosbuffalo.mkultra.abilities.passives.SoulDrainAbility;
 import com.chaosbuffalo.mkultra.abilities.structure.NecrotideGolemBeam;
@@ -33,11 +34,16 @@ public class MKUAbilities {
     public static final RegistryObject<FireballAbility> FIREBALL = REGISTRY.register("ability.fireball", FireballAbility::new);
     public static final RegistryObject<ShadowPulseFlurryAbility> SHADOW_PUlSE_FLURRY = REGISTRY.register("ability.shadow_pulse_flurry", ShadowPulseFlurryAbility::new);
 
+    public static final RegistryObject<SeafuryAbility> SEAFURY = REGISTRY.register("ability.seafury", SeafuryAbility::new);
+
     public static final RegistryObject<NecrotideGolemBeam> NECROTIDE_GOLEM_BEAM = REGISTRY.register("ability.necrotide_golem_beam", NecrotideGolemBeam::new);
 
     //necromancer
     public static final RegistryObject<MKEntitySummonAbility> TEST_SUMMON = REGISTRY.register("ability.test_summon",
             () -> new MKEntitySummonAbility(new ResourceLocation(MKUltra.MODID, "hyborean_sorcerer_queen"), MKAttributes.NECROMANCY));
+
+    public static final RegistryObject<MKEntitySummonAbility> NECROTIDE_WARRIOR_SUMMON = REGISTRY.register("ability.necrotide_warrior_summon",
+            () -> new MKEntitySummonAbility(new ResourceLocation(MKUltra.MODID, "necrotide_skeletal_warrior"), MKAttributes.NECROMANCY));
     public static final RegistryObject<ShadowPulseAbility> SHADOW_PULSE = REGISTRY.register("ability.shadow_pulse", ShadowPulseAbility::new);
     public static final RegistryObject<ShadowBoltAbility> SHADOW_BOLT = REGISTRY.register("ability.shadow_bolt", ShadowBoltAbility::new);
     public static final RegistryObject<LifeSpikeAbility> LIFE_SPIKE = REGISTRY.register("ability.life_spike", LifeSpikeAbility::new);
@@ -56,6 +62,8 @@ public class MKUAbilities {
     public static final RegistryObject<NaturesRemedyAbility> NATURES_REMEDY = REGISTRY.register("ability.natures_remedy", NaturesRemedyAbility::new);
     public static final RegistryObject<ExplosiveGrowthAbility> EXPLOSIVE_GROWTH = REGISTRY.register("ability.explosive_growth", ExplosiveGrowthAbility::new);
     public static final RegistryObject<CleansingSeedAbility> CLEANSING_SEED = REGISTRY.register("ability.cleansing_seed", CleansingSeedAbility::new);
+
+    public static final RegistryObject<GreenSoulAbility> GREEN_SOUL = REGISTRY.register("ability.green_soul", GreenSoulAbility::new);
 
     //cleric
     public static final RegistryObject<SmiteAbility> SMITE = REGISTRY.register("ability.smite", SmiteAbility::new);

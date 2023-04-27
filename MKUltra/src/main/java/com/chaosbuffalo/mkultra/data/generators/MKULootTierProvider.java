@@ -6,6 +6,8 @@ import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkweapons.data.LootTierProvider;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
+import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
+import com.chaosbuffalo.mkweapons.items.effects.melee.OnHitAbilityEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.UndeadDamageMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.LootItemTemplate;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
@@ -40,8 +42,26 @@ public class MKULootTierProvider extends LootTierProvider {
                 writeLootTier(trooperExecutioner(), cache),
                 writeLootTier(trooperMagus(), cache),
                 writeLootTier(burningSkeletonLoot(), cache),
-                writeLootTier(burningStaff(), cache)
+                writeLootTier(burningStaff(), cache),
+                writeLootTier(seafuryWeapon(), cache)
         );
+    }
+
+    private LootTier seafuryWeapon() {
+        LootTier tier = new LootTier(new ResourceLocation(MKUltra.MODID, "seafury"));
+        LootItemTemplate weaponTemplate = new LootItemTemplate(LootSlotManager.MAIN_HAND);
+        weaponTemplate.addItem(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.KATANA_TYPE));
+        weaponTemplate.addItem(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.LONGSWORD_TYPE));
+        var meleeEffects = new MeleeEffectOption();
+        var weaponEffect = new OnHitAbilityEffect(0.5, 10.0f, MKUAbilities.SEAFURY);;
+        meleeEffects.addEffect(weaponEffect);
+        weaponTemplate.addRandomizationOption(meleeEffects);
+        NameOption name = new NameOption(Component.literal("Seafury Blade"));
+        weaponTemplate.addRandomizationOption(name);
+        weaponTemplate.addTemplate(new RandomizationTemplate(new ResourceLocation(MKUltra.MODID, "seafury_blade"),
+                RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.NAME_SLOT), 10);
+        tier.addItemTemplate(weaponTemplate, 10);
+        return tier;
     }
 
     private LootTier burningSkeletonLoot() {

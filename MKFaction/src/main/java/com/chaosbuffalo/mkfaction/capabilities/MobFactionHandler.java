@@ -1,11 +1,13 @@
 package com.chaosbuffalo.mkfaction.capabilities;
 
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
+import com.chaosbuffalo.mkfaction.faction.FactionGreetings;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.network.MobFactionAssignmentPacket;
 import com.chaosbuffalo.mkfaction.network.PacketHandler;
 import com.chaosbuffalo.targeting_api.Targeting;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -14,16 +16,20 @@ import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class MobFactionHandler implements IMobFaction {
     private final LivingEntity entity;
     private ResourceLocation factionName;
     private MKFaction faction;
+    private ResourceLocation battlecryName;
+
+    @Nullable
+    private Component battlecry;
 
     public MobFactionHandler(LivingEntity entity) {
         this.entity = entity;
-        factionName = MKFaction.INVALID_FACTION;
-        faction = null;
+        setFactionNameInternal(MKFaction.INVALID_FACTION);
     }
 
     @Override
@@ -42,9 +48,15 @@ public class MobFactionHandler implements IMobFaction {
         return factionName;
     }
 
+    @Override
+    public ResourceLocation getBattlecryName() {
+        return battlecryName;
+    }
+
     private void setFactionNameInternal(ResourceLocation factionName) {
         this.factionName = factionName;
         this.faction = MKFactionRegistry.getFaction(factionName);
+        this.battlecryName = new ResourceLocation(factionName.getNamespace(), String.format("battlecry.%s", factionName.getPath()));
         if (!factionName.equals(MKFaction.INVALID_FACTION) && faction == null) {
             throw new IllegalStateException(String.format("Entity %s was switched to unregistered faction '%s'", entity, factionName));
         }

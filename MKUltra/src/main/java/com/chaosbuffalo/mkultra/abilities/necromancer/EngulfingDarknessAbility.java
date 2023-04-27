@@ -23,9 +23,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class EngulfingDarknessAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_casting");
@@ -62,12 +64,13 @@ public class EngulfingDarknessAbility extends MKAbility {
     @Override
     public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
         super.buildDescription(casterData, consumer);
-        AbilityDescriptions.getEffectModifiers(MKUEffects.ENGULFING_DARKNESS.get(), casterData, false).forEach(consumer);
+        AbilityDescriptions.getEffectModifiers(MKUEffects.ENGULFING_DARKNESS.get(), casterData, false,
+                attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)).forEach(consumer);
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
-        float level = getSkillLevel(entityData.getEntity(), MKAttributes.CONJURATION);
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+        float level = skillSupplier.apply(MKAttributes.CONJURATION);
         Component dotStr = getDamageDescription(entityData,
                 CoreDamageTypes.ShadowDamage.get(), baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
         float dotDur = convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()));
@@ -113,9 +116,9 @@ public class EngulfingDarknessAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        super.endCast(entity, data, context);
-        float level = getSkillLevel(entity, MKAttributes.CONJURATION);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
+        super.endCast(entity, data, context, skillSupplier);
+        float level = skillSupplier.apply(MKAttributes.CONJURATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             MKEffectBuilder<?> dot = getDotCast(data, level)
                     .ability(this)

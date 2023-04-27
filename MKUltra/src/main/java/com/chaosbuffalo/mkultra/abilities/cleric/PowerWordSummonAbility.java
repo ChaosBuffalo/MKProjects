@@ -22,7 +22,10 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.function.Function;
 
 public class PowerWordSummonAbility extends MKAbility {
     protected final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "power_word_summon_casting");
@@ -52,8 +55,8 @@ public class PowerWordSummonAbility extends MKAbility {
     }
 
     @Override
-    protected Component getAbilityDescription(IMKEntityData entityData) {
-        float level = getSkillLevel(entityData.getEntity(), MKAttributes.CONJURATION);
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+        float level = skillSupplier.apply(MKAttributes.CONJURATION);
         int duration = getBuffDuration(entityData, level, base.value(), scale.value()) / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), duration);
     }
@@ -69,9 +72,9 @@ public class PowerWordSummonAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
-        super.endCast(castingEntity, casterData, context);
-        float level = getSkillLevel(castingEntity, MKAttributes.CONJURATION);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
+        super.endCast(castingEntity, casterData, context, skillSupplier);
+        float level = skillSupplier.apply(MKAttributes.CONJURATION);
 
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             MKEffectBuilder<?> warp = WarpTargetEffect.from(castingEntity)

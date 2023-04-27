@@ -90,6 +90,9 @@ public class MKUEffects {
     public static final RegistryObject<NaturesRemedyEffect> NATURES_REMEDY = REGISTRY.register("effect.natures_remedy",
             NaturesRemedyEffect::new);
 
+    public static final RegistryObject<GreenSoulEffect> GREEN_SOUL = REGISTRY.register("effect.green_soul",
+            GreenSoulEffect::new);
+
 
     public static void register(IEventBus modBus) {
         REGISTRY.register(modBus);

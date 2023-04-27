@@ -5,9 +5,15 @@
   "defaultPlayerScore": -5000,
   "enemies": [
     "mkfaction:domesticated_animals",
-    "mkultra:green_knights",
-    "mkfaction:villagers"
+    "mkfaction:villagers",
+    "mkultra:green_knights"
   ],
   "firstNames": [],
+  "greetings": {
+    "battlecries": [],
+    "friendly_greetings": [],
+    "member_greetings": [],
+    "outsider_greetings": []
+  },
   "lastNames": []
 }
