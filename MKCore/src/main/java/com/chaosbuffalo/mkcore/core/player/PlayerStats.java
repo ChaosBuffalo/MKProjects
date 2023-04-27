@@ -95,7 +95,6 @@ public class PlayerStats extends EntityStats {
 
     }
 
-    @Override
     public CompoundTag serialize() {
         CompoundTag tag = new CompoundTag();
         tag.put("cooldowns", abilityTracker.serialize());
@@ -103,7 +102,6 @@ public class PlayerStats extends EntityStats {
         return tag;
     }
 
-    @Override
     public void deserialize(CompoundTag tag) {
         abilityTracker.deserialize(tag.getCompound("cooldowns"));
         if (tag.contains("mana")) {

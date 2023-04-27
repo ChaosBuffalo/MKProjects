@@ -15,13 +15,9 @@ public interface IMKEntityStats {
 
     float getMaxPoise();
 
-    void setMaxPoise(float max);
-
     void setPoise(float value);
 
     float getMaxMana();
-
-    void setMaxMana(float max);
 
     float getPoiseRegenRate();
 
@@ -72,10 +68,4 @@ public interface IMKEntityStats {
     int getTimer(ResourceLocation id);
 
     float getTimerPercent(ResourceLocation id, float partialTick);
-
-    void resetAllTimers();
-
-    CompoundTag serialize();
-
-    void deserialize(CompoundTag nbt);
 }

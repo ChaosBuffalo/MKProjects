@@ -76,7 +76,6 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
         return (float) requiredAttribute(MKAttributes.MAX_POISE).getValue();
     }
 
-    @Override
     public void setMaxPoise(float max) {
         requiredAttribute(MKAttributes.MAX_POISE).setBaseValue(max);
         setPoise(getPoise()); // Refresh the poise to account for the updated maximum
@@ -99,7 +98,6 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
         return (float) requiredAttribute(MKAttributes.MAX_MANA).getValue();
     }
 
-    @Override
     public void setMaxMana(float max) {
         requiredAttribute(MKAttributes.MAX_MANA).setBaseValue(max);
         setMana(getMana()); // Refresh the mana to account for the updated maximum
@@ -315,19 +313,8 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
         return abilityTracker.getTimerProgressPercent(timerId, partialTick);
     }
 
-    @Override
     public void resetAllTimers() {
         abilityTracker.removeAll();
-    }
-
-    @Override
-    public CompoundTag serialize() {
-        return new CompoundTag();
-    }
-
-    @Override
-    public void deserialize(CompoundTag nbt) {
-
     }
 
     public LivingEntity getEntity() {

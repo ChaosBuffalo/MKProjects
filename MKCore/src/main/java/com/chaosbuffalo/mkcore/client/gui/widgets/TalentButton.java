@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.talents.MKTalent;
 import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import com.chaosbuffalo.mkwidgets.client.gui.instructions.HoveringTextInstruction;
@@ -38,7 +39,7 @@ public class TalentButton extends MKButton {
     public final String line;
     public final TalentRecord record;
 
-    public TalentButton(int index, String line, TalentRecord record,
+    public TalentButton(IMKEntityData entityData, int index, String line, TalentRecord record,
                         int x, int y) {
         super(x, y, WIDTH, HEIGHT, record.getNode().getTalent().getTalentName());
         this.index = index;
@@ -48,7 +49,7 @@ public class TalentButton extends MKButton {
         MKTalent talent = record.getNode().getTalent();
         tooltip.add(talent.getTalentName());
         tooltip.add(talent.getTalentTypeName());
-        talent.describeTalent(record, tooltip::add);
+        talent.describeTalent(entityData, record, tooltip::add);
     }
 
 

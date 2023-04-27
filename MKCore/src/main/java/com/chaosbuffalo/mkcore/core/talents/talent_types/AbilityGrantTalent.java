@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core.talents.talent_types;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.talents.MKTalent;
 import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import com.chaosbuffalo.mkcore.core.talents.TalentType;
@@ -31,12 +32,11 @@ public class AbilityGrantTalent extends MKTalent {
     }
 
     @Override
-    public void describeTalent(TalentRecord record, Consumer<Component> consumer) {
-        super.describeTalent(record, consumer);
-        MKCore.getEntityData(Minecraft.getInstance().player).ifPresent(x -> {
-            consumer.accept(ability.get().getAbilityName());
-            ability.get().buildDescription(x, consumer);
-        });
+    public void describeTalent(IMKEntityData entityData, TalentRecord record, Consumer<Component> consumer) {
+        super.describeTalent(entityData, record, consumer);
+        consumer.accept(ability.get().getAbilityName());
+        ability.get().buildDescription(entityData, consumer);
+
     }
 
     @Override

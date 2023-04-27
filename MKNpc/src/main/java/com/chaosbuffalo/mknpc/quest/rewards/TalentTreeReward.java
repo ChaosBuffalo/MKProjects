@@ -48,7 +48,7 @@ public class TalentTreeReward extends QuestReward{
     @Override
     public void grantReward(Player player) {
         if (treeName.getValue().equals(TalentManager.INVALID_TREE)){
-            MKNpc.LOGGER.debug("Failed to grant talent tree reward for player {}, talent tree is invalid.", player);
+            MKNpc.LOGGER.warn("Failed to grant talent tree reward for player {}, talent tree is invalid.", player);
             return;
         }
         MKCore.getPlayer(player).ifPresent(cap -> {
