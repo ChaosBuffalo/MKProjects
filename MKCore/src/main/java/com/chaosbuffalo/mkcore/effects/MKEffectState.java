@@ -74,9 +74,9 @@ public abstract class MKEffectState {
         }
     }
 
-    public void deserializeStorage(CompoundTag tag) {
-        if (tag.contains("maxStacks")) {
-            maxStacks = tag.getInt("maxStacks");
+    public void deserializeStorage(CompoundTag stateTag) {
+        if (stateTag.contains("maxStacks")) {
+            maxStacks = stateTag.getInt("maxStacks");
         }
     }
 }

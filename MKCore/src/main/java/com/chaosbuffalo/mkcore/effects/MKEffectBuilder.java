@@ -56,6 +56,11 @@ public class MKEffectBuilder<T extends MKEffectState> {
         return baseStackCount;
     }
 
+    public MKEffectBuilder<T> setBaseStackCount(int baseStackCount) {
+        this.baseStackCount = baseStackCount;
+        return this;
+    }
+
     public float getSkillLevel() {
         return skillLevel;
     }

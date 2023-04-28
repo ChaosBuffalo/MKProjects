@@ -85,9 +85,9 @@ public class HealingThreatEffect extends MKEffect {
         }
 
         @Override
-        public void deserializeStorage(CompoundTag tag) {
-            super.deserializeStorage(tag);
-            threatValue = tag.getFloat("threat");
+        public void deserializeStorage(CompoundTag stateTag) {
+            super.deserializeStorage(stateTag);
+            threatValue = stateTag.getFloat("threat");
         }
     }
 }

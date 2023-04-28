@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
+import java.util.Optional;
 
 public class MKPlayerData implements IMKEntityData {
     private final Player player;
@@ -111,6 +112,11 @@ public class MKPlayerData implements IMKEntityData {
 
     public PlayerAnimationModule getAnimationModule() {
         return animationModule;
+    }
+
+    @Override
+    public Optional<ParticleEffectInstanceTracker> getParticleEffectTracker() {
+        return Optional.of(getAnimationModule().getEffectInstanceTracker());
     }
 
     @Override
