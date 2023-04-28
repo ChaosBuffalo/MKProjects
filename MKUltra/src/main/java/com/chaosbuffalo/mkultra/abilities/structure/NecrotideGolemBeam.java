@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.MeleeUseCondition;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
@@ -29,6 +30,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class NecrotideGolemBeam extends StructureAbility {
@@ -46,6 +48,7 @@ public class NecrotideGolemBeam extends StructureAbility {
     protected final FloatAttribute modifierScaling = new FloatAttribute("modifier_scaling", 1.0f);
     protected final FloatAttribute beamSpeed = new FloatAttribute("beam_speed", 1.85f);
     protected final FloatAttribute beamSpeedScale = new FloatAttribute("beam_speed_scale", 0.025f);
+    protected final FloatAttribute beamDeathSelfDamage = new FloatAttribute("beam_death_damage", 25.0f);
     protected final IntAttribute charge_time = new IntAttribute("charge_time", GameConstants.TICKS_PER_SECOND * 2);
     @Override
     public TargetingContext getTargetContext() {
@@ -71,6 +74,14 @@ public class NecrotideGolemBeam extends StructureAbility {
     @Override
     public float getDistance(LivingEntity entity) {
         return 30.0f;
+    }
+
+    protected void onEffectDie(BaseEffectEntity.DeathReason deathReason, BaseEffectEntity entity) {
+        LivingEntity owner = entity.getOwner();
+        if (owner != null) {
+            owner.hurt(MKDamageSource.causeAbilityDamage(entity.getLevel(), CoreDamageTypes.ArcaneDamage.get(),
+                    getAbilityId(), entity, entity, 0.0f), beamDeathSelfDamage.value());
+        }
     }
 
     @Override
@@ -101,7 +112,8 @@ public class NecrotideGolemBeam extends StructureAbility {
                            .effect(sound, TargetingContexts.ENEMY)
                            .effect(damage, TargetingContexts.ENEMY)
                            .waitTime(charge_time.value())
-                           .tickRate(tickRate.value());
+                           .tickRate(tickRate.value())
+                           .setDeathCallback(this::onEffectDie);
                    builder.spawn();
                })
        );

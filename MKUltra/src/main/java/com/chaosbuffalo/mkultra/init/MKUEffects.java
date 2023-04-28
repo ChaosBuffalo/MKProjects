@@ -93,6 +93,9 @@ public class MKUEffects {
     public static final RegistryObject<GreenSoulEffect> GREEN_SOUL = REGISTRY.register("effect.green_soul",
             GreenSoulEffect::new);
 
+    public static final RegistryObject<FrozenGraspEffect> FROZEN_GRASP = REGISTRY.register("effect.frozen_grasp",
+            FrozenGraspEffect::new);
+
 
     public static void register(IEventBus modBus) {
         REGISTRY.register(modBus);

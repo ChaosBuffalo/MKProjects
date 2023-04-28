@@ -61,17 +61,17 @@ public class MKAttributes {
             .setSyncable(true);
 
     // This is slightly confusing.
-    // 1.5 max means the cooldown will progress at most 50% faster than the normal rate. This translates into a 50% reduction in the observed cooldown.
-    // 0.25 minimum means that a cooldown can be increased up to 175% of the normal value. This translates into a 75% increase in the observed cooldown
-    public static final Attribute COOLDOWN = new MKRangedAttribute("attribute.name.mk.cooldown_rate", 1, 0.25, 1.5)
+    // 1.9 max means the cooldown will progress at most 10x faster than the normal rate. This translates into a 90% reduction in observed cooldown.
+    // -3.0 minimum means that a cooldown can be increased up to 5x of the normal value. This translates into a 500% increase in the observed cooldown
+    public static final Attribute COOLDOWN = new MKRangedAttribute("attribute.name.mk.cooldown_rate", 1.0, -3.0, 1.9)
             .setName(MKCore.makeRL("cooldown_rate"))
             .setSyncable(true);
 
-    public static final Attribute HEAL_BONUS = new MKRangedAttribute("attribute.name.mk.heal_bonus", 0.0, 0.0, 2.0)
+    public static final Attribute HEAL_BONUS = new MKRangedAttribute("attribute.name.mk.heal_bonus", 0.0, 0.0, 2048)
             .setName(MKCore.makeRL("heal_bonus"))
             .setSyncable(true);
 
-    public static final Attribute CASTING_SPEED = new MKRangedAttribute("attribute.name.mk.casting_speed", 1, 0.25, 1.5)
+    public static final Attribute CASTING_SPEED = new MKRangedAttribute("attribute.name.mk.casting_speed", 1.0, -3.0, 1.9)
             .setName(MKCore.makeRL("casting_speed"))
             .setSyncable(true);
 

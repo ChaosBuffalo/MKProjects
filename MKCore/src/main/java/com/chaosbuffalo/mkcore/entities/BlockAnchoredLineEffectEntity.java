@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.entities;
 
-import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.core.player.SyncComponent;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
@@ -134,6 +133,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     @Override
     protected boolean serverUpdate() {
         if (!(getLevel().getBlockState(startPos).getBlock() == block.get())){
+            onDeath(DeathReason.KILLED);
             return true;
         }
         if (target == null) {
