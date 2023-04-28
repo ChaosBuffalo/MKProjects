@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.effects.status.MKResistance;
 import com.chaosbuffalo.mkcore.effects.triggers.LivingHurtEntityTriggers;
 import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.abilities.misc.FrozenGraspAbility;
 import com.chaosbuffalo.mkultra.effects.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -104,7 +105,7 @@ public class MKUEffects {
             "effect.frozen_grasp_applier",
             () -> new OnHitEffect<>(FROZEN_GRASP, SpellTriggers.LIVING_HURT_ENTITY::registerMeleeEffect,
                     UUID.fromString("8355cbed-9f22-4796-a382-b755ce5cbc8d"),
-                    new ResourceLocation(MKUltra.MODID, "frozen_grasp_cast")));
+                    FrozenGraspAbility.CAST_PARTICLES));
 
 
     public static void register(IEventBus modBus) {

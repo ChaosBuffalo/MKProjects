@@ -73,6 +73,7 @@ public class MKAttributes {
 
     public static final Attribute CASTING_SPEED = new MKRangedAttribute("attribute.name.mk.casting_speed", 1.0, -3.0, 1.9)
             .setName(MKCore.makeRL("casting_speed"))
+            .setAdditionIsPercentage(true)
             .setSyncable(true);
 
     public static final Attribute BUFF_DURATION = new MKRangedAttribute("attribute.name.mk.buff_duration", 1.0, 0.0, 5.0)
