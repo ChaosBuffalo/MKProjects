@@ -78,7 +78,7 @@ public class NecrotideGolemBeam extends StructureAbility {
 
     protected void onEffectDie(BaseEffectEntity.DeathReason deathReason, BaseEffectEntity entity) {
         LivingEntity owner = entity.getOwner();
-        if (owner != null) {
+        if (owner != null && deathReason == BaseEffectEntity.DeathReason.KILLED) {
             owner.hurt(MKDamageSource.causeAbilityDamage(entity.getLevel(), CoreDamageTypes.ArcaneDamage.get(),
                     getAbilityId(), entity, entity, 0.0f), beamDeathSelfDamage.value());
         }
