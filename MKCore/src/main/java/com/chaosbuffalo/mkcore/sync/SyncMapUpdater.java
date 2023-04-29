@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -22,7 +23,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     private final Function<K, String> keyEncoder;
     private final Function<String, K> keyDecoder;
     private final Set<K> dirty = new HashSet<>();
-    private final Function<K, V> valueFactory;
+    private final BiFunction<K, CompoundTag, V> valueFactory;
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
     private BiPredicate<K, V> storageFilter = this::defaultEntryFilter;
     private BiPredicate<K, V> syncFilter = this::defaultEntryFilter;
@@ -32,6 +33,18 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
                           Function<K, String> keyEncoder,
                           Function<String, K> keyDecoder,
                           Function<K, V> valueFactory) {
+        this.rootName = rootName;
+        this.backingMap = mapSupplier.get();
+        this.keyEncoder = keyEncoder;
+        this.keyDecoder = keyDecoder;
+        this.valueFactory = (k, t) -> valueFactory.apply(k);
+    }
+
+    public SyncMapUpdater(String rootName,
+                          Supplier<Map<K, V>> mapSupplier,
+                          Function<K, String> keyEncoder,
+                          Function<String, K> keyDecoder,
+                          BiFunction<K, CompoundTag, V> valueFactory) {
         this.rootName = rootName;
         this.backingMap = mapSupplier.get();
         this.keyEncoder = keyEncoder;
@@ -176,13 +189,13 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
                 continue;
             }
 
-            V current = backingMap.computeIfAbsent(decodedKey, valueFactory);
+            CompoundTag entryTag = tag.getCompound(key);
+            V current = backingMap.computeIfAbsent(decodedKey, k -> valueFactory.apply(k, tag));
             if (current == null) {
                 MKCore.LOGGER.error("Failed to compute map value for key {}", decodedKey);
                 continue;
             }
 
-            CompoundTag entryTag = tag.getCompound(key);
             if (!valueDeserializer.test(current, entryTag)) {
                 MKCore.LOGGER.error("Failed to deserialize map value for {}", decodedKey);
                 continue;

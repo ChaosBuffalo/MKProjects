@@ -4,8 +4,13 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
+import com.chaosbuffalo.mkcore.utils.MKNBTUtil;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.DynamicLike;
+import com.mojang.serialization.DynamicOps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.MutableComponent;
@@ -19,6 +24,8 @@ import java.util.Set;
 
 
 public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
+
+    private final ResourceLocation abilityId;
     private final MKAbility ability;
     private final Set<AbilitySource> sources = new HashSet<>(2);
     @Nullable
@@ -26,6 +33,12 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
 
     public MKAbilityInfo(MKAbility ability) {
         this.ability = ability;
+        abilityId = ability.getAbilityId();
+    }
+
+    public MKAbilityInfo(ResourceLocation abilityId, MKAbility ability) {
+        this.ability = ability;
+        this.abilityId = abilityId;
     }
 
     @Nonnull
@@ -46,7 +59,7 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
     }
 
     public ResourceLocation getId() {
-        return ability.getAbilityId();
+        return abilityId;
     }
 
     public boolean isCurrentlyKnown() {
@@ -81,6 +94,10 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
 
     public boolean usesAbilityPool() {
         return highestSource != null && highestSource.usesAbilityPool();
+    }
+
+    public MKAbilityInfo copy() {
+        return new MKAbilityInfo(abilityId, ability);
     }
 
     @Override
@@ -128,6 +145,7 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
     public void write(FriendlyByteBuf buffer) {
         buffer.writeResourceLocation(getId());
         buffer.writeRegistryIdUnsafe(MKCoreRegistry.ABILITIES, ability);
+        buffer.writeNbt(serialize());
     }
 
     public static MKAbilityInfo read(FriendlyByteBuf buffer) {
@@ -135,8 +153,53 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
         MKAbility abilityType = buffer.readRegistryIdUnsafe(MKCoreRegistry.ABILITIES);
         if (abilityType == null)
             return null;
+        CompoundTag data = buffer.readNbt();
 
-        return abilityType.createAbilityInfo();// FIXME: assign ID
+        MKAbilityInfo info = abilityType.createAbilityInfo(id);
+        if (data != null) {
+            info.deserialize(data);
+        }
+
+        return info;
+    }
+
+    public <D> D serialize(DynamicOps<D> ops) {
+        ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
+        builder.put(ops.createString("id"), ops.createString(getId().toString()));
+        builder.put(ops.createString("type"), ops.createString(ability.getAbilityId().toString()));
+        builder.put(ops.createString("data"), NbtOps.INSTANCE.convertTo(ops, serialize()));
+        return ops.createMap(builder.build());
+    }
+
+    public static <D> MKAbilityInfo deserialize(DynamicLike<D> dynamic) {
+        ResourceLocation id = dynamic.get("id").asString().map(ResourceLocation::tryParse).getOrThrow(false, MKCore.LOGGER::error);
+        ResourceLocation abilityTypeId = dynamic.get("type").asString().map(ResourceLocation::tryParse).getOrThrow(false, MKCore.LOGGER::error);
+
+        MKAbility abilityType = MKCoreRegistry.getAbility(abilityTypeId);
+        if (abilityType == null) {
+            return null;
+        }
+
+        MKAbilityInfo info = abilityType.createAbilityInfo(id);
+
+        dynamic.get("data").result().map(d -> d.convert(NbtOps.INSTANCE).getValue()).ifPresent(tag -> {
+            if (tag instanceof CompoundTag compoundTag) {
+                info.deserialize(compoundTag);
+            }
+        });
+        return info;
+    }
+
+    @Nullable
+    public static MKAbilityInfo fromTag(ResourceLocation abilityId, CompoundTag tag) {
+        ResourceLocation abilityTypeId = MKNBTUtil.readResourceLocation(tag, "type");
+        MKAbility ability = MKCoreRegistry.getAbility(abilityTypeId);
+        if (ability == null) {
+            return null;
+        }
+        MKAbilityInfo abilityInfo = ability.createAbilityInfo(abilityId);
+        abilityInfo.deserialize(tag);
+        return abilityInfo;
     }
 
     @Override

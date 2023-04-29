@@ -89,7 +89,7 @@ public class AbilityCommand {
 
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
         if (ability != null) {
-            MKCore.getPlayer(player).ifPresent(cap -> cap.getAbilities().learnAbility(ability, AbilitySource.ADMIN));
+            MKCore.getPlayer(player).ifPresent(cap -> cap.getAbilities().learnAbility(ability.getDefaultInstance(), AbilitySource.ADMIN));
         }
 
         return Command.SINGLE_SUCCESS;
@@ -106,7 +106,7 @@ public class AbilityCommand {
 
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
         if (ability != null) {
-            MKCore.getPlayer(player).ifPresent(cap -> cap.getAbilities().learnAbility(ability, AbilitySource.decode(type, "")));
+            MKCore.getPlayer(player).ifPresent(cap -> cap.getAbilities().learnAbility(ability.getDefaultInstance(), AbilitySource.decode(type, "")));
         }
 
         return Command.SINGLE_SUCCESS;
@@ -117,7 +117,7 @@ public class AbilityCommand {
 
         MKCore.getPlayer(player).ifPresent(playerData ->
                 MKCoreRegistry.ABILITIES.forEach(ability ->
-                        playerData.getAbilities().learnAbility(ability, AbilitySource.ADMIN)));
+                        playerData.getAbilities().learnAbility(ability.getDefaultInstance(), AbilitySource.ADMIN)));
 
         return Command.SINGLE_SUCCESS;
     }

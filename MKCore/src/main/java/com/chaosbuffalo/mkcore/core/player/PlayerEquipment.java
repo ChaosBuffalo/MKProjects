@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKAbilityProvider;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
@@ -117,7 +118,7 @@ public class PlayerEquipment {
             return;
 
         if (newItem.getItem() instanceof IMKAbilityProvider provider) {
-            MKAbility ability = provider.getAbility(newItem);
+            MKAbilityInfo ability = provider.getAbilityInfo(newItem);
             if (ability != null) {
                 EquipmentSlot slot = LivingEntity.getEquipmentSlotForItem(newItem);
                 playerData.getAbilities().learnAbility(ability, AbilitySource.forEquipmentSlot(slot));
@@ -130,10 +131,10 @@ public class PlayerEquipment {
             return;
 
         if (oldItem.getItem() instanceof IMKAbilityProvider provider) {
-            MKAbility ability = provider.getAbility(oldItem);
+            MKAbilityInfo ability = provider.getAbilityInfo(oldItem);
             if (ability != null) {
                 EquipmentSlot slot = LivingEntity.getEquipmentSlotForItem(oldItem);
-                playerData.getAbilities().unlearnAbility(ability.getAbilityId(), AbilitySource.forEquipmentSlot(slot));
+                playerData.getAbilities().unlearnAbility(ability.getId(), AbilitySource.forEquipmentSlot(slot));
             }
         }
     }

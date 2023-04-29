@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkweapons.items;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.item.IImplementsBlocking;
 import com.chaosbuffalo.mkcore.item.ILimitItemTooltip;
@@ -220,7 +221,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
         for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
             effect.addInformation(stack, worldIn, tooltip);
         }
-        MKAbility ability = getAbility(stack);
+        MKAbilityInfo ability = getAbilityInfo(stack);
         if (ability != null) {
             tooltip.add(Component.translatable("mkweapons.grants_ability",
                     ability.getAbilityName()).withStyle(ChatFormatting.GOLD));

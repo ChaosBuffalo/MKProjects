@@ -38,8 +38,8 @@ public class EntityAbilityKnowledge implements IMKAbilityKnowledge, IMKSerializa
         return priorityOrder;
     }
 
-    private boolean learnAbilityInternal(MKAbility ability, AbilitySource source) {
-        MKAbilityInfo info = abilityInfoMap.get(ability.getAbilityId());
+    private boolean learnAbilityInternal(MKAbilityInfo ability, AbilitySource source) {
+        MKAbilityInfo info = abilityInfoMap.get(ability.getId());
         if (info != null && info.isCurrentlyKnown()) {
             if (info.hasSource(source)) {
                 // Already knows this ability from this source
@@ -50,29 +50,30 @@ public class EntityAbilityKnowledge implements IMKAbilityKnowledge, IMKSerializa
             return true;
         }
 
-        info = ability.createAbilityInfo();
+        info = ability.copy();
         info.addSource(source);
 
-        abilityInfoMap.put(ability.getAbilityId(), info);
+        abilityInfoMap.put(ability.getId(), info);
         return true;
     }
 
+    @Deprecated
     public boolean learnAbility(MKAbility ability, int priority) {
+        return learnAbility(ability.getDefaultInstance(), priority);
+    }
+
+    public boolean learnAbility(MKAbilityInfo ability, int priority) {
         boolean ret = learnAbilityInternal(ability, AbilitySource.TRAINED);
         if (ret) {
-            abilityPriorities.put(ability.getAbilityId(), priority);
+            abilityPriorities.put(ability.getId(), priority);
             updatePriorityOrder();
         }
         return ret;
     }
 
-    public boolean learnAbility(MKAbility ability) {
-        return learnAbility(ability, AbilitySource.TRAINED);
-    }
-
     @Override
-    public boolean learnAbility(MKAbility ability, AbilitySource source) {
-        return learnAbility(ability, 1);
+    public boolean learnAbility(MKAbilityInfo abilityInfo, AbilitySource source) {
+        return learnAbility(abilityInfo, 1);
     }
 
     @Override

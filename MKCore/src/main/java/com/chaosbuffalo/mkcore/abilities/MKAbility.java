@@ -186,8 +186,13 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return new MKAbilityInfo(this);
     }
 
+    @Nonnull
+    public MKAbilityInfo createAbilityInfo(ResourceLocation abilityId) {
+        return new MKAbilityInfo(abilityId, this);
+    }
+
     public MKAbilityInfo getDefaultInstance() {
-        return createAbilityInfo();
+        return createAbilityInfo(getAbilityId());
     }
 
     public MutableComponent getAbilityName() {

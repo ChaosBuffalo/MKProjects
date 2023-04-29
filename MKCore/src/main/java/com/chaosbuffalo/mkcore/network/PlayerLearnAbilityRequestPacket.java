@@ -66,18 +66,13 @@ public class PlayerLearnAbilityRequestPacket {
                     return;
                 }
             }
-            MKAbility toLearn = MKCoreRegistry.getAbility(learning);
-            if (toLearn == null) {
-                MKCore.LOGGER.error("Learn ability failed because ability with id {} is null for player: {}.", learning.toString(), player);
-            }
-
 
             Entity teacher = player.getLevel().getEntity(entityId);
-            if (teacher instanceof IAbilityTrainingEntity) {
-                IAbilityTrainer abilityTrainer = ((IAbilityTrainingEntity) teacher).getAbilityTrainer();
+            if (teacher instanceof IAbilityTrainingEntity trainingEntity) {
+                IAbilityTrainer abilityTrainer = trainingEntity.getAbilityTrainer();
 
                 MKCore.getPlayer(player).ifPresent(playerData -> {
-                    AbilityTrainingEntry entry = abilityTrainer.getTrainingEntry(toLearn);
+                    AbilityTrainingEntry entry = abilityTrainer.getTrainingEntry(learning);
                     if (entry == null) {
                         MKCore.LOGGER.error("Trainer {} does not have requested ability {}. Requested by {}", teacher, learning, player);
                         return;
@@ -99,7 +94,7 @@ public class PlayerLearnAbilityRequestPacket {
                         }
                     }
 
-                    if (playerData.getAbilities().learnAbility(toLearn, AbilitySource.TRAINED)) {
+                    if (playerData.getAbilities().learnAbility(entry.getAbility(), AbilitySource.TRAINED)) {
                         entry.onAbilityLearned(playerData);
                     }
                 });
