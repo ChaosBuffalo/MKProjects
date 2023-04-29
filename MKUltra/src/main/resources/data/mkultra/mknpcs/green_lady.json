@@ -30,8 +30,14 @@
       "optionType": "mknpc:ability_trainings",
       "value": [
         {
-          "ability": "mkultra:ability.skin_like_wood",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.skin_like_wood",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.skin_like_wood"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:green_knight.tier_1",
@@ -40,8 +46,14 @@
           ]
         },
         {
-          "ability": "mkultra:ability.natures_remedy",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.natures_remedy",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.natures_remedy"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:green_knight.tier_1",
@@ -50,8 +62,14 @@
           ]
         },
         {
-          "ability": "mkultra:ability.spirit_bomb",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.spirit_bomb",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.spirit_bomb"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:green_knight.tier_2",
@@ -60,8 +78,14 @@
           ]
         },
         {
-          "ability": "mkultra:ability.cleansing_seed",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.cleansing_seed",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.cleansing_seed"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:green_knight.tier_2",
@@ -70,8 +94,14 @@
           ]
         },
         {
-          "ability": "mkultra:ability.explosive_growth",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.explosive_growth",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.explosive_growth"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:green_knight.tier_3",

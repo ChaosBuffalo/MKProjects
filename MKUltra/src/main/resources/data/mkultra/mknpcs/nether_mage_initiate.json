@@ -30,8 +30,14 @@
       "optionType": "mknpc:ability_trainings",
       "value": [
         {
-          "ability": "mkultra:ability.ember",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.ember",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.ember"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:nether_mage.intro.tier_1",
@@ -40,8 +46,14 @@
           ]
         },
         {
-          "ability": "mkultra:ability.fire_armor",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.fire_armor",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.fire_armor"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:nether_mage.intro.tier_1",

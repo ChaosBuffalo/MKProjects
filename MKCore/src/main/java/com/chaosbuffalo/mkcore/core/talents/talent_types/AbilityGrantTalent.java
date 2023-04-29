@@ -12,20 +12,22 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class AbilityGrantTalent extends MKTalent {
-    private final Supplier<? extends MKAbility> ability;
     private final TalentType<?> talentType;
+    private final Supplier<MKAbilityInfo> abilityInfo;
 
+    @Deprecated
     public AbilityGrantTalent(Supplier<? extends MKAbility> ability, TalentType<?> talentType) {
-        this.ability = ability;
         this.talentType = talentType;
+        abilityInfo = () -> ability.get().getDefaultInstance();
     }
 
-    public MKAbility getAbility() {
-        return ability.get();
+    public AbilityGrantTalent(TalentType<?> talentType, Supplier<MKAbilityInfo> abilityInfo) {
+        this.talentType = talentType;
+        this.abilityInfo = abilityInfo;
     }
 
     public MKAbilityInfo getAbilityInfo() {
-        return ability.get().getDefaultInstance();
+        return abilityInfo.get();
     }
 
     @Override
@@ -36,15 +38,15 @@ public class AbilityGrantTalent extends MKTalent {
     @Override
     public void describeTalent(IMKEntityData entityData, TalentRecord record, Consumer<Component> consumer) {
         super.describeTalent(entityData, record, consumer);
-        consumer.accept(ability.get().getAbilityName());
-        ability.get().buildDescription(entityData, consumer);
-
+        MKAbilityInfo abilityInfo = getAbilityInfo();
+        consumer.accept(abilityInfo.getAbilityName());
+        abilityInfo.getAbility().buildDescription(entityData, consumer);
     }
 
     @Override
     public String toString() {
         return "AbilityGrantTalent{" +
-                "ability=" + ability.get() +
+                "ability=" + getAbilityInfo() +
                 ", talentType=" + talentType +
                 '}';
     }

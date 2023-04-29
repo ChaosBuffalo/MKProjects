@@ -30,8 +30,14 @@
       "optionType": "mknpc:ability_trainings",
       "value": [
         {
-          "ability": "mkultra:ability.heal",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.heal",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.heal"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:cleric.intro.tier_1",
@@ -40,8 +46,14 @@
           ]
         },
         {
-          "ability": "mkultra:ability.smite",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.smite",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.smite"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:cleric.intro.tier_1",

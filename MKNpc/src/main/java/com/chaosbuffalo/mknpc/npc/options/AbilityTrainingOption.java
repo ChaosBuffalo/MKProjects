@@ -38,24 +38,18 @@ public class AbilityTrainingOption extends SimpleOption<List<AbilityTrainingOpti
         public <D> D serialize(DynamicOps<D> ops) {
             ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
             builder.put(ops.createString("ability"), ability.serialize(ops));
-            builder.put(ops.createString("reqs"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
+            builder.put(ops.createString("requirements"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
             return ops.createMap(builder.build());
         }
 
         public <D> void deserialize(Dynamic<D> dynamic) {
-
-            ResourceLocation abilityId = dynamic.get("ability").asString()
-                    .resultOrPartial(MKNpc.LOGGER::error)
-                    .map(ResourceLocation::new)
-                    .orElseThrow(() -> new IllegalArgumentException("Failed to parse field 'ability' from " + dynamic));
-
             ability = MKAbilityInfo.deserialize(dynamic.get("ability"));
             if (ability == null) {
-                throw new NoSuchElementException(String.format("Ability '%s' does not exist", abilityId));
+                throw new NoSuchElementException(String.format("Ability '%s' does not exist", dynamic.get("ability")));
             }
 
             requirements.clear();
-            requirements.addAll(dynamic.get("reqs").asList(x -> AbilityTrainingRequirement.fromDynamic(x)
+            requirements.addAll(dynamic.get("requirements").asList(x -> AbilityTrainingRequirement.fromDynamic(x)
                     .resultOrPartial(error -> {
                         throw new IllegalArgumentException(String.format("Failed to parse training requirement for " +
                                 "ability '%s': %s", ability.getId(), error));

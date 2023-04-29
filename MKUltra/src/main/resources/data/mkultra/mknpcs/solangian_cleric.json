@@ -26,8 +26,14 @@
       "optionType": "mknpc:ability_trainings",
       "value": [
         {
-          "ability": "mkultra:ability.heal",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.heal",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.heal"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:cleric.tier_1",
@@ -36,8 +42,14 @@
           ]
         },
         {
-          "ability": "mkultra:ability.smite",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.smite",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.smite"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:cleric.tier_1",
@@ -46,8 +58,14 @@
           ]
         },
         {
-          "ability": "mkultra:ability.galvanize",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.galvanize",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.galvanize"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:cleric.tier_2",
@@ -56,8 +74,14 @@
           ]
         },
         {
-          "ability": "mkultra:ability.power_word_summon",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.power_word_summon",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.power_word_summon"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:cleric.tier_2",
@@ -66,8 +90,14 @@
           ]
         },
         {
-          "ability": "mkultra:ability.inspire",
-          "reqs": [
+          "ability": {
+            "type": "mkultra:ability.inspire",
+            "data": {
+              "sources": []
+            },
+            "id": "mkultra:ability.inspire"
+          },
+          "requirements": [
             {
               "attributes": {},
               "entitlement": "mkultra:cleric.tier_3",

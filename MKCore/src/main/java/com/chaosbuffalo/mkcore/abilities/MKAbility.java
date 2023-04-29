@@ -115,8 +115,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
-        if (casterData instanceof MKPlayerData) {
-            MKPlayerData playerData = (MKPlayerData) casterData;
+        if (casterData instanceof MKPlayerData playerData) {
             MKAbilityInfo info = playerData.getAbilities().getKnownAbility(getAbilityId());
             if (info != null && info.usesAbilityPool()) {
                 consumer.accept(new IconTextComponent(POOL_SLOT_ICON, "mkcore.ability.description.uses_pool").withStyle(ChatFormatting.ITALIC));
@@ -200,8 +199,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     protected String getTranslationKey() {
-        ResourceLocation abilityId = getAbilityId();
-        return String.format("%s.%s.name", abilityId.getNamespace(), abilityId.getPath());
+        return getAbilityId().withSuffix(".name").toLanguageKey();
     }
 
     protected String getDescriptionTranslationKey() {
