@@ -49,7 +49,7 @@ public class WarpCurseAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
         float level = skillSupplier.apply(MKAttributes.ALTERATON);
         int duration = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value());
         Component valueStr = getDamageDescription(entityData,

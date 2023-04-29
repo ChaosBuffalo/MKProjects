@@ -1,10 +1,7 @@
 package com.chaosbuffalo.mkultra.abilities.nether_mage;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
@@ -56,7 +53,7 @@ public class FlameWaveAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
         float level = skillSupplier.apply(MKAttributes.EVOCATION);
         Component dmgStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(), base.value(), scale.value(),
                 level, modifierScaling.value());

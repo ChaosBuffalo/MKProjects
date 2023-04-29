@@ -65,7 +65,7 @@ public class UseAbilityGoal extends Goal {
 
     public boolean canActivate() {
         return entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY)
-                .map(entityData -> entityData.getAbilityExecutor().canActivateAbility(currentAbility))
+                .map(entityData -> entityData.getAbilityExecutor().canActivateAbility(currentAbility.getDefaultInstance()))
                 .orElse(false);
     }
 

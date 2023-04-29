@@ -1,10 +1,7 @@
 package com.chaosbuffalo.mkultra.abilities.brawler;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.NeedsBuffCondition;
 import com.chaosbuffalo.mkcore.abilities.description.AbilityDescriptions;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -51,17 +48,17 @@ public class YaupAbility extends MKAbility {
     }
 
     @Override
-    protected Component getSkillDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.ARETE);
+    protected Component getSkillDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.ARETE);
         int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(duration));
     }
 
     @Override
-    public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
-        super.buildDescription(casterData, consumer);
+    public void buildDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo, Consumer<Component> consumer) {
+        super.buildDescription(casterData, abilityInfo, consumer);
         AbilityDescriptions.getEffectModifiers(MKUEffects.YAUP.get(), casterData, false,
-                attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)).forEach(consumer);
+                abilityInfo).forEach(consumer);
     }
 
     @Override

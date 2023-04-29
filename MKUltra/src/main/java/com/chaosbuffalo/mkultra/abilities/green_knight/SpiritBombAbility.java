@@ -1,10 +1,7 @@
 package com.chaosbuffalo.mkultra.abilities.green_knight;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
@@ -81,7 +78,7 @@ public class SpiritBombAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.NatureDamage.get(),
                 baseDamage.value(),
                 scaleDamage.value(),

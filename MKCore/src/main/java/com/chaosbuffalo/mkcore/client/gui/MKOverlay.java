@@ -262,12 +262,12 @@ public class MKOverlay implements IGuiOverlay {
             return;
         }
 
-        MKAbility ability = executor.getCastingAbility();
-        if (ability == null) {
+        MKAbilityInfo abilityInfo = executor.getCastingAbility();
+        if (abilityInfo == null) {
             return;
         }
 
-        int castTime = data.getStats().getAbilityCastTime(ability);
+        int castTime = data.getStats().getAbilityCastTime(abilityInfo);
         if (castTime == 0) {
             return;
         }
@@ -336,7 +336,7 @@ public class MKOverlay implements IGuiOverlay {
                 continue;
 
             MKAbility ability = abilityInfo.getAbility();
-            float manaCost = data.getStats().getAbilityManaCost(ability);
+            float manaCost = data.getStats().getAbilityManaCost(abilityInfo);
             if (!executor.isCasting() && data.getStats().getMana() >= manaCost) {
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             } else {

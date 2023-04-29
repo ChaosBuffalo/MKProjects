@@ -61,7 +61,7 @@ public class NaturesRemedyAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
         float level = skillSupplier.apply(MKAttributes.RESTORATION);
         Component damageStr = getHealDescription(entityData, baseValue.value(),
                 scaleValue.value(), level, modifierScaling.value());

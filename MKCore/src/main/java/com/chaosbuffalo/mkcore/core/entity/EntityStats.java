@@ -3,12 +3,12 @@ package com.chaosbuffalo.mkcore.core.entity;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
 import com.chaosbuffalo.mkcore.core.player.SyncComponent;
 import com.chaosbuffalo.mkcore.sync.SyncFloat;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -269,8 +269,8 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
     }
 
     @Override
-    public float getAbilityManaCost(MKAbility ability) {
-        float manaCost = ability.getManaCost(entityData);
+    public float getAbilityManaCost(MKAbilityInfo abilityInfo) {
+        float manaCost = abilityInfo.getAbility().getManaCost(entityData);
         return MKCombatFormulas.applyManaCostReduction(entityData, manaCost);
     }
 
@@ -281,16 +281,21 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
     }
 
     @Override
-    public int getAbilityCastTime(MKAbility ability) {
-        int ticks = ability.getCastTime(entityData);
-        return ability.canApplyCastingSpeedModifier() ?
+    public int getAbilityCastTime(MKAbilityInfo abilityInfo) {
+        int ticks = abilityInfo.getAbility().getCastTime(entityData);
+        return abilityInfo.getAbility().canApplyCastingSpeedModifier() ?
                 MKCombatFormulas.applyCastTimeModifier(entityData, ticks) :
                 ticks;
     }
 
     @Override
-    public boolean canActivateAbility(MKAbility ability) {
-        return getMana() >= getAbilityManaCost(ability);
+    public int getAbilityCastTime(MKAbility ability) {
+        return getAbilityCastTime(ability.getDefaultInstance());
+    }
+
+    @Override
+    public boolean canActivateAbility(MKAbilityInfo abilityInfo) {
+        return getMana() >= getAbilityManaCost(abilityInfo);
     }
 
     @Override

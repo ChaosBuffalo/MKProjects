@@ -46,7 +46,7 @@ public class SeverTendonAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
         float level = skillSupplier.apply(MKAttributes.PANKRATION);
         Component valueStr = getDamageDescription(entityData,
                 CoreDamageTypes.MeleeDamage.get(), base.value(), scale.value(), level, modifierScaling.value());

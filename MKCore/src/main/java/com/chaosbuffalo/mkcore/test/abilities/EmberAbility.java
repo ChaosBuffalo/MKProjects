@@ -39,7 +39,7 @@ public class EmberAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(), damage.value(), 0.0f, 0, 1.0f);
         Component burn = Component.literal(burnTime.valueAsString()).withStyle(ChatFormatting.UNDERLINE);
         return Component.translatable(getDescriptionTranslationKey(), damageStr, burn);
@@ -66,8 +66,8 @@ public class EmberAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(castingEntity, casterData, context, abilityInfo);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             int burnDuration = burnTime.value();
             float amount = damage.value();

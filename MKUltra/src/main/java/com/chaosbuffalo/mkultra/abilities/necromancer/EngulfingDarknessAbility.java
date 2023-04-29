@@ -62,15 +62,15 @@ public class EngulfingDarknessAbility extends MKAbility {
     }
 
     @Override
-    public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
-        super.buildDescription(casterData, consumer);
+    public void buildDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo, Consumer<Component> consumer) {
+        super.buildDescription(casterData, abilityInfo, consumer);
         AbilityDescriptions.getEffectModifiers(MKUEffects.ENGULFING_DARKNESS.get(), casterData, false,
-                attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)).forEach(consumer);
+                abilityInfo).forEach(consumer);
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.CONJURATION);
+    public Component getAbilityDescription(IMKEntityData entityData, MKAbilityInfo abilityInfo) {
+        float level = abilityInfo.getSkillValue(entityData, MKAttributes.CONJURATION);
         Component dotStr = getDamageDescription(entityData,
                 CoreDamageTypes.ShadowDamage.get(), baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
         float dotDur = convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()));

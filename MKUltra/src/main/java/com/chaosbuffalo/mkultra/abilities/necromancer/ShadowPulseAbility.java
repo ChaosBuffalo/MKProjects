@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkultra.abilities.necromancer;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
@@ -61,7 +62,7 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
 
 
     @Override
-    public Component getAbilityDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
         float level = skillSupplier.apply(MKAttributes.CONJURATION);
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         Component detonateStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), detonateBase.value(), detonateScale.value(), level, modifierScaling.value());

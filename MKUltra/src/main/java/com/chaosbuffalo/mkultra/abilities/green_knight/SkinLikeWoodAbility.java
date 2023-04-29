@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkultra.abilities.green_knight;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
 import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKToggleAbility;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.NeedsBuffCondition;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -19,11 +20,9 @@ import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
 public class SkinLikeWoodAbility extends MKToggleAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "skin_like_wood_casting");
@@ -62,9 +61,10 @@ public class SkinLikeWoodAbility extends MKToggleAbility {
     }
 
     @Override
-    public void applyEffect(LivingEntity entity, IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        super.applyEffect(entity, entityData, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.ABJURATION);
+    public void applyEffect(IMKEntityData entityData, MKAbilityInfo abilityInfo) {
+        super.applyEffect(entityData, abilityInfo);
+        float level = abilityInfo.getSkillValue(entityData, MKAttributes.ABJURATION);
+        LivingEntity entity = entityData.getEntity();
         SoundUtils.serverPlaySoundAtEntity(entity, MKUSounds.spell_earth_7.get(), entity.getSoundSource());
 
         MKEffectBuilder<?> instance = getToggleEffect().builder(entity)

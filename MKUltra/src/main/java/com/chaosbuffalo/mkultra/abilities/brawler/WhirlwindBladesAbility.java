@@ -1,10 +1,7 @@
 package com.chaosbuffalo.mkultra.abilities.brawler;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.MeleeUseCondition;
 import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
@@ -26,11 +23,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
 
 public class WhirlwindBladesAbility extends MKAbility {
@@ -72,8 +67,8 @@ public class WhirlwindBladesAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.PANKRATION);
+    public Component getAbilityDescription(IMKEntityData entityData, MKAbilityInfo abilityInfo) {
+        float level = abilityInfo.getSkillValue(entityData, MKAttributes.PANKRATION);
         Component baseDamage = getDamageDescription(entityData,
                 CoreDamageTypes.MeleeDamage.get(), base.value(), scale.value(), level, 0.0f);
         float periodSeconds = 6.0f / GameConstants.TICKS_PER_SECOND;
@@ -109,11 +104,11 @@ public class WhirlwindBladesAbility extends MKAbility {
 
     @Override
     public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context,
-                             Function<Attribute, Float> skillSupplier) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, context, skillSupplier);
+                             MKAbilityInfo abilityInfo) {
+        super.continueCast(castingEntity, casterData, castTimeLeft, context, abilityInfo);
         int tickSpeed = 6;
         if (castTimeLeft % tickSpeed == 0) {
-            float level = skillSupplier.apply(MKAttributes.PANKRATION);
+            float level = abilityInfo.getSkillValue(casterData, MKAttributes.PANKRATION);
             int totalDuration = getCastTime(casterData);
             int count = (totalDuration - castTimeLeft) / tickSpeed;
             float baseAmount = perTick.value();

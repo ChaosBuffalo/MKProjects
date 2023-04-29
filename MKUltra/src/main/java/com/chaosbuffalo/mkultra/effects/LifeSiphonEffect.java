@@ -25,6 +25,7 @@ public class LifeSiphonEffect extends MKEffect {
 
     public void onLivingKillEntity(LivingDeathEvent event, DamageSource source, LivingEntity living) {
         MKCore.getEntityData(living).ifPresent(data -> {
+
             SoundUtils.playSoundAtEntity(living, MKUSounds.spell_dark_5.get());
             MKHealSource healSource = new MKHealSource(MKUAbilities.LIFE_SIPHON.getId(), living, living,
                     CoreDamageTypes.ShadowDamage.get(), MKUAbilities.LIFE_SIPHON.get().getModifierScaling());

@@ -15,10 +15,9 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public abstract class MKToggleAbility extends MKAbility {
     public static final ResourceLocation TOGGLE_EFFECT = MKCore.makeRL("textures/abilities/ability_toggle.png");
@@ -45,10 +44,10 @@ public abstract class MKToggleAbility extends MKAbility {
     }
 
     @Override
-    public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
-        super.buildDescription(casterData, consumer);
+    public void buildDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo, Consumer<Component> consumer) {
+        super.buildDescription(casterData, abilityInfo, consumer);
         AbilityDescriptions.getEffectModifiers(getToggleEffect(), casterData, false,
-                attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)).forEach(consumer);
+                abilityInfo).forEach(consumer);
     }
 
     @Override
@@ -69,11 +68,11 @@ public abstract class MKToggleAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
         if (isEffectActive(casterData)) {
-            removeEffect(castingEntity, casterData, skillSupplier);
+            removeEffect(casterData);
         } else {
-            applyEffect(castingEntity, casterData, skillSupplier);
+            applyEffect(casterData, abilityInfo);
         }
     }
 
@@ -81,11 +80,12 @@ public abstract class MKToggleAbility extends MKAbility {
         return targetData.getEffects().isEffectActive(getToggleEffect());
     }
 
-    public void applyEffect(LivingEntity castingEntity, IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
-        casterData.getAbilityExecutor().setToggleGroupAbility(getToggleGroupId(), this);
+    @OverridingMethodsMustInvokeSuper
+    public void applyEffect(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        casterData.getAbilityExecutor().setToggleGroupAbility(this, abilityInfo);
     }
 
-    public void removeEffect(LivingEntity castingEntity, IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
+    public void removeEffect(IMKEntityData casterData) {
         casterData.getAbilityExecutor().clearToggleGroupAbility(getToggleGroupId());
         if (isEffectActive(casterData)) {
             casterData.getEffects().removeEffect(getToggleEffect());

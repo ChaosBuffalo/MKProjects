@@ -1,10 +1,7 @@
 package com.chaosbuffalo.mkcore.test.abilities;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.MeleeUseCondition;
 import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
@@ -81,8 +78,9 @@ public class WhirlwindBlades extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, context, skillSupplier);
+    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft,
+                             AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.continueCast(castingEntity, casterData, castTimeLeft, context, abilityInfo);
         int tickSpeed = 6;
         if (castTimeLeft % tickSpeed == 0) {
             int level = 1;

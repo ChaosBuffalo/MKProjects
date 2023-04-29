@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.EntityTargetingAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.google.common.collect.ImmutableMap;
@@ -86,7 +87,10 @@ public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
                     MKAbility.PERCENT_FORMATTER.format(procChance), MKAbility.NUMBER_FORMATTER.format(skillLevel)));
             if (Minecraft.getInstance().player != null) {
                 MKCore.getEntityData(Minecraft.getInstance().player).ifPresent(entityData -> {
-                    tooltip.add(abilitySupplier.get().getAbilityDescription(entityData, attr -> skillLevel));
+                    // FIXME: thread this through the effect better
+                    MKAbilityInfo abilityInfo = abilitySupplier.get().createAbilityInfo();
+                    abilityInfo.setSkillValueResolver(attr -> skillLevel);
+                    tooltip.add(abilityInfo.getAbility().getAbilityDescription(entityData, abilityInfo));
                 });
             }
 

@@ -1,10 +1,7 @@
 package com.chaosbuffalo.mkultra.abilities.green_knight;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
@@ -47,9 +44,9 @@ public class CleansingSeedAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData entityData, MKAbilityInfo abilityInfo) {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.NatureDamage.get(), baseDamage.value(),
-                scaleDamage.value(), skillSupplier.apply(MKAttributes.RESTORATION),
+                scaleDamage.value(), abilityInfo.getSkillValue(entityData, MKAttributes.RESTORATION),
                 modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }

@@ -3,11 +3,13 @@ package com.chaosbuffalo.mkcore.abilities;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.AbilityType;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.mkcore.utils.MKNBTUtil;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DynamicLike;
 import com.mojang.serialization.DynamicOps;
+import it.unimi.dsi.fastutil.objects.Object2FloatFunction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -15,6 +17,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -62,6 +65,18 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
         return abilityId;
     }
 
+    public ResourceLocation getCooldownTimerId() {
+        return ability.getCooldownTimerId(this);
+    }
+
+    public float getSkillValue(IMKEntityData entityData, Attribute skillAttr) {
+        return MKAbility.getSkillLevel(entityData.getEntity(), skillAttr);
+    }
+
+    public void setSkillValueResolver(Object2FloatFunction<Attribute> resolver) {
+
+    }
+
     public boolean isCurrentlyKnown() {
         return sources.size() > 0;
     }
@@ -103,7 +118,7 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
     @Override
     public CompoundTag serialize() {
         CompoundTag tag = new CompoundTag();
-
+        MKNBTUtil.writeResourceLocation(tag, "type", ability.getAbilityId());
         ListTag list = new ListTag();
         sources.forEach(s -> list.add(s.serialize()));
         tag.put("sources", list);
@@ -113,7 +128,7 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
     @Override
     public CompoundTag serializeStorage() {
         CompoundTag tag = new CompoundTag();
-
+        MKNBTUtil.writeResourceLocation(tag, "type", ability.getAbilityId());
         ListTag list = new ListTag();
         sources.forEach(s -> {
             // Only store sources that will not be reapplied on login

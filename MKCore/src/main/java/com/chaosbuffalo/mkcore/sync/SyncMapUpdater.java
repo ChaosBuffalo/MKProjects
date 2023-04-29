@@ -190,7 +190,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
             }
 
             CompoundTag entryTag = tag.getCompound(key);
-            V current = backingMap.computeIfAbsent(decodedKey, k -> valueFactory.apply(k, tag));
+            V current = backingMap.computeIfAbsent(decodedKey, k -> valueFactory.apply(k, entryTag));
             if (current == null) {
                 MKCore.LOGGER.error("Failed to compute map value for key {}", decodedKey);
                 continue;

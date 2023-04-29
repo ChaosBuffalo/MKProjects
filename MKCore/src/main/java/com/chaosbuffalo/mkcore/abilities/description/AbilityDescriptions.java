@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.abilities.description;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import net.minecraft.ChatFormatting;
@@ -41,7 +42,7 @@ public class AbilityDescriptions {
     }
 
     public static List<Component> getEffectModifiers(MKEffect effect, IMKEntityData casterData, boolean showName,
-                                                     Function<Attribute, Float> skillSupplier) {
+                                                     MKAbilityInfo abilityInfo) {
         if (effect.getAttributeModifierMap().isEmpty()) {
             return Collections.emptyList();
         }
@@ -54,7 +55,7 @@ public class AbilityDescriptions {
         for (Map.Entry<Attribute, MKEffect.Modifier> entry : effect.getAttributeModifierMap().entrySet()) {
             MKEffect.Modifier modifier = entry.getValue();
             double value = effect.calculateModifierValue(modifier, 1,
-                    modifier.skill != null ? skillSupplier.apply(modifier.skill) : 0.0f);
+                    modifier.skill != null ? abilityInfo.getSkillValue(casterData, modifier.skill) : 0.0f);
             desc.add(Component.literal("    ")
                     .append(Component.translatable(entry.getKey().getDescriptionId()))
                     .append(String.format(": %s%s ", value > 0 ? "+" : "",

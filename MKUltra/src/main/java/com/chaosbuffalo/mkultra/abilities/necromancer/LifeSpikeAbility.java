@@ -52,7 +52,7 @@ public class LifeSpikeAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
         float level = skillSupplier.apply(MKAttributes.NECROMANCY);
         Component valueStr = getDamageDescription(entityData,
                 CoreDamageTypes.ShadowDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
