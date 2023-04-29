@@ -28,9 +28,9 @@ public class AbilityExecutor {
     protected final IMKEntityData entityData;
     private EntityCastingState currentCast;
     private final Map<ResourceLocation, MKAbilityInfo> activeToggleMap = new HashMap<>();
-    private Consumer<MKAbility> startCastCallback;
-    private Consumer<MKAbility> completeAbilityCallback;
-    private BiConsumer<MKAbility, CastInterruptReason> interruptCastCallback;
+    private Consumer<MKAbilityInfo> startCastCallback;
+    private Consumer<MKAbilityInfo> completeAbilityCallback;
+    private BiConsumer<MKAbilityInfo, CastInterruptReason> interruptCastCallback;
 
     public AbilityExecutor(IMKEntityData entityData) {
         this.entityData = entityData;
@@ -39,15 +39,15 @@ public class AbilityExecutor {
         interruptCastCallback = null;
     }
 
-    public void setCompleteAbilityCallback(Consumer<MKAbility> completeAbilityCallback) {
+    public void setCompleteAbilityCallback(Consumer<MKAbilityInfo> completeAbilityCallback) {
         this.completeAbilityCallback = completeAbilityCallback;
     }
 
-    public void setInterruptCastCallback(BiConsumer<MKAbility, CastInterruptReason> interruptCastCallback) {
+    public void setInterruptCastCallback(BiConsumer<MKAbilityInfo, CastInterruptReason> interruptCastCallback) {
         this.interruptCastCallback = interruptCastCallback;
     }
 
-    public void setStartCastCallback(Consumer<MKAbility> startCastCallback) {
+    public void setStartCastCallback(Consumer<MKAbilityInfo> startCastCallback) {
         this.startCastCallback = startCastCallback;
     }
 
@@ -71,14 +71,14 @@ public class AbilityExecutor {
             } else {
                 boolean validContext = ability.getTargetSelector().validateContext(entityData, context);
                 if (!validContext) {
-                    MKCore.LOGGER.warn("Entity {} tried to execute ability {} with a context that failed validation!", entityData.getEntity(), info.getAbility().getAbilityId());
+                    MKCore.LOGGER.warn("Entity {} tried to execute ability {} with a context that failed validation!", entityData.getEntity(), info.getId());
                     return;
                 }
             }
             if (context != null) {
                 ability.executeWithContext(entityData, context, info);
             } else {
-                MKCore.LOGGER.warn("Entity {} tried to execute ability {} with a null context!", entityData.getEntity(), info.getAbility().getAbilityId());
+                MKCore.LOGGER.warn("Entity {} tried to execute ability {} with a null context!", entityData.getEntity(), info.getId());
             }
         }
     }
@@ -162,10 +162,10 @@ public class AbilityExecutor {
 
         MKCore.LOGGER.debug("{} interrupted by {} for {}", currentCast.getAbilityInfo(), reason, entityData.getEntity());
 
-        if (reason.cannotBeBypassed() || currentCast.getAbility().isInterruptedBy(entityData, reason)) {
+        if (reason.cannotBeBypassed() || currentCast.getAbilityInfo().getAbility().isInterruptedBy(entityData, reason)) {
             currentCast.interrupt(reason);
             if (interruptCastCallback != null) {
-                interruptCastCallback.accept(currentCast.getAbility(), reason);
+                interruptCastCallback.accept(currentCast.getAbilityInfo(), reason);
             }
             clearCastingAbility();
         }
@@ -193,19 +193,18 @@ public class AbilityExecutor {
     }
 
     public boolean startAbility(AbilityContext context, MKAbilityInfo info) {
-        MKAbility ability = info.getAbility();
         if (isCasting()) {
-            MKCore.LOGGER.warn("startAbility({}) failed - {} currently casting", ability.getAbilityId(), entityData.getEntity());
+            MKCore.LOGGER.warn("startAbility({}) failed - {} currently casting", info.getId(), entityData.getEntity());
             return false;
         }
 
-        if (!ability.isExecutableContext(context)) {
-            MKCore.LOGGER.error("Entity {} tried to execute ability {} with missing memories!", entityData.getEntity(), ability.getAbilityId());
+        if (!info.getAbility().isExecutableContext(context)) {
+            MKCore.LOGGER.error("Entity {} tried to execute ability {} with missing memories!", entityData.getEntity(), info.getId());
             return false;
         }
 
         startGlobalCooldown();
-        int castTime = entityData.getStats().getAbilityCastTime(ability);
+        int castTime = entityData.getStats().getAbilityCastTime(info);
         startCast(context, info, castTime);
         if (castTime > 0) {
             return true;
@@ -221,9 +220,9 @@ public class AbilityExecutor {
         MKAbility ability = info.getAbility();
         ability.endCast(entityData.getEntity(), entityData, context, info);
         if (completeAbilityCallback != null) {
-            completeAbilityCallback.accept(ability);
+            completeAbilityCallback.accept(info);
         }
-        int cooldown = entityData.getStats().getAbilityCooldown(ability);
+        int cooldown = entityData.getStats().getAbilityCooldown(info);
         setCooldown(info, cooldown);
         SoundEvent sound = ability.getSpellCompleteSoundEvent();
         if (sound != null) {
@@ -234,7 +233,9 @@ public class AbilityExecutor {
     }
 
     public void onAbilityUnlearned(MKAbilityInfo abilityInfo) {
-        updateToggleAbility(abilityInfo);
+        if (abilityInfo.getAbility() instanceof MKToggleAbility toggleAbility) {
+            toggleAbility.removeEffect(entityData);
+        }
     }
 
     protected ServerCastingState createServerCastingState(AbilityContext context, MKAbilityInfo abilityInfo, int castTime) {
@@ -264,16 +265,8 @@ public class AbilityExecutor {
             return castTicks;
         }
 
-        public MKAbility getAbility() {
-            return abilityInfo.getAbility();
-        }
-
         public MKAbilityInfo getAbilityInfo() {
             return abilityInfo;
-        }
-
-        public ResourceLocation getAbilityId() {
-            return abilityInfo.getId();
         }
 
         public boolean tick() {
@@ -291,7 +284,7 @@ public class AbilityExecutor {
 
         void begin() {
             if (executor.startCastCallback != null) {
-                executor.startCastCallback.accept(abilityInfo.getAbility());
+                executor.startCastCallback.accept(abilityInfo);
             }
         }
 
@@ -369,7 +362,7 @@ public class AbilityExecutor {
         public void finish() {
             stopSound();
             if (executor.completeAbilityCallback != null) {
-                executor.completeAbilityCallback.accept(abilityInfo.getAbility());
+                executor.completeAbilityCallback.accept(abilityInfo);
             }
         }
 
@@ -377,24 +370,6 @@ public class AbilityExecutor {
         public void interrupt(CastInterruptReason reason) {
             super.interrupt(reason);
             stopSound();
-        }
-    }
-
-    private void updateToggleAbility(MKAbilityInfo info) {
-        if (info == null || !(info.getAbility() instanceof MKToggleAbility toggle)) {
-            return;
-        }
-
-
-        if (info.isCurrentlyKnown()) {
-            // If this is a toggle ability we must re-apply the effect to make sure it's working at the proper rank
-            if (toggle.isEffectActive(entityData)) {
-                toggle.removeEffect(entityData);
-                toggle.applyEffect(entityData, info);
-            }
-        } else {
-            // Unlearning, remove the effect
-            toggle.removeEffect(entityData);
         }
     }
 
@@ -407,8 +382,8 @@ public class AbilityExecutor {
         // This can also be called when rebuilding the activeToggleMap after transferring dimensions and in that case
         // ability will be the same as current
         if (current != null && !current.equals(abilityInfo)) {
-            if (current.getAbility() instanceof MKToggleAbility) {
-                ((MKToggleAbility) current.getAbility()).removeEffect(entityData);
+            if (current.getAbility() instanceof MKToggleAbility toggleAbility) {
+                toggleAbility.removeEffect(entityData);
             }
             setCooldown(current, entityData.getStats().getAbilityCooldown(current));
         }

@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkcore.core.entity;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
@@ -275,8 +274,8 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
     }
 
     @Override
-    public int getAbilityCooldown(MKAbility ability) {
-        int ticks = ability.getCooldown(entityData);
+    public int getAbilityCooldown(MKAbilityInfo abilityInfo) {
+        int ticks = abilityInfo.getAbility().getCooldown(entityData);
         return MKCombatFormulas.applyCooldownReduction(entityData, ticks);
     }
 
@@ -286,11 +285,6 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
         return abilityInfo.getAbility().canApplyCastingSpeedModifier() ?
                 MKCombatFormulas.applyCastTimeModifier(entityData, ticks) :
                 ticks;
-    }
-
-    @Override
-    public int getAbilityCastTime(MKAbility ability) {
-        return getAbilityCastTime(ability.getDefaultInstance());
     }
 
     @Override

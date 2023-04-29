@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.core;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import net.minecraft.resources.ResourceLocation;
@@ -55,17 +54,9 @@ public interface IMKEntityStats {
 
     float getAbilityManaCost(MKAbilityInfo abilityInfo);
 
-    int getAbilityCooldown(MKAbility ability);
+    int getAbilityCooldown(MKAbilityInfo abilityInfo);
 
-    default int getAbilityCooldown(MKAbilityInfo abilityInfo) {
-        return getAbilityCooldown(abilityInfo.getAbility());
-    }
-
-    int getAbilityCastTime(MKAbility ability);
-
-    default int getAbilityCastTime(MKAbilityInfo abilityInfo) {
-        return getAbilityCastTime(abilityInfo.getAbility());
-    }
+    int getAbilityCastTime(MKAbilityInfo abilityInfo);
 
     boolean canActivateAbility(MKAbilityInfo abilityInfo);
 

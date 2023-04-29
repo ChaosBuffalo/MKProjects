@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.editor.PlayerEditorModule;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtension;
 import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
@@ -123,10 +123,10 @@ public class MKPlayerData implements IMKEntityData {
         return player instanceof ServerPlayer;
     }
 
-    private void completeAbility(MKAbility ability) {
-        animationModule.endCast(ability);
+    private void completeAbility(MKAbilityInfo abilityInfo) {
+        animationModule.endCast(abilityInfo.getAbility());
         if (isServerSide()) {
-            getSkills().onCastAbility(ability);
+            getSkills().onCastAbility(abilityInfo.getAbility());
         }
     }
 

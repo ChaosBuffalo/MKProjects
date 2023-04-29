@@ -58,7 +58,7 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
     }
 
     public ResourceLocation getAbilityIcon() {
-        return ability.getAbilityIcon();
+        return ability.getAbilityIcon(this);
     }
 
     public ResourceLocation getId() {

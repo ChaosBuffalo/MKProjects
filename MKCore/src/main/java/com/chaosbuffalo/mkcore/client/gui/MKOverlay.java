@@ -335,7 +335,6 @@ public class MKOverlay implements IGuiOverlay {
             if (abilityInfo == null)
                 continue;
 
-            MKAbility ability = abilityInfo.getAbility();
             float manaCost = data.getStats().getAbilityManaCost(abilityInfo);
             if (!executor.isCasting() && data.getStats().getMana() >= manaCost) {
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -346,7 +345,7 @@ public class MKOverlay implements IGuiOverlay {
             int slotX = slotAbilityOffsetX;
             int slotY = barStartY + slotAbilityOffsetY - (startingSlot + i) + ((startingSlot + i) * SLOT_HEIGHT);
 
-            RenderSystem.setShaderTexture(0, ability.getAbilityIcon());
+            RenderSystem.setShaderTexture(0, abilityInfo.getAbilityIcon());
             GuiComponent.blit(matrixStack, slotX, slotY, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
 
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -365,7 +364,7 @@ public class MKOverlay implements IGuiOverlay {
                 GuiComponent.blit(matrixStack, slotX, slotY, 0, 0, ABILITY_ICON_SIZE, coolDownHeight, ABILITY_ICON_SIZE, coolDownHeight);
             }
 
-            ability.getRenderer().drawAbilityBarEffect(data, matrixStack, mc, slotX, slotY);
+            abilityInfo.getAbility().getRenderer().drawAbilityBarEffect(data, matrixStack, mc, slotX, slotY);
         }
         RenderSystem.disableBlend();
         return startingSlot + slotCount;

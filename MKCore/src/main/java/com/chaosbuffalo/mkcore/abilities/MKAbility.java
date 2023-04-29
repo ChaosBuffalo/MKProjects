@@ -124,19 +124,19 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
             consumer.accept(getSkillDescription(casterData, abilityInfo));
         }
         consumer.accept(getManaCostDescription(casterData));
-        consumer.accept(getCooldownDescription(casterData));
-        consumer.accept(getCastTimeDescription(casterData));
+        consumer.accept(getCooldownDescription(casterData, abilityInfo));
+        consumer.accept(getCastTimeDescription(casterData, abilityInfo));
         getTargetSelector().buildDescription(this, casterData, consumer);
         consumer.accept(getAbilityDescription(casterData, abilityInfo));
     }
 
-    protected Component getCooldownDescription(IMKEntityData casterData) {
-        float seconds = (float) casterData.getStats().getAbilityCooldown(this) / GameConstants.TICKS_PER_SECOND;
+    protected Component getCooldownDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        float seconds = (float) casterData.getStats().getAbilityCooldown(abilityInfo) / GameConstants.TICKS_PER_SECOND;
         return Component.translatable("mkcore.ability.description.cooldown", seconds);
     }
 
-    protected Component getCastTimeDescription(IMKEntityData casterData) {
-        int castTicks = casterData.getStats().getAbilityCastTime(this);
+    protected Component getCastTimeDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        int castTicks = casterData.getStats().getAbilityCastTime(abilityInfo);
         float seconds = (float) castTicks / GameConstants.TICKS_PER_SECOND;
         Component time = castTicks > 0 ?
                 Component.translatable("mkcore.ability.description.seconds", seconds) :
@@ -215,7 +215,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return String.format("%s.%s.description", abilityId.getNamespace(), abilityId.getPath());
     }
 
-    public ResourceLocation getAbilityIcon() {
+    public ResourceLocation getAbilityIcon(MKAbilityInfo abilityInfo) {
         ResourceLocation abilityId = getAbilityId();
         return new ResourceLocation(abilityId.getNamespace(), String.format("textures/abilities/%s.png", abilityId.getPath().split(Pattern.quote("."))[1]));
     }

@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKCombatFormulas;
@@ -61,10 +60,10 @@ public class PlayerStats extends EntityStats {
     }
 
     @Override
-    public int getAbilityCooldown(MKAbility ability) {
+    public int getAbilityCooldown(MKAbilityInfo abilityInfo) {
         if (getPlayerData().getEntity().isCreative())
             return 0;
-        return super.getAbilityCooldown(ability);
+        return super.getAbilityCooldown(abilityInfo);
     }
 
     public void printActiveCooldowns() {

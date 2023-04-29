@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -645,9 +646,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return castingAbility;
     }
 
-    public void startCast(MKAbility ability) {
+    public void startCast(MKAbilityInfo abilityInfo) {
         visualCastState = VisualCastState.CASTING;
-        castingAbility = ability;
+        castingAbility = abilityInfo.getAbility();
     }
 
     public void returnToDefaultMovementState() {
@@ -659,8 +660,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
-    public void endCast(MKAbility ability) {
-        castingAbility = ability;
+    public void endCast(MKAbilityInfo abilityInfo) {
+        castingAbility = abilityInfo.getAbility();
         visualCastState = VisualCastState.RELEASE;
         castAnimTimer = 15;
     }
