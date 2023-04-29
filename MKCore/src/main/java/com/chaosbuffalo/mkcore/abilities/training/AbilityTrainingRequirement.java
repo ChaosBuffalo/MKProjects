@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.abilities.training;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityManager;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.serialization.IDynamicMapTypedSerializer;
 import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
@@ -57,9 +57,9 @@ public abstract class AbilityTrainingRequirement implements ISerializableAttribu
         this.attributes.addAll(Arrays.asList(iSerializableAttributes));
     }
 
-    public abstract boolean check(MKPlayerData playerData, MKAbility ability);
+    public abstract boolean check(MKPlayerData playerData, MKAbilityInfo abilityInfo);
 
-    public abstract void onLearned(MKPlayerData playerData, MKAbility ability);
+    public abstract void onLearned(MKPlayerData playerData, MKAbilityInfo abilityInfo);
 
     public abstract MutableComponent describe(MKPlayerData playerData);
 

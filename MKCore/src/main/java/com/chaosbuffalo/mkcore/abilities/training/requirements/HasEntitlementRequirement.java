@@ -2,7 +2,7 @@ package com.chaosbuffalo.mkcore.abilities.training.requirements;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingRequirement;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
@@ -29,12 +29,12 @@ public class HasEntitlementRequirement extends AbilityTrainingRequirement {
     }
 
     @Override
-    public boolean check(MKPlayerData playerData, MKAbility ability) {
+    public boolean check(MKPlayerData playerData, MKAbilityInfo abilityInfo) {
         return playerData.getEntitlements().hasEntitlement(entitlement);
     }
 
     @Override
-    public void onLearned(MKPlayerData playerData, MKAbility ability) {
+    public void onLearned(MKPlayerData playerData, MKAbilityInfo abilityInfo) {
 
     }
 

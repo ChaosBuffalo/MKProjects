@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.client.gui.widgets.AbilitySlotWidget;
 import com.chaosbuffalo.mkcore.client.gui.widgets.CycleButton;
@@ -142,26 +141,24 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     }
 
     @Override
-    protected Collection<MKAbility> getSortedAbilityList() {
+    protected Collection<MKAbilityInfo> getSortedAbilityList() {
         return currentAbilityList().stream()
                 .sorted(Comparator.comparing(a -> a.getAbilityName().getString()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    private List<MKAbility> currentAbilityList() {
+    private List<MKAbilityInfo> currentAbilityList() {
         availableFilters.clear();
         availableFilters.add(AbilityFilter.All);
 
         Set<AbilityType> knownTypes = new HashSet<>();
-        List<MKAbility> knownAbilities = playerData.getAbilities()
+        List<MKAbilityInfo> knownAbilities = playerData.getAbilities()
                 .getKnownStream()
-                .map(info -> {
-                    knownTypes.add(info.getAbility().getType());
-                    return info.getAbility();
-                }).collect(Collectors.toList());
+                .peek(info -> knownTypes.add(info.getAbility().getType()))
+                .collect(Collectors.toList());
         MKAbilityInfo itemAbility = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).getAbilityInfo(0);
         if (itemAbility != null) {
-            knownAbilities.add(itemAbility.getAbility());
+            knownAbilities.add(itemAbility);
             knownTypes.add(itemAbility.getAbility().getType());
         }
         if (knownTypes.contains(AbilityType.Basic))
@@ -176,7 +173,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
         }
 
         return knownAbilities.stream()
-                .filter(ability -> currentFilter.accepts(ability.getType()))
+                .filter(ability -> currentFilter.accepts(ability.getAbilityType()))
                 .collect(Collectors.toList());
     }
 
@@ -186,7 +183,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
                 f -> Component.literal("Filter: ").append(f.getName()),
                 f -> {
                     currentFilter = f;
-                    if (getSelectedAbility() != null && !currentFilter.accepts(getSelectedAbility().getType())) {
+                    if (getSelectedAbility() != null && !currentFilter.accepts(getSelectedAbility().getAbilityType())) {
                         setSelectedAbility(null);
                     }
                     abilitiesScrollPanel.getListScrollView().resetView();
@@ -224,7 +221,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
         layout.setPaddings(2, 2, 0, 0);
         layout.setMargins(2, 2, 2, 2);
         for (int i = 0; i < group.getMaxSlots(); i++) {
-            AbilitySlotWidget slot = new AbilitySlotWidget(0, 0, group, i, this);
+            AbilitySlotWidget slot = new AbilitySlotWidget(0, 0, group, i, playerData, this);
             abilitySlots.put(new AbilitySlotKey(slot.getSlotGroup(), slot.getSlotIndex()), slot);
             layout.addWidget(slot);
         }
@@ -256,10 +253,10 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     }
 
     @Override
-    public void startDraggingAbility(MKAbility ability, MKImage icon, IMKWidget source) {
+    public void startDraggingAbility(MKAbilityInfo ability, MKImage icon, IMKWidget source) {
         super.startDraggingAbility(ability, icon, source);
         abilitySlots.forEach((key, widget) -> {
-            if (!key.group.fitsAbilityType(ability.getType())) {
+            if (!key.group.fitsAbilityType(ability.getAbilityType())) {
                 widget.setBackgroundColor(0xff555555);
                 widget.setIconColor(0xff555555);
             }

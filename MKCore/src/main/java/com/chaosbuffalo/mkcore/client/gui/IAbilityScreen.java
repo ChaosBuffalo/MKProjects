@@ -1,19 +1,20 @@
 package com.chaosbuffalo.mkcore.client.gui;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.IMKScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKImage;
 
 public interface IAbilityScreen extends IMKScreen {
 
-    MKAbility getSelectedAbility();
+    MKAbilityInfo getSelectedAbility();
 
-    void setSelectedAbility(MKAbility ability);
+    void setSelectedAbility(MKAbilityInfo ability);
 
     boolean allowsDraggingAbilities();
 
-    void startDraggingAbility(MKAbility ability, MKImage icon, IMKWidget source);
+    void startDraggingAbility(MKAbilityInfo ability, MKImage icon, IMKWidget source);
 
     void stopDraggingAbility();
 
@@ -21,5 +22,5 @@ public interface IAbilityScreen extends IMKScreen {
         return getDraggingAbility() != null;
     }
 
-    MKAbility getDraggingAbility();
+    MKAbilityInfo getDraggingAbility();
 }

@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.client.gui.GuiTextures;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.network.ForgetAbilitiesRequestPacket;
@@ -19,14 +18,14 @@ import java.util.stream.Collectors;
 
 public class ForgetAbilityModal extends MKModal {
 
-    private final List<MKAbility> forgetting = new ArrayList<>();
+    private final List<MKAbilityInfo> forgetting = new ArrayList<>();
     private final int numberToForget;
     private final MKButton forgetButton;
-    private final MKAbility tryingToLearn;
+    private final MKAbilityInfo tryingToLearn;
     private final int trainerEntityId;
     private final boolean isLearning;
 
-    public ForgetAbilityModal(MKAbility tryingToLearn, MKPlayerData playerData, int xPos, int yPos, int width, int height, Font font, int trainerEntityId) {
+    public ForgetAbilityModal(MKAbilityInfo tryingToLearn, MKPlayerData playerData, int xPos, int yPos, int width, int height, Font font, int trainerEntityId) {
         MKImage background = GuiTextures.CORE_TEXTURES.getImageForRegion(
                 GuiTextures.BACKGROUND_180_200, xPos, yPos, width, height);
         addWidget(background);
@@ -64,14 +63,11 @@ public class ForgetAbilityModal extends MKModal {
         abilities.setMargins(2, 2, 0, 0);
         abilities.doSetChildWidth(true);
         playerData.getAbilities().getPoolAbilities().forEach(abilityId -> {
-            if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
+            MKAbilityInfo abilityInfo = playerData.getAbilities().getKnownAbility(abilityId);
+            if (abilityInfo == null)
                 return;
-            }
-            MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-            if (ability != null) {
-                AbilityForgetOption abilityIcon = new AbilityForgetOption(ability, this, font);
-                abilities.addWidget(abilityIcon);
-            }
+            AbilityForgetOption abilityIcon = new AbilityForgetOption(abilityInfo, this, font);
+            abilities.addWidget(abilityIcon);
         });
         scrollview.addWidget(abilities);
         abilities.manualRecompute();
@@ -81,10 +77,10 @@ public class ForgetAbilityModal extends MKModal {
     private boolean forgetCallback(MKButton button, int click) {
         if (isLearning) {
             PacketHandler.sendMessageToServer(new PlayerLearnAbilityRequestPacket(
-                    forgetting.stream().map(MKAbility::getAbilityId).collect(Collectors.toList()),
-                    tryingToLearn.getAbilityId(), trainerEntityId));
+                    forgetting.stream().map(MKAbilityInfo::getId).collect(Collectors.toList()),
+                    tryingToLearn.getId(), trainerEntityId));
         } else {
-            PacketHandler.sendMessageToServer(new ForgetAbilitiesRequestPacket(forgetting.stream().map(MKAbility::getAbilityId).collect(Collectors.toList())));
+            PacketHandler.sendMessageToServer(new ForgetAbilitiesRequestPacket(forgetting.stream().map(MKAbilityInfo::getId).collect(Collectors.toList())));
         }
 
         if (getScreen() != null) {
@@ -97,17 +93,17 @@ public class ForgetAbilityModal extends MKModal {
         forgetButton.setEnabled(ready());
     }
 
-    public void forget(MKAbility ability) {
+    public void forget(MKAbilityInfo ability) {
         forgetting.add(ability);
         checkStatus();
     }
 
-    public void cancelForget(MKAbility ability) {
+    public void cancelForget(MKAbilityInfo ability) {
         forgetting.remove(ability);
         checkStatus();
     }
 
-    public boolean isForgetting(MKAbility ability) {
+    public boolean isForgetting(MKAbilityInfo ability) {
         return forgetting.contains(ability);
     }
 

@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.client.gui.IAbilityScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterYWithOffsetConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
@@ -11,12 +11,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 
 public class AbilityListEntry extends MKStackLayoutHorizontal {
-    private final MKAbility ability;
+    private final MKAbilityInfo ability;
     private final IAbilityScreen screen;
     private final MKImage icon;
 
 
-    public AbilityListEntry(int x, int y, int height, Font font, IAbilityScreen screen, MKAbility ability) {
+    public AbilityListEntry(int x, int y, int height, Font font, IAbilityScreen screen, MKAbilityInfo ability) {
         super(x, y, height);
         this.ability = ability;
         this.screen = screen;
@@ -46,7 +46,8 @@ public class AbilityListEntry extends MKStackLayoutHorizontal {
         if (isHovered()) {
             mkFill(matrixStack, x, y, x + width, y + height, 0x55ffffff);
         }
-        if (ability.equals(screen.getSelectedAbility())) {
+        MKAbilityInfo selected = screen.getSelectedAbility();
+        if (selected != null && selected.getId().equals(ability.getId())) {
             mkFill(matrixStack, x, y, x + width, y + height, 0x99ffffff);
         }
     }

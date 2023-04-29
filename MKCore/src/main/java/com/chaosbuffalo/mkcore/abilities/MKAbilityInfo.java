@@ -1,11 +1,14 @@
 package com.chaosbuffalo.mkcore.abilities;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
@@ -32,6 +35,14 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
 
     public AbilityType getAbilityType() {
         return ability.getType();
+    }
+
+    public MutableComponent getAbilityName() {
+        return ability.getAbilityName();
+    }
+
+    public ResourceLocation getAbilityIcon() {
+        return ability.getAbilityIcon();
     }
 
     public ResourceLocation getId() {
@@ -112,6 +123,20 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
             }
         }
         return true;
+    }
+
+    public void write(FriendlyByteBuf buffer) {
+        buffer.writeResourceLocation(getId());
+        buffer.writeRegistryIdUnsafe(MKCoreRegistry.ABILITIES, ability);
+    }
+
+    public static MKAbilityInfo read(FriendlyByteBuf buffer) {
+        ResourceLocation id = buffer.readResourceLocation();
+        MKAbility abilityType = buffer.readRegistryIdUnsafe(MKCoreRegistry.ABILITIES);
+        if (abilityType == null)
+            return null;
+
+        return abilityType.createAbilityInfo();// FIXME: assign ID
     }
 
     @Override

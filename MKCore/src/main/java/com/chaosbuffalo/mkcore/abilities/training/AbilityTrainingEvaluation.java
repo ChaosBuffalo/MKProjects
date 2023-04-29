@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.abilities.training;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
@@ -11,17 +12,17 @@ import java.util.List;
 
 public class AbilityTrainingEvaluation {
 
-    private final MKAbility ability;
+    private final MKAbilityInfo ability;
     private final boolean usesAbilityPool;
     private final List<AbilityRequirementEvaluation> requirements;
 
-    public AbilityTrainingEvaluation(MKAbility ability, List<AbilityRequirementEvaluation> requirements, boolean usesAbilityPool) {
+    public AbilityTrainingEvaluation(MKAbilityInfo ability, List<AbilityRequirementEvaluation> requirements, boolean usesAbilityPool) {
         this.ability = ability;
         this.requirements = requirements;
         this.usesAbilityPool = usesAbilityPool;
     }
 
-    public MKAbility getAbility() {
+    public MKAbilityInfo getAbilityInfo() {
         return ability;
     }
 
@@ -38,7 +39,7 @@ public class AbilityTrainingEvaluation {
     }
 
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeResourceLocation(getAbility().getAbilityId());
+        getAbilityInfo().write(buffer);
         buffer.writeBoolean(usesAbilityPool());
         buffer.writeVarInt(requirements.size());
         requirements.forEach(description -> description.write(buffer));
@@ -46,7 +47,9 @@ public class AbilityTrainingEvaluation {
 
     @Nullable
     public static AbilityTrainingEvaluation read(FriendlyByteBuf buffer) {
-        ResourceLocation abilityId = buffer.readResourceLocation();
+        MKAbilityInfo abilityInfo = MKAbilityInfo.read(buffer);
+        if (abilityInfo == null)
+            return null;
         boolean usesPool = buffer.readBoolean();
         List<AbilityRequirementEvaluation> requirementEvaluations = new ArrayList<>();
         int descCount = buffer.readVarInt();
@@ -55,9 +58,6 @@ public class AbilityTrainingEvaluation {
             requirementEvaluations.add(eval);
         }
 
-        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-        if (ability == null)
-            return null;
-        return new AbilityTrainingEvaluation(ability, requirementEvaluations, usesPool);
+        return new AbilityTrainingEvaluation(abilityInfo, requirementEvaluations, usesPool);
     }
 }

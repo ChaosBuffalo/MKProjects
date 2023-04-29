@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.client.gui.IAbilityScreen;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.utils.text.IconTextComponent;
@@ -41,7 +41,7 @@ public class AbilityInfoWidget extends MKStackLayoutVertical {
     }
 
     public void setup() {
-        MKAbility selected = screen.getSelectedAbility();
+        MKAbilityInfo selected = screen.getSelectedAbility();
         if (selected == null) {
             MKText noSelectPrompt = new MKText(fontRenderer, Component.translatable("mkcore.gui.select_ability"));
             noSelectPrompt.setColor(0xffffffff);
@@ -49,7 +49,7 @@ public class AbilityInfoWidget extends MKStackLayoutVertical {
         } else {
             IconText abilityIcon = new AbilityIconText(0, 0, 16, fontRenderer, 16, screen, selected);
             addWidget(abilityIcon);
-            selected.buildDescription(playerData, this::addDescriptionLine);
+            selected.getAbility().buildDescription(playerData, this::addDescriptionLine);
         }
     }
 

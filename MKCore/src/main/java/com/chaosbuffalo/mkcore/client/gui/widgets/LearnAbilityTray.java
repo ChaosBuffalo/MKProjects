@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEvaluation;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.LayoutRelativeWidthConstraint;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class LearnAbilityTray extends MKStackLayoutVertical {
-    private MKAbility ability;
+    private MKAbilityInfo ability;
     private AbilityTrainingEvaluation evaluation;
     private final MKPlayerData playerData;
     private final Font font;
@@ -55,7 +55,7 @@ public class LearnAbilityTray extends MKStackLayoutVertical {
             nameTray.addWidget(abilityName);
             addWidget(nameTray);
 
-            boolean isKnown = playerData.getAbilities().knowsAbility(getAbility().getAbilityId());
+            boolean isKnown = playerData.getAbilities().knowsAbility(getAbility().getId());
             boolean canLearn = evaluation.canLearn();
             String knowText;
             if (isKnown) {
@@ -94,13 +94,13 @@ public class LearnAbilityTray extends MKStackLayoutVertical {
         }
     }
 
-    public void setAbility(MKAbility ability, AbilityTrainingEvaluation requirements) {
+    public void setAbility(MKAbilityInfo ability, AbilityTrainingEvaluation requirements) {
         this.ability = ability;
         this.evaluation = requirements;
         setup();
     }
 
-    public MKAbility getAbility() {
+    public MKAbilityInfo getAbility() {
         return ability;
     }
 

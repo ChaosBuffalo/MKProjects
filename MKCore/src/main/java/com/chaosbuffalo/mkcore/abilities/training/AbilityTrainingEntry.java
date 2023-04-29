@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.abilities.training;
 
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 
 import java.util.ArrayList;
@@ -10,18 +11,18 @@ import java.util.stream.Collectors;
 
 public class AbilityTrainingEntry {
 
-    private final MKAbility ability;
+    private final MKAbilityInfo ability;
     private final AbilitySource source;
     private final List<AbilityTrainingRequirement> requirementList;
 
-    public AbilityTrainingEntry(MKAbility ability, AbilitySource source) {
+    public AbilityTrainingEntry(MKAbilityInfo ability, AbilitySource source) {
         this.ability = ability;
         requirementList = new ArrayList<>();
         this.source = source;
     }
 
     public MKAbility getAbility() {
-        return ability;
+        return ability.getAbility();
     }
 
     public List<AbilityTrainingRequirement> getRequirements() {
@@ -42,7 +43,7 @@ public class AbilityTrainingEntry {
     }
 
     private AbilityRequirementEvaluation evaluateRequirement(AbilityTrainingRequirement req, MKPlayerData playerData) {
-        return new AbilityRequirementEvaluation(req.describe(playerData), req.check(playerData, getAbility()));
+        return new AbilityRequirementEvaluation(req.describe(playerData), req.check(playerData, ability));
     }
 
     public AbilityTrainingEvaluation evaluate(MKPlayerData playerData) {
@@ -50,6 +51,6 @@ public class AbilityTrainingEntry {
                 .stream()
                 .map(req -> evaluateRequirement(req, playerData))
                 .collect(Collectors.toList());
-        return new AbilityTrainingEvaluation(getAbility(), requirements, source.usesAbilityPool());
+        return new AbilityTrainingEvaluation(ability, requirements, source.usesAbilityPool());
     }
 }

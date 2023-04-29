@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEntry;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingRequirement;
 import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainer;
@@ -90,7 +91,8 @@ public class AbilityTrainingOption extends SimpleOption<List<AbilityTrainingOpti
             IAbilityTrainer trainer = ((IAbilityTrainingEntity) entity).getAbilityTrainer();
             for (AbilityTrainingOptionEntry entry : value) {
                 if (entry.ability != null) {
-                    AbilityTrainingEntry trainingEntry = trainer.addTrainedAbility(entry.ability);
+                    MKAbilityInfo info = entry.ability.createAbilityInfo();// TODO: finish conversion
+                    AbilityTrainingEntry trainingEntry = trainer.addTrainedAbility(info);
                     for (AbilityTrainingRequirement req : entry.requirements) {
                         trainingEntry.addRequirement(req);
                     }

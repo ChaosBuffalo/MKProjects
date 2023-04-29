@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -10,9 +10,9 @@ import net.minecraft.client.gui.Font;
 public class AbilityForgetOption extends MKLayout {
 
     private final ForgetAbilityModal popup;
-    private final MKAbility ability;
+    private final MKAbilityInfo ability;
 
-    public AbilityForgetOption(MKAbility ability, ForgetAbilityModal popup,
+    public AbilityForgetOption(MKAbilityInfo ability, ForgetAbilityModal popup,
                                Font font) {
         super(0, 0, 200, 16);
         this.popup = popup;
@@ -33,7 +33,7 @@ public class AbilityForgetOption extends MKLayout {
         return true;
     }
 
-    public MKAbility getAbility() {
+    public MKAbilityInfo getAbility() {
         return ability;
     }
 
