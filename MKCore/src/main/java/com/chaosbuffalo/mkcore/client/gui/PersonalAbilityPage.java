@@ -12,9 +12,7 @@ import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.OffsetConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
-import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
-import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
-import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.*;
 import com.chaosbuffalo.mkwidgets.utils.TextureRegion;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -40,8 +38,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
 
         @Override
         public boolean equals(Object other) {
-            if (other instanceof AbilitySlotKey) {
-                AbilitySlotKey otherKey = (AbilitySlotKey) other;
+            if (other instanceof AbilitySlotKey otherKey) {
                 return slot == otherKey.slot && group.equals(otherKey.group);
             }
             return false;
@@ -239,7 +236,6 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
         boolean handled = super.mouseReleased(mouseX, mouseY, mouseButton);
         if (isDraggingAbility()) {
             stopDraggingAbility();
-            clearDragState();
             return true;
         }
         return handled;
@@ -260,10 +256,10 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     }
 
     @Override
-    public void startDraggingAbility(MKAbility dragging) {
-        super.startDraggingAbility(dragging);
+    public void startDraggingAbility(MKAbility ability, MKImage icon, IMKWidget source) {
+        super.startDraggingAbility(ability, icon, source);
         abilitySlots.forEach((key, widget) -> {
-            if (!key.group.fitsAbilityType(dragging.getType())) {
+            if (!key.group.fitsAbilityType(ability.getType())) {
                 widget.setBackgroundColor(0xff555555);
                 widget.setIconColor(0xff555555);
             }

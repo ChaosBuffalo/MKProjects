@@ -120,7 +120,7 @@ public class LearnAbilityPage extends AbilityPageBase {
         learnButton.setEnabled(canLearnCurrentAbility());
         learnButton.setPressedCallback((button, buttonType) -> {
             if (requirementsTray.getEvaluation().usesAbilityPool() && playerData.getAbilities().isAbilityPoolFull()) {
-                addModal(getChoosePoolSlotWidget(requirementsTray.getAbility(), requirementsTray.getTrainerEntityId()));
+                addModal(createChoosePoolSlotWidget(requirementsTray.getAbility(), requirementsTray.getTrainerEntityId()));
             } else {
                 PacketHandler.sendMessageToServer(new PlayerLearnAbilityRequestPacket(
                         requirementsTray.getAbility().getAbilityId(), requirementsTray.getTrainerEntityId()));

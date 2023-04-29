@@ -3,9 +3,12 @@ package com.chaosbuffalo.mkcore.client.gui;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.client.gui.widgets.*;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkwidgets.client.gui.actions.WidgetHoldingDragState;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKImage;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -31,7 +34,7 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
 
     public ScrollingListPanelLayout getAbilityScrollPanel(int xPos, int yPos, int width, int height) {
         ScrollingListPanelLayout panel = new ScrollingListPanelLayout(xPos, yPos, width, height);
-        infoWidget = new AbilityInfoWidget(0, 0, panel.getContentScrollView().getWidth(), playerData, font, this);
+        infoWidget = new AbilityInfoWidget(0, 0, panel.getContentScrollView().getWidth(), font, playerData, this);
         panel.setContent(infoWidget);
 
         MKStackLayoutVertical stackLayout = new MKStackLayoutVertical(0, 0, panel.getListScrollView().getWidth());
@@ -49,7 +52,7 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         return panel;
     }
 
-    protected ForgetAbilityModal getChoosePoolSlotWidget(MKAbility tryingToLearn, int trainingId) {
+    protected ForgetAbilityModal createChoosePoolSlotWidget(MKAbility tryingToLearn, int trainingId) {
         int screenWidth = getWidth();
         int screenHeight = getHeight();
         int xPos = (screenWidth - POPUP_WIDTH) / 2;
@@ -63,7 +66,7 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         manage.setWidth(60);
 
         manage.setPressedCallback((but, click) -> {
-            ForgetAbilityModal modal = getChoosePoolSlotWidget(null, -1);
+            ForgetAbilityModal modal = createChoosePoolSlotWidget(null, -1);
             modal.setOnCloseCallback(() -> {
                 setSelectedAbility(null);
                 flagNeedSetup();
@@ -96,19 +99,6 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         persistScrollingListPanelState(() -> abilitiesScrollPanel, wasResized);
     }
 
-    @Override
-    public boolean allowsDraggingAbilities() {
-        return false;
-    }
-
-    public MKAbility getDraggingAbility() {
-        return draggingAbility;
-    }
-
-    public void startDraggingAbility(MKAbility dragging) {
-        this.draggingAbility = dragging;
-    }
-
     protected void restoreSelectedAbility(MKAbility ability) {
         selectedAbility = ability;
         if (infoWidget != null) {
@@ -116,20 +106,36 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         }
     }
 
+    @Override
+    public boolean allowsDraggingAbilities() {
+        return false;
+    }
+
+    @Override
+    public MKAbility getDraggingAbility() {
+        return draggingAbility;
+    }
+
+    @Override
+    public void startDraggingAbility(MKAbility ability, MKImage icon, IMKWidget source) {
+        draggingAbility = ability;
+        setDragState(new WidgetHoldingDragState(new MKImage(0, 0, icon.getWidth(), icon.getHeight(), icon.getImageLoc())), source);
+    }
+
+    @Override
     public void setSelectedAbility(MKAbility ability) {
         restoreSelectedAbility(ability);
         abilitiesScrollPanel.getContentScrollView().resetView();
     }
 
+    @Override
     public MKAbility getSelectedAbility() {
         return selectedAbility;
     }
 
+    @Override
     public void stopDraggingAbility() {
         draggingAbility = null;
-    }
-
-    public boolean isDraggingAbility() {
-        return draggingAbility != null;
+        clearDragState();
     }
 }

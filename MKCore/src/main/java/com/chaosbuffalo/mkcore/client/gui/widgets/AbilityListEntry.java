@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkcore.client.gui.widgets;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.client.gui.IAbilityScreen;
-import com.chaosbuffalo.mkwidgets.client.gui.actions.WidgetHoldingDragState;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterYWithOffsetConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKImage;
@@ -27,9 +26,7 @@ public class AbilityListEntry extends MKStackLayoutHorizontal {
             @Override
             public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
                 if (screen.allowsDraggingAbilities()) {
-                    screen.setDragState(new WidgetHoldingDragState(new MKImage(0, 0, icon.getWidth(),
-                            icon.getHeight(), icon.getImageLoc())), this);
-                    screen.startDraggingAbility(ability);
+                    screen.startDraggingAbility(ability, icon, this);
                     screen.setSelectedAbility(ability);
                     return true;
                 }
