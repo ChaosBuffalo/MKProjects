@@ -229,12 +229,12 @@ public class AbilityExecutor {
             SoundUtils.serverPlaySoundAtEntity(entityData.getEntity(), sound, entityData.getEntity().getSoundSource());
         }
         clearCastingAbility();
-        MinecraftForge.EVENT_BUS.post(new EntityAbilityEvent.EntityCompleteAbilityEvent(ability, entityData));
+        MinecraftForge.EVENT_BUS.post(new EntityAbilityEvent.EntityCompleteAbilityEvent(info, entityData));
     }
 
     public void onAbilityUnlearned(MKAbilityInfo abilityInfo) {
         if (abilityInfo.getAbility() instanceof MKToggleAbility toggleAbility) {
-            toggleAbility.removeEffect(entityData);
+            toggleAbility.removeEffect(entityData, abilityInfo);
         }
     }
 
@@ -378,15 +378,15 @@ public class AbilityExecutor {
     }
 
     public void setToggleGroupAbility(MKToggleAbility ability, MKAbilityInfo abilityInfo) {
-        MKAbilityInfo current = activeToggleMap.get(ability.getToggleGroupId());
+        MKAbilityInfo current = activeToggleMap.get(ability.getToggleGroupId(abilityInfo));
         // This can also be called when rebuilding the activeToggleMap after transferring dimensions and in that case
         // ability will be the same as current
         if (current != null && !current.equals(abilityInfo)) {
             if (current.getAbility() instanceof MKToggleAbility toggleAbility) {
-                toggleAbility.removeEffect(entityData);
+                toggleAbility.removeEffect(entityData, current);
             }
             setCooldown(current, entityData.getStats().getAbilityCooldown(current));
         }
-        activeToggleMap.put(ability.getToggleGroupId(), abilityInfo);
+        activeToggleMap.put(ability.getToggleGroupId(abilityInfo), abilityInfo);
     }
 }

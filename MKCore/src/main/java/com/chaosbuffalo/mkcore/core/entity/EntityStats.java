@@ -269,19 +269,19 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
 
     @Override
     public float getAbilityManaCost(MKAbilityInfo abilityInfo) {
-        float manaCost = abilityInfo.getAbility().getManaCost(entityData);
+        float manaCost = abilityInfo.getAbility().getManaCost(entityData, abilityInfo);
         return MKCombatFormulas.applyManaCostReduction(entityData, manaCost);
     }
 
     @Override
     public int getAbilityCooldown(MKAbilityInfo abilityInfo) {
-        int ticks = abilityInfo.getAbility().getCooldown(entityData);
+        int ticks = abilityInfo.getAbility().getCooldown(entityData, abilityInfo);
         return MKCombatFormulas.applyCooldownReduction(entityData, ticks);
     }
 
     @Override
     public int getAbilityCastTime(MKAbilityInfo abilityInfo) {
-        int ticks = abilityInfo.getAbility().getCastTime(entityData);
+        int ticks = abilityInfo.getAbility().getCastTime(entityData, abilityInfo);
         return abilityInfo.getAbility().canApplyCastingSpeedModifier() ?
                 MKCombatFormulas.applyCastTimeModifier(entityData, ticks) :
                 ticks;

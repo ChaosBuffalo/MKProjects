@@ -123,7 +123,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         if (!skillAttributes.isEmpty()) {
             consumer.accept(getSkillDescription(casterData, abilityInfo));
         }
-        consumer.accept(getManaCostDescription(casterData));
+        consumer.accept(getManaCostDescription(casterData, abilityInfo));
         consumer.accept(getCooldownDescription(casterData, abilityInfo));
         consumer.accept(getCastTimeDescription(casterData, abilityInfo));
         getTargetSelector().buildDescription(this, casterData, consumer);
@@ -144,8 +144,8 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return Component.translatable("mkcore.ability.description.cast_time", time);
     }
 
-    protected Component getManaCostDescription(IMKEntityData casterData) {
-        return Component.translatable("mkcore.ability.description.mana_cost", getManaCost(casterData));
+    protected Component getManaCostDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        return Component.translatable("mkcore.ability.description.mana_cost", getManaCost(casterData, abilityInfo));
     }
 
     @Deprecated
@@ -190,7 +190,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     @Nonnull
     public MKAbilityInfo createAbilityInfo() {
-        return new MKAbilityInfo(this);
+        return new MKAbilityInfo(getAbilityId(), this);
     }
 
     @Nonnull
@@ -228,7 +228,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return castTime;
     }
 
-    public int getCastTime(IMKEntityData casterData) {
+    public int getCastTime(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
         return getBaseCastTime();
     }
 
@@ -260,7 +260,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return cooldown;
     }
 
-    public int getCooldown(IMKEntityData casterData) {
+    public int getCooldown(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
         return getBaseCooldown();
     }
 
@@ -278,7 +278,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return manaCost;
     }
 
-    public float getManaCost(IMKEntityData casterData) {
+    public float getManaCost(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
         return getBaseManaCost() + getManaCostModifierForSkills(casterData);
     }
 

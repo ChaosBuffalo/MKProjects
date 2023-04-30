@@ -1,23 +1,23 @@
 package com.chaosbuffalo.mkcore.events;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 
 public class EntityAbilityEvent extends EntityDataEvent {
-    private final MKAbility ability;
+    private final MKAbilityInfo ability;
 
-    public EntityAbilityEvent(MKAbility ability, IMKEntityData entityData) {
+    public EntityAbilityEvent(MKAbilityInfo ability, IMKEntityData entityData) {
         super(entityData);
         this.ability = ability;
     }
 
-    public MKAbility getAbility() {
+    public MKAbilityInfo getAbilityInfo() {
         return ability;
     }
 
     public static class EntityCompleteAbilityEvent extends EntityAbilityEvent {
 
-        public EntityCompleteAbilityEvent(MKAbility ability, IMKEntityData entityData) {
+        public EntityCompleteAbilityEvent(MKAbilityInfo ability, IMKEntityData entityData) {
             super(ability, entityData);
         }
     }

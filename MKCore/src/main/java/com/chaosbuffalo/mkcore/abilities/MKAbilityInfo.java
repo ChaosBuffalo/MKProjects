@@ -6,8 +6,6 @@ import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.mkcore.utils.MKNBTUtil;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.DynamicLike;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.OptionalDynamic;
 import it.unimi.dsi.fastutil.objects.Object2FloatFunction;
@@ -34,11 +32,6 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
     private final Set<AbilitySource> sources = new HashSet<>(2);
     @Nullable
     private AbilitySource highestSource;
-
-    public MKAbilityInfo(MKAbility ability) {
-        this.ability = ability;
-        abilityId = ability.getAbilityId();
-    }
 
     public MKAbilityInfo(ResourceLocation abilityId, MKAbility ability) {
         this.ability = ability;

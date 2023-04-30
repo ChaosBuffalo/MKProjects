@@ -110,7 +110,7 @@ public class HotBarCommand {
         return SharedSuggestionProvider.suggest(MKCore.getPlayer(player)
                         .map(playerData -> playerData.getAbilities()
                                 .getKnownStream()
-                                .filter(info -> group.fitsAbilityType(info.getAbility().getType()))
+                                .filter(info -> group.fitsAbilityType(info.getAbilityType()))
                                 .map(MKAbilityInfo::getId)
                                 .map(ResourceLocation::toString))
                         .orElse(Stream.empty()),

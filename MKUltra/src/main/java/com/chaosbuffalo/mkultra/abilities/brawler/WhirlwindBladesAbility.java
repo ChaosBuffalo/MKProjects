@@ -72,7 +72,7 @@ public class WhirlwindBladesAbility extends MKAbility {
         Component baseDamage = getDamageDescription(entityData,
                 CoreDamageTypes.MeleeDamage.get(), base.value(), scale.value(), level, 0.0f);
         float periodSeconds = 6.0f / GameConstants.TICKS_PER_SECOND;
-        int castSeconds = getCastTime(entityData) / GameConstants.TICKS_PER_SECOND;
+        int castSeconds = getCastTime(entityData, abilityInfo) / GameConstants.TICKS_PER_SECOND;
         int numberOfCasts = Math.round(castSeconds / periodSeconds);
         Component maxDamage = getDamageDescription(entityData,
                 CoreDamageTypes.MeleeDamage.get(), base.value(), scale.value(), level,
@@ -109,7 +109,7 @@ public class WhirlwindBladesAbility extends MKAbility {
         int tickSpeed = 6;
         if (castTimeLeft % tickSpeed == 0) {
             float level = abilityInfo.getSkillValue(casterData, MKAttributes.PANKRATION);
-            int totalDuration = getCastTime(casterData);
+            int totalDuration = getCastTime(casterData, abilityInfo);
             int count = (totalDuration - castTimeLeft) / tickSpeed;
             float baseAmount = perTick.value();
             float scaling = count * baseAmount;

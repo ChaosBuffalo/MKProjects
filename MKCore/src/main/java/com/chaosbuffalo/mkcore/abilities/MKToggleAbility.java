@@ -27,8 +27,8 @@ public abstract class MKToggleAbility extends MKAbility {
         super();
     }
 
-    public ResourceLocation getToggleGroupId() {
-        return getAbilityId();
+    public ResourceLocation getToggleGroupId(MKAbilityInfo abilityInfo) {
+        return abilityInfo.getId();
     }
 
     public abstract MKEffect getToggleEffect();
@@ -51,26 +51,26 @@ public abstract class MKToggleAbility extends MKAbility {
     }
 
     @Override
-    public float getManaCost(IMKEntityData casterData) {
+    public float getManaCost(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
         if (isEffectActive(casterData)) {
             return 0f;
         }
-        return super.getManaCost(casterData);
+        return super.getManaCost(casterData, abilityInfo);
     }
 
     @Override
-    public int getCastTime(IMKEntityData casterData) {
+    public int getCastTime(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
         // Active effects can be disabled instantly
         if (isEffectActive(casterData)) {
             return 0;
         }
-        return super.getCastTime(casterData);
+        return super.getCastTime(casterData, abilityInfo);
     }
 
     @Override
     public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
         if (isEffectActive(casterData)) {
-            removeEffect(casterData);
+            removeEffect(casterData, abilityInfo);
         } else {
             applyEffect(casterData, abilityInfo);
         }
@@ -85,8 +85,8 @@ public abstract class MKToggleAbility extends MKAbility {
         casterData.getAbilityExecutor().setToggleGroupAbility(this, abilityInfo);
     }
 
-    public void removeEffect(IMKEntityData casterData) {
-        casterData.getAbilityExecutor().clearToggleGroupAbility(getToggleGroupId());
+    public void removeEffect(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        casterData.getAbilityExecutor().clearToggleGroupAbility(getToggleGroupId(abilityInfo));
         if (isEffectActive(casterData)) {
             casterData.getEffects().removeEffect(getToggleEffect());
         }

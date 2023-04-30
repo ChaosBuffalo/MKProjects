@@ -49,20 +49,20 @@ public class ShadowBoltAbility extends MKAbility {
     }
 
     @Override
-    public int getCastTime(IMKEntityData casterData) {
-        return casterData.getEffects().isEffectActive(MKUEffects.SHADOWBRINGER.get()) ? 0 : super.getCastTime(casterData);
+    public int getCastTime(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        return casterData.getEffects().isEffectActive(MKUEffects.SHADOWBRINGER.get()) ? 0 : super.getCastTime(casterData, abilityInfo);
     }
 
     @Override
-    public float getManaCost(IMKEntityData casterData) {
-        float cost = super.getManaCost(casterData);
+    public float getManaCost(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        float cost = super.getManaCost(casterData, abilityInfo);
         return casterData.getEffects().isEffectActive(MKUEffects.SHADOWBRINGER.get()) ? cost / 2.0f : cost;
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
-        float skillLevel = skillSupplier.apply(MKAttributes.EVOCATION);
-        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.ShadowDamage.get(), baseDamage.value(),
+    public Component getAbilityDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        float skillLevel = abilityInfo.getSkillValue(casterData, MKAttributes.EVOCATION);
+        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), baseDamage.value(),
                 scaleDamage.value(), skillLevel,
                 modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), damageStr);

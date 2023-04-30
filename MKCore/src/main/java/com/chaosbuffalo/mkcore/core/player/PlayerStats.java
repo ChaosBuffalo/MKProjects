@@ -55,7 +55,7 @@ public class PlayerStats extends EntityStats {
     public float getAbilityManaCost(MKAbilityInfo abilityInfo) {
         if (getPlayerData().getEntity().isCreative())
             return 0f;
-        float manaCost = abilityInfo.getAbility().getManaCost(entityData);
+        float manaCost = abilityInfo.getAbility().getManaCost(entityData, abilityInfo);
         return MKCombatFormulas.applyManaCostReduction(entityData, manaCost);
     }
 
