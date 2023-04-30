@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.client.gui.IPlayerDataAwareScreen;
 import com.chaosbuffalo.mkcore.client.gui.ParticleEditorScreen;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
+import com.chaosbuffalo.mkcore.client.rendering.MKPlayerRenderer;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.MKRangedAttribute;
@@ -40,6 +41,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
@@ -223,6 +225,17 @@ public class ClientEventHandler {
 
             if (Minecraft.getInstance().screen instanceof IPlayerDataAwareScreen screen) {
                 screen.onPlayerDataUpdate();
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRenderHand(RenderHandEvent event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc != null && mc.player != null && event.getHand() == InteractionHand.MAIN_HAND) {
+            var renderer =  mc.getEntityRenderDispatcher().getRenderer(mc.player);
+            if (renderer instanceof MKPlayerRenderer playerRenderer) {
+                playerRenderer.renderHandFirstPerson(mc.player);
             }
         }
     }
