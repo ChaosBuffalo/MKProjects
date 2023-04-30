@@ -109,27 +109,47 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.skin_like_wood",
+          "ability": {
+            "type": "mkultra:ability.skin_like_wood",
+            "id": "mkultra:ability.skin_like_wood",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.natures_remedy",
+          "ability": {
+            "type": "mkultra:ability.natures_remedy",
+            "id": "mkultra:ability.natures_remedy",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.spirit_bomb",
+          "ability": {
+            "type": "mkultra:ability.spirit_bomb",
+            "id": "mkultra:ability.spirit_bomb",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 4
         },
         {
-          "abilityName": "mkultra:ability.natures_remedy",
+          "ability": {
+            "type": "mkultra:ability.natures_remedy",
+            "id": "mkultra:ability.natures_remedy",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.cleansing_seed",
+          "ability": {
+            "type": "mkultra:ability.cleansing_seed",
+            "id": "mkultra:ability.cleansing_seed",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 5
         }

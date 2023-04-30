@@ -42,12 +42,20 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.skin_like_wood",
+          "ability": {
+            "type": "mkultra:ability.skin_like_wood",
+            "id": "mkultra:ability.skin_like_wood",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.natures_remedy",
+          "ability": {
+            "type": "mkultra:ability.natures_remedy",
+            "id": "mkultra:ability.natures_remedy",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 2
         }

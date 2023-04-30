@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.client.rendering;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.client.rendering.model.MKPlayerModel;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
@@ -38,11 +38,11 @@ public class MKPlayerRenderer extends PlayerRenderer {
         MKCore.getPlayer(entityIn).ifPresent(data -> {
             PlayerAnimationModule.PlayerVisualCastState state = data.getAnimationModule().getPlayerVisualCastState();
             if (state == PlayerAnimationModule.PlayerVisualCastState.CASTING || state == PlayerAnimationModule.PlayerVisualCastState.RELEASE) {
-                MKAbility ability = data.getAnimationModule().getCastingAbility();
+                MKAbilityInfo ability = data.getAnimationModule().getCastingAbility();
                 if (ability != null) {
                     // do spell casting
-                    if (ability.hasCastingParticles()) {
-                        ParticleAnimation anim = ParticleAnimationManager.getAnimation(ability.getCastingParticles());
+                    if (ability.getAbility().hasCastingParticles()) {
+                        ParticleAnimation anim = ParticleAnimationManager.getAnimation(ability.getAbility().getCastingParticles());
                         if (anim != null) {
                             Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
                             leftPos.ifPresent(x -> anim.spawn(entityIn.getCommandSenderWorld(), x, null));
@@ -65,11 +65,11 @@ public class MKPlayerRenderer extends PlayerRenderer {
             MKCore.getPlayer(playerIn).ifPresent(data -> {
                 PlayerAnimationModule.PlayerVisualCastState state = data.getAnimationModule().getPlayerVisualCastState();
                 if (state == PlayerAnimationModule.PlayerVisualCastState.CASTING || state == PlayerAnimationModule.PlayerVisualCastState.RELEASE) {
-                    MKAbility ability = data.getAnimationModule().getCastingAbility();
+                    MKAbilityInfo ability = data.getAnimationModule().getCastingAbility();
                     if (ability != null) {
                         // do spell casting
-                        if (ability.hasCastingParticles()) {
-                            ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
+                        if (ability.getAbility().hasCastingParticles()) {
+                            ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getAbility().getCastingParticles());
                             if (anim != null) {
                                 Vec3 leftPos = getFirstPersonHandPosition(HumanoidArm.LEFT,
                                         (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));
@@ -98,11 +98,11 @@ public class MKPlayerRenderer extends PlayerRenderer {
             MKCore.getPlayer(playerIn).ifPresent(data -> {
                 PlayerAnimationModule.PlayerVisualCastState state = data.getAnimationModule().getPlayerVisualCastState();
                 if (state == PlayerAnimationModule.PlayerVisualCastState.CASTING || state == PlayerAnimationModule.PlayerVisualCastState.RELEASE) {
-                    MKAbility ability = data.getAnimationModule().getCastingAbility();
+                    MKAbilityInfo ability = data.getAnimationModule().getCastingAbility();
                     if (ability != null) {
                         // do spell casting
-                        if (ability.hasCastingParticles()) {
-                            ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
+                        if (ability.getAbility().hasCastingParticles()) {
+                            ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getAbility().getCastingParticles());
                             if (anim != null) {
                                 Vec3 leftPos = getFirstPersonHandPosition(HumanoidArm.LEFT,
                                         (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));

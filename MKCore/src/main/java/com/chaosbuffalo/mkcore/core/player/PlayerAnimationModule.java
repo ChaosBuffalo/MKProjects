@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.core.player;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -14,7 +13,7 @@ public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
     private final ParticleEffectInstanceTracker effectInstanceTracker;
     private int castAnimTimer;
     private PlayerVisualCastState playerVisualCastState;
-    private MKAbility castingAbility;
+    private MKAbilityInfo castingAbility;
 
     @Override
     public SyncComponent getSyncComponent() {
@@ -48,7 +47,7 @@ public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
         return playerData;
     }
 
-    public MKAbility getCastingAbility() {
+    public MKAbilityInfo getCastingAbility() {
         return castingAbility;
     }
 
@@ -76,11 +75,11 @@ public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
 
     public void startCast(MKAbilityInfo abilityInfo) {
         playerVisualCastState = PlayerVisualCastState.CASTING;
-        castingAbility = abilityInfo.getAbility();
+        castingAbility = abilityInfo;
     }
 
-    public void endCast(MKAbility ability) {
-        castingAbility = ability;
+    public void endCast(MKAbilityInfo abilityInfo) {
+        castingAbility = abilityInfo;
         playerVisualCastState = PlayerVisualCastState.RELEASE;
         castAnimTimer = 15;
     }

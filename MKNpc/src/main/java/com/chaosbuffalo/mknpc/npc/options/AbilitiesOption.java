@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -29,7 +30,11 @@ public class AbilitiesOption extends WorldPermanentOption {
     }
 
     public AbilitiesOption withAbilityOption(MKAbility ability, int priority, double chance) {
-        addAbilityEntry(new NpcAbilityEntry(ability.getAbilityId(), priority, chance));
+        return withAbilityOption(ability.getDefaultInstance(), priority, chance);
+    }
+
+    public AbilitiesOption withAbilityOption(MKAbilityInfo abilityInfo, int priority, double chance) {
+        addAbilityEntry(new NpcAbilityEntry(abilityInfo, priority, chance));
         return this;
     }
 

@@ -64,17 +64,29 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.furious_brooding",
+          "ability": {
+            "type": "mkultra:ability.furious_brooding",
+            "id": "mkultra:ability.furious_brooding",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.whirlwind_blades",
+          "ability": {
+            "type": "mkultra:ability.whirlwind_blades",
+            "id": "mkultra:ability.whirlwind_blades",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.yank",
+          "ability": {
+            "type": "mkultra:ability.yank",
+            "id": "mkultra:ability.yank",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 2
         }

@@ -42,32 +42,56 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.fire_armor",
+          "ability": {
+            "type": "mkultra:ability.fire_armor",
+            "id": "mkultra:ability.fire_armor",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 5
         },
         {
-          "abilityName": "mkultra:ability.fireball",
+          "ability": {
+            "type": "mkultra:ability.fireball",
+            "id": "mkultra:ability.fireball",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 6
         },
         {
-          "abilityName": "mkultra:ability.ember",
+          "ability": {
+            "type": "mkultra:ability.ember",
+            "id": "mkultra:ability.ember",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.ignite",
+          "ability": {
+            "type": "mkultra:ability.ignite",
+            "id": "mkultra:ability.ignite",
+            "sources": []
+          },
           "chance": 0.5,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.flame_wave",
+          "ability": {
+            "type": "mkultra:ability.flame_wave",
+            "id": "mkultra:ability.flame_wave",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.warp_curse",
+          "ability": {
+            "type": "mkultra:ability.warp_curse",
+            "id": "mkultra:ability.warp_curse",
+            "sources": []
+          },
           "chance": 0.5,
           "priority": 4
         }

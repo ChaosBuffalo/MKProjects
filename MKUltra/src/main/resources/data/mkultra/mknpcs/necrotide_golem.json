@@ -30,12 +30,20 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.shadow_bolt",
+          "ability": {
+            "type": "mkultra:ability.shadow_bolt",
+            "id": "mkultra:ability.shadow_bolt",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.necrotide_golem_beam",
+          "ability": {
+            "type": "mkultra:ability.necrotide_golem_beam",
+            "id": "mkultra:ability.necrotide_golem_beam",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 1
         }

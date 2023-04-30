@@ -124,9 +124,9 @@ public class MKPlayerData implements IMKEntityData {
     }
 
     private void completeAbility(MKAbilityInfo abilityInfo) {
-        animationModule.endCast(abilityInfo.getAbility());
+        animationModule.endCast(abilityInfo);
         if (isServerSide()) {
-            getSkills().onCastAbility(abilityInfo.getAbility());
+            getSkills().onCastAbility(abilityInfo);
         }
     }
 

@@ -65,12 +65,20 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.sever_tendon",
+          "ability": {
+            "type": "mkultra:ability.sever_tendon",
+            "id": "mkultra:ability.sever_tendon",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.ember",
+          "ability": {
+            "type": "mkultra:ability.ember",
+            "id": "mkultra:ability.ember",
+            "sources": []
+          },
           "chance": 0.5,
           "priority": 2
         }

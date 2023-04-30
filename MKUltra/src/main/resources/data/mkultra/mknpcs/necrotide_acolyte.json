@@ -30,17 +30,29 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.shadow_bolt",
+          "ability": {
+            "type": "mkultra:ability.shadow_bolt",
+            "id": "mkultra:ability.shadow_bolt",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.drown",
+          "ability": {
+            "type": "mkultra:ability.drown",
+            "id": "mkultra:ability.drown",
+            "sources": []
+          },
           "chance": 0.5,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.shadow_pulse",
+          "ability": {
+            "type": "mkultra:ability.shadow_pulse",
+            "id": "mkultra:ability.shadow_pulse",
+            "sources": []
+          },
           "chance": 0.5,
           "priority": 3
         }

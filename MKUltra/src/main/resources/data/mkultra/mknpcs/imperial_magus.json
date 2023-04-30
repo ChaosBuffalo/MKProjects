@@ -65,37 +65,65 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.fireball",
+          "ability": {
+            "type": "mkultra:ability.fireball",
+            "id": "mkultra:ability.fireball",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.flame_wave",
+          "ability": {
+            "type": "mkultra:ability.flame_wave",
+            "id": "mkultra:ability.flame_wave",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 6
         },
         {
-          "abilityName": "mkultra:ability.smite",
+          "ability": {
+            "type": "mkultra:ability.smite",
+            "id": "mkultra:ability.smite",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 4
         },
         {
-          "abilityName": "mkultra:ability.fire_armor",
+          "ability": {
+            "type": "mkultra:ability.fire_armor",
+            "id": "mkultra:ability.fire_armor",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 5
         },
         {
-          "abilityName": "mkultra:ability.heal",
+          "ability": {
+            "type": "mkultra:ability.heal",
+            "id": "mkultra:ability.heal",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.natures_remedy",
+          "ability": {
+            "type": "mkultra:ability.natures_remedy",
+            "id": "mkultra:ability.natures_remedy",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.power_word_summon",
+          "ability": {
+            "type": "mkultra:ability.power_word_summon",
+            "id": "mkultra:ability.power_word_summon",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 7
         }

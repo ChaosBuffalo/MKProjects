@@ -52,12 +52,20 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.natures_remedy",
+          "ability": {
+            "type": "mkultra:ability.natures_remedy",
+            "id": "mkultra:ability.natures_remedy",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.sever_tendon",
+          "ability": {
+            "type": "mkultra:ability.sever_tendon",
+            "id": "mkultra:ability.sever_tendon",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 3
         }

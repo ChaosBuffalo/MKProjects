@@ -1,15 +1,14 @@
 package com.chaosbuffalo.mknpc.npc;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public class NpcAbilityEntry implements INBTSerializable<CompoundTag> {
-    private ResourceLocation abilityName;
+    private MKAbilityInfo abilityInfo;
     private int priority;
     private double chance;
 
@@ -18,12 +17,11 @@ public class NpcAbilityEntry implements INBTSerializable<CompoundTag> {
         chance = 1.0;
     }
 
-    public NpcAbilityEntry(ResourceLocation abilityName, int priority, double chance) {
+    public NpcAbilityEntry(MKAbilityInfo abilityInfo, int priority, double chance) {
         this.priority = priority;
-        this.abilityName = abilityName;
+        this.abilityInfo = abilityInfo;
         this.chance = chance;
     }
-
 
     public void setPriority(int priority) {
         this.priority = priority;
@@ -37,17 +35,12 @@ public class NpcAbilityEntry implements INBTSerializable<CompoundTag> {
         return chance;
     }
 
-    public void setAbilityName(ResourceLocation abilityName) {
-        this.abilityName = abilityName;
-    }
-
-    public ResourceLocation getAbilityName() {
-        return abilityName;
+    public MKAbilityInfo getAbilityInfo() {
+        return abilityInfo;
     }
 
     public <D> void deserialize(Dynamic<D> dynamic) {
-        abilityName = dynamic.get("abilityName").asString().result().map(ResourceLocation::new)
-                .orElse(MKCoreRegistry.INVALID_ABILITY);
+        abilityInfo = MKAbilityInfo.deserialize(dynamic.get("ability"));
         chance = dynamic.get("chance").asDouble(1.0);
         priority = dynamic.get("priority").asInt(1);
     }
@@ -56,14 +49,14 @@ public class NpcAbilityEntry implements INBTSerializable<CompoundTag> {
         return ops.createMap(ImmutableMap.of(
                 ops.createString("priority"), ops.createInt(getPriority()),
                 ops.createString("chance"), ops.createDouble(getChance()),
-                ops.createString("abilityName"), ops.createString(getAbilityName().toString())
+                ops.createString("ability"), abilityInfo.serialize(ops)
         ));
     }
 
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-        tag.putString("abilityName", getAbilityName().toString());
+        tag.put("ability", abilityInfo.serializeWithId());
         tag.putInt("priority", getPriority());
         tag.putDouble("chance", getChance());
         return tag;
@@ -71,7 +64,7 @@ public class NpcAbilityEntry implements INBTSerializable<CompoundTag> {
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
-        abilityName = new ResourceLocation(nbt.getString("abilityName"));
+        abilityInfo = MKAbilityInfo.fromIdTag(nbt.getCompound("ability"));
         priority = nbt.getInt("priority");
         chance = nbt.getDouble("chance");
     }

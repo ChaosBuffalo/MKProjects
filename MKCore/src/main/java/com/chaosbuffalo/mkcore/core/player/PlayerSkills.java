@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
@@ -73,8 +74,8 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         }
     }
 
-    public void onCastAbility(MKAbility cast) {
-        for (Attribute attribute : cast.getSkillAttributes()) {
+    public void onCastAbility(MKAbilityInfo abilityInfo) {
+        for (Attribute attribute : abilityInfo.getAbility().getSkillAttributes()) {
             tryIncreaseSkill(attribute);
         }
     }

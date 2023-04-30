@@ -55,12 +55,20 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.fireball",
+          "ability": {
+            "type": "mkultra:ability.fireball",
+            "id": "mkultra:ability.fireball",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.ember",
+          "ability": {
+            "type": "mkultra:ability.ember",
+            "id": "mkultra:ability.ember",
+            "sources": []
+          },
           "chance": 0.5,
           "priority": 2
         }

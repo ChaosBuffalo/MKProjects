@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.client.render.renderers;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
@@ -14,7 +14,6 @@ import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
@@ -158,10 +157,10 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
         super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
         MKEntity.VisualCastState castState = entityIn.getVisualCastState();
         if (castState == MKEntity.VisualCastState.CASTING || castState == MKEntity.VisualCastState.RELEASE) {
-            MKAbility ability = entityIn.getCastingAbility();
+            MKAbilityInfo ability = entityIn.getCastingAbility();
             if (ability != null) {
-                if (ability.hasCastingParticles()) {
-                    ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
+                if (ability.getAbility().hasCastingParticles()) {
+                    ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getAbility().getCastingParticles());
                     if (anim != null) {
                         Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
                         leftPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, null));

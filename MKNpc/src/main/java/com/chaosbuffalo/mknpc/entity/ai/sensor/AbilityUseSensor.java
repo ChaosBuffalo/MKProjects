@@ -29,7 +29,7 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
 
     @Override
     protected void doTick(@Nonnull ServerLevel worldIn, MKEntity entityIn) {
-        Optional<MKAbility> abilityOptional = entityIn.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get());
+        Optional<MKAbilityInfo> abilityOptional = entityIn.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get());
         int timeOut = entityIn.getBrain().getMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT.get()).orElse(0);
         boolean isCasting = MKCore.getEntityData(entityIn).map(data -> data.getAbilityExecutor().isCasting()).orElse(false);
         if (abilityOptional.isPresent() && !isCasting && timeOut <= 20) {
@@ -50,7 +50,7 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
                 if (mkAbility.isValidTarget(entityIn, targetSelection.getTargetEntity())) {
                     entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_TARGET.get(), targetSelection.getTargetEntity());
                     entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_POSITION_TARGET.get(), new TargetUtil.LivingOrPosition(targetSelection.getTargetEntity()));
-                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get(), mkAbility);
+                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get(), ability);
                     entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
                             entityIn.getMovementStrategy(targetSelection));
                     entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get(), targetSelection.getTargetEntity());

@@ -79,17 +79,29 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.ember",
+          "ability": {
+            "type": "mkultra:ability.ember",
+            "id": "mkultra:ability.ember",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.fireball",
+          "ability": {
+            "type": "mkultra:ability.fireball",
+            "id": "mkultra:ability.fireball",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.flame_wave",
+          "ability": {
+            "type": "mkultra:ability.flame_wave",
+            "id": "mkultra:ability.flame_wave",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 3
         }

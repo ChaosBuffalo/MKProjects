@@ -217,21 +217,11 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     }
 
     private boolean validateAbilityForSlot(int index, ResourceLocation abilityId) {
-        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-        if (ability == null) {
-            // not an ability
-            return false;
-        }
-
         if (requiresAbilityKnown() && !playerData.getAbilities().knowsAbility(abilityId)) {
             MKCore.LOGGER.error("setSlot({}, {}, {}) - player does not know ability!", groupId, index, abilityId);
             return false;
         }
 
-        if (!groupId.fitsAbilityType(ability.getType())) {
-            MKCore.LOGGER.error("setSlot({}, {}, {}) - ability does not fit in group", groupId, index, abilityId);
-            return false;
-        }
         return true;
     }
 

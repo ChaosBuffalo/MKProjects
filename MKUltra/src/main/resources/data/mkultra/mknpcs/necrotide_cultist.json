@@ -26,22 +26,38 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.shadow_bolt",
+          "ability": {
+            "type": "mkultra:ability.shadow_bolt",
+            "id": "mkultra:ability.shadow_bolt",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.drown",
+          "ability": {
+            "type": "mkultra:ability.drown",
+            "id": "mkultra:ability.drown",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.shadow_pulse",
+          "ability": {
+            "type": "mkultra:ability.shadow_pulse",
+            "id": "mkultra:ability.shadow_pulse",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.necrotide_warrior_summon",
+          "ability": {
+            "type": "mkultra:ability.necrotide_warrior_summon",
+            "id": "mkultra:ability.necrotide_warrior_summon",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 4
         }

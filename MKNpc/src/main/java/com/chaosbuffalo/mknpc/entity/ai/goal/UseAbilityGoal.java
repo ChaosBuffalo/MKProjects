@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.BrainAbilityContext;
 import com.chaosbuffalo.mknpc.MKNpc;
@@ -17,7 +17,7 @@ import java.util.Optional;
 public class UseAbilityGoal extends Goal {
     public static final int CAN_SEE_TIMEOUT = 30;
     private final MKEntity entity;
-    private MKAbility currentAbility;
+    private MKAbilityInfo currentAbility;
     private LivingEntity target;
     private int ticksSinceSeenTarget;
 
@@ -34,7 +34,7 @@ public class UseAbilityGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        Optional<MKAbility> abilityOptional = entity.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get());
+        Optional<MKAbilityInfo> abilityOptional = entity.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get());
         Optional<LivingEntity> target = entity.getBrain().getMemory(MKAbilityMemories.ABILITY_TARGET.get());
         if (abilityOptional.isPresent() && target.isPresent()) {
             currentAbility = abilityOptional.get();
@@ -58,14 +58,14 @@ public class UseAbilityGoal extends Goal {
         }
     }
 
-    protected boolean isInRange(MKAbility ability, LivingEntity target) {
-        float range = ability.getDistance(entity);
+    protected boolean isInRange(MKAbilityInfo ability, LivingEntity target) {
+        float range = ability.getAbility().getDistance(entity, ability);
         return target.distanceToSqr(entity) <= range * range;
     }
 
     public boolean canActivate() {
         return entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY)
-                .map(entityData -> entityData.getAbilityExecutor().canActivateAbility(currentAbility.getDefaultInstance()))
+                .map(entityData -> entityData.getAbilityExecutor().canActivateAbility(currentAbility))
                 .orElse(false);
     }
 
@@ -89,9 +89,9 @@ public class UseAbilityGoal extends Goal {
             entity.getLookControl().setLookAt(target, 50.0f, 50.0f);
         }
         AbilityContext context = new BrainAbilityContext(entity);
-        MKNpc.LOGGER.debug("ai {} casting {} on {}", entity, currentAbility.getAbilityId(), target);
+        MKNpc.LOGGER.debug("ai {} casting {} on {}", entity, currentAbility.getId(), target);
         entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY)
-                .ifPresent(entityData -> entityData.getAbilityExecutor().executeAbilityWithContext(currentAbility.getAbilityId(), context));
+                .ifPresent(entityData -> entityData.getAbilityExecutor().executeAbilityInfoWithContext(currentAbility, context));
     }
 
     @Override

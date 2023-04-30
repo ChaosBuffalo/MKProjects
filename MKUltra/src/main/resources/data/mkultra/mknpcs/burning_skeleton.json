@@ -86,17 +86,29 @@
               "optionType": "mknpc:temp_abilities",
               "options": [
                 {
-                  "abilityName": "mkultra:ability.fire_armor",
+                  "ability": {
+                    "type": "mkultra:ability.fire_armor",
+                    "id": "mkultra:ability.fire_armor",
+                    "sources": []
+                  },
                   "chance": 1.0,
                   "priority": 3
                 },
                 {
-                  "abilityName": "mkultra:ability.fireball",
+                  "ability": {
+                    "type": "mkultra:ability.fireball",
+                    "id": "mkultra:ability.fireball",
+                    "sources": []
+                  },
                   "chance": 1.0,
                   "priority": 2
                 },
                 {
-                  "abilityName": "mkultra:ability.wrath_beam",
+                  "ability": {
+                    "type": "mkultra:ability.wrath_beam",
+                    "id": "mkultra:ability.wrath_beam",
+                    "sources": []
+                  },
                   "chance": 1.0,
                   "priority": 1
                 }
@@ -111,12 +123,20 @@
               "optionType": "mknpc:temp_abilities",
               "options": [
                 {
-                  "abilityName": "mkultra:ability.fireball",
+                  "ability": {
+                    "type": "mkultra:ability.fireball",
+                    "id": "mkultra:ability.fireball",
+                    "sources": []
+                  },
                   "chance": 1.0,
                   "priority": 3
                 },
                 {
-                  "abilityName": "mkultra:ability.wrath_beam_flurry",
+                  "ability": {
+                    "type": "mkultra:ability.wrath_beam_flurry",
+                    "id": "mkultra:ability.wrath_beam_flurry",
+                    "sources": []
+                  },
                   "chance": 1.0,
                   "priority": 1
                 }

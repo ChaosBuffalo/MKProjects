@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueUtils;
 import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
@@ -20,7 +19,6 @@ import com.chaosbuffalo.mkcore.sync.EntityUpdateEngine;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
-import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
@@ -85,7 +83,6 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 
-@SuppressWarnings("EntityConstructor")
 public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, IUpdateEngineProvider, IMKPet, ITargetingOwner {
     private static final EntityDataAccessor<String> LOOK_STYLE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Float> SCALE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
@@ -94,7 +91,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private final SyncComponent animSync = new SyncComponent("anim");
     private int castAnimTimer;
     private VisualCastState visualCastState;
-    private MKAbility castingAbility;
+    private MKAbilityInfo castingAbility;
     private double lungeSpeed;
     private NonCombatMoveType nonCombatMoveType;
     private CombatMoveType combatMoveType;
@@ -642,13 +639,13 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return castAnimTimer;
     }
 
-    public MKAbility getCastingAbility() {
+    public MKAbilityInfo getCastingAbility() {
         return castingAbility;
     }
 
     public void startCast(MKAbilityInfo abilityInfo) {
         visualCastState = VisualCastState.CASTING;
-        castingAbility = abilityInfo.getAbility();
+        castingAbility = abilityInfo;
     }
 
     public void returnToDefaultMovementState() {
@@ -661,7 +658,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     public void endCast(MKAbilityInfo abilityInfo) {
-        castingAbility = abilityInfo.getAbility();
+        castingAbility = abilityInfo;
         visualCastState = VisualCastState.RELEASE;
         castAnimTimer = 15;
     }

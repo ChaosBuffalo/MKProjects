@@ -1,9 +1,7 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
 import com.chaosbuffalo.mkcore.CoreCapabilities;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
 import net.minecraft.nbt.CompoundTag;
@@ -31,18 +29,18 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
     @Override
     public void applyToEntity(Entity entity) {
         if (entity instanceof LivingEntity livingEntity) {
-            livingEntity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((cap) -> {
+            livingEntity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent(cap -> {
                 List<ResourceLocation> toUnlearn = new ArrayList<>();
                 for (MKAbilityInfo ability : cap.getAbilities().getAllAbilities()) {
                     toUnlearn.add(ability.getId());
                 }
-                for (ResourceLocation loc : toUnlearn) {
-                    cap.getAbilities().unlearnAbility(loc, AbilitySource.TRAINED);
+                for (ResourceLocation abilityId : toUnlearn) {
+                    cap.getAbilities().unlearnAbility(abilityId, AbilitySource.TRAINED);
                 }
                 for (NpcAbilityEntry entry : abilities) {
-                    MKAbility ability = MKCoreRegistry.getAbility(entry.getAbilityName());
-                    if (ability != null) {
-                        cap.getAbilities().learnAbility(ability, entry.getPriority());
+                    MKAbilityInfo abilityInfo = entry.getAbilityInfo();
+                    if (abilityInfo != null) {
+                        cap.getAbilities().learnAbility(abilityInfo, entry.getPriority());
                     }
                 }
             });

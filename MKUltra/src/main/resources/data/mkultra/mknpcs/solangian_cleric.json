@@ -117,27 +117,47 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.heal",
+          "ability": {
+            "type": "mkultra:ability.heal",
+            "id": "mkultra:ability.heal",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.smite",
+          "ability": {
+            "type": "mkultra:ability.smite",
+            "id": "mkultra:ability.smite",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.galvanize",
+          "ability": {
+            "type": "mkultra:ability.galvanize",
+            "id": "mkultra:ability.galvanize",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.power_word_summon",
+          "ability": {
+            "type": "mkultra:ability.power_word_summon",
+            "id": "mkultra:ability.power_word_summon",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 4
         },
         {
-          "abilityName": "mkultra:ability.inspire",
+          "ability": {
+            "type": "mkultra:ability.inspire",
+            "id": "mkultra:ability.inspire",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 5
         }

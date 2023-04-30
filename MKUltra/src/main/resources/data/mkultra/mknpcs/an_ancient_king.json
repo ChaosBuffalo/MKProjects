@@ -47,32 +47,56 @@
       "optionType": "mknpc:abilities",
       "options": [
         {
-          "abilityName": "mkultra:ability.natures_remedy",
+          "ability": {
+            "type": "mkultra:ability.natures_remedy",
+            "id": "mkultra:ability.natures_remedy",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.sever_tendon",
+          "ability": {
+            "type": "mkultra:ability.sever_tendon",
+            "id": "mkultra:ability.sever_tendon",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.heal",
+          "ability": {
+            "type": "mkultra:ability.heal",
+            "id": "mkultra:ability.heal",
+            "sources": []
+          },
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.power_word_summon",
+          "ability": {
+            "type": "mkultra:ability.power_word_summon",
+            "id": "mkultra:ability.power_word_summon",
+            "sources": []
+          },
           "chance": 0.5,
           "priority": 4
         },
         {
-          "abilityName": "mkultra:ability.explosive_growth",
+          "ability": {
+            "type": "mkultra:ability.explosive_growth",
+            "id": "mkultra:ability.explosive_growth",
+            "sources": []
+          },
           "chance": 0.5,
           "priority": 5
         },
         {
-          "abilityName": "mkultra:ability.fireball",
+          "ability": {
+            "type": "mkultra:ability.fireball",
+            "id": "mkultra:ability.fireball",
+            "sources": []
+          },
           "chance": 0.5,
           "priority": 6
         }
