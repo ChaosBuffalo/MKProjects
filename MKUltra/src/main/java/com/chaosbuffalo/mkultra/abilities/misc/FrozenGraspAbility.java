@@ -8,7 +8,9 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.description.AbilityDescriptions;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
-import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.effects.OnHitEffect;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -22,6 +24,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -69,6 +72,16 @@ public class FrozenGraspAbility extends MKAbility {
         return MKUSounds.spell_dark_4.get();
     }
 
+
+    private final Vec3 YP = new Vec3(0.0, 1.0, 0.0);
+    public MKEffectBuilder<?> onHitEffect(OnHitEffect.OnHitCallbackData args) {
+        int dur = getBuffDuration(args.entityData, args.instance.getSkillLevel(),
+                baseDuration.value(), scaleDuration.value());
+        MKParticles.spawn(args.target, YP, hitParticles.getValue());
+        return MKUEffects.FROZEN_GRASP.get().builder(args.entityData.getEntity())
+                .skillLevel(args.instance.getSkillLevel()).timed(dur);
+    }
+
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
         float level = skillSupplier.apply(MKAttributes.NECROMANCY);
@@ -89,7 +102,6 @@ public class FrozenGraspAbility extends MKAbility {
         super.endCast(castingEntity, casterData, context, skillSupplier);
         float level = skillSupplier.apply(MKAttributes.NECROMANCY);
         casterData.getEffects().addEffect(FrozenGraspEffect.applierFrom(castingEntity,
-                selfDuration.value() * GameConstants.TICKS_PER_SECOND, getBuffDuration(casterData,
-                        level, baseDuration.value(), scaleDuration.value()), maxStacks.value(), hitParticles.getValue()));
+                selfDuration.value() * GameConstants.TICKS_PER_SECOND, maxStacks.value()));
     }
 }

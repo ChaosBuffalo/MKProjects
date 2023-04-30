@@ -1,11 +1,9 @@
 package com.chaosbuffalo.mkultra.effects;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.*;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -20,13 +18,10 @@ public class FrozenGraspEffect extends MKEffect {
     private static final UUID castingUUID = UUID.fromString("c06a3740-5c18-4063-b807-84ef4cb3e931");
     private static final UUID attackUUID = UUID.fromString("32faca56-9979-4546-afbb-83f7075592a2");
 
-    public static MKEffectBuilder<?> applierFrom(LivingEntity source, int duration, int onHitDuration, int maxStacks,
-                                                 ResourceLocation particles) {
+    public static MKEffectBuilder<?> applierFrom(LivingEntity source, int duration, int maxStacks) {
         return MKUEffects.FROZEN_GRASP_APPLIER.get().builder(source)
                 .state(s -> {
                     s.setMaxStacks(maxStacks);
-                    s.setDuration(onHitDuration);
-                    s.setEffectParticles(particles);
                 }).setBaseStackCount(maxStacks).timed(duration);
     }
 
