@@ -1,8 +1,9 @@
 package com.chaosbuffalo.mkcore.core.damage;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
+import com.chaosbuffalo.mkcore.effects.triggers.LivingHurtEntityTriggers;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.network.CritMessagePacket;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -23,13 +24,6 @@ public abstract class MKDamageSource extends DamageSource {
     protected Entity immediateSource;
     protected float modifierScaling = 1.0f;
     protected boolean suppressTriggers;
-
-    public enum Origination {
-        MK_ABILITY,
-        DAMAGE_TYPE
-    }
-
-    public abstract Origination getOrigination();
 
     @Override
     @Nullable
@@ -57,6 +51,8 @@ public abstract class MKDamageSource extends DamageSource {
         return false;
     }
 
+    public abstract void sendCritMessage(LivingEntity livingTarget, LivingEntity livingSource, float newDamage);
+
     public static class EffectDamage extends MKDamageSource {
 
         @Nullable
@@ -70,11 +66,6 @@ public abstract class MKDamageSource extends DamageSource {
         @Nullable
         public String getDamageTypeName() {
             return damageTypeName;
-        }
-
-        @Override
-        public Origination getOrigination() {
-            return Origination.DAMAGE_TYPE;
         }
 
         @Nonnull
@@ -97,11 +88,19 @@ public abstract class MKDamageSource extends DamageSource {
             }
             return comp;
         }
+
+        @Override
+        public void sendCritMessage(LivingEntity livingTarget, LivingEntity livingSource, float newDamage) {
+            LivingHurtEntityTriggers.sendCritPacket(livingTarget, livingSource,
+                    new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage,
+                            getMKDamageType(), getDamageTypeName()));
+        }
     }
 
     public static class AbilityDamage extends MKDamageSource {
         @Nullable
         private final ResourceLocation abilityId;
+        private final Component abilityName;
 
         private AbilityDamage(Level level, MKDamageType damageType,
                               @Nullable Entity immediateSource,
@@ -109,6 +108,16 @@ public abstract class MKDamageSource extends DamageSource {
                               @Nullable ResourceLocation abilityId) {
             super(level, damageType, immediateSource, trueSource);
             this.abilityId = abilityId;
+            abilityName = abilityId != null ? Component.translatable(abilityId.toLanguageKey()) : Component.literal("an ability"); // FIXME: this is useless
+        }
+
+        private AbilityDamage(Level level, MKDamageType damageType,
+                              @Nullable Entity immediateSource,
+                              @Nullable Entity trueSource,
+                              MKAbilityInfo abilityInfo) {
+            super(level, damageType, immediateSource, trueSource);
+            this.abilityName = abilityInfo.getAbilityName();
+            abilityId = abilityInfo.getId();
         }
 
         @Nullable
@@ -116,31 +125,25 @@ public abstract class MKDamageSource extends DamageSource {
             return abilityId;
         }
 
-        @Override
-        public Origination getOrigination() {
-            return Origination.MK_ABILITY;
-        }
-
         @Nonnull
         @Override
         public Component getLocalizedDeathMessage(LivingEntity killedEntity) {
-            // FIXME: better message
-            MutableComponent comp = Component.translatable("%s got dropped", killedEntity.getDisplayName());
+            MutableComponent msg = Component.empty();
+            msg.append(killedEntity.getDisplayName());
+            msg.append(" was killed by ");
+            msg.append(abilityName);
             if (trueSource != null) {
-                comp.append(" by ").append(trueSource.getDisplayName());
-            } else {
-                comp.append(" anonymously");
+                msg.append(" from ").append(trueSource.getDisplayName());
             }
-            if (abilityId != null) {
-                MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-                if (ability != null) {
-                    comp.append(" by ability ").append(ability.getAbilityName());
-                }
-            }
-            if (damageType != null) {
-                comp.append(" with some major ").append(damageType.getDisplayName());
-            }
-            return comp;
+            return msg;
+        }
+
+        @Override
+        public void sendCritMessage(LivingEntity livingTarget, LivingEntity livingSource,
+                                    float newDamage) {
+            LivingHurtEntityTriggers.sendCritPacket(livingTarget, livingSource,
+                    new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage,
+                            abilityName, getMKDamageType()));
         }
     }
 
@@ -181,6 +184,16 @@ public abstract class MKDamageSource extends DamageSource {
     }
 
     public static MKDamageSource causeAbilityDamage(Level level, MKDamageType damageType,
+                                                    MKAbilityInfo abilityId,
+                                                    @Nullable Entity immediateSource,
+                                                    @Nullable Entity trueSource) {
+        if (damageType.equals(CoreDamageTypes.MeleeDamage.get())) {
+            return causeMeleeDamage(level, abilityId, immediateSource, trueSource);
+        }
+        return new AbilityDamage(level, damageType, immediateSource, trueSource, abilityId);
+    }
+
+    public static MKDamageSource causeAbilityDamage(Level level, MKDamageType damageType,
                                                     ResourceLocation abilityId,
                                                     @Nullable Entity immediateSource,
                                                     @Nullable Entity trueSource,
@@ -204,10 +217,17 @@ public abstract class MKDamageSource extends DamageSource {
     }
 
 
+    @Deprecated
     public static MKDamageSource causeMeleeDamage(Level level, ResourceLocation abilityId,
                                                   @Nullable Entity immediateSource,
                                                   @Nullable Entity trueSource) {
         return new AbilityDamage(level, CoreDamageTypes.MeleeDamage.get(), immediateSource, trueSource, abilityId);
+    }
+
+    public static MKDamageSource causeMeleeDamage(Level level, MKAbilityInfo abilityInfo,
+                                                  @Nullable Entity immediateSource,
+                                                  @Nullable Entity trueSource) {
+        return new AbilityDamage(level, CoreDamageTypes.MeleeDamage.get(), immediateSource, trueSource, abilityInfo);
     }
 
     public static MKDamageSource causeMeleeDamage(Level level, ResourceLocation abilityId,

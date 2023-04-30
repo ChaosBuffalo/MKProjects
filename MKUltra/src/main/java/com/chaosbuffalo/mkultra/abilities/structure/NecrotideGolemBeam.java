@@ -82,10 +82,10 @@ public class NecrotideGolemBeam extends StructureAbility {
             builder.setBlock(Blocks.SOUL_LANTERN);
             MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_dark_1.get(),
                             castingEntity.getSoundSource())
-                    .ability(this);
+                    .ability(abilityInfo);
             MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
                             base.value(), scale.value(), modifierScaling.value())
-                    .ability(this)
+                    .ability(abilityInfo)
                     .skillLevel(skillLevel);
             castingEntity.getLevel().setBlockAndUpdate(pos, Blocks.SOUL_LANTERN.defaultBlockState());
             builder.setRange(10.0f)

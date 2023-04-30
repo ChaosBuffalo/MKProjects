@@ -109,17 +109,17 @@ public class MKDamageType {
     }
 
     public Component getAbilityCritMessage(LivingEntity source, LivingEntity target, float damage,
-                                           MKAbility ability, boolean isSelf) {
+                                           Component abilityName, boolean isSelf) {
         MutableComponent msg;
         if (isSelf) {
             msg = Component.translatable("mkcore.crit.ability.self",
-                    ability.getAbilityName(),
+                    abilityName,
                     target.getDisplayName(),
                     Math.round(damage));
         } else {
             msg = Component.translatable("mkcore.crit.ability.other",
                     source.getDisplayName(),
-                    ability.getAbilityName(),
+                    abilityName,
                     target.getDisplayName(),
                     Math.round(damage));
         }

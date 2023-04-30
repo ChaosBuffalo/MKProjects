@@ -58,18 +58,18 @@ public class PhoenixAspectAbility extends MKAbility {
         int duration = (BASE_DURATION + DURATION_SCALE * level) * GameConstants.TICKS_PER_SECOND;
 //        duration = PlayerFormulas.applyBuffDurationBonus(data, duration);
         MKEffectBuilder<?> flying = MKTestEffects.PHOENIX_ASPECT.get().builder(castingEntity)
-                .ability(this)
+                .ability(abilityInfo)
                 .timed(duration)
                 .amplify(level);
         MKEffectBuilder<?> feather = FeatherFallEffect.from(castingEntity)
-                .ability(this)
+                .ability(abilityInfo)
                 .timed(duration + 10 * GameConstants.TICKS_PER_SECOND)
                 .amplify(level);
         MKEffectBuilder<?> particlePotion = MKOldParticleEffect.from(castingEntity,
                         ParticleTypes.FIREWORK,
                         ParticleEffects.DIRECTED_SPOUT, false, new Vec3(1.0, 1.5, 1.0),
                         new Vec3(0.0, 1.0, 0.0), 40, 5, 1.0)
-                .ability(this);
+                .ability(abilityInfo);
 
         AreaEffectBuilder.createOnCaster(castingEntity)
                 .effect(flying, getTargetContext())

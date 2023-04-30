@@ -70,21 +70,21 @@ public class FuriousBroodingAbility extends MKAbility {
         return MKUSounds.spell_negative_effect_7.get();
     }
 
-    public MKEffectBuilder<?> createFuriousBroodingEffect(IMKEntityData casterData, float level) {
+    public MKEffectBuilder<?> createFuriousBroodingEffect(IMKEntityData casterData, MKAbilityInfo abilityInfo, float level) {
         int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
         return FuriousBroodingEffect.from(casterData.getEntity(), baseValue.value(), scaleValue.value(),
                         modifierScaling.value(), tick_particles.getValue())
-                .ability(this)
+                .ability(abilityInfo)
                 .skillLevel(level)
                 .timed(duration);
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.PNEUMA);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(castingEntity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.PNEUMA);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            MKEffectBuilder<?> heal = createFuriousBroodingEffect(casterData, level).ability(this);
+            MKEffectBuilder<?> heal = createFuriousBroodingEffect(casterData, abilityInfo, level);
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> targetData.getEffects().addEffect(heal));
 
             MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), tick_particles.getValue());

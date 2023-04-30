@@ -84,19 +84,19 @@ public class SeverTendonAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.PANKRATION);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(entity, data, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(data, MKAttributes.PANKRATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.MeleeDamage.get(),
                             base.value(), scale.value(), modifierScaling.value())
-                    .ability(this)
+                    .ability(abilityInfo)
                     .skillLevel(level);
 
 
             int dur = getBuffDuration(data, level, baseDuration.value(), scaleDuration.value());
             MKEffectBuilder<?> severTendon = SeverTendonEffect.from(entity, baseDot.value(), scaleDot.value(), dotModifierScaling.value())
-                    .ability(this)
+                    .ability(abilityInfo)
                     .timed(dur)
                     .skillLevel(level);
 

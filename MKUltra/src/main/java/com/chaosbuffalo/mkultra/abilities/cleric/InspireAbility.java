@@ -87,9 +87,9 @@ public class InspireAbility extends MKAbility {
         MobEffectInstance hasteEffect = new MobEffectInstance(MobEffects.DIG_SPEED, duration, oldAmp, false, false);
         MobEffectInstance regenEffect = new MobEffectInstance(MobEffects.REGENERATION, duration, oldAmp, false, false);
         MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_holy_8.get(), castingEntity.getSoundSource())
-                .ability(this);
+                .ability(abilityInfo);
         MKEffectBuilder<?> particles = MKParticleEffect.from(castingEntity, cast_particles.getValue(), true, new Vec3(0.0, 1.0, 0.0))
-                .ability(this);
+                .ability(abilityInfo);
 
         AreaEffectBuilder.createOnCaster(castingEntity)
                 .effect(hasteEffect, getTargetContext())

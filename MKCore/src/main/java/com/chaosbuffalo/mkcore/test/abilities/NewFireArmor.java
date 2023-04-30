@@ -65,14 +65,14 @@ public class NewFireArmor extends MKAbility {
         MobEffectInstance fireResistanceEffect = new MobEffectInstance(MobEffects.FIRE_RESISTANCE, duration, level, false, true);
 
         MKEffectBuilder<?> newFireEffect = MKTestEffects.FIRE_ARMOR.get().builder(castingEntity)
-                .ability(this)
+                .ability(abilityInfo)
                 .timed(duration)
                 .amplify(level);
 
         MKEffectBuilder<?> particleEffect = MKOldParticleEffect.from(castingEntity, ParticleTypes.FLAME,
                         ParticleEffects.CIRCLE_PILLAR_MOTION, false, new Vec3(1.0, 1.0, 1.0),
                         new Vec3(0.0, 1.0, 0.0), 40, 5, .1f)
-                .ability(this)
+                .ability(abilityInfo)
                 .amplify(level);
 
         AreaEffectBuilder.createOnCaster(castingEntity)

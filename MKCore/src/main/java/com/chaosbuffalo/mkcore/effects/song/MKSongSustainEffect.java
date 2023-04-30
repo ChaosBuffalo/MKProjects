@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mkcore.effects.song;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
+import com.chaosbuffalo.mkcore.abilities.MKSongAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
@@ -40,22 +42,18 @@ public class MKSongSustainEffect extends MKEffect {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect instance) {
-            MKCore.LOGGER.info("MKSongSustainEffect.performEffect {} {}", instance, getSongAbility());
-
-//            if (entityData.getAbilityExecutor().isCasting() ||
-//                    !entityData.getStats().consumeMana(ability.getSustainEffectManaCost(playerData))) {
-//                entity.removePotionEffect(this);
-//                return;
-//            }
-
-            if (targetData instanceof MKPlayerData playerData) {
-                if (!playerData.getStats().consumeMana(getSongAbility().getSustainEffectManaCost(playerData, instance))) {
-                    // Remove the effect if you can't pay the upkeep
-                    return false;
-                }
+            MKAbilityInfo abilityInfo = getSongAbility(targetData, instance);
+            MKCore.LOGGER.info("MKSongSustainEffect.performEffect {} {}", instance, abilityInfo);
+            if (abilityInfo == null || !(abilityInfo.getAbility() instanceof MKSongAbility songAbility)) {
+                return false;
             }
 
-            MKActiveEffect pulse = getSongAbility().createPulseEffect(targetData);
+            if (!targetData.getStats().consumeMana(songAbility.getSustainEffectManaCost(targetData, instance))) {
+                // Remove the effect if you can't pay the upkeep
+                return false;
+            }
+
+            MKActiveEffect pulse = songAbility.createPulseEffect(targetData, abilityInfo);
             targetData.getEffects().addEffect(pulse);
 
             LivingEntity target = targetData.getEntity();

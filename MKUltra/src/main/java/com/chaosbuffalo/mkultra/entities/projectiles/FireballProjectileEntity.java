@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkultra.entities.projectiles;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
@@ -33,6 +34,9 @@ public class FireballProjectileEntity extends SpriteTrailProjectileEntity {
     public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_trail");
     public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_detonate");
 
+    private FireballAbility ability;
+    private MKAbilityInfo abilityInfo;
+
     public FireballProjectileEntity(EntityType<? extends Projectile> entityTypeIn,
                                     Level worldIn) {
         super(entityTypeIn, worldIn, new ItemStack(MKUItems.fireballProjectileItem.get()));
@@ -40,10 +44,17 @@ public class FireballProjectileEntity extends SpriteTrailProjectileEntity {
         setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
     }
 
+    public void setSourceAbility(FireballAbility ability, MKAbilityInfo abilityInfo) {
+        this.ability = ability;
+        this.abilityInfo = abilityInfo;
+    }
 
     @Override
     protected boolean onImpact(Entity caster, HitResult result, int amplifier) {
         if (!this.level.isClientSide && caster instanceof LivingEntity casterLiving) {
+            if (ability == null || abilityInfo == null) {
+                return false;
+            }
             SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
             SoundUtils.serverPlaySoundAtEntity(this, MKUSounds.spell_fire_4.get(), cat);
             MKParticles.spawn(this, new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES);
@@ -53,13 +64,13 @@ public class FireballProjectileEntity extends SpriteTrailProjectileEntity {
                             ability.getBaseDamage(),
                             ability.getScaleDamage(),
                             ability.getModifierScaling())
-                    .ability(ability)
+                    .ability(abilityInfo)
                     .directEntity(this)
                     .skillLevel(getSkillLevel())
                     .amplify(amplifier);
 
             MKEffectBuilder<?> fireBreak = MKUEffects.BREAK_FIRE.get().builder(casterLiving)
-                    .ability(ability)
+                    .ability(abilityInfo)
                     .directEntity(this)
                     .timed(Math.round((getSkillLevel() + 1) * GameConstants.TICKS_PER_SECOND))
                     .skillLevel(getSkillLevel())

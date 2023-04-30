@@ -79,18 +79,17 @@ public class NaturesRemedyAbility extends MKAbility {
         int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
         return NaturesRemedyEffect.from(casterData.getEntity(), baseValue.value(), scaleValue.value(),
                         modifierScaling.value(), tick_particles.getValue())
-                .ability(this)
                 .skillLevel(level)
                 .timed(duration);
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.RESTORATION);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(castingEntity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.RESTORATION);
+        MKEffectBuilder<?> heal = createNaturesRemedyEffect(casterData, level)
+                .ability(abilityInfo);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            MKEffectBuilder<?> heal = createNaturesRemedyEffect(casterData, level).ability(this);
-
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> targetData.getEffects().addEffect(heal));
 
             SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_heal_8.get(), targetEntity.getSoundSource());

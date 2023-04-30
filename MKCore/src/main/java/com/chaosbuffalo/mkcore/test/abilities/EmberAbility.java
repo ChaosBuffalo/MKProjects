@@ -74,7 +74,7 @@ public class EmberAbility extends MKAbility {
             MKCore.LOGGER.info("Ember damage {} burnTime {}", amount, burnDuration);
             targetEntity.setSecondsOnFire(burnDuration);
             targetEntity.hurt(MKDamageSource.causeAbilityDamage(targetEntity.getLevel(), CoreDamageTypes.FireDamage.get(),
-                    getAbilityId(), castingEntity, castingEntity), amount);
+                    abilityInfo, castingEntity, castingEntity), amount);
 //            SoundUtils.playSoundAtEntity(targetEntity, ModSounds.spell_fire_6);
             EntityEffectBuilder.LineEffectBuilder lineBuilder = EntityEffectBuilder.createLineEffectOnEntity(castingEntity, targetEntity,
                     new Vec3(targetEntity.getX(), targetEntity.getY(0.5), targetEntity.getZ()),

@@ -16,10 +16,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
 public class CleansingSeedAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "cleansing_seed_casting");
@@ -82,13 +80,14 @@ public class CleansingSeedAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
+    public void endCast(LivingEntity entity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(entity, casterData, context, abilityInfo);
 
-        float level = skillSupplier.apply(MKAttributes.RESTORATION);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.RESTORATION);
         CleansingSeedProjectileEntity proj = new CleansingSeedProjectileEntity(MKUEntities.CLEANSING_SEED_TYPE.get(), entity.level);
         proj.setOwner(entity);
         proj.setSkillLevel(level);
+        proj.setSourceAbility(this, abilityInfo);
         shootProjectile(proj, projectileSpeed.value(), projectileInaccuracy.value(), entity, context);
         entity.level.addFreshEntity(proj);
     }

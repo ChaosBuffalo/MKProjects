@@ -41,20 +41,20 @@ public abstract class MKSongAbility extends MKToggleAbility {
     @Override
     public void applyEffect(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
         super.applyEffect(casterData, abilityInfo);
-        applySustainEffect(casterData);
+        applySustainEffect(casterData, abilityInfo);
     }
 
-    public MKActiveEffect createSustainEffect(IMKEntityData casterData) {
+    public MKActiveEffect createSustainEffect(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
         return getSustainEffect().builder(casterData.getEntity())
-                .ability(this)
+                .ability(abilityInfo)
                 .periodic(getSustainEffectTicks())
                 .infinite()
                 .createApplication();
     }
 
-    public MKActiveEffect createPulseEffect(IMKEntityData casterData) {
+    public MKActiveEffect createPulseEffect(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
         return getPulseEffect().builder(casterData.getEntity())
-                .ability(this)
+                .ability(abilityInfo)
                 .periodic(getPulseEffectTicks())
                 .timed(getSustainEffectTicks())
                 .createApplication();
@@ -68,10 +68,10 @@ public abstract class MKSongAbility extends MKToggleAbility {
         return ParticleTypes.NOTE;
     }
 
-    protected void applySustainEffect(IMKEntityData casterData) {
+    protected void applySustainEffect(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
         MKCore.LOGGER.info("MKSongAbilityNew.applySustainEffect");
 
-        MKActiveEffect sustain = createSustainEffect(casterData);
+        MKActiveEffect sustain = createSustainEffect(casterData, abilityInfo);
         casterData.getEffects().addEffect(sustain);
 
         LivingEntity entity = casterData.getEntity();
@@ -83,7 +83,7 @@ public abstract class MKSongAbility extends MKToggleAbility {
                 entity.getLookAngle()), entity);
     }
 
-    public void addPulseAreaEffects(IMKEntityData casterData, AreaEffectBuilder addEffect) {
+    public void addPulseAreaEffects(IMKEntityData casterData, MKAbilityInfo abilityInfo, AreaEffectBuilder addEffect) {
 
     }
 

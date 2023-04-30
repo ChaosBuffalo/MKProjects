@@ -85,10 +85,10 @@ public class YaupAbility extends MKAbility {
         float level = abilityInfo.getSkillValue(casterData, MKAttributes.ARETE);
         MKEffectBuilder<?> yaup = YaupEffect.from(entity, level, getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()));
         MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_buff_attack_4.get(), entity.getSoundSource())
-                .ability(this);
+                .ability(abilityInfo);
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, tick_particles.getValue(),
                         true, new Vec3(0.0, 1.0, 0.0))
-                .ability(this);
+                .ability(abilityInfo);
 
         AreaEffectBuilder.createOnCaster(entity)
                 .effect(yaup, getTargetContext())

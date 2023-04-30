@@ -233,7 +233,7 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
     @Nullable
     @Override
     public MKAbilityInfo getAbilityInfo(ItemStack itemStack) {
-        return itemStack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY)
+        return itemStack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).resolve()
                 .map(IWeaponData::getGrantedAbility).orElse(null);
     }
 

@@ -105,10 +105,10 @@ public class ExplosiveGrowthAbility extends MKAbility {
         float damage = baseDamage.value() + scaleDamage.value() * pankrationLevel;
 
         MKEffectBuilder<?> cure = CureEffect.from(castingEntity)
-                .ability(this)
+                .ability(abilityInfo)
                 .skillLevel(restoLevel);
         MKEffectBuilder<?> remedy = MKUAbilities.NATURES_REMEDY.get().createNaturesRemedyEffect(casterData, restoLevel)
-                .ability(this);
+                .ability(abilityInfo);
 
         Vec3 look = castingEntity.getLookAngle().scale(getDistance(castingEntity, abilityInfo));
         Vec3 from = castingEntity.position().add(0, castingEntity.getEyeHeight(), 0);
@@ -128,7 +128,7 @@ public class ExplosiveGrowthAbility extends MKAbility {
                     break;
                 }
                 case ENEMY: {
-                    entHit.hurt(MKDamageSource.causeMeleeDamage(castingEntity.getLevel(), getAbilityId(), castingEntity, castingEntity), damage);
+                    entHit.hurt(MKDamageSource.causeMeleeDamage(castingEntity.getLevel(), abilityInfo, castingEntity, castingEntity), damage);
                     SoundUtils.serverPlaySoundAtEntity(entHit, MKUSounds.spell_earth_1.get(), cat);
                     break;
                 }

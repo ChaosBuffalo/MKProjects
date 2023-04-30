@@ -89,14 +89,14 @@ public class LifeSpikeAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(castingEntity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.EVOCATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
 
-            MKEffectBuilder<?> damage = VampiricDamageEffect.from(entity, CoreDamageTypes.ShadowDamage.get(),
+            MKEffectBuilder<?> damage = VampiricDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
                             base.value(), scale.value(), modifierScaling.value(), healScaling.value(), healModScaling.value())
-                    .ability(this)
+                    .ability(abilityInfo)
                     .skillLevel(level);
 
 

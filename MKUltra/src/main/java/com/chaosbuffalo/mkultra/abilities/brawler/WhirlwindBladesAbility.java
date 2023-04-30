@@ -116,13 +116,13 @@ public class WhirlwindBladesAbility extends MKAbility {
 
             MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.MeleeDamage.get(),
                             base.value(), scale.value(), modifierScaling.value() * scaling)
-                    .ability(this)
+                    .ability(abilityInfo)
                     .skillLevel(level);
             MKEffectBuilder<?> particles = MKParticleEffect.from(castingEntity,
                             cast_particles.getValue(), true, new Vec3(0.0, 1.0, 0.0))
-                    .ability(this);
+                    .ability(abilityInfo);
             MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_2.get(), castingEntity.getSoundSource())
-                    .ability(this);
+                    .ability(abilityInfo);
 
             AreaEffectBuilder.createOnCaster(castingEntity)
                     .effect(damage, getTargetContext())

@@ -16,10 +16,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
 public class SpiritBombAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_casting");
@@ -78,22 +76,23 @@ public class SpiritBombAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
-        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.NatureDamage.get(),
+    public Component getAbilityDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.NatureDamage.get(),
                 baseDamage.value(),
                 scaleDamage.value(),
-                skillSupplier.apply(MKAttributes.EVOCATION),
+                abilityInfo.getSkillValue(casterData, MKAttributes.EVOCATION),
                 modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
+    public void endCast(LivingEntity entity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(entity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.EVOCATION);
         SpiritBombProjectileEntity proj = new SpiritBombProjectileEntity(MKUEntities.SPIRIT_BOMB_TYPE.get(), entity.level);
         proj.setOwner(entity);
         proj.setSkillLevel(level);
+        proj.setSourceAbility(this, abilityInfo);
         shootProjectile(proj, projectileSpeed.value(), projectileInaccuracy.value(), entity, context);
         entity.level.addFreshEntity(proj);
     }

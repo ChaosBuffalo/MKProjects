@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.test.abilities;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKSongAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
@@ -36,10 +37,10 @@ public class NewHealSong extends MKSongAbility {
     }
 
     @Override
-    public void addPulseAreaEffects(IMKEntityData casterData, AreaEffectBuilder areaEffect) {
+    public void addPulseAreaEffects(IMKEntityData casterData, MKAbilityInfo abilityInfo, AreaEffectBuilder areaEffect) {
         MKEffectBuilder<?> effect = MKTestEffects.NEW_HEAL.get().builder(casterData.getEntity())
                 .state(s -> s.setScalingParameters(3, 1))
-                .ability(this);
+                .ability(abilityInfo);
 
         areaEffect.effect(effect, TargetingContexts.FRIENDLY);
     }

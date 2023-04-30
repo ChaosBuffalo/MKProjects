@@ -74,13 +74,13 @@ public class FireArmorAbility extends MKAbility {
         MobEffectInstance absorb = new MobEffectInstance(MobEffects.ABSORPTION, duration, oldAmp, false, false, true);
 
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, cast_particles.getValue(), true, new Vec3(0.0, 1.0, 0.0))
-                .ability(this);
+                .ability(abilityInfo);
 
         MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_fire_2.get(), entity.getSoundSource())
-                .ability(this);
+                .ability(abilityInfo);
 
         MKEffectBuilder<?> fireArmor = MKUEffects.FIRE_ARMOR.get().builder(entity)
-                .ability(this)
+                .ability(abilityInfo)
                 .timed(duration)
                 .skillLevel(level);
 

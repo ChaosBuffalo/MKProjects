@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkultra.entities.projectiles;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
@@ -36,6 +37,9 @@ public class SpiritBombProjectileEntity extends SpriteTrailProjectileEntity {
     public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_trail");
     public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_detonate");
 
+    private SpiritBombAbility ability;
+    private MKAbilityInfo abilityInfo;
+
 
     public SpiritBombProjectileEntity(EntityType<? extends Projectile> entityTypeIn,
                                       Level worldIn) {
@@ -46,6 +50,11 @@ public class SpiritBombProjectileEntity extends SpriteTrailProjectileEntity {
         setDoGroundProc(true);
         setGroundProcTime(GameConstants.TICKS_PER_SECOND);
         setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
+    }
+
+    public void setSourceAbility(SpiritBombAbility ability, MKAbilityInfo abilityInfo) {
+        this.ability = ability;
+        this.abilityInfo = abilityInfo;
     }
 
     @Override
@@ -89,12 +98,14 @@ public class SpiritBombProjectileEntity extends SpriteTrailProjectileEntity {
 
     private boolean doEffect(Entity caster, int amplifier) {
         if (!this.level.isClientSide && caster instanceof LivingEntity casterLiving) {
-            SpiritBombAbility ability = MKUAbilities.SPIRIT_BOMB.get();
+            if (ability == null || abilityInfo == null) {
+                return false;
+            }
             MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(casterLiving, CoreDamageTypes.NatureDamage.get(),
                             ability.getBaseDamage(),
                             ability.getScaleDamage(),
                             ability.getModifierScaling())
-                    .ability(ability)
+                    .ability(abilityInfo)
                     .directEntity(this)
                     .skillLevel(getSkillLevel())
                     .amplify(amplifier);

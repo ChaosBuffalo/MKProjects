@@ -1,7 +1,5 @@
 package com.chaosbuffalo.mkcore.effects.triggers;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -15,7 +13,6 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.ParticleEffectSpawnPacket;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -118,14 +115,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         boolean notBlocked = !wasBlocked(source);
         if (notBlocked && source.getMKDamageType().rollCrit(livingSource, livingTarget, immediate)) {
             newDamage = source.getMKDamageType().applyCritDamage(livingSource, livingTarget, immediate, newDamage);
-            switch (source.getOrigination()) {
-                case MK_ABILITY:
-                    sendAbilityCrit(livingTarget, livingSource, source, newDamage);
-                    break;
-                case DAMAGE_TYPE:
-                    sendEffectCrit(livingTarget, livingSource, source, newDamage);
-                    break;
-            }
+            source.sendCritMessage(livingTarget, livingSource, newDamage);
         }
         event.setAmount(newDamage);
 
@@ -133,32 +123,6 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
             return;
         playerHurtTriggers.forEach(f -> f.apply(event, source, livingTarget, livingSource, sourceData));
         endTrigger(livingSource, typeTag);
-    }
-
-    private void sendEffectCrit(LivingEntity livingTarget, LivingEntity livingSource, MKDamageSource source,
-                                float newDamage) {
-        if (source instanceof MKDamageSource.EffectDamage) {
-            MKDamageSource.EffectDamage effectDamage = (MKDamageSource.EffectDamage) source;
-            sendCritPacket(livingTarget, livingSource,
-                    new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage,
-                            source.getMKDamageType(), effectDamage.getDamageTypeName()));
-        }
-    }
-
-    private void sendAbilityCrit(LivingEntity livingTarget, LivingEntity livingSource, MKDamageSource source,
-                                 float newDamage) {
-        if (source instanceof MKDamageSource.AbilityDamage abilityDamage) {
-            MKAbility ability = MKCoreRegistry.getAbility(abilityDamage.getAbilityId());
-            ResourceLocation abilityName;
-            if (ability != null) {
-                abilityName = ability.getAbilityId();
-            } else {
-                abilityName = MKCoreRegistry.INVALID_ABILITY;
-            }
-            sendCritPacket(livingTarget, livingSource,
-                    new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage,
-                            abilityName, source.getMKDamageType()));
-        }
     }
 
     private void handleProjectile(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
@@ -211,7 +175,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         endTrigger(livingSource, MELEE_TAG);
     }
 
-    private static void sendCritPacket(LivingEntity livingTarget, LivingEntity livingSource,
+    public static void sendCritPacket(LivingEntity livingTarget, LivingEntity livingSource,
                                        CritMessagePacket packet) {
         PacketHandler.sendToTrackingAndSelf(packet, livingSource);
         Vec3 lookVec = livingTarget.getLookAngle();

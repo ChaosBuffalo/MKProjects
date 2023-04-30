@@ -79,12 +79,12 @@ public class GalvanizeAbility extends MKAbility {
         int oldAmp = Math.round(level);
         MobEffectInstance jump = new MobEffectInstance(MobEffects.JUMP, duration, oldAmp, false, false);
         MKEffectBuilder<?> cure = CureEffect.from(entity)
-                .ability(this)
+                .ability(abilityInfo)
                 .skillLevel(level);
         MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_buff_5.get(), entity.getSoundSource())
-                .ability(this);
+                .ability(abilityInfo);
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, cast_2_particles.getValue(), false, new Vec3(0.0, 1.0, 0.0))
-                .ability(this);
+                .ability(abilityInfo);
 
         AreaEffectBuilder.createOnCaster(entity)
                 .effect(jump, getTargetContext())

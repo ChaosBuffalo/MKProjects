@@ -92,12 +92,14 @@ public class StunningShoutAbility extends MKAbility {
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.BleedDamage.get(),
                         baseDamage.value(), scaleDamage.value(), modifierScaling.value())
                 .skillLevel(level)
-                .ability(this);
-        MKEffectBuilder<?> stun = StunEffect.from(castingEntity).ability(this).skillLevel(level).timed(
-                getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()));
+                .ability(abilityInfo);
+        MKEffectBuilder<?> stun = StunEffect.from(castingEntity)
+                .ability(abilityInfo)
+                .skillLevel(level)
+                .timed(getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()));
         MKEffectBuilder<?> particles = MKParticleEffect.from(castingEntity, tick_particles.getValue(),
                         false, new Vec3(0.0, 1.5, 0.0))
-                .ability(this);
+                .ability(abilityInfo);
 
         Vec3 look = castingEntity.getLookAngle().scale(getDistance(castingEntity, abilityInfo));
         Vec3 from = castingEntity.position().add(0, castingEntity.getEyeHeight(), 0);

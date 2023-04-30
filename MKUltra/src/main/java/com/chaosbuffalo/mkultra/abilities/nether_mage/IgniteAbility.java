@@ -27,10 +27,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.function.Function;
 
 public class IgniteAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "ignite_casting");
@@ -59,9 +56,9 @@ public class IgniteAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
-        Component valueStr = getDamageDescription(entityData,
+    public Component getAbilityDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.EVOCATION);
+        Component valueStr = getDamageDescription(casterData,
                 CoreDamageTypes.FireDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), valueStr, igniteDistance.value());
     }
@@ -92,15 +89,15 @@ public class IgniteAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
+    public void endCast(LivingEntity entity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(entity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.EVOCATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.FireDamage.get(),
                             base.value(),
                             scale.value(),
                             modifierScaling.value())
-                    .ability(this)
+                    .ability(abilityInfo)
                     .skillLevel(level);
 
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {
@@ -110,13 +107,13 @@ public class IgniteAbility extends MKAbility {
 
                 if (MKUAbilityUtils.isBurning(targetData)) {
                     MKEffectBuilder<?> ignite = IgniteEffect.from(entity, base.value(), scale.value(), modifierScaling.value())
-                            .ability(this)
+                            .ability(abilityInfo)
                             .skillLevel(level);
                     MKEffectBuilder<?> particle = MKParticleEffect.from(entity, cast_2_particles.getValue(),
                                     true, new Vec3(0.0, 1.0, 0.0))
-                            .ability(this);
+                            .ability(abilityInfo);
                     MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_fire_8.get(), entity.getSoundSource())
-                            .ability(this);
+                            .ability(abilityInfo);
 
                     AreaEffectBuilder.createOnEntity(entity, targetEntity)
                             .effect(particle, getTargetContext())
@@ -129,8 +126,8 @@ public class IgniteAbility extends MKAbility {
                             .spawn();
 
                 } else {
-                    MKEffectBuilder<?> burn = MKUAbilities.EMBER.get().getBurnCast(data, level)
-                            .ability(this);
+                    MKEffectBuilder<?> burn = MKUAbilities.EMBER.get().getBurnCast(casterData, level)
+                            .ability(abilityInfo);
                     targetData.getEffects().addEffect(burn);
 
                     MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_1_particles.getValue());

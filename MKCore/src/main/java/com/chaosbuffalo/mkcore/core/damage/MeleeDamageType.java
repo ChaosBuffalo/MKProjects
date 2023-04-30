@@ -19,7 +19,7 @@ public class MeleeDamageType extends MKDamageType {
 
     @Override
     public Component getAbilityCritMessage(LivingEntity source, LivingEntity target, float damage,
-                                           MKAbility ability, boolean isSelf) {
+                                           Component abilityName, boolean isSelf) {
         MutableComponent msg;
         if (isSelf) {
             msg = Component.translatable("mkcore.crit.melee.self",

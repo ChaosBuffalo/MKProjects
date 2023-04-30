@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.effects;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -60,6 +61,7 @@ public class MKEffectBuilder<T extends MKEffectState> {
         return skillLevel;
     }
 
+    @Deprecated
     public MKEffectBuilder<T> ability(MKAbility ability) {
         if (ability != null) {
             this.abilityId = ability.getAbilityId();
@@ -69,6 +71,11 @@ public class MKEffectBuilder<T extends MKEffectState> {
 
     public MKEffectBuilder<T> ability(ResourceLocation abilityId) {
         this.abilityId = abilityId;
+        return this;
+    }
+
+    public MKEffectBuilder<T> ability(MKAbilityInfo abilityInfo) {
+        this.abilityId = abilityInfo.getId();
         return this;
     }
 

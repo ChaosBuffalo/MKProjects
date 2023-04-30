@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mkcore.effects.song;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
+import com.chaosbuffalo.mkcore.abilities.MKSongAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
@@ -29,15 +31,19 @@ public class MKSongPulseEffect extends MKEffect {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect instance) {
-            MKCore.LOGGER.info("MKSongPulseEffect.performEffect {} {}", instance, getSongAbility());
+            MKAbilityInfo abilityInfo = getSongAbility(targetData, instance);
+            MKCore.LOGGER.info("MKSongPulseEffect.performEffect {} {}", instance, abilityInfo);
+            if (abilityInfo == null || !(abilityInfo.getAbility() instanceof MKSongAbility songAbility)) {
+                return false;
+            }
 
             AreaEffectBuilder area = AreaEffectBuilder.createOnCaster(targetData.getEntity());
-            getSongAbility().addPulseAreaEffects(targetData, area);
+            songAbility.addPulseAreaEffects(targetData, abilityInfo, area);
 
             area.instant()
-                    .particle(getSongAbility().getSongPulseParticle())
+                    .particle(songAbility.getSongPulseParticle())
                     .color(16762905)
-                    .radius(getSongAbility().getSongDistance(targetData, instance), true)
+                    .radius(songAbility.getSongDistance(targetData, instance), true)
                     .spawn();
 
             return true;

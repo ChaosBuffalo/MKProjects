@@ -69,7 +69,6 @@ public class EmberAbility extends MKAbility {
     public MKEffectBuilder<?> getBurnCast(IMKEntityData casterData, float level) {
         int burnTicks = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
         return BurnEffect.from(casterData.getEntity(), baseDot.value(), scaleDot.value(), dotModifierScaling.value(), burn_cast_particles.getValue())
-                .ability(this)
                 .skillLevel(level)
                 .timed(burnTicks);
     }
@@ -100,16 +99,16 @@ public class EmberAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(castingEntity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.EVOCATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.FireDamage.get(),
+            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.FireDamage.get(),
                             base.value(), scale.value(), modifierScaling.value())
-                    .ability(this)
+                    .ability(abilityInfo)
                     .skillLevel(level);
-            MKEffectBuilder<?> burn = getBurnCast(data, level)
-                    .ability(this)
+            MKEffectBuilder<?> burn = getBurnCast(casterData, level)
+                    .ability(abilityInfo)
                     .skillLevel(level);
 
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {

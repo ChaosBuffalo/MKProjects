@@ -2,10 +2,8 @@ package com.chaosbuffalo.mkcore.network;
 
 import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -26,7 +24,7 @@ public class CritMessagePacket {
     }
 
     private final int targetId;
-    private ResourceLocation abilityName;
+    private Component abilityName;
     private ResourceLocation damageType;
     private final float critDamage;
     private final CritType type;
@@ -52,7 +50,7 @@ public class CritMessagePacket {
     }
 
 
-    public CritMessagePacket(int targetId, int sourceId, float critDamage, ResourceLocation abilityName,
+    public CritMessagePacket(int targetId, int sourceId, float critDamage, Component abilityName,
                              MKDamageType damageType) {
         this.targetId = targetId;
         this.sourceId = sourceId;
@@ -76,7 +74,7 @@ public class CritMessagePacket {
         sourceId = pb.readInt();
         this.critDamage = pb.readFloat();
         if (type == CritType.MK_CRIT) {
-            this.abilityName = pb.readResourceLocation();
+            this.abilityName = pb.readComponent();
             this.damageType = pb.readResourceLocation();
         }
         if (type == CritType.PROJECTILE_CRIT) {
@@ -94,7 +92,7 @@ public class CritMessagePacket {
         pb.writeInt(sourceId);
         pb.writeFloat(critDamage);
         if (type == CritType.MK_CRIT) {
-            pb.writeResourceLocation(this.abilityName);
+            pb.writeComponent(abilityName);
             pb.writeResourceLocation(this.damageType);
         }
         if (type == CritType.PROJECTILE_CRIT) {
@@ -134,10 +132,10 @@ public class CritMessagePacket {
                     return;
                 }
             }
-            if (!(source instanceof LivingEntity)) {
+            if (!(source instanceof LivingEntity livingSource)) {
                 return;
             }
-            LivingEntity livingSource = (LivingEntity) source;
+            MKDamageType mkDamageType;
             switch (packet.type) {
                 case MELEE_CRIT:
                     if (isSelf) {
@@ -156,13 +154,11 @@ public class CritMessagePacket {
                     }
                     break;
                 case MK_CRIT:
-//                messageStyle.setColor(TextFormatting.AQUA);
-                    MKAbility ability = MKCoreRegistry.getAbility(packet.abilityName);
-                    MKDamageType mkDamageType = MKCoreRegistry.getDamageType(packet.damageType);
-                    if (ability == null || mkDamageType == null) {
+                    mkDamageType = MKCoreRegistry.getDamageType(packet.damageType);
+                    if (mkDamageType == null) {
                         break;
                     }
-                    player.sendSystemMessage(mkDamageType.getAbilityCritMessage(livingSource, (LivingEntity) target, packet.critDamage, ability, isSelf));
+                    player.sendSystemMessage(mkDamageType.getAbilityCritMessage(livingSource, (LivingEntity) target, packet.critDamage, packet.abilityName, isSelf));
                     break;
                 case PROJECTILE_CRIT:
                     Entity projectile = player.getCommandSenderWorld().getEntity(packet.projectileId);

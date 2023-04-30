@@ -96,14 +96,14 @@ public class FlameWaveAbility extends MKAbility {
 
         MKEffectBuilder<?> flames = FlameWaveEffect.from(entity, base.value(), scale.value(), modifierScaling.value(),
                         baseDuration.value(), scaleDuration.value(), damageBoost.value())
-                .ability(this)
+                .ability(abilityInfo)
                 .skillLevel(level);
 
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, cast_2_particles.getValue(), false, new Vec3(0.0, 1.0, 0.0))
-                .ability(this);
+                .ability(abilityInfo);
 
         MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_fire_1.get(), entity.getSoundSource())
-                .ability(this);
+                .ability(abilityInfo);
 
         AreaEffectBuilder.createOnCaster(entity)
                 .effect(flames, getTargetContext())

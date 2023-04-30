@@ -57,11 +57,11 @@ public class DrownAbility extends MKAbility {
                 dotStr, NUMBER_FORMATTER.format(convertDurationToSeconds(DrownEffect.DEFAULT_PERIOD)));
     }
 
-    public MKEffectBuilder<?> getDotEffect(IMKEntityData casterData, float level) {
+    public MKEffectBuilder<?> getDotEffect(IMKEntityData casterData, MKAbilityInfo abilityInfo, float level) {
         int durTicks = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
         return DrownEffect.from(casterData.getEntity(), baseDot.value(), scaleDot.value(),
                         dotModifierScaling.value(), tick_particles.getValue())
-                .ability(this)
+                .ability(abilityInfo)
                 .skillLevel(level)
                 .timed(durTicks);
     }
@@ -92,12 +92,13 @@ public class DrownAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.CONJURATION);
+    public void endCast(LivingEntity entity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(entity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.CONJURATION);
         DrownProjectileEntity proj = new DrownProjectileEntity(MKUEntities.DROWN_TYPE.get(), entity.level);
         proj.setOwner(entity);
         proj.setSkillLevel(level);
+        proj.setSourceAbility(this, abilityInfo);
         shootProjectile(proj, projectileSpeed.value(), projectileInaccuracy.value(), entity, context);
         entity.level.addFreshEntity(proj);
     }

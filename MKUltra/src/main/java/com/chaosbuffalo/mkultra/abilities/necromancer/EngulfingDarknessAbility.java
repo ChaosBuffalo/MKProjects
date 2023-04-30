@@ -85,7 +85,6 @@ public class EngulfingDarknessAbility extends MKAbility {
         return EngulfingDarknessEffect.from(casterData.getEntity(), baseDot.value(), scaleDot.value(),
                         dotModifierScaling.value(), getShadowbringerChance(casterData), shadowbringerDuration.value(),
                         dotCastParticles.getValue())
-                .ability(this)
                 .skillLevel(level)
                 .timed(dur);
     }
@@ -116,12 +115,12 @@ public class EngulfingDarknessAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.CONJURATION);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(castingEntity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.CONJURATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            MKEffectBuilder<?> dot = getDotCast(data, level)
-                    .ability(this)
+            MKEffectBuilder<?> dot = getDotCast(casterData, level)
+                    .ability(abilityInfo)
                     .skillLevel(level);
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {
                 targetData.getEffects().addEffect(dot);

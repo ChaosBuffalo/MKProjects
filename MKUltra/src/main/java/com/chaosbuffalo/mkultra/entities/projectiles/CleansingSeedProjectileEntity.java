@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkultra.entities.projectiles;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
@@ -10,7 +11,6 @@ import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.green_knight.CleansingSeedAbility;
 import com.chaosbuffalo.mkultra.effects.CureEffect;
-import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
 import com.chaosbuffalo.targeting_api.Targeting;
@@ -37,12 +37,19 @@ public class CleansingSeedProjectileEntity extends SpriteTrailProjectileEntity {
     public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "cleansing_seed_trail");
     public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "cleansing_seed_detonate");
 
+    private CleansingSeedAbility ability;
+    private MKAbilityInfo abilityInfo;
 
     public CleansingSeedProjectileEntity(EntityType<? extends Projectile> entityTypeIn,
                                          Level worldIn) {
         super(entityTypeIn, worldIn, new ItemStack(MKUItems.cleansingSeedProjectileItem.get()));
         setDeathTime(40);
         setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
+    }
+
+    public void setSourceAbility(CleansingSeedAbility ability, MKAbilityInfo abilityInfo) {
+        this.ability = ability;
+        this.abilityInfo = abilityInfo;
     }
 
     @Override
@@ -52,19 +59,20 @@ public class CleansingSeedProjectileEntity extends SpriteTrailProjectileEntity {
             return false;
         }
 
+        if (ability == null || abilityInfo == null) {
+            return false;
+        }
+
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
         SoundUtils.serverPlaySoundAtEntity(this, MKUSounds.spell_water_6.get(), cat);
-        if (caster instanceof LivingEntity && trace.getType() == HitResult.Type.ENTITY) {
-            LivingEntity casterLiving = (LivingEntity) caster;
+        if (caster instanceof LivingEntity casterLiving && trace.getType() == HitResult.Type.ENTITY) {
             EntityHitResult entityTrace = (EntityHitResult) trace;
-            if (entityTrace.getEntity() instanceof LivingEntity) {
-                LivingEntity target = (LivingEntity) entityTrace.getEntity();
+            if (entityTrace.getEntity() instanceof LivingEntity target) {
                 Targeting.TargetRelation relation = Targeting.getTargetRelation(caster, target);
-                CleansingSeedAbility ability = MKUAbilities.CLEANSING_SEED.get();
                 switch (relation) {
                     case FRIEND: {
                         MKEffectBuilder<?> cure = CureEffect.from(casterLiving)
-                                .ability(ability)
+                                .ability(abilityInfo)
                                 .directEntity(this)
                                 .skillLevel(getSkillLevel())
                                 .amplify(amplifier);

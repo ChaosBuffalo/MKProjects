@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkultra.entities.projectiles;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
@@ -33,6 +34,9 @@ public class ShadowBoltProjectileEntity extends SpriteTrailProjectileEntity {
     public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_trail");
     public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_detonate");
 
+    private ShadowBoltAbility ability;
+    private MKAbilityInfo abilityInfo;
+
 
     public ShadowBoltProjectileEntity(EntityType<? extends Projectile> entityTypeIn,
                                       Level worldIn) {
@@ -41,22 +45,29 @@ public class ShadowBoltProjectileEntity extends SpriteTrailProjectileEntity {
         setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
     }
 
+    public void setSourceAbility(ShadowBoltAbility ability, MKAbilityInfo abilityInfo) {
+        this.ability = ability;
+        this.abilityInfo = abilityInfo;
+    }
+
 
     @Override
     protected boolean onImpact(Entity caster, HitResult result, int amplifier) {
         if (!this.level.isClientSide && caster instanceof LivingEntity casterLiving) {
+            if (ability == null || abilityInfo == null) {
+                return false;
+            }
             SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
             SoundUtils.serverPlaySoundAtEntity(this, MKUSounds.spell_dark_8.get(), cat);
             MKParticles.spawn(this, new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES);
 
             if (result.getType().equals(HitResult.Type.ENTITY)) {
                 EntityHitResult entityTrace = (EntityHitResult) result;
-                ShadowBoltAbility ability = MKUAbilities.SHADOW_BOLT.get();
                 MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(casterLiving, CoreDamageTypes.ShadowDamage.get(),
                                 ability.getBaseDamage(),
                                 ability.getScaleDamage(),
                                 ability.getModifierScaling())
-                        .ability(ability)
+                        .ability(abilityInfo)
                         .directEntity(this)
                         .skillLevel(getSkillLevel())
                         .amplify(amplifier);

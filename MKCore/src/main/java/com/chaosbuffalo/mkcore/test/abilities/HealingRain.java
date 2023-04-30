@@ -64,7 +64,7 @@ public class HealingRain extends MKAbility {
             int level = 0;
             MKEffectBuilder<?> heal = MKTestEffects.NEW_HEAL.get().builder(castingEntity)
                     .state(s -> s.setScalingParameters(BASE_AMOUNT, AMOUNT_SCALE))
-                    .ability(this)
+                    .ability(abilityInfo)
                     .amplify(level);
             MKEffectBuilder<?> particlePotion = MKOldParticleEffect.from(castingEntity,
                             ParticleTypes.BUBBLE,
@@ -72,7 +72,7 @@ public class HealingRain extends MKAbility {
                             new Vec3(1.0, 1.0, 1.0),
                             new Vec3(0.0, 1.0, 0.0),
                             10, 0, 1.0)
-                    .ability(this);
+                    .ability(abilityInfo);
 
             float dist = getDistance(castingEntity, abilityInfo);
             AreaEffectBuilder.createOnCaster(castingEntity)
