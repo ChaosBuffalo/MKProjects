@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Lazy;
 
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
@@ -60,6 +62,11 @@ public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
 
     public EntityEffectBuilder<T> setParticles(ResourceLocation animation) {
         effect.setParticles(animation);
+        return this;
+    }
+
+    public EntityEffectBuilder<T> setDeathCallback(BiConsumer<BaseEffectEntity.DeathReason, BaseEffectEntity> consumer) {
+        effect.setDeathCallback(consumer);
         return this;
     }
 

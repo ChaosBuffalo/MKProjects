@@ -2,12 +2,14 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
+import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
 import com.chaosbuffalo.mkcore.sync.UpdateEngine;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 import javax.annotation.Nonnull;
+import java.util.Optional;
 
 public interface IMKEntityData {
 
@@ -21,6 +23,8 @@ public interface IMKEntityData {
     AbilityExecutor getAbilityExecutor();
 
     IMKAbilityKnowledge getAbilities();
+
+    Optional<ParticleEffectInstanceTracker> getParticleEffectTracker();
 
     IMKEntityStats getStats();
 

@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
 public class MKCombatFormulas {
 
     public static int applyCooldownReduction(IMKEntityData entityData, int originalCooldownTicks) {
-        final float MAX_COOLDOWN = 2.0f; // Maximum cooldown rate improvement is 200%
+        final float MAX_COOLDOWN = 2.0f;
         float cdrValue = (float) entityData.getEntity().getAttribute(MKAttributes.COOLDOWN).getValue();
         float mod = MAX_COOLDOWN - cdrValue;
         float newTicks = mod * originalCooldownTicks;
@@ -15,7 +15,7 @@ public class MKCombatFormulas {
     }
 
     public static int applyCastTimeModifier(IMKEntityData entityData, int originalCastTicks) {
-        final float MAX_RATE = 2.0f; // Maximum rate improvement is 200%
+        final float MAX_RATE = 2.0f;
         float castSpeed = (float) entityData.getEntity().getAttribute(MKAttributes.CASTING_SPEED).getValue();
         float mod = MAX_RATE - castSpeed;
         float newTicks = mod * originalCastTicks;

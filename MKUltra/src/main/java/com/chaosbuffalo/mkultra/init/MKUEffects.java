@@ -3,8 +3,11 @@ package com.chaosbuffalo.mkultra.init;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
+import com.chaosbuffalo.mkcore.effects.OnHitEffect;
+import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.effects.status.MKResistance;
 import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.abilities.misc.FrozenGraspAbility;
 import com.chaosbuffalo.mkultra.effects.*;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -92,6 +95,16 @@ public class MKUEffects {
 
     public static final RegistryObject<GreenSoulEffect> GREEN_SOUL = REGISTRY.register("effect.green_soul",
             GreenSoulEffect::new);
+
+    public static final RegistryObject<FrozenGraspEffect> FROZEN_GRASP = REGISTRY.register("effect.frozen_grasp",
+            FrozenGraspEffect::new);
+
+    public static final RegistryObject<OnHitEffect> FROZEN_GRASP_APPLIER = REGISTRY.register(
+            "effect.frozen_grasp_applier",
+            () -> new OnHitEffect((args) ->
+                    MKUAbilities.FROZEN_GRASP.get().onHitEffect(args),
+                    SpellTriggers.LIVING_HURT_ENTITY::registerMeleeEffect,
+                    FrozenGraspAbility.CAST_PARTICLES, true));
 
 
     public static void register(IEventBus modBus) {

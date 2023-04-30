@@ -110,5 +110,9 @@
   "mkultra.talent.soul_drain.name": "Soul Drain",
   "mkultra.talent.soul_drain.description": "Grants the Soul Drain passive ability.",
   "mkultra.talent.life_siphon.name": "Life Siphon",
-  "mkultra.talent.life_siphon.description": "Grants the Life Siphon passive ability."
+  "mkultra.talent.life_siphon.description": "Grants the Life Siphon passive ability.",
+  "mk_effect.mkultra.effect.frozen_grasp": "Frozen Grasp",
+  "mk_effect.mkultra.effect.frozen_grasp_applier": "Frozen Grasp (Self)",
+  "mkultra.ability.frozen_grasp.name": "Frozen Grasp",
+  "mkultra.ability.frozen_grasp.description": "Causes your next %s hits to slow the targets casting, attack, and movement speed for %s seconds."
 }

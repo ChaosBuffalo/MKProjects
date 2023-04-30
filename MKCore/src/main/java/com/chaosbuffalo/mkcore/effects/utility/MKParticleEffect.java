@@ -74,11 +74,11 @@ public class MKParticleEffect extends MKEffect {
         }
 
         @Override
-        public void deserializeStorage(CompoundTag tag) {
-            super.deserializeStorage(tag);
-            includeSelf = tag.getBoolean("includeSelf");
-            location = MKNBTUtil.readVector3(tag, "location");
-            animName = MKNBTUtil.readResourceLocation(tag, "animName");
+        public void deserializeStorage(CompoundTag stateTag) {
+            super.deserializeStorage(stateTag);
+            includeSelf = stateTag.getBoolean("includeSelf");
+            location = MKNBTUtil.readVector3(stateTag, "location");
+            animName = MKNBTUtil.readResourceLocation(stateTag, "animName");
         }
     }
 }

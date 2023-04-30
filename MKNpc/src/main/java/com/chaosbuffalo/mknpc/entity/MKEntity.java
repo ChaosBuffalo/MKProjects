@@ -190,6 +190,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             mkEntityData.attachUpdateEngine(updateEngine);
             mkEntityData.getAbilityExecutor().setStartCastCallback(this::startCast);
             mkEntityData.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
+            mkEntityData.setInstanceTracker(particleEffectTracker);
         }));
     }
 

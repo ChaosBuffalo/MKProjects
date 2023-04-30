@@ -28,6 +28,8 @@ import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -42,6 +44,13 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
     protected int tickRate = 5;
     protected int preDelay = 0;
 
+    public enum DeathReason {
+        DURATION_RAN_OUT,
+        REMOVED,
+        KILLED,
+        OWNER_NULL
+    }
+
     @Nullable
     protected SoundEvent tickSound;
 
@@ -52,6 +61,8 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
     protected LivingEntity owner;
     protected UUID ownerUniqueId;
     private IMKEntityData ownerData;
+
+    private BiConsumer<DeathReason, BaseEffectEntity> deathCallback;
 
     public static class ParticleDisplay {
         public enum DisplayType {
@@ -183,6 +194,12 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
+    protected void onDeath(BaseEffectEntity.DeathReason reason) {
+        if (deathCallback != null) {
+            deathCallback.accept(reason, this);
+        }
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -199,6 +216,10 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         if (anim != null) {
             anim.spawn(getCommandSenderWorld(), position(), null);
         }
+    }
+
+    public void setDeathCallback(BiConsumer<DeathReason, BaseEffectEntity> deathCallback) {
+        this.deathCallback = deathCallback;
     }
 
     protected void clientUpdate() {
@@ -281,11 +302,15 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
 
     protected boolean serverUpdate() {
         if (tickCount > preDelay + waitTime + duration + WAIT_LAG + 1) {
+            onDeath(DeathReason.DURATION_RAN_OUT);
             return true;
         }
         IMKEntityData entityData = getOwnerData();
-        if (entityData == null)
+        if (entityData == null){
+            onDeath(DeathReason.OWNER_NULL);
             return true;
+        }
+
 
         // lets recalc waiting to include a wait lag so that the server isnt damaging before the client responds
         boolean stillWaiting = tickCount <= preDelay + waitTime + WAIT_LAG;

@@ -4,13 +4,16 @@ import com.chaosbuffalo.mkcore.core.entity.EntityAbilityKnowledge;
 import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
 import com.chaosbuffalo.mkcore.core.entity.EntityStats;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
+import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
 import com.chaosbuffalo.mkcore.sync.UpdateEngine;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 public class MKEntityData implements IMKEntityData {
 
@@ -22,6 +25,9 @@ public class MKEntityData implements IMKEntityData {
     private final EntityEffectHandler effectHandler;
     private final EntityPetModule pets;
 
+    @Nullable
+    private ParticleEffectInstanceTracker instanceTracker = null;
+
     public MKEntityData(LivingEntity livingEntity) {
         entity = Objects.requireNonNull(livingEntity);
         knowledge = new EntityAbilityKnowledge(this);
@@ -30,6 +36,15 @@ public class MKEntityData implements IMKEntityData {
         combatExtensionModule = new CombatExtensionModule(this);
         effectHandler = new EntityEffectHandler(this);
         pets = new EntityPetModule(this);
+    }
+
+    public void setInstanceTracker(ParticleEffectInstanceTracker instanceTracker) {
+        this.instanceTracker = instanceTracker;
+    }
+
+    @Override
+    public Optional<ParticleEffectInstanceTracker> getParticleEffectTracker() {
+        return Optional.ofNullable(instanceTracker);
     }
 
     @Nonnull

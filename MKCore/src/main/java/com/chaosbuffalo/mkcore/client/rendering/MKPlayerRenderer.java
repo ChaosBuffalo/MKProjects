@@ -58,69 +58,34 @@ public class MKPlayerRenderer extends PlayerRenderer {
         });
     }
 
-    @Override
-    public void renderRightHand(PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, AbstractClientPlayer playerIn) {
-        super.renderRightHand(matrixStackIn, bufferIn, combinedLightIn, playerIn);
-        if (playerIn instanceof LocalPlayer) {
-            MKCore.getPlayer(playerIn).ifPresent(data -> {
-                PlayerAnimationModule.PlayerVisualCastState state = data.getAnimationModule().getPlayerVisualCastState();
-                if (state == PlayerAnimationModule.PlayerVisualCastState.CASTING || state == PlayerAnimationModule.PlayerVisualCastState.RELEASE) {
-                    MKAbility ability = data.getAnimationModule().getCastingAbility();
-                    if (ability != null) {
-                        // do spell casting
-                        if (ability.hasCastingParticles()) {
-                            ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
-                            if (anim != null) {
-                                Vec3 leftPos = getFirstPersonHandPosition(HumanoidArm.LEFT,
-                                        (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));
-                                anim.spawn(playerIn.getCommandSenderWorld(), leftPos, null);
-                                Vec3 rightPos = getFirstPersonHandPosition(HumanoidArm.RIGHT,
-                                        (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));
-                                anim.spawn(playerIn.getCommandSenderWorld(), rightPos, null);
-                            }
+    public void renderHandFirstPerson(AbstractClientPlayer playerIn) {
+        MKCore.getPlayer(playerIn).ifPresent(data -> {
+            PlayerAnimationModule.PlayerVisualCastState state = data.getAnimationModule().getPlayerVisualCastState();
+            if (state == PlayerAnimationModule.PlayerVisualCastState.CASTING || state == PlayerAnimationModule.PlayerVisualCastState.RELEASE) {
+                MKAbility ability = data.getAnimationModule().getCastingAbility();
+                if (ability != null) {
+                    // do spell casting
+                    if (ability.hasCastingParticles()) {
+                        ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
+                        if (anim != null) {
+                            Vec3 leftPos = getFirstPersonHandPosition(HumanoidArm.LEFT,
+                                    (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));
+                            anim.spawn(playerIn.getCommandSenderWorld(), leftPos, null);
+                            Vec3 rightPos = getFirstPersonHandPosition(HumanoidArm.RIGHT,
+                                    (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));
+                            anim.spawn(playerIn.getCommandSenderWorld(), rightPos, null);
                         }
                     }
                 }
+            }
 
 
-                data.getAnimationModule().getParticleInstances().forEach(instance -> {
-                    instance.update(playerIn, skeleton, 0.0f, getRenderOffset(playerIn, 0.0f));
-                });
+            data.getAnimationModule().getParticleInstances().forEach(instance -> {
+                instance.update(playerIn, skeleton, 0.0f, getRenderOffset(playerIn, 0.0f));
             });
-        }
-
+        });
     }
-
-    @Override
-    public void renderLeftHand(PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, AbstractClientPlayer playerIn) {
-        super.renderLeftHand(matrixStackIn, bufferIn, combinedLightIn, playerIn);
-        if (playerIn instanceof LocalPlayer) {
-            MKCore.getPlayer(playerIn).ifPresent(data -> {
-                PlayerAnimationModule.PlayerVisualCastState state = data.getAnimationModule().getPlayerVisualCastState();
-                if (state == PlayerAnimationModule.PlayerVisualCastState.CASTING || state == PlayerAnimationModule.PlayerVisualCastState.RELEASE) {
-                    MKAbility ability = data.getAnimationModule().getCastingAbility();
-                    if (ability != null) {
-                        // do spell casting
-                        if (ability.hasCastingParticles()) {
-                            ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
-                            if (anim != null) {
-                                Vec3 leftPos = getFirstPersonHandPosition(HumanoidArm.LEFT,
-                                        (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));
-                                anim.spawn(playerIn.getCommandSenderWorld(), leftPos, null);
-                                Vec3 rightPos = getFirstPersonHandPosition(HumanoidArm.RIGHT,
-                                        (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));
-                                anim.spawn(playerIn.getCommandSenderWorld(), rightPos, null);
-                            }
-                        }
-                    }
-                }
-                data.getAnimationModule().getParticleInstances().forEach(instance -> {
-                    instance.update(playerIn, skeleton, 0.0f, getRenderOffset(playerIn, 0.0f));
-                });
-            });
-        }
-    }
-
+    
     private Vec3 getOffsetSideFirstPerson(HumanoidArm handIn, float equippedProg) {
         int i = handIn == HumanoidArm.RIGHT ? 1 : -1;
         return new Vec3(i * 0.56F, -0.52F + equippedProg * -0.6F, -0.72F);
