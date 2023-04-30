@@ -32,10 +32,8 @@
         {
           "ability": {
             "type": "mkultra:ability.ember",
-            "data": {
-              "sources": []
-            },
-            "id": "mkultra:ability.ember"
+            "id": "mkultra:ability.ember",
+            "sources": []
           },
           "requirements": [
             {
@@ -48,10 +46,8 @@
         {
           "ability": {
             "type": "mkultra:ability.fire_armor",
-            "data": {
-              "sources": []
-            },
-            "id": "mkultra:ability.fire_armor"
+            "id": "mkultra:ability.fire_armor",
+            "sources": []
           },
           "requirements": [
             {

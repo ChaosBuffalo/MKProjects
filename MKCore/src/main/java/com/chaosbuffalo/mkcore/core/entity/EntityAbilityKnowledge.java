@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore.core.entity;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
@@ -110,25 +109,15 @@ public class EntityAbilityKnowledge implements IMKAbilityKnowledge, IMKSerializa
         return tag;
     }
 
-    private static MKAbilityInfo createAbilityInfo(ResourceLocation abilityId) {
-        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-        if (ability == null)
-            return null;
-
-        return ability.createAbilityInfo();
-    }
-
     @Override
     public boolean deserialize(CompoundTag tag) {
         if (tag.contains("abilities")) {
             CompoundTag abilityInfo = tag.getCompound("abilities");
             for (String key : abilityInfo.getAllKeys()) {
-                ResourceLocation loc = new ResourceLocation(key);
-                MKAbilityInfo info = createAbilityInfo(loc);
+                ResourceLocation abilityId = new ResourceLocation(key);
+                MKAbilityInfo info = MKAbilityInfo.fromTag(abilityId, abilityInfo.getCompound(key));
                 if (info != null) {
-                    if (info.deserialize(abilityInfo.getCompound(key))) {
-                        abilityInfoMap.put(loc, info);
-                    }
+                    abilityInfoMap.put(abilityId, info);
                 }
             }
         }

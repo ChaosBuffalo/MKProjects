@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKAbilityProvider;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -26,7 +25,6 @@ public class PlayerEquipment {
     };
 
     private final MKPlayerData playerData;
-    private MKAbility currentMainAbility = null;
 
     public PlayerEquipment(MKPlayerData playerData) {
         this.playerData = playerData;
@@ -56,17 +54,10 @@ public class PlayerEquipment {
     }
 
     private void handleMainHandChange(ItemStack to) {
-        // Clear the current ability if present
-        if (currentMainAbility != null) {
-            playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).clearSlot(0);
-            currentMainAbility = null;
-        }
-
         if (to.getItem() instanceof IMKAbilityProvider provider) {
-            currentMainAbility = provider.getAbility(to);
-            if (currentMainAbility != null) {
-                playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).setSlot(0, currentMainAbility.getAbilityId());
-            }
+            playerData.getLoadout().getItemGroup().setItemAbility(0, provider.getAbilityInfo(to));
+        } else {
+            playerData.getLoadout().getItemGroup().setItemAbility(0, null);
         }
     }
 

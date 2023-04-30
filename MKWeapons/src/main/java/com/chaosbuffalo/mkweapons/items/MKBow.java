@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkweapons.items;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
 import com.chaosbuffalo.mkweapons.MKWeapons;
@@ -231,9 +232,9 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
 
     @Nullable
     @Override
-    public MKAbility getAbility(ItemStack itemStack) {
-        return MKCoreRegistry.getAbility(itemStack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY)
-                .map(IWeaponData::getAbilityName).orElse(MKCoreRegistry.INVALID_ABILITY));
+    public MKAbilityInfo getAbilityInfo(ItemStack itemStack) {
+        return itemStack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY)
+                .map(IWeaponData::getGrantedAbility).orElse(null);
     }
 
     @Override

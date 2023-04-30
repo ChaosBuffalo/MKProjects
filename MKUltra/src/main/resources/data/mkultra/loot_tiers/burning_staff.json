@@ -6,7 +6,11 @@
           "lootSlot": "mkweapons:main_hand",
           "options": [
             {
-              "abilityId": "mkultra:ability.fireball",
+              "ability": {
+                "type": "mkultra:ability.fireball",
+                "id": "mkultra:ability.fireball",
+                "sources": []
+              },
               "randomizationType": "mkweapons:option.ability",
               "slotName": "mkweapons:randomization.ability",
               "weight": 1.0

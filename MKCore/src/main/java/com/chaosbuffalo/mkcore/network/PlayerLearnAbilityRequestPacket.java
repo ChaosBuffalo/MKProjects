@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEntry;
 import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainer;
 import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainingEntity;
+import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -58,11 +59,13 @@ public class PlayerLearnAbilityRequestPacket {
             if (player == null)
                 return;
 
+            MKPlayerData playerData = MKCore.getPlayerOrNull(player);
+            if (playerData == null)
+                return;
 
-            for (ResourceLocation loc : forgetting) {
-                MKAbility ability = MKCoreRegistry.getAbility(loc);
-                if (ability == null) {
-                    MKCore.LOGGER.error("Forget ability failed because ability with id {} is null for player: {}.", loc.toString(), player);
+            for (ResourceLocation abilityId : forgetting) {
+                if (!playerData.getAbilities().knowsAbility(abilityId)) {
+                    MKCore.LOGGER.error("Forget ability failed because ability with id {} is null for player: {}.", abilityId.toString(), player);
                     return;
                 }
             }
@@ -71,33 +74,31 @@ public class PlayerLearnAbilityRequestPacket {
             if (teacher instanceof IAbilityTrainingEntity trainingEntity) {
                 IAbilityTrainer abilityTrainer = trainingEntity.getAbilityTrainer();
 
-                MKCore.getPlayer(player).ifPresent(playerData -> {
-                    AbilityTrainingEntry entry = abilityTrainer.getTrainingEntry(learning);
-                    if (entry == null) {
-                        MKCore.LOGGER.error("Trainer {} does not have requested ability {}. Requested by {}", teacher, learning, player);
-                        return;
-                    }
-                    if (!entry.checkRequirements(playerData)) {
-                        MKCore.LOGGER.debug("Failed to learn ability {} from {} - unmet requirements", learning, teacher);
-                        return;
-                    }
+                AbilityTrainingEntry entry = abilityTrainer.getTrainingEntry(learning);
+                if (entry == null) {
+                    MKCore.LOGGER.error("Trainer {} does not have requested ability {}. Requested by {}", teacher, learning, player);
+                    return;
+                }
+                if (!entry.checkRequirements(playerData)) {
+                    MKCore.LOGGER.debug("Failed to learn ability {} from {} - unmet requirements", learning, teacher);
+                    return;
+                }
 
-                    int count = playerData.getAbilities().getSlotDeficitToLearnAnAbility();
-                    if (count != forgetting.size()) {
-                        MKCore.LOGGER.debug("Failed to learn ability {} from {} - a", learning, teacher);
+                int count = playerData.getAbilities().getSlotDeficitToLearnAnAbility();
+                if (count != forgetting.size()) {
+                    MKCore.LOGGER.debug("Failed to learn ability {} from {} - a", learning, teacher);
+                    return;
+                }
+                for (ResourceLocation toForget : forgetting) {
+                    if (!playerData.getAbilities().unlearnAbility(toForget, AbilitySource.TRAINED)) {
+                        MKCore.LOGGER.debug("Failed to learn ability {} from {} - provided unlearned ability for forgetting {}", learning, teacher, toForget);
                         return;
                     }
-                    for (ResourceLocation toForget : forgetting) {
-                        if (!playerData.getAbilities().unlearnAbility(toForget, AbilitySource.TRAINED)) {
-                            MKCore.LOGGER.debug("Failed to learn ability {} from {} - provided unlearned ability for forgetting {}", learning, teacher, toForget);
-                            return;
-                        }
-                    }
+                }
 
-                    if (playerData.getAbilities().learnAbility(entry.getAbility(), AbilitySource.TRAINED)) {
-                        entry.onAbilityLearned(playerData);
-                    }
-                });
+                if (playerData.getAbilities().learnAbility(entry.getAbility(), AbilitySource.TRAINED)) {
+                    entry.onAbilityLearned(playerData);
+                }
             }
         });
         ctx.setPacketHandled(true);

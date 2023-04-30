@@ -242,9 +242,9 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
 
     @Nullable
     @Override
-    public MKAbility getAbility(ItemStack itemStack) {
-        return MKCoreRegistry.getAbility(itemStack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY)
-                .map(IWeaponData::getAbilityName).orElse(MKCoreRegistry.INVALID_ABILITY));
+    public MKAbilityInfo getAbilityInfo(ItemStack itemStack) {
+        return itemStack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY)
+                .map(IWeaponData::getGrantedAbility).orElse(null);
     }
 
     @Override

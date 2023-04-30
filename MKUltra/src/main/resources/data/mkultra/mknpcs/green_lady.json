@@ -32,10 +32,8 @@
         {
           "ability": {
             "type": "mkultra:ability.skin_like_wood",
-            "data": {
-              "sources": []
-            },
-            "id": "mkultra:ability.skin_like_wood"
+            "id": "mkultra:ability.skin_like_wood",
+            "sources": []
           },
           "requirements": [
             {
@@ -48,10 +46,8 @@
         {
           "ability": {
             "type": "mkultra:ability.natures_remedy",
-            "data": {
-              "sources": []
-            },
-            "id": "mkultra:ability.natures_remedy"
+            "id": "mkultra:ability.natures_remedy",
+            "sources": []
           },
           "requirements": [
             {
@@ -64,10 +60,8 @@
         {
           "ability": {
             "type": "mkultra:ability.spirit_bomb",
-            "data": {
-              "sources": []
-            },
-            "id": "mkultra:ability.spirit_bomb"
+            "id": "mkultra:ability.spirit_bomb",
+            "sources": []
           },
           "requirements": [
             {
@@ -80,10 +74,8 @@
         {
           "ability": {
             "type": "mkultra:ability.cleansing_seed",
-            "data": {
-              "sources": []
-            },
-            "id": "mkultra:ability.cleansing_seed"
+            "id": "mkultra:ability.cleansing_seed",
+            "sources": []
           },
           "requirements": [
             {
@@ -96,10 +88,8 @@
         {
           "ability": {
             "type": "mkultra:ability.explosive_growth",
-            "data": {
-              "sources": []
-            },
-            "id": "mkultra:ability.explosive_growth"
+            "id": "mkultra:ability.explosive_growth",
+            "sources": []
           },
           "requirements": [
             {

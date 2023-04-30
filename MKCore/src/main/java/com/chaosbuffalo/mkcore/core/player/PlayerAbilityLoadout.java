@@ -64,7 +64,7 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
         if (source.placeOnBarWhenLearned()) {
             for (Map.Entry<AbilityGroupId, AbilityGroup> entry : abilityGroups.entrySet()) {
                 if (entry.getKey().fitsAbilityType(abilityInfo.getAbilityType()) &&
-                        entry.getValue().tryEquip(abilityInfo.getId())) {
+                        entry.getValue().tryEquip(abilityInfo)) {
                     break;
                 }
             }

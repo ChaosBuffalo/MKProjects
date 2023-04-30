@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.core.player.loadout;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
@@ -9,8 +8,9 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+
+import javax.annotation.Nonnull;
 
 
 public class PassiveAbilityGroup extends AbilityGroup {
@@ -25,15 +25,15 @@ public class PassiveAbilityGroup extends AbilityGroup {
     }
 
     @Override
-    protected void onAbilityAdded(ResourceLocation abilityId) {
-        super.onAbilityAdded(abilityId);
-        activatePassive(abilityId);
+    protected void onAbilityAdded(@Nonnull MKAbilityInfo abilityInfo) {
+        super.onAbilityAdded(abilityInfo);
+        activatePassive(abilityInfo);
     }
 
     @Override
-    protected void onAbilityRemoved(ResourceLocation abilityId) {
-        super.onAbilityRemoved(abilityId);
-        removePassive(abilityId);
+    protected void onAbilityRemoved(@Nonnull MKAbilityInfo abilityInfo) {
+        super.onAbilityRemoved(abilityInfo);
+        removePassive(abilityInfo);
     }
 
     @Override
@@ -58,14 +58,13 @@ public class PassiveAbilityGroup extends AbilityGroup {
         getAbilities().forEach(id -> {
             MKAbilityInfo info = playerData.getAbilities().getKnownAbility(id);
             if (info != null && info.getAbility().getSkillAttributes().contains(skill)) {
-                removePassive(id);
-                activatePassive(id);
+                removePassive(info);
+                activatePassive(info);
             }
         });
     }
 
-    private void activatePassive(ResourceLocation abilityId) {
-        MKAbilityInfo info = playerData.getAbilities().getKnownAbility(abilityId);
+    private void activatePassive(MKAbilityInfo info) {
         if (info != null && info.getAbility() instanceof MKPassiveAbility) {
             info.getAbility().executeWithContext(playerData, AbilityContext.selfTarget(playerData), info);
         }
@@ -79,12 +78,12 @@ public class PassiveAbilityGroup extends AbilityGroup {
         // Active persona passives should be caught by onJoinWorld
         // Persona switching while in-game should not go inside this branch
         if (willBeInWorld || playerData.getEntity().isAddedToWorld()) {
-            getAbilities().forEach(this::activatePassive);
+            getAbilityInfoStream().forEach(this::activatePassive);
         }
     }
 
-    private void removePassive(ResourceLocation abilityId) {
-        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
+    private void removePassive(MKAbilityInfo abilityInfo) {
+        MKAbility ability = abilityInfo.getAbility();
         if (ability instanceof MKPassiveAbility passiveAbility) {
             MKEffect passiveEffect = passiveAbility.getPassiveEffect();
             if (playerData.getEffects().isEffectActive(passiveEffect)) {
@@ -94,7 +93,6 @@ public class PassiveAbilityGroup extends AbilityGroup {
     }
 
     private void removeAllPassiveTalents() {
-        getAbilities().forEach(this::removePassive);
+        getAbilityInfoStream().forEach(this::removePassive);
     }
-
 }

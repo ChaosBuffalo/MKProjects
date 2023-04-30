@@ -22,7 +22,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class AbilityGroup implements IPlayerSyncComponentProvider {
     protected final MKPlayerData playerData;
@@ -99,17 +102,25 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
 
     }
 
+    public boolean isSlotFilled(int slot) {
+        return !getSlot(slot).equals(MKCoreRegistry.INVALID_ABILITY);
+    }
+
+    protected Stream<MKAbilityInfo> getAbilityInfoStream() {
+        return IntStream.range(0, getMaximumSlotCount()).mapToObj(this::getAbilityInfo).filter(Objects::nonNull);
+    }
+
     protected int getFirstFreeAbilitySlot() {
         return getAbilitySlot(MKCoreRegistry.INVALID_ABILITY);
     }
 
-    public boolean tryEquip(ResourceLocation abilityId) {
-        int slot = getAbilitySlot(abilityId);
+    public boolean tryEquip(MKAbilityInfo abilityInfo) {
+        int slot = getAbilitySlot(abilityInfo.getId());
         if (slot == -1) {
             // Ability was just learned so let's try to put it on the bar
             slot = getFirstFreeAbilitySlot();
             if (slot != -1 && slot < getCurrentSlotCount()) {
-                setSlot(slot, abilityId);
+                setSlot(slot, abilityInfo.getId());
                 return true;
             }
         }
@@ -133,13 +144,13 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         return MKCoreRegistry.INVALID_ABILITY;
     }
 
-    protected void onAbilityAdded(ResourceLocation abilityId) {
+    protected void onAbilityAdded(@Nonnull MKAbilityInfo abilityId) {
         MKCore.LOGGER.debug("onAbilityAdded({})", abilityId);
     }
 
-    protected void onAbilityRemoved(ResourceLocation abilityId) {
-        MKCore.LOGGER.debug("onAbilityRemoved({})", abilityId);
-        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
+    protected void onAbilityRemoved(@Nonnull MKAbilityInfo abilityInfo) {
+        MKCore.LOGGER.debug("onAbilityRemoved({})", abilityInfo);
+        MKAbility ability = abilityInfo.getAbility();
         if (ability instanceof MKToggleAbility toggleAbility) {
             toggleAbility.removeEffect(playerData);
         }
@@ -161,8 +172,11 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         // Clearing slot - no validity checks required
         if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
 //            MKCore.LOGGER.info("setSlot - clearing {} from {}", index, currentAbilityId);
+            MKAbilityInfo current = getAbilityInfo(index);
+            if (current != null) {
+                onAbilityRemoved(current);
+            }
             setIndex(index, abilityId);
-            onAbilityRemoved(currentAbilityId);
             return;
         }
 
@@ -183,14 +197,23 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         // abilityId was not slotted and is being inserted into an empty slot
         if (currentAbilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
             setIndex(index, abilityId);
-            onAbilityAdded(abilityId);
+            MKAbilityInfo newInfo = getAbilityInfo(index);
+            if (newInfo != null) {
+                onAbilityAdded(newInfo);
+            }
             return;
         }
 
         // New ability is not current slotted and is replacing an existing ability
+        MKAbilityInfo current = getAbilityInfo(index);
+        if (current != null) {
+            onAbilityRemoved(current);
+        }
         setIndex(index, abilityId);
-        onAbilityRemoved(currentAbilityId);
-        onAbilityAdded(abilityId);
+        MKAbilityInfo newInfo = getAbilityInfo(index);
+        if (newInfo != null) {
+            onAbilityAdded(newInfo);
+        }
     }
 
     private boolean validateAbilityForSlot(int index, ResourceLocation abilityId) {
@@ -325,16 +348,11 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     }
 
     private <T> void deserializeAbilityList(Dynamic<T> dynamic, BiConsumer<Integer, ResourceLocation> consumer) {
-        List<DataResult<String>> passives = dynamic.asList(Dynamic::asString);
-        for (int i = 0; i < passives.size(); i++) {
+        List<DataResult<String>> abilities = dynamic.asList(Dynamic::asString);
+        for (int i = 0; i < abilities.size(); i++) {
             int index = i;
-            passives.get(i).resultOrPartial(MKCore.LOGGER::error).ifPresent(idString -> {
-                ResourceLocation abilityId = new ResourceLocation(idString);
-                MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-                if (ability != null) {
-                    consumer.accept(index, abilityId);
-                }
-            });
+            abilities.get(i).map(ResourceLocation::tryParse).resultOrPartial(MKCore.LOGGER::error)
+                    .ifPresent(abilityId -> consumer.accept(index, abilityId));
         }
     }
 }

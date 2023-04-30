@@ -28,10 +28,8 @@
         {
           "ability": {
             "type": "mkultra:ability.heal",
-            "data": {
-              "sources": []
-            },
-            "id": "mkultra:ability.heal"
+            "id": "mkultra:ability.heal",
+            "sources": []
           },
           "requirements": [
             {
@@ -44,10 +42,8 @@
         {
           "ability": {
             "type": "mkultra:ability.smite",
-            "data": {
-              "sources": []
-            },
-            "id": "mkultra:ability.smite"
+            "id": "mkultra:ability.smite",
+            "sources": []
           },
           "requirements": [
             {
@@ -60,10 +56,8 @@
         {
           "ability": {
             "type": "mkultra:ability.galvanize",
-            "data": {
-              "sources": []
-            },
-            "id": "mkultra:ability.galvanize"
+            "id": "mkultra:ability.galvanize",
+            "sources": []
           },
           "requirements": [
             {
@@ -76,10 +70,8 @@
         {
           "ability": {
             "type": "mkultra:ability.power_word_summon",
-            "data": {
-              "sources": []
-            },
-            "id": "mkultra:ability.power_word_summon"
+            "id": "mkultra:ability.power_word_summon",
+            "sources": []
           },
           "requirements": [
             {
@@ -92,10 +84,8 @@
         {
           "ability": {
             "type": "mkultra:ability.inspire",
-            "data": {
-              "sources": []
-            },
-            "id": "mkultra:ability.inspire"
+            "id": "mkultra:ability.inspire",
+            "sources": []
           },
           "requirements": [
             {

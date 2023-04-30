@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkweapons.capabilities;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
@@ -23,6 +24,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +38,7 @@ public class WeaponDataHandler implements IWeaponData {
     private final List<IRangedWeaponEffect> rangedWeaponEffects;
     private final List<IRangedWeaponEffect> cachedRangedWeaponEffects;
     private final Map<EquipmentSlot, Multimap<Attribute, AttributeModifier>> modifiers = new HashMap<>();
-    private ResourceLocation ability;
+    private MKAbilityInfo ability;
     private boolean isCacheDirty;
 
     public WeaponDataHandler() {
@@ -45,7 +47,6 @@ public class WeaponDataHandler implements IWeaponData {
         rangedWeaponEffects = new ArrayList<>();
         cachedRangedWeaponEffects = new ArrayList<>();
         isCacheDirty = true;
-        ability = MKCoreRegistry.INVALID_ABILITY;
     }
 
     @Override
@@ -77,11 +78,16 @@ public class WeaponDataHandler implements IWeaponData {
 
     @Override
     public ResourceLocation getAbilityName() {
+        return ability != null ? ability.getId() : MKCoreRegistry.INVALID_ABILITY;
+    }
+
+    @Nullable
+    public MKAbilityInfo getGrantedAbility() {
         return ability;
     }
 
     @Override
-    public void setAbilityId(ResourceLocation ability) {
+    public void setGrantedAbility(MKAbilityInfo ability) {
         this.ability = ability;
     }
 
@@ -187,8 +193,10 @@ public class WeaponDataHandler implements IWeaponData {
             rangedEffectList.add(effect.serialize(NbtOps.INSTANCE));
         }
         nbt.put("ranged_effects", rangedEffectList);
-        ResourceLocation abilityId = getAbilityName() != null ? getAbilityName() : MKCoreRegistry.INVALID_ABILITY;
-        nbt.putString("ability_granted", abilityId.toString());
+
+        if (ability != null) {
+            nbt.put("ability_granted", ability.serializeWithId());
+        }
         return nbt;
     }
 
@@ -218,9 +226,8 @@ public class WeaponDataHandler implements IWeaponData {
                 }
             }
         }
-        ResourceLocation abilityId = new ResourceLocation(nbt.getString("ability_granted"));
-        if (!abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
-            setAbilityId(abilityId);
+        if (nbt.contains("ability_granted")) {
+            ability = MKAbilityInfo.fromIdTag(nbt.getCompound("ability_granted"));
         }
     }
 }

@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkcore.utils.MKNBTUtil;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DynamicLike;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.OptionalDynamic;
 import it.unimi.dsi.fastutil.objects.Object2FloatFunction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -125,6 +126,12 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
         return tag;
     }
 
+    public CompoundTag serializeWithId() {
+        CompoundTag tag = serialize();
+        MKNBTUtil.writeResourceLocation(tag, "id", getId());
+        return tag;
+    }
+
     @Override
     public CompoundTag serializeStorage() {
         CompoundTag tag = new CompoundTag();
@@ -179,14 +186,14 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
     }
 
     public <D> D serialize(DynamicOps<D> ops) {
-        ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
-        builder.put(ops.createString("id"), ops.createString(getId().toString()));
-        builder.put(ops.createString("type"), ops.createString(ability.getAbilityId().toString()));
-        builder.put(ops.createString("data"), NbtOps.INSTANCE.convertTo(ops, serialize()));
-        return ops.createMap(builder.build());
+        return NbtOps.INSTANCE.convertTo(ops, serializeWithId());
+//        ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
+//        builder.put(ops.createString("id"), ops.createString(getId().toString()));
+//        builder.put(ops.createString("type"), ops.createString(ability.getAbilityId().toString()));
+//        builder.put(ops.createString("data"), NbtOps.INSTANCE.convertTo(ops, serialize()));
+//        return ops.createMap(builder.build());
     }
-
-    public static <D> MKAbilityInfo deserialize(DynamicLike<D> dynamic) {
+    public static <D> MKAbilityInfo deserialize(OptionalDynamic<D> dynamic) {
         ResourceLocation id = dynamic.get("id").asString().map(ResourceLocation::tryParse).getOrThrow(false, MKCore.LOGGER::error);
         ResourceLocation abilityTypeId = dynamic.get("type").asString().map(ResourceLocation::tryParse).getOrThrow(false, MKCore.LOGGER::error);
 
@@ -207,6 +214,19 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
 
     @Nullable
     public static MKAbilityInfo fromTag(ResourceLocation abilityId, CompoundTag tag) {
+        ResourceLocation abilityTypeId = MKNBTUtil.readResourceLocation(tag, "type");
+        MKAbility ability = MKCoreRegistry.getAbility(abilityTypeId);
+        if (ability == null) {
+            return null;
+        }
+        MKAbilityInfo abilityInfo = ability.createAbilityInfo(abilityId);
+        abilityInfo.deserialize(tag);
+        return abilityInfo;
+    }
+
+    @Nullable
+    public static MKAbilityInfo fromIdTag(CompoundTag tag) {
+        ResourceLocation abilityId = MKNBTUtil.readResourceLocation(tag, "id");
         ResourceLocation abilityTypeId = MKNBTUtil.readResourceLocation(tag, "type");
         MKAbility ability = MKCoreRegistry.getAbility(abilityTypeId);
         if (ability == null) {

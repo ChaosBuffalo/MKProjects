@@ -6,7 +6,11 @@
           "lootSlot": "mkweapons:main_hand",
           "options": [
             {
-              "abilityId": "mkultra:ability.sever_tendon",
+              "ability": {
+                "type": "mkultra:ability.sever_tendon",
+                "id": "mkultra:ability.sever_tendon",
+                "sources": []
+              },
               "randomizationType": "mkweapons:option.ability",
               "slotName": "mkweapons:randomization.ability",
               "weight": 1.0

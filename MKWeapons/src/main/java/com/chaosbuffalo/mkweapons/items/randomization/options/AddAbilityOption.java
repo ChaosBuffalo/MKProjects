@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkweapons.items.randomization.options;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.IRandomizationSlot;
@@ -15,15 +15,20 @@ import net.minecraft.world.item.ItemStack;
 
 public class AddAbilityOption extends BaseRandomizationOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "option.ability");
-    private MKAbility ability;
+    private MKAbilityInfo abilityInfo;
 
     public AddAbilityOption(IRandomizationSlot slot) {
         super(NAME, slot);
     }
 
+    @Deprecated
     public AddAbilityOption(MKAbility ability, IRandomizationSlot slot) {
+        this(ability.getDefaultInstance(), slot);
+    }
+
+    public AddAbilityOption(MKAbilityInfo abilityInfo, IRandomizationSlot slot) {
         this(slot);
-        this.ability = ability;
+        this.abilityInfo = abilityInfo;
     }
 
     public AddAbilityOption() {
@@ -32,20 +37,20 @@ public class AddAbilityOption extends BaseRandomizationOption {
 
     @Override
     public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
-        stack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).ifPresent(x ->
-                x.setAbilityId(ability.getAbilityId()));
+        if (abilityInfo != null) {
+            stack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).ifPresent(x -> x.setGrantedAbility(abilityInfo));
+        }
     }
 
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
-        ability = MKCoreRegistry.getAbility(new ResourceLocation(dynamic.get("abilityId")
-                .asString(MKCoreRegistry.INVALID_ABILITY.toString())));
+        abilityInfo = MKAbilityInfo.deserialize(dynamic.get("ability"));
     }
 
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("abilityId"), ops.createString(ability.getAbilityId().toString()));
+        builder.put(ops.createString("ability"), abilityInfo.serialize(ops));
     }
 }

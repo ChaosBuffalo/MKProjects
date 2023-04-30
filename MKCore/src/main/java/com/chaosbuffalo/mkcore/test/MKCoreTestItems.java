@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.test;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKAbilityProvider;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.*;
@@ -13,6 +14,7 @@ import net.minecraftforge.registries.RegistryObject;
 import java.util.function.Supplier;
 
 import net.minecraft.world.item.Item.Properties;
+import org.jetbrains.annotations.Nullable;
 
 public class MKCoreTestItems {
 
@@ -38,9 +40,10 @@ public class MKCoreTestItems {
             this.ability = ability;
         }
 
+        @Nullable
         @Override
-        public MKAbility getAbility(ItemStack item) {
-            return ability.get();
+        public MKAbilityInfo getAbilityInfo(ItemStack itemStack) {
+            return ability.get().getDefaultInstance();
         }
     }
 
@@ -50,9 +53,10 @@ public class MKCoreTestItems {
             super(Tiers.IRON, 3, -2.4F, (new Item.Properties()));
         }
 
+        @Nullable
         @Override
-        public MKAbility getAbility(ItemStack item) {
-            return MKTestAbilities.TEST_WHIRLWIND_BLADES.get();
+        public MKAbilityInfo getAbilityInfo(ItemStack itemStack) {
+            return MKTestAbilities.TEST_WHIRLWIND_BLADES.get().getDefaultInstance();
         }
     }
 

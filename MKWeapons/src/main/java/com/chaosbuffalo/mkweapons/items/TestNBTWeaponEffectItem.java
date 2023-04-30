@@ -28,7 +28,7 @@ public class TestNBTWeaponEffectItem extends Item {
             if (playerIn.getOffhandItem().getItem() instanceof IMKMeleeWeapon) {
                 playerIn.getOffhandItem().getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).ifPresent(cap -> {
                     cap.addMeleeWeaponEffect(new StunMeleeWeaponEffect(0.5, 2));
-                    cap.setAbilityId(MKTestAbilities.TEST_EMBER.get().getAbilityId());
+                    cap.setGrantedAbility(MKTestAbilities.TEST_EMBER.get().getDefaultInstance());
                 });
                 ServerPlayer serverPlayer = (ServerPlayer) playerIn;
                 serverPlayer.connection.send(new ClientboundSetEquipmentPacket(playerIn.getId(),

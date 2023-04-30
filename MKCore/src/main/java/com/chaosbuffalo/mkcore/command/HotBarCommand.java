@@ -34,12 +34,6 @@ public class HotBarCommand {
                 .then(Commands.literal("show")
                         .then(Commands.argument("group", AbilityGroupArgument.abilityGroup())
                                 .executes(HotBarCommand::showActionBar)))
-                .then(Commands.literal("set")
-                        .then(Commands.argument("group", AbilityGroupArgument.abilityGroup())
-                                .then(Commands.argument("slot", IntegerArgumentType.integer(0, GameConstants.ACTION_BAR_SIZE))
-                                        .then(Commands.argument("abilityId", AbilityIdArgument.ability())
-                                                .suggests(HotBarCommand::suggestKnownAbilities)
-                                                .executes(HotBarCommand::setActionBar)))))
                 .then(Commands.literal("clear")
                         .then(Commands.argument("group", AbilityGroupArgument.abilityGroup())
                                 .then(Commands.argument("slot", IntegerArgumentType.integer(0, GameConstants.ACTION_BAR_SIZE))
@@ -47,11 +41,6 @@ public class HotBarCommand {
                 .then(Commands.literal("reset")
                         .then(Commands.argument("group", AbilityGroupArgument.abilityGroup())
                                 .executes(HotBarCommand::resetActionBar)))
-                .then(Commands.literal("add")
-                        .then(Commands.argument("group", AbilityGroupArgument.abilityGroup())
-                                .then(Commands.argument("abilityId", AbilityIdArgument.ability())
-                                        .suggests(HotBarCommand::suggestKnownAbilities)
-                                        .executes(HotBarCommand::addActionBar))))
                 .then(Commands.literal("slots")
                         .then(Commands.argument("group", AbilityGroupArgument.abilityGroup())
                                 .then(Commands.argument("count", IntegerArgumentType.integer())
@@ -71,41 +60,6 @@ public class HotBarCommand {
                 MKCore.LOGGER.info("Updated slot count for {}", group);
             } else {
                 MKCore.LOGGER.error("Failed to update slot count for {}", group);
-            }
-        });
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    static int setActionBar(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ServerPlayer player = ctx.getSource().getPlayerOrException();
-
-        AbilityGroupId group = ctx.getArgument("group", AbilityGroupId.class);
-        int slot = IntegerArgumentType.getInteger(ctx, "slot");
-        ResourceLocation abilityId = ctx.getArgument("abilityId", ResourceLocation.class);
-
-        MKCore.getPlayer(player).ifPresent(playerData -> {
-            PlayerAbilityKnowledge abilityKnowledge = playerData.getAbilities();
-            if (abilityKnowledge.knowsAbility(abilityId)) {
-                playerData.getLoadout().getAbilityGroup(group).setSlot(slot, abilityId);
-            }
-        });
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    static int addActionBar(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ServerPlayer player = ctx.getSource().getPlayerOrException();
-
-        AbilityGroupId group = ctx.getArgument("group", AbilityGroupId.class);
-        ResourceLocation abilityId = ctx.getArgument("abilityId", ResourceLocation.class);
-
-        MKCore.getPlayer(player).ifPresent(playerData -> {
-            PlayerAbilityKnowledge abilityKnowledge = playerData.getAbilities();
-            if (abilityKnowledge.knowsAbility(abilityId)) {
-                if (!playerData.getLoadout().getAbilityGroup(group).tryEquip(abilityId)) {
-                    ChatUtils.sendMessage(player, "No room for ability");
-                }
             }
         });
 
