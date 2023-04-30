@@ -22,11 +22,9 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
 public class FireArmorAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "fire_armor_casting");
@@ -51,10 +49,10 @@ public class FireArmorAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
-        float level = skillSupplier.apply(MKAttributes.ABJURATION);
+    public Component getAbilityDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.ABJURATION);
         float amount = MKUEffects.FIRE_ARMOR.get().getPerLevel() * (level + 1) * 100.0f;
-        int duration = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
+        int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), amount,
                 CoreDamageTypes.FireDamage.get().getFormattedDisplayName(), duration);
     }
@@ -66,10 +64,10 @@ public class FireArmorAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.ABJURATION);
-        int duration = getBuffDuration(data, level, baseDuration.value(), scaleDuration.value());
+    public void endCast(LivingEntity entity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(entity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.ABJURATION);
+        int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
 
         int oldAmp = Math.round(level);
         MobEffectInstance fireResist = new MobEffectInstance(MobEffects.FIRE_RESISTANCE, duration, oldAmp, false, false, true);
@@ -95,7 +93,7 @@ public class FireArmorAbility extends MKAbility {
                 .disableParticle()
                 .instant()
                 .color(16762905)
-                .radius(getDistance(entity), true)
+                .radius(getDistance(entity, abilityInfo), true)
                 .spawn();
     }
 

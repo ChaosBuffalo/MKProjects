@@ -43,36 +43,37 @@ public class AbilityTargeting {
             .setDescriptionKey("mkcore.ability_target.position_include_entities")
             .addDynamicDescription(AbilityDescriptions::getRangeDescription);
 
-    static AbilityContext noTarget(IMKEntityData entityData, MKAbility ability) {
+    static AbilityContext noTarget(IMKEntityData entityData, MKAbilityInfo abilityInfo) {
         return AbilityContext.EMPTY;
     }
 
-    private static AbilityContext selectSelf(IMKEntityData entityData, MKAbility ability) {
-        MKCore.LOGGER.debug("AbilityTargeting.SELF {} {}", ability.getAbilityId(), entityData.getEntity());
+    private static AbilityContext selectSelf(IMKEntityData entityData, MKAbilityInfo abilityInfo) {
+        MKCore.LOGGER.debug("AbilityTargeting.SELF {} {}", abilityInfo.getId(), entityData.getEntity());
         return AbilityContext.selfTarget(entityData);
     }
 
-    private static AbilityContext selectSingle(IMKEntityData entityData, MKAbility ability) {
+    private static AbilityContext selectSingle(IMKEntityData entityData, MKAbilityInfo abilityInfo) {
         LivingEntity targetEntity = TargetUtil.getSingleLivingTarget(entityData.getEntity(),
-                ability.getDistance(entityData.getEntity()),
-                ability::isValidTarget);
-        MKCore.LOGGER.debug("AbilityTargeting.SINGLE_TARGET {} {} {}", ability.getAbilityId(), entityData.getEntity(), targetEntity);
+                abilityInfo.getAbility().getDistance(entityData.getEntity(), abilityInfo),
+                abilityInfo.getAbility()::isValidTarget);
+        MKCore.LOGGER.debug("AbilityTargeting.SINGLE_TARGET {} {} {}", abilityInfo.getId(), entityData.getEntity(), targetEntity);
         return AbilityContext.singleTarget(targetEntity);
     }
 
-    private static AbilityContext selectSingleOrSelf(IMKEntityData entityData, MKAbility ability) {
+    private static AbilityContext selectSingleOrSelf(IMKEntityData entityData, MKAbilityInfo abilityInfo) {
         LivingEntity targetEntity = TargetUtil.getSingleLivingTargetOrSelf(entityData.getEntity(),
-                ability.getDistance(entityData.getEntity()),
-                ability::isValidTarget);
-        MKCore.LOGGER.debug("AbilityTargeting.SINGLE_TARGET_OR_SELF {} {} {}", ability.getAbilityId(),
+                abilityInfo.getAbility().getDistance(entityData.getEntity(), abilityInfo),
+                abilityInfo.getAbility()::isValidTarget);
+        MKCore.LOGGER.debug("AbilityTargeting.SINGLE_TARGET_OR_SELF {} {} {}", abilityInfo.getId(),
                 entityData.getEntity(), targetEntity);
         return AbilityContext.singleTarget(targetEntity);
     }
 
-    private static AbilityContext selectPositionIncludeEntities(IMKEntityData entityData, MKAbility ability) {
-        TargetUtil.LivingOrPosition targetPos = TargetUtil.getPositionTarget(entityData.getEntity(), ability.getDistance(entityData.getEntity()),
-                ability::isValidTarget);
-        MKCore.LOGGER.debug("AbilityTargeting.POSITION_INCLUDE_ENTITIES {} {} {}", ability.getAbilityId(),
+    private static AbilityContext selectPositionIncludeEntities(IMKEntityData entityData, MKAbilityInfo abilityInfo) {
+        TargetUtil.LivingOrPosition targetPos = TargetUtil.getPositionTarget(entityData.getEntity(),
+                abilityInfo.getAbility().getDistance(entityData.getEntity(), abilityInfo),
+                abilityInfo.getAbility()::isValidTarget);
+        MKCore.LOGGER.debug("AbilityTargeting.POSITION_INCLUDE_ENTITIES {} {} {}", abilityInfo.getId(),
                 entityData.getEntity(), targetPos != null ? targetPos : "EMPTY");
         return AbilityContext.singleOrPositionTarget(targetPos);
     }

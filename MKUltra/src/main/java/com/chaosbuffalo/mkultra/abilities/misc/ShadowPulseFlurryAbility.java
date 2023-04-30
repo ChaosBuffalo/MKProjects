@@ -27,7 +27,7 @@ public class ShadowPulseFlurryAbility extends PositionFlurryAbility {
         setCooldownSeconds(5);
         setManaCost(10);
         addSkillAttribute(MKAttributes.EVOCATION);
-        setUseCondition(new MeleeUseCondition(this));
+        setUseCondition(new MeleeUseCondition());
         casting_particles.setDefaultValue(CASTING_PARTICLES);
     }
 

@@ -74,7 +74,7 @@ public class HealingRain extends MKAbility {
                             10, 0, 1.0)
                     .ability(this);
 
-            float dist = getDistance(castingEntity);
+            float dist = getDistance(castingEntity, abilityInfo);
             AreaEffectBuilder.createOnCaster(castingEntity)
                     .effect(heal, getTargetContext())
                     .effect(particlePotion, getTargetContext())

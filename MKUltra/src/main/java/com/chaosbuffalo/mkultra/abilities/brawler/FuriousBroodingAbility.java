@@ -41,7 +41,7 @@ public class FuriousBroodingAbility extends MKAbility {
         setManaCost(6);
         addAttributes(tick_particles, baseValue, baseDuration, scaleValue, scaleDuration, modifierScaling);
         addSkillAttribute(MKAttributes.PNEUMA);
-        setUseCondition(new HealCondition(this, 0.8f).setSelfOnly(true));
+        setUseCondition(new HealCondition(0.8f).setSelfOnly(true));
     }
 
     @Override

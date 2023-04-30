@@ -63,7 +63,7 @@ public class NecrotideGolemBeam extends StructureAbility {
         setCastTime(GameConstants.TICKS_PER_SECOND * 3);
         addAttributes(pulse_particles, wait_particles, poi_name, tickRate, duration, charge_time, base, scale,
                 modifierScaling);
-        setUseCondition(new MeleeUseCondition(this));
+        setUseCondition(new MeleeUseCondition());
         addSkillAttribute(MKAttributes.NECROMANCY);
     }
 

@@ -23,11 +23,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class YaupAbility extends MKAbility {
     public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "yaup_cast");
@@ -44,7 +42,7 @@ public class YaupAbility extends MKAbility {
         setManaCost(2);
         addAttributes(baseDuration, scaleDuration, tick_particles, cast_particles);
         addSkillAttribute(MKAttributes.ARETE);
-        setUseCondition(new NeedsBuffCondition(this, MKUEffects.YAUP));
+        setUseCondition(new NeedsBuffCondition(MKUEffects.YAUP));
     }
 
     @Override
@@ -82,10 +80,10 @@ public class YaupAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.ARETE);
-        MKEffectBuilder<?> yaup = YaupEffect.from(entity, level, getBuffDuration(data, level, baseDuration.value(), scaleDuration.value()));
+    public void endCast(LivingEntity entity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(entity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.ARETE);
+        MKEffectBuilder<?> yaup = YaupEffect.from(entity, level, getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()));
         MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_buff_attack_4.get(), entity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, tick_particles.getValue(),
@@ -98,7 +96,7 @@ public class YaupAbility extends MKAbility {
                 .effect(particles, getTargetContext())
                 .instant()
                 .color(1048370)
-                .radius(getDistance(entity), true)
+                .radius(getDistance(entity, abilityInfo), true)
                 .disableParticle()
                 .spawn();
 

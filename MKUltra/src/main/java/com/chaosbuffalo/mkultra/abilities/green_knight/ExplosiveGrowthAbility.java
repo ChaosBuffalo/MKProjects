@@ -27,14 +27,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.Function;
 
 public class ExplosiveGrowthAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "explosive_growth_casting");
@@ -73,10 +71,10 @@ public class ExplosiveGrowthAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
-        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.MeleeDamage.get(), baseDamage.value(),
+    public Component getAbilityDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.MeleeDamage.get(), baseDamage.value(),
                 scaleDamage.value(),
-                skillSupplier.apply(MKAttributes.PANKRATION),
+                abilityInfo.getSkillValue(casterData, MKAttributes.PANKRATION),
                 modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
@@ -98,10 +96,10 @@ public class ExplosiveGrowthAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
-        float restoLevel = skillSupplier.apply(MKAttributes.RESTORATION);
-        float pankrationLevel = skillSupplier.apply(MKAttributes.PANKRATION);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(castingEntity, casterData, context, abilityInfo);
+        float restoLevel = abilityInfo.getSkillValue(casterData, MKAttributes.RESTORATION);
+        float pankrationLevel = abilityInfo.getSkillValue(casterData, MKAttributes.PANKRATION);
 
         SoundSource cat = castingEntity instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
         float damage = baseDamage.value() + scaleDamage.value() * pankrationLevel;
@@ -112,7 +110,7 @@ public class ExplosiveGrowthAbility extends MKAbility {
         MKEffectBuilder<?> remedy = MKUAbilities.NATURES_REMEDY.get().createNaturesRemedyEffect(casterData, restoLevel)
                 .ability(this);
 
-        Vec3 look = castingEntity.getLookAngle().scale(getDistance(castingEntity));
+        Vec3 look = castingEntity.getLookAngle().scale(getDistance(castingEntity, abilityInfo));
         Vec3 from = castingEntity.position().add(0, castingEntity.getEyeHeight(), 0);
         Vec3 to = from.add(look);
         List<LivingEntity> entityHit = TargetUtil.getTargetsInLine(castingEntity, from, to, 1.0f, this::isValidTarget);
@@ -152,5 +150,4 @@ public class ExplosiveGrowthAbility extends MKAbility {
             spawn.addLoc(pos);
         });
     }
-
 }

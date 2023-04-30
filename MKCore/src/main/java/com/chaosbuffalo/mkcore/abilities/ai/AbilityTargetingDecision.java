@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.abilities.ai;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import net.minecraft.world.entity.LivingEntity;
 
 import javax.annotation.Nullable;
@@ -17,21 +17,21 @@ public class AbilityTargetingDecision {
 
     private final LivingEntity target;
     private final MovementSuggestion movementSuggestion;
-    private final MKAbility ability;
+    private final MKAbilityInfo abilityInfo;
 
-    public AbilityTargetingDecision(LivingEntity target, MovementSuggestion movementSuggestion, MKAbility ability) {
+    public AbilityTargetingDecision(LivingEntity target, MKAbilityInfo abilityInfo, MovementSuggestion movementSuggestion) {
         this.target = target;
         this.movementSuggestion = movementSuggestion;
-        this.ability = ability;
+        this.abilityInfo = abilityInfo;
     }
 
-    public AbilityTargetingDecision(LivingEntity target, MKAbility ability) {
-        this(target, MovementSuggestion.STATIONARY, ability);
+    public AbilityTargetingDecision(LivingEntity target, MKAbilityInfo abilityInfo) {
+        this(target, abilityInfo, MovementSuggestion.STATIONARY);
     }
 
     @Nullable
-    public MKAbility getAbility() {
-        return ability;
+    public MKAbilityInfo getAbilityInfo() {
+        return abilityInfo;
     }
 
     @Nullable

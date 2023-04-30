@@ -61,7 +61,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         this.manaCost = 1;
         this.attributes = new ArrayList<>();
         this.skillAttributes = new HashSet<>();
-        setUseCondition(new StandardUseCondition(this));
+        setUseCondition(new StandardUseCondition());
         addAttribute(casting_particles);
     }
 
@@ -126,7 +126,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         consumer.accept(getManaCostDescription(casterData, abilityInfo));
         consumer.accept(getCooldownDescription(casterData, abilityInfo));
         consumer.accept(getCastTimeDescription(casterData, abilityInfo));
-        getTargetSelector().buildDescription(this, casterData, consumer);
+        getTargetSelector().buildDescription(casterData, abilityInfo, consumer);
         consumer.accept(getAbilityDescription(casterData, abilityInfo));
     }
 
@@ -240,8 +240,13 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return true;
     }
 
+    @Deprecated
     public float getDistance(LivingEntity entity) {
         return 1.0f;
+    }
+
+    public float getDistance(LivingEntity entity, MKAbilityInfo abilityInfo) {
+        return getDistance(entity);
     }
 
     protected float getMeleeReach(LivingEntity entity) {

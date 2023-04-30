@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.abilities.ai.conditions;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityDecisionContext;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
@@ -19,16 +19,14 @@ public class NeedsBuffCondition extends AbilityUseCondition {
     private boolean selfOnly;
 
 
-    public NeedsBuffCondition(MKAbility ability, MobEffect buffEffect) {
-        super(ability);
+    public NeedsBuffCondition(MobEffect buffEffect) {
         this.buffEffect = buffEffect;
         buffMKEffect = null;
         this.movementSuggestion = AbilityTargetingDecision.MovementSuggestion.FOLLOW;
         selfOnly = false;
     }
 
-    public NeedsBuffCondition(MKAbility ability, Supplier<? extends MKEffect> buffEffect) {
-        super(ability);
+    public NeedsBuffCondition(Supplier<? extends MKEffect> buffEffect) {
         this.buffEffect = null;
         buffMKEffect = buffEffect;
         this.movementSuggestion = AbilityTargetingDecision.MovementSuggestion.FOLLOW;
@@ -53,14 +51,14 @@ public class NeedsBuffCondition extends AbilityUseCondition {
 
     @Nonnull
     @Override
-    public AbilityTargetingDecision getDecision(AbilityDecisionContext context) {
-        if (getAbility().getTargetContext().canTargetCaster() && needsBuff(context.getCaster())) {
-            return new AbilityTargetingDecision(context.getCaster(), getAbility());
+    public AbilityTargetingDecision getDecision(MKAbilityInfo abilityInfo, AbilityDecisionContext context) {
+        if (abilityInfo.getAbility().getTargetContext().canTargetCaster() && needsBuff(context.getCaster())) {
+            return new AbilityTargetingDecision(context.getCaster(), abilityInfo);
         }
         if (!selfOnly) {
             for (LivingEntity friendly : context.getFriendlies()) {
                 if (needsBuff(friendly)) {
-                    return new AbilityTargetingDecision(friendly, movementSuggestion, getAbility());
+                    return new AbilityTargetingDecision(friendly, abilityInfo, movementSuggestion);
                 }
             }
         }

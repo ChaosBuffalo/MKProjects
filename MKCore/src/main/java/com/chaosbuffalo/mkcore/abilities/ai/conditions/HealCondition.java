@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.abilities.ai.conditions;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityDecisionContext;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
 import net.minecraft.world.entity.LivingEntity;
@@ -14,8 +14,7 @@ public class HealCondition extends AbilityUseCondition {
     private final AbilityTargetingDecision.MovementSuggestion movementSuggestion;
     private boolean selfOnly;
 
-    public HealCondition(MKAbility ability, float healThreshold) {
-        super(ability);
+    public HealCondition(float healThreshold) {
         this.healThreshold = healThreshold;
         this.movementSuggestion = AbilityTargetingDecision.MovementSuggestion.FOLLOW;
         selfOnly = false;
@@ -26,8 +25,8 @@ public class HealCondition extends AbilityUseCondition {
         return this;
     }
 
-    public HealCondition(MKAbility ability) {
-        this(ability, .75f);
+    public HealCondition() {
+        this(.75f);
     }
 
     private boolean needsHealing(LivingEntity entity) {
@@ -36,14 +35,14 @@ public class HealCondition extends AbilityUseCondition {
 
     @Nonnull
     @Override
-    public AbilityTargetingDecision getDecision(AbilityDecisionContext context) {
-        if (getAbility().getTargetContext().canTargetCaster() && needsHealing(context.getCaster())) {
-            return new AbilityTargetingDecision(context.getCaster(), getAbility());
+    public AbilityTargetingDecision getDecision(MKAbilityInfo abilityInfo, AbilityDecisionContext context) {
+        if (abilityInfo.getAbility().getTargetContext().canTargetCaster() && needsHealing(context.getCaster())) {
+            return new AbilityTargetingDecision(context.getCaster(), abilityInfo);
         } else if (!selfOnly) {
             List<LivingEntity> friends = context.getFriendlies();
             for (LivingEntity target : friends) {
                 if (needsHealing(target)) {
-                    return new AbilityTargetingDecision(target, movementSuggestion, getAbility());
+                    return new AbilityTargetingDecision(target, abilityInfo, movementSuggestion);
                 }
             }
         }

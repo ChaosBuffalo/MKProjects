@@ -1,10 +1,7 @@
 package com.chaosbuffalo.mkcore.test.abilities;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.NeedsBuffCondition;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKCombatFormulas;
@@ -21,10 +18,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.function.Function;
 
 public class NewFireArmor extends MKAbility {
 
@@ -36,7 +30,7 @@ public class NewFireArmor extends MKAbility {
         setCastTime(GameConstants.TICKS_PER_SECOND);
         setCooldownSeconds(135);
         setManaCost(12);
-        setUseCondition(new NeedsBuffCondition(this, MobEffects.FIRE_RESISTANCE));
+        setUseCondition(new NeedsBuffCondition(MobEffects.FIRE_RESISTANCE));
     }
 
     @Override
@@ -60,8 +54,8 @@ public class NewFireArmor extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(castingEntity, casterData, context, abilityInfo);
         int level = 1;
 
         int duration = getDuration(casterData, level);
@@ -89,7 +83,7 @@ public class NewFireArmor extends MKAbility {
                 .instant()
                 .particle(ParticleTypes.DRIPPING_LAVA)
                 .color(16762905)
-                .radius(getDistance(castingEntity), true)
+                .radius(getDistance(castingEntity, abilityInfo), true)
                 .spawn();
 
         PacketHandler.sendToTrackingAndSelf(new ParticleEffectSpawnPacket(

@@ -46,7 +46,7 @@ public class NaturesRemedyAbility extends MKAbility {
         setCastTime(GameConstants.TICKS_PER_SECOND / 2);
         addSkillAttribute(MKAttributes.RESTORATION);
         addAttributes(baseValue, scaleValue, baseDuration, scaleDuration, modifierScaling, cast_particles, tick_particles);
-        setUseCondition(new HealCondition(this, .75f));
+        setUseCondition(new HealCondition(.75f));
         casting_particles.setDefaultValue(CASTING_PARTICLES);
     }
 

@@ -534,15 +534,15 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     public MovementStrategy getMovementStrategy(AbilityTargetingDecision decision) {
-        MKAbility ability = decision.getAbility();
-        if (ability == null) {
+        MKAbilityInfo abilityInfo = decision.getAbilityInfo();
+        if (abilityInfo == null) {
             return StationaryMovementStrategy.STATIONARY_MOVEMENT_STRATEGY;
         }
         switch (decision.getMovementSuggestion()) {
             case KITE:
-                return new KiteMovementStrategy(Math.max(ability.getDistance(this) * .5, 8));
+                return new KiteMovementStrategy(Math.max(abilityInfo.getAbility().getDistance(this, abilityInfo) * .5, 8));
             case FOLLOW:
-                return new FollowMovementStrategy(1.0f, Math.round(ability.getDistance(this) / 2.0f));
+                return new FollowMovementStrategy(1.0f, Math.round(abilityInfo.getAbility().getDistance(this, abilityInfo) / 2.0f));
             case MELEE:
                 return new FollowMovementStrategy(1.0f, 1);
             case STATIONARY:

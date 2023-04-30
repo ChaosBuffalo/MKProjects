@@ -36,7 +36,7 @@ public class YankAbility extends MKAbility {
         setManaCost(4);
         addAttributes(base, scale, cast_particles);
         addSkillAttribute(MKAttributes.PANKRATION);
-        setUseCondition(new MeleeSpellInterruptUseCondition(this));
+        setUseCondition(new MeleeSpellInterruptUseCondition());
     }
 
     @Override

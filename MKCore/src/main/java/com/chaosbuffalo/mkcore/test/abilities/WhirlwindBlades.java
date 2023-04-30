@@ -18,11 +18,9 @@ import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
 public class WhirlwindBlades extends MKAbility {
     public static float BASE_DAMAGE = 2.0f;
@@ -33,7 +31,7 @@ public class WhirlwindBlades extends MKAbility {
         setCastTime(GameConstants.TICKS_PER_SECOND * 3);
         setCooldownSeconds(20);
         setManaCost(6);
-        setUseCondition(new MeleeUseCondition(this));
+        setUseCondition(new MeleeUseCondition());
     }
 
     @Override
@@ -109,7 +107,7 @@ public class WhirlwindBlades extends MKAbility {
 //                            1, getTargetType())
                     .instant()
                     .color(16409620)
-                    .radius(getDistance(castingEntity), true)
+                    .radius(getDistance(castingEntity, abilityInfo), true)
                     .particle(ParticleTypes.CRIT)
                     .spawn();
 

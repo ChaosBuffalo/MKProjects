@@ -21,10 +21,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.function.Function;
 
 public class InspireAbility extends MKAbility {
     protected final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "inspire_casting");
@@ -44,9 +41,9 @@ public class InspireAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
-        float level = skillSupplier.apply(MKAttributes.ALTERATON);
-        int duration = getBuffDuration(entityData, level, base.value(), scale.value()) / GameConstants.TICKS_PER_SECOND;
+    public Component getAbilityDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.ALTERATON);
+        int duration = getBuffDuration(casterData, level, base.value(), scale.value()) / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), duration);
     }
 
@@ -81,9 +78,9 @@ public class InspireAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.ALTERATON);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(castingEntity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.ALTERATON);
         int duration = getBuffDuration(casterData, level, base.value(), scale.value());
         int oldAmp = Math.round(level);
 
@@ -101,7 +98,7 @@ public class InspireAbility extends MKAbility {
                 .effect(particles, getTargetContext())
                 .instant()
                 .color(1034415)
-                .radius(getDistance(castingEntity), true)
+                .radius(getDistance(castingEntity, abilityInfo), true)
                 .disableParticle()
                 .spawn();
     }

@@ -43,7 +43,7 @@ public class WhirlwindBladesAbility extends MKAbility {
         setCooldownSeconds(20);
         setManaCost(6);
         addSkillAttribute(MKAttributes.PANKRATION);
-        setUseCondition(new MeleeUseCondition(this));
+        setUseCondition(new MeleeUseCondition());
     }
 
     @Override
@@ -130,7 +130,7 @@ public class WhirlwindBladesAbility extends MKAbility {
                     .effect(sound, getTargetContext())
                     .instant()
                     .color(16409620)
-                    .radius(getDistance(castingEntity), true)
+                    .radius(getDistance(castingEntity, abilityInfo), true)
                     .disableParticle()
                     .spawn();
         }

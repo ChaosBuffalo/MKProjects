@@ -35,7 +35,7 @@ public class SkinLikeWoodAbility extends MKToggleAbility {
         setManaCost(2);
         addAttributes(cast_particles);
         addSkillAttribute(MKAttributes.ABJURATION);
-        setUseCondition(new NeedsBuffCondition(this, this::getToggleEffect).setSelfOnly(true));
+        setUseCondition(new NeedsBuffCondition(this::getToggleEffect).setSelfOnly(true));
         casting_particles.setDefaultValue(CASTING_PARTICLES);
     }
 

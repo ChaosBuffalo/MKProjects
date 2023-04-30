@@ -14,13 +14,13 @@ import java.util.function.Consumer;
 
 public class AbilityTargetSelector {
 
-    private final BiFunction<IMKEntityData, MKAbility, AbilityContext> selector;
+    private final BiFunction<IMKEntityData, MKAbilityInfo, AbilityContext> selector;
     private Set<MemoryModuleType<?>> requiredMemories;
     private String descriptionKey;
-    private final List<BiFunction<MKAbility, IMKEntityData, Component>> additionalDescriptors;
+    private final List<BiFunction<MKAbilityInfo, IMKEntityData, Component>> additionalDescriptors;
     private boolean showTargetType;
 
-    public AbilityTargetSelector(BiFunction<IMKEntityData, MKAbility, AbilityContext> selector) {
+    public AbilityTargetSelector(BiFunction<IMKEntityData, MKAbilityInfo, AbilityContext> selector) {
         this.selector = selector;
         this.additionalDescriptors = new ArrayList<>();
         this.showTargetType = true;
@@ -37,7 +37,7 @@ public class AbilityTargetSelector {
         return this;
     }
 
-    public AbilityTargetSelector addDynamicDescription(BiFunction<MKAbility, IMKEntityData, Component> description) {
+    public AbilityTargetSelector addDynamicDescription(BiFunction<MKAbilityInfo, IMKEntityData, Component> description) {
         additionalDescriptors.add(description);
         return this;
     }
@@ -46,9 +46,9 @@ public class AbilityTargetSelector {
         return showTargetType;
     }
 
-    public void buildDescription(MKAbility ability, IMKEntityData casterData, Consumer<Component> consumer) {
-        consumer.accept(getDescriptionWithHeading(ability));
-        additionalDescriptors.forEach(func -> consumer.accept(func.apply(ability, casterData)));
+    public void buildDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo, Consumer<Component> consumer) {
+        consumer.accept(getDescriptionWithHeading(abilityInfo.getAbility()));
+        additionalDescriptors.forEach(func -> consumer.accept(func.apply(abilityInfo, casterData)));
     }
 
     private MutableComponent getDescriptionWithHeading(MKAbility ability) {
@@ -77,12 +77,12 @@ public class AbilityTargetSelector {
         }
     }
 
-    public BiFunction<IMKEntityData, MKAbility, AbilityContext> getSelector() {
+    public BiFunction<IMKEntityData, MKAbilityInfo, AbilityContext> getSelector() {
         return selector;
     }
 
     public AbilityContext createContext(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
-        return selector.apply(casterData, abilityInfo.getAbility());
+        return selector.apply(casterData, abilityInfo);
     }
 
     public boolean validateContext(IMKEntityData casterData, AbilityContext context) {

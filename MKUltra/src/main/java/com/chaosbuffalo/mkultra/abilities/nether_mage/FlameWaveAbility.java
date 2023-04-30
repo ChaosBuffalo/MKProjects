@@ -53,9 +53,9 @@ public class FlameWaveAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
-        Component dmgStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(), base.value(), scale.value(),
+    public Component getAbilityDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.EVOCATION);
+        Component dmgStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(), base.value(), scale.value(),
                 level, modifierScaling.value());
         int dur = Math.round(baseDuration.value() + scaleDuration.value() * level);
         float mult = damageBoost.value() * 100.0f;
@@ -90,9 +90,9 @@ public class FlameWaveAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
+    public void endCast(LivingEntity entity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(entity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.EVOCATION);
 
         MKEffectBuilder<?> flames = FlameWaveEffect.from(entity, base.value(), scale.value(), modifierScaling.value(),
                         baseDuration.value(), scaleDuration.value(), damageBoost.value())
@@ -111,7 +111,7 @@ public class FlameWaveAbility extends MKAbility {
                 .effect(sound, getTargetContext())
                 .instant()
                 .color(16737305)
-                .radius(getDistance(entity), true)
+                .radius(getDistance(entity, abilityInfo), true)
                 .disableParticle()
                 .spawn();
 

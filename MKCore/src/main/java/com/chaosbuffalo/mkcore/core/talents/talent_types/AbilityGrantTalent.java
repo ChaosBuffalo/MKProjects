@@ -39,8 +39,10 @@ public class AbilityGrantTalent extends MKTalent {
     public void describeTalent(IMKEntityData entityData, TalentRecord record, Consumer<Component> consumer) {
         super.describeTalent(entityData, record, consumer);
         MKAbilityInfo abilityInfo = getAbilityInfo();
-        consumer.accept(abilityInfo.getAbilityName());
-        abilityInfo.getAbility().buildDescription(entityData, abilityInfo, consumer);
+        if (abilityInfo != null) {
+            consumer.accept(abilityInfo.getAbilityName());
+            abilityInfo.getAbility().buildDescription(entityData, abilityInfo, consumer);
+        }
     }
 
     @Override

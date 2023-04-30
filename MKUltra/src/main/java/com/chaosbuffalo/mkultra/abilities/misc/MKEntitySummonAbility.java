@@ -42,7 +42,7 @@ public class MKEntitySummonAbility extends MKAbility {
         npcDefintion.setDefaultValue(npcDef);
         addAttribute(npcDefintion);
         setCastTime(5 * GameConstants.TICKS_PER_SECOND);
-        setUseCondition(new SummonPetCondition(this));
+        setUseCondition(new SummonPetCondition(this::getSummonSlot));
         addSkillAttribute(skillAttribute);
         summoningSkill = skillAttribute;
     }

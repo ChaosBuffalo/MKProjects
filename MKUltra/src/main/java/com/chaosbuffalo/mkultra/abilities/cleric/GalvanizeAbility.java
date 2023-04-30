@@ -22,10 +22,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.function.Function;
 
 public class GalvanizeAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "galvanize_casting");
@@ -47,9 +44,9 @@ public class GalvanizeAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
-        float level = skillSupplier.apply(MKAttributes.ABJURATION);
-        int duration = getBuffDuration(entityData, level, base.value(), scale.value()) / GameConstants.TICKS_PER_SECOND;
+    public Component getAbilityDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.ABJURATION);
+        int duration = getBuffDuration(casterData, level, base.value(), scale.value()) / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), duration);
     }
 
@@ -74,10 +71,10 @@ public class GalvanizeAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.ABJURATION);
-        int duration = getBuffDuration(data, level, base.value(), scale.value());
+    public void endCast(LivingEntity entity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(entity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.ABJURATION);
+        int duration = getBuffDuration(casterData, level, base.value(), scale.value());
 
         int oldAmp = Math.round(level);
         MobEffectInstance jump = new MobEffectInstance(MobEffects.JUMP, duration, oldAmp, false, false);
@@ -96,7 +93,7 @@ public class GalvanizeAbility extends MKAbility {
                 .effect(particles, getTargetContext())
                 .instant()
                 .color(1048370)
-                .radius(getDistance(entity), true)
+                .radius(getDistance(entity, abilityInfo), true)
                 .disableParticle()
                 .spawn();
 

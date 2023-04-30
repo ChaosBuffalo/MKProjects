@@ -40,10 +40,10 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
             AbilityDecisionContext context = createAbilityDecisionContext(entityIn);
             for (MKAbilityInfo ability : mkEntityData.getAbilities().getAbilitiesPriorityOrder()) {
                 MKAbility mkAbility = ability.getAbility();
-                if (!mkEntityData.getAbilityExecutor().canActivateAbility(mkAbility.getDefaultInstance()))
+                if (!mkEntityData.getAbilityExecutor().canActivateAbility(ability))
                     continue;
 
-                AbilityTargetingDecision targetSelection = mkAbility.getUseCondition().getDecision(context);
+                AbilityTargetingDecision targetSelection = mkAbility.getUseCondition().getDecision(ability, context);
                 if (targetSelection == AbilityTargetingDecision.UNDECIDED)
                     continue;
 

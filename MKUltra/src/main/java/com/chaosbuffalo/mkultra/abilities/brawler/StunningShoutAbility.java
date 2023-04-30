@@ -24,12 +24,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.Function;
 
 public class StunningShoutAbility extends MKAbility {
     public static final ResourceLocation TICK_PARTICLES = new ResourceLocation(MKUltra.MODID, "stunning_shout_tick");
@@ -66,11 +64,11 @@ public class StunningShoutAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier, MKAbilityInfo abilityInfo) {
-        float level = skillSupplier.apply(MKAttributes.PNEUMA);
-        Component damageStr = getDamageDescription(entityData, CoreDamageTypes.BleedDamage.get(), baseDamage.value(),
+    public Component getAbilityDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.PNEUMA);
+        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.BleedDamage.get(), baseDamage.value(),
                 scaleDamage.value(), level, modifierScaling.value());
-        int dur = getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
+        int dur = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(dur), damageStr);
     }
 
@@ -86,10 +84,9 @@ public class StunningShoutAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context,
-                        Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.PNEUMA);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+        super.endCast(castingEntity, casterData, context, abilityInfo);
+        float level = abilityInfo.getSkillValue(casterData, MKAttributes.PNEUMA);
 
 
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.BleedDamage.get(),
@@ -102,7 +99,7 @@ public class StunningShoutAbility extends MKAbility {
                         false, new Vec3(0.0, 1.5, 0.0))
                 .ability(this);
 
-        Vec3 look = castingEntity.getLookAngle().scale(getDistance(castingEntity));
+        Vec3 look = castingEntity.getLookAngle().scale(getDistance(castingEntity, abilityInfo));
         Vec3 from = castingEntity.position().add(0, castingEntity.getEyeHeight(), 0);
         Vec3 to = from.add(look);
         List<LivingEntity> entityHit = TargetUtil.getTargetsInLine(castingEntity, from, to, 1.0f, this::isValidTarget);
