@@ -30,6 +30,7 @@ public class MKUItemModelProvider extends ItemModelProvider {
         makeSimpleItem(MKUItems.destroyedTrooperChestplate.get());
         makeSimpleItem(MKUItems.destroyedTrooperLeggings.get());
         makeSimpleItem(MKUItems.destroyedTrooperHelmet.get());
+        makeSimpleItem(MKUItems.seawovenScrap.get());
     }
 
     private void makeSimpleItem(Item item) {

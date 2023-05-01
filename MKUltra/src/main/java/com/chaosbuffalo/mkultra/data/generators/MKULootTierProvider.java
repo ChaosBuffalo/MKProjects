@@ -6,7 +6,6 @@ import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkweapons.data.LootTierProvider;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
-import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.OnHitAbilityEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.UndeadDamageMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.LootItemTemplate;
@@ -43,7 +42,8 @@ public class MKULootTierProvider extends LootTierProvider {
                 writeLootTier(trooperMagus(), cache),
                 writeLootTier(burningSkeletonLoot(), cache),
                 writeLootTier(burningStaff(), cache),
-                writeLootTier(seafuryWeapon(), cache)
+                writeLootTier(seafuryWeapon(), cache),
+                writeLootTier(seawovenSkeletonTier(), cache)
         );
     }
 
@@ -275,6 +275,16 @@ public class MKULootTierProvider extends LootTierProvider {
         addRingOfMinorHealth(tier, 10);
         tier.addItemTemplate(executionersBlade, 5);
         return tier;
+    }
+
+    private LootTier seawovenSkeletonTier() {
+        LootTier tier = new LootTier(new ResourceLocation(MKUltra.MODID, "seawoven_skeleton"));
+        LootItemTemplate pigLoot = new LootItemTemplate(LootSlotManager.ITEMS);
+        pigLoot.addItemStack(new ItemStack(MKUItems.seawovenScrap.get()), 1.0);
+        pigLoot.addTemplate(new RandomizationTemplate(new ResourceLocation(MKUltra.MODID, "empty")), 1.0);
+        tier.addItemTemplate(pigLoot, 10);
+        return tier;
+
     }
 
     private LootTier zombieTrooperTier() {

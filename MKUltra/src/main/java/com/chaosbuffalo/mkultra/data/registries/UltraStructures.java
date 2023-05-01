@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.event.SpawnNpcDefinitionEvent;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.data.UltraTags;
+import com.chaosbuffalo.mkultra.world.gen.feature.structure.DeepslateObeliskPools;
 import com.chaosbuffalo.mkultra.world.gen.feature.structure.DesertTempleVillagePools;
 import com.chaosbuffalo.mkultra.world.gen.feature.structure.IntroCastlePools;
 import com.chaosbuffalo.mkultra.world.gen.feature.structure.NecrotideAlterPools;
@@ -31,6 +32,8 @@ public class UltraStructures {
     public static ResourceKey<Structure> INTRO_CASTLE = createKey("intro_castle");
     public static ResourceKey<Structure> DESERT_TEMPLE_VILLAGE = createKey("desert_temple_village");
     public static ResourceKey<Structure> NECROTIDE_ALTER = createKey("necrotide_alter");
+
+    public static ResourceKey<Structure> DEEPSLATE_OBELISK = createKey("deepslate_obelisk");
 
     public static ResourceKey<Structure> createKey(String name) {
         return ResourceKey.create(Registries.STRUCTURE, new ResourceLocation(MKUltra.MODID, name));
@@ -64,6 +67,12 @@ public class UltraStructures {
                                 .addTrigger(StructureEvent.EventTrigger.ON_DEATH)
                                 .addTrigger(StructureEvent.EventTrigger.ON_ACTIVATE)
                         ).build());
+
+        context.register(DEEPSLATE_OBELISK,
+                new MKJigsawBuilder(DEEPSLATE_OBELISK.location(),
+                        emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_DEEPSLATE_OBELISK),
+                                GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.BEARD_THIN),
+                        templates.getOrThrow(DeepslateObeliskPools.BASE)).build());
     }
 
     public static Structure.StructureSettings structure(HolderSet<Biome> biomes, GenerationStep.Decoration step, TerrainAdjustment adjustment) {

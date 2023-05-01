@@ -111,6 +111,9 @@ public final class MKUItems {
     public static RegistryObject<Item> destroyedTrooperBoots = REGISTRY.register("destroyed_trooper_boots",
             () -> new Item(new Item.Properties()));
 
+    public static RegistryObject<Item> seawovenScrap = REGISTRY.register("seawoven_scrap",
+            () -> new Item(new Item.Properties()));
+
     public static void register(IEventBus bus) {
         REGISTRY.register(bus);
     }

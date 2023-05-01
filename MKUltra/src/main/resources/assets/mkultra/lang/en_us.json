@@ -114,5 +114,6 @@
   "mk_effect.mkultra.effect.frozen_grasp": "Frozen Grasp",
   "mk_effect.mkultra.effect.frozen_grasp_applier": "Frozen Grasp (Self)",
   "mkultra.ability.frozen_grasp.name": "Frozen Grasp",
-  "mkultra.ability.frozen_grasp.description": "Causes your next %s hits to slow the targets casting, attack, and movement speed for %s seconds."
+  "mkultra.ability.frozen_grasp.description": "Causes your next %s hits to slow the targets casting, attack, and movement speed for %s seconds.",
+  "item.mkultra.seawoven_scrap": "Seawoven Scrap"
 }

@@ -1,0 +1,76 @@
+{
+  "entityType": "mkultra:hyborean_skeleton",
+  "options": [
+    {
+      "optionType": "mknpc:render_group",
+      "value": "seawoven"
+    },
+    {
+      "attributes": [
+        {
+          "attributeName": "minecraft:generic.max_health",
+          "value": 45.0
+        },
+        {
+          "attributeName": "mkcore:max_mana",
+          "value": 45.0
+        },
+        {
+          "attributeName": "mkcore:mana_regen",
+          "value": 2.0
+        }
+      ],
+      "optionType": "mknpc:attributes"
+    },
+    {
+      "optionType": "mknpc:name",
+      "value": "A Seawoven Skeleton"
+    },
+    {
+      "dropChances": 1,
+      "lootOptions": [
+        {
+          "lootSlotName": "mkweapons:items",
+          "lootSlotTier": "mkultra:seawoven_skeleton",
+          "weight": 1.0
+        }
+      ],
+      "noLootChance": 0.25,
+      "noLootIncrease": 0.25,
+      "optionType": "mknpc:extra_loot"
+    },
+    {
+      "optionType": "mknpc:abilities",
+      "options": [
+        {
+          "abilityName": "mkultra:ability.seafury",
+          "chance": 1.0,
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "major_skills": [
+        "mkcore:conjuration",
+        "mkcore:necromancy"
+      ],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:evocation"
+      ],
+      "optionType": "mknpc:skills",
+      "remedial_skills": [
+        "mkcore:one_hand_pierce"
+      ]
+    },
+    {
+      "optionType": "mknpc:mk_size",
+      "value": 0.98
+    },
+    {
+      "optionType": "mknpc:faction",
+      "value": "mkfaction:undead"
+    }
+  ]
+}
