@@ -1,9 +1,11 @@
 package com.chaosbuffalo.mkcore.network;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
+import com.chaosbuffalo.mkcore.effects.MKEffect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -53,12 +55,15 @@ public class EntityEffectPacket {
 
         int count = buffer.readVarInt();
         for (int i = 0; i < count; i++) {
-            ResourceLocation effectId = buffer.readResourceLocation();
+            MKEffect effect = buffer.readRegistryIdUnsafe(MKCoreRegistry.EFFECTS);
+            if (effect == null)
+                continue;
+
             CompoundTag data = buffer.readNbt();
             if (data == null)
                 continue;
 
-            MKActiveEffect instance = MKActiveEffect.deserializeClient(effectId, sourceId, data);
+            MKActiveEffect instance = MKActiveEffect.deserializeClient(effect, sourceId, data);
             if (instance != null) {
                 effects.add(instance);
             }
@@ -72,7 +77,7 @@ public class EntityEffectPacket {
         buffer.writeUUID(sourceId);
         buffer.writeVarInt(effects.size());
         for (MKActiveEffect effect : effects) {
-            buffer.writeResourceLocation(effect.getEffect().getId());
+            buffer.writeRegistryIdUnsafe(MKCoreRegistry.EFFECTS, effect.getEffect());
             buffer.writeNbt(effect.serializeClient());
         }
     }
@@ -96,17 +101,14 @@ public class EntityEffectPacket {
             MKCore.getEntityData(target).ifPresent(data -> {
                 EntityEffectHandler handler = data.getEffects();
                 switch (packet.action) {
-                    case SET: {
+                    case SET -> {
                         packet.effects.forEach(instance -> handler.clientSetEffect(packet.sourceId, instance));
-                        break;
                     }
-                    case REMOVE: {
+                    case REMOVE -> {
                         packet.effects.forEach(instance -> handler.clientRemoveEffect(packet.sourceId, instance));
-                        break;
                     }
-                    case SET_ALL: {
+                    case SET_ALL -> {
                         handler.clientSetAllEffects(packet.sourceId, packet.effects);
-                        break;
                     }
                 }
             });

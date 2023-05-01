@@ -10,13 +10,11 @@ import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -42,6 +40,8 @@ public class MKActiveEffect {
     private Entity directEntity;
     @Nullable
     private UUID directUUID;
+
+    private boolean needClientUpdate = false;
 
     // Builder
     public MKActiveEffect(MKEffectBuilder<?> builder, MKEffectState state) {
@@ -102,8 +102,20 @@ public class MKActiveEffect {
         return effect;
     }
 
-    public MKEffectBehaviour getBehaviour() {
-        return behaviour;
+    public boolean isTickReady() {
+        return behaviour.isReady();
+    }
+
+    public boolean isTemporary() {
+        return behaviour.isTemporary();
+    }
+
+    public boolean isTimed() {
+        return behaviour.isTimed();
+    }
+
+    public boolean isExpired() {
+        return behaviour.isExpired();
     }
 
     public int getDuration() {
@@ -112,10 +124,11 @@ public class MKActiveEffect {
 
     public void setDuration(int duration) {
         behaviour.setDuration(duration);
+        needClientUpdate = true;
     }
 
     public void modifyDuration(int delta) {
-        behaviour.modifyDuration(delta);
+        setDuration(getDuration() + delta);
     }
 
     public int getStackCount() {
@@ -124,6 +137,7 @@ public class MKActiveEffect {
 
     public void setStackCount(int count) {
         stackCount = count;
+        needClientUpdate = true;
     }
 
     public void setSkillLevel(float skillLevel) {
@@ -135,7 +149,7 @@ public class MKActiveEffect {
     }
 
     public void modifyStackCount(int delta) {
-        stackCount += delta;
+        setStackCount(stackCount + delta);
     }
 
     @Nullable
@@ -158,42 +172,26 @@ public class MKActiveEffect {
         return getDirectEntity() != null;
     }
 
-    public void recoverState(IMKEntityData targetData) {
-        Entity rawSource = findEntity(sourceEntity, getSourceId(), targetData);
-        if (rawSource instanceof LivingEntity) {
-            sourceEntity = (LivingEntity) rawSource;
+    public MKEffectTickResult tick(IMKEntityData targetData) {
+        MKEffectTickResult result = behaviour.behaviourTick(targetData, this);
+        if (!result.sendsClientUpdate() && needClientUpdate) {
+            result = MKEffectTickResult.Update;
         }
-
-        if (directEntity == null && directUUID != null) {
-            directEntity = findEntity(null, directUUID, targetData);
-        }
-    }
-
-    @Nullable
-    protected Entity findEntity(Entity entity, UUID entityId, IMKEntityData targetData) {
-        if (entity != null)
-            return entity;
-        Level world = targetData.getEntity().getCommandSenderWorld();
-        if (!world.isClientSide()) {
-            return ((ServerLevel) world).getEntity(entityId);
-        }
-        return null;
+        needClientUpdate = false;
+        return result;
     }
 
     public CompoundTag serializeClient() {
         CompoundTag stateTag = new CompoundTag();
-        stateTag.put("state", serializeState());
+        stateTag.put("behaviour", behaviour.serialize());
+        stateTag.putInt("stacks", getStackCount());
         return stateTag;
     }
 
-    public static MKActiveEffect deserializeClient(ResourceLocation effectId, UUID sourceId, CompoundTag tag) {
-        MKEffect effect = MKCoreRegistry.EFFECTS.getValue(effectId);
-        if (effect == null) {
-            return null;
-        }
-
+    public static MKActiveEffect deserializeClient(MKEffect effect, UUID sourceId, CompoundTag tag) {
         MKActiveEffect active = effect.createInstance(sourceId);
-        active.deserializeState(tag.getCompound("state"));
+        active.behaviour.deserializeState(tag.getCompound("behaviour"));
+        active.stackCount = tag.getInt("stacks");
         return active;
     }
 
@@ -325,7 +323,7 @@ public class MKActiveEffect {
 
         @Override
         public boolean isInfiniteDuration() {
-            return effectInstance.getBehaviour().isInfinite();
+            return effectInstance.behaviour.isInfinite();
         }
 
         @Override
@@ -334,7 +332,7 @@ public class MKActiveEffect {
             // in-game GUI doesn't flash continuously
             if (isInfiniteDuration())
                 return Integer.MAX_VALUE;
-            return effectInstance.getBehaviour().getDuration();
+            return effectInstance.behaviour.getDuration();
         }
 
         @Override

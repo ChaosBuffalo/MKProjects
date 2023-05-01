@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
-import com.chaosbuffalo.mkcore.effects.MKEffectTickAction;
+import com.chaosbuffalo.mkcore.effects.MKEffectTickResult;
 import com.chaosbuffalo.mkcore.network.EntityEffectPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.google.common.collect.ImmutableList;
@@ -40,10 +40,10 @@ public class EntityEffectHandler {
 
             List<MKActiveEffect> activeEffects = ImmutableList.copyOf(activeEffectMap.values());
             activeEffects.forEach(active -> {
-                MKEffectTickAction action = active.getBehaviour().behaviourTick(entityData, active);
-                if (action == MKEffectTickAction.Update) {
+                MKEffectTickResult tickResult = active.tick(entityData);
+                if (tickResult == MKEffectTickResult.Update) {
                     onEffectUpdated(active);
-                } else if (action == MKEffectTickAction.Remove) {
+                } else if (tickResult == MKEffectTickResult.Remove) {
                     removeEffectInstance(active);
                 }
             });
@@ -69,7 +69,7 @@ public class EntityEffectHandler {
                 MKCore.LOGGER.warn("Effect {} failed apply validation", activeEffect);
                 return;
             }
-            if (activeEffect.getBehaviour().isTimed()) {
+            if (activeEffect.isTimed()) {
                 MKCore.LOGGER.debug("EntityEffectHandler.addEffect timed {} to {}", activeEffect, entityData.getEntity());
                 MKActiveEffect existing = activeEffectMap.get(activeEffect.getEffect());
                 if (existing == null) {
@@ -89,20 +89,17 @@ public class EntityEffectHandler {
 
         // Server-side only
         private void loadEffect(MKActiveEffect activeEffect) {
-//            MKCore.LOGGER.debug("EntityEffectHandler.EffectSource.loadEffect {}", activeEffect);
             activeEffect.getEffect().onInstanceLoaded(entityData, activeEffect);
             activeEffectMap.put(activeEffect.getEffect(), activeEffect);
         }
 
         // Server-side only
         private void onWorldReady(MKActiveEffect activeEffect) {
-//            MKCore.LOGGER.debug("EntityEffectHandler.onWorldReady {}", activeEffect);
             activeEffect.getEffect().onInstanceReady(entityData, activeEffect);
         }
 
         // Called on both sides
         protected void onNewEffect(MKActiveEffect activeEffect) {
-//            MKCore.LOGGER.debug("EntityEffectHandler.onNewEffect {}", activeEffect);
             if (entityData.isServerSide()) {
                 activeEffect.getEffect().onInstanceAdded(entityData, activeEffect);
                 sendEffectSet(activeEffect);
@@ -123,7 +120,7 @@ public class EntityEffectHandler {
 //            MKCore.LOGGER.debug("EntityEffectHandler.onEffectRemoved {}", activeEffect);
             if (entityData.isServerSide()) {
                 activeEffect.getEffect().onInstanceRemoved(entityData, activeEffect);
-                if (!activeEffect.getBehaviour().isExpired()) {
+                if (!activeEffect.isExpired()) {
                     // If it was removed early we need to tell the client
                     sendEffectRemove(activeEffect);
                 }
@@ -188,7 +185,7 @@ public class EntityEffectHandler {
         public Tag serializeStorage() {
             ListTag list = new ListTag();
             activeEffectMap.forEach((effect, activeEffect) -> {
-                if (!activeEffect.getBehaviour().isTemporary()) {
+                if (!activeEffect.isTemporary()) {
                     list.add(activeEffect.serializeStorage());
                 }
             });

@@ -33,10 +33,6 @@ public class MKEffectBehaviour {
         return isInfinite() || duration > 0;
     }
 
-    public void modifyDuration(int delta) {
-        duration += delta;
-    }
-
     public boolean isExpired() {
         return canExpire() && duration <= 0;
     }
@@ -69,8 +65,8 @@ public class MKEffectBehaviour {
         return period;
     }
 
-    public MKEffectTickAction behaviourTick(IMKEntityData targetData, MKActiveEffect activeEffect) {
-        MKEffectTickAction action;
+    public MKEffectTickResult behaviourTick(IMKEntityData targetData, MKActiveEffect activeEffect) {
+        MKEffectTickResult action;
         if (isInfinite()) {
             action = infiniteTick(targetData, activeEffect);
         } else {
@@ -90,7 +86,7 @@ public class MKEffectBehaviour {
         }
     }
 
-    private MKEffectTickAction timedTick(IMKEntityData targetData, MKActiveEffect instance) {
+    private MKEffectTickResult timedTick(IMKEntityData targetData, MKActiveEffect instance) {
         boolean keepTicking = false;
         if (getDuration() > 0) {
             keepTicking = tryPerformEffect(targetData, instance);
@@ -99,21 +95,21 @@ public class MKEffectBehaviour {
         }
 
         if (isExpired() || !keepTicking) {
-            return MKEffectTickAction.Remove;
+            return MKEffectTickResult.Remove;
         }
-        return MKEffectTickAction.NoUpdate;
+        return MKEffectTickResult.NoUpdate;
     }
 
-    private MKEffectTickAction infiniteTick(IMKEntityData targetData, MKActiveEffect instance) {
+    private MKEffectTickResult infiniteTick(IMKEntityData targetData, MKActiveEffect instance) {
 
         boolean keepTicking = tryPerformEffect(targetData, instance);
         if (!keepTicking) {
-            return MKEffectTickAction.Remove;
+            return MKEffectTickResult.Remove;
         }
 
         duration++;
 
-        return MKEffectTickAction.NoUpdate;
+        return MKEffectTickResult.NoUpdate;
     }
 
     private boolean tryPerformEffect(IMKEntityData targetData, MKActiveEffect instance) {

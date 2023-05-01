@@ -14,7 +14,7 @@ public abstract class MKEffectState {
     protected int maxStacks = -1;
 
     public boolean isReady(IMKEntityData targetData, MKActiveEffect instance) {
-        return instance.getBehaviour().isReady();
+        return instance.isTickReady();
     }
 
     protected int clampMaxStacks(int newValue) {

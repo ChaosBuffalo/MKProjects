@@ -37,10 +37,6 @@ public class WarpTargetEffect extends MKEffect {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
-            // We definitely need the source for this effect so make an attempt to recover the casting entity
-            if (!activeEffect.hasSourceEntity()) {
-                activeEffect.recoverState(targetData);
-            }
             LivingEntity source = activeEffect.getSourceEntity();
             if (source == null) {
                 return false;
