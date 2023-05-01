@@ -29,6 +29,7 @@ public class OnHitEffect extends MKEffect {
             this.target = target;
         }
     }
+
     private final Function<OnHitCallbackData, MKEffectBuilder<?>> effectSupplier;
     private final UUID effectUUID;
 
@@ -51,7 +52,7 @@ public class OnHitEffect extends MKEffect {
 
         MKCore.getEntityData(livingTarget).ifPresent(data -> {
             // retrieve the duration and skill level from State here
-            if (!canBlock || !livingTarget.isBlocking()){
+            if (!canBlock || !livingTarget.isBlocking()) {
                 data.getEffects().addEffect(effectSupplier.apply(new OnHitCallbackData(sourceData, instance, livingTarget)));
             }
             instance.modifyStackCount(-1);

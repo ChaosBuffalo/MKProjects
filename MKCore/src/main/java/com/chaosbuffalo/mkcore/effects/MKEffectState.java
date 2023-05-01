@@ -3,12 +3,7 @@ package com.chaosbuffalo.mkcore.effects;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
-
-import javax.annotation.Nullable;
-import java.util.UUID;
 
 public abstract class MKEffectState {
     protected int maxStacks = -1;
@@ -41,23 +36,6 @@ public abstract class MKEffectState {
 
     public void setMaxStacks(int max) {
         this.maxStacks = max;
-    }
-
-    @Deprecated
-    @Nullable
-    protected Entity findEntity(Entity entity, UUID entityId, Level world) {
-        if (entity != null)
-            return entity;
-        if (!world.isClientSide()) {
-            return ((ServerLevel) world).getEntity(entityId);
-        }
-        return null;
-    }
-
-    @Deprecated
-    @Nullable
-    protected Entity findEntity(Entity entity, UUID entityId, IMKEntityData targetData) {
-        return findEntity(entity, entityId, targetData.getEntity().getCommandSenderWorld());
     }
 
     public boolean validateOnApply(IMKEntityData targetData, MKActiveEffect activeEffect) {

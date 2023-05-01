@@ -195,16 +195,21 @@ public class MKActiveEffect {
         return active;
     }
 
-    public CompoundTag serializeState() {
-        CompoundTag stateTag = new CompoundTag();
-        stateTag.put("behaviour", behaviour.serialize());
-        stateTag.putInt("stacks", getStackCount());
-        stateTag.putFloat("skillLevel", getSkillLevel());
+    public float getAttributeSkillLevel(Attribute skill) {
+        return attributeSkillSnapshot.getOrDefault(skill, 0f);
+    }
+
+    public CompoundTag serializeStorage() {
+        CompoundTag tag = new CompoundTag();
+        MKNBTUtil.writeResourceLocation(tag, "effectId", effect.getId());
+        tag.put("behaviour", behaviour.serialize());
+        tag.putInt("stacks", getStackCount());
+        tag.putFloat("skillLevel", getSkillLevel());
         if (abilityId != null) {
-            stateTag.putString("abilityId", abilityId.toString());
+            tag.putString("abilityId", abilityId.toString());
         }
         if (directUUID != null) {
-            stateTag.putUUID("directEntity", directUUID);
+            tag.putUUID("directEntity", directUUID);
         }
         if (!attributeSkillSnapshot.isEmpty()) {
             CompoundTag attrTag = new CompoundTag();
@@ -214,45 +219,10 @@ public class MKActiveEffect {
                     attrTag.putFloat(attrId.toString(), entry.getFloatValue());
                 }
             });
-            stateTag.put("attrSkills", attrTag);
+            tag.put("attrSkills", attrTag);
         }
 
-        return stateTag;
-    }
 
-    public float getAttributeSkillLevel(Attribute skill) {
-        return attributeSkillSnapshot.getOrDefault(skill, 0f);
-    }
-
-    public void deserializeState(CompoundTag stateTag) {
-        stackCount = stateTag.getInt("stacks");
-        skillLevel = stateTag.getFloat("skillLevel");
-        behaviour.deserializeState(stateTag.getCompound("behaviour"));
-        if (stateTag.contains("abilityId")) {
-            abilityId = ResourceLocation.tryParse(stateTag.getString("abilityId"));
-        }
-        if (stateTag.contains("state")) {
-            state.deserializeStorage(stateTag.getCompound("state"));
-        }
-        if (stateTag.contains("directEntity")) {
-            directUUID = stateTag.getUUID("directEntity");
-        }
-        if (stateTag.contains("attrSkills")) {
-            CompoundTag attrTag = stateTag.getCompound("attrSkills");
-            for (String key : attrTag.getAllKeys()) {
-                ResourceLocation attrLoc = new ResourceLocation(key);
-                Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(attrLoc);
-                if (attribute != null) {
-                    float val = attrTag.getFloat(key);
-                    attributeSkillSnapshot.put(attribute, val);
-                }
-            }
-        }
-    }
-
-    public CompoundTag serializeStorage() {
-        CompoundTag tag = serializeState();
-        serializeId(tag);
         CompoundTag stateTag = new CompoundTag();
         state.serializeStorage(stateTag);
         if (!stateTag.isEmpty()) {
@@ -261,29 +231,43 @@ public class MKActiveEffect {
         return tag;
     }
 
+    @Nullable
     public static MKActiveEffect deserializeStorage(UUID sourceId, CompoundTag tag) {
-        ResourceLocation effectId = deserializeId(tag);
-
+        ResourceLocation effectId = MKNBTUtil.readResourceLocation(tag, "effectId");
         MKEffect effect = MKCoreRegistry.EFFECTS.getValue(effectId);
         if (effect == null) {
             return null;
         }
 
         MKActiveEffect active = effect.createInstance(sourceId);
-        active.deserializeState(tag);
+        active.stackCount = tag.getInt("stacks");
+        active.skillLevel = tag.getFloat("skillLevel");
+        active.behaviour.deserializeState(tag.getCompound("behaviour"));
+        if (tag.contains("abilityId")) {
+            active.abilityId = ResourceLocation.tryParse(tag.getString("abilityId"));
+        }
+        if (tag.contains("state")) {
+            active.state.deserializeStorage(tag.getCompound("state"));
+        }
+        if (tag.contains("directEntity")) {
+            active.directUUID = tag.getUUID("directEntity");
+        }
+        if (tag.contains("attrSkills")) {
+            CompoundTag attrTag = tag.getCompound("attrSkills");
+            for (String key : attrTag.getAllKeys()) {
+                ResourceLocation attrLoc = new ResourceLocation(key);
+                Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(attrLoc);
+                if (attribute != null) {
+                    float val = attrTag.getFloat(key);
+                    active.attributeSkillSnapshot.put(attribute, val);
+                }
+            }
+        }
         if (!active.getState().validateOnLoad(active)) {
             MKCore.LOGGER.warn("Effect {} failed load validation", active);
             return null;
         }
         return active;
-    }
-
-    private void serializeId(CompoundTag nbt) {
-        MKNBTUtil.writeResourceLocation(nbt, "effectId", effect.getId());
-    }
-
-    private static ResourceLocation deserializeId(CompoundTag tag) {
-        return MKNBTUtil.readResourceLocation(tag, "effectId");
     }
 
     @Override
