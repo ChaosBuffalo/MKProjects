@@ -1,8 +1,11 @@
 package com.chaosbuffalo.mkultra;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.data.MKAbilityProvider;
+import com.chaosbuffalo.mkcore.data.MKCoreGenerators;
 import com.chaosbuffalo.mkultra.data.generators.*;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraBiomeTagsProvider;
+import com.chaosbuffalo.mkultra.data.generators.tags.UltraItemTagsProvider;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraStructureTagsProvider;
 import com.chaosbuffalo.mkultra.data.generators.MKUNpcProvider;
 import net.minecraft.core.HolderLookup;
@@ -24,6 +27,9 @@ public class MKUDataGenerators {
         ExistingFileHelper fileHelper = event.getExistingFileHelper();
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
         PackOutput packOutput = generator.getPackOutput();
+        MKCoreGenerators.MKBlockTagsProvider blockTagsProvider = new MKCoreGenerators.MKBlockTagsProvider(generator.getPackOutput(),
+                event.getLookupProvider(), MKUltra.MODID, event.getExistingFileHelper());
+        generator.addProvider(event.includeServer(), blockTagsProvider);
 
         generator.addProvider(event.includeServer(), new MKURegistrySets(packOutput, lookupProvider));
         generator.addProvider(event.includeServer(), new UltraBiomeTagsProvider(packOutput, lookupProvider, fileHelper));
@@ -36,7 +42,10 @@ public class MKUDataGenerators {
         generator.addProvider(event.includeServer(), new MKUQuestProvider(generator));
         generator.addProvider(event.includeServer(), new MKUNpcProvider(generator));
         generator.addProvider(event.includeServer(), new MKAbilityProvider.FromMod(generator, MKUltra.MODID));
+        generator.addProvider(event.includeServer(), new MKURecipeProvider(packOutput));
 
         generator.addProvider(event.includeClient(), new MKUItemModelProvider(packOutput, fileHelper));
+        generator.addProvider(event.includeServer(), new UltraItemTagsProvider(generator,
+                event.getLookupProvider(), blockTagsProvider, event.getExistingFileHelper()));
     }
 }

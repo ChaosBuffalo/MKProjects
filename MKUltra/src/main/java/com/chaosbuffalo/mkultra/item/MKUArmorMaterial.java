@@ -20,6 +20,11 @@ public enum MKUArmorMaterial implements ArmorMaterial {
     TROOPER_KNIGHT_ARMOR("mkultra:trooper_knight", 18, new int[]{1, 4, 5, 2}, 12,
             SoundEvents.ARMOR_EQUIP_IRON, 0.0F, 0.0F, () -> {
         return Ingredient.of(MKUItems.corruptedPigIronPlate.get());
+    }),
+
+    SEAWOVEN_ARMOR("mkultra:seawoven", 18, new int[]{1, 2, 3, 2}, 14,
+            SoundEvents.ARMOR_EQUIP_LEATHER, 0.0f, 0.0f, () -> {
+        return Ingredient.of(MKUItems.seawovenScrap.get());
     });
 
 
