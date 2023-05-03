@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 111111111,
+    "separation": 35,
+    "spacing": 65
+  },
+  "structures": [
+    {
+      "structure": "mkultra:deepslate_obelisk",
+      "weight": 1
+    }
+  ]
+}

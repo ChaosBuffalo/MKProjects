@@ -19,6 +19,8 @@ public class UltraStructureSets {
     public static final ResourceKey<StructureSet> DESERT_TEMPLE_VILLAGE = createKey("desert_temple_village");
     public static final ResourceKey<StructureSet> NECROTIDE_ALTER = createKey("necrotide_alter");
 
+    public static final ResourceKey<StructureSet> DEEPSLATE_OBELISK = createKey("deepslate_obelisk");
+
     public static ResourceKey<StructureSet> createKey(String name) {
         return ResourceKey.create(Registries.STRUCTURE_SET, new ResourceLocation(MKUltra.MODID, name));
     }
@@ -40,5 +42,9 @@ public class UltraStructureSets {
         context.register(NECROTIDE_ALTER,
                 new StructureSet(structures.getOrThrow(UltraStructures.NECROTIDE_ALTER),
                         new RandomSpreadStructurePlacement(50, 24, RandomSpreadType.LINEAR, 132321313)));
+
+        context.register(DEEPSLATE_OBELISK,
+                new StructureSet(structures.getOrThrow(UltraStructures.DEEPSLATE_OBELISK),
+                        new RandomSpreadStructurePlacement(65, 35, RandomSpreadType.LINEAR, 111111111)));
     }
 }

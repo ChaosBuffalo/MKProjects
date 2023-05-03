@@ -1,10 +1,7 @@
 package com.chaosbuffalo.mkultra.data.registries;
 
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.world.gen.feature.structure.CryptStructurePools;
-import com.chaosbuffalo.mkultra.world.gen.feature.structure.DesertTempleVillagePools;
-import com.chaosbuffalo.mkultra.world.gen.feature.structure.IntroCastlePools;
-import com.chaosbuffalo.mkultra.world.gen.feature.structure.NecrotideAlterPools;
+import com.chaosbuffalo.mkultra.world.gen.feature.structure.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstapContext;
 import net.minecraft.resources.ResourceKey;
@@ -25,5 +22,6 @@ public class UltraStructurePools {
         NecrotideAlterPools.registerPools(pContext);
         DesertTempleVillagePools.registerPools(pContext);
         CryptStructurePools.registerPools(pContext);
+        DeepslateObeliskPools.registerPools(pContext);
     }
 }

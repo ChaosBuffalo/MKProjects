@@ -25,5 +25,7 @@ public class UltraStructureTagsProvider extends StructureTagsProvider {
                 .add(UltraStructures.DESERT_TEMPLE_VILLAGE);
         tag(UltraTags.Structures.NECROTIDE_ALTER)
                 .add(UltraStructures.NECROTIDE_ALTER);
+        tag(UltraTags.Structures.DEEPSLATE_OBELISK)
+                .add(UltraStructures.DEEPSLATE_OBELISK);
     }
 }

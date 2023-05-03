@@ -21,6 +21,11 @@ import java.util.UUID;
 
 public final class MKUItems {
 
+    public static final UUID CHEST_UUID = UUID.fromString("434f17f4-4763-4d27-afdb-368e76ab259e");
+    public static final UUID LEGGINGS_UUID = UUID.fromString("1ac6cd1d-7416-4757-89e6-b20d3206464d");
+    public static final UUID HELMET_UUID = UUID.fromString("dfb52730-bba0-4b22-8458-f6d9ed687b33");
+    public static final UUID FEET_UUID = UUID.fromString("9baf459d-e898-402d-9915-af25a217fedd");
+
     public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, MKUltra.MODID);
 
     public static RegistryObject<Item> cleansingSeedProjectileItem = REGISTRY.register("cleansing_seed_projectile",
@@ -64,40 +69,74 @@ public final class MKUItems {
                     new AttributeModifier(UUID.fromString("f0d94451-5a80-4669-954d-bc6f6c39ccd0"),
                             "Bonus", 0.10, AttributeModifier.Operation.MULTIPLY_TOTAL)));
 
-    public static RegistryObject<Item> greenKnightHelmet = REGISTRY.register("green_knight_helmet",
+    public static RegistryObject<MKArmorItem> greenKnightHelmet = REGISTRY.register("green_knight_helmet",
             () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.HELMET,
                     (new Item.Properties()), new ArmorModifierEffect(gkHelmetAttrs)));
 
-    public static RegistryObject<Item> greenKnightLeggings = REGISTRY.register("green_knight_leggings",
+    public static RegistryObject<MKArmorItem> greenKnightLeggings = REGISTRY.register("green_knight_leggings",
             () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.LEGGINGS,
                     (new Item.Properties()), new ArmorModifierEffect(gkLegsAttrs)));
 
-    public static RegistryObject<Item> greenKnightChestplate = REGISTRY.register("green_knight_chestplate",
+    public static RegistryObject<MKArmorItem> greenKnightChestplate = REGISTRY.register("green_knight_chestplate",
             () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.CHESTPLATE,
                     (new Item.Properties()), new ArmorModifierEffect(gkChestAttrs)));
 
-    public static RegistryObject<Item> greenKnightBoots = REGISTRY.register("green_knight_boots",
+    public static RegistryObject<MKArmorItem> greenKnightBoots = REGISTRY.register("green_knight_boots",
             () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.BOOTS,
                     (new Item.Properties()), new ArmorModifierEffect(gkBootsAttrs)));
 
     public static RegistryObject<Item> corruptedPigIronPlate = REGISTRY.register("corrupted_pig_iron_plate",
             () -> new Item(new Item.Properties()));
 
-    public static RegistryObject<Item> trooperKnightHelmet = REGISTRY.register("trooper_knight_helmet",
+    public static RegistryObject<MKArmorItem> trooperKnightHelmet = REGISTRY.register("trooper_knight_helmet",
             () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, ArmorItem.Type.HELMET,
                     (new Item.Properties())));
 
-    public static RegistryObject<Item> trooperKnightLeggings = REGISTRY.register("trooper_knight_leggings",
+    public static RegistryObject<MKArmorItem> trooperKnightLeggings = REGISTRY.register("trooper_knight_leggings",
             () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, ArmorItem.Type.LEGGINGS,
                     (new Item.Properties())));
 
-    public static RegistryObject<Item> trooperKnightChestplate = REGISTRY.register("trooper_knight_chestplate",
+    public static RegistryObject<MKArmorItem> trooperKnightChestplate = REGISTRY.register("trooper_knight_chestplate",
             () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, ArmorItem.Type.CHESTPLATE,
                     (new Item.Properties())));
 
-    public static RegistryObject<Item> trooperKnightBoots = REGISTRY.register("trooper_knight_boots",
+    public static RegistryObject<MKArmorItem> trooperKnightBoots = REGISTRY.register("trooper_knight_boots",
             () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, ArmorItem.Type.BOOTS,
                     (new Item.Properties())));
+
+    public static RegistryObject<MKArmorItem> seawovenHelmet = REGISTRY.register("seawoven_helmet",
+            () -> new MKArmorItem(MKUArmorMaterial.SEAWOVEN_ARMOR, ArmorItem.Type.HELMET,
+                    (new Item.Properties()),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.MANA_REGEN,
+                                    new AttributeModifier(HELMET_UUID, "seawoven", 1.0, AttributeModifier.Operation.ADDITION))
+                    ))));
+
+    public static RegistryObject<MKArmorItem> seawovenLeggings = REGISTRY.register("seawoven_leggings",
+            () -> new MKArmorItem(MKUArmorMaterial.SEAWOVEN_ARMOR, ArmorItem.Type.LEGGINGS,
+                    (new Item.Properties()),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.MAX_MANA,
+                                    new AttributeModifier(LEGGINGS_UUID, "seawoven", 6.0, AttributeModifier.Operation.ADDITION))
+                    ))));
+
+    public static RegistryObject<MKArmorItem> seawovenChestplate = REGISTRY.register("seawoven_chestplate",
+            () -> new MKArmorItem(MKUArmorMaterial.SEAWOVEN_ARMOR, ArmorItem.Type.CHESTPLATE,
+                    (new Item.Properties()),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.MAX_MANA,
+                                    new AttributeModifier(CHEST_UUID,"seawoven", 6.0, AttributeModifier.Operation.ADDITION)),
+                            new AttributeOptionEntry(MKAttributes.MANA_REGEN,
+                                    new AttributeModifier(CHEST_UUID, "seawoven", 1.0, AttributeModifier.Operation.ADDITION))
+                    ))));
+
+    public static RegistryObject<MKArmorItem> seawovenBoots = REGISTRY.register("seawoven_boots",
+            () -> new MKArmorItem(MKUArmorMaterial.SEAWOVEN_ARMOR, ArmorItem.Type.BOOTS,
+                    (new Item.Properties()),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.MAX_MANA,
+                                    new AttributeModifier(FEET_UUID,"seawoven", 4.0, AttributeModifier.Operation.ADDITION))
+                    ))));
 
     public static RegistryObject<Item> destroyedTrooperHelmet = REGISTRY.register("destroyed_trooper_helmet",
             () -> new Item(new Item.Properties()));
@@ -109,6 +148,9 @@ public final class MKUItems {
             () -> new Item(new Item.Properties()));
 
     public static RegistryObject<Item> destroyedTrooperBoots = REGISTRY.register("destroyed_trooper_boots",
+            () -> new Item(new Item.Properties()));
+
+    public static RegistryObject<Item> seawovenScrap = REGISTRY.register("seawoven_scrap",
             () -> new Item(new Item.Properties()));
 
     public static void register(IEventBus bus) {

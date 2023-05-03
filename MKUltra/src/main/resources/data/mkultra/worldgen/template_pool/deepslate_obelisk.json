@@ -1,0 +1,17 @@
+{
+  "elements": [
+    {
+      "element": {
+        "bWaterLog": true,
+        "element_type": "mknpc:mk_single_jigsaw",
+        "location": "mkultra:deepslate_obelisk",
+        "processors": {
+          "processors": []
+        },
+        "projection": "rigid"
+      },
+      "weight": 1
+    }
+  ],
+  "fallback": "minecraft:empty"
+}

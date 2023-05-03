@@ -25,5 +25,7 @@ public class UltraBiomeTagsProvider extends BiomeTagsProvider {
                 .addTag(BiomeTags.HAS_VILLAGE_DESERT);
         tag(UltraTags.Biomes.HAS_NECROTIDE_ALTER)
                 .addTag(BiomeTags.HAS_VILLAGE_DESERT);
+        tag(UltraTags.Biomes.HAS_DEEPSLATE_OBELISK)
+                .addTag(BiomeTags.HAS_VILLAGE_DESERT);
     }
 }

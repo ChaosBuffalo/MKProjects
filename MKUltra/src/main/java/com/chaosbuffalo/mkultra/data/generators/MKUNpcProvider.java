@@ -70,8 +70,51 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 writeDefinition(generateSkeletalLock(), cache),
                 writeDefinition(generateNecrotideGolem(), cache),
                 writeDefinition(generateNecrotideSkeletalArcher(), cache),
-                writeDefinition(generateNecrotideSkeletalWarrior(), cache)
+                writeDefinition(generateNecrotideSkeletalWarrior(), cache),
+                writeDefinition(generateSeawovenSkeleton(), cache),
+                writeDefinition(generateSeawovenWretch(), cache)
         );
+    }
+
+    private NpcDefinition generateSeawovenWretch() {
+        NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "seawoven_wretch"),
+                MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
+        def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new RenderGroupOption().setValue(MKUSkeletons.SEAWOVEN_WRTECH_NAME));
+        def.addOption(new MKSizeOption().setValue(0.92f));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 35.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 35.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.0))
+        );
+        def.addOption(new NameOption().setValue("A Seawoven Wretch"));
+        def.addOption(new AbilitiesOption().withAbilityOption(MKUAbilities.FROZEN_GRASP.get(), 1, 1.0));
+        def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.NECROMANCER));
+        return def;
+    }
+
+    private NpcDefinition generateSeawovenSkeleton() {
+        NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "seawoven_skeleton"),
+                MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
+        def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new RenderGroupOption().setValue(MKUSkeletons.SEAWOVEN_NAME));
+        def.addOption(new MKSizeOption().setValue(0.98f));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 45.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 45.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.0))
+        );
+        def.addOption(new NameOption().setValue("A Seawoven Skeleton"));
+        def.addOption(new AbilitiesOption().withAbilityOption(MKUAbilities.SEAFURY.get(), 1, 1.0));
+        def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.NECROMANCER));
+        ResourceLocation lootTierName = new ResourceLocation(MKUltra.MODID, "seawoven_skeleton");
+        def.addOption(new ExtraLootOption()
+                .withLootOptions(new LootOptionEntry(LootSlotManager.ITEMS.getName(), lootTierName, 1.0))
+                .withDropChances(1)
+                .withNoLootChance(0.25)
+                .withNoLootIncrease(0.25)
+        );
+        return def;
     }
 
     private NpcDefinition generateSkeletalLock() {
