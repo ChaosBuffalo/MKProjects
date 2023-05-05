@@ -26,51 +26,25 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
         extensionProviders.add(provider);
     }
 
-    @Override
-    public CompoundTag serialize() {
+    public void onJoinWorld() {
         ensurePersonaLoaded();
-
-        CompoundTag tag = new CompoundTag();
-        CompoundTag personaRoot = new CompoundTag();
-        personas.forEach((name, persona) -> personaRoot.put(name, persona.serialize()));
-        tag.put("personas", personaRoot);
-        tag.putString("activePersona", getActivePersona().getName());
-        return tag;
+        getActivePersona().onJoinWorld();
     }
 
-    public void ensurePersonaLoaded() {
+    private void ensurePersonaLoaded() {
         if (activePersona == null) {
             // When creating a new character it comes to serialize first, so create the default persona here if none is active
             loadPersona(DEFAULT_PERSONA_NAME);
         }
+        Objects.requireNonNull(activePersona, "Persona was required but not loaded");
     }
 
     private void loadPersona(String name) {
         // Look for the specified persona, or create a new persona if it does not exist
-        activatePersonaInternal(personas.computeIfAbsent(name, this::createNewPersona), true);
-    }
+        Persona persona = personas.computeIfAbsent(name, this::createNewPersona);
+        MKCore.LOGGER.debug("loadPersona({}) {} ", persona.getName(), playerData.getEntity());
 
-    @Override
-    public boolean deserialize(CompoundTag tag) {
-        CompoundTag personaRoot = tag.getCompound("personas");
-        for (String name : personaRoot.getAllKeys()) {
-            CompoundTag personaTag = personaRoot.getCompound(name);
-            Persona persona = createNewPersona(name);
-            if (!persona.deserialize(personaTag)) {
-                MKCore.LOGGER.error("Failed to deserialize persona {} for {}", name, playerData.getEntity());
-                continue;
-            }
-
-            personas.put(name, persona);
-        }
-
-        String activePersonaName = DEFAULT_PERSONA_NAME;
-        if (tag.contains("activePersona")) {
-            activePersonaName = tag.getString("activePersona");
-        }
-
-        loadPersona(activePersonaName);
-        return true;
+        dispatchActivation(persona);
     }
 
     protected Persona createNewPersona(String name) {
@@ -135,22 +109,67 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
             return false;
         }
 
-        activatePersonaInternal(newPersona, false);
+        Persona current = getActivePersona();
+        MKCore.LOGGER.debug("activatePersona({}) {} ", newPersona.getName(), playerData.getEntity());
+        if (current != newPersona) {
+
+            dispatchDeactivation(current);
+            dispatchActivation(newPersona);
+        }
+
         return true;
     }
 
-    private void activatePersonaInternal(Persona persona, boolean firstActivation) {
-        MKCore.LOGGER.debug("activatePersona({}) {} ", persona.getName(), playerData.getEntity());
-        if (!firstActivation && getActivePersona() != persona) {
-            Persona current = getActivePersona();
-            MKCore.LOGGER.debug("activatePersona({}) - deactivating previous {}", persona.getName(), current.getName());
-            current.deactivate();
-            MinecraftForge.EVENT_BUS.post(new PersonaEvent.PersonaDeactivated(current));
-        }
-
+    private void dispatchActivation(Persona persona) {
         setActivePersona(persona);
         persona.activate();
+//        if (events.size() > 0) {
+//            events.forEach(e -> e.onPersonaActivated(persona));
+//        }
         MinecraftForge.EVENT_BUS.post(new PersonaEvent.PersonaActivated(persona));
+    }
+
+    private void dispatchDeactivation(Persona current) {
+        current.deactivate();
+//        if (events.size() > 0) {
+//            events.forEach(e -> e.onPersonaDeactivated(current));
+//        }
+        MinecraftForge.EVENT_BUS.post(new PersonaEvent.PersonaDeactivated(current));
+    }
+
+    @Override
+    public CompoundTag serialize() {
+        ensurePersonaLoaded();
+
+        CompoundTag tag = new CompoundTag();
+        CompoundTag personaRoot = new CompoundTag();
+        personas.forEach((name, persona) -> personaRoot.put(name, persona.serialize()));
+        tag.put("personas", personaRoot);
+        tag.putString("activePersona", getActivePersona().getName());
+        return tag;
+    }
+
+    @Override
+    public boolean deserialize(CompoundTag tag) {
+        CompoundTag personaRoot = tag.getCompound("personas");
+        for (String name : personaRoot.getAllKeys()) {
+            CompoundTag personaTag = personaRoot.getCompound(name);
+            Persona persona = createNewPersona(name);
+            if (!persona.deserialize(personaTag)) {
+                MKCore.LOGGER.error("Failed to deserialize persona {} for {}", name, playerData.getEntity());
+                continue;
+            }
+
+            personas.put(name, persona);
+        }
+
+        String activePersonaName = DEFAULT_PERSONA_NAME;
+        if (tag.contains("activePersona")) {
+            activePersonaName = tag.getString("activePersona");
+        }
+
+        loadPersona(activePersonaName);
+        return true;
     }
 
     // The client only has a single persona that will be overwritten when the server changes

@@ -49,6 +49,10 @@ public class Persona implements IMKSerializable<CompoundTag> {
         return extension == null ? null : clazz.cast(extension);
     }
 
+    public void onJoinWorld() {
+        knowledge.onJoinWorld();
+    }
+
     public void activate() {
         knowledge.getSyncComponent().attach(data.getUpdateEngine());
         knowledge.onPersonaActivated();

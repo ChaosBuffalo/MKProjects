@@ -138,10 +138,8 @@ public class MKPlayerData implements IMKEntityData {
 
     @Override
     public void onJoinWorld() {
-        getPersonaManager().ensurePersonaLoaded();
-        getKnowledge().onJoinWorld();
+        getPersonaManager().onJoinWorld();
         getStats().onJoinWorld();
-        getAbilityExecutor().onJoinWorld();
         getEffects().onJoinWorld();
         if (isServerSide()) {
             MKCore.LOGGER.info("server player joined world!");

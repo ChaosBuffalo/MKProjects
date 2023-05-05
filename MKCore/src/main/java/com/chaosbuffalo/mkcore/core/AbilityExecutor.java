@@ -98,10 +98,6 @@ public class AbilityExecutor {
         updateCurrentCast();
     }
 
-    public void onJoinWorld() {
-
-    }
-
     public void setCooldown(ResourceLocation id, int ticks) {
         MKCore.LOGGER.debug("setCooldown({}, {})", id, ticks);
 
