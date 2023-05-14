@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.TestNBTWeaponEffectItem;
 import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
+import com.chaosbuffalo.mkweapons.items.effects.melee.LivingDamageMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RapidFireRangedWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.MKTier;
@@ -49,6 +50,8 @@ public class MKWeaponsItems {
     public static MKTier DIAMOND_TIER = new MKTier(Tiers.DIAMOND, "diamond", Tags.Items.GEMS_DIAMOND);
     public static MKTier GOLD_TIER = new MKTier(Tiers.GOLD, "gold", Tags.Items.INGOTS_GOLD);
     public static MKTier STONE_TIER = new MKTier(Tiers.STONE, "stone", Tags.Items.COBBLESTONE);
+    public static MKTier NETHERITE_TIER = new MKTier(Tiers.NETHERITE, "netherite", Tags.Items.INGOTS_NETHERITE,
+            new LivingDamageMeleeWeaponEffect(1.2f));
 
     public static List<MKBow> BOWS = new ArrayList<>();
 
@@ -96,6 +99,7 @@ public class MKWeaponsItems {
         materials.add(new Tuple<>("diamond", DIAMOND_TIER));
         materials.add(new Tuple<>("gold", GOLD_TIER));
         materials.add(new Tuple<>("stone", STONE_TIER));
+        materials.add(new Tuple<>("netherite", NETHERITE_TIER));
         WEAPON_LOOKUP.clear();
         for (Tuple<String, MKTier> mat : materials) {
             for (IMeleeWeaponType weaponType : MeleeWeaponTypes.WEAPON_TYPES.values()) {

@@ -39,6 +39,7 @@ public class ItemEffects {
         addWeaponEffectDeserializer(SkillScalingEffect.NAME, SkillScalingEffect::new);
         addWeaponEffectDeserializer(RangedSkillScalingEffect.NAME, RangedSkillScalingEffect::new);
         addWeaponEffectDeserializer(OnHitAbilityEffect.NAME, OnHitAbilityEffect::new);
+        addWeaponEffectDeserializer(LivingDamageMeleeWeaponEffect.NAME, LivingDamageMeleeWeaponEffect::new);
     }
 
     @Nullable

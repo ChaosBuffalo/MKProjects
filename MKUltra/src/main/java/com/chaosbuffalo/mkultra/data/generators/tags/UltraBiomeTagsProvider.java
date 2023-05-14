@@ -27,5 +27,9 @@ public class UltraBiomeTagsProvider extends BiomeTagsProvider {
                 .addTag(BiomeTags.HAS_VILLAGE_DESERT);
         tag(UltraTags.Biomes.HAS_DEEPSLATE_OBELISK)
                 .addTag(BiomeTags.HAS_VILLAGE_DESERT);
+        tag(UltraTags.Biomes.HAS_HYBOREAN_CRYPT)
+                .addTag(BiomeTags.HAS_VILLAGE_DESERT);
+        tag(UltraTags.Biomes.HAS_DECAYING_CHURCH)
+                .addTag(BiomeTags.HAS_VILLAGE_DESERT);
     }
 }

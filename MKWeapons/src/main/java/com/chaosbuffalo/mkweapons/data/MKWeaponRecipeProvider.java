@@ -1,18 +1,18 @@
 package com.chaosbuffalo.mkweapons.data;
 
+import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.data.recipes.RecipeCategory;
-import net.minecraft.data.recipes.RecipeProvider;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.data.recipes.*;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.common.Tags;
 
 import java.util.Arrays;
@@ -101,13 +101,19 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
     protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
         getHaftRecipe().save(consumer);
         for (MKMeleeWeapon weapon : MKWeaponsItems.WEAPONS) {
-            getRecipe(weapon).save(consumer);
+            if (!weapon.getMKTier().equals(MKWeaponsItems.NETHERITE_TIER)) {
+                getRecipe(weapon).save(consumer);
+            } else {
+                mkNetheriteSmithing(consumer,
+                        MKWeaponsItems.lookupWeapon(MKWeaponsItems.DIAMOND_TIER, weapon.getWeaponType()),
+                        RecipeCategory.COMBAT, weapon);
+            }
+
         }
         for (MKBow bow : MKWeaponsItems.BOWS) {
             getLongbowRecipe(bow).save(consumer);
         }
     }
-
 
     private ShapedRecipeBuilder getHaftRecipe() {
         return ShapedRecipeBuilder.shaped(RecipeCategory.MISC, MKWeaponsItems.Haft.get(), 3)
@@ -118,6 +124,12 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
                 .pattern("SSS")
                 .unlockedBy("has_stick", has(Items.STICK))
                 .unlockedBy("has_leather", has(Tags.Items.LEATHER));
+    }
+
+    private static void mkNetheriteSmithing(Consumer<FinishedRecipe> pFinishedRecipeConsumer, Item pIngredientItem, RecipeCategory pCategory, Item pResultItem) {
+        SmithingTransformRecipeBuilder.smithing(Ingredient.of(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE), Ingredient.of(pIngredientItem), Ingredient.of(Items.NETHERITE_INGOT), pCategory, pResultItem)
+                .unlocks("has_netherite_ingot", has(Items.NETHERITE_INGOT))
+                .save(pFinishedRecipeConsumer, new ResourceLocation(MKWeapons.MODID, getItemName(pResultItem) + "_smithing"));
     }
 
     private ShapedRecipeBuilder getLongbowRecipe(MKBow bow) {

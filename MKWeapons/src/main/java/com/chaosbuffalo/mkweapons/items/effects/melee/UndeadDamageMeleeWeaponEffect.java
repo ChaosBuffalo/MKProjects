@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkweapons.items.effects.melee;
 
+import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.google.common.collect.ImmutableMap;
@@ -17,8 +18,7 @@ import net.minecraft.world.level.Level;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class UndeadDamageMeleeWeaponEffect extends BaseMeleeWeaponEffect {
-    private float damageMultiplier;
+public class UndeadDamageMeleeWeaponEffect extends DamageMultiplierMeleeWeaponEffect {
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.undead_damage");
 
     public UndeadDamageMeleeWeaponEffect(float multiplier) {
@@ -26,29 +26,13 @@ public class UndeadDamageMeleeWeaponEffect extends BaseMeleeWeaponEffect {
         this.damageMultiplier = multiplier;
     }
 
+    @Override
+    public boolean isTargetSuitable(LivingEntity attacker, LivingEntity target, IMKMeleeWeapon weapon, ItemStack stack) {
+        return target.isInvertedHealAndHarm();
+    }
+
     public UndeadDamageMeleeWeaponEffect() {
         super(NAME, ChatFormatting.GOLD);
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        damageMultiplier = dynamic.get("multiplier").asFloat(1.5f);
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("multiplier"), ops.createFloat(damageMultiplier));
-    }
-
-    @Override
-    public float modifyDamageDealt(float damage, IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        if (target.isInvertedHealAndHarm()) {
-            return damage * damageMultiplier;
-        } else {
-            return damage;
-        }
     }
 
     @Override
@@ -56,7 +40,7 @@ public class UndeadDamageMeleeWeaponEffect extends BaseMeleeWeaponEffect {
         super.addInformation(stack, worldIn, tooltip);
         if (Screen.hasShiftDown()) {
             tooltip.add(Component.translatable("mkweapons.weapon_effect.undead_damage.description",
-                    damageMultiplier));
+                    MKAbility.PERCENT_FORMATTER.format(damageMultiplier)));
         }
     }
 }

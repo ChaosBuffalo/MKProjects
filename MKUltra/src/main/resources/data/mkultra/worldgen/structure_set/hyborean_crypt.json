@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 222222,
+    "separation": 25,
+    "spacing": 45
+  },
+  "structures": [
+    {
+      "structure": "mkultra:hyborean_crypt",
+      "weight": 1
+    }
+  ]
+}

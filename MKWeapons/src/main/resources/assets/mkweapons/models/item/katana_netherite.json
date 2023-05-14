@@ -1,0 +1,15 @@
+{
+  "parent": "mkweapons:item/katana_base",
+  "overrides": [
+    {
+      "model": "mkweapons:item/katana_netherite_blocking",
+      "predicate": {
+        "minecraft:blocking": 1.0
+      }
+    }
+  ],
+  "textures": {
+    "0": "mkweapons:item/netherite_tool",
+    "particle": "mkweapons:item/netherite_tool"
+  }
+}

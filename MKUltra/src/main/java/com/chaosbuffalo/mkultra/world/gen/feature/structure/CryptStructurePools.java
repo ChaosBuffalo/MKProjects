@@ -10,6 +10,7 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstapContext;
 import net.minecraft.data.worldgen.Pools;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
@@ -27,6 +28,15 @@ public class CryptStructurePools {
     private static final ResourceLocation CRYPT_ROOM_REMEMBRANCE = new ResourceLocation(MKUltra.MODID, "crypt/crypt_room_remembrance_hall");
     private static final ResourceLocation CRYPT_ROOM_TOMBS = new ResourceLocation(MKUltra.MODID, "crypt/crypt_room_tombs");
 
+
+    public static ResourceKey<StructureTemplatePool> BASE =
+            UltraStructurePools.createKey("crypt/crypt_base");
+
+    public static ResourceKey<StructureTemplatePool> CRYPT_HALLWAYS =
+            UltraStructurePools.createKey("crypt_hallways");
+
+    public static ResourceKey<StructureTemplatePool> CRYPT_ROOMS =
+            UltraStructurePools.createKey("crypt_rooms");
     public static final int GEN_DEPTH = 7;
 
     public static void register(BootstapContext<StructureTemplatePool> pContext, String pName, StructureTemplatePool pValue) {
@@ -37,27 +47,27 @@ public class CryptStructurePools {
         HolderGetter<StructureTemplatePool> holderGetter = pContext.lookup(Registries.TEMPLATE_POOL);
         Holder<StructureTemplatePool> empty = holderGetter.getOrThrow(Pools.EMPTY);
 
-        register(pContext, "crypt/crypt_base", new StructureTemplatePool(empty,
+        pContext.register(BASE, new StructureTemplatePool(empty,
                 ImmutableList.of(
                         Pair.of(MKSinglePoolElement.forTemplate(CRYPT_ENTRANCE, false), 1)
                 ),
                 StructureTemplatePool.Projection.RIGID));
-        register(pContext, "crypt_hallways", new StructureTemplatePool(empty,
+        pContext.register(CRYPT_HALLWAYS, new StructureTemplatePool(empty,
                 ImmutableList.of(
                         Pair.of(MKSinglePoolElement.forTemplate(CRYPT_HALLWAY_1, false), 1),
                         Pair.of(MKSinglePoolElement.forTemplate(CRYPT_FLAT_HALLWAY_LONG_1, false), 1),
-                        Pair.of(MKSinglePoolElement.forTemplate(CRYPT_FLAT_HALLWAY_SHORT_1, false), 1),
-                        Pair.of(MKSinglePoolElement.forTemplate(CRYPT_CORNER_RIGHT_1, false), 1),
-                        Pair.of(MKSinglePoolElement.forTemplate(CRYPT_CORNER_LEFT_1, false), 1)
+                        Pair.of(MKSinglePoolElement.forTemplate(CRYPT_FLAT_HALLWAY_SHORT_1, false), 1)
                 ),
                 StructureTemplatePool.Projection.RIGID));
-        register(pContext, "crypt_rooms", new StructureTemplatePool(empty,
+
+        pContext.register(CRYPT_ROOMS, new StructureTemplatePool(empty,
                 ImmutableList.of(
                         Pair.of(MKSinglePoolElement.forTemplate(CRYPT_ROOM_1, false), 1),
                         Pair.of(MKSinglePoolElement.forTemplate(CRYPT_ROOM_2, false), 1),
                         Pair.of(MKSinglePoolElement.forTemplate(CRYPT_ROOM_3, false), 1),
                         Pair.of(MKSinglePoolElement.forTemplate(CRYPT_ROOM_TOMBS, false), 1),
-                        Pair.of(MKSinglePoolElement.forTemplate(CRYPT_ROOM_REMEMBRANCE, false), 1)
+                        Pair.of(MKSinglePoolElement.forTemplate(CRYPT_ROOM_REMEMBRANCE, false), 1),
+                        Pair.of(MKSinglePoolElement.forTemplate(CRYPT_ROOM_DECAYING, false), 1)
                 ),
                 StructureTemplatePool.Projection.RIGID));
     }

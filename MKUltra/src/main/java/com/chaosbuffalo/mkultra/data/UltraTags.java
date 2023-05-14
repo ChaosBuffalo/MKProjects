@@ -15,6 +15,10 @@ public class UltraTags {
         public static final TagKey<Biome> HAS_NECROTIDE_ALTER = tag("has_necrotide_alter");
         public static final TagKey<Biome> HAS_DEEPSLATE_OBELISK = tag("has_deepslate_obelisk");
 
+        public static final TagKey<Biome> HAS_HYBOREAN_CRYPT = tag("has_hyborean_crypt");
+
+        public static final TagKey<Biome> HAS_DECAYING_CHURCH = tag("has_decaying_church");
+
         private static TagKey<Biome> tag(String name) {
             return TagKey.create(Registries.BIOME, new ResourceLocation(MKUltra.MODID, name));
         }
@@ -25,6 +29,10 @@ public class UltraTags {
         public static final TagKey<Structure> DESERT_TEMPLE_VILLAGE = tag("desert_temple_village");
         public static final TagKey<Structure> NECROTIDE_ALTER = tag("necrotide_alter");
         public static final TagKey<Structure> DEEPSLATE_OBELISK = tag("deepslate_obelisk");
+
+        public static final TagKey<Structure> HYBOREAN_CRYPT = tag("hyborean_crypt");
+
+        public static final TagKey<Structure> DECAYING_CHURCH = tag("decaying_church");
         private static TagKey<Structure> tag(String name) {
             return TagKey.create(Registries.STRUCTURE, new ResourceLocation(MKUltra.MODID, name));
         }

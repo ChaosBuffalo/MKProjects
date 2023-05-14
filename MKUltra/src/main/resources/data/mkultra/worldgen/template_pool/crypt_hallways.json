@@ -35,30 +35,6 @@
         "projection": "rigid"
       },
       "weight": 1
-    },
-    {
-      "element": {
-        "bWaterLog": false,
-        "element_type": "mknpc:mk_single_jigsaw",
-        "location": "mkultra:crypt/crypt_corner_right_1",
-        "processors": {
-          "processors": []
-        },
-        "projection": "rigid"
-      },
-      "weight": 1
-    },
-    {
-      "element": {
-        "bWaterLog": false,
-        "element_type": "mknpc:mk_single_jigsaw",
-        "location": "mkultra:crypt/crypt_corner_left_1",
-        "processors": {
-          "processors": []
-        },
-        "projection": "rigid"
-      },
-      "weight": 1
     }
   ],
   "fallback": "minecraft:empty"

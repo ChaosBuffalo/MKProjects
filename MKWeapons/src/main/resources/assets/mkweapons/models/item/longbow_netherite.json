@@ -1,0 +1,29 @@
+{
+  "parent": "mkweapons:item/longbow_base",
+  "overrides": [
+    {
+      "model": "mkweapons:item/longbow_netherite_pulling_0",
+      "predicate": {
+        "minecraft:pulling": 1.0
+      }
+    },
+    {
+      "model": "mkweapons:item/longbow_netherite_pulling_1",
+      "predicate": {
+        "minecraft:pull": 0.65,
+        "minecraft:pulling": 1.0
+      }
+    },
+    {
+      "model": "mkweapons:item/longbow_netherite_pulling_2",
+      "predicate": {
+        "minecraft:pull": 0.9,
+        "minecraft:pulling": 1.0
+      }
+    }
+  ],
+  "textures": {
+    "0": "mkweapons:item/netherite_tool",
+    "particle": "mkweapons:item/netherite_tool"
+  }
+}
