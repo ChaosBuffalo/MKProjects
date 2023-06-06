@@ -64,10 +64,9 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
             personas.put(name, persona);
         }
 
-        String activePersonaName = DEFAULT_PERSONA_NAME;
-        if (tag.contains("activePersona")) {
-            activePersonaName = tag.getString("activePersona");
-        }
+        String activePersonaName = tag.contains("activePersona") ?
+                tag.getString("activePersona") :
+                DEFAULT_PERSONA_NAME;
 
         loadPersona(activePersonaName);
         return true;
@@ -80,7 +79,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
     }
 
     protected void setActivePersona(Persona persona) {
-        activePersona = persona;
+        activePersona = Objects.requireNonNull(persona, "cannot activate a null persona");
     }
 
     public Persona getActivePersona() {
@@ -97,7 +96,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
 
     public boolean createPersona(String name) {
         if (hasPersona(name)) {
-            MKCore.LOGGER.error("Cannot create a persona named {}! Persona with that name already exists.", name);
+            MKCore.LOGGER.error("Cannot create a persona named {} for {}! Persona with that name already exists.", name, playerData.getEntity());
             return false;
         }
 
@@ -140,10 +139,10 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
     }
 
     private void activatePersonaInternal(Persona persona, boolean firstActivation) {
-        MKCore.LOGGER.debug("activatePersona({}) {} ", persona.getName(), playerData.getEntity());
+//        MKCore.LOGGER.debug("activatePersona({}) {} ", persona.getName(), playerData.getEntity());
         if (!firstActivation && getActivePersona() != persona) {
             Persona current = getActivePersona();
-            MKCore.LOGGER.debug("activatePersona({}) - deactivating previous {}", persona.getName(), current.getName());
+//            MKCore.LOGGER.debug("activatePersona({}) - deactivating previous {}", persona.getName(), current.getName());
             current.deactivate();
             MinecraftForge.EVENT_BUS.post(new PersonaEvent.PersonaDeactivated(current));
         }
@@ -160,7 +159,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
             super(playerData);
 
             setActivePersona(createNewPersona("client_persona"));
-            getActivePersona().getKnowledge().getSyncComponent().attach(playerData.getUpdateEngine());
+            getActivePersona().getSyncComponent().attach(playerData.getUpdateEngine());
         }
     }
 

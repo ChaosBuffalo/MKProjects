@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.editor.PlayerEditorModule;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtension;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
 import com.chaosbuffalo.mkcore.core.player.*;
@@ -52,6 +53,10 @@ public class MKPlayerData implements IMKEntityData {
         attachUpdateEngine(updateEngine);
     }
 
+    private Persona getPersona() {
+        return getPersonaManager().getActivePersona();
+    }
+
     @Override
     public PlayerStats getStats() {
         return stats;
@@ -67,21 +72,17 @@ public class MKPlayerData implements IMKEntityData {
         return abilityExecutor;
     }
 
-    private PlayerKnowledge getKnowledge() {
-        return getPersonaManager().getActivePersona().getKnowledge();
-    }
-
     public PlayerAbilityLoadout getLoadout() {
-        return getKnowledge().getAbilityLoadout();
+        return getPersona().getLoadout();
     }
 
     @Override
     public PlayerAbilityKnowledge getAbilities() {
-        return getKnowledge().getAbilityKnowledge();
+        return getPersona().getAbilities();
     }
 
     public PlayerSkills getSkills() {
-        return getKnowledge().getSkills();
+        return getPersona().getSkills();
     }
 
     public PlayerUpdateEngine getUpdateEngine() {
@@ -93,11 +94,11 @@ public class MKPlayerData implements IMKEntityData {
     }
 
     public PlayerTalentKnowledge getTalents() {
-        return getKnowledge().getTalentKnowledge();
+        return getPersona().getTalents();
     }
 
     public PlayerEntitlementKnowledge getEntitlements() {
-        return getKnowledge().getEntitlementsKnowledge();
+        return getPersona().getEntitlements();
     }
 
     public PlayerEquipment getEquipment() {
@@ -139,7 +140,7 @@ public class MKPlayerData implements IMKEntityData {
     @Override
     public void onJoinWorld() {
         getPersonaManager().ensurePersonaLoaded();
-        getKnowledge().onJoinWorld();
+        getPersona().onJoinWorld();
         getStats().onJoinWorld();
         getAbilityExecutor().onJoinWorld();
         getEffects().onJoinWorld();
@@ -224,7 +225,7 @@ public class MKPlayerData implements IMKEntityData {
     }
 
     public <T extends IPersonaExtension> T getPersonaExtension(Class<T> clazz) {
-        return getPersonaManager().getActivePersona().getExtension(clazz);
+        return getPersona().getExtension(clazz);
     }
 
     @Override
