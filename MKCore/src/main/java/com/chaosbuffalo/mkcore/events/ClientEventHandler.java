@@ -30,13 +30,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
@@ -46,14 +41,12 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 @Mod.EventBusSubscriber(modid = MKCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
@@ -186,38 +179,6 @@ public class ClientEventHandler {
     }
 
     @SubscribeEvent
-    public static void onRender(TickEvent.RenderTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) {
-            Minecraft inst = Minecraft.getInstance();
-            Player player = inst.player;
-            if (player != null) {
-                double dist = player.getAttributeValue(MKAttributes.ATTACK_REACH);
-                float partialTicks = inst.getFrameTime();
-                HitResult result = player.pick(dist, partialTicks, false);
-                Vec3 eyePos = player.getEyePosition(partialTicks);
-
-                double tracedDist2 = dist * dist;
-                if (result != null) {
-                    tracedDist2 = result.getLocation().distanceToSqr(eyePos);
-                }
-                Vec3 lookVec = player.getViewVector(1.0f);
-                Vec3 to = eyePos.add(lookVec.x * dist, lookVec.y * dist, lookVec.z * dist);
-                AABB lookBB = player.getBoundingBox().expandTowards(lookVec.scale(dist)).inflate(1.0D, 1.0D, 1.0D);
-                EntityHitResult entityTrace = ProjectileUtil.getEntityHitResult(player, eyePos, to, lookBB,
-                        (ent) -> !ent.isSpectator() && ent.isPickable(), tracedDist2);
-                MKCore.getPlayer(player).ifPresent(x -> {
-                    if (entityTrace != null) {
-                        Entity entityHit = entityTrace.getEntity();
-                        x.getCombatExtension().setPointedEntity(entityHit);
-                    } else {
-                        x.getCombatExtension().setPointedEntity(null);
-                    }
-                });
-            }
-        }
-    }
-
-    @SubscribeEvent
     public static void onPlayerDataUpdated(PlayerDataEvent.Updated event) {
         if (event.getPlayer().getCommandSenderWorld().isClientSide) {
             Player local = Minecraft.getInstance().player;
@@ -233,7 +194,7 @@ public class ClientEventHandler {
     @SubscribeEvent
     public static void onRenderHand(RenderHandEvent event) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc != null && mc.player != null && event.getHand() == InteractionHand.MAIN_HAND) {
+        if (mc.player != null && event.getHand() == InteractionHand.MAIN_HAND) {
             var renderer =  mc.getEntityRenderDispatcher().getRenderer(mc.player);
             if (renderer instanceof MKPlayerRenderer playerRenderer) {
                 playerRenderer.renderHandFirstPerson(mc.player);
@@ -348,19 +309,14 @@ public class ClientEventHandler {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onAttackReplacement(InputEvent.InteractionKeyMappingTriggered event) {
         if (event.isAttack() && event.getHand() == InteractionHand.MAIN_HAND) {
-            Minecraft inst = Minecraft.getInstance();
-            Player player = inst.player;
-            if (player != null) {
-                Optional<Entity> lookingAt = MKCore.getPlayer(player)
-                        .map(x -> x.getCombatExtension().getPointedEntity())
-                        .orElse(Optional.empty());
-                lookingAt.ifPresent(entityHit -> {
-                    if (!Targeting.isValidFriendly(player, entityHit)) {
-                        doPlayerAttack(player, entityHit, Minecraft.getInstance());
-                        event.setSwingHand(true);
-                    }
-                    event.setCanceled(true);
-                });
+            Minecraft mc = Minecraft.getInstance();
+            Player player = mc.player;
+            if (player != null && mc.crosshairPickEntity != null) {
+                if (!Targeting.isValidFriendly(player, mc.crosshairPickEntity)) {
+                    doPlayerAttack(player, mc.crosshairPickEntity, mc);
+                    event.setSwingHand(true);
+                }
+                event.setCanceled(true);
             }
         }
     }

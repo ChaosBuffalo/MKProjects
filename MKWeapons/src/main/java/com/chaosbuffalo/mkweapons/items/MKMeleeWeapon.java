@@ -36,6 +36,7 @@ import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.ToolAction;
 import net.minecraftforge.common.ToolActions;
 
@@ -73,7 +74,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
                 "Weapon modifier", getDamage(), AttributeModifier.Operation.ADDITION));
         builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID,
                 "Weapon modifier", getWeaponType().getAttackSpeed(), AttributeModifier.Operation.ADDITION));
-        builder.put(MKAttributes.ATTACK_REACH, new AttributeModifier(ATTACK_REACH_MODIFIER,
+        builder.put(ForgeMod.ENTITY_REACH.get(), new AttributeModifier(ATTACK_REACH_MODIFIER,
                 "Weapon modifier", getWeaponType().getReach(), AttributeModifier.Operation.ADDITION));
         builder.put(MKAttributes.MELEE_CRIT, new AttributeModifier(CRIT_CHANCE_MODIFIER,
                 "Weapon modifier", getWeaponType().getCritChance(), AttributeModifier.Operation.ADDITION));

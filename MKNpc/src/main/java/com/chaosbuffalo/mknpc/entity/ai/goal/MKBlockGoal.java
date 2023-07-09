@@ -7,13 +7,13 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.SwordItem;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.ToolActions;
 
 import java.util.EnumSet;
@@ -38,7 +38,7 @@ public class MKBlockGoal extends Goal {
     }
 
     protected double getAttackReachSqr(LivingEntity attackTarget) {
-        double range = attackTarget.getAttributeValue(MKAttributes.ATTACK_REACH) * 2.5;
+        double range = MKAttributes.getValueSafe(ForgeMod.ENTITY_REACH.get(), attackTarget) * 2.5;
         range *= attackTarget.getScale();
         return range * range;
     }

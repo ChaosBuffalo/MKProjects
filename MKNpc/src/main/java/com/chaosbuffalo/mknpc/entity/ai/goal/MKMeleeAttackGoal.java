@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.events.PostAttackEvent;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
@@ -103,7 +102,7 @@ public class MKMeleeAttackGoal extends Goal {
     }
 
     protected double getAttackReachSqr(LivingEntity attackTarget) {
-        double range = entity.getAttributeValue(MKAttributes.ATTACK_REACH);
+        double range = entity.getEntityReach();
         range *= entity.getScale();
         return range * range;
     }

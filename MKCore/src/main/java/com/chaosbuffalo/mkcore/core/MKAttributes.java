@@ -2,7 +2,9 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -144,10 +146,6 @@ public class MKAttributes {
             .setName(MKCore.makeRL("bleed_damage"))
             .setSyncable(true);
 
-    public static final Attribute ATTACK_REACH = new MKRangedAttribute("attribute.name.mk.attack_reach", 3.0, 0.0, 128)
-            .setName(MKCore.makeRL("attack_reach"))
-            .setSyncable(true);
-
     public static final Attribute ABJURATION = new MKRangedAttribute("attribute.name.mk.abjuration", 0, 0, GameConstants.SKILL_MAX)
             .setName(MKCore.makeRL("abjuration"))
             .setSyncable(true);
@@ -253,6 +251,7 @@ public class MKAttributes {
     public static final List<Attribute> COMBAT_SKILLS = new ArrayList<>();
 
     static {
+        // TODO: attr tags or just remove these. They aren't even used
         SPELL_SKILLS.add(EVOCATION);
         SPELL_SKILLS.add(RESTORATION);
         SPELL_SKILLS.add(DIVINATION);
@@ -274,13 +273,20 @@ public class MKAttributes {
         COMBAT_SKILLS.add(ONE_HAND_SLASH);
     }
 
+    public static double getValueSafe(Attribute attr, LivingEntity target) {
+        AttributeInstance instance = target.getAttribute(attr);
+        if (instance != null) {
+            return instance.getValue();
+        } else {
+            return attr.getDefaultValue();
+        }
+    }
 
     public static void iterateEntityAttributes(Consumer<Attribute> consumer) {
         consumer.accept(COOLDOWN);
         consumer.accept(CASTING_SPEED);
         consumer.accept(HEAL_BONUS);
         consumer.accept(BUFF_DURATION);
-        consumer.accept(ATTACK_REACH);
         consumer.accept(ARCANE_DAMAGE);
         consumer.accept(ARCANE_RESISTANCE);
         consumer.accept(FIRE_DAMAGE);
@@ -340,24 +346,21 @@ public class MKAttributes {
     @Mod.EventBusSubscriber(modid = MKCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class Registration {
 
-
         @SubscribeEvent
         public static void registerAttributes(RegisterEvent event) {
-            if (event.getRegistryKey() == ForgeRegistries.ATTRIBUTES.getRegistryKey()) {
-                iterateEntityAttributes(attr -> {
-                    if (attr instanceof MKRangedAttribute) {
-                        event.register(ForgeRegistries.ATTRIBUTES.getRegistryKey(),
-                                ((MKRangedAttribute) attr).getName(), () -> attr);
-                    }
-                });
-                iteratePlayerAttributes(attr -> {
-                    if (attr instanceof MKRangedAttribute) {
-                        event.register(ForgeRegistries.ATTRIBUTES.getRegistryKey(),
-                                ((MKRangedAttribute) attr).getName(), () -> attr);
-                    }
-                });
+            if (event.getRegistryKey() != ForgeRegistries.ATTRIBUTES.getRegistryKey()) {
+                return;
             }
-
+            iterateEntityAttributes(attr -> {
+                if (attr instanceof MKRangedAttribute mkAttr) {
+                    event.register(ForgeRegistries.ATTRIBUTES.getRegistryKey(), mkAttr.getName(), () -> attr);
+                }
+            });
+            iteratePlayerAttributes(attr -> {
+                if (attr instanceof MKRangedAttribute mkAttr) {
+                    event.register(ForgeRegistries.ATTRIBUTES.getRegistryKey(), mkAttr.getName(), () -> attr);
+                }
+            });
         }
     }
 }

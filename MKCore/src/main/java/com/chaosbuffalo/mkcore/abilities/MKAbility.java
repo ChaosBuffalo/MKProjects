@@ -30,6 +30,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ForgeMod;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -230,7 +231,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     protected float getMeleeReach(LivingEntity entity) {
-        return (float) entity.getAttributeValue(MKAttributes.ATTACK_REACH);
+        return (float) MKAttributes.getValueSafe(ForgeMod.ENTITY_REACH.get(), entity);
     }
 
     protected void setCooldownTicks(int ticks) {

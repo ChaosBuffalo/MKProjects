@@ -75,10 +75,11 @@ public abstract class InGameGuiMixins extends GuiComponent {
                     if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
                         float f = this.minecraft.player.getAttackStrengthScale(0.0F);
                         boolean shouldDrawAttackIndicator = false;
-                        Optional<Entity> pointedEntity = MKCore.getPlayer(minecraft.player).map(x -> x.getCombatExtension().getPointedEntity()).orElse(Optional.empty());
-                        if (pointedEntity.isPresent() && pointedEntity.get() instanceof LivingEntity && f >= 1.0F) {
+                        if (minecraft.crosshairPickEntity != null &&
+                                minecraft.crosshairPickEntity instanceof LivingEntity livingEntity &&
+                                f >= 1.0F) {
                             shouldDrawAttackIndicator = this.minecraft.player.getCurrentItemAttackStrengthDelay() > 5.0F;
-                            shouldDrawAttackIndicator = shouldDrawAttackIndicator & pointedEntity.get().isAlive();
+                            shouldDrawAttackIndicator = shouldDrawAttackIndicator & livingEntity.isAlive();
                         }
 
                         int j = this.screenHeight / 2 - 7 + 16;
@@ -99,19 +100,14 @@ public abstract class InGameGuiMixins extends GuiComponent {
     }
 
     private Vector3f getColorForSituation() {
-        if (minecraft.player != null) {
-            return MKCore.getPlayer(minecraft.player).map(x -> {
-                Optional<Entity> target = x.getCombatExtension().getPointedEntity();
-                return target.map(ent -> {
-                    Targeting.TargetRelation relation = Targeting.getTargetRelation(minecraft.player, ent);
-                    return switch (relation) {
-                        case FRIEND -> new Vector3f(0.0f, 1.0f, 0.0f);
-                        case ENEMY -> new Vector3f(1.0f, 0.0f, 0.0f);
-                        case NEUTRAL -> new Vector3f(1.0f, 1.0f, 0.0f);
-                        default -> new Vector3f(1.0f, 1.0f, 1.0f);
-                    };
-                }).orElse(new Vector3f(1.0f, 1.0f, 1.0f));
-            }).orElse(new Vector3f(1.0f, 1.0f, 1.0f));
+        if (minecraft.player != null && minecraft.crosshairPickEntity != null) {
+            Targeting.TargetRelation relation = Targeting.getTargetRelation(minecraft.player, minecraft.crosshairPickEntity);
+            return switch (relation) {
+                case FRIEND -> new Vector3f(0.0f, 1.0f, 0.0f);
+                case ENEMY -> new Vector3f(1.0f, 0.0f, 0.0f);
+                case NEUTRAL -> new Vector3f(1.0f, 1.0f, 0.0f);
+                default -> new Vector3f(1.0f, 1.0f, 1.0f);
+            };
         }
         return new Vector3f(1.0f, 1.0f, 1.0f);
     }

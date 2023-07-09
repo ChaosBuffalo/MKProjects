@@ -78,6 +78,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
@@ -321,6 +322,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
                 .add(Attributes.ATTACK_DAMAGE, attackDamage)
                 .add(Attributes.MOVEMENT_SPEED, movementSpeed)
                 .add(MKNpcAttributes.AGGRO_RANGE.get(), 6)
+                .add(ForgeMod.ENTITY_REACH.get())
                 .add(Attributes.ATTACK_SPEED)
                 .add(Attributes.FOLLOW_RANGE, 32.0D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.5);
@@ -338,6 +340,10 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     public void performRangedAttack(LivingEntity target, float distanceFactor) {
         attackEntityWithRangedAttack(target, distanceFactor, 1.6f);
+    }
+
+    public double getEntityReach() {
+        return getAttributeValue(ForgeMod.ENTITY_REACH.get());
     }
 
     @Override

@@ -1,12 +1,10 @@
 package com.chaosbuffalo.mkcore.network;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.events.PostAttackEvent;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -36,11 +34,8 @@ public class MKItemAttackPacket {
                 return;
             }
             Entity target = entity.getLevel().getEntity(entityId);
-            AttributeInstance instance = entity.getAttribute(MKAttributes.ATTACK_REACH);
-            if (instance == null)
-                return;
-            double reach = instance.getValue();
             if (target != null) {
+                double reach = entity.getEntityReach();
                 if (entity.distanceToSqr(target) <= reach * reach) {
                     entity.attack(target);
                     MKCore.getEntityData(entity).ifPresent(cap -> cap.getCombatExtension().recordSwing());
