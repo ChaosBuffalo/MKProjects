@@ -13,20 +13,18 @@ import org.spongepowered.asm.mixin.Overwrite;
 @Mixin(ShieldItem.class)
 public abstract class ShieldItemMixins {
 
-
     /**
      * @author kovak
      * @reason shield can't block if we're poise broke
      */
     @Overwrite
-    public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand handIn) {
-        ItemStack itemstack = playerIn.getItemInHand(handIn);
-        if (MKCore.getPlayer(playerIn).map(x -> x.getStats().isPoiseBroke()).orElse(false)) {
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        ItemStack itemstack = player.getItemInHand(hand);
+        if (MKCore.getPlayer(player).map(x -> x.getStats().isPoiseBroke()).orElse(false)) {
             return InteractionResultHolder.pass(itemstack);
         } else {
-            playerIn.startUsingItem(handIn);
+            player.startUsingItem(hand);
             return InteractionResultHolder.consume(itemstack);
         }
     }
-
 }

@@ -4,22 +4,22 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "mkcore.refmap.json",
   "mixins": [
+    "DamageSourceMixins",
     "LivingEntityMixins",
     "MobEntityMixins",
     "ShieldItemMixins",
-    "SwordItemMixins",
-    "DamageSourceMixins"
+    "SwordItemMixins"
   ],
   "injectors": {
     "maxShiftBy": 2
   },
   "client": [
-    "ClientPlayerEntityMixins",
-    "InGameGuiMixins",
-    "ItemStackClientMixins",
-    "PotionSpriteUploaderMixins",
-    "WorldRendererMixins",
-    "EntityRendererDispatcherMixins"
+    "client.LocalPlayerMixins",
+    "client.EntityRendererDispatcherMixins",
+    "client.InGameGuiMixins",
+    "client.ItemStackClientMixins",
+    "client.MobEffectTextureManagerMixins",
+    "client.LevelRendererMixins"
   ],
   "minVersion": "0.8"
 }

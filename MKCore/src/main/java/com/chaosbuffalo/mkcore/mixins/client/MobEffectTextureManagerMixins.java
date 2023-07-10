@@ -1,29 +1,22 @@
-package com.chaosbuffalo.mkcore.mixins;
+package com.chaosbuffalo.mkcore.mixins.client;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
-import com.google.common.collect.Streams;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.client.resources.TextureAtlasHolder;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
-import java.util.stream.Stream;
-
 @Mixin(MobEffectTextureManager.class)
-public abstract class PotionSpriteUploaderMixins extends TextureAtlasHolder {
+public abstract class MobEffectTextureManagerMixins extends TextureAtlasHolder {
 
-    public PotionSpriteUploaderMixins(TextureManager textureManagerIn, ResourceLocation atlasTextureLocation, ResourceLocation prefixIn) {
+    public MobEffectTextureManagerMixins(TextureManager textureManagerIn, ResourceLocation atlasTextureLocation, ResourceLocation prefixIn) {
         super(textureManagerIn, atlasTextureLocation, prefixIn);
     }
-
-
 
 //    /**
 //     * @author ralekdev

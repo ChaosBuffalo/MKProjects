@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkcore.mixins;
+package com.chaosbuffalo.mkcore.mixins.client;
 
 import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.client.rendering.MKPlayerRenderer;
@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -18,12 +19,14 @@ import java.util.Map;
 @Mixin(EntityRenderDispatcher.class)
 public abstract class EntityRendererDispatcherMixins {
 
+    @Unique
     private static final Map<String, EntityRendererProvider<AbstractClientPlayer>> PLAYER_PROVIDERS = ImmutableMap.of("default", (p_174098_) -> {
         return new MKPlayerRenderer(p_174098_, false);
     }, "slim", (p_174096_) -> {
         return new MKPlayerRenderer(p_174096_, true);
     });
 
+    @Unique
     private static final Map<String, EntityRendererProvider<AbstractClientPlayer>> VANILLA_PROVIDERS = ImmutableMap.of("default", (p_174098_) -> {
         return new PlayerRenderer(p_174098_, false);
     }, "slim", (p_174096_) -> {
@@ -32,10 +35,13 @@ public abstract class EntityRendererDispatcherMixins {
 
     // redirect player model registration to use ours
     @Redirect(
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderers;createPlayerRenderers(Lnet/minecraft/client/renderer/entity/EntityRendererProvider$Context;)Ljava/util/Map;"),
-            method = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;onResourceManagerReload(Lnet/minecraft/server/packs/resources/ResourceManager;)V"
+            method = "onResourceManagerReload(Lnet/minecraft/server/packs/resources/ResourceManager;)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/entity/EntityRenderers;createPlayerRenderers(Lnet/minecraft/client/renderer/entity/EntityRendererProvider$Context;)Ljava/util/Map;"
+            )
     )
-    private Map<String, EntityRenderer<? extends Player>> proxyCreatePlayerRenderers(EntityRendererProvider.Context p_174052_) {
+    private Map<String, EntityRenderer<? extends Player>> mkcore$proxyCreatePlayerRenderers(EntityRendererProvider.Context p_174052_) {
         ImmutableMap.Builder<String, EntityRenderer<? extends Player>> builder = ImmutableMap.builder();
         Map<String, EntityRendererProvider<AbstractClientPlayer>> providers;
         if (MKConfig.CLIENT.enablePlayerCastAnimations.get()) {

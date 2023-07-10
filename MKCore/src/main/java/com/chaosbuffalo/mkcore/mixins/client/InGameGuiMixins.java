@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkcore.mixins;
+package com.chaosbuffalo.mkcore.mixins.client;
 
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.mojang.blaze3d.systems.RenderSystem;

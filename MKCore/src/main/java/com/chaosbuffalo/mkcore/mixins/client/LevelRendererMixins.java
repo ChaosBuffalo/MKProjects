@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkcore.mixins;
+package com.chaosbuffalo.mkcore.mixins.client;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import javax.annotation.Nullable;
 
 @Mixin(LevelRenderer.class)
-public abstract class WorldRendererMixins {
+public abstract class LevelRendererMixins {
     @Shadow
     @Nullable
     private PostChain transparencyChain;
@@ -39,18 +39,31 @@ public abstract class WorldRendererMixins {
     public abstract void renderClouds(PoseStack matrixStackIn, Matrix4f mat, float partialTicks, double viewEntityX, double viewEntityY, double viewEntityZ);
 
 
-    @Redirect(method = "Lnet/minecraft/client/renderer/LevelRenderer;renderLevel(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V",
-              at = @At(target = "Lnet/minecraft/client/Options;getCloudsType()Lnet/minecraft/client/CloudStatus;", value = "INVOKE"))
-    private CloudStatus interceptCloudStatus(Options instance) {
+    @Redirect(
+            method = "renderLevel(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V",
+            at = @At(
+                    target = "Lnet/minecraft/client/Options;getCloudsType()Lnet/minecraft/client/CloudStatus;",
+                    value = "INVOKE"
+            )
+    )
+    private CloudStatus mkcore$interceptCloudStatus(Options instance) {
         return CloudStatus.OFF;
     }
 
     // move clouds to before particle rendering
-    @Inject(method = "Lnet/minecraft/client/renderer/LevelRenderer;renderLevel(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V",
-            at = @At(target = "Lnet/minecraft/client/renderer/RenderBuffers;crumblingBufferSource()Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;", value = "INVOKE", ordinal = 1, shift = At.Shift.BY, by = 2),
-            locals = LocalCapture.CAPTURE_FAILHARD)
-    private void proxyRedoClouds(PoseStack p_109600_, float p_109601_, long p_109602_, boolean p_109603,
-                                 Camera p_109604_, GameRenderer p_109605_, LightTexture p_109606_, Matrix4f p_109607_, CallbackInfo ci) {
+    @Inject(
+            method = "renderLevel(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V",
+            at = @At(
+                    target = "Lnet/minecraft/client/renderer/RenderBuffers;crumblingBufferSource()Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;",
+                    value = "INVOKE",
+                    ordinal = 1,
+                    shift = At.Shift.BY,
+                    by = 2
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
+    private void mkcore$proxyRedoClouds(PoseStack p_109600_, float p_109601_, long p_109602_, boolean p_109603,
+                                        Camera p_109604_, GameRenderer p_109605_, LightTexture p_109606_, Matrix4f p_109607_, CallbackInfo ci) {
 
         //draw clouds early before particles
         Minecraft mc = Minecraft.getInstance();

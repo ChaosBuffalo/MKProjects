@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkcore.mixins;
+package com.chaosbuffalo.mkcore.mixins.client;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.mojang.authlib.GameProfile;
@@ -14,9 +14,9 @@ import java.util.Collection;
 import java.util.List;
 
 @Mixin(LocalPlayer.class)
-public abstract class ClientPlayerEntityMixins extends AbstractClientPlayer {
+public abstract class LocalPlayerMixins extends AbstractClientPlayer {
 
-    public ClientPlayerEntityMixins(ClientLevel world, GameProfile profile) {
+    public LocalPlayerMixins(ClientLevel world, GameProfile profile) {
         super(world, profile);
     }
 

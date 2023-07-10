@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkcore.mixins;
+package com.chaosbuffalo.mkcore.mixins.client;
 
 import com.chaosbuffalo.mkcore.item.AttributeTooltipManager;
 import com.google.common.collect.ImmutableMultimap;
@@ -22,10 +22,10 @@ import java.util.List;
 public abstract class ItemStackClientMixins {
 
     @Unique
-    private List<Component> tooltipList;
+    private List<Component> mkcore$tooltipList;
 
     @Unique
-    private Player player;
+    private Player mkcore$player;
 
     @Shadow
     public abstract Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot equipmentSlot);
@@ -38,14 +38,14 @@ public abstract class ItemStackClientMixins {
                     value = "INVOKE"
             )
     )
-    private Multimap<Attribute, AttributeModifier> proxyGetAttributeModifiers(ItemStack itemStack, EquipmentSlot equipmentSlot) {
+    private Multimap<Attribute, AttributeModifier> mkcore$proxyGetAttributeModifiers(ItemStack itemStack, EquipmentSlot equipmentSlot) {
         // Don't follow our path if it's building the search tree during startup
-        if (player == null) {
+        if (mkcore$player == null) {
             return getAttributeModifiers(equipmentSlot);
         }
 
-        if (tooltipList != null) {
-            AttributeTooltipManager.renderTooltip(tooltipList, player, itemStack, equipmentSlot);
+        if (mkcore$tooltipList != null) {
+            AttributeTooltipManager.renderTooltip(mkcore$tooltipList, mkcore$player, itemStack, equipmentSlot);
         }
         return ImmutableMultimap.of();
     }
@@ -55,8 +55,8 @@ public abstract class ItemStackClientMixins {
             at = @At("HEAD"),
             argsOnly = true
     )
-    private Player capturePlayer(Player player) {
-        this.player = player;
+    private Player mkcore$capturePlayer(Player player) {
+        this.mkcore$player = player;
         return player;
     }
 
@@ -66,8 +66,8 @@ public abstract class ItemStackClientMixins {
             index = 3,
             ordinal = 0
     )
-    private List<Component> captureList(List<Component> list) {
-        this.tooltipList = list;
+    private List<Component> mkcore$captureList(List<Component> list) {
+        this.mkcore$tooltipList = list;
         return list;
     }
 }

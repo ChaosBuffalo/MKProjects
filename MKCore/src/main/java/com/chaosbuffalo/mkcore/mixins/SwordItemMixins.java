@@ -8,8 +8,6 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 
-import net.minecraft.world.item.Item.Properties;
-
 @Mixin(SwordItem.class)
 public abstract class SwordItemMixins extends TieredItem {
 
@@ -35,22 +33,21 @@ public abstract class SwordItemMixins extends TieredItem {
         return 72000;
     }
 
-
     /**
      * @author kovak
      * @reason make sword block only when we are not poise broke and shield is not in offhand
      */
     @Override
-    public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand handIn) {
-        ItemStack itemstack = playerIn.getItemInHand(handIn);
-        ItemStack offhand = playerIn.getOffhandItem();
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        ItemStack itemstack = player.getItemInHand(hand);
+        ItemStack offhand = player.getOffhandItem();
         if (offhand.getItem() instanceof ShieldItem) {
             return InteractionResultHolder.pass(itemstack);
         }
-        if (MKCore.getPlayer(playerIn).map(x -> x.getStats().isPoiseBroke()).orElse(false)) {
+        if (MKCore.getPlayer(player).map(x -> x.getStats().isPoiseBroke()).orElse(false)) {
             return InteractionResultHolder.pass(itemstack);
         } else {
-            playerIn.startUsingItem(handIn);
+            player.startUsingItem(hand);
             return InteractionResultHolder.consume(itemstack);
         }
     }
