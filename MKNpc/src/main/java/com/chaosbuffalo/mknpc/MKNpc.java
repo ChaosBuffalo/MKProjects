@@ -43,13 +43,13 @@ public class MKNpc {
 
     public MKNpc() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-        MinecraftForge.EVENT_BUS.register(this);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
-
+        modBus.addListener(this::setup);
+        modBus.addListener(this::clientSetup);
+        modBus.addListener(this::enqueueIMC);
+        modBus.addListener(this::processIMC);
         setupRegistries(modBus);
+
+        MinecraftForge.EVENT_BUS.register(this);
         NpcDialogueUtils.setupMKNpcHandlers();
         npcDefinitionManager = new NpcDefinitionManager();
         questDefinitionManager = new QuestDefinitionManager();
@@ -57,10 +57,10 @@ public class MKNpc {
 
     private void setupRegistries(IEventBus modBus) {
         MKNpcAttributes.register(modBus);
-        MKNpcBlocks.register();
+        MKNpcBlocks.register(modBus);
         NpcCommands.register(modBus);
-        MKNpcTileEntityTypes.register();
-        MKNpcEntityTypes.register();
+        MKNpcTileEntityTypes.register(modBus);
+        MKNpcEntityTypes.register(modBus);
         MKNpcEffects.register(modBus);
         MKMemoryModuleTypes.register(modBus);
         MKSensorTypes.register(modBus);

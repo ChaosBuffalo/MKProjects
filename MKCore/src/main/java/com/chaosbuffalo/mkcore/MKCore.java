@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkcore.abilities.AbilityManager;
 import com.chaosbuffalo.mkcore.client.gui.MKOverlay;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.command.MKCommand;
-import com.chaosbuffalo.mkcore.core.ICoreExtension;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -132,10 +131,6 @@ public class MKCore {
                 MKCore.LOGGER.debug("IMC register persona extension from mod {} {}", m.senderModId(), m.method());
                 IPersonaExtensionProvider factory = (IPersonaExtensionProvider) m.messageSupplier().get();
                 PersonaManager.registerExtension(factory);
-            } else if (m.method().equals(CORE_EXTENSION)) {
-                MKCore.LOGGER.debug("IMC core extension from mod {} {}", m.senderModId(), m.method());
-                ICoreExtension extension = (ICoreExtension) m.messageSupplier().get();
-                extension.register();
             }
         });
     }

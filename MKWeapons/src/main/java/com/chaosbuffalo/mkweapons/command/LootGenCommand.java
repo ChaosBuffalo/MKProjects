@@ -13,7 +13,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -31,18 +30,22 @@ public class LootGenCommand {
                         .suggests(LootGenCommand::suggestLootTiers)
                         .then(Commands.argument("loot_slot", LootSlotArgument.definition())
                                 .suggests(LootGenCommand::suggestLootSlots)
-                                .then(Commands.argument("difficulty", DoubleArgumentType.doubleArg(GameConstants.MIN_DIFFICULTY, GameConstants.MAX_DIFFICULTY))
+                                .then(Commands.argument("difficulty", difficultyArgument())
                                         .executes(LootGenCommand::summon))));
     }
 
+    private static DoubleArgumentType difficultyArgument() {
+        return DoubleArgumentType.doubleArg(GameConstants.MIN_DIFFICULTY, GameConstants.MAX_DIFFICULTY);
+    }
+
     static CompletableFuture<Suggestions> suggestLootTiers(final CommandContext<CommandSourceStack> context,
-                                                           final SuggestionsBuilder builder) throws CommandSyntaxException {
+                                                           final SuggestionsBuilder builder) {
         return SharedSuggestionProvider.suggest(LootTierManager.LOOT_TIERS.keySet().stream()
                 .map(ResourceLocation::toString), builder);
     }
 
     static CompletableFuture<Suggestions> suggestLootSlots(final CommandContext<CommandSourceStack> context,
-                                                           final SuggestionsBuilder builder) throws CommandSyntaxException {
+                                                           final SuggestionsBuilder builder) {
         return SharedSuggestionProvider.suggest(LootSlotManager.SLOTS.keySet().stream()
                 .map(ResourceLocation::toString), builder);
     }

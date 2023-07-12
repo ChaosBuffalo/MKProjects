@@ -48,18 +48,16 @@ public class EntityEventHandler {
     @SuppressWarnings("unused")
     @SubscribeEvent
     public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> e) {
-        if (e.getObject() instanceof Player) {
-            Player playerEntity = (Player) e.getObject();
+        if (e.getObject() instanceof Player playerEntity) {
             CoreCapabilities.PlayerDataProvider.attach(e, playerEntity);
-        } else if (e.getObject() instanceof LivingEntity) {
-            LivingEntity livingEntity = (LivingEntity) e.getObject();
+        } else if (e.getObject() instanceof LivingEntity livingEntity) {
             CoreCapabilities.EntityDataProvider.attach(e, livingEntity);
         }
     }
 
     @SubscribeEvent
     public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
-        if (event.getEntity().getCommandSenderWorld().isClientSide())
+        if (event.getEntity().getLevel().isClientSide())
             return;
 
         if (event.getEntity() instanceof LivingEntity) {
@@ -74,15 +72,13 @@ public class EntityEventHandler {
         });
     }
 
-    private static int applyMending(LivingEntity entityIn, int xpValue, int xpPerDamage) {
+    private static int applyMending(LivingEntity entityIn, int xpValue, int xpPerDurability) {
         Map.Entry<EquipmentSlot, ItemStack> entry = EnchantmentHelper.getRandomItemWith(Enchantments.MENDING, entityIn, ItemStack::isDamaged);
         if (entry != null) {
             ItemStack stack = entry.getValue();
-            if (!stack.isEmpty() && stack.isDamaged()) {
-                int i = Math.min((int) (xpValue * stack.getXpRepairRatio()), stack.getDamageValue());
-                xpValue -= i / Math.max(1, xpPerDamage);
-                stack.setDamageValue(stack.getDamageValue() - i);
-            }
+            int i = Math.min((int) (xpValue * stack.getXpRepairRatio()), stack.getDamageValue());
+            stack.setDamageValue(stack.getDamageValue() - i);
+            xpValue -= i / Math.max(1, xpPerDurability);
         }
         return xpValue;
     }
@@ -94,13 +90,12 @@ public class EntityEventHandler {
 
     @SubscribeEvent
     public static void onPlayerPickupXP(PlayerXpEvent.PickupXp event) {
-        if (!MKConfig.SERVER.enablePartyXpShare.get().booleanValue())
+        if (!MKConfig.SERVER.enablePartyXpShare.get())
             return;
 
-        int rangeSq = MKConfig.SERVER.partyXpShareDistance.get().intValue();
+        int rangeSq = MKConfig.SERVER.partyXpShareDistance.get();
 
-        if (event.getEntity() instanceof ServerPlayer) {
-            ServerPlayer serverPlayer = (ServerPlayer) event.getEntity();
+        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             Team team = event.getEntity().getTeam();
             MinecraftServer server = serverPlayer.getServer();
             if (team != null && server != null) {
@@ -114,10 +109,10 @@ public class EntityEventHandler {
 
                     for (Player player : playersInRange) {
                         if (!player.is(serverPlayer)) {
-                            MKCore.LOGGER.info("onPlayerPickupXP giving {} to {}", splitAmount, player);
-                            if (MKConfig.SERVER.enablePartyXpShareMending.get().booleanValue()) {
+//                            MKCore.LOGGER.info("onPlayerPickupXP giving {} to {}", splitAmount, player);
+                            if (MKConfig.SERVER.enablePartyXpShareMending.get()) {
                                 splitAmount = applyMending(player, splitAmount, 2);
-                                MKCore.LOGGER.info("onPlayerPickupXP post mending {}", splitAmount);
+//                                MKCore.LOGGER.info("onPlayerPickupXP post mending {}", splitAmount);
                             }
                             if (splitAmount > 0) {
                                 player.giveExperiencePoints(splitAmount);
@@ -144,13 +139,11 @@ public class EntityEventHandler {
 
     @SubscribeEvent
     public static void onStartTracking(PlayerEvent.StartTracking event) {
-//        MKCore.LOGGER.info("StartTracking {} {}", event.getTarget(), event.getTarget().getEntityId());
-        if (event.getEntity() instanceof ServerPlayer) {
-            ServerPlayer playerEntity = (ServerPlayer) event.getEntity();
-
-            MKCore.getEntityData(event.getTarget()).ifPresent(targetData -> targetData.onPlayerStartTracking(playerEntity));
-            if (event.getTarget() instanceof IUpdateEngineProvider) {
-                ((IUpdateEngineProvider) event.getTarget()).getUpdateEngine().sendAll(playerEntity);
+        if (event.getEntity() instanceof ServerPlayer playerEntity) {
+            MKCore.getEntityData(event.getTarget())
+                    .ifPresent(targetData -> targetData.onPlayerStartTracking(playerEntity));
+            if (event.getTarget() instanceof IUpdateEngineProvider provider) {
+                provider.getUpdateEngine().sendAll(playerEntity);
             }
         }
     }

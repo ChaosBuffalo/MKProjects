@@ -28,6 +28,10 @@ public class MKLootReward extends QuestReward {
         addAttributes(this.lootTier, this.lootSlot);
     }
 
+    public MKLootReward(ResourceLocation lootTier, LootSlot lootSlot, MutableComponent description) {
+        this(lootTier, lootSlot.getName(), description);
+    }
+
     public MKLootReward() {
         super(TYPE_NAME, defaultDescription);
         addAttributes(this.lootTier, this.lootSlot);

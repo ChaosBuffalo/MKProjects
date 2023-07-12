@@ -46,7 +46,7 @@ public class LootSlotManager {
         return SLOTS.get(name);
     }
 
-    public static void setupLootSlots() {
+    static {
         addLootSlot(MAIN_HAND);
         addLootSlot(OFF_HAND);
         addLootSlot(CHEST);
