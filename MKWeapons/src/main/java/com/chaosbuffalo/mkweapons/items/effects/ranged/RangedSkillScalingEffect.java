@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
-import com.chaosbuffalo.mkweapons.ClientUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
@@ -60,7 +59,7 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
     public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
         tooltip.add(Component.translatable(skill.getDescriptionId()).withStyle(color));
         if (Screen.hasShiftDown()) {
-            float skillLevel = ClientUtils.getClientSkillLevel(skill);
+            float skillLevel = player != null ?  MKAbility.getSkillLevel(player, skill) : 0.0f;
             double bonus = skillLevel * baseDamage;
             tooltip.add(Component.translatable("mkweapons.weapon_effect.ranged_skill_scaling.description",
                     Component.translatable(skill.getDescriptionId()), MKAbility.NUMBER_FORMATTER.format(bonus)));
@@ -79,17 +78,17 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
     }
 
     @Override
-    public void onSkillChange(Player player) {
-        onEntityUnequip(player);
-        onEntityEquip(player);
-    }
-
-    @Override
     public void onEntityUnequip(LivingEntity entity) {
         AttributeInstance attr = entity.getAttribute(MKAttributes.RANGED_DAMAGE);
         if (attr != null) {
             attr.removeModifier(skillScaling);
         }
+    }
+
+    @Override
+    public void onSkillChange(Player player) {
+        onEntityUnequip(player);
+        onEntityEquip(player);
     }
 
     @Override

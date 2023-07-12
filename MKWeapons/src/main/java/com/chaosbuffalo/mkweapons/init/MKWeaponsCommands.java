@@ -1,8 +1,11 @@
 package com.chaosbuffalo.mkweapons.init;
 
 import com.chaosbuffalo.mkweapons.MKWeapons;
+import com.chaosbuffalo.mkweapons.command.LootGenCommand;
 import com.chaosbuffalo.mkweapons.command.LootSlotArgument;
 import com.chaosbuffalo.mkweapons.command.LootTierArgument;
+import com.mojang.brigadier.CommandDispatcher;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
@@ -27,5 +30,9 @@ public class MKWeaponsCommands {
 
     public static void register(IEventBus modBus) {
         ARGUMENT_TYPES.register(modBus);
+    }
+
+    public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(LootGenCommand.register());
     }
 }

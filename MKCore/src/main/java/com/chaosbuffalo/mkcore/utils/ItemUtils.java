@@ -9,9 +9,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
 
-import java.util.ArrayList;
 import java.util.UUID;
-import java.util.function.Function;
 
 public class ItemUtils {
     public static final UUID OFFHAND_UUID = UUID.fromString("80df259e-29f8-4779-bd46-94a24e313c2d");
@@ -19,27 +17,8 @@ public class ItemUtils {
     private static final float DEFAULT_CRIT_MULTIPLIER = 1.5f;
     public static CriticalStats<Item> CRIT = new CriticalStats<>(DEFAULT_CRIT_RATE, DEFAULT_CRIT_MULTIPLIER);
 
-    public static ArrayList<Function<Item, Boolean>> IS_TWO_HANDED_CALLBACKS = new ArrayList<>();
-
     public static void addCriticalStats(Class<? extends Item> itemIn, int priority, float criticalChance, float damageMultiplier) {
         CRIT.addCriticalStats(itemIn, priority, criticalChance, damageMultiplier);
-    }
-
-    public static boolean isSuitableOffhandWeapon(ItemStack item) {
-        return !item.equals(ItemStack.EMPTY) && item.getItem() instanceof SwordItem; // we need to add is no shield back here
-    }
-
-    public static void addTwoHandedCallback(Function<Item, Boolean> func) {
-        IS_TWO_HANDED_CALLBACKS.add(func);
-    }
-
-    public static boolean isTwoHandedWeapon(Item item) {
-        for (Function<Item, Boolean> callback : IS_TWO_HANDED_CALLBACKS) {
-            if (callback.apply(item)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public static boolean isRangedWeapon(ItemStack item) {

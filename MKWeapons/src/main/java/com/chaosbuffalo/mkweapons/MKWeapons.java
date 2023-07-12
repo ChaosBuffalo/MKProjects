@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkweapons;
 
 import com.chaosbuffalo.mkweapons.capabilities.IArrowData;
 import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
-import com.chaosbuffalo.mkweapons.command.WeaponsCommands;
 import com.chaosbuffalo.mkweapons.event.MKWeaponsEventHandler;
 import com.chaosbuffalo.mkweapons.extensions.MKWCuriosExtension;
 import com.chaosbuffalo.mkweapons.init.MKWeaponEffects;
@@ -61,8 +60,6 @@ public class MKWeapons {
         // some preinit code
         PacketHandler.setupHandler();
         MKWeaponsEventHandler.registerCombatTriggers();
-        WeaponsCommands.registerArguments();
-
     }
 
 
@@ -89,7 +86,7 @@ public class MKWeapons {
 
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
-        WeaponsCommands.register(event.getDispatcher());
+        MKWeaponsCommands.registerCommands(event.getDispatcher());
     }
 
     public static LazyOptional<IArrowData> getArrowCapability(AbstractArrow entity) {
