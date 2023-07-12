@@ -51,7 +51,7 @@ public class EntityUtils {
         if (entity.getMainHandItem().isEmpty()) {
             return GameConstants.TICKS_PER_SECOND;
         } else {
-            return 1.0D / entity.getAttribute(Attributes.ATTACK_SPEED).getValue() *
+            return 1.0D / entity.getAttributeValue(Attributes.ATTACK_SPEED) *
                     GameConstants.TICKS_PER_SECOND;
         }
 

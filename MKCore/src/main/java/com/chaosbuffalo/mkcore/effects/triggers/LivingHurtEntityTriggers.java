@@ -229,14 +229,14 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         Entity projectile = source.getDirectEntity();
         float damage = event.getAmount();
         if (DamageUtils.isNonMKProjectileDamage(source)) {
-            damage += livingSource.getAttribute(MKAttributes.RANGED_DAMAGE).getValue();
+            damage += livingSource.getAttributeValue(MKAttributes.RANGED_DAMAGE);
         }
         boolean wasCrit = false;
         if (projectile != null && CoreDamageTypes.RangedDamage.get().rollCrit(livingSource, livingTarget, projectile)) {
             damage = CoreDamageTypes.RangedDamage.get().applyCritDamage(livingSource, livingTarget, projectile, damage);
             wasCrit = true;
         }
-        damage = (float) (damage * (1.0 - livingTarget.getAttribute(MKAttributes.RANGED_RESISTANCE).getValue()));
+        damage = (float) (damage * (1.0 - livingTarget.getAttributeValue(MKAttributes.RANGED_RESISTANCE)));
         event.setAmount(damage);
         if (wasCrit) {
             sendCritPacket(livingTarget, livingSource,

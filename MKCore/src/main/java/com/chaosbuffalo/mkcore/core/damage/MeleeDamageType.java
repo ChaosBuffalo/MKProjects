@@ -39,6 +39,6 @@ public class MeleeDamageType extends MKDamageType {
     @Override
     public float applyResistance(LivingEntity target, float originalDamage) {
         return CombatRules.getDamageAfterAbsorb(originalDamage, target.getArmorValue(),
-                (float) target.getAttribute(getResistanceAttribute()).getValue());
+                (float) target.getAttributeValue(getResistanceAttribute()));
     }
 }
