@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkcore.client.gui.PlayerPageBase;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.client.gui.widgets.ScrollingListPanelLayout;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.client.gui.widgets.QuestListEntry;
@@ -19,7 +18,6 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import com.chaosbuffalo.mkwidgets.utils.TextureRegion;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.InterModComms;
 
 
 public class QuestPage extends PlayerPageBase {
@@ -107,29 +105,23 @@ public class QuestPage extends PlayerPageBase {
         persistScrollingListPanelState(() -> currentScrollingPanel, wasResized);
     }
 
-    static class PageFactory implements PlayerPageRegistry.Extension {
-
-        @Override
-        public ResourceLocation getId() {
-            return PAGE_ID;
-        }
-
-        @Override
-        public Component getDisplayName() {
-            return Component.translatable("mknpc.gui.page.quests.name");
-        }
-
-        @Override
-        public MKScreen createPage(MKPlayerData playerData) {
-            return new QuestPage(playerData);
-        }
-    }
-
     public static void registerPlayerPage() {
-        PlayerPageRegistry.ExtensionProvider provider = PageFactory::new;
-        InterModComms.sendTo("mkcore", "register_player_page", () -> {
-            MKFactionMod.LOGGER.info("Faction register player page");
-            return provider;
+        final Component displayName = Component.translatable("mknpc.gui.page.quests.name");
+        PlayerPageRegistry.register(new PlayerPageRegistry.PageDefinition() {
+            @Override
+            public ResourceLocation getId() {
+                return PAGE_ID;
+            }
+
+            @Override
+            public Component getDisplayName() {
+                return displayName;
+            }
+
+            @Override
+            public MKScreen createPage(MKPlayerData playerData) {
+                return new QuestPage(playerData);
+            }
         });
     }
 }

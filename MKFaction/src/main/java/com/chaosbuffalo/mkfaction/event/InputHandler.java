@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mkfaction.client.gui.FactionPage;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionStatus;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -20,7 +21,6 @@ import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 
@@ -29,18 +29,20 @@ import javax.annotation.Nullable;
 public class InputHandler {
 
     public static final KeyMapping CON_KEY_BIND = new KeyMapping("key.mkfaction.con.desc",
-            GLFW.GLFW_KEY_C,
+            InputConstants.KEY_C,
             "key.mkfaction.category");
     public static final KeyMapping FACTION_PANEL_KEY_BIND = new KeyMapping("key.mkfaction.panel.desc",
-            GLFW.GLFW_KEY_P,
+            InputConstants.KEY_P,
             "key.mkfaction.category");
 
-
-    public static void registerKeyBinding(RegisterKeyMappingsEvent evt) {
-        evt.register(CON_KEY_BIND);
-        evt.register(FACTION_PANEL_KEY_BIND);
+    @Mod.EventBusSubscriber(modid = MKFactionMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class ModEvents {
+        @SubscribeEvent
+        public static void registerKeyBinding(RegisterKeyMappingsEvent event) {
+            event.register(CON_KEY_BIND);
+            event.register(FACTION_PANEL_KEY_BIND);
+        }
     }
-
 
     @Nullable
     public static <E extends Entity> EntityHitResult getLookingAtNonPlayer(Class<E> clazz,

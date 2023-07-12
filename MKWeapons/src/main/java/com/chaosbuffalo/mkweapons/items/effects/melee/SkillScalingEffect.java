@@ -19,7 +19,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -65,7 +64,7 @@ public class SkillScalingEffect extends BaseMeleeWeaponEffect {
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
+    public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
         tooltip.add(Component.translatable(skill.getDescriptionId()).withStyle(color));
         if (Screen.hasShiftDown()) {
             float skillLevel = ClientUtils.getClientSkillLevel(skill);

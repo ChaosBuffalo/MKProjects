@@ -16,8 +16,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -91,8 +91,8 @@ public class BleedMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
-        super.addInformation(stack, worldIn, tooltip);
+    public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
+        super.addInformation(stack, player, tooltip);
         if (Screen.hasShiftDown()) {
             tooltip.add(Component.translatable("mkweapons.weapon_effect.bleed.description",
                     damageMultiplier, durationSeconds, maxStacks, Component.translatable(skill.getDescriptionId())));

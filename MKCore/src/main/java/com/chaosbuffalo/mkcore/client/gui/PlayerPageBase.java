@@ -77,7 +77,7 @@ public abstract class PlayerPageBase extends MKScreen implements IPlayerDataAwar
             super(x, y, ROW_HEIGHT);
             setMargins(2, 2, 1, 1);
             setPaddingLeft(2).setPaddingRight(2);
-            for (PlayerPageRegistry.Extension otherPage : PlayerPageRegistry.getAllPages()) {
+            for (PlayerPageRegistry.PageDefinition otherPage : PlayerPageRegistry.getAllPages()) {
                 MKButton button = new MKButton(otherPage.getDisplayName());
                 button.setWidth(currentPage.font.width(otherPage.getDisplayName()) + 10);
                 button.setEnabled(!otherPage.getId().equals(currentPage.getPageId()));

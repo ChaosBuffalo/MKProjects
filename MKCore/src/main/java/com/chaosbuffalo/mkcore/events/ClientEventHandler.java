@@ -51,56 +51,57 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-@Mod.EventBusSubscriber(modid = MKCore.MOD_ID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = MKCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ClientEventHandler {
 
-    private static KeyMapping playerMenuBind;
-    private static KeyMapping particleEditorBind;
+    private static final KeyMapping playerMenuBind = new KeyMapping("key.hud.playermenu",
+            InputConstants.KEY_J, "key.mkcore.category");
+    private static final KeyMapping particleEditorBind = new KeyMapping("key.hud.particle_editor",
+            InputConstants.KEY_ADD, "key.mkcore.category");
     private static KeyMapping[] activeAbilityBinds;
     private static KeyMapping[] ultimateAbilityBinds;
     private static KeyMapping itemAbilityBind;
 
+    @Mod.EventBusSubscriber(modid = MKCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class ModEvents {
+        @SubscribeEvent
+        public static void registerKeyBinding(RegisterKeyMappingsEvent event) {
+            event.register(playerMenuBind);
+            event.register(particleEditorBind);
 
-    public static void registerKeyBinding(RegisterKeyMappingsEvent evt) {
-        playerMenuBind = new KeyMapping("key.hud.playermenu", GLFW.GLFW_KEY_J, "key.mkcore.category");
-        evt.register(playerMenuBind);
+            activeAbilityBinds = new KeyMapping[GameConstants.MAX_BASIC_ABILITIES];
+            for (int i = 0; i < GameConstants.MAX_BASIC_ABILITIES; i++) {
+                String bindName = String.format("key.hud.active_ability%d", i + 1);
+                int key = InputConstants.KEY_1 + i;
+                KeyMapping bind = new KeyMapping(bindName, KeyConflictContext.IN_GAME, KeyModifier.ALT,
+                        InputConstants.getKey(key, 0), "key.mkcore.abilitybar");
 
-        particleEditorBind = new KeyMapping("key.hud.particle_editor", GLFW.GLFW_KEY_KP_ADD, "key.mkcore.category");
-        evt.register(particleEditorBind);
+                event.register(bind);
+                activeAbilityBinds[i] = bind;
+            }
 
-        activeAbilityBinds = new KeyMapping[GameConstants.MAX_BASIC_ABILITIES];
-        for (int i = 0; i < GameConstants.MAX_BASIC_ABILITIES; i++) {
-            String bindName = String.format("key.hud.active_ability%d", i + 1);
-            int key = GLFW.GLFW_KEY_1 + i;
-            KeyMapping bind = new KeyMapping(bindName, KeyConflictContext.IN_GAME, KeyModifier.ALT,
-                    InputConstants.getKey(key, 0), "key.mkcore.abilitybar");
+            ultimateAbilityBinds = new KeyMapping[GameConstants.MAX_ULTIMATE_ABILITIES];
+            for (int i = 0; i < GameConstants.MAX_ULTIMATE_ABILITIES; i++) {
+                String bindName = String.format("key.hud.ultimate_ability%d", i + 1);
+                int key = InputConstants.KEY_6 + i;
+                KeyMapping bind = new KeyMapping(bindName, KeyConflictContext.IN_GAME, KeyModifier.ALT,
+                        InputConstants.getKey(key, 0), "key.mkcore.abilitybar");
 
-            evt.register(bind);
-            activeAbilityBinds[i] = bind;
+                event.register(bind);
+                ultimateAbilityBinds[i] = bind;
+            }
+
+
+            int defaultItemKey = InputConstants.KEY_8;
+            itemAbilityBind = new KeyMapping("key.hud.item_ability", KeyConflictContext.IN_GAME, KeyModifier.ALT,
+                    InputConstants.getKey(defaultItemKey, 0), "key.mkcore.abilitybar");
+            event.register(itemAbilityBind);
         }
-
-        ultimateAbilityBinds = new KeyMapping[GameConstants.MAX_ULTIMATE_ABILITIES];
-        for (int i = 0; i < GameConstants.MAX_ULTIMATE_ABILITIES; i++) {
-            String bindName = String.format("key.hud.ultimate_ability%d", i + 1);
-            int key = GLFW.GLFW_KEY_6 + i;
-            KeyMapping bind = new KeyMapping(bindName, KeyConflictContext.IN_GAME, KeyModifier.ALT,
-                    InputConstants.getKey(key, 0), "key.mkcore.abilitybar");
-
-            evt.register(bind);
-            ultimateAbilityBinds[i] = bind;
-        }
-
-
-        int defaultItemKey = GLFW.GLFW_KEY_8;
-        itemAbilityBind = new KeyMapping("key.hud.item_ability", KeyConflictContext.IN_GAME, KeyModifier.ALT,
-                InputConstants.getKey(defaultItemKey, 0), "key.mkcore.abilitybar");
-        evt.register(itemAbilityBind);
     }
 
     public static float getTotalGlobalCooldown() {

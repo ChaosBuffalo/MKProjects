@@ -17,12 +17,12 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.InterModComms;
 
 import java.util.Comparator;
 import java.util.List;
 
 public class FactionPage extends PlayerPageBase {
+    public static final ResourceLocation PAGE_ID = new ResourceLocation(MKFactionMod.MODID, "factions");
 
     protected MKScrollView scrollView;
 
@@ -87,29 +87,23 @@ public class FactionPage extends PlayerPageBase {
 
     }
 
-    static class PageFactory implements PlayerPageRegistry.Extension {
-
-        @Override
-        public ResourceLocation getId() {
-            return new ResourceLocation(MKFactionMod.MODID, "factions");
-        }
-
-        @Override
-        public Component getDisplayName() {
-            return Component.literal("Factions");
-        }
-
-        @Override
-        public MKScreen createPage(MKPlayerData playerData) {
-            return new FactionPage(playerData);
-        }
-    }
-
     public static void registerPlayerPage() {
-        PlayerPageRegistry.ExtensionProvider provider = PageFactory::new;
-        InterModComms.sendTo("mkcore", "register_player_page", () -> {
-            MKFactionMod.LOGGER.debug("Faction register player page");
-            return provider;
+        final Component displayName = Component.literal("Factions");
+        PlayerPageRegistry.register(new PlayerPageRegistry.PageDefinition() {
+            @Override
+            public ResourceLocation getId() {
+                return PAGE_ID;
+            }
+
+            @Override
+            public Component getDisplayName() {
+                return displayName;
+            }
+
+            @Override
+            public MKScreen createPage(MKPlayerData playerData) {
+                return new FactionPage(playerData);
+            }
         });
     }
 }

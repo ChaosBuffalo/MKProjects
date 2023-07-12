@@ -209,7 +209,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
         return mkTier;
     }
 
-    public void addToTooltip(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
+    public void addToTooltip(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
         if (getWeaponType().isTwoHanded()) {
             tooltip.add(Component.translatable("mkweapons.two_handed.name")
                     .withStyle(ChatFormatting.GRAY));
@@ -218,7 +218,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
             }
         }
         for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
-            effect.addInformation(stack, worldIn, tooltip);
+            effect.addInformation(stack, player, tooltip);
         }
         MKAbility ability = getAbility(stack);
         if (ability != null) {

@@ -3,17 +3,15 @@ package com.chaosbuffalo.mkfaction;
 import com.chaosbuffalo.mkfaction.capabilities.PlayerFactionHandler;
 import com.chaosbuffalo.mkfaction.client.gui.FactionPage;
 import com.chaosbuffalo.mkfaction.command.FactionCommand;
-import com.chaosbuffalo.mkfaction.event.InputHandler;
 import com.chaosbuffalo.mkfaction.faction.FactionDefaultManager;
 import com.chaosbuffalo.mkfaction.faction.FactionManager;
 import com.chaosbuffalo.mkfaction.init.FactionCommands;
 import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mkfaction.network.PacketHandler;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -27,19 +25,21 @@ import org.apache.logging.log4j.Logger;
 public class MKFactionMod {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final String MODID = "mkfaction";
-    private FactionManager factionManager;
-    private FactionDefaultManager factionDefaultManager;
+    private final FactionManager factionManager;
+    private final FactionDefaultManager factionDefaultManager;
 
     public MKFactionMod() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        // Register the enqueueIMC method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
+        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modBus.addListener(this::setup);
+        modBus.addListener(this::clientSetup);
+        modBus.addListener(this::enqueueIMC);
+
         MinecraftForge.EVENT_BUS.register(this);
-        MKFactions.register(FMLJavaModLoadingContext.get().getModEventBus());
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(InputHandler::registerKeyBinding);
+        MKFactions.register(modBus);
+
         factionManager = new FactionManager();
         factionDefaultManager = new FactionDefaultManager();
-        FactionCommands.register(FMLJavaModLoadingContext.get().getModEventBus());
+        FactionCommands.register(modBus);
     }
 
 
@@ -57,6 +57,9 @@ public class MKFactionMod {
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
         PlayerFactionHandler.registerPersonaExtension();
-        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> FactionPage::registerPlayerPage);
+    }
+
+    private void clientSetup(final FMLClientSetupEvent event) {
+        event.enqueueWork(FactionPage::registerPlayerPage);
     }
 }

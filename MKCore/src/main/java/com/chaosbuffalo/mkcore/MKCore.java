@@ -22,10 +22,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
@@ -35,7 +32,6 @@ import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -59,7 +55,6 @@ public class MKCore {
     private final ParticleAnimationManager particleAnimationManager;
     public static final String CORE_EXTENSION = "mk_core_extension";
     public static final String PERSONA_EXTENSION = "register_persona_extension";
-    public static final String REGISTER_PLAYER_PAGE = "register_player_page";
 
     public static MKCore INSTANCE;
 
@@ -73,7 +68,6 @@ public class MKCore {
         modBus.addListener(this::modifyAttributesEvent);
         // Register the processIMC method for modloading
         modBus.addListener(this::processIMC);
-        modBus.addListener(ClientEventHandler::registerKeyBinding);
         MKCoreRegistry.register(modBus);
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
@@ -85,9 +79,7 @@ public class MKCore {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        // some preinit code
         PacketHandler.setupHandler();
-//        MKCommand.registerArguments();
         ParticleAnimationManager.setupDeserializers();
         AbilityManager.setupDeserializers();
     }
@@ -135,7 +127,6 @@ public class MKCore {
     private void processIMC(final InterModProcessEvent event) {
         MKCore.LOGGER.debug("MKCore.processIMC");
         internalIMCStageSetup();
-        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> PlayerPageRegistry::checkClientIMC);
         event.getIMCStream().forEach(m -> {
             if (m.method().equals(PERSONA_EXTENSION)) {
                 MKCore.LOGGER.debug("IMC register persona extension from mod {} {}", m.senderModId(), m.method());

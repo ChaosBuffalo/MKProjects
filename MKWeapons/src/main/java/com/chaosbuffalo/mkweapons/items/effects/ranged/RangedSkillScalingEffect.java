@@ -21,7 +21,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -58,7 +57,7 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
 //    }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
+    public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
         tooltip.add(Component.translatable(skill.getDescriptionId()).withStyle(color));
         if (Screen.hasShiftDown()) {
             float skillLevel = ClientUtils.getClientSkillLevel(skill);
