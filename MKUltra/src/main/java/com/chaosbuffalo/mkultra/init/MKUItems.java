@@ -1,30 +1,57 @@
 package com.chaosbuffalo.mkultra.init;
 
+import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.item.MKUArmorMaterial;
+import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
+import com.chaosbuffalo.mkweapons.items.MKBow;
+import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.armor.MKArmorItem;
 import com.chaosbuffalo.mkweapons.items.effects.armor.ArmorModifierEffect;
+import com.chaosbuffalo.mkweapons.items.effects.melee.ManaDrainWeaponEffect;
+import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedManaDrainEffect;
+import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedModifierEffect;
+import com.chaosbuffalo.mkweapons.items.effects.ranged.RapidFireRangedWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
+import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
+import com.chaosbuffalo.mkweapons.items.weapon.tier.MKTier;
+import com.chaosbuffalo.mkweapons.items.weapon.tier.MKWrapperTier;
+import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
+import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import com.google.common.collect.Lists;
+import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.registries.RegistryObject;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
+@Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class MKUItems {
 
     public static final UUID CHEST_UUID = UUID.fromString("434f17f4-4763-4d27-afdb-368e76ab259e");
     public static final UUID LEGGINGS_UUID = UUID.fromString("1ac6cd1d-7416-4757-89e6-b20d3206464d");
     public static final UUID HELMET_UUID = UUID.fromString("dfb52730-bba0-4b22-8458-f6d9ed687b33");
     public static final UUID FEET_UUID = UUID.fromString("9baf459d-e898-402d-9915-af25a217fedd");
+
+    public static MKTier BRONZE_TIER = new MKTier("bronze", 1, 150, 5.0F, 1.0F, 12,
+                () -> Ingredient.of(Items.COPPER_INGOT), BlockTags.NEEDS_IRON_TOOL, Tags.Items.INGOTS_COPPER,
+            new ManaDrainWeaponEffect(0.5f, 0.5f));
 
     public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, MKUltra.MODID);
 
@@ -138,6 +165,40 @@ public final class MKUItems {
                                     new AttributeModifier(FEET_UUID,"seawoven", 4.0, AttributeModifier.Operation.ADDITION))
                     ))));
 
+    public static RegistryObject<MKArmorItem> ancientBronzeHelmet = REGISTRY.register("ancient_bronze_helmet",
+            () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_BRONZE_CHAINMAIL, ArmorItem.Type.HELMET,
+                    (new Item.Properties()),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.ARETE,
+                                    new AttributeModifier(HELMET_UUID, "ancient_bronze", 0.1, AttributeModifier.Operation.MULTIPLY_TOTAL))
+                    ))));
+
+    public static RegistryObject<MKArmorItem> ancientBronzeLeggings = REGISTRY.register("ancient_bronze_leggings",
+            () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_BRONZE_CHAINMAIL, ArmorItem.Type.LEGGINGS,
+                    (new Item.Properties()),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(Attributes.MOVEMENT_SPEED,
+                                    new AttributeModifier(LEGGINGS_UUID, "ancient_bronze", 0.15, AttributeModifier.Operation.MULTIPLY_TOTAL))
+                    ))));
+
+    public static RegistryObject<MKArmorItem> ancientBronzeChestplate = REGISTRY.register("ancient_bronze_chestplate",
+            () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_BRONZE_CHAINMAIL, ArmorItem.Type.CHESTPLATE,
+                    (new Item.Properties()),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(Attributes.MAX_HEALTH,
+                                    new AttributeModifier(CHEST_UUID,"ancient_bronze", 10.0, AttributeModifier.Operation.ADDITION)),
+                            new AttributeOptionEntry(Attributes.ATTACK_DAMAGE,
+                                    new AttributeModifier(CHEST_UUID, "ancient_bronze", 2.0, AttributeModifier.Operation.ADDITION))
+                    ))));
+
+    public static RegistryObject<MKArmorItem> ancientBronzeBoots = REGISTRY.register("ancient_bronze_boots",
+            () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_BRONZE_CHAINMAIL, ArmorItem.Type.BOOTS,
+                    (new Item.Properties()),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(Attributes.ATTACK_SPEED,
+                                    new AttributeModifier(FEET_UUID,"seawoven", 0.12, AttributeModifier.Operation.MULTIPLY_TOTAL))
+                    ))));
+
     public static RegistryObject<Item> destroyedTrooperHelmet = REGISTRY.register("destroyed_trooper_helmet",
             () -> new Item(new Item.Properties()));
 
@@ -155,6 +216,82 @@ public final class MKUItems {
 
     public static void register(IEventBus bus) {
         REGISTRY.register(bus);
+    }
+
+    public static Map<IMKTier, Map<IMeleeWeaponType, Item>> WEAPON_LOOKUP = new HashMap<>();
+    public static List<MKMeleeWeapon> WEAPONS = new ArrayList<>();
+    public static List<MKBow> BOWS = new ArrayList<>();
+
+    private static void putWeaponForLookup(IMKTier tier, IMeleeWeaponType weaponType, Item item) {
+        WEAPON_LOOKUP.putIfAbsent(tier, new HashMap<>());
+        WEAPON_LOOKUP.get(tier).put(weaponType, item);
+    }
+
+    public static Item lookupWeapon(IMKTier tier, IMeleeWeaponType weaponType) {
+        return WEAPON_LOOKUP.get(tier).get(weaponType);
+    }
+
+    @SubscribeEvent
+    public static void registerItems(RegisterEvent evt) {
+        if (evt.getRegistryKey() != ForgeRegistries.ITEMS.getRegistryKey()) {
+            return;
+        }
+        Set<Tuple<String, IMKTier>> materials = new HashSet<>();
+        materials.add(new Tuple<>("bronze", BRONZE_TIER));
+        WEAPONS.clear();
+        BOWS.clear();
+        WEAPON_LOOKUP.clear();
+        for (Tuple<String, IMKTier> mat : materials) {
+            for (IMeleeWeaponType weaponType : MeleeWeaponTypes.WEAPON_TYPES.values()) {
+                MKMeleeWeapon weapon = new MKMeleeWeapon(mat.getB(), weaponType,
+                        (new Item.Properties()));
+                WEAPONS.add(weapon);
+                putWeaponForLookup(mat.getB(), weaponType, weapon);
+                evt.register(ForgeRegistries.ITEMS.getRegistryKey(), new ResourceLocation(MKUltra.MODID,
+                        String.format("%s_%s", weaponType.getName().getPath(), mat.getA())), () -> weapon);
+            }
+            RangedModifierEffect rangedMods = new RangedModifierEffect();
+            rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT,
+                    new AttributeModifier(MKWeaponsItems.RANGED_WEP_UUID, "Bow Crit", 0.05, AttributeModifier.Operation.ADDITION));
+            rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT_MULTIPLIER,
+                    new AttributeModifier(MKWeaponsItems.RANGED_WEP_UUID, "Bow Crit", 0.25, AttributeModifier.Operation.ADDITION));
+            MKBow bow = new MKBow(
+                    new Item.Properties().durability(mat.getB().getUses() * 3), mat.getB(),
+                    GameConstants.TICKS_PER_SECOND * 2.5f, 4.0f,
+                    new RapidFireRangedWeaponEffect(7, .10f),
+                    rangedMods,
+                    new RangedManaDrainEffect(0.5f, 0.5f)
+            );
+            BOWS.add(bow);
+            evt.register(ForgeRegistries.ITEMS.getRegistryKey(),
+                    new ResourceLocation(MKUltra.MODID, String.format("longbow_%s", mat.getA())), () -> bow);
+        }
+    }
+
+    public static void registerItemProperties() {
+        for (MKBow bow : BOWS) {
+            ItemProperties.register(bow, new ResourceLocation("pull"), (itemStack, world, entity, seed) -> {
+                if (entity == null) {
+                    return 0.0F;
+                } else {
+                    return !(entity.getUseItem().getItem() instanceof MKBow) ? 0.0F :
+                            (float) (itemStack.getUseDuration() - entity.getUseItemRemainingTicks()) / bow.getDrawTime(itemStack, entity);
+                }
+            });
+            ItemProperties.register(bow, new ResourceLocation("pulling"), (itemStack, world, entity, seed) -> {
+                return entity != null && entity.isUsingItem() && entity.getUseItem() == itemStack ? 1.0F : 0.0F;
+            });
+        }
+        for (MKMeleeWeapon weapon : WEAPONS) {
+            if (MeleeWeaponTypes.WITH_BLOCKING.contains(weapon.getWeaponType())) {
+                ItemProperties.register(weapon, new ResourceLocation("blocking"),
+                        (itemStack, world, entity, seed) -> entity != null && entity.isUsingItem()
+                                && entity.getUseItem() == itemStack ? 1.0F : 0.0F);
+            }
+
+        }
+
+
     }
 
 }

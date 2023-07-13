@@ -32,7 +32,8 @@ public class UltraItemTagsProvider extends ItemTagsProvider {
         tag(CoreTags.Items.LIGHT_ARMOR)
                 .add(MKUItems.seawovenBoots.get(), MKUItems.seawovenHelmet.get(), MKUItems.seawovenChestplate.get(), MKUItems.seawovenLeggings.get());
         tag(CoreTags.Items.MEDIUM_ARMOR)
-                .add(MKUItems.trooperKnightLeggings.get(), MKUItems.trooperKnightBoots.get(), MKUItems.trooperKnightHelmet.get(), MKUItems.trooperKnightChestplate.get());
+                .add(MKUItems.trooperKnightLeggings.get(), MKUItems.trooperKnightBoots.get(), MKUItems.trooperKnightHelmet.get(), MKUItems.trooperKnightChestplate.get())
+                .add(MKUItems.ancientBronzeBoots.get(), MKUItems.ancientBronzeChestplate.get(), MKUItems.ancientBronzeLeggings.get(), MKUItems.ancientBronzeHelmet.get());
         tag(CoreTags.Items.HEAVY_ARMOR)
                 .add(MKUItems.greenKnightHelmet.get(), MKUItems.greenKnightChestplate.get(), MKUItems.greenKnightBoots.get(), MKUItems.greenKnightLeggings.get());
 

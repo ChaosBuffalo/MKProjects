@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkweapons.items.effects;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.AccessoryModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.armor.ArmorModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.*;
+import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedManaDrainEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedSkillScalingEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RapidFireRangedWeaponEffect;
@@ -40,6 +41,8 @@ public class ItemEffects {
         addWeaponEffectDeserializer(RangedSkillScalingEffect.NAME, RangedSkillScalingEffect::new);
         addWeaponEffectDeserializer(OnHitAbilityEffect.NAME, OnHitAbilityEffect::new);
         addWeaponEffectDeserializer(LivingDamageMeleeWeaponEffect.NAME, LivingDamageMeleeWeaponEffect::new);
+        addWeaponEffectDeserializer(ManaDrainWeaponEffect.NAME, ManaDrainWeaponEffect::new);
+        addWeaponEffectDeserializer(RangedManaDrainEffect.NAME, RangedManaDrainEffect::new);
     }
 
     @Nullable

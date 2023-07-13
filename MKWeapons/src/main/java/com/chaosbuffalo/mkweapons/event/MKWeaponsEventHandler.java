@@ -138,7 +138,8 @@ public class MKWeaponsEventHandler {
         float newDamage = event.getAmount();
         if (trueSource instanceof LivingEntity) {
             LivingEntity livingSource = (LivingEntity) trueSource;
-            if (DamageUtils.isMinecraftPhysicalDamage(source)) {
+            boolean isMelee = DamageUtils.isMeleeDamage(source);
+            if (isMelee) {
                 ItemStack mainHand = livingSource.getMainHandItem();
                 if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon) {
                     Item item = mainHand.getItem();
@@ -153,6 +154,15 @@ public class MKWeaponsEventHandler {
                 for (IAccessoryEffect effect : handler.getEffects()) {
                     newDamage = effect.modifyDamageDealt(newDamage, handler.getAccessory(),
                             handler.getStack(), livingTarget, livingSource);
+                }
+            }
+            if (isMelee) {
+                ItemStack mainHand = livingSource.getMainHandItem();
+                if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon) {
+                    Item item = mainHand.getItem();
+                    for (IMeleeWeaponEffect effect : ((IMKMeleeWeapon) item).getWeaponEffects(mainHand)) {
+                        effect.onHurt(newDamage, (IMKMeleeWeapon) item, mainHand, livingTarget, livingSource);
+                    }
                 }
             }
         }

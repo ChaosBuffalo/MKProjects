@@ -27,8 +27,74 @@
       "value": "An Ancient King"
     },
     {
+      "dropChances": 2,
+      "lootOptions": [
+        {
+          "lootSlotName": "mkweapons:rings",
+          "lootSlotTier": "mkultra:ancient_king",
+          "weight": 1.0
+        },
+        {
+          "lootSlotName": "mkweapons:earrings",
+          "lootSlotTier": "mkultra:ancient_king",
+          "weight": 3.0
+        }
+      ],
+      "noLootChance": 0.2,
+      "noLootIncrease": 0.25,
+      "optionType": "mknpc:extra_loot"
+    },
+    {
       "optionType": "mknpc:equipment",
       "slotOptions": {
+        "chest": [
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"minecraft:air\", Count: 1b}",
+            "weight": 2.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:ancient_bronze_chestplate\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          }
+        ],
+        "feet": [
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"minecraft:air\", Count: 1b}",
+            "weight": 2.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:ancient_bronze_boots\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          }
+        ],
+        "head": [
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"minecraft:air\", Count: 1b}",
+            "weight": 2.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:ancient_bronze_helmet\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          }
+        ],
+        "legs": [
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"minecraft:air\", Count: 1b}",
+            "weight": 2.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:ancient_bronze_leggings\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          }
+        ],
         "mainhand": [
           {
             "dropChance": 0.0,
@@ -38,6 +104,16 @@
           {
             "dropChance": 0.0,
             "item": "{id: \"mkweapons:greatsword_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:battleaxe_bronze\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:greatsword_bronze\", Count: 1b, tag: {Damage: 0}}",
             "weight": 1.0
           }
         ]

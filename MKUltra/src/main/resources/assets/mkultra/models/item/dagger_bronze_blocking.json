@@ -1,0 +1,7 @@
+{
+  "parent": "mkweapons:item/dagger_base_blocking",
+  "textures": {
+    "0": "mkultra:item/bronze_tool",
+    "particle": "mkultra:item/bronze_tool"
+  }
+}

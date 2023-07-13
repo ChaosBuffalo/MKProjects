@@ -11,7 +11,8 @@ import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
 import com.chaosbuffalo.mkweapons.items.effects.melee.LivingDamageMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RapidFireRangedWeaponEffect;
-import com.chaosbuffalo.mkweapons.items.weapon.tier.MKTier;
+import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
+import com.chaosbuffalo.mkweapons.items.weapon.tier.MKWrapperTier;
 import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import com.chaosbuffalo.mkweapons.items.weapon.types.WeaponTypeManager;
@@ -43,19 +44,19 @@ public class MKWeaponsItems {
     }
 
     public static List<MKMeleeWeapon> WEAPONS = new ArrayList<>();
-    private static final UUID RANGED_WEP_UUID = UUID.fromString("dbaf479e-515e-4ebc-94dd-eb5a4014bb64");
+    public static final UUID RANGED_WEP_UUID = UUID.fromString("dbaf479e-515e-4ebc-94dd-eb5a4014bb64");
 
-    public static MKTier IRON_TIER = new MKTier(Tiers.IRON, "iron", Tags.Items.INGOTS_IRON);
-    public static MKTier WOOD_TIER = new MKTier(Tiers.WOOD, "wood", ItemTags.PLANKS);
-    public static MKTier DIAMOND_TIER = new MKTier(Tiers.DIAMOND, "diamond", Tags.Items.GEMS_DIAMOND);
-    public static MKTier GOLD_TIER = new MKTier(Tiers.GOLD, "gold", Tags.Items.INGOTS_GOLD);
-    public static MKTier STONE_TIER = new MKTier(Tiers.STONE, "stone", Tags.Items.COBBLESTONE);
-    public static MKTier NETHERITE_TIER = new MKTier(Tiers.NETHERITE, "netherite", Tags.Items.INGOTS_NETHERITE,
+    public static MKWrapperTier IRON_TIER = new MKWrapperTier(Tiers.IRON, "iron", Tags.Items.INGOTS_IRON);
+    public static MKWrapperTier WOOD_TIER = new MKWrapperTier(Tiers.WOOD, "wood", ItemTags.PLANKS);
+    public static MKWrapperTier DIAMOND_TIER = new MKWrapperTier(Tiers.DIAMOND, "diamond", Tags.Items.GEMS_DIAMOND);
+    public static MKWrapperTier GOLD_TIER = new MKWrapperTier(Tiers.GOLD, "gold", Tags.Items.INGOTS_GOLD);
+    public static MKWrapperTier STONE_TIER = new MKWrapperTier(Tiers.STONE, "stone", Tags.Items.COBBLESTONE);
+    public static MKWrapperTier NETHERITE_TIER = new MKWrapperTier(Tiers.NETHERITE, "netherite", Tags.Items.INGOTS_NETHERITE,
             new LivingDamageMeleeWeaponEffect(1.2f));
 
     public static List<MKBow> BOWS = new ArrayList<>();
 
-    public static Map<MKTier, Map<IMeleeWeaponType, Item>> WEAPON_LOOKUP = new HashMap<>();
+    public static Map<IMKTier, Map<IMeleeWeaponType, Item>> WEAPON_LOOKUP = new HashMap<>();
 
     public static RegistryObject<Item> Haft = REGISTRY.register("haft",
             () -> new Item(new Item.Properties()));
@@ -75,15 +76,18 @@ public class MKWeaponsItems {
     public static RegistryObject<Item> SilverEarring = REGISTRY.register("silver_earring",
             () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
+    public static RegistryObject<Item> CopperEarring = REGISTRY.register("copper_earring",
+            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
+
     public static RegistryObject<Item> GoldEarring = REGISTRY.register("gold_earring",
             () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
-    public static void putWeaponForLookup(MKTier tier, IMeleeWeaponType weaponType, Item item) {
+    public static void putWeaponForLookup(IMKTier tier, IMeleeWeaponType weaponType, Item item) {
         WEAPON_LOOKUP.putIfAbsent(tier, new HashMap<>());
         WEAPON_LOOKUP.get(tier).put(weaponType, item);
     }
 
-    public static Item lookupWeapon(MKTier tier, IMeleeWeaponType weaponType) {
+    public static Item lookupWeapon(IMKTier tier, IMeleeWeaponType weaponType) {
         return WEAPON_LOOKUP.get(tier).get(weaponType);
     }
 
@@ -93,7 +97,7 @@ public class MKWeaponsItems {
             return;
         }
         MeleeWeaponTypes.registerWeaponTypes();
-        Set<Tuple<String, MKTier>> materials = new HashSet<>();
+        Set<Tuple<String, IMKTier>> materials = new HashSet<>();
         materials.add(new Tuple<>("iron", IRON_TIER));
         materials.add(new Tuple<>("wood", WOOD_TIER));
         materials.add(new Tuple<>("diamond", DIAMOND_TIER));
@@ -101,7 +105,9 @@ public class MKWeaponsItems {
         materials.add(new Tuple<>("stone", STONE_TIER));
         materials.add(new Tuple<>("netherite", NETHERITE_TIER));
         WEAPON_LOOKUP.clear();
-        for (Tuple<String, MKTier> mat : materials) {
+        BOWS.clear();
+        WEAPONS.clear();
+        for (Tuple<String, IMKTier> mat : materials) {
             for (IMeleeWeaponType weaponType : MeleeWeaponTypes.WEAPON_TYPES.values()) {
                 MKMeleeWeapon weapon = new MKMeleeWeapon(mat.getB(), weaponType,
                         (new Item.Properties()));

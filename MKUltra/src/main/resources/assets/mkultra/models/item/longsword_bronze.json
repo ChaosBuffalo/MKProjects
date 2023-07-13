@@ -1,0 +1,15 @@
+{
+  "parent": "mkweapons:item/longsword_base",
+  "overrides": [
+    {
+      "model": "mkultra:item/longsword_bronze_blocking",
+      "predicate": {
+        "minecraft:blocking": 1.0
+      }
+    }
+  ],
+  "textures": {
+    "0": "mkultra:item/bronze_tool",
+    "particle": "mkultra:item/bronze_tool"
+  }
+}

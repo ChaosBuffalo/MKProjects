@@ -116,5 +116,10 @@
   "mkweapons.weapon_effect.on_hit_ability.name": "On Hit: %s",
   "mkweapons.weapon_effect.on_hit_ability.description": "Proc Chance: %s, Casts at Skill Level: %s",
   "mkweapons.weapon_effect.living_damage.description": "Deals %s Damage to Living creatures.",
-  "mkweapons.weapon_effect.living_damage.name": "Vorpal"
+  "mkweapons.weapon_effect.living_damage.name": "Vorpal",
+  "mkweapons.weapon_effect.mana_drain.description": "Drains mana from the target equivalent to %s of the damage dealt, returning %s of that to the wielder.",
+  "mkweapons.weapon_effect.mana_drain.name": "Mana Drain",
+  "mkweapons.weapon_effect.ranged_mana_drain.description": "When your arrow hits the target, drains mana equivalent to %s of the damage dealt, returning %s of that to the wielder.",
+  "mkweapons.weapon_effect.ranged_mana_drain.name": "Mana Drain",
+  "item.mkweapons.copper_earring": "Copper Earring"
 }

@@ -119,5 +119,19 @@
   "item.mkultra.seawoven_chestplate": "Seawoven Robes",
   "item.mkultra.seawoven_boots": "Seawoven Anklets",
   "item.mkultra.seawoven_helmet": "Seawoven Circlet",
-  "item.mkultra.seawoven_leggings": "Seawoven Leggings"
+  "item.mkultra.seawoven_leggings": "Seawoven Leggings",
+  "item.mkultra.dagger_bronze": "Bronze Dagger",
+  "item.mkultra.longsword_bronze": "Bronze Longsword",
+  "item.mkultra.greatsword_bronze": "Bronze Greatsword",
+  "item.mkultra.katana_bronze": "Bronze Katana",
+  "item.mkultra.staff_bronze": "Bronze Quarterstaff",
+  "item.mkultra.spear_bronze": "Bronze Spear",
+  "item.mkultra.mace_bronze": "Bronze Mace",
+  "item.mkultra.warhammer_bronze": "Bronze Warhammer",
+  "item.mkultra.battleaxe_bronze": "Bronze Battleaxe",
+  "item.mkweapons.longbow_bronze": "Bronze Longbow",
+  "item.mkultra.ancient_bronze_chestplate": "Ancient Bronze Cuirass",
+  "item.mkultra.ancient_bronze_boots": "Ancient Bronze Boots",
+  "item.mkultra.ancient_bronze_helmet": "Ancient Bronze Coif",
+  "item.mkultra.ancient_bronze_leggings": "Ancient Bronze Leggings"
 }

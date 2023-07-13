@@ -84,7 +84,7 @@ public class MKWeapons {
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
-        MKWeaponsItems.registerItemProperties();
+        event.enqueueWork(MKWeaponsItems::registerItemProperties);
     }
 
     @SubscribeEvent

@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkultra.extensions.MKUNpcExtensions;
 import com.chaosbuffalo.mkultra.init.*;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
@@ -18,6 +19,7 @@ public class MKUltra {
 
     public MKUltra() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modBus.addListener(this::clientSetup);
         MKUEffects.register(modBus);
         MKUEntities.register(modBus);
         MKUAbilities.register(modBus);
@@ -28,6 +30,10 @@ public class MKUltra {
         MKUFactions.register(modBus);
         MKUItems.register(modBus);
         modBus.addListener(this::enqueueIMC);
+    }
+
+    private void clientSetup(final FMLClientSetupEvent event) {
+        event.enqueueWork(MKUItems::registerItemProperties);
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {

@@ -13,19 +13,25 @@ import java.util.function.Supplier;
 
 public enum MKUArmorMaterial implements ArmorMaterial {
 
-    GREEN_KNIGHT_ARMOR("mkultra:green_knight", 25, new int[]{3, 6, 7, 3}, 15, SoundEvents.ARMOR_EQUIP_IRON,
-            0.0F, 0.0F, () -> {
-        return Ingredient.of(Items.IRON_INGOT);
-    }),
+    GREEN_KNIGHT_ARMOR("mkultra:green_knight", 25, new int[]{3, 6, 7, 3}, 15,
+            SoundEvents.ARMOR_EQUIP_IRON,
+            0.0F, 0.0F,
+            () -> Ingredient.of(Items.IRON_INGOT)),
     TROOPER_KNIGHT_ARMOR("mkultra:trooper_knight", 18, new int[]{1, 4, 5, 2}, 12,
-            SoundEvents.ARMOR_EQUIP_IRON, 0.0F, 0.0F, () -> {
-        return Ingredient.of(MKUItems.corruptedPigIronPlate.get());
-    }),
+            SoundEvents.ARMOR_EQUIP_IRON,
+            0.0F, 0.0F,
+            () -> Ingredient.of(MKUItems.corruptedPigIronPlate.get())),
 
     SEAWOVEN_ARMOR("mkultra:seawoven", 18, new int[]{1, 2, 3, 2}, 14,
-            SoundEvents.ARMOR_EQUIP_LEATHER, 0.0f, 0.0f, () -> {
-        return Ingredient.of(MKUItems.seawovenScrap.get());
-    });
+            SoundEvents.ARMOR_EQUIP_LEATHER,
+            0.0f, 0.0f,
+            () -> Ingredient.of(MKUItems.seawovenScrap.get())),
+
+    ANCIENT_BRONZE_CHAINMAIL("mkultra:ancient_bronze_chainmail", 22, new int[]{2, 5, 6, 2}, 18,
+            SoundEvents.ARMOR_EQUIP_CHAIN,
+            0.0f, 0.0f,
+            () -> Ingredient.of(Items.COPPER_INGOT)
+    );
 
 
     private static final int[] MAX_DAMAGE_ARRAY = new int[]{13, 15, 16, 11};
