@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkultra.item.MKUArmorMaterial;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
+import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
 import com.chaosbuffalo.mkweapons.items.armor.MKArmorItem;
 import com.chaosbuffalo.mkweapons.items.effects.armor.ArmorModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.ManaDrainWeaponEffect;
@@ -16,7 +17,6 @@ import com.chaosbuffalo.mkweapons.items.effects.ranged.RapidFireRangedWeaponEffe
 import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.MKTier;
-import com.chaosbuffalo.mkweapons.items.weapon.tier.MKWrapperTier;
 import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import com.google.common.collect.Lists;
@@ -69,6 +69,12 @@ public final class MKUItems {
 
     public static RegistryObject<Item> drownProjectileItem = REGISTRY.register("drown_projectile",
             () -> new Item(new Item.Properties()));
+
+    public static RegistryObject<Item> corruptedGauntlets = REGISTRY.register("corrupted_gauntlets",
+            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
+
+    public static RegistryObject<Item> necrotideBand = REGISTRY.register("necrotide_band",
+            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
     static List<AttributeOptionEntry> gkHelmetAttrs = Lists.newArrayList(
             new AttributeOptionEntry(MKAttributes.COOLDOWN,

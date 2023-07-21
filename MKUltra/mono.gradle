@@ -18,6 +18,14 @@ project.ext.dependentProjects = [
 
 apply from: '../common.gradle'
 
+minecraft {
+    runs {
+        data {
+            args '--existing-mod', 'mkweapons'
+        }
+    }
+}
+
 idea.module {
     excludeDirs << file("run")
 }

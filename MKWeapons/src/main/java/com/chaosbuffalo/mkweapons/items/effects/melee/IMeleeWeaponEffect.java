@@ -26,5 +26,8 @@ public interface IMeleeWeaponEffect extends IItemEffect {
 
     }
 
-
+    @Override
+    default IMeleeWeaponEffect copy() {
+        return (IMeleeWeaponEffect) IItemEffect.super.copy();
+    }
 }

@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mkweapons.items.randomization.options;
 
+import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.serialization.attributes.IScalableAttribute;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
@@ -34,6 +36,14 @@ public class AccessoryEffectOption extends EffectOption<IAccessoryEffect> {
 
     @Override
     public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
-        MKAccessory.getAccessoryHandler(stack).ifPresent(x -> getItemEffects().forEach(x::addEffect));
+        MKAccessory.getAccessoryHandler(stack).ifPresent(x -> getItemEffects().forEach(eff -> {
+            IAccessoryEffect copied = eff.copy();
+            copied.getAttributes().forEach(attr -> {
+                if (attr instanceof IScalableAttribute sAttr) {
+                    sAttr.scale(difficulty / GameConstants.MAX_DIFFICULTY);
+                }
+            });
+            x.addEffect(copied);
+        }));
     }
 }

@@ -156,6 +156,13 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         );
         def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.NECROMANCER));
         def.addOption(new NotableOption());
+        ResourceLocation lootTierName = new ResourceLocation(MKUltra.MODID, "necrotide_golem");
+        def.addOption(new ExtraLootOption()
+                .withLootOptions(new LootOptionEntry(LootSlotManager.RINGS.getName(), lootTierName, 3.0))
+                .withLootOptions(new LootOptionEntry(LootSlotManager.HANDS.getName(), lootTierName, 1.0))
+                .withDropChances(1)
+                .withNoLootChance(0.0)
+                .withNoLootIncrease(0.0));
         return def;
     }
 

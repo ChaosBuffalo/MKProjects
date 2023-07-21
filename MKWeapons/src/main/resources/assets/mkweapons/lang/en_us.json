@@ -121,5 +121,7 @@
   "mkweapons.weapon_effect.mana_drain.name": "Mana Drain",
   "mkweapons.weapon_effect.ranged_mana_drain.description": "When your arrow hits the target, drains mana equivalent to %s of the damage dealt, returning %s of that to the wielder.",
   "mkweapons.weapon_effect.ranged_mana_drain.name": "Mana Drain",
-  "item.mkweapons.copper_earring": "Copper Earring"
+  "item.mkweapons.copper_earring": "Copper Earring",
+  "mkweapons.accessory_effect.on_hit_ability.name": "On Melee Hit: %s",
+  "mkweapons.accessory_effect.on_hit_ability.description": "Proc Chance: %s, Casts at Skill Level: %s"
 }

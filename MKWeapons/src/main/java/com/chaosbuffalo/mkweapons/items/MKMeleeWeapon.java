@@ -9,7 +9,10 @@ import com.chaosbuffalo.mkcore.item.ILimitItemTooltip;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkweapons.capabilities.IWeaponData;
+import com.chaosbuffalo.mkweapons.capabilities.MKCurioItemHandler;
 import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
+import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
+import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
@@ -120,6 +123,12 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
                 if (cap.getCombatExtension().getEntityTicksSinceLastSwing() >= EntityUtils.getCooldownPeriod(attacker)) {
                     for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
                         effect.onHit(this, stack, target, attacker);
+                    }
+                    List<MKCurioItemHandler> curios = MKAccessory.getMKCurios(attacker);
+                    for (MKCurioItemHandler handler : curios) {
+                        for (IAccessoryEffect effect : handler.getEffects()) {
+                            effect.onMeleeHit(this, stack, target, attacker);
+                        }
                     }
                 }
             }

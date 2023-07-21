@@ -1,8 +1,11 @@
 package com.chaosbuffalo.mkweapons.items.randomization.options;
 
+import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.serialization.attributes.IScalableAttribute;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
+import com.chaosbuffalo.mkweapons.items.effects.armor.IArmorEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.IRandomizationSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
@@ -35,6 +38,14 @@ public class MeleeEffectOption extends EffectOption<IMeleeWeaponEffect> {
     @Override
     public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
         stack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).ifPresent(
-                x -> getItemEffects().forEach(x::addMeleeWeaponEffect));
+                x -> getItemEffects().forEach(eff -> {
+                    IMeleeWeaponEffect copied = eff.copy();
+                    copied.getAttributes().forEach(attr -> {
+                        if (attr instanceof IScalableAttribute sAttr) {
+                            sAttr.scale(difficulty / GameConstants.MAX_DIFFICULTY);
+                        }
+                    });
+                    x.addMeleeWeaponEffect(copied);
+                }));
     }
 }

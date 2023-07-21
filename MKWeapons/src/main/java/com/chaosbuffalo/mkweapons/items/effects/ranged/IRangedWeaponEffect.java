@@ -27,4 +27,9 @@ public interface IRangedWeaponEffect extends IItemEffect {
     default double modifyArrowDamage(double inDamage, LivingEntity shooter, AbstractArrow arrow) {
         return inDamage;
     }
+
+    @Override
+    default IRangedWeaponEffect copy() {
+        return (IRangedWeaponEffect) IItemEffect.super.copy();
+    }
 }

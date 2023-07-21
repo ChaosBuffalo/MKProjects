@@ -29,7 +29,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class EngulfingDarknessAbility extends MKAbility {
+public class EngulfingDarknessAbility extends EntityTargetingAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_casting");
     public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "engulfing_darkness_cast");
     public static final ResourceLocation TICK_PARTICLES = new ResourceLocation(MKUltra.MODID, "engulfing_darkness_tick");
@@ -101,11 +101,6 @@ public class EngulfingDarknessAbility extends MKAbility {
     }
 
     @Override
-    public AbilityTargetSelector getTargetSelector() {
-        return AbilityTargeting.SINGLE_TARGET;
-    }
-
-    @Override
     public SoundEvent getCastingSoundEvent() {
         return MKUSounds.hostile_casting_shadow.get();
     }
@@ -116,19 +111,22 @@ public class EngulfingDarknessAbility extends MKAbility {
     }
 
     @Override
+    public void castAtEntity(IMKEntityData casterData, LivingEntity target, Function<Attribute, Float> skillSupplier) {
+        float level = skillSupplier.apply(MKAttributes.CONJURATION);
+        MKEffectBuilder<?> dot = getDotCast(casterData, level)
+                .ability(this)
+                .skillLevel(level);
+
+        MKCore.getEntityData(target).ifPresent(targetData -> {
+            targetData.getEffects().addEffect(dot);
+        });
+        SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_dark_7.get(), target.getSoundSource());
+        MKParticles.spawn(target, new Vec3(0.0, 1.0, 0.0), castParticles.getValue());
+    }
+
+    @Override
     public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
         super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.CONJURATION);
-        context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            MKEffectBuilder<?> dot = getDotCast(data, level)
-                    .ability(this)
-                    .skillLevel(level);
-            MKCore.getEntityData(targetEntity).ifPresent(targetData -> {
-                targetData.getEffects().addEffect(dot);
-            });
 
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_dark_7.get(), targetEntity.getSoundSource());
-            MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), castParticles.getValue());
-        });
     }
 }

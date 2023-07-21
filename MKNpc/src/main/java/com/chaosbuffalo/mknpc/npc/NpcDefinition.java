@@ -281,6 +281,7 @@ public class NpcDefinition {
             MKNpc.getNpcData(entity).ifPresent(cap -> {
                 cap.setDefinition(this);
                 cap.setSpawnID(uuid);
+                cap.setDifficultyValue(difficultyValue);
             });
             applyDefinition(entity, difficultyValue);
             if (entity instanceof MKEntity mkEntity) {

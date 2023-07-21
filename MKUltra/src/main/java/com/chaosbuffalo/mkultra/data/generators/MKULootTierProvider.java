@@ -6,6 +6,8 @@ import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkweapons.data.LootTierProvider;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
+import com.chaosbuffalo.mkweapons.items.effects.accesory.OnMeleeProcEffect;
+import com.chaosbuffalo.mkweapons.items.effects.accesory.RestoreManaOnCastEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.OnHitAbilityEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.UndeadDamageMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.LootItemTemplate;
@@ -45,7 +47,8 @@ public class MKULootTierProvider extends LootTierProvider {
                 writeLootTier(seafuryWeapon(), cache),
                 writeLootTier(seawovenSkeletonTier(), cache),
                 writeLootTier(ancientKingTier(), cache),
-                writeLootTier(hyboreanSorcQueenTier(), cache)
+                writeLootTier(hyboreanSorcQueenTier(), cache),
+                writeLootTier(necrotideGolem(), cache)
         );
     }
 
@@ -64,6 +67,52 @@ public class MKULootTierProvider extends LootTierProvider {
                 RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.NAME_SLOT), 10);
         tier.addItemTemplate(weaponTemplate, 10);
         return tier;
+    }
+
+    private void necrotideGolemAttrs(LootTier tier, LootItemTemplate template) {
+        template.addRandomizationOption(AttributeOption.withModifier(Attributes.MAX_HEALTH, tier.getName().toString(),
+                6.0, 30.0, AttributeModifier.Operation.ADDITION));
+        template.addRandomizationOption(AttributeOption.withModifier(MKAttributes.MAX_MANA, tier.getName().toString(),
+                6.0, 30.0, AttributeModifier.Operation.ADDITION));
+        template.addRandomizationOption(AttributeOption.withModifier(MKAttributes.MANA_REGEN, tier.getName().toString(),
+                0.5, 4.0, AttributeModifier.Operation.ADDITION));
+        template.addRandomizationOption(AttributeOption.withModifier(MKAttributes.NECROMANCY, tier.getName().toString(),
+                2, 10, AttributeModifier.Operation.ADDITION));
+        template.addRandomizationOption(AttributeOption.withModifier(MKAttributes.SHADOW_DAMAGE, tier.getName().toString(),
+                2.0, 8.0, AttributeModifier.Operation.ADDITION));
+        template.addRandomizationOption(AttributeOption.withModifier(MKAttributes.SHADOW_RESISTANCE, tier.getName().toString(),
+                0.05, 0.20, AttributeModifier.Operation.ADDITION));
+    }
+
+
+    private LootTier necrotideGolem() {
+        LootTier tier = new LootTier(new ResourceLocation(MKUltra.MODID, "necrotide_golem"));
+        LootItemTemplate template = new LootItemTemplate(LootSlotManager.HANDS);
+        template.addItem(MKUItems.corruptedGauntlets.get());
+        var onHitEffect = new OnMeleeProcEffect(0.05, 0.15, 0.0f, 100.0f, MKUAbilities.ENGULFING_DARKNESS);
+        var effects = new AccessoryEffectOption();
+        effects.addEffect(onHitEffect);
+        template.addRandomizationOption(effects);
+        template.addTemplate(new RandomizationTemplate(new ResourceLocation(MKUltra.MODID, "corrupted_gauntlets"),
+                RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT), 10);
+        template.addTemplate(new RandomizationTemplate(new ResourceLocation(MKUltra.MODID, "corrupted_gauntlets_crit"),
+                RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT), 1);
+        tier.addItemTemplate(template, 10);
+        necrotideGolemAttrs(tier, template);
+        LootItemTemplate ringTemplate = new LootItemTemplate(LootSlotManager.RINGS);
+        template.addItem(MKUItems.necrotideBand.get());
+        var restoreMana = new RestoreManaOnCastEffect(0.05, 0.25, 0.1f, 1.0f);
+        var ringEffects = new AccessoryEffectOption();
+        ringEffects.addEffect(restoreMana);
+        ringTemplate.addRandomizationOption(ringEffects);
+        ringTemplate.addTemplate(new RandomizationTemplate(new ResourceLocation(MKUltra.MODID, "necrotide_band"),
+                RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT), 10);
+        ringTemplate.addTemplate(new RandomizationTemplate(new ResourceLocation(MKUltra.MODID, "necrotide_band_crit"),
+                RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT), 1);
+        tier.addItemTemplate(ringTemplate, 20);
+        necrotideGolemAttrs(tier, ringTemplate);
+        return tier;
+
     }
 
     private LootTier burningSkeletonLoot() {
