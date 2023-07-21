@@ -17,6 +17,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.Lazy;
@@ -80,20 +81,22 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect{
                     target, attr -> skillLevel.value()));
         }
     }
+
     @Override
-    public void addInformation(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
+    public void addInformation(ItemStack stack, @org.jetbrains.annotations.Nullable Player player, List<Component> tooltip) {
         tooltip.add(Component.translatable(String.format("%s.%s.name",
                 this.getTypeName().getNamespace(), this.getTypeName().getPath()), abilitySupplier.get().getAbilityName()).withStyle(color));
         if (Screen.hasShiftDown()) {
             tooltip.add(Component.translatable(String.format("%s.%s.description",
                             this.getTypeName().getNamespace(), this.getTypeName().getPath()),
                     MKAbility.PERCENT_FORMATTER.format(procChance), MKAbility.NUMBER_FORMATTER.format(skillLevel)));
-            if (Minecraft.getInstance().player != null) {
-                MKCore.getEntityData(Minecraft.getInstance().player).ifPresent(entityData -> {
+            if (player != null) {
+                MKCore.getEntityData(player).ifPresent(entityData -> {
                     tooltip.add(abilitySupplier.get().getAbilityDescription(entityData, attr -> skillLevel.value()));
                 });
             }
 
         }
+
     }
 }
