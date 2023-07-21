@@ -33,7 +33,7 @@ public class RangedDamageType extends MKDamageType {
     @Override
     public float applyResistance(LivingEntity target, float originalDamage) {
         return (float) (CombatRules.getDamageAfterAbsorb(originalDamage, target.getArmorValue(),
-                (float) target.getAttribute(getResistanceAttribute()).getValue())
-                * (1.0 - target.getAttribute(MKAttributes.RANGED_RESISTANCE).getValue()));
+                (float) target.getAttributeValue(getResistanceAttribute()))
+                * (1.0 - target.getAttributeValue(MKAttributes.RANGED_RESISTANCE)));
     }
 }

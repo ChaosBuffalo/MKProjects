@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkwidgets;
 
-
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -20,11 +19,10 @@ public class MKWidgets {
 
 
     public MKWidgets() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
-        MinecraftForge.EVENT_BUS.register(this);
+        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modBus.addListener(this::clientSetup);
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
-        ClientEventHandler.clientSetup();
     }
 }

@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkweapons;
 
 import com.chaosbuffalo.mkweapons.capabilities.IArrowData;
 import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
-import com.chaosbuffalo.mkweapons.command.WeaponsCommands;
 import com.chaosbuffalo.mkweapons.event.MKWeaponsEventHandler;
 import com.chaosbuffalo.mkweapons.extensions.MKWCuriosExtension;
 import com.chaosbuffalo.mkweapons.init.MKWeaponEffects;
@@ -11,14 +10,13 @@ import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsParticles;
 import com.chaosbuffalo.mkweapons.items.effects.IWeaponEffectsExtension;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
-import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
-import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.WeaponTypeManager;
 import com.chaosbuffalo.mkweapons.network.PacketHandler;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -30,39 +28,38 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
-
 @Mod(MKWeapons.MODID)
 public class MKWeapons {
     // Directly reference a log4j logger.
     public static final Logger LOGGER = LogManager.getLogger();
     public static final String MODID = "mkweapons";
     public static final String REGISTER_MK_WEAPONS_EXTENSION = "register_mk_weapons_extension";
-    public WeaponTypeManager weaponTypeManager;
-    public LootTierManager lootTierManager;
+    public final WeaponTypeManager weaponTypeManager;
+    public final LootTierManager lootTierManager;
 
     public MKWeapons() {
+        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         MinecraftForge.EVENT_BUS.register(this);
-        LootSlotManager.setupLootSlots();
-        RandomizationSlotManager.setupRandomizationSlots();
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
-        MKWeaponsParticles.register(FMLJavaModLoadingContext.get().getModEventBus());
-        MKWeaponsItems.register(FMLJavaModLoadingContext.get().getModEventBus());
-        MKWeaponsCommands.register(FMLJavaModLoadingContext.get().getModEventBus());
-        MKWeaponEffects.register(FMLJavaModLoadingContext.get().getModEventBus());
+        modBus.addListener(this::setup);
+        modBus.addListener(this::clientSetup);
+        modBus.addListener(this::processIMC);
+        modBus.addListener(this::enqueueIMC);
+        setupRegistries(modBus);
         weaponTypeManager = new WeaponTypeManager();
         lootTierManager = new LootTierManager();
+    }
 
+    private void setupRegistries(IEventBus modBus) {
+        MKWeaponsParticles.register(modBus);
+        MKWeaponsItems.register(modBus);
+        MKWeaponsCommands.register(modBus);
+        MKWeaponEffects.register(modBus);
     }
 
     private void setup(final FMLCommonSetupEvent event) {
         // some preinit code
         PacketHandler.setupHandler();
         MKWeaponsEventHandler.registerCombatTriggers();
-        WeaponsCommands.registerArguments();
-
     }
 
 
@@ -80,7 +77,6 @@ public class MKWeapons {
                 ext.registerWeaponEffectsExtension();
             }
         });
-
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
@@ -89,7 +85,7 @@ public class MKWeapons {
 
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
-        WeaponsCommands.register(event.getDispatcher());
+        MKWeaponsCommands.registerCommands(event.getDispatcher());
     }
 
     public static LazyOptional<IArrowData> getArrowCapability(AbstractArrow entity) {

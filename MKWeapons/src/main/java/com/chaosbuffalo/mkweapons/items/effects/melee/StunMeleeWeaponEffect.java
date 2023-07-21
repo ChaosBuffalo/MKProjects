@@ -12,12 +12,11 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
@@ -64,8 +63,8 @@ public class StunMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
-        super.addInformation(stack, worldIn, tooltip);
+    public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
+        super.addInformation(stack, player, tooltip);
         if (Screen.hasShiftDown()) {
             tooltip.add(Component.translatable("mkweapons.weapon_effect.stun.description",
                     stunChance * 100.0, stunDuration));

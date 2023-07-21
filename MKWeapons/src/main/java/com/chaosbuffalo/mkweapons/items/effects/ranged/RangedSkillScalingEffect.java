@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
-import com.chaosbuffalo.mkweapons.ClientUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
@@ -21,7 +20,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -58,10 +56,10 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
 //    }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
+    public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
         tooltip.add(Component.translatable(skill.getDescriptionId()).withStyle(color));
         if (Screen.hasShiftDown()) {
-            float skillLevel = ClientUtils.getClientSkillLevel(skill);
+            float skillLevel = player != null ?  MKAbility.getSkillLevel(player, skill) : 0.0f;
             double bonus = skillLevel * baseDamage;
             tooltip.add(Component.translatable("mkweapons.weapon_effect.ranged_skill_scaling.description",
                     Component.translatable(skill.getDescriptionId()), MKAbility.NUMBER_FORMATTER.format(bonus)));
@@ -80,17 +78,17 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
     }
 
     @Override
-    public void onSkillChange(Player player) {
-        onEntityUnequip(player);
-        onEntityEquip(player);
-    }
-
-    @Override
     public void onEntityUnequip(LivingEntity entity) {
         AttributeInstance attr = entity.getAttribute(MKAttributes.RANGED_DAMAGE);
         if (attr != null) {
             attr.removeModifier(skillScaling);
         }
+    }
+
+    @Override
+    public void onSkillChange(Player player) {
+        onEntityUnequip(player);
+        onEntityEquip(player);
     }
 
     @Override

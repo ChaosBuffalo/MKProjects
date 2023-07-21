@@ -10,7 +10,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -29,9 +29,8 @@ public class MKNpcBlocks {
     public static final RegistryObject<BlockItem> MK_POI_ITEM = ITEMS.register("mk_poi",
             () -> new BlockItem(MK_POI_BLOCK.get(), new Item.Properties()));
 
-    public static void register() {
-        BLOCKS.register(FMLJavaModLoadingContext.get().getModEventBus());
-        ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+    public static void register(IEventBus modBus) {
+        BLOCKS.register(modBus);
+        ITEMS.register(modBus);
     }
-
 }

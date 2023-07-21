@@ -36,7 +36,7 @@ public class RandomizationSlotManager {
 
     public static final Map<ResourceLocation, IRandomizationSlot> SLOTS = new HashMap<>();
 
-    public static void addRandomizatiotSlot(IRandomizationSlot slot) {
+    public static void addRandomizationSlot(IRandomizationSlot slot) {
         SLOTS.put(slot.getName(), slot);
     }
 
@@ -44,13 +44,13 @@ public class RandomizationSlotManager {
         return SLOTS.get(name);
     }
 
-    public static void setupRandomizationSlots() {
-        addRandomizatiotSlot(ATTRIBUTE_SLOT);
-        addRandomizatiotSlot(EFFECT_SLOT);
-        addRandomizatiotSlot(ABILITY_SLOT);
-        addRandomizatiotSlot(NAME_SLOT);
-        addRandomizatiotSlot(PERM_ABILITY_SLOT);
-        addRandomizatiotSlot(PERM_EFFECT_SLOT);
-        addRandomizatiotSlot(PERM_ATTRIBUTE_SLOT);
+    static {
+        addRandomizationSlot(ATTRIBUTE_SLOT);
+        addRandomizationSlot(EFFECT_SLOT);
+        addRandomizationSlot(ABILITY_SLOT);
+        addRandomizationSlot(NAME_SLOT);
+        addRandomizationSlot(PERM_ABILITY_SLOT);
+        addRandomizationSlot(PERM_EFFECT_SLOT);
+        addRandomizationSlot(PERM_ATTRIBUTE_SLOT);
     }
 }

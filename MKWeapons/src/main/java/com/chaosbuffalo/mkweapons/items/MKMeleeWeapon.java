@@ -4,8 +4,6 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
-import com.chaosbuffalo.mkcore.item.IImplementsBlocking;
-import com.chaosbuffalo.mkcore.item.ILimitItemTooltip;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkweapons.capabilities.IWeaponData;
@@ -47,7 +45,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitItemTooltip, IImplementsBlocking, IReceivesSkillChange {
+public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceivesSkillChange {
     private final IMeleeWeaponType weaponType;
     private final IMKTier mkTier;
     private final List<IMeleeWeaponEffect> weaponEffects;
@@ -218,7 +216,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
         return mkTier;
     }
 
-    public void addToTooltip(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
+    public void addToTooltip(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
         if (getWeaponType().isTwoHanded()) {
             tooltip.add(Component.translatable("mkweapons.two_handed.name")
                     .withStyle(ChatFormatting.GRAY));
@@ -227,7 +225,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
             }
         }
         for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
-            effect.addInformation(stack, worldIn, tooltip);
+            effect.addInformation(stack, player, tooltip);
         }
         MKAbility ability = getAbility(stack);
         if (ability != null) {
@@ -253,23 +251,6 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, ILimitIt
     public MKAbility getAbility(ItemStack itemStack) {
         return MKCoreRegistry.getAbility(itemStack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY)
                 .map(IWeaponData::getAbilityName).orElse(MKCoreRegistry.INVALID_ABILITY));
-    }
-
-    @Override
-    public Multimap<Attribute, AttributeModifier> limitTooltip(ItemStack itemStack, EquipmentSlot equipmentSlotType, Multimap<Attribute, AttributeModifier> multimap) {
-        if (multimap.containsKey(MKAttributes.BLOCK_EFFICIENCY)) {
-            multimap.removeAll(MKAttributes.BLOCK_EFFICIENCY);
-        }
-        if (multimap.containsKey(MKAttributes.MAX_POISE)) {
-            multimap.removeAll(MKAttributes.MAX_POISE);
-        }
-        if (multimap.containsKey(MKAttributes.MELEE_CRIT)) {
-            multimap.removeAll(MKAttributes.MELEE_CRIT);
-        }
-        if (multimap.containsKey(MKAttributes.MELEE_CRIT_MULTIPLIER)) {
-            multimap.removeAll(MKAttributes.MELEE_CRIT_MULTIPLIER);
-        }
-        return multimap;
     }
 
     @Override

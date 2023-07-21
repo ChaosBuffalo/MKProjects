@@ -230,7 +230,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     protected float getMeleeReach(LivingEntity entity) {
-        return (float) entity.getAttribute(MKAttributes.ATTACK_REACH).getValue();
+        return (float) entity.getAttributeValue(MKAttributes.ATTACK_REACH);
     }
 
     protected void setCooldownTicks(int ticks) {

@@ -32,10 +32,10 @@ public abstract class StatPageBase extends PlayerPageBase {
             double baseValue = attribute.getBaseValue();
             if (attr.equals(Attributes.ATTACK_SPEED) && minecraft.player != null) {
                 ItemStack itemInHand = minecraft.player.getMainHandItem();
-                if (!itemInHand.equals(ItemStack.EMPTY)) {
-                    if (itemInHand.getAttributeModifiers(EquipmentSlot.MAINHAND).containsKey(attr)) {
-                        Collection<AttributeModifier> itemAttackSpeed = itemInHand.getAttributeModifiers(EquipmentSlot.MAINHAND)
-                                .get(attr);
+                if (!itemInHand.isEmpty()) {
+                    var modifiers = itemInHand.getAttributeModifiers(EquipmentSlot.MAINHAND);
+                    if (modifiers.containsKey(attr)) {
+                        Collection<AttributeModifier> itemAttackSpeed = modifiers.get(attr);
                         double attackSpeed = 4.0;
                         for (AttributeModifier mod : itemAttackSpeed) {
                             if (mod.getOperation().equals(AttributeModifier.Operation.ADDITION)) {

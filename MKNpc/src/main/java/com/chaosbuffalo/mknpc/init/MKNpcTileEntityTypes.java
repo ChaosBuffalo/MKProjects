@@ -4,7 +4,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -20,7 +20,7 @@ public class MKNpcTileEntityTypes {
             TILES.register("mk_poi", () -> BlockEntityType.Builder.of(
                     MKPoiTileEntity::new, MKNpcBlocks.MK_POI_BLOCK.get()).build(null));
 
-    public static void register() {
-        TILES.register(FMLJavaModLoadingContext.get().getModEventBus());
+    public static void register(IEventBus modBus) {
+        TILES.register(modBus);
     }
 }

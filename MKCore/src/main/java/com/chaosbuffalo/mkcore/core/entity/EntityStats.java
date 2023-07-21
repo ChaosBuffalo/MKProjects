@@ -40,7 +40,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
 
     @Override
     public float getDamageTypeBonus(MKDamageType damageType) {
-        return (float) getEntity().getAttribute(damageType.getDamageAttribute()).getValue();
+        return (float) getEntity().getAttributeValue(damageType.getDamageAttribute());
     }
 
     // Mostly to shut up warning about null returns from getAttribute. Only use this for attrs you know will be present
@@ -73,7 +73,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
 
     @Override
     public float getMaxPoise() {
-        return (float) requiredAttribute(MKAttributes.MAX_POISE).getValue();
+        return (float) getEntity().getAttributeValue(MKAttributes.MAX_POISE);
     }
 
     public void setMaxPoise(float max) {
@@ -95,7 +95,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
 
     @Override
     public float getMaxMana() {
-        return (float) requiredAttribute(MKAttributes.MAX_MANA).getValue();
+        return (float) getEntity().getAttributeValue(MKAttributes.MAX_MANA);
     }
 
     public void setMaxMana(float max) {
@@ -105,12 +105,12 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
 
     @Override
     public float getPoiseRegenRate() {
-        return (float) requiredAttribute(MKAttributes.POISE_REGEN).getValue();
+        return (float) getEntity().getAttributeValue(MKAttributes.POISE_REGEN);
     }
 
     @Override
     public float getManaRegenRate() {
-        return (float) requiredAttribute(MKAttributes.MANA_REGEN).getValue();
+        return (float) getEntity().getAttributeValue(MKAttributes.MANA_REGEN);
     }
 
     @Override
@@ -126,17 +126,17 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
 
     @Override
     public float getHealBonus() {
-        return (float) getEntity().getAttribute(MKAttributes.HEAL_BONUS).getValue();
+        return (float) getEntity().getAttributeValue(MKAttributes.HEAL_BONUS);
     }
 
     @Override
     public float getHealEfficiency() {
-        return (float) getEntity().getAttribute(MKAttributes.HEAL_EFFICIENCY).getValue();
+        return (float) getEntity().getAttributeValue(MKAttributes.HEAL_EFFICIENCY);
     }
 
     @Override
     public float getBuffDurationModifier() {
-        return (float) getEntity().getAttribute(MKAttributes.BUFF_DURATION).getValue();
+        return (float) getEntity().getAttributeValue(MKAttributes.BUFF_DURATION);
     }
 
     @Override
@@ -161,7 +161,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
 
     @Override
     public int getPoiseBreakCooldownTicks() {
-        return (int) Math.round(requiredAttribute(MKAttributes.POISE_BREAK_CD).getValue() * GameConstants.TICKS_PER_SECOND);
+        return (int) Math.round(getEntity().getAttributeValue(MKAttributes.POISE_BREAK_CD) * GameConstants.TICKS_PER_SECOND);
     }
 
     @Override
@@ -253,7 +253,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
 
     @Override
     public BlockResult tryPoiseBlock(float damageIn) {
-        float blockPortion = (float) (requiredAttribute(MKAttributes.BLOCK_EFFICIENCY).getValue() * damageIn);
+        float blockPortion = (float) (getEntity().getAttributeValue(MKAttributes.BLOCK_EFFICIENCY) * damageIn);
         float remainder = damageIn - blockPortion;
         float poise = getPoise();
         if (blockPortion >= poise) {

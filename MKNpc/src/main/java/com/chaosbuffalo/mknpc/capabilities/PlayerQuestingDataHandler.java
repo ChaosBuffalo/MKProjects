@@ -129,7 +129,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
                     UUID::fromString,
                     this::createNewEntry
             );
-            persona.getKnowledge().addSyncPrivate(questChainUpdater);
+            persona.addSyncPrivate(questChainUpdater);
         }
 
         public Optional<PlayerQuestChainInstance> getChain(UUID questId) {
@@ -162,7 +162,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         public void startQuest(Player player, IWorldNpcData worldHandler, QuestChainInstance questChain) {
             if (!questChain.getDefinition().isRepeatable() && completedQuests.contains(questChain.getQuestId())) {
                 MKNpc.LOGGER.info("Can't start quest with definition {} for {} already completed {}",
-                        questChain.getDefinition().getName(), persona.getPlayerData().getEntity(), questChain.getQuestId());
+                        questChain.getDefinition().getName(), persona.getEntity(), questChain.getQuestId());
                 player.sendSystemMessage(Component.translatable("mknpc.quest.cant_start_quest", questChain.getDefinition().getQuestName()).withStyle(ChatFormatting.DARK_RED));
                 return;
             }

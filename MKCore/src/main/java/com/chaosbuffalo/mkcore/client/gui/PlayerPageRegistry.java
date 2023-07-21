@@ -6,22 +6,17 @@ import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.InterModComms;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class PlayerPageRegistry {
 
-    public interface ExtensionProvider extends Supplier<Extension> {
-    }
-
-    public interface Extension {
+    public interface PageDefinition {
         ResourceLocation getId();
 
         Component getDisplayName();
@@ -29,31 +24,26 @@ public class PlayerPageRegistry {
         MKScreen createPage(MKPlayerData playerData);
     }
 
-    private static class InternalPageEntry {
-        public final Extension extension;
-        public final int priority;
-
-        public InternalPageEntry(Extension extension, int priority) {
-            this.extension = extension;
-            this.priority = priority;
-        }
+    private record InternalPageEntry(PageDefinition pageDefinition, int priority) {
     }
 
     private static final List<InternalPageEntry> extensions = new ArrayList<>(6);
 
-    private static void registerIMC(InterModComms.IMCMessage m) {
-        PlayerPageRegistry.ExtensionProvider factory = m.<PlayerPageRegistry.ExtensionProvider>getMessageSupplier().get();
-        Extension extension = factory.get();
-        MKCore.LOGGER.info("Found IMC player page extension: {}", extension.getId());
-        addExtension(extension, 10);
+    private static void addExtension(PageDefinition pageDefinition, int priority) {
+        extensions.add(new InternalPageEntry(pageDefinition, priority));
     }
 
-    private static void addExtension(Extension extension, int priority) {
-        extensions.add(new InternalPageEntry(extension, priority));
+    /**
+     * Do this from FMLClientSetupEvent using enqueueWork
+     * @param pageDefinition page definition
+     */
+    public static void register(PageDefinition pageDefinition) {
+        addExtension(pageDefinition, 10);
     }
 
     private static void registerInternal(ResourceLocation name, Function<MKPlayerData, MKScreen> factory, int priority) {
-        addExtension(new Extension() {
+        final Component displayName = Component.translatable("mkcore.gui.character." + name.getPath());
+        addExtension(new PageDefinition() {
             @Override
             public ResourceLocation getId() {
                 return name;
@@ -61,7 +51,7 @@ public class PlayerPageRegistry {
 
             @Override
             public Component getDisplayName() {
-                return Component.translatable(String.format("mkcore.gui.character.%s", getId().getPath()));
+                return displayName;
             }
 
             @Override
@@ -81,19 +71,19 @@ public class PlayerPageRegistry {
     @Nullable
     public static MKScreen createPage(MKPlayerData playerData, ResourceLocation name) {
         return extensions.stream()
-                .filter(e -> e.extension.getId().equals(name))
+                .filter(e -> e.pageDefinition.getId().equals(name))
                 .findFirst()
-                .map(e -> e.extension.createPage(playerData))
+                .map(e -> e.pageDefinition.createPage(playerData))
                 .orElse(null);
     }
 
-    public static List<Extension> getAllPages() {
+    public static List<PageDefinition> getAllPages() {
         // Sort by priority followed by display name
         Comparator<InternalPageEntry> comp = Comparator.comparing(e -> e.priority);
-        comp = comp.thenComparing(e -> e.extension.getDisplayName().getString());
+        comp = comp.thenComparing(e -> e.pageDefinition.getDisplayName().getString());
         return extensions.stream()
                 .sorted(comp)
-                .map(e -> e.extension)
+                .map(e -> e.pageDefinition)
                 .collect(Collectors.toList());
     }
 
@@ -104,10 +94,5 @@ public class PlayerPageRegistry {
 
     public static void openDefaultPlayerScreen(MKPlayerData playerData) {
         openPlayerScreen(playerData, MKCore.makeRL("abilities"));
-    }
-
-    public static void checkClientIMC() {
-        InterModComms.getMessages(MKCore.MOD_ID, m -> m.equals(MKCore.REGISTER_PLAYER_PAGE))
-                .forEach(PlayerPageRegistry::registerIMC);
     }
 }

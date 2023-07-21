@@ -17,24 +17,14 @@ public class MKWeaponsClientEventHandler {
     @SubscribeEvent
     public static void onTooltipEvent(ItemTooltipEvent event) {
         Item item = event.getItemStack().getItem();
-        if (item instanceof MKMeleeWeapon) {
-            ((MKMeleeWeapon) item).addToTooltip(event.getItemStack(),
-                    event.getEntity() != null ? event.getEntity().getCommandSenderWorld() : null, event.getToolTip());
+        if (item instanceof MKMeleeWeapon meleeWeapon) {
+            meleeWeapon.addToTooltip(event.getItemStack(), event.getEntity(), event.getToolTip());
+        } else if (item instanceof MKBow bow) {
+            bow.addToTooltip(event.getItemStack(), event.getEntity(), event.getToolTip());
+        } else if (item instanceof MKArmorItem armorItem) {
+            armorItem.addToTooltip(event.getItemStack(), event.getEntity(), event.getToolTip());
+        } else if (item instanceof MKAccessory accessory) {
+            accessory.addToTooltip(event.getItemStack(), event.getEntity(), event.getToolTip());
         }
-        if (item instanceof MKBow) {
-            ((MKBow) item).addToTooltip(event.getItemStack(),
-                    event.getEntity() != null ? event.getEntity().getCommandSenderWorld() : null, event.getToolTip());
-        }
-        if (item instanceof MKArmorItem) {
-            ((MKArmorItem) item).addToTooltip(event.getItemStack(),
-                    event.getEntity() != null ? event.getEntity().getCommandSenderWorld() : null, event.getToolTip());
-        }
-
-        if (item instanceof MKAccessory) {
-            ((MKAccessory) item).addToTooltip(event.getItemStack(),
-                    event.getEntity() != null ? event.getEntity().getCommandSenderWorld() : null, event.getToolTip());
-        }
-
     }
-
 }

@@ -6,7 +6,6 @@ import com.chaosbuffalo.mknpc.command.NpcCommands;
 import com.chaosbuffalo.mknpc.dialogue.NPCDialogueExtension;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
-import com.chaosbuffalo.mknpc.event.NpcClientEventHandler;
 import com.chaosbuffalo.mknpc.init.*;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.npc.IMKNpcExtension;
@@ -19,13 +18,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -41,36 +38,29 @@ public class MKNpc {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final String MODID = "mknpc";
     public static final String REGISTER_NPC_OPTIONS_EXTENSION = "register_npc_extension";
-    private NpcDefinitionManager npcDefinitionManager;
-    private QuestDefinitionManager questDefinitionManager;
+    private final NpcDefinitionManager npcDefinitionManager;
+    private final QuestDefinitionManager questDefinitionManager;
 
     public MKNpc() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-        MinecraftForge.EVENT_BUS.register(this);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
-        modBus.addListener(NpcClientEventHandler::registerKeyBinding);
-//
-
+        modBus.addListener(this::setup);
+        modBus.addListener(this::clientSetup);
+        modBus.addListener(this::enqueueIMC);
+        modBus.addListener(this::processIMC);
         setupRegistries(modBus);
+
+        MinecraftForge.EVENT_BUS.register(this);
         NpcDialogueUtils.setupMKNpcHandlers();
         npcDefinitionManager = new NpcDefinitionManager();
         questDefinitionManager = new QuestDefinitionManager();
-//        MKNpcWorldGen.registerStructurePieces();
-//        TestJigsawStructurePools.registerPatterns();
-//        MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::biomeSetup);
-//        MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::worldSetup);
-        //make sure not to class load server specific events on client
     }
 
     private void setupRegistries(IEventBus modBus) {
         MKNpcAttributes.register(modBus);
-        MKNpcBlocks.register();
+        MKNpcBlocks.register(modBus);
         NpcCommands.register(modBus);
-        MKNpcTileEntityTypes.register();
-        MKNpcEntityTypes.register();
+        MKNpcTileEntityTypes.register(modBus);
+        MKNpcEntityTypes.register(modBus);
         MKNpcEffects.register(modBus);
         MKMemoryModuleTypes.register(modBus);
         MKSensorTypes.register(modBus);
@@ -80,7 +70,6 @@ public class MKNpc {
     private void enqueueIMC(final InterModEnqueueEvent event) {
         NPCDialogueExtension.sendExtension();
         PlayerQuestingDataHandler.registerPersonaExtension();
-        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> QuestPage::registerPlayerPage);
     }
 
     private void processIMC(final InterModProcessEvent event) {
@@ -113,6 +102,9 @@ public class MKNpc {
 //        MKNpcWorldGen.registerStructurePoolTypes();
     }
 
+    private void clientSetup(final FMLClientSetupEvent event) {
+        event.enqueueWork(QuestPage::registerPlayerPage);
+    }
 
     public static double getDifficultyScale(LivingEntity entity) {
         switch (entity.getCommandSenderWorld().getDifficulty()) {
@@ -126,9 +118,6 @@ public class MKNpc {
             default:
                 return 0.25;
         }
-    }
-
-    private void doClientStuff(final FMLClientSetupEvent event) {
     }
 
     public static LazyOptional<? extends IEntityNpcData> getNpcData(Entity entity) {

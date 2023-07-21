@@ -83,7 +83,7 @@ public class PlayerFactionHandler implements IPlayerFaction {
                     ResourceLocation::tryParse,
                     this::createNewEntry
             );
-            persona.getKnowledge().addSyncPrivate(factionUpdater);
+            persona.addSyncPrivate(factionUpdater);
         }
 
         private PlayerFactionEntry createNewEntry(ResourceLocation factionId) {
@@ -150,7 +150,7 @@ public class PlayerFactionHandler implements IPlayerFaction {
     }
 
     private static PersonaFactionData createNewPersonaData(Persona persona) {
-        MKFactionMod.LOGGER.debug("MKFaction creating new persona data for {}", persona.getPlayerData().getEntity());
+        MKFactionMod.LOGGER.debug("MKFaction creating new persona data for {}", persona.getEntity());
         return new PersonaFactionData(persona);
     }
 

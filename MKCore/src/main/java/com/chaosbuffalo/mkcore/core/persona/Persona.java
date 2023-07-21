@@ -1,42 +1,83 @@
 package com.chaosbuffalo.mkcore.core.persona;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.core.player.PlayerKnowledge;
+import com.chaosbuffalo.mkcore.core.player.*;
+import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class Persona implements IMKSerializable<CompoundTag> {
+public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncComponentProvider {
     private final String name;
-    private final PlayerKnowledge knowledge;
+    private final SyncComponent sync = new SyncComponent("knowledge");
+    private final PlayerAbilityKnowledge abilities;
+    private final PlayerTalentKnowledge talents;
+    private final PlayerEntitlementKnowledge entitlements;
+    private final PlayerAbilityLoadout loadout;
+    private final PlayerSkills skills;
     private final MKPlayerData data;
     private final Map<Class<? extends IPersonaExtension>, IPersonaExtension> extensions = new IdentityHashMap<>();
     private UUID personaId;
 
     public Persona(MKPlayerData playerData, String name) {
         this.name = name;
-        knowledge = new PlayerKnowledge(playerData);
         data = playerData;
         personaId = UUID.randomUUID();
+        abilities = new PlayerAbilityKnowledge(playerData);
+        talents = new PlayerTalentKnowledge(playerData);
+        loadout = new PlayerAbilityLoadout(playerData);
+        entitlements = new PlayerEntitlementKnowledge(playerData);
+        addSyncChild(abilities);
+        addSyncChild(talents);
+        addSyncChild(loadout);
+        skills = new PlayerSkills(playerData);
+        skills.addCallback(loadout.getPassiveAbilityGroup()::onSkillUpdate);
     }
 
     public String getName() {
         return name;
     }
 
-    public PlayerKnowledge getKnowledge() {
-        return knowledge;
-    }
-
     public MKPlayerData getPlayerData() {
         return data;
     }
 
+    public Player getEntity() {
+        return data.getEntity();
+    }
+
     public UUID getPersonaId() {
         return personaId;
+    }
+
+    @Override
+    public SyncComponent getSyncComponent() {
+        return sync;
+    }
+
+    public PlayerSkills getSkills() {
+        return skills;
+    }
+
+    public PlayerAbilityKnowledge getAbilities() {
+        return abilities;
+    }
+
+    public PlayerAbilityLoadout getLoadout() {
+        return loadout;
+    }
+
+    public PlayerTalentKnowledge getTalents() {
+        return talents;
+    }
+
+    public PlayerEntitlementKnowledge getEntitlements() {
+        return entitlements;
     }
 
     void registerExtension(IPersonaExtension extension) {
@@ -44,22 +85,44 @@ public class Persona implements IMKSerializable<CompoundTag> {
     }
 
     public <T extends IPersonaExtension> T getExtension(Class<T> clazz) {
-//            MKCore.LOGGER.info("getExtension {} {}", extensions.size(), extensions.values().stream().map(Objects::toString).collect(Collectors.joining(",")));
         IPersonaExtension extension = extensions.get(clazz);
         return extension == null ? null : clazz.cast(extension);
     }
 
+    public void onJoinWorld() {
+        MKCore.LOGGER.debug("PlayerKnowledge.onJoinWorld");
+        entitlements.onJoinWorld();
+        talents.onJoinWorld();
+        loadout.onJoinWorld();
+    }
+
+    public void onPersonaActivated() {
+        MKCore.LOGGER.debug("PlayerKnowledge.onPersonaActivated");
+        entitlements.onPersonaActivated();
+        talents.onPersonaActivated();
+        skills.onPersonaActivated();
+        loadout.onPersonaActivated();
+    }
+
+    public void onPersonaDeactivated() {
+        MKCore.LOGGER.debug("PlayerKnowledge.onPersonaDeactivated");
+        entitlements.onPersonaDeactivated();
+        talents.onPersonaDeactivated();
+        skills.onPersonaDeactivated();
+        loadout.onPersonaDeactivated();
+    }
+
     public void activate() {
-        knowledge.getSyncComponent().attach(data.getUpdateEngine());
-        knowledge.onPersonaActivated();
-        getPlayerData().onPersonaActivated();
+        sync.attach(data.getUpdateEngine());
+        onPersonaActivated();
+        data.onPersonaActivated();
         extensions.values().forEach(IPersonaExtension::onPersonaActivated);
     }
 
     public void deactivate() {
-        knowledge.onPersonaDeactivated();
-        knowledge.getSyncComponent().detach(data.getUpdateEngine());
-        getPlayerData().onPersonaDeactivated();
+        onPersonaDeactivated();
+        sync.detach(data.getUpdateEngine());
+        data.onPersonaDeactivated();
         extensions.values().forEach(IPersonaExtension::onPersonaDeactivated);
     }
 
@@ -89,19 +152,27 @@ public class Persona implements IMKSerializable<CompoundTag> {
     @Override
     public CompoundTag serialize() {
         CompoundTag tag = new CompoundTag();
-        tag.put("knowledge", knowledge.serialize());
-        tag.put("extensions", serializeExtensions());
         tag.putUUID("personaId", personaId);
+        tag.put("abilities", abilities.serialize());
+        tag.put("talents", talents.serializeNBT());
+        tag.put("entitlements", entitlements.serialize());
+        tag.put("skills", skills.serialize());
+        tag.put("loadout", loadout.serializeNBT());
+        tag.put("extensions", serializeExtensions());
         return tag;
     }
 
     @Override
     public boolean deserialize(CompoundTag tag) {
-        knowledge.deserialize(tag.getCompound("knowledge"));
-        deserializeExtensions(tag.getCompound("extensions"));
         if (tag.contains("personaId")) {
             personaId = tag.getUUID("personaId");
         }
+        abilities.deserialize(tag.getCompound("abilities"));
+        talents.deserializeNBT(tag.get("talents"));
+        entitlements.deserialize(tag.getCompound("entitlements"));
+        skills.deserialize(tag.getCompound("skills"));
+        loadout.deserializeNBT(tag.getCompound("loadout"));
+        deserializeExtensions(tag.getCompound("extensions"));
         return true;
     }
 }

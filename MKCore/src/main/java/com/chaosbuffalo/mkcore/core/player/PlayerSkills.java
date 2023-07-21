@@ -68,8 +68,8 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
 
     private static void onWeaponSkillChange(MKPlayerData playerData, double value) {
         ItemStack mainHand = playerData.getEntity().getItemBySlot(EquipmentSlot.MAINHAND);
-        if (mainHand.getItem() instanceof IReceivesSkillChange) {
-            ((IReceivesSkillChange) mainHand.getItem()).onSkillChange(mainHand, playerData.getEntity());
+        if (mainHand.getItem() instanceof IReceivesSkillChange receiver) {
+            receiver.onSkillChange(mainHand, playerData.getEntity());
         }
     }
 

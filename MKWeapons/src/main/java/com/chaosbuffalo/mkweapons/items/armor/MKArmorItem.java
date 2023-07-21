@@ -10,6 +10,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
@@ -82,9 +83,9 @@ public class MKArmorItem extends ArmorItem implements IMKArmor {
         }
     }
 
-    public void addToTooltip(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
+    public void addToTooltip(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
         for (IArmorEffect armorEffect : getArmorEffects(stack)) {
-            armorEffect.addInformation(stack, worldIn, tooltip);
+            armorEffect.addInformation(stack, player, tooltip);
         }
     }
 

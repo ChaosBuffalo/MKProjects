@@ -131,11 +131,11 @@ public class MKDamageType {
     }
 
     public float applyDamage(LivingEntity source, LivingEntity target, Entity immediate, float originalDamage, float modifierScaling) {
-        return (float) (originalDamage + source.getAttribute(getDamageAttribute()).getValue() * modifierScaling);
+        return (float) (originalDamage + source.getAttributeValue(getDamageAttribute()) * modifierScaling);
     }
 
     public float applyResistance(LivingEntity target, float originalDamage) {
-        return (float) (originalDamage - (originalDamage * target.getAttribute(getResistanceAttribute()).getValue()));
+        return (float) (originalDamage - (originalDamage * target.getAttributeValue(getResistanceAttribute())));
     }
 
     protected boolean canCrit(LivingEntity source) {
@@ -168,7 +168,7 @@ public class MKDamageType {
     }
 
     public float getCritMultiplier(LivingEntity source, LivingEntity target, Entity immediate) {
-        return (float) source.getAttribute(getCritMultiplierAttribute()).getValue();
+        return (float) source.getAttributeValue(getCritMultiplierAttribute());
     }
 
     public float getCritChance(LivingEntity source, LivingEntity target) {
@@ -176,6 +176,6 @@ public class MKDamageType {
     }
 
     public float getCritChance(LivingEntity source, LivingEntity target, Entity immediate) {
-        return (float) source.getAttribute(getCritChanceAttribute()).getValue() * critMultiplier;
+        return (float) source.getAttributeValue(getCritChanceAttribute()) * critMultiplier;
     }
 }

@@ -1,11 +1,11 @@
 package com.chaosbuffalo.mknpc.event;
 
-
 import com.chaosbuffalo.mkcore.init.CoreParticles;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.GlobalPos;
@@ -16,26 +16,30 @@ import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+
 @Mod.EventBusSubscriber(modid = MKNpc.MODID, value = Dist.CLIENT)
 public class NpcClientEventHandler {
 
-    private static KeyMapping questMenuBind;
+    private static final KeyMapping questMenuBind = new KeyMapping("key.hud.questmenu",
+            InputConstants.KEY_K, "key.mknpc.category");
     private static int ticks = -1;
+
+    @Mod.EventBusSubscriber(modid = MKNpc.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class ModEvents {
+        @SubscribeEvent
+        public static void registerKeyBinding(RegisterKeyMappingsEvent event) {
+            event.register(questMenuBind);
+        }
+    }
 
     @SubscribeEvent
     public static void onKeyEvent(InputEvent.Key event) {
         handleInputEvent();
-    }
-
-    public static void registerKeyBinding(RegisterKeyMappingsEvent event) {
-        questMenuBind = new KeyMapping("key.hud.questmenu", GLFW.GLFW_KEY_K, "key.mknpc.category");
-        event.register(questMenuBind);
     }
 
     public static void handleInputEvent() {

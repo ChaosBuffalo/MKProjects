@@ -27,59 +27,59 @@ public class MeleeWeaponTypes {
             new ResourceLocation(MKWeapons.MODID, "longsword"),
             1.5f, -2.4f, 0.5f, 0.05f, 0.0f, false,
             0.75f, 25f,
-            new SkillScalingEffect(4.5, MKAttributes.ONE_HAND_SLASH),
+            new MeleeSkillScalingEffect(4.5, MKAttributes.ONE_HAND_SLASH),
             new FuryStrikeMeleeWeaponEffect(5, .25));
     public static final MeleeWeaponType GREATSWORD_TYPE = new MeleeWeaponType(
             new ResourceLocation(MKWeapons.MODID, "greatsword"),
             2.5f, -3.0f, 0.9f, 0.10f, 1.0f, true,
             0.8f, 25f,
-            new SkillScalingEffect(7.5, MKAttributes.TWO_HAND_SLASH),
+            new MeleeSkillScalingEffect(7.5, MKAttributes.TWO_HAND_SLASH),
             new DoubleStrikeMeleeWeaponEffect(.2));
     public static final MeleeWeaponType KATANA_TYPE = new MeleeWeaponType(
             new ResourceLocation(MKWeapons.MODID, "katana"),
             1.5f, -2.2f, 1.0f, 0.10f, 0.0f, true,
             0.75f, 25f,
-            new SkillScalingEffect(4.5, MKAttributes.TWO_HAND_SLASH),
+            new MeleeSkillScalingEffect(4.5, MKAttributes.TWO_HAND_SLASH),
             new ComboStrikeMeleeWeaponEffect(5, .25));
     public static final MeleeWeaponType DAGGER_TYPE = new MeleeWeaponType(
             new ResourceLocation(MKWeapons.MODID, "dagger"),
             1.0f, -1.0f, 1.5f, 0.10f, -1.0f, false,
             0.5f, 20f,
-            new SkillScalingEffect(3.0, MKAttributes.ONE_HAND_PIERCE),
+            new MeleeSkillScalingEffect(3.0, MKAttributes.ONE_HAND_PIERCE),
             new BleedMeleeWeaponEffect(1.0f, 10, 4, MKAttributes.ONE_HAND_PIERCE),
             new ComboStrikeMeleeWeaponEffect(3, .50));
     public static final MeleeWeaponType STAFF_TYPE = new MeleeWeaponType(
             new ResourceLocation(MKWeapons.MODID, "staff"),
             1.75f, -2.5f, 0.5f, 0.05f, 1.0f, true,
             0.85f, 30f,
-            new SkillScalingEffect(5.25, MKAttributes.TWO_HAND_BLUNT),
+            new MeleeSkillScalingEffect(5.25, MKAttributes.TWO_HAND_BLUNT),
             new StunMeleeWeaponEffect(.20, 2),
             new ComboStrikeMeleeWeaponEffect(5, .15));
     public static final MeleeWeaponType SPEAR_TYPE = new MeleeWeaponType(
             new ResourceLocation(MKWeapons.MODID, "spear"),
             2.0f, -2.0f, 0.75f, 0.05f, 2.0f, true,
             0.75f, 30f,
-            new SkillScalingEffect(6.0, MKAttributes.TWO_HAND_PIERCE),
+            new MeleeSkillScalingEffect(6.0, MKAttributes.TWO_HAND_PIERCE),
             new BleedMeleeWeaponEffect(0.75f, 5, 5, MKAttributes.TWO_HAND_PIERCE),
             new FuryStrikeMeleeWeaponEffect(3, .4));
     public static final MeleeWeaponType WARHAMMER_TYPE = new MeleeWeaponType(
             new ResourceLocation(MKWeapons.MODID, "warhammer"),
             2.25f, -2.75f, 0.25f, 0.05f, 1.0f, true,
             0.8f, 25f,
-            new SkillScalingEffect(6.75, MKAttributes.TWO_HAND_BLUNT),
+            new MeleeSkillScalingEffect(6.75, MKAttributes.TWO_HAND_BLUNT),
             new UndeadDamageMeleeWeaponEffect(2.0f),
             new StunMeleeWeaponEffect(.1, 5));
     public static final MeleeWeaponType BATTLEAXE_TYPE = new MeleeWeaponType(
             new ResourceLocation(MKWeapons.MODID, "battleaxe"),
             2.25f, -3.2f, 0.75f, 0.05f, 0.0f, true,
             0.8f, 25f,
-            new SkillScalingEffect(6.75, MKAttributes.TWO_HAND_SLASH),
+            new MeleeSkillScalingEffect(6.75, MKAttributes.TWO_HAND_SLASH),
             new BleedMeleeWeaponEffect(1.0f, 2, 4, MKAttributes.TWO_HAND_SLASH));
     public static final MeleeWeaponType MACE_TYPE = new MeleeWeaponType(
             new ResourceLocation(MKWeapons.MODID, "mace"),
             1.75f, -2.1f, 0.25f, 0.05f, 0.0f, false,
             0.75f, 30f,
-            new SkillScalingEffect(5.25, MKAttributes.ONE_HAND_BLUNT),
+            new MeleeSkillScalingEffect(5.25, MKAttributes.ONE_HAND_BLUNT),
             new UndeadDamageMeleeWeaponEffect(1.5f),
             new DoubleStrikeMeleeWeaponEffect(.1));
 

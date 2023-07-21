@@ -111,7 +111,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                                 .withAdditionalNode(killZombiesNode)
                                 .withAdditionalPrompts(killZombiesPrompt)
                 )
-                .reward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "burning_staff"), LootSlotManager.MAIN_HAND.getName(),
+                .reward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "burning_staff"),
+                        LootSlotManager.MAIN_HAND,
                         Component.translatable("mkultra.quest_reward.receive_item.name", Component.literal("Burning Staff"))))
                 .reward(new XpReward(25))
                 .quest();
@@ -300,7 +301,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         helmetTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperHelmet.get()));
         helmet.addObjective(helmetTrade);
         helmet.addReward(new XpReward(25));
-        helmet.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"), LootSlotManager.HEAD.getName(),
+        helmet.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"),
+                LootSlotManager.HEAD,
                 Component.translatable("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightHelmet.get().getDescription())));
         def.addQuest(helmet);
 
@@ -315,7 +317,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         leggingsTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperLeggings.get()));
         leggings.addObjective(leggingsTrade);
         leggings.addReward(new XpReward(25));
-        leggings.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"), LootSlotManager.LEGS.getName(),
+        leggings.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"),
+                LootSlotManager.LEGS,
                 Component.translatable("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightLeggings.get().getDescription())));
         def.addQuest(leggings);
 
@@ -330,7 +333,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         bootTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperBoots.get()));
         boots.addObjective(bootTrade);
         boots.addReward(new XpReward(25));
-        boots.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"), LootSlotManager.FEET.getName(),
+        boots.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"),
+                LootSlotManager.FEET,
                 Component.translatable("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightBoots.get().getDescription())));
         def.addQuest(boots);
 
@@ -345,7 +349,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         chestplateTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperChestplate.get()));
         chestplate.addObjective(chestplateTrade);
         chestplate.addReward(new XpReward(25));
-        chestplate.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"), LootSlotManager.CHEST.getName(),
+        chestplate.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"),
+                LootSlotManager.CHEST,
                 Component.translatable("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightChestplate.get().getDescription())));
         def.addQuest(chestplate);
 

@@ -197,13 +197,13 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
         return super.customArrow(arrow);
     }
 
-    public void addToTooltip(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip) {
+    public void addToTooltip(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
         if (getMKTier().getAttackDamageBonus() > 0) {
             tooltip.add(Component.translatable("mkweapons.bow_extra_damage.description",
                     getMKTier().getAttackDamageBonus()).withStyle(ChatFormatting.GRAY));
         }
         for (IRangedWeaponEffect weaponEffect : getWeaponEffects(stack)) {
-            weaponEffect.addInformation(stack, worldIn, tooltip);
+            weaponEffect.addInformation(stack, player, tooltip);
         }
     }
 

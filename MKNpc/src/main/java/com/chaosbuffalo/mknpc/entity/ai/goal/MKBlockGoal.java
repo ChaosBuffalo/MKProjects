@@ -38,7 +38,7 @@ public class MKBlockGoal extends Goal {
     }
 
     protected double getAttackReachSqr(LivingEntity attackTarget) {
-        double range = attackTarget.getAttribute(MKAttributes.ATTACK_REACH).getValue() * 2.5;
+        double range = attackTarget.getAttributeValue(MKAttributes.ATTACK_REACH) * 2.5;
         range *= attackTarget.getScale();
         return range * range;
     }

@@ -730,18 +730,17 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     public double getAttackSpeedMultiplier() {
-        AttributeInstance attackSpeed = getAttribute(Attributes.ATTACK_SPEED);
-        return attackSpeed.getValue() / getBaseAttackSpeedValueWithItem();
+        double attackSpeed = getAttributeValue(Attributes.ATTACK_SPEED);
+        return attackSpeed / getBaseAttackSpeedValueWithItem();
     }
 
     public double getBaseAttackSpeedValueWithItem() {
         ItemStack itemInHand = getMainHandItem();
-        double baseValue = getAttribute(Attributes.ATTACK_SPEED).getBaseValue();
-        if (!itemInHand.equals(ItemStack.EMPTY)) {
-            if (itemInHand.getAttributeModifiers(EquipmentSlot.MAINHAND).containsKey(
-                    Attributes.ATTACK_SPEED)) {
-                Collection<AttributeModifier> itemAttackSpeed = itemInHand.getAttributeModifiers(EquipmentSlot.MAINHAND)
-                        .get(Attributes.ATTACK_SPEED);
+        double baseValue = getAttributeBaseValue(Attributes.ATTACK_SPEED);
+        if (!itemInHand.isEmpty()) {
+            var modifiers = itemInHand.getAttributeModifiers(EquipmentSlot.MAINHAND);
+            if (modifiers.containsKey(Attributes.ATTACK_SPEED)) {
+                Collection<AttributeModifier> itemAttackSpeed = modifiers.get(Attributes.ATTACK_SPEED);
                 double attackSpeed = 4.0;
                 for (AttributeModifier mod : itemAttackSpeed) {
                     if (mod.getOperation().equals(AttributeModifier.Operation.ADDITION)) {

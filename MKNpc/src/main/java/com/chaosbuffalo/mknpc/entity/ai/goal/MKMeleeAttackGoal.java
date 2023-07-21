@@ -103,7 +103,7 @@ public class MKMeleeAttackGoal extends Goal {
     }
 
     protected double getAttackReachSqr(LivingEntity attackTarget) {
-        double range = entity.getAttribute(MKAttributes.ATTACK_REACH).getValue();
+        double range = entity.getAttributeValue(MKAttributes.ATTACK_REACH);
         range *= entity.getScale();
         return range * range;
     }
