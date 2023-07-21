@@ -33,7 +33,7 @@ public class ScalableFloatAttribute extends FloatAttribute implements IScalableA
 
     @Override
     public void scale(double value) {
-        setValue(MathUtils.lerp(min, max, (float) value));
+        setValue(MathUtils.exLerp(min, max, (float) value));
     }
 
     public void setMax(float max) {

@@ -41,6 +41,6 @@ public class ScalableDoubleAttribute extends DoubleAttribute implements IScalabl
 
     @Override
     public void scale(double value) {
-        setValue(MathUtils.lerpDouble(min, max, value));
+        setValue(MathUtils.exLerpDouble(min, max, value));
     }
 }
