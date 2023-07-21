@@ -1,0 +1,7 @@
+{
+  "parent": "mkweapons:item/greatsword_base_blocking",
+  "textures": {
+    "0": "mkweapons:item/netherite_tool",
+    "particle": "mkweapons:item/netherite_tool"
+  }
+}

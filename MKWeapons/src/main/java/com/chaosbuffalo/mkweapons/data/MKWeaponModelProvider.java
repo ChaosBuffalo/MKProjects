@@ -21,8 +21,8 @@ import java.util.Map;
 
 public class MKWeaponModelProvider extends ItemModelProvider {
 
-    public MKWeaponModelProvider(PackOutput generator, ExistingFileHelper existingFileHelper) {
-        super(generator, MKWeapons.MODID, existingFileHelper);
+    public MKWeaponModelProvider(PackOutput generator, ExistingFileHelper existingFileHelper, String modId) {
+        super(generator, modId, existingFileHelper);
     }
 
     @Override
@@ -33,32 +33,37 @@ public class MKWeaponModelProvider extends ItemModelProvider {
         for (MKBow bow : MKWeaponsItems.BOWS) {
             makeBowModels(bow);
         }
-        makeSimpleItem(MKWeaponsItems.CopperRing.get());
-        makeSimpleItem(MKWeaponsItems.GoldEarring.get());
-        makeSimpleItem(MKWeaponsItems.GoldRing.get());
-        makeSimpleItem(MKWeaponsItems.RoseGoldRing.get());
-        makeSimpleItem(MKWeaponsItems.SilverRing.get());
-        makeSimpleItem(MKWeaponsItems.SilverEarring.get());
+        makeSimpleJewelry(MKWeaponsItems.CopperRing.get());
+        makeSimpleJewelry(MKWeaponsItems.GoldEarring.get());
+        makeSimpleJewelry(MKWeaponsItems.GoldRing.get());
+        makeSimpleJewelry(MKWeaponsItems.RoseGoldRing.get());
+        makeSimpleJewelry(MKWeaponsItems.SilverRing.get());
+        makeSimpleJewelry(MKWeaponsItems.SilverEarring.get());
+        makeSimpleJewelry(MKWeaponsItems.CopperEarring.get());
     }
 
-    private ItemModelBuilder makeSimpleItem(Item item) {
+    protected ResourceLocation getBaseLoc(String name) {
+        return new ResourceLocation(MKWeapons.MODID, name);
+    }
+
+    protected ItemModelBuilder makeSimpleJewelry(Item item) {
         String path = ForgeRegistries.ITEMS.getKey(item).getPath();
         return singleTexture(path, new ResourceLocation(MKWeapons.MODID, "jewelry_base"), "layer0",
                 modLoc(String.format("item/%s", path)));
     }
 
-    private void makeBowModels(MKBow bow) {
+    protected void makeBowModels(MKBow bow) {
         String path = ForgeRegistries.ITEMS.getKey(bow).getPath();
         List<String> subModels = Arrays.asList("pulling_0", "pulling_1", "pulling_2");
         for (String subModel : subModels) {
             String subPath = String.format("%s_%s", path, subModel);
             getBuilder(subPath)
-                    .parent(getExistingFile(modLoc(String.format("item/longbow_base_%s", subModel))))
+                    .parent(getExistingFile(getBaseLoc(String.format("item/longbow_base_%s", subModel))))
                     .texture("0", modLoc(String.format("item/%s_tool", bow.getMKTier().getName())))
                     .texture("particle", modLoc(String.format("item/%s_tool", bow.getMKTier().getName())));
         }
         ItemModelBuilder builder = getBuilder(path)
-                .parent(getExistingFile(modLoc("item/longbow_base")))
+                .parent(getExistingFile(getBaseLoc("item/longbow_base")))
                 .texture("0", modLoc(String.format("item/%s_tool", bow.getMKTier().getName())))
                 .texture("particle", modLoc(String.format("item/%s_tool", bow.getMKTier().getName())));
         int index = 0;
@@ -78,7 +83,7 @@ public class MKWeaponModelProvider extends ItemModelProvider {
         }
     }
 
-    private void makeWeaponModel(MKMeleeWeapon weapon) {
+    protected void makeWeaponModel(MKMeleeWeapon weapon) {
         String path = ForgeRegistries.ITEMS.getKey(weapon).getPath();
         List<String> subModels = Arrays.asList("blocking");
         if (MeleeWeaponTypes.WITH_BLOCKING.contains(weapon.getWeaponType())) {
@@ -86,7 +91,7 @@ public class MKWeaponModelProvider extends ItemModelProvider {
             for (String subModel : subModels) {
                 String subPath = String.format("%s_%s", path, subModel);
                 getBuilder(subPath)
-                        .parent(getExistingFile(modLoc(String.format("item/%s_base_%s", weapon.getWeaponType().getName().getPath(), subModel))))
+                        .parent(getExistingFile(getBaseLoc(String.format("item/%s_base_%s", weapon.getWeaponType().getName().getPath(), subModel))))
                         .texture("0", modLoc(String.format("item/%s_tool", weapon.getMKTier().getName())))
                         .texture("particle", modLoc(String.format("item/%s_tool", weapon.getMKTier().getName())));
             }
@@ -94,7 +99,7 @@ public class MKWeaponModelProvider extends ItemModelProvider {
 
 
         ItemModelBuilder builder = getBuilder(path)
-                .parent(getExistingFile(modLoc(String.format("item/%s_base", weapon.getWeaponType().getName().getPath()))))
+                .parent(getExistingFile(getBaseLoc(String.format("item/%s_base", weapon.getWeaponType().getName().getPath()))))
                 .texture("0", modLoc(String.format("item/%s_tool", weapon.getMKTier().getName())))
                 .texture("particle", modLoc(String.format("item/%s_tool", weapon.getMKTier().getName())));
 

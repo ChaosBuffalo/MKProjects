@@ -27,12 +27,35 @@
       "value": "Hyborean Sorcerer Queen"
     },
     {
+      "dropChances": 2,
+      "lootOptions": [
+        {
+          "lootSlotName": "mkweapons:main_hand",
+          "lootSlotTier": "mkultra:hyborean_sorcerer_queen",
+          "weight": 1.0
+        },
+        {
+          "lootSlotName": "mkweapons:earrings",
+          "lootSlotTier": "mkultra:hyborean_sorcerer_queen",
+          "weight": 3.0
+        }
+      ],
+      "noLootChance": 0.2,
+      "noLootIncrease": 0.25,
+      "optionType": "mknpc:extra_loot"
+    },
+    {
       "optionType": "mknpc:equipment",
       "slotOptions": {
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": "{id: \"mkweapons:katana_iron\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:katana_bronze\", Count: 1b, tag: {Damage: 0}}",
             "weight": 1.0
           }
         ]

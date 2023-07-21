@@ -23,5 +23,6 @@ public class UltraStructurePools {
         DesertTempleVillagePools.registerPools(pContext);
         CryptStructurePools.registerPools(pContext);
         DeepslateObeliskPools.registerPools(pContext);
+        DecayingChurchPools.registerPools(pContext);
     }
 }

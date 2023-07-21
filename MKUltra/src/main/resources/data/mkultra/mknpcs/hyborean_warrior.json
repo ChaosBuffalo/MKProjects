@@ -29,30 +29,103 @@
     {
       "optionType": "mknpc:equipment",
       "slotOptions": {
+        "chest": [
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"minecraft:air\", Count: 1b}",
+            "weight": 20.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:ancient_bronze_chestplate\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          }
+        ],
+        "feet": [
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"minecraft:air\", Count: 1b}",
+            "weight": 20.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:ancient_bronze_boots\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          }
+        ],
+        "head": [
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"minecraft:air\", Count: 1b}",
+            "weight": 20.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:ancient_bronze_helmet\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          }
+        ],
+        "legs": [
+          {
+            "dropChance": 0.0,
+            "item": "{id: \"minecraft:air\", Count: 1b}",
+            "weight": 20.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:ancient_bronze_leggings\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          }
+        ],
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": "{id: \"mkweapons:battleaxe_stone\", Count: 1b, tag: {Damage: 0}}",
-            "weight": 1.0
+            "weight": 10.0
           },
           {
             "dropChance": 0.0,
             "item": "{id: \"mkweapons:spear_stone\", Count: 1b, tag: {Damage: 0}}",
-            "weight": 1.0
+            "weight": 10.0
           },
           {
             "dropChance": 0.0,
             "item": "{id: \"mkweapons:greatsword_stone\", Count: 1b, tag: {Damage: 0}}",
-            "weight": 1.0
+            "weight": 10.0
           },
           {
             "dropChance": 0.0,
             "item": "{id: \"mkweapons:longsword_stone\", Count: 1b, tag: {Damage: 0}}",
-            "weight": 1.0
+            "weight": 10.0
           },
           {
             "dropChance": 0.0,
             "item": "{id: \"mkweapons:warhammer_stone\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 10.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:battleaxe_bronze\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:spear_bronze\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:greatsword_bronze\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:longsword_bronze\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:warhammer_bronze\", Count: 1b, tag: {Damage: 0}}",
             "weight": 1.0
           }
         ]

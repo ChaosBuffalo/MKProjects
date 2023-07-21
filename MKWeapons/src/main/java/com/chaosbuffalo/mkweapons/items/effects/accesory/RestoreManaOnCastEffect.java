@@ -3,6 +3,10 @@ package com.chaosbuffalo.mkweapons.items.effects.accesory;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.serialization.attributes.DoubleAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.ScalableDoubleAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.ScalableFloatAttribute;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
 import com.google.common.collect.ImmutableMap;
@@ -20,49 +24,42 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class RestoreManaOnCastEffect extends BaseAccessoryEffect {
-    private double chance;
-    private float percentage;
+
+    protected final ScalableDoubleAttribute chance = new ScalableDoubleAttribute("chance", 0.0, 0.0);
+    protected final ScalableFloatAttribute percentage = new ScalableFloatAttribute("percentage", 0.0f, 1.0f);
+
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "accessory_effect.restore_mana");
 
     public RestoreManaOnCastEffect() {
         super(NAME, ChatFormatting.AQUA);
-        chance = 0.0;
-        percentage = 0.0f;
+        addAttributes(chance, percentage);
     }
 
-    public RestoreManaOnCastEffect(double chance, float restorePercentage) {
+    public RestoreManaOnCastEffect(double chanceMin, double chanceMax, float restorePercentageMin, float restorePercentageMax) {
         this();
-        this.chance = chance;
-        this.percentage = restorePercentage;
+        this.chance.setValue(chanceMin);
+        this.chance.setMin(chanceMin);
+        this.chance.setMax(chanceMax);
+        this.percentage.setValue(restorePercentageMin);
+        this.percentage.setMin(restorePercentageMin);
+        this.percentage.setMax(restorePercentageMax);
     }
 
     public double getChance() {
-        return chance;
+        return chance.value();
     }
 
     public void setChance(double chance) {
-        this.chance = chance;
+        this.chance.setValue(chance);
     }
 
     public float getPercentage() {
-        return percentage;
+        return percentage.value();
     }
 
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("chance"), ops.createDouble(chance));
-        builder.put(ops.createString("percentage"), ops.createFloat(percentage));
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        chance = dynamic.get("chance").asDouble(0.0);
-        percentage = dynamic.get("percentage").asFloat(0.0f);
-    }
 
     public void setPercentage(float percentage) {
-        this.percentage = percentage;
+        this.percentage.setValue(percentage);
     }
 
     @Override

@@ -24,6 +24,7 @@ public class LootSlotManager {
             EquipmentSlot.HEAD);
     public static final LootSlot FEET = new LootSlot(new ResourceLocation(MKWeapons.MODID, "feet"),
             EquipmentSlot.FEET);
+
     public static final LootSlot INVALID = new LootSlot(INVALID_LOOT_SLOT, (ent, item) -> {
     });
     public static final LootSlot ITEMS = new LootSlot(new ResourceLocation(MKWeapons.MODID, "items"),
@@ -33,6 +34,10 @@ public class LootSlotManager {
             (ent, item) -> {
             });
     public static final LootSlot EARRINGS = new LootSlot(new ResourceLocation(MKWeapons.MODID, "earrings"),
+            (ent, item) -> {
+            });
+
+    public static final LootSlot HANDS = new LootSlot(new ResourceLocation(MKWeapons.MODID, "hands"),
             (ent, item) -> {
             });
 
@@ -57,5 +62,6 @@ public class LootSlotManager {
         addLootSlot(ITEMS);
         addLootSlot(RINGS);
         addLootSlot(EARRINGS);
+        addLootSlot(HANDS);
     }
 }

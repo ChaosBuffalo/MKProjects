@@ -27,6 +27,24 @@
       "value": "A Necrotide Construction"
     },
     {
+      "dropChances": 1,
+      "lootOptions": [
+        {
+          "lootSlotName": "mkweapons:rings",
+          "lootSlotTier": "mkultra:necrotide_golem",
+          "weight": 3.0
+        },
+        {
+          "lootSlotName": "mkweapons:hands",
+          "lootSlotTier": "mkultra:necrotide_golem",
+          "weight": 1.0
+        }
+      ],
+      "noLootChance": 0.0,
+      "noLootIncrease": 0.0,
+      "optionType": "mknpc:extra_loot"
+    },
+    {
       "optionType": "mknpc:abilities",
       "options": [
         {

@@ -1,8 +1,11 @@
 package com.chaosbuffalo.mkweapons.items.randomization.options;
 
+import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.serialization.attributes.IScalableAttribute;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
+import com.chaosbuffalo.mkweapons.items.effects.armor.IArmorEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.IRangedWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.IRandomizationSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
@@ -35,6 +38,14 @@ public class RangedEffectOption extends EffectOption<IRangedWeaponEffect> {
     @Override
     public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
         stack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).ifPresent(
-                x -> getItemEffects().forEach(x::addRangedWeaponEffect));
+                x -> getItemEffects().forEach(eff -> {
+                    IRangedWeaponEffect copied = eff.copy();
+                    copied.getAttributes().forEach(attr -> {
+                        if (attr instanceof IScalableAttribute sAttr) {
+                            sAttr.scale(difficulty / GameConstants.MAX_DIFFICULTY);
+                        }
+                    });
+                    x.addRangedWeaponEffect(copied);
+                }));
     }
 }

@@ -7,10 +7,13 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkweapons.capabilities.IWeaponData;
+import com.chaosbuffalo.mkweapons.capabilities.MKCurioItemHandler;
 import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
+import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
+import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
-import com.chaosbuffalo.mkweapons.items.weapon.tier.MKTier;
+import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
 import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -44,7 +47,7 @@ import java.util.UUID;
 
 public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceivesSkillChange {
     private final IMeleeWeaponType weaponType;
-    private final MKTier mkTier;
+    private final IMKTier mkTier;
     private final List<IMeleeWeaponEffect> weaponEffects;
     protected Multimap<Attribute, AttributeModifier> modifiers;
     protected static final UUID ATTACK_REACH_MODIFIER = UUID.fromString("f74aa80c-43b8-4d00-a6ce-8d52694ff20c");
@@ -54,7 +57,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     protected static final UUID BLOCK_EFFICIENCY_MODIFIER = UUID.fromString("da287a85-0c12-459c-97a5-faea98bc3d6f");
     public static final Set<ToolAction> SWORD_ACTIONS = ImmutableSet.of(ToolActions.SWORD_DIG, ToolActions.SHIELD_BLOCK);
 
-    public MKMeleeWeapon(MKTier tier, IMeleeWeaponType weaponType, Properties builder) {
+    public MKMeleeWeapon(IMKTier tier, IMeleeWeaponType weaponType, Properties builder) {
         super(tier, Math.round(weaponType.getDamageForTier(tier) - tier.getAttackDamageBonus()), weaponType.getAttackSpeed(), builder);
         this.weaponType = weaponType;
         this.mkTier = tier;
@@ -118,6 +121,12 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
                 if (cap.getCombatExtension().getEntityTicksSinceLastSwing() >= EntityUtils.getCooldownPeriod(attacker)) {
                     for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
                         effect.onHit(this, stack, target, attacker);
+                    }
+                    List<MKCurioItemHandler> curios = MKAccessory.getMKCurios(attacker);
+                    for (MKCurioItemHandler handler : curios) {
+                        for (IAccessoryEffect effect : handler.getEffects()) {
+                            effect.onMeleeHit(this, stack, target, attacker);
+                        }
                     }
                 }
             }
@@ -203,7 +212,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     }
 
     @Override
-    public MKTier getMKTier() {
+    public IMKTier getMKTier() {
         return mkTier;
     }
 

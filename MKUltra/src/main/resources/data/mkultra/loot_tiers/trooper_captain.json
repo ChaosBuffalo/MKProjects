@@ -57,6 +57,7 @@
             {
               "effects": [
                 {
+                  "attributes": {},
                   "itemEffectType": "mkweapons:weapon_effect.undead_damage",
                   "multiplier": 1.25
                 }

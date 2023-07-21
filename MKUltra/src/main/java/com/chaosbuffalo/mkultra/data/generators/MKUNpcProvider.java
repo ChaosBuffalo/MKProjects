@@ -156,6 +156,13 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         );
         def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.NECROMANCER));
         def.addOption(new NotableOption());
+        ResourceLocation lootTierName = new ResourceLocation(MKUltra.MODID, "necrotide_golem");
+        def.addOption(new ExtraLootOption()
+                .withLootOptions(new LootOptionEntry(LootSlotManager.RINGS.getName(), lootTierName, 3.0))
+                .withLootOptions(new LootOptionEntry(LootSlotManager.HANDS.getName(), lootTierName, 1.0))
+                .withDropChances(1)
+                .withNoLootChance(0.0)
+                .withNoLootIncrease(0.0));
         return def;
     }
 
@@ -823,19 +830,50 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("mkweapons:battleaxe_stone"))), 1.0, 0.0f));
+                        new ResourceLocation("mkweapons:battleaxe_stone"))), 10.0, 0.0f));
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("mkweapons:spear_stone"))), 1.0, 0.0f));
+                        new ResourceLocation("mkweapons:spear_stone"))), 10.0, 0.0f));
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("mkweapons:greatsword_stone"))), 1.0, 0.0f));
+                        new ResourceLocation("mkweapons:greatsword_stone"))), 10.0, 0.0f));
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("mkweapons:longsword_stone"))), 1.0, 0.0f));
+                        new ResourceLocation("mkweapons:longsword_stone"))), 10.0, 0.0f));
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("mkweapons:warhammer_stone"))), 1.0, 0.0f));
+                        new ResourceLocation("mkweapons:warhammer_stone"))), 10.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkultra:battleaxe_bronze"))), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkultra:spear_bronze"))), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkultra:greatsword_bronze"))), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkultra:longsword_bronze"))), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkultra:warhammer_bronze"))), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.CHEST,
+                new NpcItemChoice(ItemStack.EMPTY, 20.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.CHEST,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientBronzeChestplate.get()), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.LEGS,
+                new NpcItemChoice(ItemStack.EMPTY, 20.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.LEGS,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientBronzeLeggings.get()), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.HEAD,
+                new NpcItemChoice(ItemStack.EMPTY, 20.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.HEAD,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientBronzeHelmet.get()), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.FEET,
+                new NpcItemChoice(ItemStack.EMPTY, 20.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.FEET,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientBronzeBoots.get()), 1.0, 1.1f));
         def.addOption(equipOption);
         def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.WARRIOR));
         return def;
@@ -856,7 +894,10 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("mkweapons:longbow_stone"))), 1.0, 0.0f));
+                        new ResourceLocation("mkweapons:longbow_stone"))), 10.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkultra:longbow_bronze"))), 4.0, 1.1f));
         def.addOption(equipOption);
         def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.ARCHER));
         return def;
@@ -878,6 +919,9 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
                         new ResourceLocation("mkweapons:katana_iron"))), 1.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkultra:katana_bronze"))), 1.0, 1.1f));
         def.addOption(equipOption);
         def.addOption(new AbilitiesOption()
                 .withAbilityOption(MKUAbilities.FIRE_ARMOR.get(), 5, 1.0)
@@ -886,6 +930,14 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 .withAbilityOption(MKUAbilities.IGNITE.get(), 2, 0.5)
                 .withAbilityOption(MKUAbilities.FLAME_WAVE.get(), 3, 1.0)
                 .withAbilityOption(MKUAbilities.WARP_CURSE.get(), 4, 0.5)
+        );
+        ResourceLocation lootTierName = new ResourceLocation(MKUltra.MODID, "hyborean_sorcerer_queen");
+        def.addOption(new ExtraLootOption()
+                .withLootOptions(new LootOptionEntry(LootSlotManager.MAIN_HAND.getName(), lootTierName, 1.0))
+                .withLootOptions(new LootOptionEntry(LootSlotManager.EARRINGS.getName(), lootTierName, 3.0))
+                .withDropChances(2)
+                .withNoLootChance(0.2)
+                .withNoLootIncrease(0.25)
         );
         def.addOption(new MKComboSettingsOption().setComboCount(5).setComboDelay(60));
         def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.MAGE));
@@ -911,6 +963,28 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
                         new ResourceLocation("mkweapons:greatsword_iron"))), 1.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkultra:battleaxe_bronze"))), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkultra:greatsword_bronze"))), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.CHEST,
+                new NpcItemChoice(ItemStack.EMPTY, 2.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.CHEST,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientBronzeChestplate.get()), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.LEGS,
+                new NpcItemChoice(ItemStack.EMPTY, 2.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.LEGS,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientBronzeLeggings.get()), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.HEAD,
+                new NpcItemChoice(ItemStack.EMPTY, 2.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.HEAD,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientBronzeHelmet.get()), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.FEET,
+                new NpcItemChoice(ItemStack.EMPTY, 2.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.FEET,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientBronzeBoots.get()), 1.0, 1.1f));
         def.addOption(equipOption);
         def.addOption(new AbilitiesOption()
                 .withAbilityOption(MKUAbilities.NATURES_REMEDY.get(), 2, 1.0)
@@ -920,6 +994,14 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 .withAbilityOption(MKUAbilities.EXPLOSIVE_GROWTH.get(), 5, 0.5)
                 .withAbilityOption(MKUAbilities.FIREBALL.get(), 6, 0.5)
 
+        );
+        ResourceLocation lootTierName = new ResourceLocation(MKUltra.MODID, "ancient_king");
+        def.addOption(new ExtraLootOption()
+                .withLootOptions(new LootOptionEntry(LootSlotManager.RINGS.getName(), lootTierName, 1.0))
+                .withLootOptions(new LootOptionEntry(LootSlotManager.EARRINGS.getName(), lootTierName, 3.0))
+                .withDropChances(2)
+                .withNoLootChance(0.2)
+                .withNoLootIncrease(0.25)
         );
         def.addOption(new MKComboSettingsOption().setComboCount(2).setComboDelay(10));
         def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.PALADIN));
@@ -941,7 +1023,10 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("mkweapons:dagger_stone"))), 1.0, 0.0f));
+                        new ResourceLocation("mkweapons:dagger_stone"))), 5.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkultra:dagger_bronze"))), 3.0, 1.1f));
         def.addOption(equipOption);
         def.addOption(new AbilitiesOption()
                 .withAbilityOption(MKUAbilities.FIRE_ARMOR.get(), 2, 0.5)
@@ -967,13 +1052,30 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("mkweapons:battleaxe_iron"))), 1.0, 0.0f));
+                        new ResourceLocation("mkweapons:battleaxe_iron"))), 10.0, 0.0f));
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("mkweapons:greatsword_iron"))), 1.0, 0.0f));
+                        new ResourceLocation("mkweapons:greatsword_iron"))), 10.0, 0.0f));
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("mkweapons:warhammer_iron"))), 1.0, 0.0f));
+                        new ResourceLocation("mkweapons:warhammer_iron"))), 10.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkultra:battleaxe_bronze"))), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkultra:greatsword_bronze"))), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkultra:warhammer_bronze"))), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.HEAD,
+                new NpcItemChoice(ItemStack.EMPTY, 2.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.HEAD,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientBronzeHelmet.get()), 1.0, 1.1f));
+        equipOption.addItemChoice(EquipmentSlot.FEET,
+                new NpcItemChoice(ItemStack.EMPTY, 2.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.FEET,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientBronzeBoots.get()), 1.0, 1.1f));
         def.addOption(equipOption);
         def.addOption(new AbilitiesOption()
                 .withAbilityOption(MKUAbilities.NATURES_REMEDY.get(), 2, 1.0)

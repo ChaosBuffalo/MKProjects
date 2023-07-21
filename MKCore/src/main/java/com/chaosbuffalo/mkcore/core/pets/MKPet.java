@@ -157,7 +157,7 @@ public class MKPet<T extends LivingEntity & IMKPet> {
         }
     }
 
-    @Nullable
+
     public static <T extends LivingEntity & IMKPet> MKPet<T> makePetFromEntity(Class<T> clazz,
                                                                                ResourceLocation petSlotName,
                                                                                Entity entity) {

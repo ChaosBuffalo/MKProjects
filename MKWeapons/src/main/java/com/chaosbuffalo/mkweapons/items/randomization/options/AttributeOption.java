@@ -20,7 +20,9 @@ import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
+import org.w3c.dom.Attr;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +49,16 @@ public class AttributeOption extends BaseRandomizationOption {
 
     public void addFixedAttributeModifier(Attribute attribute, AttributeModifier attributeModifier) {
         modifiers.add(new AttributeOptionEntry(attribute, attributeModifier, attributeModifier.getAmount(), attributeModifier.getAmount()));
+    }
+
+    public static AttributeOption withModifier(Attribute attribute, String name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
+        return withModifier(RandomizationSlotManager.ATTRIBUTE_SLOT, attribute, name, minAmount, maxAmount, op);
+    }
+
+    public static AttributeOption withModifier(IRandomizationSlot slot, Attribute attribute, String name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
+        AttributeOption opt = new AttributeOption(slot);
+        opt.addAttributeModifier(attribute, name, minAmount, maxAmount, op);
+        return opt;
     }
 
     public void addAttributeModifier(Attribute attribute, String name, double minAmount, double maxAmount, AttributeModifier.Operation op) {

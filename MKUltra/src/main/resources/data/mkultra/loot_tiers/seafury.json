@@ -9,6 +9,7 @@
               "effects": [
                 {
                   "ability": "mkultra:ability.seafury",
+                  "attributes": {},
                   "chance": 0.5,
                   "itemEffectType": "mkweapons:weapon_effect.on_hit_ability",
                   "skill_level": 10.0

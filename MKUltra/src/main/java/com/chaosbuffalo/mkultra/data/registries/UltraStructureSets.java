@@ -18,8 +18,9 @@ public class UltraStructureSets {
     public static final ResourceKey<StructureSet> INTRO_CASTLE = createKey("intro_castle");
     public static final ResourceKey<StructureSet> DESERT_TEMPLE_VILLAGE = createKey("desert_temple_village");
     public static final ResourceKey<StructureSet> NECROTIDE_ALTER = createKey("necrotide_alter");
-
     public static final ResourceKey<StructureSet> DEEPSLATE_OBELISK = createKey("deepslate_obelisk");
+    public static final ResourceKey<StructureSet> HYBOREAN_CRYPT = createKey("hyborean_crypt");
+    public static final ResourceKey<StructureSet> DECAYING_CHURCH = createKey("decaying_church");
 
     public static ResourceKey<StructureSet> createKey(String name) {
         return ResourceKey.create(Registries.STRUCTURE_SET, new ResourceLocation(MKUltra.MODID, name));
@@ -46,5 +47,13 @@ public class UltraStructureSets {
         context.register(DEEPSLATE_OBELISK,
                 new StructureSet(structures.getOrThrow(UltraStructures.DEEPSLATE_OBELISK),
                         new RandomSpreadStructurePlacement(65, 35, RandomSpreadType.LINEAR, 111111111)));
+
+        context.register(HYBOREAN_CRYPT,
+                new StructureSet(structures.getOrThrow(UltraStructures.HYBOREAN_CRYPT),
+                        new RandomSpreadStructurePlacement(75, 25, RandomSpreadType.LINEAR, 222222)));
+
+        context.register(DECAYING_CHURCH,
+                new StructureSet(structures.getOrThrow(UltraStructures.DECAYING_CHURCH),
+                        new RandomSpreadStructurePlacement(75, 35, RandomSpreadType.LINEAR, 4)));
     }
 }

@@ -1,0 +1,149 @@
+{
+  "slotItems": {
+    "mkweapons:earrings": [
+      {
+        "template": {
+          "lootSlot": "mkweapons:earrings",
+          "options": [
+            {
+              "modifiers": [
+                {
+                  "Amount": 0.05,
+                  "AttributeName": "mkcore:melee_crit_multiplier",
+                  "Name": "mkultra:ancient_king",
+                  "Operation": 0,
+                  "maxValue": 0.2,
+                  "minValue": 0.05
+                }
+              ],
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 1.0
+            },
+            {
+              "name": "{\"text\":\"Earring of Might\"}",
+              "randomizationType": "mkweapons:name",
+              "slotName": "mkweapons:randomization.name",
+              "weight": 1.0
+            }
+          ],
+          "potentialItems": [
+            {
+              "itemStack": "{id: \"mkweapons:copper_earring\", Count: 1b}",
+              "weight": 1.0
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "slots": [
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.name"
+                ],
+                "templateType": "mkultra:earring"
+              },
+              "weight": 15.0
+            }
+          ]
+        },
+        "weight": 10.0
+      }
+    ],
+    "mkweapons:rings": [
+      {
+        "template": {
+          "lootSlot": "mkweapons:rings",
+          "options": [
+            {
+              "modifiers": [
+                {
+                  "Amount": 0.02,
+                  "AttributeName": "mkcore:spell_crit_chance",
+                  "Name": "mkultra:ancient_king",
+                  "Operation": 0,
+                  "maxValue": 0.1,
+                  "minValue": 0.02
+                }
+              ],
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 1.0
+            },
+            {
+              "name": "{\"text\":\"Ring of Destruction\"}",
+              "randomizationType": "mkweapons:name",
+              "slotName": "mkweapons:randomization.name",
+              "weight": 1.0
+            }
+          ],
+          "potentialItems": [
+            {
+              "itemStack": "{id: \"mkweapons:silver_ring\", Count: 1b}",
+              "weight": 1.0
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "slots": [
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.name"
+                ],
+                "templateType": "mkultra:ring"
+              },
+              "weight": 15.0
+            }
+          ]
+        },
+        "weight": 10.0
+      },
+      {
+        "template": {
+          "lootSlot": "mkweapons:rings",
+          "options": [
+            {
+              "modifiers": [
+                {
+                  "Amount": 0.02,
+                  "AttributeName": "mkcore:melee_crit_chance",
+                  "Name": "mkultra:ancient_king",
+                  "Operation": 0,
+                  "maxValue": 0.1,
+                  "minValue": 0.02
+                }
+              ],
+              "randomizationType": "mkweapons:attributes",
+              "slotName": "mkweapons:randomization.attributes",
+              "weight": 1.0
+            },
+            {
+              "name": "{\"text\":\"Ring of Keen Edges\"}",
+              "randomizationType": "mkweapons:name",
+              "slotName": "mkweapons:randomization.name",
+              "weight": 1.0
+            }
+          ],
+          "potentialItems": [
+            {
+              "itemStack": "{id: \"mkweapons:copper_ring\", Count: 1b}",
+              "weight": 1.0
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "slots": [
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.name"
+                ],
+                "templateType": "mkultra:ring"
+              },
+              "weight": 15.0
+            }
+          ]
+        },
+        "weight": 10.0
+      }
+    ]
+  }
+}

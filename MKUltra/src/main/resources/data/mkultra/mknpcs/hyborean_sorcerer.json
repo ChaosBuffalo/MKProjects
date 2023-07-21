@@ -33,7 +33,12 @@
           {
             "dropChance": 0.0,
             "item": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}",
-            "weight": 1.0
+            "weight": 5.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": "{id: \"mkultra:dagger_bronze\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 3.0
           }
         ]
       }

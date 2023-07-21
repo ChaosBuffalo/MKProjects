@@ -1,12 +1,15 @@
 package com.chaosbuffalo.mkultra.data.generators.tags;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.init.CoreTags;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.ItemTagsProvider;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.common.data.BlockTagsProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
@@ -32,9 +35,18 @@ public class UltraItemTagsProvider extends ItemTagsProvider {
         tag(CoreTags.Items.LIGHT_ARMOR)
                 .add(MKUItems.seawovenBoots.get(), MKUItems.seawovenHelmet.get(), MKUItems.seawovenChestplate.get(), MKUItems.seawovenLeggings.get());
         tag(CoreTags.Items.MEDIUM_ARMOR)
-                .add(MKUItems.trooperKnightLeggings.get(), MKUItems.trooperKnightBoots.get(), MKUItems.trooperKnightHelmet.get(), MKUItems.trooperKnightChestplate.get());
+                .add(MKUItems.trooperKnightLeggings.get(), MKUItems.trooperKnightBoots.get(), MKUItems.trooperKnightHelmet.get(), MKUItems.trooperKnightChestplate.get())
+                .add(MKUItems.ancientBronzeBoots.get(), MKUItems.ancientBronzeChestplate.get(), MKUItems.ancientBronzeLeggings.get(), MKUItems.ancientBronzeHelmet.get());
         tag(CoreTags.Items.HEAVY_ARMOR)
                 .add(MKUItems.greenKnightHelmet.get(), MKUItems.greenKnightChestplate.get(), MKUItems.greenKnightBoots.get(), MKUItems.greenKnightLeggings.get());
+        tag(accessory("hands"))
+                .add(MKUItems.corruptedGauntlets.get());
+        tag(accessory("ring"))
+                .add(MKUItems.necrotideBand.get());
 
+    }
+
+    private static TagKey<Item> accessory(String name) {
+        return ItemTags.create(new ResourceLocation("curios", name));
     }
 }

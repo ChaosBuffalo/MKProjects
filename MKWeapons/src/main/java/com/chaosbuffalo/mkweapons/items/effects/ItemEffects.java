@@ -1,12 +1,17 @@
 package com.chaosbuffalo.mkweapons.items.effects;
 
 import com.chaosbuffalo.mkweapons.items.effects.accesory.AccessoryModifierEffect;
+import com.chaosbuffalo.mkweapons.items.effects.accesory.OnMeleeProcEffect;
+import com.chaosbuffalo.mkweapons.items.effects.accesory.RestoreManaOnCastEffect;
 import com.chaosbuffalo.mkweapons.items.effects.armor.ArmorModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.*;
+import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedManaDrainEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedSkillScalingEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RapidFireRangedWeaponEffect;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
@@ -39,6 +44,11 @@ public class ItemEffects {
         addWeaponEffectDeserializer(MeleeSkillScalingEffect.NAME, MeleeSkillScalingEffect::new);
         addWeaponEffectDeserializer(RangedSkillScalingEffect.NAME, RangedSkillScalingEffect::new);
         addWeaponEffectDeserializer(OnHitAbilityEffect.NAME, OnHitAbilityEffect::new);
+        addWeaponEffectDeserializer(LivingDamageMeleeWeaponEffect.NAME, LivingDamageMeleeWeaponEffect::new);
+        addWeaponEffectDeserializer(ManaDrainWeaponEffect.NAME, ManaDrainWeaponEffect::new);
+        addWeaponEffectDeserializer(RangedManaDrainEffect.NAME, RangedManaDrainEffect::new);
+        addWeaponEffectDeserializer(RestoreManaOnCastEffect.NAME, RestoreManaOnCastEffect::new);
+        addWeaponEffectDeserializer(OnMeleeProcEffect.NAME, OnMeleeProcEffect::new);
     }
 
     @Nullable
@@ -53,5 +63,10 @@ public class ItemEffects {
             weaponEffect.deserialize(dynamic);
         }
         return weaponEffect;
+    }
+
+    public static <T extends IItemEffect> T copyEffect(T effect) {
+        Tag tag = effect.serialize(NbtOps.INSTANCE);
+        return (T) deserializeEffect(new Dynamic<>(NbtOps.INSTANCE, tag));
     }
 }

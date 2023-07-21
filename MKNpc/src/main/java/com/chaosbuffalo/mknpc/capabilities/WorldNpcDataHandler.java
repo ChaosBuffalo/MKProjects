@@ -94,7 +94,6 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         Structure struct = start.getStructure();
         StructureData structureData = new StructureData(world.dimension(),
                 start, this::getComponentDataFromPiece);
-
         MKStructureEntry structureEntry = new MKStructureEntry(this,
                 world.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(struct),
                 IStructureStartMixin.getInstanceIdFromStart(start), structureData);

@@ -6,7 +6,7 @@ import com.chaosbuffalo.mknpc.client.render.renderers.ILayerTextureProvider;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -17,9 +17,9 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.function.Function;
 
-public class MKAdditionalBipedLayer<T extends MKEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
+public class MKAdditionalBipedLayer<T extends MKEntity, M extends HumanoidModel<T>> extends RenderLayer<T, M> {
     private final LayerStyle style;
-    private final EntityModel<T> layerModel;
+    private final HumanoidModel<T> layerModel;
     private final ILayerTextureProvider<T, M> renderer;
 
     public MKAdditionalBipedLayer(ILayerTextureProvider<T, M> entityRendererIn,
@@ -32,7 +32,7 @@ public class MKAdditionalBipedLayer<T extends MKEntity, M extends EntityModel<T>
         this.style = layer;
     }
 
-    protected static <T extends MKEntity> void renderCopyTranslucent(EntityModel<T> modelParentIn, EntityModel<T> modelIn,
+    protected static <T extends MKEntity> void renderCopyTranslucent(HumanoidModel<T> modelParentIn, HumanoidModel<T> modelIn,
                                                                      ResourceLocation textureLocationIn, PoseStack matrixStackIn,
                                                                      MultiBufferSource bufferIn, int packedLightIn, T entityIn,
                                                                      float limbSwing, float limbSwingAmount, float ageInTicks,
@@ -47,12 +47,12 @@ public class MKAdditionalBipedLayer<T extends MKEntity, M extends EntityModel<T>
 
     }
 
-    protected static <T extends MKEntity> void renderTranslucentModel(EntityModel<T> modelIn, ResourceLocation textureLocationIn, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn, T entityIn, float red, float green, float blue) {
+    protected static <T extends MKEntity> void renderTranslucentModel(HumanoidModel<T> modelIn, ResourceLocation textureLocationIn, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn, T entityIn, float red, float green, float blue) {
         VertexConsumer ivertexbuilder = bufferIn.getBuffer(RenderType.entityTranslucent(textureLocationIn, false));
         modelIn.renderToBuffer(matrixStackIn, ivertexbuilder, packedLightIn, LivingEntityRenderer.getOverlayCoords(entityIn, 0.0F), red, green, blue, 1.0F);
     }
 
-    protected static <T extends MKEntity> void renderCopyCutoutModel(EntityModel<T> modelParentIn, EntityModel<T> modelIn,
+    protected static <T extends MKEntity> void renderCopyCutoutModel(HumanoidModel<T> modelParentIn, HumanoidModel<T> modelIn,
                                                                      ResourceLocation textureLocationIn, PoseStack matrixStackIn,
                                                                      MultiBufferSource bufferIn, int packedLightIn, T entityIn,
                                                                      float limbSwing, float limbSwingAmount, float ageInTicks,

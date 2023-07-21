@@ -1,0 +1,15 @@
+{
+  "parent": "mkweapons:item/spear_base",
+  "overrides": [
+    {
+      "model": "mkultra:item/spear_bronze_blocking",
+      "predicate": {
+        "minecraft:blocking": 1.0
+      }
+    }
+  ],
+  "textures": {
+    "0": "mkultra:item/bronze_tool",
+    "particle": "mkultra:item/bronze_tool"
+  }
+}

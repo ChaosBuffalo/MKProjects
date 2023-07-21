@@ -11,7 +11,7 @@ import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOption;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotManager;
 import com.chaosbuffalo.mkweapons.items.randomization.templates.RandomizationTemplate;
-import com.chaosbuffalo.mkweapons.items.weapon.tier.MKTier;
+import com.chaosbuffalo.mkweapons.items.weapon.tier.MKWrapperTier;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
@@ -42,7 +42,7 @@ public class MKWeaponsGenerator {
         gen.addProvider(event.includeServer(), blockTagsProvider);
         gen.addProvider(event.includeServer(), new MKWeaponsItemTagProvider(gen, event.getLookupProvider(),
                 blockTagsProvider, helper));
-        gen.addProvider(event.includeClient(), new MKWeaponModelProvider(gen.getPackOutput(), helper));
+        gen.addProvider(event.includeClient(), new MKWeaponModelProvider(gen.getPackOutput(), helper, MKWeapons.MODID));
 
     }
 
@@ -59,7 +59,7 @@ public class MKWeaponsGenerator {
 
         private LootTier generateTierOne() {
             LootTier tier = new LootTier(new ResourceLocation(MKWeapons.MODID, "tier_one"));
-            Set<MKTier> weaponTiers = new HashSet<>();
+            Set<MKWrapperTier> weaponTiers = new HashSet<>();
             weaponTiers.add(MKWeaponsItems.STONE_TIER);
             weaponTiers.add(MKWeaponsItems.WOOD_TIER);
 

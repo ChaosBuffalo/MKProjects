@@ -6,10 +6,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.event.SpawnNpcDefinitionEvent;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.data.UltraTags;
-import com.chaosbuffalo.mkultra.world.gen.feature.structure.DeepslateObeliskPools;
-import com.chaosbuffalo.mkultra.world.gen.feature.structure.DesertTempleVillagePools;
-import com.chaosbuffalo.mkultra.world.gen.feature.structure.IntroCastlePools;
-import com.chaosbuffalo.mkultra.world.gen.feature.structure.NecrotideAlterPools;
+import com.chaosbuffalo.mkultra.world.gen.feature.structure.*;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
@@ -20,6 +17,9 @@ import net.minecraft.util.random.WeightedRandomList;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.VerticalAnchor;
+import net.minecraft.world.level.levelgen.heightproviders.ConstantHeight;
+import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSpawnOverride;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
@@ -34,6 +34,10 @@ public class UltraStructures {
     public static ResourceKey<Structure> NECROTIDE_ALTER = createKey("necrotide_alter");
 
     public static ResourceKey<Structure> DEEPSLATE_OBELISK = createKey("deepslate_obelisk");
+
+    public static ResourceKey<Structure> HYBOREAN_CRYPT = createKey("hyborean_crypt");
+
+    public static ResourceKey<Structure> DECAYING_CHURCH = createKey("decaying_church");
 
     public static ResourceKey<Structure> createKey(String name) {
         return ResourceKey.create(Registries.STRUCTURE, new ResourceLocation(MKUltra.MODID, name));
@@ -73,6 +77,20 @@ public class UltraStructures {
                         emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_DEEPSLATE_OBELISK),
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.BEARD_THIN),
                         templates.getOrThrow(DeepslateObeliskPools.BASE)).build());
+
+        context.register(HYBOREAN_CRYPT,
+                new MKJigsawBuilder(HYBOREAN_CRYPT.location(),
+                        emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_HYBOREAN_CRYPT),
+                                GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.BURY),
+                        templates.getOrThrow(CryptStructurePools.BASE))
+                        .setHeightProvider(ConstantHeight.of(VerticalAnchor.absolute(-19)))
+                        .build());
+        context.register(DECAYING_CHURCH,
+                new MKJigsawBuilder(DECAYING_CHURCH.location(),
+                        emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_DECAYING_CHURCH),
+                                GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.BEARD_THIN),
+                        templates.getOrThrow(DecayingChurchPools.BASE))
+                        .build());
     }
 
     public static Structure.StructureSettings structure(HolderSet<Biome> biomes, GenerationStep.Decoration step, TerrainAdjustment adjustment) {

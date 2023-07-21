@@ -27,5 +27,9 @@ public class UltraStructureTagsProvider extends StructureTagsProvider {
                 .add(UltraStructures.NECROTIDE_ALTER);
         tag(UltraTags.Structures.DEEPSLATE_OBELISK)
                 .add(UltraStructures.DEEPSLATE_OBELISK);
+        tag(UltraTags.Structures.HYBOREAN_CRYPT)
+                .add(UltraStructures.HYBOREAN_CRYPT);
+        tag(UltraTags.Structures.DECAYING_CHURCH)
+                .add(UltraStructures.DECAYING_CHURCH);
     }
 }

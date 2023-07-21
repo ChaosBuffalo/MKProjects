@@ -10,7 +10,7 @@ import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.IRangedWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedSkillScalingEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
-import com.chaosbuffalo.mkweapons.items.weapon.tier.MKTier;
+import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
 import com.google.common.collect.Multimap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -40,11 +40,11 @@ import java.util.List;
 
 public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillChange {
     private final List<IRangedWeaponEffect> weaponEffects = new ArrayList<>();
-    private final MKTier tier;
+    private final IMKTier tier;
     private final float baseDrawTime;
     private final float baseLaunchVel;
 
-    public MKBow(Properties builder, MKTier tier, float baseDrawTime,
+    public MKBow(Properties builder, IMKTier tier, float baseDrawTime,
                  float baseLaunchVel, IRangedWeaponEffect... weaponEffects) {
         super(builder);
         this.baseDrawTime = baseDrawTime;
@@ -209,7 +209,7 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
 
 
     @Override
-    public MKTier getMKTier() {
+    public IMKTier getMKTier() {
         return tier;
     }
 
