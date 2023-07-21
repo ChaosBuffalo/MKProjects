@@ -10,6 +10,14 @@ public class MathUtils {
         return (1.0f - t) * v0 + t * v1;
     }
 
+    public static float exLerp(float v0, float v1, float t) {
+        return v0 + t * (v1 - v0);
+    }
+
+    public static double exLerpDouble(double v0, double v1, double t) {
+        return v0 + t * (v1 - v0);
+    }
+
     public static double lerpDouble(double v0, double v1, double t) {
         return (1.0 - t) * v0 + t * v1;
     }
