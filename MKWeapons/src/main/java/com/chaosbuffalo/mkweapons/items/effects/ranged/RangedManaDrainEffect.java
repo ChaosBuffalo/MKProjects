@@ -16,13 +16,12 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class RangedManaDrainEffect extends BaseRangedWeaponEffect{
+public class RangedManaDrainEffect extends BaseRangedWeaponEffect {
 
     private float damageMultiplier;
     private float efficiency;
@@ -74,7 +73,7 @@ public class RangedManaDrainEffect extends BaseRangedWeaponEffect{
     }
 
     @Override
-    public void addInformation(ItemStack stack, @org.jetbrains.annotations.Nullable Player player, List<Component> tooltip) {
+    public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
         super.addInformation(stack, player, tooltip);
         if (Screen.hasShiftDown()) {
             tooltip.add(Component.translatable("mkweapons.weapon_effect.ranged_mana_drain.description",

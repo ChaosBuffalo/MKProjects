@@ -12,21 +12,19 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.Lazy;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class OnMeleeProcEffect extends BaseAccessoryEffect{
+public class OnMeleeProcEffect extends BaseAccessoryEffect {
     protected ScalableDoubleAttribute procChance = new ScalableDoubleAttribute("proc_chance", 0.05, 0.05);
 
     protected ScalableFloatAttribute skillLevel = new ScalableFloatAttribute("skill_level", 0.0f, 0.0f);
@@ -40,7 +38,7 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect{
         this();
         this.procChance.setValue(procChanceMin);
         this.procChance.setMin(procChanceMin);
-        this.procChance.setMin(procChanceMax);
+        this.procChance.setMax(procChanceMax);
         this.skillLevel.setMin(skillLevelMin);
         this.skillLevel.setMax(skillLevelMax);
         this.skillLevel.setValue(skillLevelMin);
@@ -83,20 +81,22 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect{
     }
 
     @Override
-    public void addInformation(ItemStack stack, @org.jetbrains.annotations.Nullable Player player, List<Component> tooltip) {
+    public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
+        MKAbility ability = abilitySupplier.get();
+        if (ability == null)
+            return;
+
         tooltip.add(Component.translatable(String.format("%s.%s.name",
-                this.getTypeName().getNamespace(), this.getTypeName().getPath()), abilitySupplier.get().getAbilityName()).withStyle(color));
+                this.getTypeName().getNamespace(), this.getTypeName().getPath()), ability.getAbilityName()).withStyle(color));
         if (Screen.hasShiftDown()) {
             tooltip.add(Component.translatable(String.format("%s.%s.description",
                             this.getTypeName().getNamespace(), this.getTypeName().getPath()),
-                    MKAbility.PERCENT_FORMATTER.format(procChance), MKAbility.NUMBER_FORMATTER.format(skillLevel)));
+                    MKAbility.PERCENT_FORMATTER.format(procChance.value()), MKAbility.NUMBER_FORMATTER.format(skillLevel.value())));
             if (player != null) {
                 MKCore.getEntityData(player).ifPresent(entityData -> {
-                    tooltip.add(abilitySupplier.get().getAbilityDescription(entityData, attr -> skillLevel.value()));
+                    tooltip.add(ability.getAbilityDescription(entityData, attr -> skillLevel.value()));
                 });
             }
-
         }
-
     }
 }
