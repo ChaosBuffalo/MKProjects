@@ -19,16 +19,16 @@ public interface IMeleeWeaponEffect extends IItemEffect {
     }
 
     default float modifyDamageDealt(float damage, IMKMeleeWeapon weapon, ItemStack stack,
-                                    LivingEntity target, LivingEntity attacker) {
+                                    LivingEntity target, IMKEntityData attackerData) {
         return damage;
     }
 
-    default void postAttack(IMKMeleeWeapon weapon, ItemStack stack, LivingEntity attacker) {
+    default void postAttack(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData) {
 
     }
 
     default void onHurt(float damage, IMKMeleeWeapon weapon, ItemStack stack,
-                       LivingEntity target, LivingEntity attacker) {
+                        LivingEntity target, IMKEntityData attackerData) {
 
     }
 

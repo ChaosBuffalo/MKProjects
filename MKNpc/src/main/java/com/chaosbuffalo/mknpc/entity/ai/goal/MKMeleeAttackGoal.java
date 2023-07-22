@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.events.PostAttackEvent;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
@@ -14,7 +13,6 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.EnumSet;
 import java.util.Optional;
@@ -77,10 +75,9 @@ public class MKMeleeAttackGoal extends Goal {
             mainHand.getItem().hurtEnemy(mainHand, enemy, entity);
         }
         entity.resetSwing();
-        LazyOptional<? extends IMKEntityData> entityData = MKCore.getEntityData(entity);
-        entityData.ifPresent(cap -> {
+        MKCore.getEntityData(entity).ifPresent(cap -> {
             cap.getCombatExtension().recordSwing();
-            MinecraftForge.EVENT_BUS.post(new PostAttackEvent(entity));
+            MinecraftForge.EVENT_BUS.post(new PostAttackEvent(cap));
             if (cap.getCombatExtension().getCurrentSwingCount() > 0 &&
                     cap.getCombatExtension().getCurrentSwingCount() % getComboCount() == 0) {
                 entity.subtractFromTicksSinceLastSwing(getComboDelay());

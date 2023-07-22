@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkweapons.items.effects.melee;
 
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
@@ -31,8 +32,8 @@ public abstract class DamageMultiplierMeleeWeaponEffect extends BaseMeleeWeaponE
     public abstract boolean isTargetSuitable(LivingEntity attacker, LivingEntity target, IMKMeleeWeapon weapon, ItemStack stack);
 
     @Override
-    public float modifyDamageDealt(float damage, IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        if (isTargetSuitable(attacker, target, weapon, stack)) {
+    public float modifyDamageDealt(float damage, IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, IMKEntityData attackerData) {
+        if (isTargetSuitable(attackerData.getEntity(), target, weapon, stack)) {
             return damage * damageMultiplier;
         } else {
             return damage;

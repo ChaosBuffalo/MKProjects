@@ -10,23 +10,18 @@ import net.minecraft.world.item.ItemStack;
 
 public interface IAccessoryEffect extends IItemEffect {
 
-
     default float modifyDamageDealt(float damage, MKAccessory accessory, ItemStack stack,
-                                    LivingEntity target, LivingEntity attacker) {
+                                    LivingEntity target, IMKEntityData attackerData) {
         return damage;
     }
 
-    default void livingCompleteAbility(LivingEntity caster, IMKEntityData entityData, MKAccessory accessory,
+    default void livingCompleteAbility(IMKEntityData casterData, MKAccessory accessory,
                                        ItemStack stack, MKAbility ability) {
 
     }
 
-    default void onMeleeHit(IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, LivingEntity attacker) {
-
-    }
-
     default void onMeleeHit(IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, IMKEntityData attackerData) {
-        onMeleeHit(weapon, stack, target, attackerData.getEntity());
+
     }
 
     @Override

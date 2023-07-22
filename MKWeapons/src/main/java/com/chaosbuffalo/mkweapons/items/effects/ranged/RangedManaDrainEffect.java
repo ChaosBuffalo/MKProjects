@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkweapons.items.effects.ranged;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkweapons.MKWeapons;
@@ -11,8 +10,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
@@ -61,15 +58,11 @@ public class RangedManaDrainEffect extends BaseRangedWeaponEffect {
     }
 
     @Override
-    public void onProjectileHit(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
-                                IMKEntityData sourceData, AbstractArrow arrow, ItemStack bow) {
-        super.onProjectileHit(event, source, livingTarget, sourceData, arrow, bow);
-        MKCore.getEntityData(livingTarget).ifPresent(targetData -> {
-            float amount = event.getAmount() * damageMultiplier;
-            if (targetData.getStats().consumeMana(amount)) {
-                sourceData.getStats().addMana(amount * efficiency);
-            }
-        });
+    public void onProjectileHit(LivingHurtEvent event, IMKEntityData attackerData, IMKEntityData victimData, AbstractArrow arrow, ItemStack bow) {
+        float amount = event.getAmount() * damageMultiplier;
+        if (victimData.getStats().consumeMana(amount)) {
+            attackerData.getStats().addMana(amount * efficiency);
+        }
     }
 
     @Override

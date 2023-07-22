@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.core;
 
+import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
@@ -17,7 +18,11 @@ public interface IMKEntityData {
     LivingEntity getEntity();
 
     default boolean isServerSide() {
-        return !getEntity().getCommandSenderWorld().isClientSide();
+        return !isClientSide();
+    }
+
+    default boolean isClientSide() {
+        return getEntity().getLevel().isClientSide();
     }
 
     AbilityExecutor getAbilityExecutor();
@@ -43,4 +48,9 @@ public interface IMKEntityData {
     void onPlayerStartTracking(ServerPlayer playerEntity);
 
     void attachUpdateEngine(UpdateEngine engine);
+
+    static IMKEntityData getOrThrow(LivingEntity livingEntity) {
+        return livingEntity.getCapability(CoreCapabilities.ENTITY_CAPABILITY)
+                .orElseThrow(() -> new IllegalStateException("Entity " + livingEntity + " did not have the entity capability!"));
+    }
 }

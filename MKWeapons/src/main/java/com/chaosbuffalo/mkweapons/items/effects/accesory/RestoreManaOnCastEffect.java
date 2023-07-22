@@ -3,20 +3,14 @@ package com.chaosbuffalo.mkweapons.items.effects.accesory;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.serialization.attributes.DoubleAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ScalableDoubleAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ScalableFloatAttribute;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -63,13 +57,12 @@ public class RestoreManaOnCastEffect extends BaseAccessoryEffect {
     }
 
     @Override
-    public void livingCompleteAbility(LivingEntity caster, IMKEntityData entityData, MKAccessory accessory,
+    public void livingCompleteAbility(IMKEntityData casterData, MKAccessory accessory,
                                       ItemStack stack, MKAbility ability) {
-        if (!caster.getCommandSenderWorld().isClientSide() && entityData instanceof MKPlayerData) {
-            MKPlayerData playerData = (MKPlayerData) entityData;
-            double roll = caster.getRandom().nextDouble();
+        if (casterData.isServerSide() && casterData instanceof MKPlayerData playerData) {
+            double roll = casterData.getEntity().getRandom().nextDouble();
             if (roll >= (1.0 - getChance())) {
-                float mana = ability.getManaCost(entityData) * getPercentage();
+                float mana = ability.getManaCost(casterData) * getPercentage();
                 playerData.getStats().addMana(mana);
                 playerData.getEntity().sendSystemMessage(Component.translatable(
                         "mkweapons.accessory_effect.restore_mana.message",
@@ -86,6 +79,4 @@ public class RestoreManaOnCastEffect extends BaseAccessoryEffect {
                     MKAbility.PERCENT_FORMATTER.format(getChance()), MKAbility.PERCENT_FORMATTER.format(getPercentage())));
         }
     }
-
-
 }

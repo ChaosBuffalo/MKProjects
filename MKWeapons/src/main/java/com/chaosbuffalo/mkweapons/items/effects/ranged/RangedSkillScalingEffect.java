@@ -12,7 +12,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -44,8 +43,8 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
     }
 
     @Override
-    public void onProjectileHit(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget, IMKEntityData sourceData, AbstractArrow arrow, ItemStack bow) {
-        if (sourceData instanceof MKPlayerData playerData) {
+    public void onProjectileHit(LivingHurtEvent event, IMKEntityData attackerData, IMKEntityData victimData, AbstractArrow arrow, ItemStack bow) {
+        if (attackerData instanceof MKPlayerData playerData) {
             playerData.getSkills().tryScaledIncreaseSkill(skill, 0.5);
         }
     }

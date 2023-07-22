@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkweapons.items.effects.melee;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.google.common.collect.ImmutableMap;
@@ -57,12 +58,11 @@ public class ManaDrainWeaponEffect extends BaseMeleeWeaponEffect {
     }
 
     @Override
-    public void onHurt(float damage, IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        super.onHurt(damage, weapon, stack, target, attacker);
+    public void onHurt(float damage, IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, IMKEntityData attackerData) {
+        super.onHurt(damage, weapon, stack, target, attackerData);
         MKCore.getEntityData(target).ifPresent(targetData -> {
             if (targetData.getStats().consumeMana(damage * damageMultiplier)) {
-                MKCore.getEntityData(attacker).ifPresent(attackerData -> attackerData.getStats()
-                        .addMana(damage * damageMultiplier * efficiency));
+                attackerData.getStats().addMana(damage * damageMultiplier * efficiency);
             }
         });
     }

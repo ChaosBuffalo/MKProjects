@@ -341,8 +341,10 @@ public class ClientEventHandler {
         if (!player.isSpectator()) {
             player.attack(target);
             player.resetAttackStrengthTicker();
-            MKCore.getEntityData(player).ifPresent(cap -> cap.getCombatExtension().recordSwing());
-            MinecraftForge.EVENT_BUS.post(new PostAttackEvent(player));
+            MKCore.getEntityData(player).ifPresent(cap -> {
+                cap.getCombatExtension().recordSwing();
+                MinecraftForge.EVENT_BUS.post(new PostAttackEvent(cap));
+            });
         }
     }
 

@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkweapons.items.effects.melee;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.ResetAttackSwingPacket;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
@@ -68,21 +68,21 @@ public class DoubleStrikeMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     }
 
     @Override
-    public void postAttack(IMKMeleeWeapon weapon, ItemStack stack, LivingEntity attacker) {
-        if (attacker.getCommandSenderWorld().isClientSide()) {
+    public void postAttack(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData) {
+        if (attackerData.isClientSide()) {
             return;
         }
-        MKCore.getEntityData(attacker).ifPresent(cap -> {
-            double roll = attacker.getRandom().nextDouble();
-            if (roll >= (1.0 - chance)) {
-                CombatExtensionModule combatModule = cap.getCombatExtension();
-                double cooldownPeriod = EntityUtils.getCooldownPeriod(attacker);
-                combatModule.addEntityTicksSinceLastSwing((int) cooldownPeriod);
-                if (attacker instanceof ServerPlayer) {
-                    PacketHandler.sendMessage(new ResetAttackSwingPacket(combatModule.getEntityTicksSinceLastSwing()),
-                            (ServerPlayer) attacker);
-                }
+
+        LivingEntity attacker = attackerData.getEntity();
+        double roll = attacker.getRandom().nextDouble();
+        if (roll >= (1.0 - chance)) {
+            CombatExtensionModule combatModule = attackerData.getCombatExtension();
+            double cooldownPeriod = EntityUtils.getCooldownPeriod(attacker);
+            combatModule.addEntityTicksSinceLastSwing((int) cooldownPeriod);
+            if (attacker instanceof ServerPlayer serverPlayer) {
+                PacketHandler.sendMessage(new ResetAttackSwingPacket(combatModule.getEntityTicksSinceLastSwing()),
+                        serverPlayer);
             }
-        });
+        }
     }
 }

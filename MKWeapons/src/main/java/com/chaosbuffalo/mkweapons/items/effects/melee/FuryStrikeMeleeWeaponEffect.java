@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkweapons.items.effects.melee;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import net.minecraft.ChatFormatting;
@@ -35,18 +35,15 @@ public class FuryStrikeMeleeWeaponEffect extends SwingMeleeWeaponEffect {
         }
     }
 
-
     @Override
-    public float modifyDamageDealt(float damage, IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        return MKCore.getEntityData(attacker).map(cap -> {
-            CombatExtensionModule combatModule = cap.getCombatExtension();
-            if (combatModule.isMidCombo()) {
-                int hit = combatModule.getCurrentSwingCount() % getNumberOfHits();
-                double damageIncrease = 1.0 + hit * getPerHit();
-                return damageIncrease * damage;
-            } else {
-                return damage;
-            }
-        }).orElse(damage).floatValue();
+    public float modifyDamageDealt(float damage, IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, IMKEntityData attackerData) {
+        CombatExtensionModule combatModule = attackerData.getCombatExtension();
+        if (combatModule.isMidCombo()) {
+            int hit = combatModule.getCurrentSwingCount() % getNumberOfHits();
+            double damageIncrease = 1.0 + hit * getPerHit();
+            return (float)damageIncrease * damage;
+        } else {
+            return damage;
+        }
     }
 }
