@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.EntityTargetingAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.google.common.collect.ImmutableMap;
@@ -68,10 +69,9 @@ public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
     }
 
     @Override
-    public void onHit(IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        if (attacker.getRandom().nextDouble() >= (1.0 - procChance)) {
-            MKCore.getEntityData(attacker).ifPresent(entityData -> abilitySupplier.get().castAtEntity(entityData,
-                    target, attr -> skillLevel));
+    public void onHit(IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, IMKEntityData attackerData) {
+        if (attackerData.getEntity().getRandom().nextDouble() >= (1.0 - procChance)) {
+            abilitySupplier.get().castAtEntity(attackerData, target, attr -> skillLevel);
         }
     }
 

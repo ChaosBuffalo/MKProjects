@@ -11,7 +11,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 public interface IRangedWeaponEffect extends IItemEffect {
 
     default void onProjectileHit(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
-                                 LivingEntity livingSource, IMKEntityData sourceData,
+                                 IMKEntityData sourceData,
                                  AbstractArrow arrow, ItemStack bow) {
 
     }

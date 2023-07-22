@@ -25,6 +25,10 @@ public interface IAccessoryEffect extends IItemEffect {
 
     }
 
+    default void onMeleeHit(IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, IMKEntityData attackerData) {
+        onMeleeHit(weapon, stack, target, attackerData.getEntity());
+    }
+
     @Override
     default IAccessoryEffect copy() {
         return (IAccessoryEffect) IItemEffect.super.copy();

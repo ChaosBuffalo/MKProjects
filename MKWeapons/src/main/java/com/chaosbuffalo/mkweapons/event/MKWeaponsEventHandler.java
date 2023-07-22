@@ -40,7 +40,7 @@ public class MKWeaponsEventHandler {
             MKWeapons.getArrowCapability(arrow).ifPresent(cap -> {
                 if (!cap.getShootingWeapon().isEmpty() && cap.getShootingWeapon().getItem() instanceof IMKRangedWeapon bow) {
                     for (IRangedWeaponEffect effect : bow.getWeaponEffects(cap.getShootingWeapon())) {
-                        effect.onProjectileHit(event, source, livingTarget, livingSource, sourceData,
+                        effect.onProjectileHit(event, source, livingTarget, sourceData,
                                 arrow, cap.getShootingWeapon());
                     }
                 }
