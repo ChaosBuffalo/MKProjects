@@ -15,7 +15,6 @@ import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
 import com.chaosbuffalo.mkcore.item.AttributeTooltipManager;
 import com.chaosbuffalo.mkcore.network.ExecuteActiveAbilityPacket;
-import com.chaosbuffalo.mkcore.network.MKItemAttackPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -25,7 +24,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -40,7 +38,6 @@ import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -294,29 +291,15 @@ public class ClientEventHandler {
         tooltip.add(component);
     }
 
-    private static void doPlayerAttack(Player player, Entity target, Minecraft minecraft) {
-        if (minecraft.gameMode != null) {
-            minecraft.gameMode.ensureHasSentCarriedItem();
-        }
-        PacketHandler.sendMessageToServer(new MKItemAttackPacket(target));
-        if (!player.isSpectator()) {
-            player.attack(target);
-            MKCore.getEntityData(player).ifPresent(cap -> cap.getCombatExtension().recordSwing());
-            MinecraftForge.EVENT_BUS.post(new PostAttackEvent(player));
-        }
-    }
-
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onAttackReplacement(InputEvent.InteractionKeyMappingTriggered event) {
         if (event.isAttack() && event.getHand() == InteractionHand.MAIN_HAND) {
             Minecraft mc = Minecraft.getInstance();
             Player player = mc.player;
             if (player != null && mc.crosshairPickEntity != null) {
-                if (!Targeting.isValidFriendly(player, mc.crosshairPickEntity)) {
-                    doPlayerAttack(player, mc.crosshairPickEntity, mc);
-                    event.setSwingHand(true);
+                if (Targeting.isValidFriendly(player, mc.crosshairPickEntity)) {
+                    event.setCanceled(true);
                 }
-                event.setCanceled(true);
             }
         }
     }

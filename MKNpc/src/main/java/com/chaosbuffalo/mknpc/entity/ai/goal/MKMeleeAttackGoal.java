@@ -79,7 +79,7 @@ public class MKMeleeAttackGoal extends Goal {
         LazyOptional<? extends IMKEntityData> entityData = MKCore.getEntityData(entity);
         entityData.ifPresent(cap -> {
             cap.getCombatExtension().recordSwing();
-            MinecraftForge.EVENT_BUS.post(new PostAttackEvent(entity));
+            MinecraftForge.EVENT_BUS.post(new PostAttackEvent(cap));
             if (cap.getCombatExtension().getCurrentSwingCount() > 0 &&
                     cap.getCombatExtension().getCurrentSwingCount() % getComboCount() == 0) {
                 entity.subtractFromTicksSinceLastSwing(getComboDelay());

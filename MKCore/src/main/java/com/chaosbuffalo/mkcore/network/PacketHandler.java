@@ -51,8 +51,6 @@ public class PacketHandler {
                 OpenLearnAbilitiesGuiPacket::new, OpenLearnAbilitiesGuiPacket::handle);
         networkChannel.registerMessage(id++, PlayerLearnAbilityRequestPacket.class, PlayerLearnAbilityRequestPacket::toBytes,
                 PlayerLearnAbilityRequestPacket::new, PlayerLearnAbilityRequestPacket::handle);
-        networkChannel.registerMessage(id++, MKItemAttackPacket.class, MKItemAttackPacket::toBytes,
-                MKItemAttackPacket::new, MKItemAttackPacket::handle);
         networkChannel.registerMessage(id++, ResetAttackSwingPacket.class, ResetAttackSwingPacket::toBytes,
                 ResetAttackSwingPacket::new, ResetAttackSwingPacket::handle);
         networkChannel.registerMessage(id++, MKParticleEffectSpawnPacket.class, MKParticleEffectSpawnPacket::toBytes,

@@ -1,11 +1,10 @@
 package com.chaosbuffalo.mkcore.events;
 
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.entity.living.LivingEvent;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 
-public class PostAttackEvent extends LivingEvent {
+public class PostAttackEvent extends EntityDataEvent {
 
-    public PostAttackEvent(LivingEntity entity) {
+    public PostAttackEvent(IMKEntityData entity) {
         super(entity);
     }
 }

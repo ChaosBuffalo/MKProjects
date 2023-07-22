@@ -7,6 +7,7 @@
     "DamageSourceMixins",
     "LivingEntityMixins",
     "MobEntityMixins",
+    "PlayerMixins",
     "ShieldItemMixins",
     "SwordItemMixins"
   ],
@@ -14,12 +15,12 @@
     "maxShiftBy": 2
   },
   "client": [
-    "client.LocalPlayerMixins",
     "client.EntityRendererDispatcherMixins",
     "client.InGameGuiMixins",
     "client.ItemStackClientMixins",
-    "client.MobEffectTextureManagerMixins",
-    "client.LevelRendererMixins"
+    "client.LevelRendererMixins",
+    "client.LocalPlayerMixins",
+    "client.MobEffectTextureManagerMixins"
   ],
   "minVersion": "0.8"
 }
