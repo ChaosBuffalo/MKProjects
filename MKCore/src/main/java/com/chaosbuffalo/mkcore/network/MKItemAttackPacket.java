@@ -43,7 +43,6 @@ public class MKItemAttackPacket {
             if (target != null) {
                 if (entity.distanceToSqr(target) <= reach * reach) {
                     entity.attack(target);
-                    entity.resetAttackStrengthTicker();
                     MKCore.getEntityData(entity).ifPresent(cap -> cap.getCombatExtension().recordSwing());
                     MinecraftForge.EVENT_BUS.post(new PostAttackEvent(entity));
                 }
