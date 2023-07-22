@@ -17,11 +17,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.loading.FMLLoader;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,7 +44,7 @@ public abstract class MKEffect {
 
     @Nullable
     protected String name;
-    protected final Lazy<MobEffect> wrapperEffect = Lazy.of(() -> new WrapperEffect(this));
+    protected final Lazy<MobEffect> wrapperEffect = Lazy.of(WrapperEffect::new);
     protected final MobEffectCategory effectType;
     private final Map<Attribute, Modifier> attributeModifierMap = new HashMap<>();
 
@@ -149,7 +146,10 @@ public abstract class MKEffect {
         for (Map.Entry<Attribute, Modifier> entry : getAttributeModifierMap().entrySet()) {
             AttributeInstance attrInstance = manager.getInstance(entry.getKey());
             if (attrInstance != null) {
-                attrInstance.removeModifier(entry.getValue().attributeModifier);
+                AttributeModifier modifier = entry.getValue().attributeModifier;
+                if (attrInstance.hasModifier(modifier)) {
+                    attrInstance.removeModifier(modifier);
+                }
             }
         }
     }
@@ -160,7 +160,10 @@ public abstract class MKEffect {
             AttributeInstance attrInstance = manager.getInstance(entry.getKey());
             if (attrInstance != null) {
                 Modifier template = entry.getValue();
-                attrInstance.removeModifier(template.attributeModifier);
+                AttributeModifier modifier = template.attributeModifier;
+                if (attrInstance.hasModifier(modifier)) {
+                    attrInstance.removeModifier(modifier);
+                }
                 attrInstance.addPermanentModifier(createModifier(template, activeEffect));
             }
         }
@@ -183,36 +186,6 @@ public abstract class MKEffect {
                 modifier.skill != null ? activeEffect.getAttributeSkillLevel(modifier.skill) : 0.0f);
     }
 
-    /**
-     * If the effect should be displayed in the players inventory
-     *
-     * @param effect the active MKEffect
-     * @return true to display it (default), false to hide it.
-     */
-    public boolean shouldRender(MKActiveEffect effect) {
-        return true;
-    }
-
-    /**
-     * If the standard text (name and duration) should be drawn when this potion is active.
-     *
-     * @param effect the active MKEffect
-     * @return true to draw the standard text
-     */
-    public boolean shouldRenderInvText(MKActiveEffect effect) {
-        return true;
-    }
-
-    /**
-     * If the effect should be displayed in the player's ingame HUD
-     *
-     * @param effect the active MKEffect
-     * @return true to display it (default), false to hide it.
-     */
-    public boolean shouldRenderHUD(MKActiveEffect effect) {
-        return true;
-    }
-
     @Override
     public String toString() {
         return "MKEffect{" + getId() + "}";
@@ -223,46 +196,26 @@ public abstract class MKEffect {
         return wrapperEffect.get();
     }
 
-    public static class WrapperEffect extends MobEffect {
+    public class WrapperEffect extends MobEffect {
 
-        private final MKEffect effect;
-        private Object effectRendererReal;
-
-        protected WrapperEffect(MKEffect effect) {
-            super(effect.effectType, 0);
-            this.effect = effect;
-            initClientReal();
-        }
-
-        private void initClientReal() {
-            // we gotta do this again
-            // Minecraft instance isn't available in datagen, so don't call initializeClient if in datagen
-            if (FMLEnvironment.dist == Dist.CLIENT && !FMLLoader.getLaunchHandler().isData()) {
-                initializeClient(properties -> {
-                    this.effectRendererReal = properties;
-                });
-            }
-        }
-
-        @Override
-        public Object getEffectRendererInternal() {
-            return effectRendererReal;
+        protected WrapperEffect() {
+            super(effectType, 0);
         }
 
         public MKEffect getMKEffect() {
-            return effect;
+            return MKEffect.this;
         }
 
         @Nonnull
         @Override
         public String getDescriptionId() {
-            return effect.getName();
+            return getName();
         }
 
         @Nonnull
         @Override
         public Component getDisplayName() {
-            return effect.getDisplayName();
+            return getMKEffect().getDisplayName();
         }
 
         @Override
@@ -271,7 +224,7 @@ public abstract class MKEffect {
         }
 
         public void initializeClient(Consumer<IClientMobEffectExtensions> consumer) {
-            consumer.accept(new MKEffectRenderer(effect));
+            consumer.accept(new MKEffectRenderer(getMKEffect()));
         }
     }
 }
