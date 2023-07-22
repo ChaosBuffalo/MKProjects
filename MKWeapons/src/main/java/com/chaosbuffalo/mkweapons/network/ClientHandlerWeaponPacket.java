@@ -9,15 +9,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.Map;
 
 public class ClientHandlerWeaponPacket {
 
-
-    @OnlyIn(Dist.CLIENT)
     public static void handlePacket(SyncWeaponTypesPacket packet) {
         if (Minecraft.getInstance().player != null) {
             WeaponTypeManager.handleMKWeaponReloadForPlayerPre(Minecraft.getInstance().player);

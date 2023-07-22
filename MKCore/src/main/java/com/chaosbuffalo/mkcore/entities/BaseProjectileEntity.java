@@ -19,16 +19,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.network.NetworkHooks;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import net.minecraft.world.entity.Entity.RemovalReason;
 
 public abstract class BaseProjectileEntity extends Projectile implements IClientUpdatable, IEntityAdditionalSpawnData {
 
@@ -177,7 +172,6 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         this.groundProcTime = newVal;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public boolean shouldRenderAtSqrDistance(double distance) {
         double edgeLength = this.getBoundingBox().getSize() * 10.0D;
         if (Double.isNaN(edgeLength)) {
@@ -474,8 +468,6 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         }
     }
 
-
-    @OnlyIn(Dist.CLIENT)
     @Override
     public void lerpMotion(double x, double y, double z) {
         super.lerpMotion(x, y, z);
