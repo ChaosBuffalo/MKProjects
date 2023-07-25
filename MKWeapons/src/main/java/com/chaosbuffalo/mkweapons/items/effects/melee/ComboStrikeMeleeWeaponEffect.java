@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkweapons.items.effects.melee;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
@@ -37,16 +38,14 @@ public class ComboStrikeMeleeWeaponEffect extends SwingMeleeWeaponEffect {
     }
 
     @Override
-    public void postAttack(IMKMeleeWeapon weapon, ItemStack stack, LivingEntity attacker) {
-        MKCore.getEntityData(attacker).ifPresent(cap -> {
-            CombatExtensionModule combatModule = cap.getCombatExtension();
-            if (combatModule.isMidCombo()) {
-                int hit = combatModule.getCurrentSwingCount() % getNumberOfHits();
-                double totalReduction = hit * getPerHit();
-                double cooldownPeriod = EntityUtils.getCooldownPeriod(attacker);
-                int newTicks = (int) Math.round(cooldownPeriod * totalReduction);
-                combatModule.addEntityTicksSinceLastSwing(newTicks);
-            }
-        });
+    public void postAttack(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData) {
+        CombatExtensionModule combatModule = attackerData.getCombatExtension();
+        if (combatModule.isMidCombo()) {
+            int hit = combatModule.getCurrentSwingCount() % getNumberOfHits();
+            double totalReduction = hit * getPerHit();
+            double cooldownPeriod = EntityUtils.getCooldownPeriod(attackerData.getEntity());
+            int newTicks = (int) Math.round(cooldownPeriod * totalReduction);
+            combatModule.addEntityTicksSinceLastSwing(newTicks);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkweapons.items.effects.melee;
 
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,7 +18,7 @@ public interface IMeleeWeaponEffect extends IItemEffect {
         return damage;
     }
 
-    default void postAttack(IMKMeleeWeapon weapon, ItemStack stack, LivingEntity attacker) {
+    default void postAttack(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData) {
 
     }
 

@@ -20,6 +20,10 @@ public interface IMKEntityData {
         return !getEntity().getCommandSenderWorld().isClientSide();
     }
 
+    default boolean isClientSide() {
+        return getEntity().getCommandSenderWorld().isClientSide();
+    }
+
     AbilityExecutor getAbilityExecutor();
 
     IMKAbilityKnowledge getAbilities();

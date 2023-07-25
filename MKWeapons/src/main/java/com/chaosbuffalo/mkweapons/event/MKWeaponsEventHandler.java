@@ -92,12 +92,13 @@ public class MKWeaponsEventHandler {
     }
 
     @SubscribeEvent
-    public static void onPostCombatEvent(PostAttackEvent event) {
-        LivingEntity entity = event.getEntity();
+    public static void onPostAttackEvent(PostAttackEvent event) {
+        IMKEntityData attackerData = event.getEntityData();
+        LivingEntity entity = attackerData.getEntity();
         ItemStack mainHand = entity.getMainHandItem();
         if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
             for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(mainHand)) {
-                effect.postAttack(meleeWeapon, mainHand, entity);
+                effect.postAttack(meleeWeapon, mainHand, attackerData);
             }
         }
     }
