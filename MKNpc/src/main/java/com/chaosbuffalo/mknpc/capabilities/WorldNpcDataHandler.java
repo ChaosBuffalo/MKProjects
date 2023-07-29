@@ -90,13 +90,16 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     }
 
     @Override
-    public void setupStructureDataIfAbsent(StructureStart start, Level world) {
+    public void setupStructureDataIfAbsent(StructureStart start, Level level) {
+        UUID instanceId = IStructureStartMixin.getInstanceIdFromStart(start);
         Structure struct = start.getStructure();
-        StructureData structureData = new StructureData(world.dimension(),
+        ResourceLocation structId = level.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(struct);
+        if (hasStructureInstance(structId, instanceId))
+            return;
+        StructureData structureData = new StructureData(level.dimension(),
                 start, this::getComponentDataFromPiece);
         MKStructureEntry structureEntry = new MKStructureEntry(this,
-                world.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(struct),
-                IStructureStartMixin.getInstanceIdFromStart(start), structureData);
+                structId, instanceId, structureData);
         indexStructureEntry(structureEntry);
     }
 
@@ -256,12 +259,14 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         return Optional.ofNullable(structureIndex.get(structId));
     }
 
-    protected boolean hasStructureInstance(UUID structureId) {
-        return structureIndex.containsKey(structureId);
+    protected boolean hasStructureInstance(ResourceLocation structId, UUID instanceId) {
+        List<UUID> instances = structureToInstanceIndex.get(structId);
+        return instances != null && instances.contains(instanceId);
     }
 
     protected boolean isStructureIndexed(ResourceLocation structureName) {
-        return structureToInstanceIndex.containsKey(structureName) && structureToInstanceIndex.get(structureName).size() > 0;
+        List<UUID> instances = structureToInstanceIndex.get(structureName);
+        return instances != null && !instances.isEmpty();
     }
 
     @Override

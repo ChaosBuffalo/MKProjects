@@ -97,8 +97,8 @@ public class WorldStructureManager {
 
         // returns true if we are not already in structure
         public boolean visit(ServerPlayer player) {
-            if (activePlayers.containsKey(player.getUUID())) {
-                ActivePlayerEntry active = activePlayers.get(player.getUUID());
+            ActivePlayerEntry active = activePlayers.get(player.getUUID());
+            if (active != null) {
                 active.ticksSinceSeen = 0;
                 return false;
             } else {
