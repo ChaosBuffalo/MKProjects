@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkultra.effects;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectState;
 import com.chaosbuffalo.mkcore.effects.MKSimplePassiveState;
@@ -21,12 +22,10 @@ public class SoulDrainEffect extends MKEffect {
         SpellTriggers.LIVING_KILL_ENTITY.register(this, this::onLivingKillEntity);
     }
 
-    public void onLivingKillEntity(LivingDeathEvent event, DamageSource source, LivingEntity living) {
-        MKCore.getPlayer(living).ifPresent(data -> {
-            SoundUtils.playSoundAtEntity(living, MKUSounds.spell_dark_4.get());
-            float mana = MKUAbilities.SOUL_DRAIN.get().getDrainValue((attr) -> MKAbility.getSkillLevel(living, attr));
-            data.getStats().addMana(mana);
-        });
+    public void onLivingKillEntity(LivingDeathEvent event, DamageSource source, IMKEntityData data) {
+        SoundUtils.playSoundAtEntity(data.getEntity(), MKUSounds.spell_dark_4.get());
+        float mana = MKUAbilities.SOUL_DRAIN.get().getDrainValue((attr) -> MKAbility.getSkillLevel(data.getEntity(), attr));
+        data.getStats().addMana(mana);
     }
 
     @Override

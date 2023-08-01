@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkultra.effects;
 
-import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.healing.MKHealSource;
 import com.chaosbuffalo.mkcore.core.healing.MKHealing;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
@@ -23,14 +23,13 @@ public class LifeSiphonEffect extends MKEffect {
         SpellTriggers.LIVING_KILL_ENTITY.register(this, this::onLivingKillEntity);
     }
 
-    public void onLivingKillEntity(LivingDeathEvent event, DamageSource source, LivingEntity living) {
-        MKCore.getEntityData(living).ifPresent(data -> {
-            SoundUtils.playSoundAtEntity(living, MKUSounds.spell_dark_5.get());
-            MKHealSource healSource = new MKHealSource(MKUAbilities.LIFE_SIPHON.getId(), living, living,
-                    CoreDamageTypes.ShadowDamage.get(), MKUAbilities.LIFE_SIPHON.get().getModifierScaling());
-            float amount = MKUAbilities.LIFE_SIPHON.get().getHealingValue(living);
-            MKHealing.healEntityFrom(living, amount, healSource);
-        });
+    public void onLivingKillEntity(LivingDeathEvent event, DamageSource source, IMKEntityData killerData) {
+        LivingEntity living = killerData.getEntity();
+        SoundUtils.playSoundAtEntity(living, MKUSounds.spell_dark_5.get());
+        MKHealSource healSource = new MKHealSource(MKUAbilities.LIFE_SIPHON.getId(), living, living,
+                CoreDamageTypes.ShadowDamage.get(), MKUAbilities.LIFE_SIPHON.get().getModifierScaling());
+        float amount = MKUAbilities.LIFE_SIPHON.get().getHealingValue(living);
+        MKHealing.healEntityFrom(living, amount, healSource);
     }
 
     @Override

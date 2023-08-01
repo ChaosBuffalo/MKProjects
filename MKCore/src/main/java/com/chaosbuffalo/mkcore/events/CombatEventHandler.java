@@ -209,7 +209,9 @@ public class CombatEventHandler {
             if (killer.level.isClientSide) {
                 return;
             }
-            SpellTriggers.LIVING_KILL_ENTITY.onEntityDeath(event, source, killer);
+            MKCore.getEntityData(killer).ifPresent(killerData -> {
+                SpellTriggers.LIVING_KILL_ENTITY.onEntityDeath(event, source, killerData);
+            });
         }
 
         SpellTriggers.LIVING_DEATH.onEntityDeath(event, source, event.getEntity());
