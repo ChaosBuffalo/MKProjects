@@ -56,7 +56,7 @@ public class CombatEventHandler {
 
         // Living is victim
         MKCore.getEntityData(livingTarget).ifPresent(targetData ->
-                SpellTriggers.ENTITY_HURT.onEntityHurtLiving(event, source, livingTarget, targetData));
+                SpellTriggers.ENTITY_HURT.onEntityHurtLiving(event, source, targetData));
     }
 
     @SubscribeEvent
@@ -89,9 +89,8 @@ public class CombatEventHandler {
     private static boolean canBlock(DamageSource source, LivingEntity entity) {
         Entity sourceEntity = source.getDirectEntity();
         boolean hasPiercing = false;
-        if (sourceEntity instanceof AbstractArrow) {
-            AbstractArrow abstractarrowentity = (AbstractArrow) sourceEntity;
-            if (abstractarrowentity.getPierceLevel() > 0) {
+        if (sourceEntity instanceof AbstractArrow arrow) {
+            if (arrow.getPierceLevel() > 0) {
                 hasPiercing = true;
             }
         }
@@ -206,8 +205,7 @@ public class CombatEventHandler {
                 entityData.getAbilityExecutor().interruptCast(CastInterruptReason.Death));
 
         DamageSource source = event.getSource();
-        if (source.getEntity() instanceof LivingEntity) {
-            LivingEntity killer = (LivingEntity) source.getEntity();
+        if (source.getEntity() instanceof LivingEntity killer) {
             if (killer.level.isClientSide) {
                 return;
             }
@@ -216,6 +214,4 @@ public class CombatEventHandler {
 
         SpellTriggers.LIVING_DEATH.onEntityDeath(event, source, event.getEntity());
     }
-
-
 }

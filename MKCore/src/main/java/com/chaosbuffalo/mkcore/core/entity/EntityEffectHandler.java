@@ -259,8 +259,8 @@ public class EntityEffectHandler {
         sources.forEach((sourceId, source) -> source.sendAllEffectsToPlayer(playerEntity));
     }
 
-    private boolean hasEffects() {
-        return sources.size() > 0;
+    public boolean hasEffects() {
+        return !sources.isEmpty();
     }
 
     public boolean isEffectActive(MKEffect effect) {

@@ -9,7 +9,6 @@ import com.chaosbuffalo.mkcore.effects.MKSimplePassiveState;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -31,11 +30,10 @@ public class SkinLikeWoodEffect extends MKEffect {
         return MKSimplePassiveState.INSTANCE;
     }
 
-    private void onEntityHurt(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
-                              IMKEntityData targetData) {
+    private void onEntityHurt(LivingHurtEvent event, DamageSource source, IMKEntityData targetData) {
         if (targetData.getEffects().isEffectActive(this)) {
-            if (targetData instanceof MKPlayerData) {
-                if (!((MKPlayerData) targetData).getStats().consumeMana(1)) {
+            if (targetData instanceof MKPlayerData playerData) {
+                if (!playerData.getStats().consumeMana(1)) {
                     targetData.getEffects().removeEffect(this);
                 }
             }

@@ -35,12 +35,12 @@ import java.util.List;
 public class MKWeaponsEventHandler {
 
     private static void handleProjectileDamage(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
-                                               LivingEntity livingSource, IMKEntityData sourceData) {
+                                               IMKEntityData attackerData) {
         if (source.getDirectEntity() instanceof AbstractArrow arrow && !livingTarget.isBlocking()) {
             MKWeapons.getArrowCapability(arrow).ifPresent(cap -> {
                 if (!cap.getShootingWeapon().isEmpty() && cap.getShootingWeapon().getItem() instanceof IMKRangedWeapon bow) {
                     for (IRangedWeaponEffect effect : bow.getWeaponEffects(cap.getShootingWeapon())) {
-                        effect.onProjectileHit(event, source, livingTarget, livingSource, sourceData,
+                        effect.onProjectileHit(event, source, livingTarget, attackerData,
                                 arrow, cap.getShootingWeapon());
                     }
                 }

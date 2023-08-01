@@ -51,13 +51,13 @@ public class ItemEventHandler {
             return;
         }
         if (event.getEntity() instanceof Player) {
-            MKCore.getPlayer(event.getEntity()).ifPresent((playerData) -> {
+            MKCore.getPlayer(event.getEntity()).ifPresent(playerData -> {
                 playerData.getEquipment().onEquipmentChange(event.getSlot(), event.getFrom(), event.getTo());
-                SpellTriggers.LIVING_EQUIPMENT_CHANGE.onEquipmentChange(event, playerData, playerData.getEntity());
+                SpellTriggers.LIVING_EQUIPMENT_CHANGE.onEquipmentChange(event, playerData);
             });
         } else {
             MKCore.getEntityData(event.getEntity()).ifPresent(entityData -> {
-                SpellTriggers.LIVING_EQUIPMENT_CHANGE.onEquipmentChange(event, entityData, entityData.getEntity());
+                SpellTriggers.LIVING_EQUIPMENT_CHANGE.onEquipmentChange(event, entityData);
             });
         }
     }

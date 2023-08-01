@@ -32,7 +32,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
     @FunctionalInterface
     public interface Trigger {
         void apply(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
-                   LivingEntity livingSource, IMKEntityData sourceData);
+                   IMKEntityData attackerData);
     }
 
     private static final String MELEE_TAG = "LIVING_HURT_ENTITY.melee";
@@ -72,7 +72,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
 
         public void onLivingHurtEntity(LivingHurtEvent event, DamageSource source,
                                        LivingEntity livingTarget, IMKEntityData sourceData) {
-            runTrigger(sourceData.getEntity(), tag, (trigger, instance) ->
+            runTrigger(sourceData, tag, (trigger, instance) ->
                     trigger.apply(event, source, livingTarget, sourceData, instance));
         }
     }
@@ -126,8 +126,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
     public void onLivingHurtEntity(LivingHurtEvent event, DamageSource source,
                                    LivingEntity livingTarget, IMKEntityData sourceData) {
         LivingEntity livingSource = sourceData.getEntity();
-        if (DamageUtils.isMKDamage(source)) {
-            MKDamageSource mkSource = (MKDamageSource) source;
+        if (source instanceof MKDamageSource mkSource) {
             if (mkSource.isMeleeDamage()) {
                 handleMKMelee(event, mkSource, livingTarget, livingSource, sourceData);
             } else {
@@ -146,10 +145,10 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         if (livingHurtEntityPostEffectTriggers.hasTriggers()) {
             livingHurtEntityPostEffectTriggers.onLivingHurtEntity(event, source, livingTarget, sourceData);
         }
-        if (livingHurtEntityPostTriggers.size() == 0 || startTrigger(livingSource, POST_TAG))
+        if (livingHurtEntityPostTriggers.isEmpty() || startTrigger(sourceData, POST_TAG))
             return;
-        livingHurtEntityPostTriggers.forEach(f -> f.apply(event, source, livingTarget, livingSource, sourceData));
-        endTrigger(livingSource, POST_TAG);
+        livingHurtEntityPostTriggers.forEach(f -> f.apply(event, source, livingTarget, sourceData));
+        endTrigger(sourceData, POST_TAG);
     }
 
     private void handleMKDamage(LivingHurtEvent event, MKDamageSource source, LivingEntity livingTarget,
@@ -191,16 +190,15 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         if (effectTriggers.hasTriggers()) {
             effectTriggers.onLivingHurtEntity(event, source, livingTarget, sourceData);
         }
-        if (playerHurtTriggers.size() == 0 || startTrigger(livingSource, typeTag))
+        if (playerHurtTriggers.isEmpty() || startTrigger(sourceData, typeTag))
             return;
-        playerHurtTriggers.forEach(f -> f.apply(event, source, livingTarget, livingSource, sourceData));
-        endTrigger(livingSource, typeTag);
+        playerHurtTriggers.forEach(f -> f.apply(event, source, livingTarget, sourceData));
+        endTrigger(sourceData, typeTag);
     }
 
     private void sendEffectCrit(LivingEntity livingTarget, LivingEntity livingSource, MKDamageSource source,
                                 float newDamage) {
-        if (source instanceof MKDamageSource.EffectDamage) {
-            MKDamageSource.EffectDamage effectDamage = (MKDamageSource.EffectDamage) source;
+        if (source instanceof MKDamageSource.EffectDamage effectDamage) {
             sendCritPacket(livingTarget, livingSource,
                     new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage,
                             source.getMKDamageType(), effectDamage.getDamageTypeName()));
@@ -229,7 +227,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         Entity projectile = source.getDirectEntity();
         float damage = event.getAmount();
         if (DamageUtils.isNonMKProjectileDamage(source)) {
-            damage += livingSource.getAttributeValue(MKAttributes.RANGED_DAMAGE);
+            damage += (float) livingSource.getAttributeValue(MKAttributes.RANGED_DAMAGE);
         }
         boolean wasCrit = false;
         if (projectile != null && CoreDamageTypes.RangedDamage.get().rollCrit(livingSource, livingTarget, projectile)) {
@@ -246,10 +244,10 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         if (livingHurtEntityProjectileEffectTriggers.hasTriggers()) {
             livingHurtEntityProjectileEffectTriggers.onLivingHurtEntity(event, source, livingTarget, sourceData);
         }
-        if (livingHurtEntityProjectileTriggers.size() == 0 || startTrigger(livingSource, PROJECTILE_TAG))
+        if (livingHurtEntityProjectileTriggers.isEmpty() || startTrigger(sourceData, PROJECTILE_TAG))
             return;
-        livingHurtEntityProjectileTriggers.forEach(f -> f.apply(event, source, livingTarget, livingSource, sourceData));
-        endTrigger(livingSource, PROJECTILE_TAG);
+        livingHurtEntityProjectileTriggers.forEach(f -> f.apply(event, source, livingTarget, sourceData));
+        endTrigger(sourceData, PROJECTILE_TAG);
     }
 
     private void handleMKMelee(LivingHurtEvent event, MKDamageSource source, LivingEntity livingTarget,
@@ -273,10 +271,10 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         if (livingHurtEntityMeleeEffectTriggers.hasTriggers()) {
             livingHurtEntityMeleeEffectTriggers.onLivingHurtEntity(event, source, livingTarget, sourceData);
         }
-        if (livingHurtEntityMeleeTriggers.size() == 0 || startTrigger(livingSource, MELEE_TAG))
+        if (livingHurtEntityMeleeTriggers.isEmpty() || startTrigger(sourceData, MELEE_TAG))
             return;
-        livingHurtEntityMeleeTriggers.forEach(f -> f.apply(event, source, livingTarget, livingSource, sourceData));
-        endTrigger(livingSource, MELEE_TAG);
+        livingHurtEntityMeleeTriggers.forEach(f -> f.apply(event, source, livingTarget, sourceData));
+        endTrigger(sourceData, MELEE_TAG);
     }
 
     private static void sendCritPacket(LivingEntity livingTarget, LivingEntity livingSource,

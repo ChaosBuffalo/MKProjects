@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mkcore.effects.triggers;
 
+import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,7 +21,7 @@ public class FallTriggers extends SpellTriggers.TriggerCollectionBase {
 
     @Override
     public boolean hasTriggers() {
-        return fallTriggers.size() > 0;
+        return !fallTriggers.isEmpty();
     }
 
     public void register(FallTrigger trigger) {
@@ -27,9 +29,15 @@ public class FallTriggers extends SpellTriggers.TriggerCollectionBase {
     }
 
     public void onLivingFall(LivingHurtEvent event, DamageSource source, LivingEntity entity) {
-        if (fallTriggers.size() == 0 || startTrigger(entity, TAG))
+        if (fallTriggers.isEmpty())
+            return;
+
+        IMKEntityData entityData = MKCore.getEntityDataOrNull(entity);
+        if (entityData == null)
+            return;
+        if (startTrigger(entityData, TAG))
             return;
         fallTriggers.forEach(f -> f.apply(event, source, entity));
-        endTrigger(entity, TAG);
+        endTrigger(entityData, TAG);
     }
 }

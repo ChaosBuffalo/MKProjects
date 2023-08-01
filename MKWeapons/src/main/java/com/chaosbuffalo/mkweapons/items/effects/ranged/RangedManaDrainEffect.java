@@ -62,12 +62,10 @@ public class RangedManaDrainEffect extends BaseRangedWeaponEffect {
 
     @Override
     public void onProjectileHit(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
-                                LivingEntity livingSource, IMKEntityData sourceData, AbstractArrow arrow, ItemStack bow) {
-        super.onProjectileHit(event, source, livingTarget, livingSource, sourceData, arrow, bow);
+                                IMKEntityData attackerData, AbstractArrow arrow, ItemStack bow) {
         MKCore.getEntityData(livingTarget).ifPresent(targetData -> {
             if (targetData.getStats().consumeMana(event.getAmount() * damageMultiplier)) {
-                MKCore.getEntityData(livingSource).ifPresent(attackerData -> attackerData.getStats()
-                        .addMana(event.getAmount() * damageMultiplier * efficiency));
+                attackerData.getStats().addMana(event.getAmount() * damageMultiplier * efficiency);
             }
         });
     }
