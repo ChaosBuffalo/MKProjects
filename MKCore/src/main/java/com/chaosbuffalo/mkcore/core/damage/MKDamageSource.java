@@ -17,10 +17,6 @@ import javax.annotation.Nullable;
 
 public abstract class MKDamageSource extends DamageSource {
     protected final MKDamageType damageType;
-    @Nullable
-    protected Entity trueSource;
-    @Nullable
-    protected Entity immediateSource;
     protected float modifierScaling = 1.0f;
     protected boolean suppressTriggers;
 
@@ -31,23 +27,10 @@ public abstract class MKDamageSource extends DamageSource {
 
     public abstract Origination getOrigination();
 
-    @Override
-    @Nullable
-    public Entity getDirectEntity() {
-        return immediateSource;
-    }
-
-    @Override
-    @Nullable
-    public Entity getEntity() {
-        return trueSource;
-    }
-
     private MKDamageSource(Level level, MKDamageType damageType,
-                           @Nullable Entity immediateSource, @Nullable Entity trueSource) {
-        super(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(CoreDamageTypes.MK_DAMAGE));
-        this.immediateSource = immediateSource;
-        this.trueSource = trueSource;
+                           @Nullable Entity directEntity, @Nullable Entity causingEntity) {
+        super(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(CoreDamageTypes.MK_DAMAGE),
+                directEntity, causingEntity);
         this.damageType = damageType;
     }
 
@@ -62,8 +45,9 @@ public abstract class MKDamageSource extends DamageSource {
         @Nullable
         protected final String damageTypeName;
 
-        private EffectDamage(Level level, MKDamageType damageType, @Nullable Entity immediateSource, @Nullable Entity trueSource, @Nullable String damageTypeName) {
-            super(level, damageType, immediateSource, trueSource);
+        private EffectDamage(Level level, MKDamageType damageType, @Nullable Entity directEntity,
+                             @Nullable Entity causingEntity, @Nullable String damageTypeName) {
+            super(level, damageType, directEntity, causingEntity);
             this.damageTypeName = damageTypeName;
         }
 
@@ -82,8 +66,8 @@ public abstract class MKDamageSource extends DamageSource {
         public Component getLocalizedDeathMessage(LivingEntity killedEntity) {
             // FIXME: better message
             MutableComponent comp = Component.translatable("%s got dropped", killedEntity.getDisplayName());
-            if (trueSource != null) {
-                comp.append(" by ").append(trueSource.getDisplayName());
+            if (getEntity() != null) {
+                comp.append(" by ").append(getEntity().getDisplayName());
             } else {
                 comp.append(" anonymously");
             }
@@ -104,10 +88,10 @@ public abstract class MKDamageSource extends DamageSource {
         private final ResourceLocation abilityId;
 
         private AbilityDamage(Level level, MKDamageType damageType,
-                              @Nullable Entity immediateSource,
-                              @Nullable Entity trueSource,
+                              @Nullable Entity directEntity,
+                              @Nullable Entity causingEntity,
                               @Nullable ResourceLocation abilityId) {
-            super(level, damageType, immediateSource, trueSource);
+            super(level, damageType, directEntity, causingEntity);
             this.abilityId = abilityId;
         }
 
@@ -126,8 +110,8 @@ public abstract class MKDamageSource extends DamageSource {
         public Component getLocalizedDeathMessage(LivingEntity killedEntity) {
             // FIXME: better message
             MutableComponent comp = Component.translatable("%s got dropped", killedEntity.getDisplayName());
-            if (trueSource != null) {
-                comp.append(" by ").append(trueSource.getDisplayName());
+            if (getEntity() != null) {
+                comp.append(" by ").append(getEntity().getDisplayName());
             } else {
                 comp.append(" anonymously");
             }
