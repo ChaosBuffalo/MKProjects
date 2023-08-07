@@ -53,10 +53,8 @@ public class MKQuestCommand {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         String questIdStr = StringArgumentType.getString(ctx, "id");
         UUID questId = UUID.fromString(questIdStr);
-        ContentDB.tryGetPrimaryData().ifPresent(worldData -> {
-            MKNpc.getPlayerQuestData(player).ifPresent(x -> {
-                x.startQuest(worldData, questId);
-            });
+        MKNpc.getPlayerQuestData(player).ifPresent(x -> {
+            x.startQuest(ContentDB.getPrimaryData(), questId);
         });
 
         return Command.SINGLE_SUCCESS;

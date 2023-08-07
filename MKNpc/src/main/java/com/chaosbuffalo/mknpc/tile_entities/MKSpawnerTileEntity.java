@@ -366,7 +366,7 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
         if (level != null && randomSpawns.size() > 0) {
             BlockPos above = getBlockPos().above();
             if (needsUploadToWorld) {
-                ContentDB.tryGetPrimaryData().ifPresent(cap -> cap.addSpawner(this));
+                ContentDB.getPrimaryData().addSpawner(this);
                 if (!isAir(level, above)) {
                     level.setBlock(above, Blocks.AIR.defaultBlockState(), 3);
                 }

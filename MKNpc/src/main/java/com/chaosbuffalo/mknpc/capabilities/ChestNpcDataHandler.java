@@ -129,7 +129,7 @@ public class ChestNpcDataHandler implements IChestNpcData {
     public void onLoad() {
         if (needsUploadToWorld) {
             if (getTileEntity().getLevel() instanceof ServerLevel) {
-                ContentDB.tryGetPrimaryData().ifPresent(cap -> cap.addChest(this));
+                ContentDB.getPrimaryData().addChest(this);
                 needsUploadToWorld = false;
             }
         }

@@ -93,7 +93,7 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
     public void tick(Level level) {
         if (level != null) {
             if (needsUploadToWorld) {
-                ContentDB.tryGetPrimaryData().ifPresent(cap -> cap.addPointOfInterest(this));
+                ContentDB.getPrimaryData().addPointOfInterest(this);
                 level.setBlock(getBlockPos(), Blocks.AIR.defaultBlockState(), 3);
                 needsUploadToWorld = false;
             }

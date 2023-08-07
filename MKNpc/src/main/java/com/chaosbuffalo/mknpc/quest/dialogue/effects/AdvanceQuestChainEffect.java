@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mknpc.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
+import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
@@ -46,24 +47,24 @@ public class AdvanceQuestChainEffect extends DialogueEffect implements IReceives
 
     @Override
     public void applyEffect(ServerPlayer serverPlayerEntity, LivingEntity livingEntity, DialogueNode dialogueNode) {
-        ContentDB.tryGetPrimaryData().ifPresent(x -> {
-            QuestChainInstance questChain = x.getQuest(chainId);
-            if (questChain == null) {
-                return;
-            }
-            IPlayerQuestingData questingData = MKNpc.getPlayerQuestData(serverPlayerEntity).resolve().orElse(null);
-            if (questingData == null) {
-                return;
-            }
-            questingData.getQuestChain(chainId).ifPresent(playerChain -> {
-                for (String questName : playerChain.getCurrentQuests()) {
-                    Quest currentQuest = questChain.getDefinition().getQuest(questName);
-                    if (currentQuest == null) {
-                        continue;
-                    }
-                    questChain.signalQuestProgress(x, questingData, currentQuest, playerChain, true);
+        QuestChainInstance questChain = ContentDB.getQuestInstance(chainId);
+        if (questChain == null) {
+            return;
+        }
+        IPlayerQuestingData questingData = MKNpc.getPlayerQuestData(serverPlayerEntity).resolve().orElse(null);
+        if (questingData == null) {
+            return;
+        }
+        questingData.getQuestChain(chainId).ifPresent(playerChain -> {
+            IWorldNpcData worldData = ContentDB.getPrimaryData();
+            for (String questName : playerChain.getCurrentQuests()) {
+                Quest currentQuest = questChain.getDefinition().getQuest(questName);
+                if (currentQuest == null) {
+                    continue;
                 }
-            });
+
+                questChain.signalQuestProgress(worldData, questingData, currentQuest, playerChain, true);
+            }
         });
     }
 

@@ -156,18 +156,15 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             return;
         }
         if (server != null && entry.getQuestId() == null) {
-            Level overworld = server.getLevel(Level.OVERWORLD);
-            if (overworld != null) {
-                Optional<QuestChainInstance.QuestChainBuildResult> quest = ContentDB.tryGetPrimaryData()
-                        .map(x -> x.buildQuest(npcDef, getSpawnPos())).orElse(Optional.empty());
-                if (quest.isPresent()) {
-                    QuestChainInstance.QuestChainBuildResult result = quest.get();
-                    QuestChainInstance newQuest = result.instance;
-                    MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getNotableUUID()));
-                    MKNpc.LOGGER.debug("Assigning quest {}({}) to {}", newQuest.getDefinition().getName(), newQuest.getQuestId(), entity);
-                    entry.setupDialogue(result);
-                    entry.setQuestId(newQuest.getQuestId());
-                }
+            Optional<QuestChainInstance.QuestChainBuildResult> quest = ContentDB.tryGetPrimaryData()
+                    .map(x -> x.buildQuest(npcDef, getSpawnPos())).orElse(Optional.empty());
+            if (quest.isPresent()) {
+                QuestChainInstance.QuestChainBuildResult result = quest.get();
+                QuestChainInstance newQuest = result.instance;
+                MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getNotableUUID()));
+                MKNpc.LOGGER.debug("Assigning quest {}({}) to {}", newQuest.getDefinition().getName(), newQuest.getQuestId(), entity);
+                entry.setupDialogue(result);
+                entry.setQuestId(newQuest.getQuestId());
             }
         }
         if (entry.getQuestId() != null) {

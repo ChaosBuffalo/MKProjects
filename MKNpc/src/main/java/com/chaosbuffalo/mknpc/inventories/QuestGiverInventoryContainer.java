@@ -60,13 +60,12 @@ public class QuestGiverInventoryContainer extends ChestMenu {
         }
 
         if (!playerIn.getLevel().isClientSide) {
-            IWorldNpcData worldData = ContentDB.getPrimaryData();
             Optional<? extends IPlayerQuestingData> playerQuestOpt = MKNpc.getPlayerQuestData(playerIn).resolve();
             if (playerQuestOpt.isPresent()) {
                 IPlayerQuestingData playerQuest = playerQuestOpt.get();
                 Collection<PlayerQuestChainInstance> chains = playerQuest.getQuestChains();
                 for (PlayerQuestChainInstance chain : chains) {
-                    QuestChainInstance questChain = worldData.getQuest(chain.getQuestId());
+                    QuestChainInstance questChain = ContentDB.getQuestInstance(chain.getQuestId());
                     if (questChain == null) {
                         continue;
                     }
@@ -84,6 +83,7 @@ public class QuestGiverInventoryContainer extends ChestMenu {
                                         if (matches != null) {
                                             tradeObj.onPlayerTradeSuccess(playerIn,
                                                     playerObj, questData, chain, entity);
+                                            IWorldNpcData worldData = ContentDB.getPrimaryData();
                                             questChain.signalQuestProgress(worldData, playerQuest, currentQuest, chain, false);
                                             return;
                                         }

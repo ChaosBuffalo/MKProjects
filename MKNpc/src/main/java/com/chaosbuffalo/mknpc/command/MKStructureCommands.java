@@ -72,13 +72,10 @@ public class MKStructureCommands {
             starts.forEach(start -> {
                 ResourceLocation featureName = ctx.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE)
                         .getKey(start.getStructure());
-                ContentDB.tryGetPrimaryData().ifPresent(x -> {
-                    x.getStructureData(IStructureStartMixin.getInstanceIdFromStart(start)).ifPresent(entry -> {
-                        entry.reset();
-                    });
-                });
+                UUID instanceId = IStructureStartMixin.getInstanceIdFromStart(start);
+                ContentDB.getPrimaryData().getStructureData(instanceId).ifPresent(MKStructureEntry::reset);
                 player.sendSystemMessage(Component.translatable("mknpc.command.reset_struct",
-                        featureName, IStructureStartMixin.getInstanceIdFromStart(start)));
+                        featureName, instanceId));
             });
         }
         return Command.SINGLE_SUCCESS;
@@ -95,10 +92,9 @@ public class MKStructureCommands {
         if (starts.isEmpty()) {
             player.sendSystemMessage(Component.translatable("mknpc.command.not_in_struct"));
         } else {
-            IWorldNpcData cap = ContentDB.getPrimaryData();
             starts.forEach(start -> {
                 UUID startId = IStructureStartMixin.getInstanceIdFromStart(start);
-                Optional<MKStructureEntry> entry = cap.getStructureData(startId);
+                Optional<MKStructureEntry> entry = ContentDB.getPrimaryData().getStructureData(startId);
                 ResourceLocation featureName = ctx.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(start.getStructure());
                 if (entry.isPresent()) {
                     Map<String, List<PointOfInterestEntry>> pois = entry.get().getPointsOfInterest();

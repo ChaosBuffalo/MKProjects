@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mknpc.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
+import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
@@ -60,18 +61,17 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
         if (questingData == null) {
             return;
         }
-        ContentDB.tryGetPrimaryData().ifPresent(x -> {
-            QuestChainInstance questChain = x.getQuest(chainId);
-            if (questChain == null) {
+        QuestChainInstance questChain = ContentDB.getQuestInstance(chainId);
+        if (questChain == null) {
+            return;
+        }
+        questingData.getQuestChain(chainId).ifPresent(playerChain -> {
+            Quest currentQuest = questChain.getDefinition().getQuest(questName);
+            if (currentQuest == null) {
                 return;
             }
-            questingData.getQuestChain(chainId).ifPresent(playerChain -> {
-                Quest currentQuest = questChain.getDefinition().getQuest(questName);
-                if (currentQuest == null) {
-                    return;
-                }
-                questChain.signalObjectiveComplete(objectiveName, x, questingData, currentQuest, playerChain);
-            });
+            IWorldNpcData worldData = ContentDB.getPrimaryData();
+            questChain.signalObjectiveComplete(objectiveName, worldData, questingData, currentQuest, playerChain);
         });
     }
 
