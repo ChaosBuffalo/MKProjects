@@ -11,7 +11,7 @@ public class DamageUtils {
         return source instanceof MKDamageSource;
     }
 
-    public static boolean wasBlocked(DamageSource source) {
+    public static boolean wasAlreadyPartiallyBlocked(DamageSource source) {
         if (source instanceof IMKDamageSourceExtensions ext) {
             return !ext.canBlock();
         } else {

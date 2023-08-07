@@ -1,9 +1,7 @@
 package com.chaosbuffalo.mkcore.events;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.CastInterruptReason;
-import com.chaosbuffalo.mkcore.core.IMKEntityStats;
-import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.core.damage.IMKDamageSourceExtensions;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
@@ -13,17 +11,16 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.PlayerLeftClickEmptyPacket;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
-import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.InteractionHand;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -32,6 +29,8 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+
+import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = MKCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CombatEventHandler {
@@ -87,29 +86,15 @@ public class CombatEventHandler {
     }
 
     private static boolean canBlock(DamageSource source, LivingEntity entity) {
-        Entity sourceEntity = source.getDirectEntity();
-        boolean hasPiercing = false;
-        if (sourceEntity instanceof AbstractArrow arrow) {
-            if (arrow.getPierceLevel() > 0) {
-                hasPiercing = true;
-            }
-        }
-        if (DamageUtils.wasBlocked(source)) {
+        if (DamageUtils.wasAlreadyPartiallyBlocked(source)) {
             return false;
         }
-        if (!source.is(DamageTypeTags.BYPASSES_SHIELD) && entity.isBlocking() && !hasPiercing) {
-            Vec3 damageLoc = source.getSourcePosition();
-            if (damageLoc != null) {
-                Vec3 lookVec = entity.getViewVector(1.0F);
-                Vec3 damageDir = damageLoc.vectorTo(entity.position()).normalize();
-                damageDir = new Vec3(damageDir.x, 0.0D, damageDir.z);
-                if (damageDir.dot(lookVec) < 0.0D) {
-                    return true;
-                }
-            }
-        }
-        return false;
 
+        return entity.isDamageSourceBlocked(source);
+    }
+
+    private static void playSound(LivingEntity target, Supplier<SoundEvent> sound) {
+        SoundUtils.serverPlaySoundAtEntity(target, sound.get(), target.getSoundSource());
     }
 
     @SubscribeEvent
@@ -118,70 +103,67 @@ public class CombatEventHandler {
         if (target.level.isClientSide)
             return;
 
+        IMKEntityData targetData = MKCore.getEntityDataOrNull(target);
+        if (targetData == null)
+            return;
+
         DamageSource dmgSource = event.getSource();
         Entity source = dmgSource.getEntity();
 
         if (canBlock(dmgSource, target)) {
-            MKCore.getEntityData(target).ifPresent(targetData -> {
-                IMKEntityStats.BlockResult breakResult = targetData.getStats().tryPoiseBlock(event.getAmount());
-                float left = breakResult.damageLeft();
-                if (!(dmgSource instanceof MKDamageSource)) {
-                    // correct for if we're a vanilla damage source and we're going to bypass armor so pre-apply armor
-                    if (DamageUtils.isProjectileDamage(dmgSource)) {
-                        left = CoreDamageTypes.RangedDamage.get().applyResistance(target, left);
-                    } else {
-                        left = CoreDamageTypes.MeleeDamage.get().applyResistance(target, left);
-                    }
-
-                }
-                // need to stop remainder damage from being blockable
-                event.setCanceled(true);
-                if (left > 0) {
-                    if (dmgSource instanceof IMKDamageSourceExtensions mkSrc) {
-                        mkSrc.setCanBlock(false);
-                    }
-                    if (dmgSource instanceof MKDamageSource mk) {
-                        mk.setSuppressTriggers(true);
-                    }
-                    target.hurt(dmgSource, left);
-                }
-                if (breakResult.poiseBroke()) {
-                    SoundUtils.serverPlaySoundAtEntity(event.getEntity(),
-                            CoreSounds.block_break.get(), event.getEntity().getSoundSource());
+            IMKEntityStats.BlockResult breakResult = targetData.getStats().tryPoiseBlock(event.getAmount());
+            float left = breakResult.damageLeft();
+            if (!(dmgSource instanceof MKDamageSource)) {
+                // correct for if we're a vanilla damage source and we're going to bypass armor so pre-apply armor
+                if (DamageUtils.isProjectileDamage(dmgSource)) {
+                    left = CoreDamageTypes.RangedDamage.get().applyResistance(target, left);
                 } else {
-                    if (event.getEntity().getTicksUsingItem() <= 6) {
-                        SoundUtils.serverPlaySoundAtEntity(event.getEntity(),
-                                CoreSounds.parry.get(), event.getEntity().getSoundSource());
-                        MKCore.getPlayer(target).ifPresent(
-                                playerData -> playerData.getSkills().tryIncreaseSkill(MKAttributes.BLOCK));
+                    left = CoreDamageTypes.MeleeDamage.get().applyResistance(target, left);
+                }
+            }
+            // need to stop remainder damage from being blockable
+            event.setCanceled(true);
+            if (left > 0) {
+                if (dmgSource instanceof IMKDamageSourceExtensions mkSrc) {
+                    mkSrc.setCanBlock(false);
+                }
+                if (dmgSource instanceof MKDamageSource mk) {
+                    mk.setSuppressTriggers(true);
+                }
+                target.hurt(dmgSource, left);
+            }
+            if (breakResult.poiseBroke()) {
+                playSound(target, CoreSounds.block_break);
+            } else {
+                if (target.getTicksUsingItem() <= 6) {
+                    playSound(target, CoreSounds.parry);
+                    if (targetData instanceof MKPlayerData playerData) {
+                        playerData.getSkills().tryIncreaseSkill(MKAttributes.BLOCK);
+                    }
+                } else {
+                    if (targetData instanceof MKPlayerData playerData) {
+                        playerData.getSkills().tryScaledIncreaseSkill(MKAttributes.BLOCK, 0.5);
+                    }
+                    if (dmgSource.getDirectEntity() instanceof AbstractArrow) {
+                        playSound(target, CoreSounds.arrow_block);
+                    } else if (source instanceof LivingEntity attacker) {
+                        ItemStack weapon = attacker.getMainHandItem();
+                        playSound(target, weapon.getItem() instanceof SwordItem ?
+                                CoreSounds.weapon_block :
+                                CoreSounds.fist_block);
                     } else {
-                        MKCore.getPlayer(target).ifPresent(
-                                playerData -> playerData.getSkills().tryScaledIncreaseSkill(MKAttributes.BLOCK, 0.5));
-                        if (dmgSource.getDirectEntity() instanceof AbstractArrow) {
-                            SoundUtils.serverPlaySoundAtEntity(event.getEntity(),
-                                    CoreSounds.arrow_block.get(), event.getEntity().getSoundSource());
-                        } else if (source instanceof LivingEntity) {
-                            if (((LivingEntity) source).getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem) {
-                                SoundUtils.serverPlaySoundAtEntity(event.getEntity(),
-                                        CoreSounds.weapon_block.get(), event.getEntity().getSoundSource());
-                            } else {
-                                SoundUtils.serverPlaySoundAtEntity(event.getEntity(),
-                                        CoreSounds.fist_block.get(), event.getEntity().getSoundSource());
-                            }
-                        } else {
-                            SoundUtils.serverPlaySoundAtEntity(event.getEntity(),
-                                    CoreSounds.fist_block.get(), event.getEntity().getSoundSource());
-                        }
+                        playSound(target, CoreSounds.fist_block);
                     }
                 }
-            });
+            }
         }
-        if (dmgSource instanceof MKDamageSource) {
-            if (((MKDamageSource) dmgSource).shouldSuppressTriggers())
+
+        if (dmgSource instanceof MKDamageSource mkDamageSource) {
+            if (mkDamageSource.shouldSuppressTriggers())
                 return;
         }
-        if (source instanceof LivingEntity) {
-            SpellTriggers.LIVING_ATTACKED.onAttacked((LivingEntity) source, target);
+        if (source instanceof LivingEntity attacker) {
+            SpellTriggers.LIVING_ATTACKED.onAttacked(attacker, target);
         }
     }
 

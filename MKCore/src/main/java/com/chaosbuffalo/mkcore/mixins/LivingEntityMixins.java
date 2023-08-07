@@ -48,7 +48,7 @@ public abstract class LivingEntityMixins {
     )
     private void mkcore$knockbackProxy(LivingEntity entity, double strength, double x, double z) {
         if (DamageUtils.isMeleeDamage(mkcore$damageSource) && mkcore$damageSource.getDirectEntity() != null
-                && !DamageUtils.wasBlocked(mkcore$damageSource)
+                && !DamageUtils.wasAlreadyPartiallyBlocked(mkcore$damageSource)
                 && !EntityUtils.isInFrontOf(entity, mkcore$damageSource.getDirectEntity())) {
             knockback(strength, x, z);
             MKCore.LOGGER.info("Performing knockback");
