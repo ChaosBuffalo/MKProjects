@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.event;
 
+import com.chaosbuffalo.mknpc.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
@@ -34,7 +35,7 @@ public class WorldStructureHandler {
     @SubscribeEvent
     public static void onWorldTick(TickEvent.LevelTickEvent ev) {
         if (ev.phase == TickEvent.Phase.END && ev.level instanceof ServerLevel serverLevel) {
-            MKNpc.getOverworldData(ev.level).ifPresent(over -> {
+            ContentDB.tryGetPrimaryData().ifPresent(over -> {
                 StructureManager levelStructures = serverLevel.structureManager();
                 WorldStructureManager activeStructures = over.getStructureManager();
                 for (ServerPlayer player : serverLevel.players()) {

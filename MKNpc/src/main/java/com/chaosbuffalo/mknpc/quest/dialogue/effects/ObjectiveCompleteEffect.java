@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.quest.dialogue.effects;
 
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
+import com.chaosbuffalo.mknpc.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
@@ -55,19 +56,11 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
 
     @Override
     public void applyEffect(ServerPlayer serverPlayerEntity, LivingEntity livingEntity, DialogueNode dialogueNode) {
-        MinecraftServer server = serverPlayerEntity.getServer();
-        if (server == null) {
-            return;
-        }
-        Level overworld = server.getLevel(Level.OVERWORLD);
-        if (overworld == null) {
-            return;
-        }
         IPlayerQuestingData questingData = MKNpc.getPlayerQuestData(serverPlayerEntity).resolve().orElse(null);
         if (questingData == null) {
             return;
         }
-        overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(x -> {
+        ContentDB.tryGetPrimaryData().ifPresent(x -> {
             QuestChainInstance questChain = x.getQuest(chainId);
             if (questChain == null) {
                 return;

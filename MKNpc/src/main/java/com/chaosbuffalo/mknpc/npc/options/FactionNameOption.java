@@ -2,8 +2,8 @@ package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
+import com.chaosbuffalo.mknpc.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.option_entries.FactionNameOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INameEntry;
@@ -49,18 +49,17 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
     @Override
     @Nullable
     public MutableComponent getEntityName(NpcDefinition definition, Level world, UUID spawnId) {
-        return world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).map(
-                cap -> {
-                    if (!cap.hasEntityOptionEntry(definition, this, spawnId)) {
-                        cap.addEntityOptionEntry(definition, this, spawnId, makeOptionEntry(definition, world.getRandom()));
-                    }
-                    INpcOptionEntry entry = cap.getEntityOptionEntry(definition, this, spawnId);
-                    if (entry instanceof INameEntry) {
-                        return ((INameEntry) entry).getName();
-                    } else {
-                        return Component.literal("Name Error");
-                    }
-                }).orElse(Component.literal("Name Error"));
+        return ContentDB.tryGetLevelData(world).map(cap -> {
+            if (!cap.hasEntityOptionEntry(definition, this, spawnId)) {
+                cap.addEntityOptionEntry(definition, this, spawnId, makeOptionEntry(definition, cap.getWorld().getRandom()));
+            }
+            INpcOptionEntry entry = cap.getEntityOptionEntry(definition, this, spawnId);
+            if (entry instanceof INameEntry nameEntry) {
+                return nameEntry.getName();
+            } else {
+                return Component.literal("Name Error");
+            }
+        }).orElse(Component.literal("Name Error"));
     }
 
     @Nullable

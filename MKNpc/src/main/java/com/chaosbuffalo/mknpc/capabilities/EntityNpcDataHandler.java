@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.capabilities;
 
 import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mknpc.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -157,7 +158,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         if (server != null && entry.getQuestId() == null) {
             Level overworld = server.getLevel(Level.OVERWORLD);
             if (overworld != null) {
-                Optional<QuestChainInstance.QuestChainBuildResult> quest = overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
+                Optional<QuestChainInstance.QuestChainBuildResult> quest = ContentDB.tryGetPrimaryData()
                         .map(x -> x.buildQuest(npcDef, getSpawnPos())).orElse(Optional.empty());
                 if (quest.isPresent()) {
                     QuestChainInstance.QuestChainBuildResult result = quest.get();

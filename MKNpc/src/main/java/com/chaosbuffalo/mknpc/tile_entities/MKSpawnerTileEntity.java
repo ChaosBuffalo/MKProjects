@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.WorldUtils;
+import com.chaosbuffalo.mknpc.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.blocks.MKSpawnerBlock;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
@@ -363,24 +364,17 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
 
     public void tick(Level level) {
         if (level != null && randomSpawns.size() > 0) {
+            BlockPos above = getBlockPos().above();
             if (needsUploadToWorld) {
-                MinecraftServer server = level.getServer();
-                if (server != null) {
-                    Level overworld = server.getLevel(Level.OVERWORLD);
-                    if (overworld != null) {
-                        overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
-                                .ifPresent(cap -> cap.addSpawner(this));
-                    }
-                    if (!isAir(level, getBlockPos().above())) {
-                        level.setBlock(getBlockPos().above(), Blocks.AIR.defaultBlockState(), 3);
-                    }
-                    needsUploadToWorld = false;
-
+                ContentDB.tryGetPrimaryData().ifPresent(cap -> cap.addSpawner(this));
+                if (!isAir(level, above)) {
+                    level.setBlock(above, Blocks.AIR.defaultBlockState(), 3);
                 }
+                needsUploadToWorld = false;
             }
-            if (!isAir(level, getBlockPos().above())) {
+            if (!isAir(level, above)) {
                 if (placedByStructure) {
-                    level.setBlock(getBlockPos().above(), Blocks.AIR.defaultBlockState(), 3);
+                    level.setBlock(above, Blocks.AIR.defaultBlockState(), 3);
                 } else {
                     return;
                 }

@@ -128,7 +128,7 @@ public class MKNpc {
         return entity.getCapability(NpcCapabilities.PLAYER_QUEST_DATA_CAPABILITY);
     }
 
-    public static LazyOptional<? extends IWorldNpcData> getWorldNpcData(Level world) {
+    public static LazyOptional<IWorldNpcData> getWorldNpcData(Level world) {
         return world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY);
     }
 

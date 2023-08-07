@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mknpc.command;
 
+import com.chaosbuffalo.mknpc.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.capabilities.PointOfInterestEntry;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
@@ -70,7 +72,7 @@ public class MKStructureCommands {
             starts.forEach(start -> {
                 ResourceLocation featureName = ctx.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE)
                         .getKey(start.getStructure());
-                MKNpc.getOverworldData(player.getLevel()).ifPresent(x -> {
+                ContentDB.tryGetPrimaryData().ifPresent(x -> {
                     x.getStructureData(IStructureStartMixin.getInstanceIdFromStart(start)).ifPresent(entry -> {
                         entry.reset();
                     });
@@ -93,37 +95,31 @@ public class MKStructureCommands {
         if (starts.isEmpty()) {
             player.sendSystemMessage(Component.translatable("mknpc.command.not_in_struct"));
         } else {
-            Level overworld = server.getLevel(Level.OVERWORLD);
-            if (overworld != null) {
-                overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(cap -> {
-                    starts.forEach(start -> {
-                        UUID startId = IStructureStartMixin.getInstanceIdFromStart(start);
-                        Optional<MKStructureEntry> entry = cap.getStructureData(startId);
-                        ResourceLocation featureName = ctx.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(start.getStructure());
-                        if (entry.isPresent()) {
-                            Map<String, List<PointOfInterestEntry>> pois = entry.get().getPointsOfInterest();
-                            if (pois.entrySet().stream().allMatch(m -> m.getValue().isEmpty())) {
-                                player.sendSystemMessage(Component.translatable(
-                                        "mknpc.command.pois_struct_no_poi",
-                                        featureName, startId));
-                            } else {
-                                player.sendSystemMessage(Component.translatable("mknpc.command.pois_for_struct",
-                                        featureName, startId));
-                                pois.forEach((key, value) -> value.forEach(
-                                        poi -> player.sendSystemMessage(Component.translatable(
-                                                "mknpc.command.pois_struct_desc",
-                                                key, poi.getLocation().toString()))));
-                            }
-                        } else {
-                            player.sendSystemMessage(Component.translatable(
-                                    "mknpc.command.pois_struct_not_found",
-                                    featureName, startId));
-                        }
-                    });
-                });
-            } else {
-                player.sendSystemMessage(Component.translatable("mknpc.command.cant_find_cap"));
-            }
+            IWorldNpcData cap = ContentDB.getPrimaryData();
+            starts.forEach(start -> {
+                UUID startId = IStructureStartMixin.getInstanceIdFromStart(start);
+                Optional<MKStructureEntry> entry = cap.getStructureData(startId);
+                ResourceLocation featureName = ctx.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(start.getStructure());
+                if (entry.isPresent()) {
+                    Map<String, List<PointOfInterestEntry>> pois = entry.get().getPointsOfInterest();
+                    if (pois.entrySet().stream().allMatch(m -> m.getValue().isEmpty())) {
+                        player.sendSystemMessage(Component.translatable(
+                                "mknpc.command.pois_struct_no_poi",
+                                featureName, startId));
+                    } else {
+                        player.sendSystemMessage(Component.translatable("mknpc.command.pois_for_struct",
+                                featureName, startId));
+                        pois.forEach((key, value) -> value.forEach(
+                                poi -> player.sendSystemMessage(Component.translatable(
+                                        "mknpc.command.pois_struct_desc",
+                                        key, poi.getLocation().toString()))));
+                    }
+                } else {
+                    player.sendSystemMessage(Component.translatable(
+                            "mknpc.command.pois_struct_not_found",
+                            featureName, startId));
+                }
+            });
         }
 
         return Command.SINGLE_SUCCESS;

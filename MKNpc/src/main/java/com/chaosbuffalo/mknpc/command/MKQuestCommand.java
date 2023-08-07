@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.command;
 
+import com.chaosbuffalo.mknpc.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
@@ -52,23 +53,11 @@ public class MKQuestCommand {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         String questIdStr = StringArgumentType.getString(ctx, "id");
         UUID questId = UUID.fromString(questIdStr);
-        MinecraftServer server = player.getServer();
-        if (server != null) {
-            Level world = server.getLevel(Level.OVERWORLD);
-            if (world != null) {
-                LazyOptional<IWorldNpcData> worldL = world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY);
-                Optional<IWorldNpcData> wrldOpt = worldL.resolve();
-                if (wrldOpt.isPresent()) {
-                    IWorldNpcData worldData = wrldOpt.get();
-                    MKNpc.getPlayerQuestData(player).ifPresent(x -> {
-                        x.startQuest(worldData, questId);
-                    });
-
-                }
-
-
-            }
-        }
+        ContentDB.tryGetPrimaryData().ifPresent(worldData -> {
+            MKNpc.getPlayerQuestData(player).ifPresent(x -> {
+                x.startQuest(worldData, questId);
+            });
+        });
 
         return Command.SINGLE_SUCCESS;
     }
@@ -80,18 +69,12 @@ public class MKQuestCommand {
 
         BlockPos pos = player.blockPosition();
         if (definition != null) {
-            MinecraftServer server = player.getServer();
-            if (server != null) {
-                Level world = server.getLevel(Level.OVERWORLD);
-                if (world != null) {
-                    Optional<QuestChainInstance.QuestChainBuildResult> quest = world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
-                            .map(x -> x.buildQuest(definition, pos)).orElse(Optional.empty());
-                    if (quest.isPresent()) {
-                        QuestChainInstance newQuest = quest.get().instance;
-                        player.sendSystemMessage(Component.literal(String.format("Generated quest: %s", newQuest.getQuestId().toString())));
-                        return Command.SINGLE_SUCCESS;
-                    }
-                }
+            Optional<QuestChainInstance.QuestChainBuildResult> quest = ContentDB.tryGetPrimaryData()
+                    .map(x -> x.buildQuest(definition, pos)).orElse(Optional.empty());
+            if (quest.isPresent()) {
+                QuestChainInstance newQuest = quest.get().instance;
+                player.sendSystemMessage(Component.literal(String.format("Generated quest: %s", newQuest.getQuestId().toString())));
+                return Command.SINGLE_SUCCESS;
             }
             player.sendSystemMessage(Component.literal("Failed to generate quest"));
         } else {

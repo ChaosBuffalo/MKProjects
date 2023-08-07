@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkchat.event.PlayerNpcDialogueTreeGatherEvent;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.core.healing.MKAbilityHealEvent;
 import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
+import com.chaosbuffalo.mknpc.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
@@ -30,6 +31,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -39,6 +42,7 @@ import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 
 @SuppressWarnings("unused")
@@ -70,16 +74,15 @@ public class EntityHandler {
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event) {
         if (!event.getLevel().isClientSide()) {
-            MinecraftServer server = event.getLevel().getServer();
-            Level level = (Level) event.getLevel();
-            if (server == null || level == null) {
+            if (!(event.getChunk() instanceof LevelChunk levelChunk)) {
+                MKNpc.LOGGER.warn("Chunk {} loaded but not a LevelChunk", event.getChunk());
                 return;
             }
             event.getChunk().getBlockEntitiesPos().forEach(pos -> {
-                BlockEntity entity = event.getChunk().getBlockEntity(pos);
+                BlockEntity entity = levelChunk.getBlockEntity(pos);
                 if (entity != null) {
-                    server.overworld().getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(x ->
-                            x.queueChestForProcessing(GlobalPos.of(level.dimension(), pos)));
+                    GlobalPos gpos = GlobalPos.of(levelChunk.getLevel().dimension(), pos);
+                    ContentDB.tryGetPrimaryData().ifPresent(x -> x.queueChestForProcessing(gpos));
                 }
             });
         }
@@ -104,18 +107,14 @@ public class EntityHandler {
             if (te == null) {
                 return;
             }
-            Level overWorld = server.getLevel(Level.OVERWORLD);
-            if (overWorld != null) {
-                te.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(
-                        chestCap -> {
-                            overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
-                                    worldData -> processLootChestEvents(event.getEntity(), chestCap, worldData));
-                            if (chestCap.hasQuestInventoryForPlayer(event.getEntity()) && !event.getEntity().isShiftKeyDown()) {
-                                event.getEntity().openMenu(chestCap);
-                                event.setCanceled(true);
-                            }
-                        });
-            }
+            te.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(chestCap -> {
+                ContentDB.tryGetPrimaryData().ifPresent(
+                        worldData -> processLootChestEvents(event.getEntity(), chestCap, worldData));
+                if (chestCap.hasQuestInventoryForPlayer(event.getEntity()) && !event.getEntity().isShiftKeyDown()) {
+                    event.getEntity().openMenu(chestCap);
+                    event.setCanceled(true);
+                }
+            });
         }
     }
 
@@ -156,24 +155,18 @@ public class EntityHandler {
         if (event.getEntity().level.isClientSide) {
             return;
         }
-        MinecraftServer server = event.getEntity().getServer();
-        if (server == null) {
-            return;
-        }
-        Level overWorld = server.getLevel(Level.OVERWORLD);
-        MKNpc.LOGGER.debug("Setting up dialogue between {} and {}", event.getSpeaker(), event.getEntity());
-        if (overWorld != null) {
-            overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
-                    worldData -> MKNpc.getPlayerQuestData(event.getEntity()).ifPresent(x -> x.getQuestChains().forEach(
-                            pQuestChain -> {
-                                QuestChainInstance questChainInstance = worldData.getQuest(pQuestChain.getQuestId());
-                                if (questChainInstance != null) {
-                                    MKNpc.LOGGER.debug("Adding quest chain dialogue for {}", questChainInstance.getDefinition().getName());
-                                    questChainInstance.getTreeForEntity(event.getSpeaker()).ifPresent(event::addTree);
-                                }
-                            })));
-        }
 
+        MKNpc.LOGGER.debug("Setting up dialogue between {} and {}", event.getSpeaker(), event.getEntity());
+        ContentDB.tryGetPrimaryData().ifPresent(worldData -> {
+            MKNpc.getPlayerQuestData(event.getEntity()).ifPresent(x -> x.getQuestChains().forEach(
+                    pQuestChain -> {
+                        QuestChainInstance questChainInstance = worldData.getQuest(pQuestChain.getQuestId());
+                        if (questChainInstance != null) {
+                            MKNpc.LOGGER.debug("Adding quest chain dialogue for {}", questChainInstance.getDefinition().getName());
+                            questChainInstance.getTreeForEntity(event.getSpeaker()).ifPresent(event::addTree);
+                        }
+                    }));
+        });
     }
 
     private static void handleKillEntityForPlayer(Player player, LivingDeathEvent event, IWorldNpcData worldData) {
@@ -217,15 +210,8 @@ public class EntityHandler {
         MKNpc.getNpcData(event.getEntity()).ifPresent(npcData ->
                 npcData.getDeathReceiver().ifPresent(receiver -> receiver.onEntityDeath(npcData, event)));
         if (event.getSource().getEntity() instanceof Player player) {
-            MinecraftServer server = player.getServer();
-            if (server == null) {
-                return;
-            }
-            Level overWorld = server.getLevel(Level.OVERWORLD);
-            if (overWorld == null) {
-                return;
-            }
-            overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(worldNpcData -> {
+            ContentDB.tryGetPrimaryData().ifPresent(worldNpcData -> {
+                MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
                 handleKillEntityForPlayer(player, event, worldNpcData);
                 Team team = player.getTeam();
                 if (team != null) {
