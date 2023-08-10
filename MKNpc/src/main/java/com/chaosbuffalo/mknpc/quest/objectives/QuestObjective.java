@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
 import com.chaosbuffalo.mkcore.serialization.attributes.ISerializableAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.StringAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.ObjectiveInstanceData;
@@ -88,7 +87,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
         return data;
     }
 
-    public abstract PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData);
+    public abstract PlayerQuestObjectiveData generatePlayerData(QuestData questData);
 
     public abstract PlayerQuestObjectiveData playerDataFactory();
 

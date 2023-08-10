@@ -73,7 +73,7 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
         this.objectiveNames.addAll(dynamic.get("objectiveNames").asList(x -> x.asString().result()).stream()
-                .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList()));
+                .filter(Optional::isPresent).map(Optional::get).toList());
         questName = dynamic.get("questName").asString("default");
         chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(Util.NIL_UUID);
     }

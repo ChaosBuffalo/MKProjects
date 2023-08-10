@@ -3,7 +3,6 @@ package com.chaosbuffalo.mknpc.quest.objectives;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
@@ -66,7 +65,7 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
     }
 
     @Override
-    public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
+    public PlayerQuestObjectiveData generatePlayerData(QuestData questData) {
         PlayerQuestObjectiveData newObj = playerDataFactory();
         newObj.putInt("killCount", 0);
         return newObj;

@@ -1,9 +1,7 @@
 package com.chaosbuffalo.mknpc.command;
 
-import com.chaosbuffalo.mknpc.ContentDB;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
@@ -20,16 +18,10 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.LazyOptional;
 
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
-;
 
 public class MKQuestCommand {
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
@@ -44,7 +36,7 @@ public class MKQuestCommand {
     }
 
     static CompletableFuture<Suggestions> suggestQuestDefinitions(final CommandContext<CommandSourceStack> context,
-                                                                  final SuggestionsBuilder builder) throws CommandSyntaxException {
+                                                                  final SuggestionsBuilder builder) {
         return SharedSuggestionProvider.suggest(QuestDefinitionManager.DEFINITIONS.keySet().stream()
                 .map(ResourceLocation::toString), builder);
     }
@@ -54,7 +46,7 @@ public class MKQuestCommand {
         String questIdStr = StringArgumentType.getString(ctx, "id");
         UUID questId = UUID.fromString(questIdStr);
         MKNpc.getPlayerQuestData(player).ifPresent(x -> {
-            x.startQuest(ContentDB.getPrimaryData(), questId);
+            x.startQuest(questId);
         });
 
         return Command.SINGLE_SUCCESS;
@@ -62,19 +54,17 @@ public class MKQuestCommand {
 
     static int generateQuest(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
-        ResourceLocation definition_id = ctx.getArgument("quest", ResourceLocation.class);
-        QuestDefinition definition = QuestDefinitionManager.getDefinition(definition_id);
+        ResourceLocation definitionId = ctx.getArgument("quest", ResourceLocation.class);
+        QuestDefinition definition = QuestDefinitionManager.getDefinition(definitionId);
 
         BlockPos pos = player.blockPosition();
         if (definition != null) {
-            Optional<QuestChainInstance.QuestChainBuildResult> quest = ContentDB.tryGetPrimaryData()
-                    .map(x -> x.buildQuest(definition, pos)).orElse(Optional.empty());
-            if (quest.isPresent()) {
-                QuestChainInstance newQuest = quest.get().instance;
-                player.sendSystemMessage(Component.literal(String.format("Generated quest: %s", newQuest.getQuestId().toString())));
-                return Command.SINGLE_SUCCESS;
-            }
-            player.sendSystemMessage(Component.literal("Failed to generate quest"));
+            ContentDB.getQuests().buildQuest(definition, pos).ifPresentOrElse(buildResult -> {
+                QuestChainInstance newQuest = buildResult.instance;
+                player.sendSystemMessage(Component.literal("Generated quest: " + newQuest.getQuestId()));
+            }, () -> {
+                player.sendSystemMessage(Component.literal("Failed to generate quest"));
+            });
         } else {
             player.sendSystemMessage(Component.literal("Definition not found."));
         }

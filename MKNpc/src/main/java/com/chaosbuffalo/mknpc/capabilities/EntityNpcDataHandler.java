@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.capabilities;
 
 import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mknpc.ContentDB;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -12,6 +12,7 @@ import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
+import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import com.chaosbuffalo.mkweapons.items.randomization.LootConstructor;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
@@ -27,7 +28,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -156,10 +156,9 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             return;
         }
         if (server != null && entry.getQuestId() == null) {
-            Optional<QuestChainInstance.QuestChainBuildResult> quest = ContentDB.tryGetPrimaryData()
-                    .map(x -> x.buildQuest(npcDef, getSpawnPos())).orElse(Optional.empty());
-            if (quest.isPresent()) {
-                QuestChainInstance.QuestChainBuildResult result = quest.get();
+            Optional<QuestChainBuildResult> buildResult = ContentDB.getQuests().buildQuest(npcDef, getSpawnPos());
+            if (buildResult.isPresent()) {
+                QuestChainBuildResult result = buildResult.get();
                 QuestChainInstance newQuest = result.instance;
                 MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getNotableUUID()));
                 MKNpc.LOGGER.debug("Assigning quest {}({}) to {}", newQuest.getDefinition().getName(), newQuest.getQuestId(), entity);
@@ -188,7 +187,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     @Override
     public void tick() {
         if (questGenCd <= 0) {
-            if (questRequests.size() > 0) {
+            if (!questRequests.isEmpty()) {
                 handleQuestRequests();
                 questGenCd = entity.getRandom().nextInt(GameConstants.TICKS_PER_SECOND * 5);
             }

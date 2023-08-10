@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
+import com.chaosbuffalo.mknpc.content.QuestObjectDB;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
@@ -111,8 +111,7 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         DialogueTree specializedTree = tree.copy();
         for (DialogueNode node : specializedTree.getNodes().values()) {
             for (DialogueEffect effect : node.getEffects()) {
-                if (effect instanceof IReceivesChainId) {
-                    IReceivesChainId advEffect = (IReceivesChainId) effect;
+                if (effect instanceof IReceivesChainId advEffect) {
                     advEffect.setChainId(questChain.getQuestId());
                 }
             }
@@ -121,8 +120,8 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         for (DialoguePrompt prompt : specializedTree.getPrompts().values()) {
             for (DialogueResponse resp : prompt.getResponses()) {
                 for (DialogueCondition condition : resp.getConditions()) {
-                    if (condition instanceof IReceivesChainId) {
-                        ((IReceivesChainId) condition).setChainId(questChain.getQuestId());
+                    if (condition instanceof IReceivesChainId receiver) {
+                        receiver.setChainId(questChain.getQuestId());
                     }
                 }
                 resp.addCondition(new OnQuestCondition(questChain.getQuestId(), quest.getQuestName()));
@@ -149,10 +148,10 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     }
 
     @Override
-    public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
+    public PlayerQuestObjectiveData generatePlayerData(QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = playerDataFactory();
-        NotableNpcEntry entry = worldData.getNotableNpc(objData.getUuid());
+        NotableNpcEntry entry = QuestObjectDB.getNotableNpc(objData.getUuid());
         if (entry != null) {
             newObj.putBlockPos("npcPos", entry.getLocation());
         }

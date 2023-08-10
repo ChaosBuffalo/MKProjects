@@ -1,14 +1,12 @@
 package com.chaosbuffalo.mknpc.tile_entities;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.WorldUtils;
-import com.chaosbuffalo.mknpc.ContentDB;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.blocks.MKSpawnerBlock;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
@@ -22,7 +20,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -260,56 +257,61 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
 
 
     public void spawnEntity() {
-        if (getLevel() != null) {
-            NpcDefinition definition = randomSpawns.next();
-            Vec3 spawnPos = Vec3.atLowerCornerOf(getBlockPos()).add(0.5, 0.125, 0.5);
-            double difficultyValue = WorldUtils.getDifficultyForGlobalPos(
-                    GlobalPos.of(getLevel().dimension(), getBlockPos()));
-            switch (getLevel().getDifficulty()) {
-                case EASY:
-                    difficultyValue *= .5;
-                    break;
-                case NORMAL:
-                    difficultyValue *= .75;
-                    break;
-                case PEACEFUL:
-                    difficultyValue = 0.0;
-                    break;
-                default:
-                    break;
-            }
-            Entity entity = definition.createEntity(getLevel(), spawnPos, spawnUUID, difficultyValue);
-            this.entity = entity;
-            if (entity != null) {
-                float rot = getBlockState().getValue(MKSpawnerBlock.ORIENTATION).getAngleInDegrees();
-                entity.absMoveTo(
-                        entity.getX(),
-                        entity.getY(),
-                        entity.getZ(),
-                        rot,
-                        0.0f);
-                entity.setYHeadRot(rot);
-                final double finDiff = difficultyValue;
-                MKNpc.getNpcData(entity).ifPresent((cap) -> {
-                    cap.setSpawnPos(BlockPos.containing(spawnPos).above());
-                    if (notableIds.containsKey(definition.getDefinitionName())) {
-                        cap.setNotableUUID(notableIds.get(definition.getDefinitionName()));
-                    }
-                    cap.setStructureId(getStructureId());
-                    cap.setDifficultyValue(finDiff);
-                    cap.setDeathReceiver(this);
-                });
-                if (entity instanceof MKEntity mkEntity) {
-                    mkEntity.setNonCombatMoveType(getMoveType());
+        if (getLevel() == null) {
+            return;
+        }
+
+        NpcDefinition definition = randomSpawns.next();
+        Vec3 spawnPos = Vec3.atLowerCornerOf(getBlockPos()).add(0.5, 0.125, 0.5);
+        double difficultyValue = WorldUtils.getDifficultyForGlobalPos(
+                GlobalPos.of(getLevel().dimension(), getBlockPos()));
+        switch (getLevel().getDifficulty()) {
+            case EASY:
+                difficultyValue *= .5;
+                break;
+            case NORMAL:
+                difficultyValue *= .75;
+                break;
+            case PEACEFUL:
+                difficultyValue = 0.0;
+                break;
+            default:
+                break;
+        }
+
+        Entity entity = definition.createEntity(getLevel(), spawnPos, spawnUUID, difficultyValue);
+        this.entity = entity;
+        if (entity != null) {
+            float rot = getBlockState().getValue(MKSpawnerBlock.ORIENTATION).getAngleInDegrees();
+            entity.absMoveTo(
+                    entity.getX(),
+                    entity.getY(),
+                    entity.getZ(),
+                    rot,
+                    0.0f);
+            entity.setYHeadRot(rot);
+            final double finDiff = difficultyValue;
+            LazyOptional<IEntityNpcData> npcCap = MKNpc.getNpcData(entity);
+            npcCap.ifPresent(cap -> {
+                cap.setSpawnPos(BlockPos.containing(spawnPos).above());
+                UUID notId = notableIds.get(definition.getDefinitionName());
+                if (notId != null) {
+                    cap.setNotableUUID(notId);
                 }
-                if (entity instanceof Mob mobEnt && getLevel() instanceof ServerLevel serverLevel) {
-                    ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
-                            serverLevel.getCurrentDifficultyAt(getBlockPos()),
-                            MobSpawnType.SPAWNER, null, null);
-                }
-                getLevel().addFreshEntity(entity);
-                MKNpc.getNpcData(entity).ifPresent(cap -> cap.setMKSpawned(true));
+                cap.setStructureId(getStructureId());
+                cap.setDifficultyValue(finDiff);
+                cap.setDeathReceiver(this);
+            });
+            if (entity instanceof MKEntity mkEntity) {
+                mkEntity.setNonCombatMoveType(getMoveType());
             }
+            if (entity instanceof Mob mobEnt && getLevel() instanceof ServerLevel serverLevel) {
+                ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
+                        serverLevel.getCurrentDifficultyAt(getBlockPos()),
+                        MobSpawnType.SPAWNER, null, null);
+            }
+            getLevel().addFreshEntity(entity);
+            npcCap.ifPresent(cap -> cap.setMKSpawned(true));
         }
     }
 
@@ -366,7 +368,8 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
         if (level != null && randomSpawns.size() > 0) {
             BlockPos above = getBlockPos().above();
             if (needsUploadToWorld) {
-                ContentDB.getPrimaryData().addSpawner(this);
+                ContentDB.getStructures().findContainingStructure(this)
+                        .ifPresent(e -> e.addSpawner(this));
                 if (!isAir(level, above)) {
                     level.setBlock(above, Blocks.AIR.defaultBlockState(), 3);
                 }

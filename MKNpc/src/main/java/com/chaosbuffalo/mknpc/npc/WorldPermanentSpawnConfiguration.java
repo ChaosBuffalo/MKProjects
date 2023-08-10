@@ -7,11 +7,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.HashMap;
+import java.util.Map;
 
 
 public class WorldPermanentSpawnConfiguration implements INBTSerializable<CompoundTag> {
 
-    private final HashMap<ResourceLocation, HashMap<ResourceLocation, INpcOptionEntry>> definitionMap;
+    private final Map<ResourceLocation, Map<ResourceLocation, INpcOptionEntry>> definitionMap;
 
     public WorldPermanentSpawnConfiguration() {
         definitionMap = new HashMap<>();
@@ -22,8 +23,15 @@ public class WorldPermanentSpawnConfiguration implements INBTSerializable<Compou
     }
 
     public boolean hasAttributeEntry(ResourceLocation definitionName, ResourceLocation optionName) {
-        return definitionMap.containsKey(definitionName) && definitionMap.get(definitionName).containsKey(optionName)
-                && definitionMap.get(definitionName).get(optionName).isValid();
+        Map<ResourceLocation, INpcOptionEntry> options = definitionMap.get(definitionName);
+        if (options == null)
+            return false;
+        INpcOptionEntry option = options.get(optionName);
+        return option != null && option.isValid();
+    }
+
+    public boolean hasAttributeEntry(ResourceLocation definitionName, WorldPermanentOption option) {
+        return hasAttributeEntry(definitionName, option.getName());
     }
 
     public INpcOptionEntry getOptionEntry(NpcDefinition definition, WorldPermanentOption option) {
@@ -43,7 +51,7 @@ public class WorldPermanentSpawnConfiguration implements INBTSerializable<Compou
         CompoundTag tag = new CompoundTag();
         for (ResourceLocation definitionName : definitionMap.keySet()) {
             CompoundTag defTag = new CompoundTag();
-            HashMap<ResourceLocation, INpcOptionEntry> optionMap = definitionMap.get(definitionName);
+            Map<ResourceLocation, INpcOptionEntry> optionMap = definitionMap.get(definitionName);
             for (ResourceLocation attributeName : optionMap.keySet()) {
                 INpcOptionEntry entry = optionMap.get(attributeName);
                 defTag.put(attributeName.toString(), entry.serializeNBT());

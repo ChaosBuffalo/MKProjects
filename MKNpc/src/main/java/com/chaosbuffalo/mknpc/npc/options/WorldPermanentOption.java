@@ -1,8 +1,7 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
-import com.chaosbuffalo.mknpc.ContentDB;
-import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
+import com.chaosbuffalo.mknpc.content.databases.ILevelOptionDatabase;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
@@ -23,31 +22,30 @@ public abstract class WorldPermanentOption extends NpcDefinitionOption {
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
-        ContentDB.tryGetLevelData(entity.getCommandSenderWorld()).ifPresent(worldCap -> {
-            ensureGenerated(definition, WorldNpcDataHandler.getSpawnIdForEntity(entity), worldCap);
-            applyFromWorld(definition, entity, worldCap);
-        });
+        ILevelOptionDatabase levelOptions = ContentDB.getLevelOptions(entity.getLevel());
+        ensureGenerated(definition, WorldNpcDataHandler.getSpawnIdForEntity(entity), levelOptions);
+        applyFromWorld(definition, entity, levelOptions);
     }
 
-    private void ensureGenerated(NpcDefinition definition, UUID spawnId, IWorldNpcData worldNpcData) {
-        if (!worldNpcData.hasEntityOptionEntry(definition, this, spawnId)) {
-            generateWorldEntry(definition, spawnId, worldNpcData);
+    private void ensureGenerated(NpcDefinition definition, UUID spawnId, ILevelOptionDatabase levelOptions) {
+        if (!levelOptions.hasEntityOptionEntry(definition, this, spawnId)) {
+            generateWorldEntry(definition, spawnId, levelOptions);
         }
     }
 
-    protected void applyFromWorld(NpcDefinition definition, Entity entity, IWorldNpcData worldData) {
-        worldData.getEntityOptionEntry(definition, this, entity).applyToEntity(entity);
+    protected void applyFromWorld(NpcDefinition definition, Entity entity, ILevelOptionDatabase levelOptions) {
+        levelOptions.getEntityOptionEntry(definition, this, entity).applyToEntity(entity);
     }
 
-    public INpcOptionEntry getOptionEntry(NpcDefinition definition, UUID entityId, IWorldNpcData worldNpcData) {
-        ensureGenerated(definition, entityId, worldNpcData);
-        return worldNpcData.getEntityOptionEntry(definition, this, entityId);
+    public INpcOptionEntry getOptionEntry(NpcDefinition definition, UUID entityId, ILevelOptionDatabase levelOptions) {
+        ensureGenerated(definition, entityId, levelOptions);
+        return levelOptions.getEntityOptionEntry(definition, this, entityId);
     }
 
     protected abstract INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random);
 
-    protected void generateWorldEntry(NpcDefinition definition, UUID spawnId, IWorldNpcData worldNpcData) {
-        worldNpcData.addEntityOptionEntry(definition, this, spawnId,
-                makeOptionEntry(definition, worldNpcData.getWorld().getRandom()));
+    protected void generateWorldEntry(NpcDefinition definition, UUID spawnId, ILevelOptionDatabase levelOptions) {
+        levelOptions.addEntityOptionEntry(definition, this, spawnId,
+                makeOptionEntry(definition, levelOptions.getLevel().getRandom()));
     }
 }

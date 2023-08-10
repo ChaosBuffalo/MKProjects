@@ -1,9 +1,6 @@
 package com.chaosbuffalo.mknpc.command;
 
-import com.chaosbuffalo.mknpc.ContentDB;
-import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.capabilities.PointOfInterestEntry;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
@@ -19,7 +16,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 
 import java.util.List;
@@ -73,7 +69,7 @@ public class MKStructureCommands {
                 ResourceLocation featureName = ctx.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE)
                         .getKey(start.getStructure());
                 UUID instanceId = IStructureStartMixin.getInstanceIdFromStart(start);
-                ContentDB.getPrimaryData().getStructureData(instanceId).ifPresent(MKStructureEntry::reset);
+                ContentDB.getStructures().getStructureInstance(instanceId).ifPresent(MKStructureEntry::reset);
                 player.sendSystemMessage(Component.translatable("mknpc.command.reset_struct",
                         featureName, instanceId));
             });
@@ -94,7 +90,7 @@ public class MKStructureCommands {
         } else {
             starts.forEach(start -> {
                 UUID startId = IStructureStartMixin.getInstanceIdFromStart(start);
-                Optional<MKStructureEntry> entry = ContentDB.getPrimaryData().getStructureData(startId);
+                Optional<MKStructureEntry> entry = ContentDB.getStructures().getStructureInstance(startId);
                 ResourceLocation featureName = ctx.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(start.getStructure());
                 if (entry.isPresent()) {
                     Map<String, List<PointOfInterestEntry>> pois = entry.get().getPointsOfInterest();

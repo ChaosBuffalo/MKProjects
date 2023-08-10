@@ -1,10 +1,9 @@
 package com.chaosbuffalo.mknpc.quest;
 
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
-import com.chaosbuffalo.mknpc.ContentDB;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.quest.data.QuestChainData;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
@@ -25,22 +24,10 @@ import java.util.stream.Collectors;
 
 public class QuestChainInstance implements INBTSerializable<CompoundTag> {
 
-    public static class QuestChainBuildResult {
-        public QuestChainInstance instance;
-        public Map<ResourceLocation, List<MKStructureEntry>> questStructures;
-
-        public QuestChainBuildResult(QuestChainInstance instance,
-                                     Map<ResourceLocation, List<MKStructureEntry>> structuresIn) {
-            this.instance = instance;
-            questStructures = structuresIn;
-        }
-
-    }
-
     private UUID questId;
     private QuestDefinition definition;
     private QuestChainData questChainData;
-    private Map<UUID, DialogueTree> dialogueTrees = new HashMap<>();
+    private final Map<UUID, DialogueTree> dialogueTrees = new HashMap<>();
     private UUID questSourceNpc;
 
     public QuestChainInstance(QuestDefinition definition, Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
@@ -64,8 +51,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         for (Quest quest : definition.getQuestChain()) {
             QuestData questData = questChainData.getQuestData(quest.getQuestName());
             for (QuestObjective<?> obj : quest.getObjectives()) {
-                if (obj instanceof TalkToNpcObjective) {
-                    TalkToNpcObjective talkObj = (TalkToNpcObjective) obj;
+                if (obj instanceof TalkToNpcObjective talkObj) {
                     UUIDInstanceData instanceData = talkObj.getInstanceData(questData);
                     if (speakingRoles.containsKey(talkObj.getNpcDefinition()) && !speakingRoles.get(talkObj.getNpcDefinition()).equals(instanceData.getUuid())) {
                         MKNpc.LOGGER.warn("Error: quest chain has 2 different npc definition with speaking roles {}", talkObj.getNpcDefinition());
@@ -157,24 +143,24 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
 //        dialogueTree.deserialize(new Dynamic<>(NBTDynamicOps.INSTANCE, nbt.get("dialogueTree")));
     }
 
-    public void signalQuestProgress(IWorldNpcData worldData, IPlayerQuestingData questingData, Quest currentQuest, PlayerQuestChainInstance playerInstance, boolean manualAdvance) {
+    public void signalQuestProgress(IPlayerQuestingData questingData, Quest currentQuest, PlayerQuestChainInstance playerInstance, boolean manualAdvance) {
         PlayerQuestData playerData = playerInstance.getQuestData(currentQuest.getQuestName());
         QuestChainInstance questInstance = ContentDB.getQuestInstance(playerInstance.getQuestId());
-        questingData.questProgression(worldData, questInstance);
+        questingData.questProgression(questInstance);
         if (currentQuest.isComplete(playerData) || manualAdvance) {
             if (currentQuest.shouldAutoComplete() || manualAdvance) {
-                questingData.advanceQuestChain(worldData, questInstance, currentQuest);
+                questingData.advanceQuestChain(questInstance, currentQuest);
             }
         }
     }
 
-    public void signalObjectiveComplete(String objectiveName, IWorldNpcData worldData, IPlayerQuestingData questingData,
+    public void signalObjectiveComplete(String objectiveName, IPlayerQuestingData questingData,
                                         Quest currentQuest, PlayerQuestChainInstance playerInstance) {
         for (QuestObjective<?> obj : currentQuest.getObjectives()) {
             if (obj.getObjectiveName().equals(objectiveName)) {
                 obj.signalCompleted(playerInstance.getQuestData(currentQuest.getQuestName()).getObjective(objectiveName));
             }
         }
-        signalQuestProgress(worldData, questingData, currentQuest, playerInstance, false);
+        signalQuestProgress(questingData, currentQuest, playerInstance, false);
     }
 }

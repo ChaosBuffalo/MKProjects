@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
-import com.chaosbuffalo.mknpc.ContentDB;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.inventories.PsuedoChestContainer;
 import com.chaosbuffalo.mknpc.inventories.QuestChestInventory;
 import net.minecraft.core.GlobalPos;
@@ -129,7 +129,8 @@ public class ChestNpcDataHandler implements IChestNpcData {
     public void onLoad() {
         if (needsUploadToWorld) {
             if (getTileEntity().getLevel() instanceof ServerLevel) {
-                ContentDB.getPrimaryData().addChest(this);
+                ContentDB.getStructures().findContainingStructure(this)
+                        .ifPresent(e -> e.addChest(this));
                 needsUploadToWorld = false;
             }
         }

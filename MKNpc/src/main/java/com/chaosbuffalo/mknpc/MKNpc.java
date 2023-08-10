@@ -118,7 +118,7 @@ public class MKNpc {
         }
     }
 
-    public static LazyOptional<? extends IEntityNpcData> getNpcData(Entity entity) {
+    public static LazyOptional<IEntityNpcData> getNpcData(Entity entity) {
         return entity.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY);
     }
 

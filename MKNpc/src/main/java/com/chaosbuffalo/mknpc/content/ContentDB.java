@@ -1,12 +1,16 @@
-package com.chaosbuffalo.mknpc;
+package com.chaosbuffalo.mknpc.content;
 
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.*;
+import com.chaosbuffalo.mknpc.content.databases.ILevelOptionDatabase;
+import com.chaosbuffalo.mknpc.content.databases.IQuestDatabase;
+import com.chaosbuffalo.mknpc.content.databases.IStructureDatabase;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -26,7 +30,7 @@ public class ContentDB {
 
     @Nullable
     public static QuestChainInstance getQuestInstance(UUID questId) {
-        return getPrimaryData().getQuest(questId);
+        return getQuests().getQuest(questId);
     }
 
     @Nonnull
@@ -41,8 +45,16 @@ public class ContentDB {
         return cap;
     }
 
-    public static LazyOptional<IWorldNpcData> tryGetQuestDB() {
-        return tryGetPrimaryData();
+    public static IQuestDatabase getQuests() {
+        return getPrimaryData();
+    }
+
+    public static IStructureDatabase getStructures() {
+        return getPrimaryData();
+    }
+
+    public static ILevelOptionDatabase getLevelOptions(Level level) {
+        return getLevelData(level);
     }
 
     @Nonnull
@@ -80,6 +92,13 @@ public class ContentDB {
             if (serverLevel.dimension() == Level.OVERWORLD) {
                 overworldData = LazyOptional.empty();
             }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            QuestObjectDB.tick();
         }
     }
 }

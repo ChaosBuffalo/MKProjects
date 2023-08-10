@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkcore.serialization.attributes.DoubleAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -126,7 +125,7 @@ public class QuestLootNpcObjective extends StructureInstanceObjective<UUIDInstan
     }
 
     @Override
-    public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
+    public PlayerQuestObjectiveData generatePlayerData(QuestData questData) {
         PlayerQuestObjectiveData newObj = playerDataFactory();
         newObj.putInt("lootCount", 0);
         return newObj;

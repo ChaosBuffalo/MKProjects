@@ -20,11 +20,11 @@ public interface IPlayerQuestingData extends INBTSerializable<CompoundTag> {
 
     Optional<PlayerQuestChainInstance> getQuestChain(UUID questId);
 
-    void advanceQuestChain(IWorldNpcData worldHandler, QuestChainInstance questChainInstance, Quest currentQuest);
+    void advanceQuestChain(QuestChainInstance questChainInstance, Quest currentQuest);
 
-    void questProgression(IWorldNpcData worldHandler, QuestChainInstance questChainInstance);
+    void questProgression(QuestChainInstance questChainInstance);
 
-    void startQuest(IWorldNpcData worldHandler, UUID questId);
+    void startQuest(UUID questId);
 
     PlayerQuestingDataHandler.QuestStatus getQuestStatus(UUID questId);
 

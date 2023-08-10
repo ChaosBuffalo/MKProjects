@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.quest.objectives;
 
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
+import com.chaosbuffalo.mknpc.content.QuestObjectDB;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
@@ -84,10 +84,10 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
     }
 
     @Override
-    public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
+    public PlayerQuestObjectiveData generatePlayerData(QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = playerDataFactory();
-        NotableNpcEntry notable = worldData.getNotableNpc(objData.getUuid());
+        NotableNpcEntry notable = QuestObjectDB.getNotableNpc(objData.getUuid());
         if (notable != null) {
             newObj.setDescription(Component.translatable("mknpc.objective.kill_notable.desc", notable.getName()));
             newObj.putBlockPos("npcPos", notable.getLocation());

@@ -3,7 +3,6 @@ package com.chaosbuffalo.mknpc.quest;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
@@ -161,10 +160,10 @@ public class Quest {
         return objectives.stream().allMatch(x -> x.isStructureRelevant(entry));
     }
 
-    public PlayerQuestData generatePlayerQuestData(IWorldNpcData worldData, QuestData instanceData) {
+    public PlayerQuestData generatePlayerQuestData(QuestData instanceData) {
         PlayerQuestData data = new PlayerQuestData(getQuestName(), getDescription());
         objectives.forEach(x -> {
-            PlayerQuestObjectiveData obj = x.generatePlayerData(worldData, instanceData);
+            PlayerQuestObjectiveData obj = x.generatePlayerData(instanceData);
             obj.putBool("isComplete", false);
             data.putObjective(x.getObjectiveName(), obj);
         });

@@ -129,7 +129,7 @@ public class WorldStructureManager {
 
     }
 
-    Map<UUID, ActiveStructure> activeStructures;
+    private final Map<UUID, ActiveStructure> activeStructures;
     private final WorldNpcDataHandler handler;
 
     public WorldStructureManager(WorldNpcDataHandler handler) {
@@ -137,27 +137,24 @@ public class WorldStructureManager {
         this.handler = handler;
     }
 
-    public void visitStructure(UUID structureId, ServerPlayer player) {
-        ActiveStructure struct = activeStructures.computeIfAbsent(structureId, (id) -> {
+    public void visitStructure(MKStructureEntry entry, ServerPlayer player) {
+        ActiveStructure struct = activeStructures.computeIfAbsent(entry.getStructureId(), (id) -> {
             ActiveStructure activeStructure = new ActiveStructure(id, this::removePlayer);
-            handler.getStructureData(id).ifPresent(structureEntry ->
-                    structureEntry.getStructure().ifPresent(structure ->
-                            structure.onStructureActivate(structureEntry, activeStructure, handler.getWorld())));
+            entry.getStructure().ifPresent(structure ->
+                    structure.onStructureActivate(entry, activeStructure, handler.getLevel()));
             return activeStructure;
         });
         if (struct.visit(player)) {
-            handler.getStructureData(structureId).ifPresent(entry -> {
-                MKNpc.LOGGER.debug("Player {} entering structure {} (ID: {})",
-                        player, entry.getStructureName(), structureId);
-                entry.getStructure().ifPresent(structure -> {
-                    structure.onPlayerEnter(player, entry, struct);
-                });
+            MKNpc.LOGGER.debug("Player {} entering structure {} (ID: {})",
+                    player, entry.getStructureName(), entry.getStructureId());
+            entry.getStructure().ifPresent(structure -> {
+                structure.onPlayerEnter(player, entry, struct);
             });
         }
     }
 
     public void removePlayer(ServerPlayer player, ActiveStructure activeStructure) {
-        Optional<MKStructureEntry> entry = handler.getStructureData(activeStructure.getStructureId());
+        Optional<MKStructureEntry> entry = handler.getStructureInstance(activeStructure.getStructureId());
         if (player != null) {
             entry.ifPresent(structureEntry -> {
                 MKNpc.LOGGER.debug("Player {} exiting structure {} (ID: {})",
@@ -166,33 +163,26 @@ public class WorldStructureManager {
                     structure.onPlayerExit(player, structureEntry, activeStructure);
                 });
             });
-
         }
-
     }
 
-    public void onNpcDeath(IEntityNpcData npcData) {
-        npcData.getStructureId().ifPresent(structureId -> {
-            if (activeStructures.containsKey(structureId)) {
-                Optional<MKStructureEntry> entry = handler.getStructureData(structureId);
-                ActiveStructure activeStruct = activeStructures.get(structureId);
-                if (activeStruct != null) {
-                    entry.ifPresent(structureEntry ->
-                            structureEntry.getStructure().ifPresent(structure ->
-                                    structure.onNpcDeath(structureEntry, activeStruct, npcData)));
-                    ActiveEntityEntry entEntry = activeStruct.getActiveEntity(npcData.getNotableUUID());
-                    if (entEntry != null) {
-                        entry.ifPresent(structureEntry ->
-                                structureEntry.getStructure().ifPresent(structure ->
-                                        structure.onTrackedEntityDeath(structureEntry, activeStruct, npcData,
-                                                entEntry.getEventName())));
-                        activeStruct.entityDied(npcData.getNotableUUID());
-                    }
+    public void onNpcDeath(IEntityNpcData npcData, UUID structureId) {
+        ActiveStructure activeStruct = activeStructures.get(structureId);
+        if (activeStruct != null) {
+            Optional<MKStructureEntry> entry = handler.getStructureInstance(structureId);
 
-                }
+            entry.ifPresent(structureEntry ->
+                    structureEntry.getStructure().ifPresent(structure ->
+                            structure.onNpcDeath(structureEntry, activeStruct, npcData)));
+            ActiveEntityEntry entEntry = activeStruct.getActiveEntity(npcData.getNotableUUID());
+            if (entEntry != null) {
+                entry.ifPresent(structureEntry ->
+                        structureEntry.getStructure().ifPresent(structure ->
+                                structure.onTrackedEntityDeath(structureEntry, activeStruct, npcData,
+                                        entEntry.getEventName())));
+                activeStruct.entityDied(npcData.getNotableUUID());
             }
-        });
-
+        }
     }
 
     public void tick() {
@@ -204,17 +194,17 @@ public class WorldStructureManager {
             if (entry.getValue().tick()) {
                 toRemove.add(entry.getKey());
             }
-            handler.getStructureData(entry.getValue().structureId).ifPresent(structureEntry -> {
+            handler.getStructureInstance(entry.getValue().structureId).ifPresent(structureEntry -> {
                 structureEntry.getCooldownTracker().tick();
                 structureEntry.getStructure().ifPresent(structure ->
-                        structure.onActiveTick(structureEntry, entry.getValue(), handler.getWorld()));
+                        structure.onActiveTick(structureEntry, entry.getValue(), handler.getLevel()));
             });
         }
         for (UUID structId : toRemove) {
-            handler.getStructureData(structId).ifPresent(structureEntry ->
+            handler.getStructureInstance(structId).ifPresent(structureEntry ->
                     structureEntry.getStructure().ifPresent(structure ->
                             structure.onStructureDeactivate(structureEntry,
-                                    activeStructures.get(structId), handler.getWorld())));
+                                    activeStructures.get(structId), handler.getLevel())));
             activeStructures.remove(structId);
         }
     }

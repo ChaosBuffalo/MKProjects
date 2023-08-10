@@ -1,10 +1,8 @@
 package com.chaosbuffalo.mknpc.inventories;
 
-import com.chaosbuffalo.mknpc.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
@@ -15,7 +13,6 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.objectives.ITradeObjectiveHandler;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -23,7 +20,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -83,8 +79,7 @@ public class QuestGiverInventoryContainer extends ChestMenu {
                                         if (matches != null) {
                                             tradeObj.onPlayerTradeSuccess(playerIn,
                                                     playerObj, questData, chain, entity);
-                                            IWorldNpcData worldData = ContentDB.getPrimaryData();
-                                            questChain.signalQuestProgress(worldData, playerQuest, currentQuest, chain, false);
+                                            questChain.signalQuestProgress(playerQuest, currentQuest, chain, false);
                                             return;
                                         }
                                     }

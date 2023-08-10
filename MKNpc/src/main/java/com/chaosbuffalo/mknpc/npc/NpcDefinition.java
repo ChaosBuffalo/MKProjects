@@ -29,24 +29,18 @@ import java.util.*;
 public class NpcDefinition {
     private ResourceLocation entityType;
     private final ResourceLocation definitionName;
+    @Nullable
     private final ResourceLocation parentName;
     public static final NpcDefinitionOption INVALID_OPTION = new InvalidOption();
     private NpcDefinition parent;
     private final Map<ResourceLocation, NpcDefinitionOption> options;
-    private static final List<NpcDefinitionOption.ApplyOrder> orders = new ArrayList<>();
     private static final UUID HEALTH_SCALING_UUID = UUID.fromString("3508a0ad-a2d5-40f2-8ce7-110401cc1a2c");
 
-    static {
-        orders.add(NpcDefinitionOption.ApplyOrder.EARLY);
-        orders.add(NpcDefinitionOption.ApplyOrder.MIDDLE);
-        orders.add(NpcDefinitionOption.ApplyOrder.LATE);
+    public NpcDefinition(ResourceLocation definitionName, ResourceLocation entityType) {
+        this(definitionName, entityType, null);
     }
 
-    boolean hasParentName() {
-        return parentName != null;
-    }
-
-    public NpcDefinition(ResourceLocation definitionName, ResourceLocation entityType, ResourceLocation parentName) {
+    public NpcDefinition(ResourceLocation definitionName, ResourceLocation entityType, @Nullable ResourceLocation parentName) {
         this.definitionName = definitionName;
         this.entityType = entityType;
         this.parentName = parentName;
@@ -66,16 +60,8 @@ public class NpcDefinition {
         return parent != null;
     }
 
-    public boolean isWorldPermanent() {
-        for (NpcDefinitionOption option : options.values()) {
-            if (option instanceof WorldPermanentOption) {
-                return true;
-            }
-        }
-        if (hasParent()) {
-            return getParent().isWorldPermanent();
-        }
-        return false;
+    boolean hasParentName() {
+        return parentName != null;
     }
 
     public NpcDefinition getParent() {
@@ -104,6 +90,7 @@ public class NpcDefinition {
         }
     }
 
+    @Nullable
     public ResourceLocation getParentName() {
         return parentName;
     }
@@ -161,8 +148,11 @@ public class NpcDefinition {
 
     public MutableComponent getNameForEntity(Level world, UUID spawnId) {
         for (NpcDefinitionOption option : options.values()) {
-            if (option instanceof INameProvider) {
-                return ((INameProvider) option).getEntityName(this, world, spawnId);
+            if (option instanceof INameProvider nameProvider) {
+                MutableComponent name = nameProvider.getEntityName(this, world, spawnId);
+                if (name != null) {
+                    return name;
+                }
             }
         }
         if (hasParent()) {
@@ -173,13 +163,10 @@ public class NpcDefinition {
     }
 
     public void applyDefinition(Entity entity, double difficultyValue) {
-        for (NpcDefinitionOption.ApplyOrder order : orders) {
-            apply(entity, order, difficultyValue);
-        }
+        apply(entity, NpcDefinitionOption.ApplyOrder.EARLY, difficultyValue);
+        apply(entity, NpcDefinitionOption.ApplyOrder.MIDDLE, difficultyValue);
+        apply(entity, NpcDefinitionOption.ApplyOrder.LATE, difficultyValue);
         applyDifficultyScaling(entity, difficultyValue);
-
-        //We need to apply equipment before the tick so that the following operations reflect correct values
-
 
         // hack to make sure we're at our new max health
         if (entity instanceof LivingEntity living) {
@@ -210,9 +197,9 @@ public class NpcDefinition {
         if (hasParent()) {
             getParent().apply(entity, order, difficultyValue);
         }
-        for (Map.Entry<ResourceLocation, NpcDefinitionOption> option : options.entrySet()) {
-            if (option.getValue().getOrdering() == order) {
-                option.getValue().applyToEntity(this, entity, difficultyValue);
+        for (NpcDefinitionOption option : options.values()) {
+            if (option.getOrdering() == order) {
+                option.applyToEntity(this, entity, difficultyValue);
             }
         }
     }
@@ -223,7 +210,7 @@ public class NpcDefinition {
     }
 
     protected <D> D getDynamicType(DynamicOps<D> ops) {
-        if (hasParentName()) {
+        if (getParentName() != null) {
             return ops.createMap(ImmutableMap.of(
                     ops.createString("parent"), ops.createString(getParentName().toString())
             ));
@@ -272,23 +259,25 @@ public class NpcDefinition {
     @Nullable
     public Entity createEntity(Level world, Vec3 pos, UUID uuid, double difficultyValue) {
         EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(getEntityType());
-        if (type != null) {
-            Entity entity = type.create(world);
-            if (entity == null) {
-                return null;
-            }
-            entity.setPos(pos.x(), pos.y(), pos.z());
-            MKNpc.getNpcData(entity).ifPresent(cap -> {
-                cap.setDefinition(this);
-                cap.setSpawnID(uuid);
-                cap.setDifficultyValue(difficultyValue);
-            });
-            applyDefinition(entity, difficultyValue);
-            if (entity instanceof MKEntity mkEntity) {
-                mkEntity.postDefinitionApply(this);
-            }
-            return entity;
+        if (type == null) {
+            return null;
         }
-        return null;
+
+        Entity entity = type.create(world);
+        if (entity == null) {
+            return null;
+        }
+
+        entity.setPos(pos.x(), pos.y(), pos.z());
+        MKNpc.getNpcData(entity).ifPresent(cap -> {
+            cap.setDefinition(this);
+            cap.setSpawnID(uuid);
+            cap.setDifficultyValue(difficultyValue);
+        });
+        applyDefinition(entity, difficultyValue);
+        if (entity instanceof MKEntity mkEntity) {
+            mkEntity.postDefinitionApply(this);
+        }
+        return entity;
     }
 }

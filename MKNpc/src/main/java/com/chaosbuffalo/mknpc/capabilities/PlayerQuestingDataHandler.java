@@ -8,7 +8,7 @@ import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.sync.SyncMapUpdater;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
-import com.chaosbuffalo.mknpc.ContentDB;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
@@ -56,13 +56,13 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
     }
 
     @Override
-    public void advanceQuestChain(IWorldNpcData worldHandler, QuestChainInstance questChainInstance, Quest currentQuest) {
-        getPersonaData().advanceQuestChain(worldHandler, questChainInstance, currentQuest, this);
+    public void advanceQuestChain(QuestChainInstance questChainInstance, Quest currentQuest) {
+        getPersonaData().advanceQuestChain(questChainInstance, currentQuest, this);
     }
 
     @Override
-    public void questProgression(IWorldNpcData worldHandler, QuestChainInstance questChainInstance) {
-        getPersonaData().questProgression(worldHandler, questChainInstance);
+    public void questProgression(QuestChainInstance questChainInstance) {
+        getPersonaData().questProgression(questChainInstance);
     }
 
 
@@ -76,11 +76,11 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
     }
 
     @Override
-    public void startQuest(IWorldNpcData worldHandler, UUID questId) {
+    public void startQuest(UUID questId) {
         QuestChainInstance chain = ContentDB.getQuestInstance(questId);
         if (chain != null) {
             MKNpc.LOGGER.info("Player {} started quest {}", getPlayer(), chain);
-            getPersonaData().startQuest(playerData.getEntity(), worldHandler, chain);
+            getPersonaData().startQuest(chain);
         } else {
             MKNpc.LOGGER.warn("Tried to start quest with id {} but it doesn't exist in the world data", questId);
         }
@@ -160,7 +160,8 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             return QuestStatus.IN_PROGRESS;
         }
 
-        public void startQuest(Player player, IWorldNpcData worldHandler, QuestChainInstance questChain) {
+        public void startQuest(QuestChainInstance questChain) {
+            Player player = persona.getEntity();
             if (!questChain.getDefinition().isRepeatable() && completedQuests.contains(questChain.getQuestId())) {
                 MKNpc.LOGGER.info("Can't start quest with definition {} for {} already completed {}",
                         questChain.getDefinition().getName(), persona.getEntity(), questChain.getQuestId());
@@ -177,7 +178,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             quest.setCurrentQuests(questChain.getStartingQuestNames());
             for (Quest q : questChain.getDefinition().getFirstQuests()) {
                 PlayerQuestData questData = q.generatePlayerQuestData(
-                        worldHandler, questChain.getQuestChainData().getQuestData(q.getQuestName()));
+                        questChain.getQuestChainData().getQuestData(q.getQuestName()));
                 quest.addQuestData(questData);
                 questChains.put(questChain.getQuestId(), quest);
                 questChainUpdater.markDirty(questChain.getQuestId());
@@ -186,7 +187,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             player.sendSystemMessage(Component.translatable("mknpc.quest.start_quest", questChain.getDefinition().getQuestName()).withStyle(ChatFormatting.GOLD));
         }
 
-        public void questProgression(IWorldNpcData worldHandler, QuestChainInstance questChainInstance) {
+        public void questProgression(QuestChainInstance questChainInstance) {
             questChainUpdater.markDirty(questChainInstance.getQuestId());
         }
 
@@ -196,7 +197,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             player.sendSystemMessage(Component.translatable("mknpc.quest.complete_chain", chain.getQuestName()).withStyle(ChatFormatting.GOLD));
         }
 
-        public void advanceQuestChain(IWorldNpcData worldHandler, QuestChainInstance questChainInstance, Quest currentQuest, IPlayerQuestingData questingData) {
+        public void advanceQuestChain(QuestChainInstance questChainInstance, Quest currentQuest, IPlayerQuestingData questingData) {
             PlayerQuestChainInstance chain = questChains.get(questChainInstance.getQuestId());
             if (chain != null && currentQuest != null) {
                 currentQuest.grantRewards(questingData);
@@ -207,7 +208,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
                         Optional<Quest> nextQuest = questChainInstance.getNextQuest(currentQuestName);
                         if (nextQuest.isPresent()) {
                             Quest quest = nextQuest.get();
-                            chain.addQuestData(quest.generatePlayerQuestData(worldHandler,
+                            chain.addQuestData(quest.generatePlayerQuestData(
                                     questChainInstance.getQuestChainData().getQuestData(quest.getQuestName())));
                             chain.setCurrentQuests(Collections.singletonList(quest.getQuestName()));
                         } else {

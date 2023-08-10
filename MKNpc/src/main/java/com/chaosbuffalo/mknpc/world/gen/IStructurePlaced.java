@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -22,6 +23,10 @@ public interface IStructurePlaced {
     void setStructureId(UUID structureId);
 
     GlobalPos getGlobalPos();
+
+    default BlockPos getBlockPos() {
+        return getGlobalPos().pos();
+    }
 
     @Nullable
     Level getStructureLevel();

@@ -7,11 +7,11 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.CanStartQuestCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
+import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.mojang.serialization.Dynamic;
@@ -57,7 +57,7 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
         return new ResourceLocation(MKNpc.MODID, String.format("give_quest.%s", questId));
     }
 
-    private DialogueTree specializeTree(QuestDefinition definition, QuestChainInstance.QuestChainBuildResult buildResult) {
+    private DialogueTree specializeTree(QuestDefinition definition, QuestChainBuildResult buildResult) {
         DialogueTree specializedTree = definition.getStartQuestTree().copy();
         for (DialogueNode node : specializedTree.getNodes().values()) {
             for (DialogueEffect effect : node.getEffects()) {
@@ -80,7 +80,7 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
         return specializedTree;
     }
 
-    public void setupDialogue(QuestChainInstance.QuestChainBuildResult buildResult) {
+    public void setupDialogue(QuestChainBuildResult buildResult) {
         QuestDefinition definition = QuestDefinitionManager.getDefinition(questDef);
         UUID questId = buildResult.instance.getQuestId();
 

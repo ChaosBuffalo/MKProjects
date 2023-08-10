@@ -3,8 +3,8 @@ package com.chaosbuffalo.mknpc.quest.objectives;
 import com.chaosbuffalo.mkcore.serialization.attributes.StringAttribute;
 import com.chaosbuffalo.mkcore.utils.SerializationUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.content.QuestObjectDB;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableChestEntry;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
@@ -71,7 +71,7 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
 
     @Override
     public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
-        MKStructureEntry entry = questStructures.get(getStructureName()).get(structureIndex.getValue());
+        MKStructureEntry entry = questStructures.get(getStructureName()).get(structureIndex.value());
         Optional<NotableChestEntry> chest = entry.getFirstChestWithTag(chestTag.getValue());
         return chest.map(x -> new UUIDInstanceData(x.getChestId())).orElse(new UUIDInstanceData());
     }
@@ -82,10 +82,10 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
     }
 
     @Override
-    public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
+    public PlayerQuestObjectiveData generatePlayerData(QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = playerDataFactory();
-        NotableChestEntry chest = worldData.getNotableChest(objData.getUuid());
+        NotableChestEntry chest = QuestObjectDB.getNotableChest(objData.getUuid());
         if (chest != null) {
             newObj.putBlockPos("chestPos", chest.getLocation());
         }

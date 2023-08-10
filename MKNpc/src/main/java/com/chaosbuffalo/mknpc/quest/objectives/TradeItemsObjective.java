@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.quest.objectives;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.SerializationUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
+import com.chaosbuffalo.mknpc.content.QuestObjectDB;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
@@ -67,10 +67,10 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
     }
 
     @Override
-    public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
+    public PlayerQuestObjectiveData generatePlayerData(QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = playerDataFactory();
-        NotableNpcEntry entry = worldData.getNotableNpc(objData.getUuid());
+        NotableNpcEntry entry = QuestObjectDB.getNotableNpc(objData.getUuid());
         if (entry != null) {
             newObj.putBlockPos("npcPos", entry.getLocation());
         }
