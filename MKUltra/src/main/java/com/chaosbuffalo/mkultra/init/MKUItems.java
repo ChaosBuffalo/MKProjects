@@ -202,7 +202,41 @@ public final class MKUItems {
                     (new Item.Properties()),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(Attributes.ATTACK_SPEED,
-                                    new AttributeModifier(FEET_UUID,"seawoven", 0.12, AttributeModifier.Operation.MULTIPLY_TOTAL))
+                                    new AttributeModifier(FEET_UUID,"ancient_bronze", 0.12, AttributeModifier.Operation.MULTIPLY_TOTAL))
+                    ))));
+
+    public static RegistryObject<MKArmorItem> ancientPriestHelmet = REGISTRY.register("ancient_priest_helmet",
+            () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_PRIEST_ROBES, ArmorItem.Type.HELMET,
+                    (new Item.Properties()),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.MANA_REGEN,
+                                    new AttributeModifier(HELMET_UUID, "ancient_priest", 2.0, AttributeModifier.Operation.ADDITION))
+                    ))));
+
+    public static RegistryObject<MKArmorItem> ancientPriestLeggings = REGISTRY.register("ancient_priest_leggings",
+            () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_PRIEST_ROBES, ArmorItem.Type.LEGGINGS,
+                    (new Item.Properties()),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.MAX_MANA,
+                                    new AttributeModifier(LEGGINGS_UUID, "ancient_priest", 10.0, AttributeModifier.Operation.ADDITION))
+                    ))));
+
+    public static RegistryObject<MKArmorItem> ancientPriestChestplate = REGISTRY.register("ancient_priest_chestplate",
+            () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_PRIEST_ROBES, ArmorItem.Type.CHESTPLATE,
+                    (new Item.Properties()),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.MAX_MANA,
+                                    new AttributeModifier(CHEST_UUID,"ancient_priest", 10.0, AttributeModifier.Operation.ADDITION)),
+                            new AttributeOptionEntry(MKAttributes.MANA_REGEN,
+                                    new AttributeModifier(CHEST_UUID, "ancient_priest", 1.5, AttributeModifier.Operation.ADDITION))
+                    ))));
+
+    public static RegistryObject<MKArmorItem> ancientPriestBoots = REGISTRY.register("ancient_priest_boots",
+            () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_PRIEST_ROBES, ArmorItem.Type.BOOTS,
+                    (new Item.Properties()),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.SPELL_CRIT_MULTIPLIER,
+                                    new AttributeModifier(FEET_UUID,"ancient_priest", 0.25, AttributeModifier.Operation.ADDITION))
                     ))));
 
     public static RegistryObject<Item> destroyedTrooperHelmet = REGISTRY.register("destroyed_trooper_helmet",

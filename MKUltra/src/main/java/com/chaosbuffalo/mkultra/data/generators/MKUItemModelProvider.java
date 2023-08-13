@@ -44,6 +44,10 @@ public class MKUItemModelProvider extends MKWeaponModelProvider {
         makeSimpleItem(MKUItems.ancientBronzeBoots.get());
         makeSimpleItem(MKUItems.corruptedGauntlets.get());
         makeSimpleItem(MKUItems.necrotideBand.get());
+        makeSimpleItem(MKUItems.ancientPriestBoots.get());
+        makeSimpleItem(MKUItems.ancientPriestChestplate.get());
+        makeSimpleItem(MKUItems.ancientPriestLeggings.get());
+        makeSimpleItem(MKUItems.ancientPriestHelmet.get());
         for (MKMeleeWeapon weapon : MKUItems.WEAPONS) {
             makeWeaponModel(weapon);
         }

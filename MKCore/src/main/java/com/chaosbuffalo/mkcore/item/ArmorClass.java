@@ -20,18 +20,30 @@ import java.util.*;
 
 public class ArmorClass {
 
-    public static final ArmorClass LIGHT = new ArmorClass(MKCore.makeRL("armor_class.light"), CoreTags.Items.LIGHT_ARMOR)
+    public static final ArmorClass ROBES = new ArmorClass(MKCore.makeRL("armor_class.robes"), CoreTags.Items.ROBES_ARMOR)
             .addPositiveEffect(Attributes.MOVEMENT_SPEED, 0.025, AttributeModifier.Operation.MULTIPLY_TOTAL)
             .addPositiveEffect(MKAttributes.CASTING_SPEED, 0.025, AttributeModifier.Operation.MULTIPLY_TOTAL)
             .addPositiveEffect(MKAttributes.MANA_REGEN, 0.025, AttributeModifier.Operation.MULTIPLY_TOTAL)
-            .addNegativeEffect(Attributes.ARMOR, -0.04, AttributeModifier.Operation.MULTIPLY_TOTAL);
+            .addNegativeEffect(Attributes.ARMOR, -0.04, AttributeModifier.Operation.MULTIPLY_TOTAL)
+            .addNegativeEffect(Attributes.MAX_HEALTH, -0.02, AttributeModifier.Operation.MULTIPLY_TOTAL);
+
+    public static final ArmorClass LIGHT = new ArmorClass(MKCore.makeRL("armor_class.light"), CoreTags.Items.LIGHT_ARMOR)
+            .addPositiveEffect(MKAttributes.MELEE_CRIT, 0.02, AttributeModifier.Operation.MULTIPLY_TOTAL)
+            .addPositiveEffect(MKAttributes.SPELL_CRIT, 0.02, AttributeModifier.Operation.MULTIPLY_TOTAL)
+            .addPositiveEffect(MKAttributes.RANGED_CRIT, 0.02, AttributeModifier.Operation.MULTIPLY_TOTAL)
+            .addPositiveEffect(MKAttributes.COOLDOWN, 0.02, AttributeModifier.Operation.MULTIPLY_TOTAL)
+            .addNegativeEffect(MKAttributes.CASTING_SPEED, -0.02, AttributeModifier.Operation.MULTIPLY_TOTAL)
+            .addNegativeEffect(Attributes.MAX_HEALTH, -0.04, AttributeModifier.Operation.MULTIPLY_TOTAL);
     public static final ArmorClass MEDIUM = new ArmorClass(MKCore.makeRL("armor_class.medium"), CoreTags.Items.MEDIUM_ARMOR)
-            .addPositiveEffect(MKAttributes.MELEE_CRIT, 0.03, AttributeModifier.Operation.ADDITION)
+            .addPositiveEffect(MKAttributes.HEAL_BONUS, 0.04, AttributeModifier.Operation.MULTIPLY_TOTAL)
             .addPositiveEffect(Attributes.ATTACK_SPEED, 0.03, AttributeModifier.Operation.MULTIPLY_TOTAL)
+            .addPositiveEffect(Attributes.MAX_HEALTH, 0.02, AttributeModifier.Operation.MULTIPLY_TOTAL)
             .addNegativeEffect(MKAttributes.COOLDOWN, -0.02, AttributeModifier.Operation.MULTIPLY_TOTAL)
-            .addNegativeEffect(MKAttributes.CASTING_SPEED, -0.02, AttributeModifier.Operation.MULTIPLY_TOTAL);
+            .addNegativeEffect(MKAttributes.CASTING_SPEED, -0.03, AttributeModifier.Operation.MULTIPLY_TOTAL);
     public static final ArmorClass HEAVY = new ArmorClass(MKCore.makeRL("armor_class.heavy"), CoreTags.Items.HEAVY_ARMOR)
             .addPositiveEffect(Attributes.ATTACK_DAMAGE, 0.025, AttributeModifier.Operation.MULTIPLY_TOTAL)
+            .addPositiveEffect(Attributes.MAX_HEALTH, 0.04, AttributeModifier.Operation.MULTIPLY_TOTAL)
+            .addPositiveEffect(MKAttributes.MAX_POISE, 0.03, AttributeModifier.Operation.MULTIPLY_TOTAL)
             .addPositiveEffect(MKAttributes.ARCANE_RESISTANCE, 0.015, AttributeModifier.Operation.MULTIPLY_TOTAL)
             .addPositiveEffect(MKAttributes.FIRE_RESISTANCE, 0.015, AttributeModifier.Operation.MULTIPLY_TOTAL)
             .addPositiveEffect(MKAttributes.FROST_RESISTANCE, 0.015, AttributeModifier.Operation.MULTIPLY_TOTAL)
@@ -42,26 +54,18 @@ public class ArmorClass {
             .addNegativeEffect(MKAttributes.COOLDOWN, -0.04, AttributeModifier.Operation.MULTIPLY_TOTAL)
             .addNegativeEffect(MKAttributes.CASTING_SPEED, -0.04, AttributeModifier.Operation.MULTIPLY_TOTAL)
             .addNegativeEffect(Attributes.ATTACK_SPEED, -0.025, AttributeModifier.Operation.MULTIPLY_TOTAL);
-    private static final List<ArmorClass> CHECK_ORDER = Arrays.asList(LIGHT, MEDIUM, HEAVY);
+    private static final List<ArmorClass> CHECK_ORDER = Arrays.asList(ROBES, LIGHT, MEDIUM, HEAVY);
 
     private final ResourceLocation location;
     private final Map<Attribute, AttributeModifier> positiveModifierMap = new HashMap<>();
     private final Map<Attribute, AttributeModifier> negativeModifierMap = new HashMap<>();
-    private final Set<ArmorMaterial> materials = new HashSet<>();
     private final TagKey<Item> tag;
-
-    private static ArmorClass getArmorClassForMaterial(ArmorMaterial material) {
-        return CHECK_ORDER.stream()
-                .filter(armorClass -> armorClass.hasMaterial(material))
-                .findFirst()
-                .orElse(null);
-    }
 
     public static ArmorClass getItemArmorClass(ArmorItem item) {
         return CHECK_ORDER.stream()
                 .filter(armorClass -> armorClass.containsItem(item))
                 .findFirst()
-                .orElseGet(() -> getArmorClassForMaterial(item.getMaterial()));
+                .orElse(null);
     }
 
     public ArmorClass(ResourceLocation location, TagKey<Item> tag) {
@@ -101,16 +105,7 @@ public class ArmorClass {
         return location;
     }
 
-    private boolean hasMaterial(ArmorMaterial material) {
-        return materials.contains(material);
-    }
-
     private boolean containsItem(ArmorItem item) {
         return tag == null || ForgeRegistries.ITEMS.tags().getTag(tag).contains(item);
-    }
-
-    public ArmorClass register(ArmorMaterial material) {
-        materials.add(material);
-        return this;
     }
 }
