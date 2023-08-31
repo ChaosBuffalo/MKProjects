@@ -15,7 +15,6 @@
   },
   "start_pool": "mkultra:intro_castle.green_knight_island",
   "step": "surface_structures",
-  "structureName": "mkultra:intro_castle",
   "structure_events": {},
   "use_expansion_hack": true
 }

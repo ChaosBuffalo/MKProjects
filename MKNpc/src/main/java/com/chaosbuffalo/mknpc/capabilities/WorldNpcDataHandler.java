@@ -14,8 +14,8 @@ import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSinglePoolElement;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructure;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -191,7 +191,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         StructureData structureData = null;
         Level structureWorld = structurePlaced.getStructureLevel();
         if (structureWorld instanceof ServerLevel serverLevel) {
-            MKJigsawStructure struct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structurePlaced.getStructureName());
+            MKStructure struct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structurePlaced.getStructureName());
             if (struct != null) {
                 StructureStart start = serverLevel.structureManager()
                         .getStructureAt(structurePlaced.getGlobalPos().pos(), struct);

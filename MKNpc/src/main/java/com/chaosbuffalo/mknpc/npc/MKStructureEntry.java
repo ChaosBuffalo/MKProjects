@@ -10,7 +10,7 @@ import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.utils.NBTSerializableMappedData;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructure;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -263,7 +263,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         }
     }
 
-    public Optional<MKJigsawStructure> getStructure() {
+    public Optional<MKStructure> getStructure() {
         return Optional.ofNullable(WorldStructureHandler.MK_STRUCTURE_INDEX.get(structureName));
     }
 

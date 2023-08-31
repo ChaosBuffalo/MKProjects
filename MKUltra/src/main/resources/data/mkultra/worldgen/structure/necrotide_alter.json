@@ -15,7 +15,6 @@
   },
   "start_pool": "mkultra:necrotide_alter/base",
   "step": "surface_structures",
-  "structureName": "mkultra:necrotide_alter",
   "structure_events": {
     "structure_events": [
       {

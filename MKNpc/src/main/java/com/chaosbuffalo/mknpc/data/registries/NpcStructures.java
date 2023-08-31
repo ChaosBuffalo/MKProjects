@@ -32,7 +32,7 @@ public class NpcStructures {
         HolderGetter<StructureTemplatePool> templates = context.lookup(Registries.TEMPLATE_POOL);
 
         context.register(TEST_JIGSAW,
-                new MKJigsawBuilder(TEST_JIGSAW.location(),
+                new MKJigsawBuilder(
                         emptySpawnsStructure(biomes.getOrThrow(NpcTags.Biomes.HAS_TEST_STRUCTURES),
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE),
                         templates.getOrThrow(NpcStructurePools.DIGGER_BASE_POOL)).build());

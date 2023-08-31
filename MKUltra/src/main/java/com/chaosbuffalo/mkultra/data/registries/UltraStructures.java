@@ -19,7 +19,6 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.heightproviders.ConstantHeight;
-import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSpawnOverride;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
@@ -48,19 +47,19 @@ public class UltraStructures {
         HolderGetter<StructureTemplatePool> templates = context.lookup(Registries.TEMPLATE_POOL);
 
         context.register(INTRO_CASTLE,
-                new MKJigsawBuilder(INTRO_CASTLE.location(),
+                new MKJigsawBuilder(
                         emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_INTRO_CASTLE),
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE),
                         templates.getOrThrow(IntroCastlePools.ISLAND_POOL)).build());
 
         context.register(DESERT_TEMPLE_VILLAGE,
-                new MKJigsawBuilder(DESERT_TEMPLE_VILLAGE.location(),
+                new MKJigsawBuilder(
                         emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_DESERT_TEMPLE_VILLAGE),
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE),
                         templates.getOrThrow(DesertTempleVillagePools.DESERT_TEMPLE_VILLAGE_BASE)).build());
 
         context.register(NECROTIDE_ALTER,
-                new MKJigsawBuilder(NECROTIDE_ALTER.location(),
+                new MKJigsawBuilder(
                         emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_NECROTIDE_ALTER),
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE),
                         templates.getOrThrow(NecrotideAlterPools.BASE))
@@ -73,20 +72,20 @@ public class UltraStructures {
                         ).build());
 
         context.register(DEEPSLATE_OBELISK,
-                new MKJigsawBuilder(DEEPSLATE_OBELISK.location(),
+                new MKJigsawBuilder(
                         emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_DEEPSLATE_OBELISK),
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.BEARD_THIN),
                         templates.getOrThrow(DeepslateObeliskPools.BASE)).build());
 
         context.register(HYBOREAN_CRYPT,
-                new MKJigsawBuilder(HYBOREAN_CRYPT.location(),
+                new MKJigsawBuilder(
                         emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_HYBOREAN_CRYPT),
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.BURY),
                         templates.getOrThrow(CryptStructurePools.BASE))
                         .setHeightProvider(ConstantHeight.of(VerticalAnchor.absolute(-19)))
                         .build());
         context.register(DECAYING_CHURCH,
-                new MKJigsawBuilder(DECAYING_CHURCH.location(),
+                new MKJigsawBuilder(
                         emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_DECAYING_CHURCH),
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.BEARD_THIN),
                         templates.getOrThrow(DecayingChurchPools.BASE))

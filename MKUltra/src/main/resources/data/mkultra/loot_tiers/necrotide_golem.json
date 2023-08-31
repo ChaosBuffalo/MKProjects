@@ -11,8 +11,8 @@
                   "ability": "mkultra:ability.engulfing_darkness",
                   "attributes": {
                     "proc_chance": {
-                      "max": 0.05,
-                      "min": 0.15,
+                      "max": 0.15,
+                      "min": 0.05,
                       "value": 0.05
                     },
                     "skill_level": {

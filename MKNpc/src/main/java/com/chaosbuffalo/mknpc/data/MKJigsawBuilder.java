@@ -17,7 +17,6 @@ import java.util.Optional;
 
 public class MKJigsawBuilder {
 
-    private final ResourceLocation name;
     private final Structure.StructureSettings settings;
     private final Holder<StructureTemplatePool> templatePool;
     private Optional<ResourceLocation> startJigsawName;
@@ -29,9 +28,8 @@ public class MKJigsawBuilder {
 
     private final HashMap<String, StructureEvent> events = new HashMap<>();
 
-    public MKJigsawBuilder(ResourceLocation name, Structure.StructureSettings settings,
+    public MKJigsawBuilder(Structure.StructureSettings settings,
                            Holder<StructureTemplatePool> templatePool) {
-        this.name = name;
         this.settings = settings;
         this.templatePool = templatePool;
         startJigsawName = Optional.empty();
@@ -84,7 +82,7 @@ public class MKJigsawBuilder {
 
     public MKJigsawStructure build() {
         var struct = new MKJigsawStructure(settings, templatePool, startJigsawName, maxDepth, heightProvider,
-                useExpansionHack, heightmapTypes, maxDistFromCenter, name, new CompoundTag());
+                useExpansionHack, heightmapTypes, maxDistFromCenter, new CompoundTag());
         for (var entry : events.entrySet()) {
             struct.addEvent(entry.getKey(), entry.getValue());
         }

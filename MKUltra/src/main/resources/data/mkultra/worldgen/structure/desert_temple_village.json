@@ -15,7 +15,6 @@
   },
   "start_pool": "mkultra:desert_temple_village",
   "step": "surface_structures",
-  "structureName": "mkultra:desert_temple_village",
   "structure_events": {},
   "use_expansion_hack": true
 }

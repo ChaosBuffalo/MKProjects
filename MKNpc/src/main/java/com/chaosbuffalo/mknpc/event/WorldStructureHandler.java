@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.event;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructure;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +24,7 @@ import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = MKNpc.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class WorldStructureHandler {
-    public static final Map<ResourceLocation, MKJigsawStructure> MK_STRUCTURE_INDEX = new HashMap<>();
+    public static final Map<ResourceLocation, MKStructure> MK_STRUCTURE_INDEX = new HashMap<>();
 
     @SubscribeEvent
     public static void serverStarted(final ServerStartedEvent event) {
@@ -61,11 +61,10 @@ public class WorldStructureHandler {
     public static void cacheStructures(MinecraftServer server) {
         server.registryAccess().registry(Registries.STRUCTURE).ifPresent(registry -> {
             MK_STRUCTURE_INDEX.clear();
-            registry.holders().filter(r -> r.get() instanceof MKJigsawStructure).forEach(r -> {
+            registry.holders().filter(r -> r.get() instanceof MKStructure).forEach(r -> {
                 MKNpc.LOGGER.info("Caching MK Structure {}", r.key().location());
-                MK_STRUCTURE_INDEX.put(r.key().location(), (MKJigsawStructure) r.get());
+                MK_STRUCTURE_INDEX.put(r.key().location(), (MKStructure) r.get());
             });
         });
-
     }
 }

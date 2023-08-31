@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.mixins;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.IMKPoolElement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.IMKPoolPiece;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.StructureManager;
@@ -11,17 +12,15 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 
 import java.util.UUID;
 
 @Mixin(PoolElementStructurePiece.class)
-public abstract class PoolElementPieceMixins implements IMKPoolPiece {
+public abstract class PoolElementStructurePieceMixins implements IMKPoolPiece {
 
     @Shadow
     public abstract StructurePoolElement getElement();
@@ -34,14 +33,16 @@ public abstract class PoolElementPieceMixins implements IMKPoolPiece {
     @Shadow
     @Final
     protected Rotation rotation;
-    protected UUID instanceId;
-    protected ResourceLocation structureName;
+    @Unique
+    protected UUID mknpc$instanceId;
+    @Unique
+    protected Structure mknpc$structure;
 
 
     @Override
-    public void setStart(UUID instanceId, ResourceLocation structureName) {
-        this.instanceId = instanceId;
-        this.structureName = structureName;
+    public void setContainingStructure(UUID instanceId, Structure structure) {
+        this.mknpc$instanceId = instanceId;
+        this.mknpc$structure = structure;
     }
 
     /**
@@ -53,8 +54,9 @@ public abstract class PoolElementPieceMixins implements IMKPoolPiece {
                       RandomSource pRandom, BoundingBox pBox, BlockPos pPos, boolean pKeepJigsaws) {
 
         if (getElement() instanceof IMKPoolElement poolElement) {
+            ResourceLocation name = pStructureManager.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(mknpc$structure);
             poolElement.mkPlace(structureTemplateManager, pLevel, pStructureManager, pGenerator,
-                    position, pPos, rotation, pBox, pRandom, pKeepJigsaws, structureName, instanceId);
+                    position, pPos, rotation, pBox, pRandom, pKeepJigsaws, name, mknpc$instanceId);
         } else {
             getElement().place(structureTemplateManager, pLevel, pStructureManager, pGenerator, position, pPos, rotation,
                     pBox, pRandom, pKeepJigsaws);

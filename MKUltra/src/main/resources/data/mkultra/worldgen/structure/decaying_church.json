@@ -15,7 +15,6 @@
   },
   "start_pool": "mkultra:decaying_church/base",
   "step": "surface_structures",
-  "structureName": "mkultra:decaying_church",
   "structure_events": {},
   "terrain_adaptation": "beard_thin",
   "use_expansion_hack": true

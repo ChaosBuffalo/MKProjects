@@ -15,7 +15,6 @@
   },
   "start_pool": "mkultra:crypt/crypt_base",
   "step": "surface_structures",
-  "structureName": "mkultra:hyborean_crypt",
   "structure_events": {},
   "terrain_adaptation": "bury",
   "use_expansion_hack": true
