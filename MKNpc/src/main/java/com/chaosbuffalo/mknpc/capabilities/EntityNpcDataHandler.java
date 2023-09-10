@@ -9,6 +9,7 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
+import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
@@ -27,7 +28,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -156,9 +156,9 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             return;
         }
         if (server != null && entry.getQuestId() == null) {
-            Optional<QuestChainInstance.QuestChainBuildResult> quest = ContentDB.getQuestDB().buildQuest(npcDef, getSpawnPos());
+            Optional<QuestChainBuildResult> quest = ContentDB.getQuestDB().buildQuest(npcDef, getSpawnPos());
             if (quest.isPresent()) {
-                QuestChainInstance.QuestChainBuildResult result = quest.get();
+                QuestChainBuildResult result = quest.get();
                 QuestChainInstance newQuest = result.instance;
                 MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getNotableUUID()));
                 MKNpc.LOGGER.debug("Assigning quest {}({}) to {}", newQuest.getDefinition().getName(), newQuest.getQuestId(), entity);

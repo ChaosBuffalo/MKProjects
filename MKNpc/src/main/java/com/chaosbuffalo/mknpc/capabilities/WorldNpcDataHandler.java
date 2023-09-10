@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.npc.*;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.WorldPermanentOption;
+import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
@@ -148,7 +149,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     }
 
     @Override
-    public Optional<QuestChainInstance.QuestChainBuildResult> buildQuest(QuestDefinition definition, BlockPos pos) {
+    public Optional<QuestChainBuildResult> buildQuest(QuestDefinition definition, BlockPos pos) {
         Map<ResourceLocation, Integer> structuresNeeded = definition.getStructuresNeeded();
         if (hasStructureInstances(structuresNeeded.keySet())) {
             Map<ResourceLocation, List<MKStructureEntry>> possibilities = structuresNeeded.keySet().stream()
@@ -175,7 +176,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
                 instance.generateDialogue(questStructures);
                 MKNpc.LOGGER.debug("Built quest {} for {}", instance.getQuestId(), definition.getName());
                 quests.put(instance.getQuestId(), instance);
-                return Optional.of(new QuestChainInstance.QuestChainBuildResult(instance, questStructures));
+                return Optional.of(new QuestChainBuildResult(instance, questStructures));
             } else {
                 return Optional.empty();
             }

@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.command;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.content.ContentDB;
+import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
@@ -63,7 +64,7 @@ public class MKQuestCommand {
         if (definition != null) {
             BlockPos pos = player.blockPosition();
             IWorldNpcData questDatabase = ContentDB.getQuestDB();
-            Optional<QuestChainInstance.QuestChainBuildResult> quest = questDatabase.buildQuest(definition, pos);
+            Optional<QuestChainBuildResult> quest = questDatabase.buildQuest(definition, pos);
             if (quest.isPresent()) {
                 QuestChainInstance newQuest = quest.get().instance;
                 player.sendSystemMessage(Component.literal("Generated quest: " + newQuest.getQuestId()));
