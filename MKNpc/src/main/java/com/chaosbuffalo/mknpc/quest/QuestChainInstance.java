@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.quest.data.QuestChainData;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
@@ -63,8 +64,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         for (Quest quest : definition.getQuestChain()) {
             QuestData questData = questChainData.getQuestData(quest.getQuestName());
             for (QuestObjective<?> obj : quest.getObjectives()) {
-                if (obj instanceof TalkToNpcObjective) {
-                    TalkToNpcObjective talkObj = (TalkToNpcObjective) obj;
+                if (obj instanceof TalkToNpcObjective talkObj) {
                     UUIDInstanceData instanceData = talkObj.getInstanceData(questData);
                     if (speakingRoles.containsKey(talkObj.getNpcDefinition()) && !speakingRoles.get(talkObj.getNpcDefinition()).equals(instanceData.getUuid())) {
                         MKNpc.LOGGER.warn("Error: quest chain has 2 different npc definition with speaking roles {}", talkObj.getNpcDefinition());
@@ -158,10 +158,11 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
 
     public void signalQuestProgress(IWorldNpcData worldData, IPlayerQuestingData questingData, Quest currentQuest, PlayerQuestChainInstance playerInstance, boolean manualAdvance) {
         PlayerQuestData playerData = playerInstance.getQuestData(currentQuest.getQuestName());
-        questingData.questProgression(worldData, worldData.getQuest(playerInstance.getQuestId()));
+        QuestChainInstance questInstance = ContentDB.getQuestInstance(playerInstance.getQuestId());
+        questingData.questProgression(worldData, questInstance);
         if (currentQuest.isComplete(playerData) || manualAdvance) {
             if (currentQuest.shouldAutoComplete() || manualAdvance) {
-                questingData.advanceQuestChain(worldData, worldData.getQuest(playerInstance.getQuestId()), currentQuest);
+                questingData.advanceQuestChain(worldData, questInstance, currentQuest);
             }
         }
     }

@@ -4,7 +4,9 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
+import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.google.common.collect.ImmutableMap;
@@ -55,30 +57,24 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
 
     @Override
     public void applyEffect(ServerPlayer serverPlayerEntity, LivingEntity livingEntity, DialogueNode dialogueNode) {
-        MinecraftServer server = serverPlayerEntity.getServer();
-        if (server == null) {
+        QuestChainInstance questChain = ContentDB.getQuestInstance(chainId);
+        if (questChain == null) {
             return;
         }
-        Level overworld = server.getLevel(Level.OVERWORLD);
-        if (overworld == null) {
-            return;
-        }
+
         IPlayerQuestingData questingData = MKNpc.getPlayerQuestData(serverPlayerEntity).resolve().orElse(null);
         if (questingData == null) {
             return;
         }
-        overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(x -> {
-            QuestChainInstance questChain = x.getQuest(chainId);
-            if (questChain == null) {
+
+
+        questingData.getQuestChain(chainId).ifPresent(playerChain -> {
+            IWorldNpcData questDB = ContentDB.getQuestDB();
+            Quest currentQuest = questChain.getDefinition().getQuest(questName);
+            if (currentQuest == null) {
                 return;
             }
-            questingData.getQuestChain(chainId).ifPresent(playerChain -> {
-                Quest currentQuest = questChain.getDefinition().getQuest(questName);
-                if (currentQuest == null) {
-                    return;
-                }
-                questChain.signalObjectiveComplete(objectiveName, x, questingData, currentQuest, playerChain);
-            });
+            questChain.signalObjectiveComplete(objectiveName, questDB, questingData, currentQuest, playerChain);
         });
     }
 

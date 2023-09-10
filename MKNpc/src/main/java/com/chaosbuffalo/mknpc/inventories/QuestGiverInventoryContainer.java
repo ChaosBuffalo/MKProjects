@@ -2,8 +2,7 @@ package com.chaosbuffalo.mknpc.inventories;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
@@ -14,7 +13,6 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.objectives.ITradeObjectiveHandler;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -22,7 +20,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,43 +55,32 @@ public class QuestGiverInventoryContainer extends ChestMenu {
             return;
         }
         Optional<? extends IPlayerQuestingData> playerQuestOpt = MKNpc.getPlayerQuestData(playerIn).resolve();
-        MinecraftServer server = playerIn.getServer();
-        if (server != null) {
-            Level overWorld = server.getLevel(Level.OVERWORLD);
-            if (overWorld != null) {
-                Optional<? extends IWorldNpcData> worldDataOpt = overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).resolve();
-                if (worldDataOpt.isPresent()) {
-                    IWorldNpcData worldData = worldDataOpt.get();
-                    ;
-                    if (playerQuestOpt.isPresent()) {
-                        IPlayerQuestingData playerQuest = playerQuestOpt.get();
-                        Collection<PlayerQuestChainInstance> chains = playerQuest.getQuestChains();
-                        for (PlayerQuestChainInstance chain : chains) {
-                            QuestChainInstance questChain = worldData.getQuest(chain.getQuestId());
-                            if (questChain == null) {
-                                continue;
-                            }
-                            for (String questName : chain.getCurrentQuests()) {
-                                Quest currentQuest = questChain.getDefinition().getQuest(questName);
-                                if (currentQuest != null) {
-                                    for (QuestObjective<?> obj : currentQuest.getObjectives()) {
-                                        PlayerQuestData playerData = chain.getQuestData(currentQuest.getQuestName());
-                                        PlayerQuestObjectiveData playerObj = playerData.getObjective(obj.getObjectiveName());
-                                        QuestData questData = questChain.getQuestChainData().getQuestData(questName);
-                                        if (obj instanceof ITradeObjectiveHandler tradeObj) {
-                                            if (tradeObj.canTradeWith(entity, playerIn, playerObj,
-                                                    questData, chain)) {
-                                                int[] matches = tradeObj.findMatches(nonEmpty);
-                                                if (matches == null) {
-                                                    continue;
-                                                } else {
-                                                    tradeObj.onPlayerTradeSuccess(playerIn,
-                                                            playerObj, questData, chain, entity);
-                                                    questChain.signalQuestProgress(worldData, playerQuest, currentQuest, chain, false);
-                                                    return;
-                                                }
-                                            }
-                                        }
+        if (!playerIn.getLevel().isClientSide && playerQuestOpt.isPresent()) {
+            IPlayerQuestingData playerQuest = playerQuestOpt.get();
+            Collection<PlayerQuestChainInstance> chains = playerQuest.getQuestChains();
+            for (PlayerQuestChainInstance chain : chains) {
+                QuestChainInstance questChain = ContentDB.getQuestInstance(chain.getQuestId());
+                if (questChain == null) {
+                    continue;
+                }
+                for (String questName : chain.getCurrentQuests()) {
+                    Quest currentQuest = questChain.getDefinition().getQuest(questName);
+                    if (currentQuest != null) {
+                        for (QuestObjective<?> obj : currentQuest.getObjectives()) {
+                            PlayerQuestData playerData = chain.getQuestData(currentQuest.getQuestName());
+                            PlayerQuestObjectiveData playerObj = playerData.getObjective(obj.getObjectiveName());
+                            QuestData questData = questChain.getQuestChainData().getQuestData(questName);
+                            if (obj instanceof ITradeObjectiveHandler tradeObj) {
+                                if (tradeObj.canTradeWith(entity, playerIn, playerObj,
+                                        questData, chain)) {
+                                    int[] matches = tradeObj.findMatches(nonEmpty);
+                                    if (matches == null) {
+                                        continue;
+                                    } else {
+                                        tradeObj.onPlayerTradeSuccess(playerIn,
+                                                playerObj, questData, chain, entity);
+                                        questChain.signalQuestProgress(ContentDB.getQuestDB(), playerQuest, currentQuest, chain, false);
+                                        return;
                                     }
                                 }
                             }

@@ -7,8 +7,8 @@ import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.effects.HealingThreatEffect;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.Quest;
@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -78,8 +79,7 @@ public class EntityHandler {
             event.getChunk().getBlockEntitiesPos().forEach(pos -> {
                 BlockEntity entity = event.getChunk().getBlockEntity(pos);
                 if (entity != null) {
-                    server.overworld().getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(x ->
-                            x.queueChestForProcessing(GlobalPos.of(level.dimension(), pos)));
+                    ContentDB.getPrimaryData().queueChestForProcessing(GlobalPos.of(level.dimension(), pos));
                 }
             });
         }
@@ -87,35 +87,25 @@ public class EntityHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onEntityInteract(PlayerInteractEvent.RightClickBlock event) {
-        if (event.isCanceled()) {
+        Level level = event.getLevel();
+        if (level.isClientSide) {
             return;
         }
-        if (event.getEntity().level.isClientSide) {
-            return;
-        }
-        MinecraftServer server = event.getEntity().getServer();
-        if (server == null) {
-            return;
-        }
-        Level world = event.getLevel();
+
         BlockPos pos = event.getHitVec().getBlockPos();
-        if (world.getBlockState(pos).getBlock() instanceof ChestBlock) {
-            BlockEntity te = world.getBlockEntity(pos);
+        if (level.getBlockState(pos).getBlock() instanceof ChestBlock) {
+            BlockEntity te = level.getBlockEntity(pos);
             if (te == null) {
                 return;
             }
-            Level overWorld = server.getLevel(Level.OVERWORLD);
-            if (overWorld != null) {
-                te.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(
-                        chestCap -> {
-                            overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
-                                    worldData -> processLootChestEvents(event.getEntity(), chestCap, worldData));
-                            if (chestCap.hasQuestInventoryForPlayer(event.getEntity()) && !event.getEntity().isShiftKeyDown()) {
-                                event.getEntity().openMenu(chestCap);
-                                event.setCanceled(true);
-                            }
-                        });
-            }
+            te.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(chestCap -> {
+                Player player = event.getEntity();
+                processLootChestEvents(player, chestCap);
+                if (!player.isShiftKeyDown() && chestCap.hasQuestInventoryForPlayer(player)) {
+                    player.openMenu(chestCap);
+                    event.setCanceled(true);
+                }
+            });
         }
     }
 
@@ -125,10 +115,10 @@ public class EntityHandler {
         event.setDroppedExperience(event.getDroppedExperience() + bonusXp);
     }
 
-    private static void processLootChestEvents(Player player, IChestNpcData chestCap, IWorldNpcData worldData) {
+    private static void processLootChestEvents(Player player, IChestNpcData chestCap) {
         MKNpc.getPlayerQuestData(player).ifPresent(x -> x.getQuestChains().forEach(
                 pQuestChain -> {
-                    QuestChainInstance questChain = worldData.getQuest(pQuestChain.getQuestId());
+                    QuestChainInstance questChain = ContentDB.getQuestInstance(pQuestChain.getQuestId());
                     if (questChain == null) {
                         return;
                     }
@@ -141,7 +131,7 @@ public class EntityHandler {
                                     PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
                                     QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
                                     if (containerObj.onLootChest(player, pObj, qData, chestCap)) {
-                                        questChain.signalQuestProgress(worldData, x, currentQuest, pQuestChain, false);
+                                        questChain.signalQuestProgress(ContentDB.getQuestDB(), x, currentQuest, pQuestChain, false);
                                         return;
                                     }
                                 }
@@ -156,83 +146,76 @@ public class EntityHandler {
         if (event.getEntity().level.isClientSide) {
             return;
         }
-        MinecraftServer server = event.getEntity().getServer();
-        if (server == null) {
-            return;
-        }
-        Level overWorld = server.getLevel(Level.OVERWORLD);
         MKNpc.LOGGER.debug("Setting up dialogue between {} and {}", event.getSpeaker(), event.getEntity());
-        if (overWorld != null) {
-            overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
-                    worldData -> MKNpc.getPlayerQuestData(event.getEntity()).ifPresent(x -> x.getQuestChains().forEach(
-                            pQuestChain -> {
-                                QuestChainInstance questChainInstance = worldData.getQuest(pQuestChain.getQuestId());
-                                if (questChainInstance != null) {
-                                    MKNpc.LOGGER.debug("Adding quest chain dialogue for {}", questChainInstance.getDefinition().getName());
-                                    questChainInstance.getTreeForEntity(event.getSpeaker()).ifPresent(event::addTree);
-                                }
-                            })));
-        }
-
+        MKNpc.getPlayerQuestData(event.getEntity()).ifPresent(x -> x.getQuestChains().forEach(
+                pQuestChain -> {
+                    QuestChainInstance questChainInstance = ContentDB.getQuestInstance(pQuestChain.getQuestId());
+                    if (questChainInstance != null) {
+                        MKNpc.LOGGER.debug("Adding quest chain dialogue for {}", questChainInstance.getDefinition().getName());
+                        questChainInstance.getTreeForEntity(event.getSpeaker()).ifPresent(event::addTree);
+                    }
+                }));
     }
 
-    private static void handleKillEntityForPlayer(Player player, LivingDeathEvent event, IWorldNpcData worldData) {
-        MKNpc.getNpcData(event.getEntity()).ifPresent(x -> {
-            if (x.getStructureId().isPresent()) {
-                worldData.getStructureManager().onNpcDeath(x);
-            }
-            if (x.getDefinition() != null) {
-                NpcDefinition def = x.getDefinition();
-                MKNpc.getPlayerQuestData(player).ifPresent(pData -> pData.getQuestChains().forEach(
-                        pQuestChain -> {
-                            QuestChainInstance questChain = worldData.getQuest(pQuestChain.getQuestId());
-                            if (questChain == null) {
-                                return;
-                            }
-                            for (String questName : pQuestChain.getCurrentQuests()) {
-                                Quest currentQuest = questChain.getDefinition().getQuest(questName);
-                                if (currentQuest != null) {
-                                    for (QuestObjective<?> obj : currentQuest.getObjectives()) {
-                                        if (obj instanceof IKillObjectiveHandler killObj) {
-                                            PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
-                                            PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
-                                            QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
-                                            if (killObj.onPlayerKillNpcDefEntity(player, pObj, def, event, qData, pQuestChain)) {
-                                                questChain.signalQuestProgress(worldData, pData, currentQuest, pQuestChain, false);
-                                            }
-                                        }
+    private static void handleNpcInStructureDeath(IEntityNpcData npcData) {
+        if (npcData.getStructureId().isPresent()) {
+            ContentDB.getPrimaryData().getStructureManager().onNpcDeath(npcData);
+        }
+    }
+
+    private static void handleKillEntityForPlayer(Player player, LivingDeathEvent event, IEntityNpcData npcData) {
+        if (npcData.getDefinition() == null) {
+            return;
+        }
+        NpcDefinition def = npcData.getDefinition();
+        MKNpc.getPlayerQuestData(player).ifPresent(pData -> pData.getQuestChains().forEach(
+                pQuestChain -> {
+                    QuestChainInstance questChain = ContentDB.getQuestInstance(pQuestChain.getQuestId());
+                    if (questChain == null) {
+                        return;
+                    }
+                    for (String questName : pQuestChain.getCurrentQuests()) {
+                        Quest currentQuest = questChain.getDefinition().getQuest(questName);
+                        if (currentQuest != null) {
+                            for (QuestObjective<?> obj : currentQuest.getObjectives()) {
+                                if (obj instanceof IKillObjectiveHandler killObj) {
+                                    PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
+                                    PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
+                                    QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
+                                    if (killObj.onPlayerKillNpcDefEntity(player, pObj, def, event, qData, pQuestChain)) {
+                                        questChain.signalQuestProgress(ContentDB.getQuestDB(), pData, currentQuest, pQuestChain, false);
                                     }
                                 }
                             }
-                        }));
-            }
-        });
+                        }
+                    }
+                }));
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDeathEvent(LivingDeathEvent event) {
-        if (event.isCanceled() || event.getEntity().level.isClientSide) {
+        if (event.getEntity().level.isClientSide) {
             return;
         }
-        MKNpc.getNpcData(event.getEntity()).ifPresent(npcData ->
-                npcData.getDeathReceiver().ifPresent(receiver -> receiver.onEntityDeath(npcData, event)));
-        if (event.getSource().getEntity() instanceof Player player) {
+
+        LazyOptional<IEntityNpcData> npcCap = MKNpc.getNpcData(event.getEntity());
+        npcCap.ifPresent(npcData -> {
+            npcData.getDeathReceiver().ifPresent(receiver -> receiver.onEntityDeath(npcData, event));
+            handleNpcInStructureDeath(npcData);
+        });
+        if (event.getSource().getEntity() instanceof ServerPlayer player) {
             MinecraftServer server = player.getServer();
             if (server == null) {
                 return;
             }
-            Level overWorld = server.getLevel(Level.OVERWORLD);
-            if (overWorld == null) {
-                return;
-            }
-            overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(worldNpcData -> {
-                handleKillEntityForPlayer(player, event, worldNpcData);
+            npcCap.ifPresent(npcData -> {
+                handleKillEntityForPlayer(player, event, npcData);
                 Team team = player.getTeam();
                 if (team != null) {
                     for (String s : team.getPlayers()) {
                         ServerPlayer member = server.getPlayerList().getPlayerByName(s);
                         if (member != null && !member.equals(player)) {
-                            handleKillEntityForPlayer(member, event, worldNpcData);
+                            handleKillEntityForPlayer(member, event, npcData);
                         }
                     }
                 }

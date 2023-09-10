@@ -4,7 +4,9 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
+import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
@@ -40,20 +42,9 @@ public class StartQuestChainEffect extends DialogueEffect implements IReceivesCh
 
     @Override
     public void applyEffect(ServerPlayer serverPlayerEntity, LivingEntity livingEntity, DialogueNode dialogueNode) {
-        MinecraftServer server = serverPlayerEntity.getServer();
-        if (server == null) {
-            return;
-        }
-        Level overworld = server.getLevel(Level.OVERWORLD);
-        if (overworld == null) {
-            return;
-        }
-        IPlayerQuestingData questingData = MKNpc.getPlayerQuestData(serverPlayerEntity).resolve().orElse(null);
-        if (questingData == null) {
-            return;
-        }
-        overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(x ->
-                questingData.startQuest(x, chainId));
+        MKNpc.getPlayerQuestData(serverPlayerEntity).ifPresent(questLog -> {
+            questLog.startQuest(ContentDB.getQuestDB(), chainId);
+        });
     }
 
     @Override

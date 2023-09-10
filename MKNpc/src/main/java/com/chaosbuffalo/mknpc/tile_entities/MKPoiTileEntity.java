@@ -1,13 +1,12 @@
 package com.chaosbuffalo.mknpc.tile_entities;
 
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -90,18 +89,12 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
     }
 
     public void tick(Level level) {
-        if (level != null) {
+        if (level != null && !level.isClientSide) {
             if (needsUploadToWorld) {
-                MinecraftServer server = level.getServer();
-                if (server != null) {
-                    Level overworld = server.getLevel(Level.OVERWORLD);
-                    if (overworld != null) {
-                        overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
-                                .ifPresent(cap -> cap.addPointOfInterest(this));
-                    }
-                    level.setBlock(getBlockPos(), Blocks.AIR.defaultBlockState(), 3);
-                    needsUploadToWorld = false;
-                }
+                ContentDB.getPrimaryData().addPointOfInterest(this);
+
+                level.setBlock(getBlockPos(), Blocks.AIR.defaultBlockState(), 3);
+                needsUploadToWorld = false;
             }
         }
     }

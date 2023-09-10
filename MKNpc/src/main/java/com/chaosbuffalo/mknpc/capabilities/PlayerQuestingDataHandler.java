@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.sync.SyncMapUpdater;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
@@ -76,7 +77,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
 
     @Override
     public void startQuest(IWorldNpcData worldHandler, UUID questId) {
-        QuestChainInstance chain = worldHandler.getQuest(questId);
+        QuestChainInstance chain = ContentDB.getQuestInstance(questId);
         if (chain != null) {
             MKNpc.LOGGER.info("Player {} started quest {}", getPlayer(), chain);
             getPersonaData().startQuest(playerData.getEntity(), worldHandler, chain);

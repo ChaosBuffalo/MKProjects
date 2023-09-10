@@ -120,30 +120,12 @@ public class MKNpc {
         }
     }
 
-    public static LazyOptional<? extends IEntityNpcData> getNpcData(Entity entity) {
+    public static LazyOptional<IEntityNpcData> getNpcData(Entity entity) {
         return entity.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY);
     }
 
-    public static LazyOptional<? extends IPlayerQuestingData> getPlayerQuestData(Player entity) {
+    public static LazyOptional<IPlayerQuestingData> getPlayerQuestData(Player entity) {
         return entity.getCapability(NpcCapabilities.PLAYER_QUEST_DATA_CAPABILITY);
     }
 
-    public static LazyOptional<? extends IWorldNpcData> getWorldNpcData(Level world) {
-        return world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY);
-    }
-
-    public static LazyOptional<? extends IWorldNpcData> getOverworldData(Level level) {
-        if (level.dimension() == Level.OVERWORLD) {
-            return getWorldNpcData(level);
-        } else {
-            MinecraftServer server = level.getServer();
-            if (server != null) {
-                Level overworld = server.getLevel(Level.OVERWORLD);
-                if (overworld != null) {
-                    return getWorldNpcData(overworld);
-                }
-            }
-            return LazyOptional.empty();
-        }
-    }
 }

@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.IDialogueExtension;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.*;
@@ -31,21 +32,16 @@ public class NPCDialogueExtension implements IDialogueExtension {
 
     private static Component notable(String name, DialogueTree tree) {
         return DialogueContextComponent.create("mkchat.simple_context.msg", (context) -> {
-            if (context.getPlayer().getServer() != null) {
-                Level overworld = context.getPlayer().getServer().getLevel(Level.OVERWORLD);
-                if (overworld != null) {
-                    return Collections.singletonList(overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
-                            .map(x -> {
-                                NotableNpcEntry entry = x.getNotableNpc(UUID.fromString(name));
-                                if (entry != null) {
-                                    return entry.getName();
-                                } else {
-                                    return Component.literal(String.format("notable:%s", name));
-                                }
-                            }).orElse(Component.literal(String.format("notable:%s", name))));
-                }
-            }
-            return Collections.singletonList(Component.literal(String.format("notable:%s", name)));
+            return Collections.singletonList(ContentDB.tryGetPrimaryData()
+                    .map(x -> {
+                        NotableNpcEntry entry = x.getNotableNpc(UUID.fromString(name));
+                        if (entry != null) {
+                            return entry.getName();
+                        } else {
+                            return Component.literal("notable:" + name);
+                        }
+                    })
+                    .orElseGet(() -> Component.literal("notable:" + name)));
         });
     }
 

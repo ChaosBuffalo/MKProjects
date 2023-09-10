@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.inventories.PsuedoChestContainer;
 import com.chaosbuffalo.mknpc.inventories.QuestChestInventory;
 import net.minecraft.core.GlobalPos;
@@ -127,17 +128,10 @@ public class ChestNpcDataHandler implements IChestNpcData {
     @Override
     public void onLoad() {
         if (needsUploadToWorld) {
-            Level world = getTileEntity().getLevel();
-            if (world != null && !world.isClientSide()) {
-                MinecraftServer server = world.getServer();
-                if (server != null) {
-                    Level overworld = server.getLevel(Level.OVERWORLD);
-                    if (overworld != null) {
-                        overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
-                                .ifPresent(cap -> cap.addChest(this));
-                    }
-                    needsUploadToWorld = false;
-                }
+            Level level = getTileEntity().getLevel();
+            if (level != null && !level.isClientSide()) {
+                ContentDB.getPrimaryData().addChest(this);
+                needsUploadToWorld = false;
             }
         }
     }

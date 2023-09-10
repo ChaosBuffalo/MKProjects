@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mknpc.event;
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructure;
 import net.minecraft.core.BlockPos;
@@ -32,29 +34,28 @@ public class WorldStructureHandler {
     }
 
     @SubscribeEvent
-    public static void onWorldTick(TickEvent.LevelTickEvent ev) {
-        if (ev.phase == TickEvent.Phase.END && ev.level instanceof ServerLevel serverLevel) {
-            MKNpc.getOverworldData(ev.level).ifPresent(over -> {
-                StructureManager levelStructures = serverLevel.structureManager();
-                WorldStructureManager activeStructures = over.getStructureManager();
-                for (ServerPlayer player : serverLevel.players()) {
-                    BlockPos playerPos = player.blockPosition();
-                    if (!levelStructures.hasAnyStructureAt(playerPos))
-                        continue;
+    public static void onWorldTick(TickEvent.LevelTickEvent event) {
+        if (event.phase == TickEvent.Phase.END && event.level instanceof ServerLevel serverLevel) {
+            IWorldNpcData over = ContentDB.getPrimaryData();
+            StructureManager levelStructures = serverLevel.structureManager();
+            WorldStructureManager activeStructures = over.getStructureManager();
+            for (ServerPlayer player : serverLevel.players()) {
+                BlockPos playerPos = player.blockPosition();
+                if (!levelStructures.hasAnyStructureAt(playerPos))
+                    continue;
 
-                    List<StructureStart> starts = MK_STRUCTURE_INDEX.values().stream()
-                            .map(x -> levelStructures.getStructureAt(playerPos, x))
-                            .filter(StructureStart::isValid)
-                            .toList();
-                    for (StructureStart start : starts) {
-                        over.setupStructureDataIfAbsent(start, ev.level);
-                        activeStructures.visitStructure(IStructureStartMixin.getInstanceIdFromStart(start), player);
-                    }
+                List<StructureStart> starts = MK_STRUCTURE_INDEX.values().stream()
+                        .map(x -> levelStructures.getStructureAt(playerPos, x))
+                        .filter(StructureStart::isValid)
+                        .toList();
+                for (StructureStart start : starts) {
+                    over.setupStructureDataIfAbsent(start, event.level);
+                    activeStructures.visitStructure(IStructureStartMixin.getInstanceIdFromStart(start), player);
                 }
-                if (ev.level.dimension() == Level.OVERWORLD) {
-                    over.update();
-                }
-            });
+            }
+            if (event.level.dimension() == Level.OVERWORLD) {
+                over.update();
+            }
         }
     }
 

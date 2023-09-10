@@ -1,13 +1,12 @@
 package com.chaosbuffalo.mknpc.tile_entities;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.WorldUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.blocks.MKSpawnerBlock;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
@@ -29,6 +28,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -366,21 +366,16 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
             if (needsUploadToWorld) {
                 MinecraftServer server = level.getServer();
                 if (server != null) {
-                    Level overworld = server.getLevel(Level.OVERWORLD);
-                    if (overworld != null) {
-                        overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
-                                .ifPresent(cap -> cap.addSpawner(this));
-                    }
+                    ContentDB.getPrimaryData().addSpawner(this);
                     if (!isAir(level, getBlockPos().above())) {
-                        level.setBlock(getBlockPos().above(), Blocks.AIR.defaultBlockState(), 3);
+                        level.setBlock(getBlockPos().above(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                     }
                     needsUploadToWorld = false;
-
                 }
             }
             if (!isAir(level, getBlockPos().above())) {
                 if (placedByStructure) {
-                    level.setBlock(getBlockPos().above(), Blocks.AIR.defaultBlockState(), 3);
+                    level.setBlock(getBlockPos().above(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                 } else {
                     return;
                 }
