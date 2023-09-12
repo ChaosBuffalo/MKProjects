@@ -1,6 +1,6 @@
 {
-  "replace": false,
   "values": [
+    "#mkcore:armor/robes",
     "#mkcore:armor/light",
     "#mkcore:armor/medium",
     "#mkcore:armor/heavy"

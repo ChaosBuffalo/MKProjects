@@ -30,7 +30,12 @@ public enum MKUArmorMaterial implements ArmorMaterial {
     ANCIENT_BRONZE_CHAINMAIL("mkultra:ancient_bronze_chainmail", 22, new int[]{2, 5, 6, 2}, 18,
             SoundEvents.ARMOR_EQUIP_CHAIN,
             0.0f, 0.0f,
-            () -> Ingredient.of(Items.COPPER_INGOT)
+            () -> Ingredient.of(Items.COPPER_INGOT)),
+
+    ANCIENT_PRIEST_ROBES("mkultra:ancient_priest_robes", 15,new int[]{1, 3, 4, 1}, 20,
+            SoundEvents.ARMOR_EQUIP_LEATHER,
+            0.0f, 0.0f,
+            () -> Ingredient.of(Items.STRING)
     );
 
 
