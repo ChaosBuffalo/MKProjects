@@ -29,8 +29,11 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Mod.EventBusSubscriber(modid = MKChat.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class DialogueManager extends SimpleJsonResourceReloadListener {
@@ -157,39 +160,57 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
         event.addListener(this);
     }
 
-    private static Component handleTextProviderRequest(String request, DialogueTree tree) {
-        if (request.contains(":")) {
-            String[] requestSplit = request.split(":", 2);
-            if (textComponentProviders.containsKey(requestSplit[0])) {
-                return textComponentProviders.get(requestSplit[0]).apply(requestSplit[1], tree);
-            } else {
-                return Component.literal("{" + request + "}");
+    // Matches {namespace:target}, allowed chars [a-zA-Z0-9_-]
+    private static final Pattern FORMAT_PATTERN = Pattern.compile("\\{(?<namespace>[\\w-]+):(?<target>[\\w-]+)}");
+
+    private static void decomposeString(String rawString,
+                                        BiFunction<String, String, Component> valueProvider,
+                                        Consumer<Component> outputConsumer) {
+        Matcher matcher = FORMAT_PATTERN.matcher(rawString);
+
+        int nextStart;
+        int mEnd;
+        for(nextStart = 0; matcher.find(nextStart); nextStart = mEnd) {
+            int mStart = matcher.start();
+            mEnd = matcher.end();
+            if (mStart > nextStart) {
+                String head = rawString.substring(nextStart, mStart);
+                outputConsumer.accept(Component.literal(head));
             }
-        } else {
-            return Component.literal("{" + request + "}");
+
+            String namespace = matcher.group("namespace");
+            String target = matcher.group("target");
+
+            Component newValue = valueProvider.apply(namespace, target);
+            if (newValue != null) {
+                outputConsumer.accept(newValue);
+            } else {
+                String rawOrigValue = rawString.substring(mStart, mEnd);
+
+                Component replacedValue = Component.literal(rawOrigValue);
+                outputConsumer.accept(replacedValue);
+            }
+        }
+
+        if (nextStart < rawString.length()) {
+            String tail = rawString.substring(nextStart);
+            outputConsumer.accept(Component.literal(tail));
         }
     }
 
-    public static Component parseDialogueMessage(String text, DialogueTree tree) {
-        String parsing = text;
-        MutableComponent component = Component.empty();
-        while (!parsing.isEmpty()) {
-            if (parsing.contains("{") && parsing.contains("}")) {
-                int index = parsing.indexOf("{");
-                int endIndex = parsing.indexOf("}");
-                component.append(parsing.substring(0, index));
-                String textProviderRequest = parsing.substring(index, endIndex + 1)
-                        .replace("{", "")
-                        .replace("}", "");
-                //handle request
-                component.append(handleTextProviderRequest(textProviderRequest, tree));
-                parsing = parsing.substring(endIndex + 1);
+    public static Component parseDialogueMessage(String rawMessage, DialogueTree tree) {
+        MutableComponent parsed = Component.empty();
+
+        decomposeString(rawMessage, (namespace, target) -> {
+            var provider = textComponentProviders.get(namespace);
+            if (provider != null) {
+                return provider.apply(target, tree);
             } else {
-                component.append(parsing);
-                parsing = "";
+                return null;
             }
-        }
-        return component;
+        }, parsed::append);
+
+        return parsed;
     }
 
     @Nullable
