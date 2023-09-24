@@ -39,57 +39,56 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
     private static final Map<ResourceLocation, DialogueTree> trees = new HashMap<>();
     private static final Map<String, BiFunction<String, DialogueTree, Component>> textComponentProviders = new HashMap<>();
-    private static final Map<String, Function<DialogueContext, Component>> contextProviders = new HashMap<String, Function<DialogueContext, Component>>();
+    private static final Map<String, Function<DialogueContext, Component>> contextProviders = new HashMap<>();
 
     private static final Map<ResourceLocation, Supplier<DialogueEffect>> effectDeserializers = new HashMap<>();
     private static final Map<ResourceLocation, Supplier<DialogueCondition>> conditionDeserializers = new HashMap<>();
 
-    private static final Function<DialogueContext, Component> playerNameProvider =
-            (context) -> context.getPlayer().getName();
+    private static Component playerNameProvider(DialogueContext context) {
+        return context.getPlayer().getName();
+    }
 
-    private static final Function<DialogueContext, Component> entityNameProvider =
-            (context) -> context.getSpeaker().getName();
+    private static Component entityNameProvider(DialogueContext context) {
+        return context.getSpeaker().getName();
+    }
 
-    private static final BiFunction<String, DialogueTree, Component> contextProvider =
-            (name, tree) -> {
-                if (contextProviders.containsKey(name)) {
-                    return DialogueContextComponent.create("mkchat.simple_context.msg", (context) ->
-                            Lists.newArrayList(contextProviders.get(name).apply(context)));
-                } else {
-                    return Component.literal(String.format("{context:%s}", name));
-                }
-            };
+    private static Component contextProvider(String name, DialogueTree tree) {
+        if (contextProviders.containsKey(name)) {
+            return DialogueContextComponent.create("mkchat.simple_context.msg", (context) ->
+                    Lists.newArrayList(contextProviders.get(name).apply(context)));
+        } else {
+            return Component.literal(String.format("{context:%s}", name));
+        }
+    }
 
-    private static final BiFunction<String, DialogueTree, Component> promptProvider =
-            (name, tree) -> {
-                DialoguePrompt prompt = tree.getPrompt(name);
-                if (prompt != null) {
-                    return prompt.getPromptLink();
-                } else {
-                    return Component.literal(String.format("{prompt:%s}", name));
-                }
-            };
+    private static Component promptProvider(String name, DialogueTree tree) {
+        DialoguePrompt prompt = tree.getPrompt(name);
+        if (prompt != null) {
+            return prompt.getPromptLink();
+        } else {
+            return Component.literal(String.format("{prompt:%s}", name));
+        }
+    }
 
-    private static final BiFunction<String, DialogueTree, Component> itemProvider =
-            (name, tree) -> {
-                ResourceLocation itemId = new ResourceLocation(name);
-                Item item = ForgeRegistries.ITEMS.getValue(itemId);
-                if (item != null) {
-                    return Component.translatable(item.getDescriptionId());
-                } else {
-                    return Component.literal(String.format("{item:%s}", name));
-                }
-            };
+    private static Component itemProvider(String name, DialogueTree tree) {
+        ResourceLocation itemId = new ResourceLocation(name);
+        Item item = ForgeRegistries.ITEMS.getValue(itemId);
+        if (item != null) {
+            return Component.translatable(item.getDescriptionId());
+        } else {
+            return Component.literal(String.format("{item:%s}", name));
+        }
+    }
 
     public static void dialogueSetup() {
         putEffectDeserializer(AddLevelEffect.effectTypeName, AddLevelEffect::new);
         putEffectDeserializer(AddFlag.effectTypeName, AddFlag::new);
         putConditionDeserializer(HasBoolFlagCondition.conditionTypeName, HasBoolFlagCondition::new);
-        putTextComponentProvider("context", contextProvider);
-        putTextComponentProvider("prompt", promptProvider);
-        putTextComponentProvider("item", itemProvider);
-        putContextArgProvider("player_name", playerNameProvider);
-        putContextArgProvider("entity_name", entityNameProvider);
+        putTextComponentProvider("context", DialogueManager::contextProvider);
+        putTextComponentProvider("prompt", DialogueManager::promptProvider);
+        putTextComponentProvider("item", DialogueManager::itemProvider);
+        putContextArgProvider("player_name", DialogueManager::playerNameProvider);
+        putContextArgProvider("entity_name", DialogueManager::entityNameProvider);
     }
 
     public static void putContextArgProvider(String typeName, Function<DialogueContext, Component> func) {
