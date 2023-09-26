@@ -1,28 +1,27 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
-public class DialogueContext {
-    private final LivingEntity speaker;
-    private final ServerPlayer player;
-    private final DialogueObject dialogueObject;
+public record DialogueContext(LivingEntity speaker, ServerPlayer player, DialogueObject dialogueObject) {
 
-    public DialogueContext(LivingEntity speaker, ServerPlayer player, DialogueObject dialogueObject) {
-        this.speaker = speaker;
-        this.player = player;
-        this.dialogueObject = dialogueObject;
+    public MutableComponent evaluate(Component message) {
+        return evaluate(speaker, message, this);
     }
 
-    public DialogueObject getDialogueObject() {
-        return dialogueObject;
-    }
+    public static MutableComponent evaluate(LivingEntity speaker, Component message, DialogueContext context) {
+        var ctx = DialogueComponentContents.createSigningContext(context);
+        CommandSourceStack sourceStack = speaker.createCommandSourceStack().withSigningContext(ctx);
 
-    public LivingEntity getSpeaker() {
-        return speaker;
-    }
-
-    public ServerPlayer getPlayer() {
-        return player;
+        try {
+            return ComponentUtils.updateForEntity(sourceStack, message, context.player(), 0);
+        } catch (CommandSyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -13,12 +14,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class DialogueUtils {
-    private static final double CHAT_RADIUS = 5.0;
 
-    public static void sendMessageToAllAround(MinecraftServer server, LivingEntity source,
-                                              Component message) {
+    public static void sendMessageToAllAround(LivingEntity speaker, Component message) {
+        if (speaker.getLevel() instanceof ServerLevel serverLevel) {
+            sendMessageToAllAround(serverLevel, speaker, message);
+        }
+    }
 
-        server.getPlayerList().getPlayers().forEach(sp -> {
+    public static void sendMessageToAllAround(ServerLevel serverLevel, LivingEntity source, Component message) {
+        serverLevel.players().forEach(sp -> {
             if (sp.distanceToSqr(source) < ChatConstants.CHAT_RADIUS_SQ) {
                 sp.sendSystemMessage(message);
             }

@@ -6,7 +6,6 @@ import com.chaosbuffalo.mkchat.dialogue.conditions.HasBoolFlagCondition;
 import com.chaosbuffalo.mkchat.dialogue.effects.AddFlag;
 import com.chaosbuffalo.mkchat.dialogue.effects.AddLevelEffect;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -48,19 +47,19 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
     private static final Map<ResourceLocation, Supplier<DialogueCondition>> conditionDeserializers = new HashMap<>();
 
     private static Component playerNameProvider(DialogueContext context) {
-        return context.getPlayer().getName();
+        return context.player().getName();
     }
 
     private static Component entityNameProvider(DialogueContext context) {
-        return context.getSpeaker().getName();
+        return context.speaker().getName();
     }
 
     private static Component contextProvider(String name, DialogueTree tree) {
-        if (contextProviders.containsKey(name)) {
-            return DialogueContextComponent.create("mkchat.simple_context.msg", (context) ->
-                    Lists.newArrayList(contextProviders.get(name).apply(context)));
+        var supplier = contextProviders.get(name);
+        if (supplier != null) {
+            return DialogueComponentContents.create(supplier);
         } else {
-            return Component.literal(String.format("{context:%s}", name));
+            return null;
         }
     }
 
@@ -69,7 +68,7 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
         if (prompt != null) {
             return prompt.getPromptLink();
         } else {
-            return Component.literal(String.format("{prompt:%s}", name));
+            return null;
         }
     }
 
@@ -79,7 +78,7 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
         if (item != null) {
             return Component.translatable(item.getDescriptionId());
         } else {
-            return Component.literal(String.format("{item:%s}", name));
+            return null;
         }
     }
 

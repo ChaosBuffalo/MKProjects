@@ -174,12 +174,11 @@ public class NpcDialogueHandler implements INpcDialogue {
         if (server == null)
             return;
 
-        Component hail = Component.literal("<")
-                .append(player.getDisplayName())
-                .append("> Hail, ")
-                .append(getEntity().getDisplayName());
+        Component body = Component.literal("Hail, ").append(getEntity().getDisplayName());
 
-        DialogueUtils.sendMessageToAllAround(player.getServer(), player, hail);
+        Component message = DialogueUtils.getSpeakerMessage(player, body);
+
+        DialogueUtils.sendMessageToAllAround(player, message);
     }
 
     @Override

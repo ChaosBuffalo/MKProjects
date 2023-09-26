@@ -27,7 +27,7 @@ public class ChatHandler {
         ServerPlayer player = event.getPlayer();
         if (player.getServer() != null) {
 
-            DialogueUtils.sendMessageToAllAround(player.getServer(), player, event.getMessage());
+            DialogueUtils.sendMessageToAllAround(player, event.getMessage());
 
             List<Mob> entities = player.getLevel().getEntitiesOfClass(Mob.class,
                     getChatBoundingBox(player, ChatConstants.NPC_CHAT_RADIUS),

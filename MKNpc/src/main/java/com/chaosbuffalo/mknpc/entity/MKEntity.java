@@ -424,7 +424,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             if (faction.hasFaction()) {
                 MKCore.getEntityData(target).ifPresent(entityData -> {
                     if (entityData.getStats().getTimer(faction.getBattlecryName()) <= 0) {
-                        DialogueUtils.sendMessageToAllAround(getServer(), this,
+                        DialogueUtils.sendMessageToAllAround(this,
                                 DialogueUtils.getSpeakerMessage(this, battlecry));
                         entityData.getStats().setTimer(faction.getBattlecryName(), BATTLECRY_COOLDOWN);
                     }

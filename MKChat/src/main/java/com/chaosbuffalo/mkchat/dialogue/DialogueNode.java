@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.OptionalDynamic;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -45,15 +44,9 @@ public class DialogueNode extends DialogueObject {
     }
 
     public MutableComponent getSpeakerMessage(LivingEntity speaker, ServerPlayer player) {
-        // Generate a string that looks like: "<speaker_name> {message}"
-        MutableComponent msg = Component.literal("<")
-                .append(speaker.getDisplayName())
-                .append("> ");
-
         DialogueContext context = new DialogueContext(speaker, player, this);
-
-        msg.append(DialogueContextComponent.evaluate(getMessage(), context));
-        return msg;
+        Component body = context.evaluate(getMessage());
+        return DialogueUtils.getSpeakerMessage(speaker, body);
     }
 
     public void sendMessage(ServerPlayer player, LivingEntity source) {
@@ -71,7 +64,7 @@ public class DialogueNode extends DialogueObject {
 
     private void sendMessage(ServerPlayer player, LivingEntity source, Component message) {
         if (player.getServer() != null) {
-            DialogueUtils.sendMessageToAllAround(player.getServer(), source, message);
+            DialogueUtils.sendMessageToAllAround(source, message);
             for (DialogueEffect effect : effects) {
                 effect.applyEffect(player, source, this);
             }
@@ -81,7 +74,7 @@ public class DialogueNode extends DialogueObject {
     public static <D> DataResult<DialogueNode> fromDynamic(Dynamic<D> dynamic) {
         Optional<String> name = decodeKey(dynamic);
         if (name.isEmpty()) {
-            return DataResult.error(() -> String.format("Failed to decode dialogue node id: %s", dynamic));
+            return DataResult.error(() -> "Failed to decode dialogue node id: " + dynamic);
         }
 
         DialogueNode prompt = new DialogueNode(name.get());
@@ -89,19 +82,13 @@ public class DialogueNode extends DialogueObject {
         if (prompt.isValid()) {
             return DataResult.success(prompt);
         }
-        return DataResult.error(() -> String.format("Unable to decode dialogue node: %s", name.get()));
-    }
-
-    public static <D> DialogueNode fromDynamicField(OptionalDynamic<D> dynamic) {
-        return dynamic.flatMap(DialogueNode::fromDynamic)
-                .resultOrPartial(DialogueUtils::throwParseException)
-                .orElseThrow(IllegalStateException::new);
+        return DataResult.error(() -> "Unable to decode dialogue node: " + name.get());
     }
 
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        if (effects.size() > 0) {
+        if (!effects.isEmpty()) {
             builder.put(ops.createString("effects"), ops.createList(effects.stream().map(x -> x.serialize(ops))));
         }
     }

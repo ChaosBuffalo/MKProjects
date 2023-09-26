@@ -1,12 +1,10 @@
 package com.chaosbuffalo.mknpc.dialogue;
 
 import com.chaosbuffalo.mkchat.MKChat;
-import com.chaosbuffalo.mkchat.dialogue.DialogueContextComponent;
 import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.IDialogueExtension;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
@@ -16,10 +14,8 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.GrantEntitlementEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.InterModComms;
 
-import java.util.Collections;
 import java.util.UUID;
 
 
@@ -31,18 +27,12 @@ public class NPCDialogueExtension implements IDialogueExtension {
     }
 
     private static Component notable(String name, DialogueTree tree) {
-        return DialogueContextComponent.create("mkchat.simple_context.msg", (context) -> {
-            return Collections.singletonList(ContentDB.tryGetPrimaryData()
-                    .map(x -> {
-                        NotableNpcEntry entry = x.getNotableNpc(UUID.fromString(name));
-                        if (entry != null) {
-                            return entry.getName();
-                        } else {
-                            return Component.literal("notable:" + name);
-                        }
-                    })
-                    .orElseGet(() -> Component.literal("notable:" + name)));
-        });
+        NotableNpcEntry entry = ContentDB.getPrimaryData().getNotableNpc(UUID.fromString(name));
+        if (entry != null) {
+            return entry.getName();
+        } else {
+            return null;
+        }
     }
 
     @Override
