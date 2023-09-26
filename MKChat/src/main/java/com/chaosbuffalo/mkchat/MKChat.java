@@ -5,8 +5,8 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
 import com.chaosbuffalo.mkchat.dialogue.IDialogueExtension;
 import com.chaosbuffalo.mkchat.init.ChatEntityTypes;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -37,6 +37,11 @@ public class MKChat {
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
         ChatCommands.register(event.getDispatcher());
+    }
+
+    @SubscribeEvent
+    public void addReloadListeners(AddReloadListenerEvent event) {
+        event.addListener(dialogueManager);
     }
 
     private void setup(final FMLCommonSetupEvent event) {

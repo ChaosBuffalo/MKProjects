@@ -18,10 +18,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -34,7 +30,6 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Mod.EventBusSubscriber(modid = MKChat.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class DialogueManager extends SimpleJsonResourceReloadListener {
     public static final String DEFINITION_FOLDER = "dialogues";
 
@@ -134,7 +129,6 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
 
     public DialogueManager() {
         super(GSON, DEFINITION_FOLDER);
-        MinecraftForge.EVENT_BUS.register(this);
     }
 
 
@@ -152,11 +146,6 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
                     new Dynamic<>(JsonOps.INSTANCE, entry.getValue()));
             trees.put(tree.getDialogueName(), tree);
         }
-    }
-
-    @SubscribeEvent
-    public void subscribeEvent(AddReloadListenerEvent event) {
-        event.addListener(this);
     }
 
     // Matches {namespace:target}, allowed chars [a-zA-Z0-9_-]
