@@ -5,9 +5,7 @@ import com.chaosbuffalo.mkchat.MKChat;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -29,7 +27,7 @@ public class DialogueUtils {
         });
     }
 
-    public static MutableComponent getSpeakerMessage(LivingEntity speaker, Component message) {
+    public static MutableComponent formatSpeakerMessage(LivingEntity speaker, Component message) {
         // Generate a string that looks like: "<speaker_name> {message}", doesn't have the dialogue node formatting
         MutableComponent msg = Component.literal("<")
                 .append(speaker.getDisplayName())

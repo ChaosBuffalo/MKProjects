@@ -176,7 +176,7 @@ public class NpcDialogueHandler implements INpcDialogue {
 
         Component body = Component.literal("Hail, ").append(getEntity().getDisplayName());
 
-        Component message = DialogueUtils.getSpeakerMessage(player, body);
+        Component message = DialogueUtils.formatSpeakerMessage(player, body);
 
         DialogueUtils.sendMessageToAllAround(player, message);
     }

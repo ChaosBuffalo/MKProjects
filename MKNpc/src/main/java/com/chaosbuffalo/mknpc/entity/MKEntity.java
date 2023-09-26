@@ -19,7 +19,6 @@ import com.chaosbuffalo.mkcore.sync.EntityUpdateEngine;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
-import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
@@ -425,7 +424,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
                 MKCore.getEntityData(target).ifPresent(entityData -> {
                     if (entityData.getStats().getTimer(faction.getBattlecryName()) <= 0) {
                         DialogueUtils.sendMessageToAllAround(this,
-                                DialogueUtils.getSpeakerMessage(this, battlecry));
+                                DialogueUtils.formatSpeakerMessage(this, battlecry));
                         entityData.getStats().setTimer(faction.getBattlecryName(), BATTLECRY_COOLDOWN);
                     }
                 });

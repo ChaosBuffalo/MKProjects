@@ -19,8 +19,7 @@ public class DialogueObject {
 
     public DialogueObject(String id, String rawMessage) {
         this.id = id;
-        this.rawMessage = rawMessage;
-        buildMessageSupplier();
+        setRawMessage(rawMessage);
     }
 
     public String getId() {

@@ -5,9 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.OptionalDynamic;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -35,8 +32,7 @@ public class DialogueResponse {
 
     public DialogueResponse copy() {
         DialogueResponse newResponse = new DialogueResponse(getResponseNodeId());
-        Tag nbt = serialize(NbtOps.INSTANCE);
-        newResponse.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt));
+        conditions.forEach(c -> newResponse.addCondition(c.copy()));
         return newResponse;
     }
 
@@ -59,8 +55,8 @@ public class DialogueResponse {
 
     public static <D> DataResult<DialogueResponse> fromDynamic(Dynamic<D> dynamic) {
         Optional<String> name = decodeKey(dynamic);
-        if (!name.isPresent()) {
-            return DataResult.error(() -> String.format("Failed to decode dialogue response id: %s", dynamic));
+        if (name.isEmpty()) {
+            return DataResult.error(() -> "Failed to decode dialogue response id: " + dynamic);
         }
 
         DialogueResponse resp = new DialogueResponse(name.get());
@@ -68,13 +64,7 @@ public class DialogueResponse {
         if (resp.isValid()) {
             return DataResult.success(resp);
         }
-        return DataResult.error(() -> String.format("Unable to decode dialogue response: %s", name.get()));
-    }
-
-    public static <D> DialogueResponse fromDynamicField(OptionalDynamic<D> dynamic) {
-        return dynamic.flatMap(DialogueResponse::fromDynamic)
-                .resultOrPartial(DialogueUtils::throwParseException)
-                .orElseThrow(IllegalStateException::new);
+        return DataResult.error(() -> "Unable to decode dialogue response: " + name.get());
     }
 
     private static <D> Optional<String> decodeKey(Dynamic<D> dynamic) {
@@ -93,7 +83,7 @@ public class DialogueResponse {
     public <D> D serialize(DynamicOps<D> ops) {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("responseNodeId"), ops.createString(responseNodeId));
-        if (conditions.size() > 0) {
+        if (!conditions.isEmpty()) {
             builder.put(ops.createString("conditions"),
                     ops.createList(conditions.stream().map(x -> x.serialize(ops))));
         }

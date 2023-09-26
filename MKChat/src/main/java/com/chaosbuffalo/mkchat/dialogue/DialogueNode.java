@@ -5,8 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,9 +27,8 @@ public class DialogueNode extends DialogueObject {
     }
 
     public DialogueNode copy() {
-        DialogueNode newNode = new DialogueNode(getId());
-        Tag nbt = serialize(NbtOps.INSTANCE);
-        newNode.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt));
+        DialogueNode newNode = new DialogueNode(getId(), getRawMessage());
+        effects.forEach(e -> newNode.addEffect(e.copy()));
         return newNode;
     }
 
@@ -46,7 +43,7 @@ public class DialogueNode extends DialogueObject {
     public MutableComponent getSpeakerMessage(LivingEntity speaker, ServerPlayer player) {
         DialogueContext context = new DialogueContext(speaker, player, this);
         Component body = context.evaluate(getMessage());
-        return DialogueUtils.getSpeakerMessage(speaker, body);
+        return DialogueUtils.formatSpeakerMessage(speaker, body);
     }
 
     public void sendMessage(ServerPlayer player, LivingEntity source) {

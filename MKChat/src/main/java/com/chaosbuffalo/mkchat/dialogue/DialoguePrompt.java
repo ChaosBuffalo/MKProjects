@@ -5,10 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.OptionalDynamic;
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -50,8 +47,7 @@ public class DialoguePrompt extends DialogueObject {
 
     public DialoguePrompt copy() {
         DialoguePrompt newPrompt = new DialoguePrompt(getId());
-        Tag nbt = serialize(NbtOps.INSTANCE);
-        newPrompt.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt));
+        responses.forEach(r -> newPrompt.addResponse(r.copy()));
         return newPrompt;
     }
 
@@ -135,13 +131,7 @@ public class DialoguePrompt extends DialogueObject {
         if (prompt.isValid()) {
             return DataResult.success(prompt);
         }
-        return DataResult.error(() -> String.format("Unable to decode dialogue prompt: %s", nameResult.get()));
-    }
-
-    public static <D> DialoguePrompt fromDynamicField(OptionalDynamic<D> dynamic) {
-        return dynamic.flatMap(DialoguePrompt::fromDynamic)
-                .resultOrPartial(DialogueUtils::throwParseException)
-                .orElseThrow(IllegalStateException::new);
+        return DataResult.error(() -> "Unable to decode dialogue prompt: " + nameResult.get());
     }
 
     @Override
@@ -149,7 +139,7 @@ public class DialoguePrompt extends DialogueObject {
         super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("triggerPhrase"), ops.createString(triggerPhrase));
         builder.put(ops.createString("suggestedText"), ops.createString(suggestionFillText));
-        if (responses.size() > 0) {
+        if (!responses.isEmpty()) {
             builder.put(ops.createString("responses"), ops.createList(responses.stream().map(x -> x.serialize(ops))));
         }
     }

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.dialogue;
 
+import com.chaosbuffalo.mkchat.ChatRegistries;
 import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
@@ -38,21 +39,23 @@ public class NPCDialogueExtension implements IDialogueExtension {
     @Override
     public void registerDialogueExtension() {
         MKNpc.LOGGER.info("Registering MKNpc Dialogue Extension");
-        DialogueManager.putEffectDeserializer(OpenLearnAbilitiesEffect.effectTypeName, OpenLearnAbilitiesEffect::new);
-        DialogueManager.putConditionDeserializer(OnQuestCondition.conditionTypeName, OnQuestCondition::new);
-        DialogueManager.putConditionDeserializer(OnQuestChainCondition.conditionTypeName, OnQuestChainCondition::new);
-        DialogueManager.putConditionDeserializer(PendingGenerationCondition.conditionTypeName, PendingGenerationCondition::new);
-        DialogueManager.putConditionDeserializer(HasGeneratedQuestsCondition.conditionTypeName, HasGeneratedQuestsCondition::new);
-        DialogueManager.putEffectDeserializer(AdvanceQuestChainEffect.effectTypeName, AdvanceQuestChainEffect::new);
-        DialogueManager.putEffectDeserializer(StartQuestChainEffect.effectTypeName, StartQuestChainEffect::new);
-        DialogueManager.putEffectDeserializer(ObjectiveCompleteEffect.effectTypeName, ObjectiveCompleteEffect::new);
-        DialogueManager.putConditionDeserializer(HasWeaponInHandCondition.conditionTypeName, HasWeaponInHandCondition::new);
-        DialogueManager.putConditionDeserializer(HasSpentTalentPointsCondition.conditionTypeName, HasSpentTalentPointsCondition::new);
-        DialogueManager.putEffectDeserializer(GrantEntitlementEffect.effectTypeName, GrantEntitlementEffect::new);
-        DialogueManager.putConditionDeserializer(HasTrainedAbilitiesCondition.conditionTypeName, HasTrainedAbilitiesCondition::new);
-        DialogueManager.putConditionDeserializer(ObjectivesCompleteCondition.conditionTypeName, ObjectivesCompleteCondition::new);
-        DialogueManager.putConditionDeserializer(HasEntitlementCondition.conditionTypeName, HasEntitlementCondition::new);
-        DialogueManager.putConditionDeserializer(CanStartQuestCondition.conditionTypeName, CanStartQuestCondition::new);
-        DialogueManager.putTextComponentProvider("notable", NPCDialogueExtension::notable);
+        ChatRegistries.putEffectDeserializer(OpenLearnAbilitiesEffect.effectTypeName, OpenLearnAbilitiesEffect::new);
+        ChatRegistries.putEffectDeserializer(AdvanceQuestChainEffect.effectTypeName, AdvanceQuestChainEffect::new);
+        ChatRegistries.putEffectDeserializer(StartQuestChainEffect.effectTypeName, StartQuestChainEffect::new);
+        ChatRegistries.putEffectDeserializer(ObjectiveCompleteEffect.effectTypeName, ObjectiveCompleteEffect::new);
+        ChatRegistries.putEffectDeserializer(GrantEntitlementEffect.effectTypeName, GrantEntitlementEffect::new);
+
+        ChatRegistries.putConditionDeserializer(OnQuestCondition.conditionTypeName, OnQuestCondition::new);
+        ChatRegistries.putConditionDeserializer(OnQuestChainCondition.conditionTypeName, OnQuestChainCondition::new);
+        ChatRegistries.putConditionDeserializer(PendingGenerationCondition.conditionTypeName, PendingGenerationCondition::new);
+        ChatRegistries.putConditionDeserializer(HasGeneratedQuestsCondition.conditionTypeName, HasGeneratedQuestsCondition::new);
+        ChatRegistries.putConditionDeserializer(HasWeaponInHandCondition.conditionTypeName, HasWeaponInHandCondition::new);
+        ChatRegistries.putConditionDeserializer(HasSpentTalentPointsCondition.conditionTypeName, HasSpentTalentPointsCondition::new);
+        ChatRegistries.putConditionDeserializer(HasTrainedAbilitiesCondition.conditionTypeName, HasTrainedAbilitiesCondition::new);
+        ChatRegistries.putConditionDeserializer(ObjectivesCompleteCondition.conditionTypeName, ObjectivesCompleteCondition::new);
+        ChatRegistries.putConditionDeserializer(HasEntitlementCondition.conditionTypeName, HasEntitlementCondition::new);
+        ChatRegistries.putConditionDeserializer(CanStartQuestCondition.conditionTypeName, CanStartQuestCondition::new);
+
+        ChatRegistries.putTextComponentProvider("notable", NPCDialogueExtension::notable);
     }
 }

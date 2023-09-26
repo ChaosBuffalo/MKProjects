@@ -45,14 +45,14 @@ public class MKChat {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        DialogueManager.dialogueSetup();
+        ChatRegistries.setup();
     }
 
     private void processIMC(final InterModProcessEvent event) {
-        MKChat.LOGGER.info("MKChat.processIMC");
+        MKChat.LOGGER.debug("MKChat.processIMC");
         event.getIMCStream().forEach(m -> {
             if (m.method().equals(REGISTER_DIALOGUE_EXTENSION)) {
-                MKChat.LOGGER.info("IMC register dialogue extension from mod {} {}", m.senderModId(),
+                MKChat.LOGGER.debug("IMC register dialogue extension from mod {} {}", m.senderModId(),
                         m.method());
                 IDialogueExtension ext = (IDialogueExtension) m.messageSupplier().get();
                 ext.registerDialogueExtension();

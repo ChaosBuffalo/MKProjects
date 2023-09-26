@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkchat.dialogue.effects;
 
-import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
+import com.chaosbuffalo.mkchat.ChatRegistries;
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkcore.serialization.IDynamicMapTypedSerializer;
 import com.mojang.serialization.DataResult;
@@ -41,13 +41,13 @@ public abstract class DialogueEffect implements IDynamicMapTypedSerializer {
     @Nonnull
     public static <D> DataResult<DialogueEffect> fromDynamic(Dynamic<D> dynamic) {
         Optional<ResourceLocation> type = getType(dynamic);
-        if (!type.isPresent()) {
-            return DataResult.error(() -> String.format("Failed to decode dialogue effect id: %s", dynamic));
+        if (type.isEmpty()) {
+            return DataResult.error(() -> "Failed to decode dialogue effect id: " + dynamic);
         }
 
-        DialogueEffect effect = DialogueManager.getDialogueEffect(type.get());
+        DialogueEffect effect = ChatRegistries.createDialogueEffect(type.get());
         if (effect == null) {
-            return DataResult.error(() -> String.format("Unable to decode dialogue effect: %s", type.get()));
+            return DataResult.error(() -> "Unable to decode dialogue effect: " + type.get());
         }
         effect.deserialize(dynamic);
         return DataResult.success(effect);

@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkchat.dialogue.conditions;
 
+import com.chaosbuffalo.mkchat.ChatRegistries;
 import com.chaosbuffalo.mkchat.MKChat;
-import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
 import com.chaosbuffalo.mkcore.serialization.IDynamicMapTypedSerializer;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
@@ -67,12 +67,12 @@ public abstract class DialogueCondition implements IDynamicMapTypedSerializer {
     public static <D> DataResult<DialogueCondition> fromDynamic(Dynamic<D> dynamic) {
         Optional<ResourceLocation> type = getType(dynamic);
         if (type.isEmpty()) {
-            return DataResult.error(() -> String.format("Failed to decode dialogue condition id: %s", dynamic));
+            return DataResult.error(() -> "Failed to decode dialogue condition id: " + dynamic);
         }
 
-        DialogueCondition cond = DialogueManager.getDialogueCondition(type.get());
+        DialogueCondition cond = ChatRegistries.createDialogueCondition(type.get());
         if (cond == null) {
-            return DataResult.error(() -> String.format("Unable to decode dialogue condition: %s", type.get()));
+            return DataResult.error(() -> "Unable to decode dialogue condition: " + type.get());
         }
         cond.deserialize(dynamic);
         return DataResult.success(cond);
