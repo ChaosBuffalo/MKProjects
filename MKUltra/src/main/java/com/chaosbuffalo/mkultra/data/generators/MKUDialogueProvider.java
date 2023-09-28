@@ -29,27 +29,31 @@ public class MKUDialogueProvider extends DialogueProvider {
     }
 
     private DialogueTree getAlphaMovePrompt() {
-        DialogueTree tree = new DialogueTree(new ResourceLocation(MKUltra.MODID, "open_abilities"));
-        DialogueNode open_training = new DialogueNode("open_training", "Let me see what I can teach you.");
-        open_training.addEffect(new OpenLearnAbilitiesEffect());
-        tree.addNode(open_training);
+        var treeBuilder = DialogueTree.builder(new ResourceLocation(MKUltra.MODID, "open_abilities"));
 
-        DialoguePrompt hail = new DialoguePrompt("hail", "", "", "")
-                .addResponse(new DialogueResponse("root"));
+        DialogueNode open = treeBuilder.newNode("open_training")
+                .text("Let me see what I can teach you.")
+                .effect(new OpenLearnAbilitiesEffect())
+                .build();
 
-        DialoguePrompt needTraining =
-                new DialoguePrompt("need_training", "need training", "I need training.", "need training?")
-                        .addResponse(new DialogueResponse(open_training));
+        DialoguePrompt need = treeBuilder.newPrompt("need_training")
+                .trigger("need training")
+                .suggest("I need training.")
+                .highlight("need training?")
+                .respondWith(open)
+                .build();
 
-        DialogueNode root = new DialogueNode("root", String.format("Hello %s, welcome to the MKU alpha. Do you %s",
-                DialogueContexts.PLAYER_NAME_CONTEXT, needTraining.getPromptEmbed()));
-        tree.addNode(root);
+        DialogueNode root = treeBuilder.newNode("root")
+                .text("Hello ", PLAYER, ", welcome to the MKU alpha. Do you ").prompt(need)
+                .build();
 
-        tree.addPrompt(needTraining);
-        tree.addPrompt(hail);
-        tree.setHailPrompt(hail);
+        DialoguePrompt hail = treeBuilder.newPrompt("hail")
+                .respondWith(root)
+                .build();
 
-        return tree;
+        treeBuilder.hail(hail);
+
+        return treeBuilder.build();
     }
 
     private DialogueTree getNetherMageInitiateDefault() {
@@ -96,37 +100,36 @@ public class MKUDialogueProvider extends DialogueProvider {
     }
 
     private DialogueTree getClericAcolyteDefault() {
-        DialogueTree tree = new DialogueTree(new ResourceLocation(MKUltra.MODID, "intro_cleric_acolyte"));
+        var treeBuilder = DialogueTree.builder(new ResourceLocation(MKUltra.MODID, "intro_cleric_acolyte"));
 
-        DialogueNode open_training = new DialogueNode("open_training", "Let me see what I can teach you.");
-        open_training.addEffect(new OpenLearnAbilitiesEffect());
+        var openN = treeBuilder.newNode("open_training")
+                .text("Let me see what I can teach you.")
+                .effect(new OpenLearnAbilitiesEffect())
+                .build();
 
-        DialoguePrompt openTraining = new DialoguePrompt("open_training", "magical abilities", "what magical abilities?", "magical abilities");
-        DialogueResponse resp = new DialogueResponse(open_training);
-        resp.addCondition(new HasEntitlementCondition(MKUEntitlements.IntroClericTier1.get()));
-        openTraining.addResponse(new DialogueResponse(open_training));
+        var openP = treeBuilder.newPrompt("open_training")
+                .trigger("magical abilities")
+                .suggest("what magical abilities?")
+                .highlight("magical abilities")
+                .respondWith(openN)
+                .build();
 
-        DialogueNode hail_wo_ability = new DialogueNode("hail_wo", String.format("Greetings. I am %s, a humble servant of the Holy See of Solang. " +
-                "I've been sent here to investigate the undead uprising.", DialogueContexts.ENTITY_NAME_CONTEXT));
+        var hailWO = treeBuilder.newNode("hail_wo")
+                .text("Greetings. I am ", SPEAKER, ", a humble servant of the Holy See of Solang. ")
+                .text("I've been sent here to investigate the undead uprising.")
+                .build();
 
-        DialogueNode hail_w_ability = new DialogueNode("hail", String.format("Are you in need of some additional %s to aid your fight against the undead.",
-                openTraining.getPromptEmbed()));
+        var hailW = treeBuilder.newNode("hail_w")
+                .text("Are you in need of some additional ").prompt(openP).text(" to aid your fight against the undead.")
+                .build();
 
-        DialoguePrompt hailPrompt = new DialoguePrompt("hail", "", "", "");
-        DialogueResponse hailWoResp = new DialogueResponse(hail_wo_ability);
+        var hailP = treeBuilder.newPrompt("hail")
+                .respondWith(new DialogueResponse(hailW)
+                        .addCondition(new HasEntitlementCondition(MKUEntitlements.IntroClericTier1.get())))
+                .respondWith(hailWO)
+                .build();
 
-        DialogueResponse hailWResp = new DialogueResponse(hail_w_ability);
-        hailWResp.addCondition(new HasEntitlementCondition(MKUEntitlements.IntroClericTier1.get()));
-
-        hailPrompt.addResponse(hailWResp);
-        hailPrompt.addResponse(hailWoResp);
-
-        tree.addNode(hail_w_ability);
-        tree.addNode(hail_wo_ability);
-        tree.addNode(open_training);
-        tree.addPrompt(hailPrompt);
-        tree.addPrompt(openTraining);
-        tree.setHailPrompt(hailPrompt);
-        return tree;
+        treeBuilder.hail(hailP);
+        return treeBuilder.build();
     }
 }

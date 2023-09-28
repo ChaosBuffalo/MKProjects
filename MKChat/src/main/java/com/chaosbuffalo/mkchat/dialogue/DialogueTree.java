@@ -173,4 +173,38 @@ public class DialogueTree {
         newTree.internalMerge(other);
         return newTree;
     }
+
+    public static Builder builder(ResourceLocation treeId) {
+        return new Builder(treeId);
+    }
+
+    public static class Builder {
+        private final DialogueTree tree;
+
+        public Builder(ResourceLocation treeId) {
+            tree = new DialogueTree(treeId);
+        }
+
+        public DialogueNode.Builder newNode(String nodeId) {
+            return DialogueNode.builder(nodeId).onBuild(tree::addNode);
+        }
+
+        public Builder addNode(DialogueNode node) {
+            tree.addNode(node);
+            return this;
+        }
+
+        public DialoguePrompt.Builder newPrompt(String promptId) {
+            return DialoguePrompt.builder(promptId).onBuild(tree::addPrompt);
+        }
+
+        public Builder hail(DialoguePrompt prompt) {
+            tree.setHailPrompt(prompt);
+            return this;
+        }
+
+        public DialogueTree build() {
+            return tree;
+        }
+    }
 }

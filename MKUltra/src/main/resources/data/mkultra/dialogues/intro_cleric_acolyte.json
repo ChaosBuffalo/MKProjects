@@ -6,6 +6,10 @@
       "message": "Greetings. I am {context:entity_name}, a humble servant of the Holy See of Solang. I've been sent here to investigate the undead uprising."
     },
     {
+      "id": "hail_w",
+      "message": "Are you in need of some additional {prompt:open_training} to aid your fight against the undead."
+    },
+    {
       "effects": [
         {
           "dialogueEffectType": "mknpc:open_learn_abilities"
@@ -13,10 +17,6 @@
       ],
       "id": "open_training",
       "message": "Let me see what I can teach you."
-    },
-    {
-      "id": "hail",
-      "message": "Are you in need of some additional {prompt:open_training} to aid your fight against the undead."
     }
   ],
   "prompts": [
@@ -43,7 +43,7 @@
               "invert": false
             }
           ],
-          "responseNodeId": "hail"
+          "responseNodeId": "hail_w"
         },
         {
           "responseNodeId": "hail_wo"

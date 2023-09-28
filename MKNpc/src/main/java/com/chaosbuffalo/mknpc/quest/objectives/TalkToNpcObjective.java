@@ -111,8 +111,7 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         DialogueTree specializedTree = tree.copy();
         for (DialogueNode node : specializedTree.getNodes().values()) {
             for (DialogueEffect effect : node.getEffects()) {
-                if (effect instanceof IReceivesChainId) {
-                    IReceivesChainId advEffect = (IReceivesChainId) effect;
+                if (effect instanceof IReceivesChainId advEffect) {
                     advEffect.setChainId(questChain.getQuestId());
                 }
             }
@@ -121,8 +120,8 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         for (DialoguePrompt prompt : specializedTree.getPrompts().values()) {
             for (DialogueResponse resp : prompt.getResponses()) {
                 for (DialogueCondition condition : resp.getConditions()) {
-                    if (condition instanceof IReceivesChainId) {
-                        ((IReceivesChainId) condition).setChainId(questChain.getQuestId());
+                    if (condition instanceof IReceivesChainId receiver) {
+                        receiver.setChainId(questChain.getQuestId());
                     }
                 }
                 resp.addCondition(new OnQuestCondition(questChain.getQuestId(), quest.getQuestName()));

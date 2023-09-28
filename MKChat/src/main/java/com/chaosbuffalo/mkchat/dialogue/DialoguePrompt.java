@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class DialoguePrompt extends DialogueObject {
@@ -156,5 +157,63 @@ public class DialoguePrompt extends DialogueObject {
         responses.clear();
         dynamic.get("responses").asList(DialogueResponse::fromDynamic)
                 .forEach(dr -> dr.resultOrPartial(DialogueUtils::throwParseException).ifPresent(responses::add));
+    }
+
+    public static Builder builder(String promptId) {
+        return new Builder(promptId);
+    }
+
+    private void validate() {
+        if (!getSuggestion().contains(getTriggerPhrase())) {
+            throw new DialogueElementMissingException(String.format("Prompt '%s' failed to validate: Trigger '%s' was " +
+                    "not found in suggestion '%s'", getId(), getTriggerPhrase(), getSuggestion()));
+        }
+    }
+
+    public static class Builder {
+        private final DialoguePrompt prompt;
+        private Consumer<DialoguePrompt> onBuild;
+
+        public Builder(String promptId) {
+            prompt = new DialoguePrompt(promptId);
+        }
+
+        public Builder onBuild(Consumer<DialoguePrompt> callback) {
+            onBuild = callback;
+            return this;
+        }
+
+        public DialoguePrompt build() {
+            prompt.validate();
+            if (onBuild != null) {
+                onBuild.accept(prompt);
+            }
+            return prompt;
+        }
+
+        public Builder trigger(String trigger) {
+            prompt.triggerPhrase = trigger;
+            return this;
+        }
+
+        public Builder suggest(String suggestion) {
+            prompt.suggestionFillText = suggestion;
+            return this;
+        }
+
+        public Builder highlight(String text) {
+            prompt.setRawMessage(text);
+            return this;
+        }
+
+        public Builder respondWith(DialogueResponse response) {
+            prompt.addResponse(response);
+            return this;
+        }
+
+        public Builder respondWith(DialogueNode response) {
+            prompt.addResponse(new DialogueResponse(response));
+            return this;
+        }
     }
 }

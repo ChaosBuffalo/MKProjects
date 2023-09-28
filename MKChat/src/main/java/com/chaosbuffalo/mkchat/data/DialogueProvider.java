@@ -15,6 +15,9 @@ import java.util.concurrent.CompletableFuture;
 
 public abstract class DialogueProvider extends MKDataProvider {
 
+    protected static final String PLAYER = DialogueContexts.PLAYER_NAME_CONTEXT;
+    protected static final String SPEAKER = DialogueContexts.ENTITY_NAME_CONTEXT;
+
     public DialogueProvider(DataGenerator generator, String modId) {
         super(generator, modId, "Dialogue");
     }

@@ -11,19 +11,25 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class DialogueNode extends DialogueObject {
     private final List<DialogueEffect> effects;
 
     public DialogueNode(String nodeId, String rawMessage) {
-        super(nodeId, rawMessage);
-        this.effects = new ArrayList<>();
+        this(nodeId, rawMessage, new ArrayList<>());
     }
 
     public DialogueNode(String nodeId) {
         this(nodeId, EMPTY_MSG);
+    }
+
+    private DialogueNode(String nodeId, String rawMessage, List<DialogueEffect> effects) {
+        super(nodeId, rawMessage);
+        this.effects = effects;
     }
 
     public DialogueNode copy() {
@@ -97,5 +103,64 @@ public class DialogueNode extends DialogueObject {
         dynamic.get("effects")
                 .asList(DialogueEffect::fromDynamic)
                 .forEach(dr -> dr.resultOrPartial(DialogueUtils::throwParseException).ifPresent(effects::add));
+    }
+
+    public static Builder builder(String nodeId) {
+        return new Builder(nodeId);
+    }
+
+    public static class Builder {
+        private final String nodeId;
+        private final StringBuilder builder;
+        private final List<DialogueEffect> effects;
+        private Consumer<DialogueNode> onBuild;
+
+        public Builder(String nodeId) {
+            this.nodeId = nodeId;
+            builder = new StringBuilder(128);
+            effects = new ArrayList<>();
+        }
+
+        public Builder onBuild(Consumer<DialogueNode> callback) {
+            onBuild = callback;
+            return this;
+        }
+
+        public Builder effect(DialogueEffect effect) {
+            effects.add(effect);
+            return this;
+        }
+
+        public Builder text(String text) {
+            builder.append(text);
+            return this;
+        }
+
+        public Builder text(String... text) {
+            return text(Arrays.asList(text));
+        }
+
+        public Builder text(List<String> text) {
+            text.forEach(this::text);
+            return this;
+        }
+
+        public Builder context(String text) {
+            builder.append(text);
+            return this;
+        }
+
+        public Builder prompt(DialoguePrompt prompt) {
+            builder.append(prompt.getPromptEmbed());
+            return this;
+        }
+
+        public DialogueNode build() {
+            DialogueNode newNode = new DialogueNode(nodeId, builder.toString(), effects);
+            if (onBuild != null) {
+                onBuild.accept(newNode);
+            }
+            return newNode;
+        }
     }
 }
