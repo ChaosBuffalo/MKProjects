@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkweapons.capabilities;
+package com.chaosbuffalo.mkcore.capabilities;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -9,25 +9,25 @@ import net.minecraftforge.common.util.LazyOptional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public abstract class ThirdPartyCapProvider<CapTarget, CapType> implements ICapabilitySerializable<CompoundTag> {
+public abstract class SingleCapabilityProvider<CapTarget, CapType> implements ICapabilitySerializable<CompoundTag> {
     protected final CapType data;
     private final LazyOptional<CapType> capOpt;
 
-    public ThirdPartyCapProvider(CapTarget attached) {
-        this.data = this.makeData(attached);
-        this.capOpt = LazyOptional.of(() -> this.data);
+    public SingleCapabilityProvider(CapTarget attached) {
+        data = makeData(attached);
+        capOpt = LazyOptional.of(() -> data);
     }
 
-    abstract CapType makeData(CapTarget var1);
+    protected abstract CapType makeData(CapTarget target);
 
-    abstract Capability<CapType> getCapability();
+    protected abstract Capability<CapType> getCapability();
 
     @Nonnull
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        return this.getCapability().orEmpty(cap, this.capOpt);
+        return getCapability().orEmpty(cap, capOpt);
     }
 
     public void invalidate() {
-        this.capOpt.invalidate();
+        capOpt.invalidate();
     }
 }

@@ -13,8 +13,6 @@ import java.util.List;
 
 public interface IArmorData extends INBTSerializable<CompoundTag> {
 
-    void attach(ItemStack itemStack);
-
     ItemStack getItemStack();
 
     List<IArmorEffect> getArmorEffects();

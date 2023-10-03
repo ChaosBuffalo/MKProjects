@@ -26,21 +26,17 @@ import java.util.Map;
 
 public class ArmorDataHandler implements IArmorData {
 
-    private ItemStack itemStack;
+    private final ItemStack itemStack;
     private final List<IArmorEffect> armorEffects;
     private final List<IArmorEffect> cachedArmorEffects;
     private final Map<EquipmentSlot, Multimap<Attribute, AttributeModifier>> modifiers = new HashMap<>();
     private boolean isCacheDirty;
 
-    public ArmorDataHandler() {
+    public ArmorDataHandler(ItemStack itemStack) {
+        this.itemStack = itemStack;
         armorEffects = new ArrayList<>();
         cachedArmorEffects = new ArrayList<>();
         isCacheDirty = true;
-    }
-
-    @Override
-    public void attach(ItemStack itemStack) {
-        this.itemStack = itemStack;
     }
 
     @Override
@@ -82,8 +78,7 @@ public class ArmorDataHandler implements IArmorData {
         newMods.putAll(modifiers);
         if (slot == getArmorItem().getType().getSlot()) {
             for (IArmorEffect armorEffect : getArmorEffects()) {
-                if (armorEffect instanceof ItemModifierEffect) {
-                    ItemModifierEffect modEffect = (ItemModifierEffect) armorEffect;
+                if (armorEffect instanceof ItemModifierEffect modEffect) {
                     modEffect.getModifiers().forEach(e -> newMods.put(e.getAttribute(), e.getModifier()));
                 }
             }
@@ -134,8 +129,8 @@ public class ArmorDataHandler implements IArmorData {
             ListTag effectList = nbt.getList("armor_effects", Tag.TAG_COMPOUND);
             for (Tag effectNBT : effectList) {
                 IItemEffect effect = ItemEffects.deserializeEffect(new Dynamic<>(NbtOps.INSTANCE, effectNBT));
-                if (effect instanceof IArmorEffect) {
-                    addArmorEffect((IArmorEffect) effect);
+                if (effect instanceof IArmorEffect armorEffect) {
+                    addArmorEffect(armorEffect);
                 } else {
                     MKWeapons.LOGGER.error("Failed to deserialize armor effect of type {} for item {}", effect.getTypeName(),
                             getItemStack());

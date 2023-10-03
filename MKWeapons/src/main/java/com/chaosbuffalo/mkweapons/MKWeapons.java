@@ -44,6 +44,7 @@ public class MKWeapons {
         modBus.addListener(this::clientSetup);
         modBus.addListener(this::processIMC);
         modBus.addListener(this::enqueueIMC);
+        modBus.addListener(WeaponsCapabilities::registerCapabilities);
         setupRegistries(modBus);
         weaponTypeManager = new WeaponTypeManager();
         lootTierManager = new LootTierManager();

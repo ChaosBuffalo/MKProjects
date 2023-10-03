@@ -2,11 +2,9 @@ package com.chaosbuffalo.mkcore;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import org.apache.commons.lang3.tuple.Pair;
 
-@Mod.EventBusSubscriber
 public class MKConfig {
 
     public static final Client CLIENT;

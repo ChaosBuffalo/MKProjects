@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class WeaponDataHandler implements IWeaponData {
 
-    private ItemStack itemStack;
+    private final ItemStack itemStack;
     private final List<IMeleeWeaponEffect> meleeWeaponEffects;
     private final List<IMeleeWeaponEffect> cachedMeleeWeaponEffects;
     private final List<IRangedWeaponEffect> rangedWeaponEffects;
@@ -39,18 +39,14 @@ public class WeaponDataHandler implements IWeaponData {
     private ResourceLocation ability;
     private boolean isCacheDirty;
 
-    public WeaponDataHandler() {
+    public WeaponDataHandler(ItemStack itemStack) {
+        this.itemStack = itemStack;
         meleeWeaponEffects = new ArrayList<>();
         cachedMeleeWeaponEffects = new ArrayList<>();
         rangedWeaponEffects = new ArrayList<>();
         cachedRangedWeaponEffects = new ArrayList<>();
         isCacheDirty = true;
         ability = MKCoreRegistry.INVALID_ABILITY;
-    }
-
-    @Override
-    public void attach(ItemStack itemStack) {
-        this.itemStack = itemStack;
     }
 
     @Override
