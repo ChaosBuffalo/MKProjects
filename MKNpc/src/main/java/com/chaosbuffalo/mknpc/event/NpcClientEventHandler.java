@@ -1,8 +1,11 @@
 package com.chaosbuffalo.mknpc.event;
 
+import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.init.CoreParticles;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.client.gui.screens.QuestPage;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -43,17 +46,17 @@ public class NpcClientEventHandler {
     }
 
     public static void handleInputEvent() {
-//        PlayerEntity player = Minecraft.getInstance().player;
-//        if (player == null)
-//            return;
-//
-//        MKPlayerData playerData = MKCore.getPlayerOrNull(player);
-//        if (playerData == null)
-//            return;
-//
-//        while (questMenuBind.isPressed()) {
-//            Minecraft.getInstance().displayGuiScreen(new QuestPage());
-//        }
+        Player player = Minecraft.getInstance().player;
+        if (player == null)
+            return;
+
+        MKPlayerData playerData = MKCore.getPlayerOrNull(player);
+        if (playerData == null)
+            return;
+
+        while (questMenuBind.consumeClick()) {
+            Minecraft.getInstance().setScreen(new QuestPage(playerData));
+        }
     }
 
     @SubscribeEvent
