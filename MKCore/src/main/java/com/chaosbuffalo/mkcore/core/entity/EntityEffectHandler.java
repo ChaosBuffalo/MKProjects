@@ -26,7 +26,7 @@ public class EntityEffectHandler {
         this.entityData = entityData;
     }
 
-    private class EffectSource {
+    public class EffectSource {
         private final UUID sourceId;
         protected final Map<MKEffect, MKActiveEffect> activeEffectMap = new HashMap<>();
 
@@ -156,11 +156,11 @@ public class EntityEffectHandler {
         }
 
         public boolean hasEffects() {
-            return activeEffectMap.size() > 0;
+            return !activeEffectMap.isEmpty();
         }
 
         public boolean isEmpty() {
-            return activeEffectMap.size() == 0;
+            return activeEffectMap.isEmpty();
         }
 
         public Stream<MKActiveEffect> effectsStream() {

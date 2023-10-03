@@ -59,7 +59,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
 
     @Override
     public boolean isDirty() {
-        return dirty.size() > 0;
+        return !dirty.isEmpty();
     }
 
     private ListTag gatherDirtyRemovals() {

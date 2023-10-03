@@ -91,7 +91,7 @@ public class QuestPanel extends MKLayout {
 
                 }
                 List<PlayerQuestReward> rewards = current.getQuestRewards();
-                if (rewards.size() > 0) {
+                if (!rewards.isEmpty()) {
                     MKText rewardName = new MKText(fontRenderer, Component.translatable("mknpc.gui.rewards.name").withStyle(ChatFormatting.BOLD));
                     rewardName.setColor(!isComplete ? 0xffffffff : 0x99ffffff);
                     questLayout.addWidget(rewardName);

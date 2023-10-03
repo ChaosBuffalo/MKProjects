@@ -221,7 +221,7 @@ public class AbilityTracker implements ISyncObject {
 
         @Override
         public boolean isDirty() {
-            return dirty.size() > 0;
+            return !dirty.isEmpty();
         }
 
         @Override

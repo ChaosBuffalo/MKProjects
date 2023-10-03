@@ -107,7 +107,7 @@ public class LearnAbilityPage extends AbilityPageBase {
             @Override
             public void onMouseHover(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
                 super.onMouseHover(mc, mouseX, mouseY, partialTicks);
-                if (requirementsTray != null && requirementsTray.getEvaluation() != null && requirementsTray.getEvaluation().getRequirements().size() > 0) {
+                if (requirementsTray != null && requirementsTray.getEvaluation() != null && !requirementsTray.getEvaluation().getRequirements().isEmpty()) {
                     if (getScreen() != null) {
                         getScreen().addPostRenderInstruction(new HoveringTextInstruction(
                                 I18n.get("mkcore.gui.character.unmet_req_tooltip"),

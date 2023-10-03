@@ -39,7 +39,7 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
     }
 
     public boolean isCurrentlyKnown() {
-        return sources.size() > 0;
+        return !sources.isEmpty();
     }
 
     public Set<AbilitySource> getSources() {

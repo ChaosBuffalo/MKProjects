@@ -70,7 +70,7 @@ public class Targeting {
             return TargetRelation.FRIEND;
         }
 
-        if (relationCallbacks.size() > 0) {
+        if (!relationCallbacks.isEmpty()) {
             for (TargetRelationCallback func : relationCallbacks) {
                 TargetRelation result = func.func.apply(source, target);
                 if (result != TargetRelation.UNHANDLED) {
