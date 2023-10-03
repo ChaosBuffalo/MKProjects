@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
-import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
@@ -64,16 +63,12 @@ public class UseAbilityGoal extends Goal {
     }
 
     public boolean canActivate() {
-        return entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY)
-                .map(entityData -> entityData.getAbilityExecutor().canActivateAbility(currentAbility))
-                .orElse(false);
+        return entity.getEntityDataCap().getAbilityExecutor().canActivateAbility(currentAbility);
     }
 
     public boolean canContinueToUse() {
         return ticksSinceSeenTarget < CAN_SEE_TIMEOUT &&
-                entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY)
-                        .map(entityData -> entityData.getAbilityExecutor().isCasting())
-                        .orElse(false) &&
+                entity.getEntityDataCap().getAbilityExecutor().isCasting() &&
                 entity.getBrain().getMemory(MKAbilityMemories.ABILITY_TARGET.get())
                         .map(tar -> tar.isAlive() && tar.is(target))
                         .orElse(false) &&
@@ -90,8 +85,7 @@ public class UseAbilityGoal extends Goal {
         }
         AbilityContext context = new BrainAbilityContext(entity);
         MKNpc.LOGGER.debug("ai {} casting {} on {}", entity, currentAbility.getAbilityId(), target);
-        entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY)
-                .ifPresent(entityData -> entityData.getAbilityExecutor().executeAbilityWithContext(currentAbility.getAbilityId(), context));
+        entity.getEntityDataCap().getAbilityExecutor().executeAbilityWithContext(currentAbility.getAbilityId(), context);
     }
 
     @Override
