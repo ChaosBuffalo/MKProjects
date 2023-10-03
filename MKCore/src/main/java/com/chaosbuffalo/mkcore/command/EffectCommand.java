@@ -38,7 +38,7 @@ public class EffectCommand {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
 
         Collection<MobEffectInstance> effects = player.getActiveEffects();
-        if (effects.size() > 0) {
+        if (!effects.isEmpty()) {
             ChatUtils.sendMessageWithBrackets(player, "Active MobEffects");
             for (MobEffectInstance instance : effects) {
                 ChatUtils.sendMessage(player, "%s: %d", ForgeRegistries.MOB_EFFECTS.getKey(instance.getEffect()), instance.getDuration());
@@ -48,7 +48,7 @@ public class EffectCommand {
         }
         MKCore.getPlayer(player).ifPresent(playerData -> {
             Collection<MKActiveEffect> mkeffects = playerData.getEffects().effects();
-            if (mkeffects.size() > 0) {
+            if (!mkeffects.isEmpty()) {
                 ChatUtils.sendMessageWithBrackets(player, "Active MKEffects");
                 for (MKActiveEffect instance : mkeffects) {
                     ChatUtils.sendMessage(player, "%s: %d %d", instance.getEffect().getId(), instance.getDuration(), instance.getStackCount());

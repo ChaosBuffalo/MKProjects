@@ -70,7 +70,7 @@ public class SyncGroup implements ISyncObject, ISyncNotifier {
     }
 
     private void writeUpdateRootTag(CompoundTag tag, CompoundTag filledRoot) {
-        if (nestedName != null && filledRoot.size() > 0) {
+        if (nestedName != null && !filledRoot.isEmpty()) {
             tag.put(nestedName, filledRoot);
         }
     }
@@ -91,7 +91,7 @@ public class SyncGroup implements ISyncObject, ISyncNotifier {
             dirty.stream()
                     .filter(ISyncObject::isDirty)
                     .forEach(c -> c.serializeUpdate(root));
-            if (root.size() > 0) {
+            if (!root.isEmpty()) {
                 writeUpdateRootTag(tag, root);
             }
             dirty.clear();

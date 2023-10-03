@@ -57,7 +57,7 @@ public class FactionGreetings implements IDynamicMapSerializer {
 
     public Optional<List<Component>> getGreetingsWithMembers(GreetingType type) {
         List<Component> greetings = getGreetingsForType(type);
-        return greetings.size() > 0 ? Optional.of(greetings) : Optional.empty();
+        return !greetings.isEmpty() ? Optional.of(greetings) : Optional.empty();
     }
 
     public FactionGreetings addGreeting(GreetingType type, Component greeting) {

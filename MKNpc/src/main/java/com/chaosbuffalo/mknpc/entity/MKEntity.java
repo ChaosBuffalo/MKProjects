@@ -842,7 +842,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             List<ThreatMapEntry> sorted = x.values().stream()
                     .sorted(Comparator.comparingDouble(ThreatMapEntry::getCurrentThreat))
                     .toList();
-            if (sorted.size() == 0) {
+            if (sorted.isEmpty()) {
                 return 0f;
             }
             return sorted.get(sorted.size() - 1).getCurrentThreat();

@@ -165,14 +165,14 @@ public class MKScrollView extends MKWidget {
     }
 
     public void centerContentX() {
-        if (getChildren().size() > 0) {
+        if (!getChildren().isEmpty()) {
             IMKWidget child = this.getChildren().getFirst();
             setOffsetX(getWidth() / 2.0 - child.getWidth() / 2.0);
         }
     }
 
     public void centerContentY() {
-        if (getChildren().size() > 0) {
+        if (!getChildren().isEmpty()) {
             IMKWidget child = this.getChildren().getFirst();
             setOffsetY(getHeight() / 2.0 - child.getHeight() / 2.0);
         }
@@ -339,7 +339,7 @@ public class MKScrollView extends MKWidget {
 
     @Nullable
     public IMKWidget getChild() {
-        if (getChildren().size() > 0) {
+        if (!getChildren().isEmpty()) {
             return this.getChildren().getFirst();
         } else {
             return null;
@@ -440,7 +440,7 @@ public class MKScrollView extends MKWidget {
 
     @Override
     public boolean addWidget(IMKWidget widget) {
-        if (getChildren().size() > 0) {
+        if (!getChildren().isEmpty()) {
             return false;
         }
         widget.setX(getX());

@@ -69,7 +69,7 @@ public class ThreatSensor extends Sensor<MKEntity> {
             entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_MAP.get(), threatMap);
             entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_LIST.get(), sortedThreat.stream()
                     .map(Map.Entry::getKey).collect(Collectors.toList()));
-            if (sortedThreat.size() > 0) {
+            if (!sortedThreat.isEmpty()) {
                 Map.Entry<LivingEntity, ThreatMapEntry> ent = sortedThreat.get(0);
                 if (!entityIn.getBrain().hasMemoryValue(MKMemoryModuleTypes.THREAT_TARGET.get())) {
                     entityIn.callForHelp(ent.getKey(), ent.getValue().getCurrentThreat());
