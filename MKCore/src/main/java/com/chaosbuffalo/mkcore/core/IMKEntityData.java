@@ -7,11 +7,12 @@ import com.chaosbuffalo.mkcore.sync.UpdateEngine;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-public interface IMKEntityData {
+public interface IMKEntityData extends INBTSerializable<CompoundTag> {
 
     @Nonnull
     LivingEntity getEntity();
@@ -36,11 +37,7 @@ public interface IMKEntityData {
 
     EntityEffectHandler getEffects();
 
-    CompoundTag serialize();
-
     EntityPetModule getPets();
-
-    void deserialize(CompoundTag nbt);
 
     void onJoinWorld();
 

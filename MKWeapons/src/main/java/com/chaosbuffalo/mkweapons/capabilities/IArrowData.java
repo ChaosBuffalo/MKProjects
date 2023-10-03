@@ -10,7 +10,5 @@ public interface IArrowData extends INBTSerializable<CompoundTag> {
 
     AbstractArrow getArrow();
 
-    void attach(AbstractArrow arrow);
-
     void setShootingWeapon(ItemStack shootingWeapon);
 }

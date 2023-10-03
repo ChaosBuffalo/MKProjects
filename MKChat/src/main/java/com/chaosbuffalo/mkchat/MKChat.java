@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkchat;
 
+import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
 import com.chaosbuffalo.mkchat.command.ChatCommands;
 import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
 import com.chaosbuffalo.mkchat.dialogue.IDialogueExtension;
@@ -28,6 +29,7 @@ public class MKChat {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         modBus.addListener(this::setup);
         modBus.addListener(this::processIMC);
+        modBus.addListener(ChatCapabilities::registerCapabilities);
         ChatEntityTypes.ENTITY_TYPES.register(modBus);
 
         MinecraftForge.EVENT_BUS.register(this);

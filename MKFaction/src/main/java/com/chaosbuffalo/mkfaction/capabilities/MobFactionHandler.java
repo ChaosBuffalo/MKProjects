@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkfaction.capabilities;
 
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
-import com.chaosbuffalo.mkfaction.faction.FactionGreetings;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.network.MobFactionAssignmentPacket;
 import com.chaosbuffalo.mkfaction.network.PacketHandler;
@@ -11,12 +10,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 public class MobFactionHandler implements IMobFaction {
     private final LivingEntity entity;
@@ -110,23 +107,6 @@ public class MobFactionHandler implements IMobFaction {
             setFactionNameInternal(new ResourceLocation(nbt.getString("factionName")));
         } else {
             setFactionNameInternal(MKFaction.INVALID_FACTION);
-        }
-    }
-
-    public static class Provider extends FactionCapabilities.Provider<LivingEntity, IMobFaction> {
-
-        public Provider(LivingEntity entity) {
-            super(entity);
-        }
-
-        @Override
-        IMobFaction makeData(LivingEntity attached) {
-            return new MobFactionHandler(attached);
-        }
-
-        @Override
-        Capability<IMobFaction> getCapability() {
-            return FactionCapabilities.MOB_FACTION_CAPABILITY;
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityManager;
+import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mkcore.client.gui.MKOverlay;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.command.MKCommand;
@@ -67,6 +68,7 @@ public class MKCore {
         modBus.addListener(this::modifyAttributesEvent);
         // Register the processIMC method for modloading
         modBus.addListener(this::processIMC);
+        modBus.addListener(CoreCapabilities::registerCapabilities);
         MKCoreRegistry.register(modBus);
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);

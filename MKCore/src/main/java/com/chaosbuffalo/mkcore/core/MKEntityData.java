@@ -100,22 +100,8 @@ public class MKEntityData implements IMKEntityData {
     }
 
     @Override
-    public CompoundTag serialize() {
-        CompoundTag tag = new CompoundTag();
-        tag.put("knowledge", knowledge.serialize());
-        tag.put("effects", effectHandler.serialize());
-        return tag;
-    }
-
-    @Override
     public EntityPetModule getPets() {
         return pets;
-    }
-
-    @Override
-    public void deserialize(CompoundTag tag) {
-        knowledge.deserialize(tag.getCompound("knowledge"));
-        effectHandler.deserialize(tag.getCompound("effects"));
     }
 
     @Override
@@ -127,5 +113,19 @@ public class MKEntityData implements IMKEntityData {
     public void attachUpdateEngine(UpdateEngine engine) {
         pets.getSyncComponent().attach(engine);
         stats.getSyncComponent().attach(engine);
+    }
+
+    @Override
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
+        tag.put("knowledge", knowledge.serialize());
+        tag.put("effects", effectHandler.serialize());
+        return tag;
+    }
+
+    @Override
+    public void deserializeNBT(CompoundTag nbt) {
+        knowledge.deserialize(nbt.getCompound("knowledge"));
+        effectHandler.deserialize(nbt.getCompound("effects"));
     }
 }

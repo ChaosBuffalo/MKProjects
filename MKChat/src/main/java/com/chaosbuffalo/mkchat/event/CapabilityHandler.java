@@ -1,9 +1,8 @@
 package com.chaosbuffalo.mkchat.event;
 
 import com.chaosbuffalo.mkchat.MKChat;
-import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
-import com.chaosbuffalo.mkchat.capabilities.NpcDialogueProvider;
-import com.chaosbuffalo.mkchat.capabilities.PlayerDialogueProvider;
+import com.chaosbuffalo.mkchat.capabilities.*;
+import com.chaosbuffalo.mkcore.utils.CapabilityUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -17,13 +16,19 @@ public class CapabilityHandler {
 
     @SuppressWarnings("unused")
     @SubscribeEvent
-    public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> e) {
-        if (e.getObject() instanceof Player) {
-            e.addCapability(ChatCapabilities.PLAYER_DIALOGUE_CAP_ID,
-                    new PlayerDialogueProvider((Player) e.getObject()));
-        } else if (e.getObject() instanceof LivingEntity) {
-            e.addCapability(ChatCapabilities.NPC_DIALOGUE_CAP_ID,
-                    new NpcDialogueProvider((LivingEntity) e.getObject()));
+    public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> event) {
+        if (event.getObject() instanceof Player player) {
+            var provider = CapabilityUtils.provider(ChatCapabilities.PLAYER_DIALOGUE_CAPABILITY,
+                    PlayerDialogueHandler::new,
+                    player);
+
+            event.addCapability(ChatCapabilities.PLAYER_DIALOGUE_CAP_ID, provider);
+        } else if (event.getObject() instanceof LivingEntity living) {
+            var provider = CapabilityUtils.provider(ChatCapabilities.NPC_DIALOGUE_CAPABILITY,
+                    NpcDialogueHandler::new,
+                    living);
+
+            event.addCapability(ChatCapabilities.NPC_DIALOGUE_CAP_ID, provider);
         }
     }
 }

@@ -13,7 +13,6 @@ import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.InterModComms;
 
 import javax.annotation.Nullable;
@@ -161,22 +160,5 @@ public class PlayerFactionHandler implements IPlayerFaction {
             MKFactionMod.LOGGER.debug("Faction register persona by IMC");
             return factory;
         });
-    }
-
-    public static class Provider extends FactionCapabilities.Provider<Player, IPlayerFaction> {
-
-        public Provider(Player entity) {
-            super(entity);
-        }
-
-        @Override
-        IPlayerFaction makeData(Player attached) {
-            return new PlayerFactionHandler(attached);
-        }
-
-        @Override
-        Capability<IPlayerFaction> getCapability() {
-            return FactionCapabilities.PLAYER_FACTION_CAPABILITY;
-        }
     }
 }

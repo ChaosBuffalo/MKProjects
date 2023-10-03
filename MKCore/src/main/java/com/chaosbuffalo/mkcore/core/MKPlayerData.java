@@ -184,8 +184,8 @@ public class MKPlayerData implements IMKEntityData {
         if (death) {
             previous.onDeath();
         }
-        CompoundTag tag = previous.serialize();
-        deserialize(tag);
+        CompoundTag tag = previous.serializeNBT();
+        deserializeNBT(tag);
     }
 
     private void syncState() {
@@ -229,16 +229,6 @@ public class MKPlayerData implements IMKEntityData {
     }
 
     @Override
-    public CompoundTag serialize() {
-        CompoundTag tag = new CompoundTag();
-        tag.put("persona", personaManager.serialize());
-        tag.put("stats", getStats().serialize());
-        tag.put("editor", getEditor().serialize());
-        tag.put("effects", getEffects().serialize());
-        return tag;
-    }
-
-    @Override
     public EntityPetModule getPets() {
         return pets;
     }
@@ -249,7 +239,17 @@ public class MKPlayerData implements IMKEntityData {
 
 
     @Override
-    public void deserialize(CompoundTag tag) {
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
+        tag.put("persona", personaManager.serialize());
+        tag.put("stats", getStats().serialize());
+        tag.put("editor", getEditor().serialize());
+        tag.put("effects", getEffects().serialize());
+        return tag;
+    }
+
+    @Override
+    public void deserializeNBT(CompoundTag tag) {
         personaManager.deserialize(tag.getCompound("persona"));
         getStats().deserialize(tag.getCompound("stats"));
         getEditor().deserialize(tag.getCompound("editor"));

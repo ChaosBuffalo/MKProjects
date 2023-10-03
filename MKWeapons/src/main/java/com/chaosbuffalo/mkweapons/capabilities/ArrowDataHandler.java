@@ -8,10 +8,11 @@ import net.minecraft.world.item.ItemStack;
 
 public class ArrowDataHandler implements IArrowData {
 
-    private AbstractArrow arrow;
+    private final AbstractArrow arrow;
     private ItemStack shootingWeapon;
 
-    public ArrowDataHandler() {
+    public ArrowDataHandler(AbstractArrow arrow) {
+        this.arrow = arrow;
         shootingWeapon = ItemStack.EMPTY;
     }
 
@@ -28,17 +29,6 @@ public class ArrowDataHandler implements IArrowData {
     @Override
     public AbstractArrow getArrow() {
         return arrow;
-    }
-
-    @Override
-    public void attach(AbstractArrow arrow) {
-        this.arrow = arrow;
-//        if (arrow.getShooter() instanceof LivingEntity){
-//            ItemStack main = ((LivingEntity) arrow.getShooter()).getHeldItemMainhand();
-//            shootingWeapon = main;
-//        } else {
-//            shootingWeapon = ItemStack.EMPTY;
-//        }
     }
 
     @Override

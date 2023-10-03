@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
-import com.chaosbuffalo.mkcore.CoreCapabilities;
+import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;

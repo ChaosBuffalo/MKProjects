@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.network;
 
-import com.chaosbuffalo.mkcore.CoreCapabilities;
+import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;

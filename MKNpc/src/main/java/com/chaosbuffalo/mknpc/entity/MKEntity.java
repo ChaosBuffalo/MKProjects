@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
 import com.chaosbuffalo.mkchat.dialogue.DialogueUtils;
-import com.chaosbuffalo.mkcore.CoreCapabilities;
+import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
