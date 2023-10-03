@@ -66,11 +66,11 @@ public class MKBlockGoal extends Goal {
 
 
     public boolean isPoiseBroke() {
-        return MKCore.getEntityData(entity).map(cap -> cap.getStats().isPoiseBroke()).orElse(false);
+        return entity.getEntityDataCap().getStats().isPoiseBroke();
     }
 
     public boolean isOnCooldown() {
-        return MKCore.getEntityData(entity).map(cap -> cap.getStats().getTimer(BLOCK_TIMER) > 0).orElse(true);
+        return entity.getEntityDataCap().getStats().getTimer(BLOCK_TIMER) > 0;
     }
 
     public boolean maybeEndBecauseOfConsider() {
@@ -139,7 +139,7 @@ public class MKBlockGoal extends Goal {
     public void stop() {
         entity.stopUsingItem();
         target = null;
-        MKCore.getEntityData(entity).ifPresent(x -> x.getStats().setTimer(BLOCK_TIMER,
-                entity.getRandom().nextIntBetweenInclusive(entity.getBlockCooldown() / 2, entity.getBlockCooldown() * 3)));
+        int cd = entity.getRandom().nextIntBetweenInclusive(entity.getBlockCooldown() / 2, entity.getBlockCooldown() * 3);
+        entity.getEntityDataCap().getStats().setTimer(BLOCK_TIMER, cd);
     }
 }
