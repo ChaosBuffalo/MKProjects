@@ -1,14 +1,13 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
 import com.chaosbuffalo.mknpc.content.ContentDB;
-import com.chaosbuffalo.mknpc.inventories.PsuedoChestContainer;
+import com.chaosbuffalo.mknpc.inventories.PseudoChestContainer;
 import com.chaosbuffalo.mknpc.inventories.QuestChestInventory;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -197,6 +196,6 @@ public class ChestNpcDataHandler implements IChestNpcData {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int guiWindow, Inventory playerInventory, Player player) {
-        return PsuedoChestContainer.createGeneric9X3(guiWindow, playerInventory, getQuestInventoryForPlayer(player), entity);
+        return PseudoChestContainer.createGeneric9X3(guiWindow, playerInventory, getQuestInventoryForPlayer(player), entity);
     }
 }
