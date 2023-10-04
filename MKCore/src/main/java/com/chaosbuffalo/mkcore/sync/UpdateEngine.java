@@ -9,8 +9,8 @@ public abstract class UpdateEngine {
 
     public void addPublic(ISyncObject syncObject) {
         publicUpdater.add(syncObject);
-        if (syncObject instanceof SyncGroup) {
-            ((SyncGroup) syncObject).forceDirty();
+        if (syncObject instanceof SyncGroup group) {
+            group.forceDirty();
         }
     }
 

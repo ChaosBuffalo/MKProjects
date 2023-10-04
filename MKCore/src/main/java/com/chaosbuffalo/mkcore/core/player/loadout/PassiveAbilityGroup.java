@@ -72,7 +72,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
     }
 
     private void activateAllPassives(boolean willBeInWorld) {
-        if (!playerData.isServerSide())
+        if (playerData.isClientSide())
             return;
 
         // We come here during deserialization of the active persona, and it tries to apply effects which will crash the client because it's too early

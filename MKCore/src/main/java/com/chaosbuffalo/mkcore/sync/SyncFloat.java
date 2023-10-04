@@ -10,7 +10,7 @@ public class SyncFloat implements ISyncObject {
 
     public SyncFloat(String name, float value) {
         this.name = name;
-        set(value);
+        set(value, false);
     }
 
     public void set(float value) {

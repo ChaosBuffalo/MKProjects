@@ -10,13 +10,19 @@ public class SyncBool implements ISyncObject {
 
     public SyncBool(String name, boolean value) {
         this.name = name;
-        set(value);
+        set(value, false);
     }
 
     public void set(boolean value) {
+        set(value, true);
+    }
+
+    private void set(boolean value, boolean setDirty) {
         this.value = value;
-        this.dirty = true;
-        parentNotifier.notifyUpdate(this);
+        if (setDirty) {
+            this.dirty = true;
+            parentNotifier.notifyUpdate(this);
+        }
     }
 
     public boolean get() {

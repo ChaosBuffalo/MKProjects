@@ -116,6 +116,15 @@ public class MKPlayerData implements IMKEntityData {
     }
 
     @Override
+    public EntityPetModule getPets() {
+        return pets;
+    }
+
+    public PlayerEditorModule getEditor() {
+        return editorModule;
+    }
+
+    @Override
     public Optional<ParticleEffectInstanceTracker> getParticleEffectTracker() {
         return Optional.of(getAnimationModule().getEffectInstanceTracker());
     }
@@ -123,11 +132,6 @@ public class MKPlayerData implements IMKEntityData {
     @Override
     public PlayerEffectHandler getEffects() {
         return effectHandler;
-    }
-
-    @Override
-    public boolean isServerSide() {
-        return player instanceof ServerPlayer;
     }
 
     private void completeAbility(MKAbility ability) {
@@ -139,16 +143,13 @@ public class MKPlayerData implements IMKEntityData {
 
     @Override
     public void onJoinWorld() {
-        getPersonaManager().ensurePersonaLoaded();
+        getPersonaManager().onJoinWorld();
         getPersona().onJoinWorld();
         getStats().onJoinWorld();
         getAbilityExecutor().onJoinWorld();
         getEffects().onJoinWorld();
         if (isServerSide()) {
-            MKCore.LOGGER.info("server player joined world!");
             initialSync();
-        } else {
-            MKCore.LOGGER.info("client player joined world!");
         }
     }
 
@@ -158,26 +159,15 @@ public class MKPlayerData implements IMKEntityData {
     }
 
     public void update() {
-        getEntity().getCommandSenderWorld().getProfiler().push("MKPlayerData.update");
-
-        getEntity().getCommandSenderWorld().getProfiler().push("PlayerEffects.tick");
         getEffects().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("PlayerStats.tick");
         getStats().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("AbilityExecutor.tick");
         getAbilityExecutor().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("Animation.tick");
         getAnimationModule().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("PlayerCombat.tick");
         getCombatExtension().tick();
 
         if (isServerSide()) {
-            getEntity().getCommandSenderWorld().getProfiler().popPush("Updater.sync");
             syncState();
         }
-        getEntity().getCommandSenderWorld().getProfiler().pop();
-
-        getEntity().getCommandSenderWorld().getProfiler().pop();
     }
 
     public void clone(MKPlayerData previous, boolean death) {
@@ -227,16 +217,6 @@ public class MKPlayerData implements IMKEntityData {
     public <T extends IPersonaExtension> T getPersonaExtension(Class<T> clazz) {
         return getPersona().getExtension(clazz);
     }
-
-    @Override
-    public EntityPetModule getPets() {
-        return pets;
-    }
-
-    public PlayerEditorModule getEditor() {
-        return editorModule;
-    }
-
 
     @Override
     public CompoundTag serializeNBT() {
