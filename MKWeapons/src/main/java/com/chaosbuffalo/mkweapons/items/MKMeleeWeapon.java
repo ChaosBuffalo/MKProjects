@@ -117,9 +117,9 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
 
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        MKCore.getEntityData(attacker).ifPresent(cap -> {
-            if (!target.isBlocking()) {
-                if (cap.getCombatExtension().getEntityTicksSinceLastSwing() >= EntityUtils.getCooldownPeriod(attacker)) {
+        if (!target.isBlocking()) {
+            MKCore.getEntityData(attacker).ifPresent(attackerData -> {
+                if (attackerData.getCombatExtension().getAttackStrengthTicks() >= EntityUtils.getCooldownPeriod(attacker)) {
                     for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
                         effect.onHit(this, stack, target, attacker);
                     }
@@ -130,8 +130,9 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
                         }
                     }
                 }
-            }
-        });
+
+            });
+        }
 
         return super.hurtEnemy(stack, target, attacker);
     }

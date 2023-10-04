@@ -5,23 +5,18 @@ import com.chaosbuffalo.mkcore.GameConstants;
 public class CombatExtensionModule {
     private static final int COMBAT_TIMEOUT = GameConstants.TICKS_PER_SECOND * 8;
     private static final int PROJECTILE_COMBO_TIMEOUT = GameConstants.TICKS_PER_SECOND * 30;
-
-    private int ticksSinceSwing;
-    private int currentSwingCount;
-    private int currentProjectileHitCount;
-    private int ticksSinceProjectileHit;
-    private boolean midCombo;
-    private boolean midProjectileCombo;
     private final IMKEntityData entityData;
+    private int lastSwingHitTick;
+    private int currentSwingCount;
+    private int lastProjectileHitTick;
+    private int currentProjectileHitCount;
 
     public CombatExtensionModule(IMKEntityData entityData) {
         this.entityData = entityData;
-        ticksSinceSwing = 0;
+        lastSwingHitTick = 0;
         currentSwingCount = 0;
-        midCombo = false;
-        midProjectileCombo = false;
+        lastProjectileHitTick = 0;
         currentProjectileHitCount = 0;
-        ticksSinceProjectileHit = 0;
     }
 
     public IMKEntityData getEntityData() {
@@ -29,84 +24,69 @@ public class CombatExtensionModule {
     }
 
     public void tick() {
-        incrementTicksSinceSwing();
-        incrementTicksSinceProjectileHit();
-        if (midCombo && getTicksSinceSwing() >= COMBAT_TIMEOUT) {
+        if (isMidMeleeCombo() && getTicksSinceSwingHit() >= COMBAT_TIMEOUT) {
             setCurrentSwingCount(0);
-            midCombo = false;
         }
-        if (midProjectileCombo && ticksSinceProjectileHit >= PROJECTILE_COMBO_TIMEOUT) {
+        if (isMidProjectileCombo() && getTicksSinceProjectileHit() >= PROJECTILE_COMBO_TIMEOUT) {
             setCurrentProjectileHitCount(0);
-            midProjectileCombo = false;
         }
     }
 
-    public void setCurrentProjectileHitCount(int currentProjectileHitCount) {
-        this.currentProjectileHitCount = currentProjectileHitCount;
-    }
-
-    public void setCurrentSwingCount(int currentSwingCount) {
-        this.currentSwingCount = currentSwingCount;
-    }
-
-    protected void incrementTicksSinceSwing() {
-        ticksSinceSwing++;
-    }
-
-    public int getTicksSinceSwing() {
-        return ticksSinceSwing;
+    public int getTicksSinceSwingHit() {
+        return entityData.getEntity().tickCount - lastSwingHitTick;
     }
 
     public int getTicksSinceProjectileHit() {
-        return ticksSinceProjectileHit;
+        return entityData.getEntity().tickCount - lastProjectileHitTick;
     }
 
-    protected void incrementTicksSinceProjectileHit() {
-        ticksSinceProjectileHit++;
-    }
-
-    public void setEntityTicksSinceLastSwing(int newTicks) {
-        getEntityData().getEntity().attackStrengthTicker = newTicks;
-    }
-
-    public int getEntityTicksSinceLastSwing() {
+    public int getAttackStrengthTicks() {
         return getEntityData().getEntity().attackStrengthTicker;
     }
 
-    public void addEntityTicksSinceLastSwing(int toAdd) {
+    public void setAttackStrengthTicks(int newTicks) {
+        getEntityData().getEntity().attackStrengthTicker = newTicks;
+    }
+
+    public void increaseAttackStrengthTicks(int toAdd) {
         getEntityData().getEntity().attackStrengthTicker += toAdd;
     }
 
-    public void recordSwing() {
-        ticksSinceSwing = 0;
+    public void recordSwingHit() {
+        lastSwingHitTick = entityData.getEntity().tickCount;
         setCurrentSwingCount(getCurrentSwingCount() + 1);
-        midCombo = true;
     }
 
-    public void recordProjectileHit() {
-        midProjectileCombo = true;
-        setCurrentProjectileHitCount(getCurrentProjectileHitCount() + 1);
-        ticksSinceProjectileHit = 0;
-    }
-
-    public void projectileMiss() {
-        midProjectileCombo = false;
-        setCurrentProjectileHitCount(0);
-    }
-
-    public boolean isMidCombo() {
-        return midCombo;
+    public boolean isMidMeleeCombo() {
+        return getCurrentSwingCount() > 0;
     }
 
     public int getCurrentSwingCount() {
         return currentSwingCount;
     }
 
+    public void setCurrentSwingCount(int currentSwingCount) {
+        this.currentSwingCount = currentSwingCount;
+    }
+
     public int getCurrentProjectileHitCount() {
         return currentProjectileHitCount;
     }
 
+    public void setCurrentProjectileHitCount(int currentProjectileHitCount) {
+        this.currentProjectileHitCount = currentProjectileHitCount;
+    }
+
+    public void recordProjectileHit() {
+        lastProjectileHitTick = entityData.getEntity().tickCount;
+        setCurrentProjectileHitCount(getCurrentProjectileHitCount() + 1);
+    }
+
+    public void projectileMiss() {
+        setCurrentProjectileHitCount(0);
+    }
+
     public boolean isMidProjectileCombo() {
-        return midProjectileCombo;
+        return getCurrentProjectileHitCount() > 0;
     }
 }
