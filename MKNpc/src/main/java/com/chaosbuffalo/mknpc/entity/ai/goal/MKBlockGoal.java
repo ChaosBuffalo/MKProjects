@@ -60,7 +60,7 @@ public class MKBlockGoal extends Goal {
     public boolean shouldConsiderBlocking(LivingEntity target) {
         //FIXME: maybe tag our swords with the sword tag and use tags here
         return target.getMainHandItem().getItem() instanceof SwordItem && MKCore.getEntityData(target).map(
-                cap -> !target.isBlocking() && cap.getCombatExtension().getEntityTicksSinceLastSwing() >=
+                cap -> !target.isBlocking() && cap.getCombatExtension().getAttackStrengthTicks() >=
                         EntityUtils.getCooldownPeriod(target)).orElse(false);
     }
 

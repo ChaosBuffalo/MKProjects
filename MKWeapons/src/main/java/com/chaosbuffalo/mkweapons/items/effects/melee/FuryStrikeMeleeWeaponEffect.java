@@ -40,7 +40,7 @@ public class FuryStrikeMeleeWeaponEffect extends SwingMeleeWeaponEffect {
     public float modifyDamageDealt(float damage, IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, LivingEntity attacker) {
         return MKCore.getEntityData(attacker).map(cap -> {
             CombatExtensionModule combatModule = cap.getCombatExtension();
-            if (combatModule.isMidCombo()) {
+            if (combatModule.isMidMeleeCombo()) {
                 int hit = combatModule.getCurrentSwingCount() % getNumberOfHits();
                 double damageIncrease = 1.0 + hit * getPerHit();
                 return damageIncrease * damage;

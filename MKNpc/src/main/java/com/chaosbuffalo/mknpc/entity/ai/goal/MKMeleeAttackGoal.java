@@ -78,7 +78,7 @@ public class MKMeleeAttackGoal extends Goal {
 
         MKEntityData cap = entity.getEntityDataCap();
         CombatExtensionModule combat = cap.getCombatExtension();
-        combat.recordSwing();
+        combat.recordSwingHit();
         MinecraftForge.EVENT_BUS.post(new PostAttackEvent(cap));
         if (combat.getCurrentSwingCount() > 0 && combat.getCurrentSwingCount() % getComboCount() == 0) {
             entity.subtractFromTicksSinceLastSwing(getComboDelay());

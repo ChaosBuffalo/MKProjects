@@ -23,7 +23,7 @@ public class PlayerMixins {
     private void mkcore$postAttack(CallbackInfo ci) {
         Player player = (Player) (Object) this;
         MKCore.getEntityData(player).ifPresent(cap -> {
-            cap.getCombatExtension().recordSwing();
+            cap.getCombatExtension().recordSwingHit();
             MinecraftForge.EVENT_BUS.post(new PostAttackEvent(cap));
         });
     }
