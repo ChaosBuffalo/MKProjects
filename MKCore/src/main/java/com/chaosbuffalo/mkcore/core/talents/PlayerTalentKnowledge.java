@@ -38,10 +38,9 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
         addSyncPrivate(talentPoints);
         addSyncPrivate(totalTalentPoints);
         addSyncPrivate(talentXp);
-        if (!playerData.isServerSide()) {
+        if (playerData.isClientSide()) {
             addSyncPrivate(new ClientTreeSyncGroup());
-        }
-        if (playerData.isServerSide()) {
+        } else {
             for (TalentTreeDefinition def : MKCore.getTalentManager().getDefaultTrees()) {
                 if (!unlockTree(def.getTreeId())) {
                     MKCore.LOGGER.error("Failed to unlock default talent tree: {}", def.getTreeId());

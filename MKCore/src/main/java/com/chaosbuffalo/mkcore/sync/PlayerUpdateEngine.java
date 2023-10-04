@@ -23,8 +23,8 @@ public class PlayerUpdateEngine extends UpdateEngine {
     @Override
     public void addPrivate(ISyncObject syncObject) {
         privateUpdater.add(syncObject);
-        if (syncObject instanceof SyncGroup) {
-            ((SyncGroup) syncObject).forceDirty();
+        if (syncObject instanceof SyncGroup group) {
+            group.forceDirty();
         }
     }
 
@@ -57,7 +57,7 @@ public class PlayerUpdateEngine extends UpdateEngine {
 
     @Override
     public void syncUpdates() {
-        if (!playerData.isServerSide())
+        if (playerData.isClientSide())
             return;
 
         if (!readyForUpdates) {
@@ -67,13 +67,13 @@ public class PlayerUpdateEngine extends UpdateEngine {
 
         if (publicUpdater.isDirty()) {
             PlayerDataSyncPacket packet = getUpdateMessage(false);
-            MKCore.LOGGER.info("sending public dirty update {} for {}", packet, player);
+            MKCore.LOGGER.debug("sending public dirty update {} for {}", packet, player);
             PacketHandler.sendToTrackingAndSelf(packet, player);
         }
 
         if (privateUpdater.isDirty()) {
             PlayerDataSyncPacket packet = getUpdateMessage(true);
-            MKCore.LOGGER.info("sending private dirty update {} for {}", packet, player);
+            MKCore.LOGGER.debug("sending private dirty update {} for {}", packet, player);
             PacketHandler.sendMessage(packet, (ServerPlayer) player);
         }
     }
@@ -86,8 +86,9 @@ public class PlayerUpdateEngine extends UpdateEngine {
 
     @Override
     public void sendAll(ServerPlayer otherPlayer) {
-        if (!playerData.isServerSide())
+        if (playerData.isClientSide())
             return;
+
         CompoundTag tag = new CompoundTag();
         publicUpdater.serializeFull(tag);
         boolean privateUpdate = player == otherPlayer;
@@ -95,6 +96,7 @@ public class PlayerUpdateEngine extends UpdateEngine {
             privateUpdater.serializeFull(tag);
             readyForUpdates = true;
         }
+
         PlayerDataSyncPacket packet = new PlayerDataSyncPacket(player.getUUID(), tag, privateUpdate);
         MKCore.LOGGER.info("sending full sync {} for {} to {}", packet, player, otherPlayer);
         PacketHandler.sendMessage(packet, otherPlayer);

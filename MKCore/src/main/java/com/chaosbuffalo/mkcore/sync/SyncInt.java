@@ -10,13 +10,19 @@ public class SyncInt implements ISyncObject {
 
     public SyncInt(String name, int value) {
         this.name = name;
-        set(value);
+        set(value, false);
     }
 
     public void set(int value) {
+        set(value, true);
+    }
+
+    public void set(int value, boolean setDirty) {
         this.value = value;
-        this.dirty = true;
-        parentNotifier.notifyUpdate(this);
+        if (setDirty) {
+            this.dirty = true;
+            parentNotifier.notifyUpdate(this);
+        }
     }
 
     public void add(int value) {

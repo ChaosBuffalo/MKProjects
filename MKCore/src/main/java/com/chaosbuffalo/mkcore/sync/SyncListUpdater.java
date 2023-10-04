@@ -125,8 +125,7 @@ public class SyncListUpdater<T> implements ISyncObject {
     }
 
     public void deserializeStorage(Tag tag) {
-        if (tag instanceof ListTag) {
-            ListTag list = (ListTag) tag;
+        if (tag instanceof ListTag list) {
             deserializeFullList(list);
         }
     }

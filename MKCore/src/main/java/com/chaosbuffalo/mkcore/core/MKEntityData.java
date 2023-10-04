@@ -20,31 +20,21 @@ public class MKEntityData implements IMKEntityData {
     private final LivingEntity entity;
     private final AbilityExecutor abilityExecutor;
     private final EntityStats stats;
-    private final EntityAbilityKnowledge knowledge;
+    private final EntityAbilityKnowledge abilities;
     private final CombatExtensionModule combatExtensionModule;
     private final EntityEffectHandler effectHandler;
     private final EntityPetModule pets;
-
     @Nullable
     private ParticleEffectInstanceTracker instanceTracker = null;
 
     public MKEntityData(LivingEntity livingEntity) {
         entity = Objects.requireNonNull(livingEntity);
-        knowledge = new EntityAbilityKnowledge(this);
+        abilities = new EntityAbilityKnowledge(this);
         abilityExecutor = new AbilityExecutor(this);
         stats = new EntityStats(this);
         combatExtensionModule = new CombatExtensionModule(this);
         effectHandler = new EntityEffectHandler(this);
         pets = new EntityPetModule(this);
-    }
-
-    public void setInstanceTracker(ParticleEffectInstanceTracker instanceTracker) {
-        this.instanceTracker = instanceTracker;
-    }
-
-    @Override
-    public Optional<ParticleEffectInstanceTracker> getParticleEffectTracker() {
-        return Optional.ofNullable(instanceTracker);
     }
 
     @Nonnull
@@ -60,7 +50,7 @@ public class MKEntityData implements IMKEntityData {
 
     @Override
     public EntityAbilityKnowledge getAbilities() {
-        return knowledge;
+        return abilities;
     }
 
     @Override
@@ -78,25 +68,25 @@ public class MKEntityData implements IMKEntityData {
         return effectHandler;
     }
 
+    public void setInstanceTracker(@Nullable ParticleEffectInstanceTracker instanceTracker) {
+        this.instanceTracker = instanceTracker;
+    }
+
+    @Override
+    public Optional<ParticleEffectInstanceTracker> getParticleEffectTracker() {
+        return Optional.ofNullable(instanceTracker);
+    }
+
     @Override
     public void onJoinWorld() {
         getEffects().onJoinWorld();
     }
 
     public void update() {
-        getEntity().getCommandSenderWorld().getProfiler().push("MKEntityData.update");
-
-        getEntity().getCommandSenderWorld().getProfiler().push("EntityEffects.tick");
         getEffects().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("AbilityExecutor.tick");
         getAbilityExecutor().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("EntityStats.tick");
         getStats().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("EntityCombat.tick");
         getCombatExtension().tick();
-        getEntity().getCommandSenderWorld().getProfiler().pop();
-
-        getEntity().getCommandSenderWorld().getProfiler().pop();
     }
 
     @Override
@@ -118,14 +108,14 @@ public class MKEntityData implements IMKEntityData {
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-        tag.put("knowledge", knowledge.serialize());
+        tag.put("abilities", abilities.serialize());
         tag.put("effects", effectHandler.serialize());
         return tag;
     }
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
-        knowledge.deserialize(nbt.getCompound("knowledge"));
+        abilities.deserialize(nbt.getCompound("abilities"));
         effectHandler.deserialize(nbt.getCompound("effects"));
     }
 }

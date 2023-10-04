@@ -120,8 +120,8 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     }
 
     public void deactivate() {
-        onPersonaDeactivated();
         sync.detach(data.getUpdateEngine());
+        onPersonaDeactivated();
         data.onPersonaDeactivated();
         extensions.values().forEach(IPersonaExtension::onPersonaDeactivated);
     }
@@ -164,9 +164,7 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
 
     @Override
     public boolean deserialize(CompoundTag tag) {
-        if (tag.contains("personaId")) {
-            personaId = tag.getUUID("personaId");
-        }
+        personaId = tag.getUUID("personaId");
         abilities.deserialize(tag.getCompound("abilities"));
         talents.deserializeNBT(tag.get("talents"));
         entitlements.deserialize(tag.getCompound("entitlements"));
