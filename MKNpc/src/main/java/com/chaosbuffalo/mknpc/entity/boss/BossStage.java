@@ -145,7 +145,7 @@ public class BossStage {
         });
         options.clear();
         for (Optional<NpcDefinitionOption> option : newOptions) {
-            option.ifPresent(npcDefinitionOption -> options.add(npcDefinitionOption));
+            option.ifPresent(options::add);
         }
         dynamic.get("transitionParticles").asString().result().ifPresent(x -> transitionParticles = new ResourceLocation(x));
         dynamic.get("transitionSound").asString().result().ifPresent(x -> transitionSound = new ResourceLocation(x));

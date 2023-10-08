@@ -145,15 +145,13 @@ public class WeaponDataHandler implements IWeaponData {
         if (slot == EquipmentSlot.MAINHAND) {
             if (itemStack.getItem() instanceof MKMeleeWeapon) {
                 for (IMeleeWeaponEffect weaponEffect : getMeleeEffects()) {
-                    if (weaponEffect instanceof ItemModifierEffect) {
-                        ItemModifierEffect modEffect = (ItemModifierEffect) weaponEffect;
+                    if (weaponEffect instanceof ItemModifierEffect modEffect) {
                         modEffect.getModifiers().forEach(e -> newMods.put(e.getAttribute(), e.getModifier()));
                     }
                 }
             } else {
                 for (IRangedWeaponEffect weaponEffect : getRangedEffects()) {
-                    if (weaponEffect instanceof ItemModifierEffect) {
-                        ItemModifierEffect modEffect = (ItemModifierEffect) weaponEffect;
+                    if (weaponEffect instanceof ItemModifierEffect modEffect) {
                         modEffect.getModifiers().forEach(e -> newMods.put(e.getAttribute(), e.getModifier()));
                     }
                 }

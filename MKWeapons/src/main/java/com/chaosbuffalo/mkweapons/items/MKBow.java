@@ -116,8 +116,7 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
 
     @Override
     public void releaseUsing(ItemStack stack, Level worldIn, LivingEntity entityLiving, int timeLeft) {
-        if (entityLiving instanceof Player) {
-            Player player = (Player) entityLiving;
+        if (entityLiving instanceof Player player) {
             boolean doesntNeedAmmo = player.getAbilities().instabuild || EnchantmentHelper.getItemEnchantmentLevel(
                     Enchantments.INFINITY_ARROWS, stack) > 0;
             ItemStack ammoStack = player.getProjectile(stack);

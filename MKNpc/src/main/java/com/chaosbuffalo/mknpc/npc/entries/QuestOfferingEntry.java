@@ -61,8 +61,7 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
         DialogueTree specializedTree = definition.getStartQuestTree().copy();
         for (DialogueNode node : specializedTree.getNodes().values()) {
             for (DialogueEffect effect : node.getEffects()) {
-                if (effect instanceof IReceivesChainId) {
-                    IReceivesChainId advEffect = (IReceivesChainId) effect;
+                if (effect instanceof IReceivesChainId advEffect) {
                     advEffect.setChainId(buildResult.instance.getQuestId());
                 }
             }

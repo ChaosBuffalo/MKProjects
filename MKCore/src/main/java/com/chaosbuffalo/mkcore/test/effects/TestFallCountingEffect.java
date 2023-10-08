@@ -15,7 +15,7 @@ import java.util.UUID;
 
 public class TestFallCountingEffect extends MKEffect {
 
-    private final TypeToken<State> STATE = new TypeToken<State>() {
+    private final TypeToken<State> STATE = new TypeToken<>() {
     };
 
     public TestFallCountingEffect() {
