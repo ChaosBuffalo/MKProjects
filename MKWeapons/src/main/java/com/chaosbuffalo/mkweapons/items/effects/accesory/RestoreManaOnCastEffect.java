@@ -60,8 +60,7 @@ public class RestoreManaOnCastEffect extends BaseAccessoryEffect {
     @Override
     public void livingCompleteAbility(LivingEntity caster, IMKEntityData entityData, MKAccessory accessory,
                                       ItemStack stack, MKAbility ability) {
-        if (!caster.getCommandSenderWorld().isClientSide() && entityData instanceof MKPlayerData) {
-            MKPlayerData playerData = (MKPlayerData) entityData;
+        if (!caster.getCommandSenderWorld().isClientSide() && entityData instanceof MKPlayerData playerData) {
             double roll = caster.getRandom().nextDouble();
             if (roll >= (1.0 - getChance())) {
                 float mana = ability.getManaCost(entityData) * getPercentage();

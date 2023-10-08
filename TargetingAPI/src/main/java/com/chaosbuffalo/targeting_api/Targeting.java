@@ -2,7 +2,7 @@ package com.chaosbuffalo.targeting_api;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.OwnableEntity;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -103,8 +103,7 @@ public class Targeting {
             return getRootEntity(controller);
         }
 
-        if (source instanceof TamableAnimal) {
-            TamableAnimal owned = (TamableAnimal) source;
+        if (source instanceof OwnableEntity owned) {
             Entity owner = owned.getOwner();
             if (owner != null) {
                 // Owner is online, so use it for relationship checks
@@ -116,8 +115,8 @@ public class Targeting {
             }
         }
 
-        if (source instanceof ITargetingOwner) {
-            Entity owner = ((ITargetingOwner) source).getTargetingOwner();
+        if (source instanceof ITargetingOwner owned) {
+            Entity owner = owned.getTargetingOwner();
             if (owner != null) {
                 return getRootEntity(owner);
             }

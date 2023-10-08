@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
@@ -126,14 +127,14 @@ public class MKButton extends MKWidget {
                 GlStateManager.DestFactor.ZERO);
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        this.blit(
+        blit(
                 matrixStack,
                 this.getX(),
                 this.getY(),
                 0,
                 46 + i * 20,
                 this.getWidth() / 2, this.getHeight());
-        this.blit(
+        blit(
                 matrixStack,
                 this.getX() + this.getWidth() / 2,
                 this.getY(),

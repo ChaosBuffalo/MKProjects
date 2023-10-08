@@ -40,8 +40,7 @@ public class NpcItemChoice implements INBTSerializable<CompoundTag> {
 
     public static void livingEquipmentAssign(LivingEntity entity, EquipmentSlot slot, NpcItemChoice choice) {
         entity.setItemSlot(slot, choice.item.copy());
-        if (entity instanceof Mob) {
-            Mob mobEntity = (Mob) entity;
+        if (entity instanceof Mob mobEntity) {
             mobEntity.setDropChance(slot, choice.dropChance);
         }
     }

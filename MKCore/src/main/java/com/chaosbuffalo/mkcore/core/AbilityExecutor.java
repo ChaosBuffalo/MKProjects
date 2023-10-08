@@ -232,11 +232,11 @@ public class AbilityExecutor {
         updateToggleAbility(abilityInfo.getAbility());
     }
 
-    protected ServerCastingState createServerCastingState(AbilityContext context, MKAbilityInfo abilityInfo, int castTime) {
+    protected EntityCastingState createServerCastingState(AbilityContext context, MKAbilityInfo abilityInfo, int castTime) {
         return new ServerCastingState(context, this, abilityInfo, castTime);
     }
 
-    protected ClientCastingState createClientCastingState(MKAbility ability, int castTicks) {
+    protected EntityCastingState createClientCastingState(MKAbility ability, int castTicks) {
         return new ClientCastingState(this, ability, castTicks);
     }
 
@@ -244,7 +244,7 @@ public class AbilityExecutor {
 
     }
 
-    static abstract class EntityCastingState {
+    protected static abstract class EntityCastingState {
         protected final MKAbility ability;
         protected final AbilityExecutor executor;
         protected int castTicks;

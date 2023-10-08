@@ -85,7 +85,7 @@ public class MKWeaponModelProvider extends ItemModelProvider {
 
     protected void makeWeaponModel(MKMeleeWeapon weapon) {
         String path = ForgeRegistries.ITEMS.getKey(weapon).getPath();
-        List<String> subModels = Arrays.asList("blocking");
+        List<String> subModels = List.of("blocking");
         if (MeleeWeaponTypes.WITH_BLOCKING.contains(weapon.getWeaponType())) {
 
             for (String subModel : subModels) {

@@ -23,72 +23,57 @@ import java.util.function.Consumer;
 
 public class MKWeaponRecipeProvider extends RecipeProvider {
 
-    public static class WeaponRecipe {
-        private final List<String> pattern;
-        private final List<Tuple<Character, Item>> itemKeys;
-
-        public WeaponRecipe(List<String> pattern, List<Tuple<Character, Item>> itemKeys) {
-            this.pattern = pattern;
-            this.itemKeys = itemKeys;
-        }
-
-        public List<String> getPattern() {
-            return pattern;
-        }
+    public record WeaponRecipe(List<String> pattern, List<Tuple<Character, Item>> itemKeys) {
 
         public boolean hasHaft() {
-            for (Tuple<Character, Item> tuple : itemKeys) {
-                if (tuple.getA().equals('H')) {
-                    return true;
+                for (Tuple<Character, Item> tuple : itemKeys) {
+                    if (tuple.getA().equals('H')) {
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
-        }
 
-        public boolean hasStick() {
-            for (Tuple<Character, Item> tuple : itemKeys) {
-                if (tuple.getA().equals('S')) {
-                    return true;
+            public boolean hasStick() {
+                for (Tuple<Character, Item> tuple : itemKeys) {
+                    if (tuple.getA().equals('S')) {
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
         }
-
-        public List<Tuple<Character, Item>> getItemKeys() {
-            return itemKeys;
-        }
-    }
 
     public static final Map<IMeleeWeaponType, WeaponRecipe> weaponRecipes = new HashMap<>();
 
     static {
         weaponRecipes.put(MeleeWeaponTypes.DAGGER_TYPE, new WeaponRecipe(
                 Arrays.asList("I", "S"),
-                Arrays.asList(new Tuple<>('S', Items.STICK))));
+                List.of(new Tuple<>('S', Items.STICK))));
         weaponRecipes.put(MeleeWeaponTypes.BATTLEAXE_TYPE, new WeaponRecipe(
                 Arrays.asList("III", "IHI", " H "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
+                List.of(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.GREATSWORD_TYPE, new WeaponRecipe(
                 Arrays.asList(" I ", " I ", "IHI"),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
+                List.of(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.KATANA_TYPE, new WeaponRecipe(
                 Arrays.asList("  I", " I ", "H  "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
+                List.of(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.LONGSWORD_TYPE, new WeaponRecipe(
                 Arrays.asList(" I ", " I ", " H "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
+                List.of(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.SPEAR_TYPE, new WeaponRecipe(
                 Arrays.asList("  I", " H ", "H  "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
+                List.of(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.WARHAMMER_TYPE, new WeaponRecipe(
                 Arrays.asList(" II", " HI", "H  "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
+                List.of(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.MACE_TYPE, new WeaponRecipe(
                 Arrays.asList(" I ", " H ", " H "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
+                List.of(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
         weaponRecipes.put(MeleeWeaponTypes.STAFF_TYPE, new WeaponRecipe(
                 Arrays.asList("  I", " H ", "I  "),
-                Arrays.asList(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
+                List.of(new Tuple<>('H', MKWeaponsItems.Haft.get()))));
 
     }
 
@@ -150,10 +135,10 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
         ShapedRecipeBuilder recipeBuilder = ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, weapon);
         recipeBuilder.define('I', weapon.getMKTier().getMajorIngredient());
         WeaponRecipe weaponRecipe = weaponRecipes.get(weapon.getWeaponType());
-        for (Tuple<Character, Item> key : weaponRecipe.getItemKeys()) {
+        for (Tuple<Character, Item> key : weaponRecipe.itemKeys()) {
             recipeBuilder.define(key.getA(), key.getB());
         }
-        for (String line : weaponRecipe.getPattern()) {
+        for (String line : weaponRecipe.pattern()) {
             recipeBuilder.pattern(line);
         }
         if (weaponRecipe.hasHaft()) {

@@ -133,10 +133,9 @@ public class CritMessagePacket {
                     return;
                 }
             }
-            if (!(source instanceof LivingEntity)) {
+            if (!(source instanceof LivingEntity livingSource)) {
                 return;
             }
-            LivingEntity livingSource = (LivingEntity) source;
             switch (packet.type) {
                 case MELEE_CRIT:
                     if (isSelf) {

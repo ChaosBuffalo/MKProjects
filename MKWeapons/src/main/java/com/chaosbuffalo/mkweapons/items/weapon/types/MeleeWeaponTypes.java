@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class MeleeWeaponTypes {
 
-    public static final HashMap<ResourceLocation, IMeleeWeaponType> WEAPON_TYPES = new HashMap<net.minecraft.resources.ResourceLocation, IMeleeWeaponType>();
+    public static final HashMap<ResourceLocation, IMeleeWeaponType> WEAPON_TYPES = new HashMap<>();
 
     public static void addWeaponType(IMeleeWeaponType weaponType) {
         WEAPON_TYPES.put(weaponType.getName(), weaponType);
