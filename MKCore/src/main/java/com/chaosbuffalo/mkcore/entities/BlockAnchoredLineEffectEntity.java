@@ -33,7 +33,7 @@ import java.util.Comparator;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements IUpdateEngineProvider{
+public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements IUpdateEngineProvider {
 
     private BlockPos startPos;
     private Supplier<Block> block;
@@ -55,6 +55,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
 
     protected Vec3 prevEndPoint;
     protected int lastTickReceive;
+
     public BlockAnchoredLineEffectEntity(EntityType<? extends BlockAnchoredLineEffectEntity> entityType, Level world) {
         super(entityType, world);
         engine = new EntityUpdateEngine(this);
@@ -117,7 +118,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
         super.clientUpdate();
     }
 
-    public void setStartPoint(Vec3 value){
+    public void setStartPoint(Vec3 value) {
         startPoint.set(value);
     }
 
@@ -132,7 +133,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
 
     @Override
     protected boolean serverUpdate() {
-        if (!(getLevel().getBlockState(startPos).getBlock() == block.get())){
+        if (!(getLevel().getBlockState(startPos).getBlock() == block.get())) {
             onDeath(DeathReason.KILLED);
             return true;
         }
@@ -157,8 +158,8 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     protected void lookForTarget() {
         getPotentialTargets().stream().min(Comparator.comparingDouble(
                 ent -> ent.distanceToSqr(startPoint.get()))).ifPresent(tar -> {
-                    target = tar;
-                    hasEntity.set(true);
+            target = tar;
+            hasEntity.set(true);
         });
     }
 

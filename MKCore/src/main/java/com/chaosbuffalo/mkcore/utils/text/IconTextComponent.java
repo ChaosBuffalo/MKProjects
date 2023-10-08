@@ -9,7 +9,6 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import org.apache.commons.compress.utils.Lists;
 
 import java.util.List;
 

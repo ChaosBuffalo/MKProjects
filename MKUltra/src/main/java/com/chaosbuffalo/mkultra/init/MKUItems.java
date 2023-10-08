@@ -50,7 +50,7 @@ public final class MKUItems {
     public static final UUID FEET_UUID = UUID.fromString("9baf459d-e898-402d-9915-af25a217fedd");
 
     public static MKTier BRONZE_TIER = new MKTier("bronze", 1, 150, 5.0F, 1.0F, 12,
-                () -> Ingredient.of(Items.COPPER_INGOT), BlockTags.NEEDS_IRON_TOOL, Tags.Items.INGOTS_COPPER,
+            () -> Ingredient.of(Items.COPPER_INGOT), BlockTags.NEEDS_IRON_TOOL, Tags.Items.INGOTS_COPPER,
             new ManaDrainWeaponEffect(0.5f, 0.5f));
 
     public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, MKUltra.MODID);
@@ -158,7 +158,7 @@ public final class MKUItems {
                     (new Item.Properties()),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                                    new AttributeModifier(CHEST_UUID,"seawoven", 6.0, AttributeModifier.Operation.ADDITION)),
+                                    new AttributeModifier(CHEST_UUID, "seawoven", 6.0, AttributeModifier.Operation.ADDITION)),
                             new AttributeOptionEntry(MKAttributes.MANA_REGEN,
                                     new AttributeModifier(CHEST_UUID, "seawoven", 1.0, AttributeModifier.Operation.ADDITION))
                     ))));
@@ -168,7 +168,7 @@ public final class MKUItems {
                     (new Item.Properties()),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                                    new AttributeModifier(FEET_UUID,"seawoven", 4.0, AttributeModifier.Operation.ADDITION))
+                                    new AttributeModifier(FEET_UUID, "seawoven", 4.0, AttributeModifier.Operation.ADDITION))
                     ))));
 
     public static RegistryObject<MKArmorItem> ancientBronzeHelmet = REGISTRY.register("ancient_bronze_helmet",
@@ -192,7 +192,7 @@ public final class MKUItems {
                     (new Item.Properties()),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(Attributes.MAX_HEALTH,
-                                    new AttributeModifier(CHEST_UUID,"ancient_bronze", 10.0, AttributeModifier.Operation.ADDITION)),
+                                    new AttributeModifier(CHEST_UUID, "ancient_bronze", 10.0, AttributeModifier.Operation.ADDITION)),
                             new AttributeOptionEntry(Attributes.ATTACK_DAMAGE,
                                     new AttributeModifier(CHEST_UUID, "ancient_bronze", 2.0, AttributeModifier.Operation.ADDITION))
                     ))));
@@ -202,7 +202,7 @@ public final class MKUItems {
                     (new Item.Properties()),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(Attributes.ATTACK_SPEED,
-                                    new AttributeModifier(FEET_UUID,"ancient_bronze", 0.12, AttributeModifier.Operation.MULTIPLY_TOTAL))
+                                    new AttributeModifier(FEET_UUID, "ancient_bronze", 0.12, AttributeModifier.Operation.MULTIPLY_TOTAL))
                     ))));
 
     public static RegistryObject<MKArmorItem> ancientPriestHelmet = REGISTRY.register("ancient_priest_helmet",
@@ -226,7 +226,7 @@ public final class MKUItems {
                     (new Item.Properties()),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                                    new AttributeModifier(CHEST_UUID,"ancient_priest", 10.0, AttributeModifier.Operation.ADDITION)),
+                                    new AttributeModifier(CHEST_UUID, "ancient_priest", 10.0, AttributeModifier.Operation.ADDITION)),
                             new AttributeOptionEntry(MKAttributes.MANA_REGEN,
                                     new AttributeModifier(CHEST_UUID, "ancient_priest", 1.5, AttributeModifier.Operation.ADDITION))
                     ))));
@@ -236,7 +236,7 @@ public final class MKUItems {
                     (new Item.Properties()),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.SPELL_CRIT_MULTIPLIER,
-                                    new AttributeModifier(FEET_UUID,"ancient_priest", 0.25, AttributeModifier.Operation.ADDITION))
+                                    new AttributeModifier(FEET_UUID, "ancient_priest", 0.25, AttributeModifier.Operation.ADDITION))
                     ))));
 
     public static RegistryObject<Item> destroyedTrooperHelmet = REGISTRY.register("destroyed_trooper_helmet",

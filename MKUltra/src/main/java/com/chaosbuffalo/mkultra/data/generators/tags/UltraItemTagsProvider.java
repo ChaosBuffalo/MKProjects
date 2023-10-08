@@ -21,7 +21,7 @@ public class UltraItemTagsProvider extends ItemTagsProvider {
                                  CompletableFuture<HolderLookup.Provider> lookupProvider,
                                  BlockTagsProvider blockTagProvider,
                                  ExistingFileHelper existingFileHelper) {
-        super(dataGenerator.getPackOutput(), lookupProvider,  blockTagProvider.contentsGetter(), MKUltra.MODID, existingFileHelper);
+        super(dataGenerator.getPackOutput(), lookupProvider, blockTagProvider.contentsGetter(), MKUltra.MODID, existingFileHelper);
     }
 
     @Nonnull

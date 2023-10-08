@@ -13,7 +13,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
-public class TalentTreeReward extends QuestReward{
+public class TalentTreeReward extends QuestReward {
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID, "quest_reward.talent_tree");
     private final ResourceLocationAttribute treeName = new ResourceLocationAttribute("tree_name",
             TalentManager.INVALID_TREE);
@@ -47,7 +47,7 @@ public class TalentTreeReward extends QuestReward{
 
     @Override
     public void grantReward(Player player) {
-        if (treeName.getValue().equals(TalentManager.INVALID_TREE)){
+        if (treeName.getValue().equals(TalentManager.INVALID_TREE)) {
             MKNpc.LOGGER.warn("Failed to grant talent tree reward for player {}, talent tree is invalid.", player);
             return;
         }

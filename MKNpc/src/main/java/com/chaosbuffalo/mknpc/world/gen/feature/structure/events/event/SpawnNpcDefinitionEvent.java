@@ -28,7 +28,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.ForgeEventFactory;
 
-import java.util.Optional;
 import java.util.UUID;
 
 public class SpawnNpcDefinitionEvent extends StructureEvent {

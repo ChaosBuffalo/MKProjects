@@ -4,7 +4,6 @@ import net.minecraft.util.RandomSource;
 
 import java.util.Collection;
 import java.util.NavigableMap;
-import java.util.Random;
 import java.util.TreeMap;
 
 public class RandomCollection<E> {

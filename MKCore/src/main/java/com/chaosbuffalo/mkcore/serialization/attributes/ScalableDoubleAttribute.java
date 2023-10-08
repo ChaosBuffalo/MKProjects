@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 
-public class ScalableDoubleAttribute extends DoubleAttribute implements IScalableAttribute{
+public class ScalableDoubleAttribute extends DoubleAttribute implements IScalableAttribute {
     protected double min;
     protected double max;
 

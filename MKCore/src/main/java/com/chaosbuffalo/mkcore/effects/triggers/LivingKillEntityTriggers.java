@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkcore.effects.triggers;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 public class LivingKillEntityTriggers extends SpellTriggers.EffectBasedTriggerCollection<LivingKillEntityTriggers.Trigger> {

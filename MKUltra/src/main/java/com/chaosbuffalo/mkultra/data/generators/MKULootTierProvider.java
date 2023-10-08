@@ -58,7 +58,8 @@ public class MKULootTierProvider extends LootTierProvider {
         weaponTemplate.addItem(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.KATANA_TYPE));
         weaponTemplate.addItem(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.LONGSWORD_TYPE));
         var meleeEffects = new MeleeEffectOption();
-        var weaponEffect = new OnHitAbilityEffect(0.5, 10.0f, MKUAbilities.SEAFURY);;
+        var weaponEffect = new OnHitAbilityEffect(0.5, 10.0f, MKUAbilities.SEAFURY);
+        ;
         meleeEffects.addEffect(weaponEffect);
         weaponTemplate.addRandomizationOption(meleeEffects);
         NameOption name = new NameOption(Component.literal("Seafury Blade"));

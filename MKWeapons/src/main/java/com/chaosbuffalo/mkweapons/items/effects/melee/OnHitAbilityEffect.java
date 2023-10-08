@@ -81,7 +81,7 @@ public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
                 this.getTypeName().getNamespace(), this.getTypeName().getPath()), abilitySupplier.get().getAbilityName()).withStyle(color));
         if (Screen.hasShiftDown()) {
             tooltip.add(Component.translatable(String.format("%s.%s.description",
-                    this.getTypeName().getNamespace(), this.getTypeName().getPath()),
+                            this.getTypeName().getNamespace(), this.getTypeName().getPath()),
                     MKAbility.PERCENT_FORMATTER.format(procChance), MKAbility.NUMBER_FORMATTER.format(skillLevel)));
             if (player != null) {
                 MKCore.getEntityData(player).ifPresent(entityData -> {

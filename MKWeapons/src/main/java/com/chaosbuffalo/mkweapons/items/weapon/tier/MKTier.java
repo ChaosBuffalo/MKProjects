@@ -25,8 +25,8 @@ public class MKTier implements IMKTier {
     private final TagKey<Item> tag;
 
     public MKTier(String name, int pLevel, int pUses, float pSpeed, float pDamage, int pEnchantmentValue,
-                   Supplier<Ingredient> pRepairIngredient, TagKey<Block> blockTag, TagKey<Item> itemTag,
-                   IMeleeWeaponEffect... effects) {
+                  Supplier<Ingredient> pRepairIngredient, TagKey<Block> blockTag, TagKey<Item> itemTag,
+                  IMeleeWeaponEffect... effects) {
         this.level = pLevel;
         this.uses = pUses;
         this.speed = pSpeed;
@@ -71,7 +71,9 @@ public class MKTier implements IMKTier {
 
     @Override
     @Nullable
-    public TagKey<Block> getTag() { return blockTag; }
+    public TagKey<Block> getTag() {
+        return blockTag;
+    }
 
     @Override
     public String getName() {

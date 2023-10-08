@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.utils;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.level.ClipContext;

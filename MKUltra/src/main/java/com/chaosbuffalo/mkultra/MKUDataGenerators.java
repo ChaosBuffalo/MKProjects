@@ -1,14 +1,11 @@
 package com.chaosbuffalo.mkultra;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.data.MKAbilityProvider;
 import com.chaosbuffalo.mkcore.data.MKCoreGenerators;
 import com.chaosbuffalo.mkultra.data.generators.*;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraBiomeTagsProvider;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraItemTagsProvider;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraStructureTagsProvider;
-import com.chaosbuffalo.mkultra.data.generators.MKUNpcProvider;
-import com.chaosbuffalo.mkultra.init.MKUItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;

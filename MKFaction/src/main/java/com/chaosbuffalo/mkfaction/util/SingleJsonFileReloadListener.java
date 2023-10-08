@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.GsonHelper;
@@ -35,7 +34,7 @@ public abstract class SingleJsonFileReloadListener extends SimplePreparableReloa
 
         return resourceManagerIn.getResource(getLoc()).map(x -> {
             try (
-                InputStream inputstream = x.open();
+                    InputStream inputstream = x.open();
             ) {
                 Reader reader = new BufferedReader(new InputStreamReader(inputstream, StandardCharsets.UTF_8));
                 return GsonHelper.fromJson(this.gson, reader, JsonObject.class);

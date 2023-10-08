@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class UltraBiomeTagsProvider extends BiomeTagsProvider {
     public UltraBiomeTagsProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookup,
-                                @Nullable ExistingFileHelper existingFileHelper) {
+                                  @Nullable ExistingFileHelper existingFileHelper) {
         super(packOutput, lookup, MKUltra.MODID, existingFileHelper);
     }
 

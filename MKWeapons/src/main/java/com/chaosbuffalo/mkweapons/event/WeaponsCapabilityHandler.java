@@ -2,7 +2,10 @@ package com.chaosbuffalo.mkweapons.event;
 
 import com.chaosbuffalo.mkcore.utils.CapabilityUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.capabilities.*;
+import com.chaosbuffalo.mkweapons.capabilities.ArmorDataHandler;
+import com.chaosbuffalo.mkweapons.capabilities.ArrowDataHandler;
+import com.chaosbuffalo.mkweapons.capabilities.WeaponDataHandler;
+import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
 import com.chaosbuffalo.mkweapons.items.armor.IMKArmor;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKWeapon;
 import net.minecraft.world.entity.Entity;

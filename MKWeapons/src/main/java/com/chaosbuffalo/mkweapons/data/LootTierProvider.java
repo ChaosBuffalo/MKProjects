@@ -4,7 +4,9 @@ import com.chaosbuffalo.mkcore.data.MKDataProvider;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.data.*;
+import net.minecraft.data.CachedOutput;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.data.DataProvider;
 import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.Path;

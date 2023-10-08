@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkcore.test.effects;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.effects.*;
 import com.chaosbuffalo.mkcore.test.MKTestEffects;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;

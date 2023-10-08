@@ -85,7 +85,7 @@ public class MKPlayerRenderer extends PlayerRenderer {
             });
         });
     }
-    
+
     private Vec3 getOffsetSideFirstPerson(HumanoidArm handIn, float equippedProg) {
         int i = handIn == HumanoidArm.RIGHT ? 1 : -1;
         return new Vec3(i * 0.56F, -0.52F + equippedProg * -0.6F, -0.72F);
