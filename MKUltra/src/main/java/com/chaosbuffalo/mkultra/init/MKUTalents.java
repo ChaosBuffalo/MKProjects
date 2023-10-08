@@ -23,7 +23,6 @@ public class MKUTalents {
             () -> new PassiveTalent(MKUAbilities.GREEN_SOUL));
 
 
-
     public static void register(IEventBus modBus) {
         TALENTS.register(modBus);
     }

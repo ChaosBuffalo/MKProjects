@@ -23,7 +23,7 @@ public interface IMeleeWeaponEffect extends IItemEffect {
     }
 
     default void onHurt(float damage, IMKMeleeWeapon weapon, ItemStack stack,
-                       LivingEntity target, LivingEntity attacker) {
+                        LivingEntity target, LivingEntity attacker) {
 
     }
 

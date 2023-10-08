@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
 public interface IMKEntityStats {
@@ -49,7 +48,8 @@ public interface IMKEntityStats {
 
     boolean consumeMana(float amount);
 
-    record BlockResult(float damageLeft, boolean poiseBroke) {};
+    record BlockResult(float damageLeft, boolean poiseBroke) {
+    }
 
     BlockResult tryPoiseBlock(float damageIn);
 

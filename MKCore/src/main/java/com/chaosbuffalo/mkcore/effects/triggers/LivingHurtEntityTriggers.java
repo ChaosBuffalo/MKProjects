@@ -76,6 +76,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
                     trigger.apply(event, source, livingTarget, sourceData, instance));
         }
     }
+
     private boolean hasTriggers = false;
 
     @Override

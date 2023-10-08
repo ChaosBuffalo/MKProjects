@@ -69,6 +69,7 @@ public class SeafuryAbility extends PositionTargetingAbility {
                 NUMBER_FORMATTER.format(radius.value())
         );
     }
+
     @Override
     public TargetingContext getTargetContext() {
         return TargetingContexts.ENEMY;

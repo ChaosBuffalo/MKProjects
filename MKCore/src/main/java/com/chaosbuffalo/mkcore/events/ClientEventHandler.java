@@ -192,7 +192,7 @@ public class ClientEventHandler {
     public static void onRenderHand(RenderHandEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null && event.getHand() == InteractionHand.MAIN_HAND) {
-            var renderer =  mc.getEntityRenderDispatcher().getRenderer(mc.player);
+            var renderer = mc.getEntityRenderDispatcher().getRenderer(mc.player);
             if (renderer instanceof MKPlayerRenderer playerRenderer) {
                 playerRenderer.renderHandFirstPerson(mc.player);
             }

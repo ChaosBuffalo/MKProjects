@@ -27,7 +27,9 @@ public abstract class StructureStartMixins implements IStructureStartMixin {
     @Shadow
     @Final
     private PiecesContainer pieceContainer;
-    @Shadow @Final private Structure structure;
+    @Shadow
+    @Final
+    private Structure structure;
     @Unique
     protected UUID mknpc$instanceId;
 

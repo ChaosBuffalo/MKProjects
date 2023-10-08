@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mkchat.event;
 
 import com.chaosbuffalo.mkchat.MKChat;
-import com.chaosbuffalo.mkchat.capabilities.*;
+import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
+import com.chaosbuffalo.mkchat.capabilities.NpcDialogueHandler;
+import com.chaosbuffalo.mkchat.capabilities.PlayerDialogueHandler;
 import com.chaosbuffalo.mkcore.utils.CapabilityUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;

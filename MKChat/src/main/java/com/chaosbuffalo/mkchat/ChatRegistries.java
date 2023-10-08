@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mkchat;
 
-import com.chaosbuffalo.mkchat.dialogue.*;
+import com.chaosbuffalo.mkchat.dialogue.DialogueContext;
+import com.chaosbuffalo.mkchat.dialogue.DialogueProviders;
+import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkchat.dialogue.conditions.HasBoolFlagCondition;
 import com.chaosbuffalo.mkchat.dialogue.effects.AddFlag;

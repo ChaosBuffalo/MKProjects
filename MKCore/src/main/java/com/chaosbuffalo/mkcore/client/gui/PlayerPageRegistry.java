@@ -35,6 +35,7 @@ public class PlayerPageRegistry {
 
     /**
      * Do this from FMLClientSetupEvent using enqueueWork
+     *
      * @param pageDefinition page definition
      */
     public static void register(PageDefinition pageDefinition) {

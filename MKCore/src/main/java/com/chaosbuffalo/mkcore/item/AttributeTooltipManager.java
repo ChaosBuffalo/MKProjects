@@ -113,8 +113,8 @@ public class AttributeTooltipManager {
                                                 double displayAmount, DoubleFunction<String> formatter) {
         displayAmount = displayAmount * -1.0D;
         return Component.translatable("attribute.modifier.take." + modifier.getOperation().toValue(),
-                formatter.apply(displayAmount),
-                Component.translatable(attribute.getDescriptionId()))
+                        formatter.apply(displayAmount),
+                        Component.translatable(attribute.getDescriptionId()))
                 .withStyle(ChatFormatting.RED);
     }
 
@@ -127,8 +127,8 @@ public class AttributeTooltipManager {
     public static MutableComponent makePlusText(Attribute attribute, AttributeModifier modifier,
                                                 double displayAmount, DoubleFunction<String> formatter) {
         return Component.translatable("attribute.modifier.plus." + modifier.getOperation().toValue(),
-                formatter.apply(displayAmount),
-                Component.translatable(attribute.getDescriptionId()))
+                        formatter.apply(displayAmount),
+                        Component.translatable(attribute.getDescriptionId()))
                 .withStyle(ChatFormatting.BLUE);
     }
 

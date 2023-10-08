@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 
-public class ScalableFloatAttribute extends FloatAttribute implements IScalableAttribute{
+public class ScalableFloatAttribute extends FloatAttribute implements IScalableAttribute {
     protected float min;
     protected float max;
 

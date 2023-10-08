@@ -51,8 +51,8 @@ public class MKGolemModel<T extends MKEntity> extends MKBipedModel<T> {
     public void prepareMobModel(T entityIn, float limbSwing, float limbSwingAmount, float partialTick) {
         float swingProgress = entityIn.getAttackAnim(partialTick);
         if (swingProgress > 0) {
-            this.rightArm.xRot = -2.0F + 1.5F * Mth.triangleWave((float)swingProgress - partialTick, 10.0F);
-            this.leftArm.xRot = -2.0F + 1.5F * Mth.triangleWave((float)swingProgress - partialTick, 10.0F);
+            this.rightArm.xRot = -2.0F + 1.5F * Mth.triangleWave((float) swingProgress - partialTick, 10.0F);
+            this.leftArm.xRot = -2.0F + 1.5F * Mth.triangleWave((float) swingProgress - partialTick, 10.0F);
         } else {
             rightArm.xRot = (-0.2F + 1.5F * Mth.triangleWave(limbSwing, 13.0F)) * limbSwingAmount;
             leftArm.xRot = (-0.2F - 1.5F * Mth.triangleWave(limbSwing, 13.0F)) * limbSwingAmount;

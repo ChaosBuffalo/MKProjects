@@ -131,7 +131,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
             Player player = playerData.getEntity();
             if (player.getRandom().nextDouble() <= chanceFormula.applyAsDouble(currentSkill)) {
                 player.sendSystemMessage(Component.translatable("mkcore.skill.increase",
-                        Component.translatable(attribute.getDescriptionId()), currentSkill + 1.0)
+                                Component.translatable(attribute.getDescriptionId()), currentSkill + 1.0)
                         .withStyle(ChatFormatting.AQUA));
                 setSkill(attribute, currentSkill + 1.0);
             }

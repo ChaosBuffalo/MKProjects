@@ -13,8 +13,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -69,7 +67,7 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
 
         int nextStart;
         int mEnd;
-        for(nextStart = 0; matcher.find(nextStart); nextStart = mEnd) {
+        for (nextStart = 0; matcher.find(nextStart); nextStart = mEnd) {
             int mStart = matcher.start();
             mEnd = matcher.end();
             if (mStart > nextStart) {

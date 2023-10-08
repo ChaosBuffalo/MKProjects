@@ -6,7 +6,7 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
-public class SyncVec3 implements ISyncObject{
+public class SyncVec3 implements ISyncObject {
 
     private final String name;
     private Vec3 value;

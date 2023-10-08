@@ -11,15 +11,16 @@ import com.chaosbuffalo.mkcore.fx.particles.animation_tracks.motions.OrbitingInP
 import com.chaosbuffalo.mkcore.init.CoreTags;
 import com.chaosbuffalo.mkcore.init.CoreTalents;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.data.*;
+import net.minecraft.data.CachedOutput;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.common.data.BlockTagsProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.data.event.GatherDataEvent;
-import org.apache.logging.log4j.core.Core;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
@@ -43,7 +44,6 @@ public class MKCoreGenerators {
             generator.addProvider(true, new CoreParticleProvider(generator));
         }
     }
-
 
 
     public static class CoreParticleProvider extends ParticleAnimationProvider {
@@ -104,7 +104,7 @@ public class MKCoreGenerators {
 
         public MKBlockTagsProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider,
                                    String modId, @Nullable ExistingFileHelper existingFileHelper) {
-            super(packOutput,lookupProvider, modId, existingFileHelper);
+            super(packOutput, lookupProvider, modId, existingFileHelper);
         }
 
         @Override
@@ -118,7 +118,7 @@ public class MKCoreGenerators {
                                          CompletableFuture<HolderLookup.Provider> lookupProvider,
                                          BlockTagsProvider blockTagProvider,
                                          ExistingFileHelper existingFileHelper) {
-            super(dataGenerator.getPackOutput(), lookupProvider,  blockTagProvider.contentsGetter(), MKCore.MOD_ID, existingFileHelper);
+            super(dataGenerator.getPackOutput(), lookupProvider, blockTagProvider.contentsGetter(), MKCore.MOD_ID, existingFileHelper);
         }
 
         @Nonnull

@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkcore.utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -50,7 +49,7 @@ public class SoundUtils {
         Holder<SoundEvent> pSound = event.getSound();
         SoundSource pSource = event.getSource();
         float pVolume = event.getNewVolume();
-        float  pPitch = event.getNewPitch();
+        float pPitch = event.getNewPitch();
 
         PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> source).send(
                 new ClientboundSoundPacket(pSound, pSource, x, y, z, pVolume, pPitch, source.getLevel().random.nextLong()));

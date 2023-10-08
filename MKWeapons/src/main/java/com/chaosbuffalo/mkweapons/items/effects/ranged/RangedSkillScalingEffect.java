@@ -62,7 +62,7 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
     public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
         tooltip.add(Component.translatable(skill.getDescriptionId()).withStyle(color));
         if (Screen.hasShiftDown()) {
-            float skillLevel = player != null ?  MKAbility.getSkillLevel(player, skill) : 0.0f;
+            float skillLevel = player != null ? MKAbility.getSkillLevel(player, skill) : 0.0f;
             double bonus = skillLevel * baseDamage;
             tooltip.add(Component.translatable("mkweapons.weapon_effect.ranged_skill_scaling.description",
                     Component.translatable(skill.getDescriptionId()), MKAbility.NUMBER_FORMATTER.format(bonus)));

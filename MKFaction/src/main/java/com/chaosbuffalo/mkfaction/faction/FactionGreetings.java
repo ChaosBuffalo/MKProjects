@@ -3,12 +3,13 @@ package com.chaosbuffalo.mkfaction.faction;
 import com.chaosbuffalo.mkcore.serialization.IDynamicMapSerializer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.network.chat.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class FactionGreetings implements IDynamicMapSerializer {

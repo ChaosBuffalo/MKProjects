@@ -74,6 +74,7 @@ public class FrozenGraspAbility extends MKAbility {
 
 
     private final Vec3 YP = new Vec3(0.0, 1.0, 0.0);
+
     public MKEffectBuilder<?> onHitEffect(OnHitEffect.OnHitCallbackData args) {
         int dur = getBuffDuration(args.entityData, args.instance.getSkillLevel(),
                 baseDuration.value(), scaleDuration.value());

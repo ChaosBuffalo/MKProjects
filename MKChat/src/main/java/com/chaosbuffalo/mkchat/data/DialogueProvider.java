@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mkchat.data;
 
-import com.chaosbuffalo.mkchat.dialogue.*;
+import com.chaosbuffalo.mkchat.dialogue.DialogueContexts;
+import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
+import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkcore.data.MKDataProvider;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;

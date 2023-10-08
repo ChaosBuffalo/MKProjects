@@ -3,11 +3,9 @@ package com.chaosbuffalo.mkcore.sync;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.UUID;
 
 public class SyncEntity<T extends Entity> implements ISyncObject {
     private final String name;

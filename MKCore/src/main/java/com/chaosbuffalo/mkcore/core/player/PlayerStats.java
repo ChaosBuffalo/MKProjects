@@ -21,6 +21,7 @@ public class PlayerStats extends EntityStats {
         super(playerData);
 
     }
+
     private Player getPlayer() {
         return (Player) getEntity();
     }
