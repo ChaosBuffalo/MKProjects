@@ -11,6 +11,7 @@ import com.chaosbuffalo.mkcore.core.player.*;
 import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
 import com.chaosbuffalo.mkcore.sync.PlayerUpdateEngine;
 import com.chaosbuffalo.mkcore.sync.UpdateEngine;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -19,6 +20,8 @@ import net.minecraft.world.entity.player.Player;
 import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 public class MKPlayerData implements IMKEntityData {
     private final Player player;
@@ -32,6 +35,8 @@ public class MKPlayerData implements IMKEntityData {
     private final PlayerEditorModule editorModule;
     private final PlayerEffectHandler effectHandler;
     private final EntityPetModule pets;
+    private final PlayerAttributeMonitor attributes;
+    private final Set<BooleanSupplier> tickCallbacks = new ObjectArraySet<>(4);
 
     public MKPlayerData(Player playerEntity) {
         player = Objects.requireNonNull(playerEntity);
@@ -39,6 +44,7 @@ public class MKPlayerData implements IMKEntityData {
         personaManager = PersonaManager.getPersonaManager(this);
         abilityExecutor = new PlayerAbilityExecutor(this);
         combatExtensionModule = new PlayerCombatExtensionModule(this);
+        attributes = new PlayerAttributeMonitor(this, this::enqueueTick);
         stats = new PlayerStats(this);
 
         animationModule = new PlayerAnimationModule(this);
@@ -134,6 +140,10 @@ public class MKPlayerData implements IMKEntityData {
         return effectHandler;
     }
 
+    public PlayerAttributeMonitor getAttributes() {
+        return attributes;
+    }
+
     private void completeAbility(MKAbility ability) {
         animationModule.endCast(ability);
         if (isServerSide()) {
@@ -148,6 +158,8 @@ public class MKPlayerData implements IMKEntityData {
         getStats().onJoinWorld();
         getAbilityExecutor().onJoinWorld();
         getEffects().onJoinWorld();
+        getCombatExtension().onJoinWorld();
+        getAttributes().onJoinWorld();
         if (isServerSide()) {
             initialSync();
         }
@@ -158,12 +170,20 @@ public class MKPlayerData implements IMKEntityData {
         getPets().onDeath(Entity.RemovalReason.KILLED);
     }
 
+    private void enqueueTick(BooleanSupplier callback) {
+        tickCallbacks.add(callback);
+    }
+
     public void update() {
         getEffects().tick();
         getStats().tick();
         getAbilityExecutor().tick();
         getAnimationModule().tick();
         getCombatExtension().tick();
+
+        if (!tickCallbacks.isEmpty()) {
+            tickCallbacks.removeIf(BooleanSupplier::getAsBoolean);
+        }
 
         if (isServerSide()) {
             syncState();
