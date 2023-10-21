@@ -81,9 +81,8 @@ public class AttributeTalentHandler extends TalentTypeHandler {
             return;
         }
 
-        AttributeModifier mod = entry.getModifier();
-        instance.removeModifier(mod);
-        instance.addTransientModifier(mod);
+        instance.removeModifier(entry.getUUID());
+        instance.addTransientModifier(entry.getModifier());
         if (entry.getAttributeTalent().requiresStatRefresh()) {
             playerData.getStats().refreshStats();
         }
@@ -96,8 +95,7 @@ public class AttributeTalentHandler extends TalentTypeHandler {
         if (entry != null) {
             AttributeInstance instance = playerData.getEntity().getAttribute(entry.getAttribute());
             if (instance != null) {
-                instance.removeModifier(entry.getModifier());
-//                dumpDirtyAttributes("removeAttribute");
+                instance.removeModifier(entry.getUUID());
             }
         }
     }
@@ -132,6 +130,10 @@ public class AttributeTalentHandler extends TalentTypeHandler {
 
         public AttributeTalent getAttributeTalent() {
             return attribute;
+        }
+
+        public UUID getUUID() {
+            return attribute.getUUID();
         }
 
         public Attribute getAttribute() {

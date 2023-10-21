@@ -16,7 +16,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -26,7 +25,6 @@ import java.util.function.Consumer;
 import java.util.function.DoubleUnaryOperator;
 
 public class PlayerSkills implements IMKSerializable<CompoundTag> {
-    private static final UUID blockScalerUUID = UUID.fromString("8cabfe08-4ad3-4b8a-9b94-cb146f743c36");
 
     protected interface SkillChangeHandler {
         void onSkillChange(MKPlayerData playerData, double value);
@@ -38,7 +36,6 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
     private final List<Consumer<Attribute>> skillChangeCallbacks = new ArrayList<>();
     private static final Map<Attribute, SkillChangeHandler> skillChangeHandlers = Util.make(() -> {
         Map<Attribute, SkillChangeHandler> map = new HashMap<>(8);
-        map.put(MKAttributes.BLOCK, PlayerSkills::onBlockChange);
         map.put(MKAttributes.ONE_HAND_BLUNT, PlayerSkills::onWeaponSkillChange);
         map.put(MKAttributes.TWO_HAND_BLUNT, PlayerSkills::onWeaponSkillChange);
         map.put(MKAttributes.ONE_HAND_SLASH, PlayerSkills::onWeaponSkillChange);
@@ -55,15 +52,6 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
 
     public void addCallback(Consumer<Attribute> cb) {
         skillChangeCallbacks.add(cb);
-    }
-
-    private static void onBlockChange(MKPlayerData playerData, double value) {
-        AttributeInstance inst = playerData.getEntity().getAttribute(MKAttributes.MAX_POISE);
-        if (inst != null) {
-            inst.removeModifier(blockScalerUUID);
-            inst.addTransientModifier(new AttributeModifier(blockScalerUUID, "block skill",
-                    MKAbility.convertSkillToMultiplier(value), AttributeModifier.Operation.MULTIPLY_TOTAL));
-        }
     }
 
     private static void onWeaponSkillChange(MKPlayerData playerData, double value) {
