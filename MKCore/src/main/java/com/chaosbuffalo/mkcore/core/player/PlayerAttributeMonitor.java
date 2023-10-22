@@ -20,6 +20,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 public class PlayerAttributeMonitor {
+    private static final boolean LOG_EN = false;
     private static final Lazy<Set<Attribute>> allInitialSync = Lazy.concurrentOf(PlayerAttributeMonitor::buildInitialSyncSet);
 
     private final MKPlayerData playerData;
@@ -51,7 +52,9 @@ public class PlayerAttributeMonitor {
 
     private void sendInitialPrivateAttributes(ServerPlayer serverPlayer) {
         List<AttributeInstance> values = allInitialSync.get().stream().map(serverPlayer::getAttribute).toList();
-        MKCore.LOGGER.info("sending {} private attr initial values to {}", values.size(), serverPlayer);
+        if (LOG_EN) {
+            MKCore.LOGGER.debug("sending {} private attr initial values to {}", values.size(), serverPlayer);
+        }
         sendAttributes(serverPlayer, values);
     }
 
@@ -60,10 +63,11 @@ public class PlayerAttributeMonitor {
     }
 
     private void onAttributeModified(AttributeInstance instance) {
-        MKCore.LOGGER.info("attr {} for {} dirty", instance.getAttribute().getDescriptionId(), playerData.getEntity());
+        if (LOG_EN) {
+            MKCore.LOGGER.debug("attr {} for {} dirty", instance.getAttribute().getDescriptionId(), playerData.getEntity());
 //        new Exception("!!attr " + instance.getAttribute().getDescriptionId() + " " + instance.getModifiers().size()).printStackTrace();
+        }
         if (instance.getAttribute() instanceof MKRangedAttribute mkAttr) {
-            MKCore.LOGGER.info("   mk sync type {}", mkAttr.getSyncType());
             if (mkAttr.getSyncType().syncChanges()) {
                 dirtyPrivates.add(instance);
                 tickRequest.accept(this::sendUpdates);
@@ -79,15 +83,17 @@ public class PlayerAttributeMonitor {
     }
 
     private boolean sendUpdates() {
-        if (dirtyPrivates.isEmpty()) {
+        if (dirtyPrivates.isEmpty())
             return true;
-        }
+
         if (playerData.getEntity() instanceof ServerPlayer serverPlayer) {
             // If not added to the world keep trying to sync
             if (!serverPlayer.isAddedToWorld())
                 return false;
 
-            MKCore.LOGGER.info("sending {} private attr updates to {}", dirtyPrivates.size(), serverPlayer);
+            if (LOG_EN) {
+                MKCore.LOGGER.debug("sending {} private attr updates to {}", dirtyPrivates.size(), serverPlayer);
+            }
             sendAttributes(serverPlayer, dirtyPrivates);
             dirtyPrivates.clear();
         }

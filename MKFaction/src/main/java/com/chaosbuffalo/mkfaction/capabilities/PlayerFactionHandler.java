@@ -149,7 +149,6 @@ public class PlayerFactionHandler implements IPlayerFaction {
     }
 
     private static PersonaFactionData createNewPersonaData(Persona persona) {
-        MKFactionMod.LOGGER.debug("MKFaction creating new persona data for {}", persona.getEntity());
         return new PersonaFactionData(persona);
     }
 
