@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkcore.core.player;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
 
 public interface IPlayerSyncComponentProvider {
-    SyncComponent getSyncComponent();
+    PlayerSyncComponent getSyncComponent();
 
     default void addSyncChild(IPlayerSyncComponentProvider syncComponent) {
         getSyncComponent().addChild(syncComponent.getSyncComponent());

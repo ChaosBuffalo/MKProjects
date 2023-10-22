@@ -1,11 +1,13 @@
 package com.chaosbuffalo.mkcore.entities;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.core.player.SyncComponent;
+import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.sync.*;
+import com.chaosbuffalo.mkcore.sync.controllers.EntitySyncController;
+import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
 import com.chaosbuffalo.mkcore.utils.RayTraceUtils;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
@@ -33,7 +35,7 @@ import java.util.Comparator;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements IUpdateEngineProvider {
+public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements ISyncControllerProvider {
 
     private BlockPos startPos;
     private Supplier<Block> block;
@@ -41,8 +43,8 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
 
     private static final EntityDataAccessor<Float> RANGE = SynchedEntityData.defineId(
             BlockAnchoredLineEffectEntity.class, EntityDataSerializers.FLOAT);
-    private final EntityUpdateEngine engine;
-    private final SyncComponent targeting = new SyncComponent("targeting");
+    private final EntitySyncController engine;
+    private final PlayerSyncComponent targeting = new PlayerSyncComponent("targeting");
 
     @Nullable
     protected LivingEntity target;
@@ -58,7 +60,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
 
     public BlockAnchoredLineEffectEntity(EntityType<? extends BlockAnchoredLineEffectEntity> entityType, Level world) {
         super(entityType, world);
-        engine = new EntityUpdateEngine(this);
+        engine = new EntitySyncController(this);
         targeting.attach(engine);
         targeting.addPublic(hasEntity);
         targeting.addPublic(startPoint);
@@ -239,7 +241,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     }
 
     @Override
-    public UpdateEngine getUpdateEngine() {
+    public SyncController getSyncController() {
         return engine;
     }
 }

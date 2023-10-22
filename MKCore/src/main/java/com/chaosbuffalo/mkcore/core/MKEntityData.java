@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
 import com.chaosbuffalo.mkcore.core.entity.EntityStats;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
-import com.chaosbuffalo.mkcore.sync.UpdateEngine;
+import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -100,7 +100,7 @@ public class MKEntityData implements IMKEntityData {
     }
 
     @Override
-    public void attachUpdateEngine(UpdateEngine engine) {
+    public void attachUpdateEngine(SyncController engine) {
         pets.getSyncComponent().attach(engine);
         stats.getSyncComponent().attach(engine);
     }

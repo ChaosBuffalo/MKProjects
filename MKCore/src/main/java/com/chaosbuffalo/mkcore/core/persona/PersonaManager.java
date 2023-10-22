@@ -167,7 +167,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
             Persona single = createNewPersona("client_persona");
 
             setActivePersona(single);
-            getActivePersona().getSyncComponent().attach(playerData.getUpdateEngine());
+            getActivePersona().getSyncComponent().attach(playerData.getSyncController());
         }
     }
 

@@ -13,9 +13,9 @@ import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.pets.IMKPet;
 import com.chaosbuffalo.mkcore.core.pets.PetNonCombatBehavior;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
-import com.chaosbuffalo.mkcore.core.player.SyncComponent;
-import com.chaosbuffalo.mkcore.entities.IUpdateEngineProvider;
-import com.chaosbuffalo.mkcore.sync.EntityUpdateEngine;
+import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
+import com.chaosbuffalo.mkcore.entities.ISyncControllerProvider;
+import com.chaosbuffalo.mkcore.sync.controllers.EntitySyncController;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
@@ -84,12 +84,12 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 
-public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, IUpdateEngineProvider, IMKPet, ITargetingOwner {
+public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, ISyncControllerProvider, IMKPet, ITargetingOwner {
     private static final EntityDataAccessor<String> LOOK_STYLE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Float> SCALE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> IS_GHOST = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> GHOST_TRANSLUCENCY = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
-    private final SyncComponent animSync = new SyncComponent("anim");
+    private final PlayerSyncComponent animSync = new PlayerSyncComponent("anim");
     private int castAnimTimer;
     private VisualCastState visualCastState;
     private MKAbility castingAbility;
@@ -101,7 +101,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private int comboCooldownDefault;
     private int comboCount;
     private int comboCooldown;
-    private final EntityUpdateEngine updateEngine;
+    private final EntitySyncController syncController;
     private final MKEntityData entityDataCap;
     private final ParticleEffectInstanceTracker particleEffectTracker;
     private final EntityTradeContainer entityTradeContainer;
@@ -175,15 +175,15 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         blockCooldown = GameConstants.TICKS_PER_SECOND * 2;
         blockDelay = GameConstants.TICKS_PER_SECOND / 2;
         blockHold = GameConstants.TICKS_PER_SECOND * 2;
-        updateEngine = new EntityUpdateEngine(this);
-        animSync.attach(updateEngine);
+        syncController = new EntitySyncController(this);
+        animSync.attach(syncController);
         particleEffectTracker = ParticleEffectInstanceTracker.getTracker(this);
         animSync.addPublic(particleEffectTracker);
         nonCombatMoveType = NonCombatMoveType.RANDOM_WANDER;
         combatMoveType = CombatMoveType.MELEE;
 
         entityDataCap = getCapability(CoreCapabilities.ENTITY_CAPABILITY).orElseThrow(IllegalStateException::new);
-        entityDataCap.attachUpdateEngine(updateEngine);
+        entityDataCap.attachUpdateEngine(syncController);
         entityDataCap.getAbilityExecutor().setStartCastCallback(this::startCast);
         entityDataCap.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
         entityDataCap.setInstanceTracker(particleEffectTracker);
@@ -236,7 +236,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     public void tick() {
         super.tick();
         if (!this.level.isClientSide()) {
-            updateEngine.syncUpdates();
+            syncController.syncUpdates();
         }
     }
 
@@ -303,8 +303,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     @Override
-    public EntityUpdateEngine getUpdateEngine() {
-        return updateEngine;
+    public EntitySyncController getSyncController() {
+        return syncController;
     }
 
     public double getLungeSpeed() {
