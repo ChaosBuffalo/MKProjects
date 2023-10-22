@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkcore.core;
 import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
-import com.chaosbuffalo.mkcore.sync.UpdateEngine;
+import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -43,5 +43,5 @@ public interface IMKEntityData extends INBTSerializable<CompoundTag> {
 
     void onPlayerStartTracking(ServerPlayer playerEntity);
 
-    void attachUpdateEngine(UpdateEngine engine);
+    void attachUpdateEngine(SyncController engine);
 }

@@ -7,7 +7,7 @@ import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.entities.IUpdateEngineProvider;
+import com.chaosbuffalo.mkcore.entities.ISyncControllerProvider;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mkcore.utils.CapabilityUtils;
 import net.minecraft.server.MinecraftServer;
@@ -147,8 +147,8 @@ public class EntityEventHandler {
         if (event.getEntity() instanceof ServerPlayer playerEntity) {
             MKCore.getEntityData(event.getTarget())
                     .ifPresent(targetData -> targetData.onPlayerStartTracking(playerEntity));
-            if (event.getTarget() instanceof IUpdateEngineProvider provider) {
-                provider.getUpdateEngine().sendAll(playerEntity);
+            if (event.getTarget() instanceof ISyncControllerProvider provider) {
+                provider.getSyncController().sendFullSync(playerEntity);
             }
         }
     }

@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
 
-    private final SyncComponent sync = new SyncComponent("loadout");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent("loadout");
 
     private final Map<AbilityGroupId, AbilityGroup> abilityGroups = new EnumMap<>(AbilityGroupId.class);
     private final PassiveAbilityGroup passiveAbilityGroup;
@@ -34,7 +34,7 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
     }
 
     @Override
-    public SyncComponent getSyncComponent() {
+    public PlayerSyncComponent getSyncComponent() {
         return sync;
     }
 

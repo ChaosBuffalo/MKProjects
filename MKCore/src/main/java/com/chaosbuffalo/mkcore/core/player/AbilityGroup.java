@@ -26,7 +26,7 @@ import java.util.function.BiConsumer;
 
 public class AbilityGroup implements IPlayerSyncComponentProvider {
     protected final MKPlayerData playerData;
-    protected final SyncComponent sync;
+    protected final PlayerSyncComponent sync;
     protected final String name;
     private final List<ResourceLocation> activeAbilities;
     private final SyncListUpdater<ResourceLocation> activeUpdater;
@@ -34,7 +34,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     protected final AbilityGroupId groupId;
 
     public AbilityGroup(MKPlayerData playerData, String name, AbilityGroupId groupId) {
-        sync = new SyncComponent(name);
+        sync = new PlayerSyncComponent(name);
         this.playerData = playerData;
         this.name = name;
         this.groupId = groupId;
@@ -46,7 +46,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     }
 
     @Override
-    public SyncComponent getSyncComponent() {
+    public PlayerSyncComponent getSyncComponent() {
         return sync;
     }
 

@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkcore.core.pets;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
-import com.chaosbuffalo.mkcore.core.player.SyncComponent;
+import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.sync.SyncBool;
 import com.chaosbuffalo.mkcore.sync.SyncEntity;
 import com.chaosbuffalo.mkcore.sync.SyncMapUpdater;
@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class EntityPetModule implements IPlayerSyncComponentProvider {
-    private final SyncComponent sync = new SyncComponent("petModule");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent("petModule");
     protected final IMKEntityData entityData;
     protected final SyncBool isPet = new SyncBool("isPet", false);
     protected final SyncEntity<LivingEntity> owner = new SyncEntity<>("owner", null, LivingEntity.class);
@@ -97,7 +97,7 @@ public class EntityPetModule implements IPlayerSyncComponentProvider {
     }
 
     @Override
-    public SyncComponent getSyncComponent() {
+    public PlayerSyncComponent getSyncComponent() {
         return sync;
     }
 

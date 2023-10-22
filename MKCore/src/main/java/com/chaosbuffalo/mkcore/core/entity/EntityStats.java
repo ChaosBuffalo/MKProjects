@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
-import com.chaosbuffalo.mkcore.core.player.SyncComponent;
+import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.sync.SyncFloat;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -24,7 +24,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
     protected final AbilityTracker abilityTracker;
     protected final SyncFloat mana = new SyncFloat("mana", 0f);
     protected final SyncFloat poise = new SyncFloat("poise", 0f);
-    private final SyncComponent sync = new SyncComponent("stats");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent("stats");
     protected float manaRegenTimer;
 
 
@@ -113,7 +113,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
     }
 
     @Override
-    public SyncComponent getSyncComponent() {
+    public PlayerSyncComponent getSyncComponent() {
         return sync;
     }
 

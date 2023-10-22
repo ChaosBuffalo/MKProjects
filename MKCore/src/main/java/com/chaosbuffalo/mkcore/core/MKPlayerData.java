@@ -9,8 +9,8 @@ import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
 import com.chaosbuffalo.mkcore.core.player.*;
 import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
-import com.chaosbuffalo.mkcore.sync.PlayerUpdateEngine;
-import com.chaosbuffalo.mkcore.sync.UpdateEngine;
+import com.chaosbuffalo.mkcore.sync.controllers.PlayerSyncController;
+import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,7 +28,7 @@ public class MKPlayerData implements IMKEntityData {
     private final PlayerAbilityExecutor abilityExecutor;
     private final PlayerStats stats;
     private final PersonaManager personaManager;
-    private final PlayerUpdateEngine updateEngine;
+    private final PlayerSyncController syncController;
     private final PlayerAnimationModule animationModule;
     private final PlayerEquipment equipment;
     private final PlayerCombatExtensionModule combatExtensionModule;
@@ -40,7 +40,7 @@ public class MKPlayerData implements IMKEntityData {
 
     public MKPlayerData(Player playerEntity) {
         player = Objects.requireNonNull(playerEntity);
-        updateEngine = new PlayerUpdateEngine(this);
+        syncController = new PlayerSyncController(this);
         personaManager = PersonaManager.getPersonaManager(this);
         abilityExecutor = new PlayerAbilityExecutor(this);
         combatExtensionModule = new PlayerCombatExtensionModule(this);
@@ -56,7 +56,7 @@ public class MKPlayerData implements IMKEntityData {
         editorModule = new PlayerEditorModule(this);
         effectHandler = new PlayerEffectHandler(this);
         pets = new EntityPetModule(this);
-        attachUpdateEngine(updateEngine);
+        attachUpdateEngine(syncController);
     }
 
     private Persona getPersona() {
@@ -91,8 +91,8 @@ public class MKPlayerData implements IMKEntityData {
         return getPersona().getSkills();
     }
 
-    public PlayerUpdateEngine getUpdateEngine() {
-        return updateEngine;
+    public PlayerSyncController getSyncController() {
+        return syncController;
     }
 
     public PersonaManager getPersonaManager() {
@@ -199,24 +199,24 @@ public class MKPlayerData implements IMKEntityData {
     }
 
     private void syncState() {
-        updateEngine.syncUpdates();
+        syncController.syncUpdates();
     }
 
     public void initialSync() {
         if (isServerSide()) {
             MKCore.LOGGER.debug("Sending initial sync for {}", player);
-            updateEngine.sendAll((ServerPlayer) player);
+            syncController.sendFullSync((ServerPlayer) player);
         }
     }
 
     @Override
     public void onPlayerStartTracking(ServerPlayer otherPlayer) {
-        updateEngine.sendAll(otherPlayer);
+        syncController.sendFullSync(otherPlayer);
         getEffects().sendAllEffectsToPlayer(otherPlayer);
     }
 
     @Override
-    public void attachUpdateEngine(UpdateEngine engine) {
+    public void attachUpdateEngine(SyncController engine) {
         animationModule.getSyncComponent().attach(engine);
         combatExtensionModule.getSyncComponent().attach(engine);
         stats.getSyncComponent().attach(engine);

@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncComponentProvider {
     private final String name;
-    private final SyncComponent sync = new SyncComponent("knowledge");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent("knowledge");
     private final PlayerAbilityKnowledge abilities;
     private final PlayerTalentKnowledge talents;
     private final PlayerEntitlementKnowledge entitlements;
@@ -56,7 +56,7 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     }
 
     @Override
-    public SyncComponent getSyncComponent() {
+    public PlayerSyncComponent getSyncComponent() {
         return sync;
     }
 
@@ -113,14 +113,14 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     }
 
     public void activate() {
-        sync.attach(data.getUpdateEngine());
+        sync.attach(data.getSyncController());
         onPersonaActivated();
         data.onPersonaActivated();
         extensions.values().forEach(IPersonaExtension::onPersonaActivated);
     }
 
     public void deactivate() {
-        sync.detach(data.getUpdateEngine());
+        sync.detach(data.getSyncController());
         onPersonaDeactivated();
         data.onPersonaDeactivated();
         extensions.values().forEach(IPersonaExtension::onPersonaDeactivated);
