@@ -25,7 +25,7 @@ public class EntityPetModule implements IPlayerSyncComponentProvider {
     protected final Map<ResourceLocation, MKPet<?>> pets = new HashMap<>();
     protected final Map<ResourceLocation, MKPet.ClientMKPet> clientPetMap = new HashMap<>();
     protected final SyncMapUpdater<ResourceLocation, MKPet.ClientMKPet> clientPets = new SyncMapUpdater<>("clientPets",
-            () -> clientPetMap, ResourceLocation::toString, ResourceLocation::tryParse, EntityPetModule::createClientPet);
+            clientPetMap, ResourceLocation::toString, ResourceLocation::tryParse, EntityPetModule::createClientPet);
 
     private static MKPet.ClientMKPet createClientPet(ResourceLocation petId) {
         return new MKPet.ClientMKPet(petId, null);

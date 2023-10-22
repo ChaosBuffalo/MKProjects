@@ -10,17 +10,16 @@ import net.minecraft.nbt.Tag;
 import java.util.BitSet;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class SyncListUpdater<T> implements ISyncObject {
-    private final Supplier<List<T>> parent;
+    private final List<T> parent;
     private final String name;
     private final Function<T, Tag> valueEncoder;
     private final Function<Tag, T> valueDecoder;
     private final BitSet dirtyEntries = new BitSet();
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
-    public SyncListUpdater(String name, Supplier<List<T>> list, Function<T, Tag> valueEncoder, Function<Tag, T> valueDecoder) {
+    public SyncListUpdater(String name, List<T> list, Function<T, Tag> valueEncoder, Function<Tag, T> valueDecoder) {
         this.name = name;
         this.parent = list;
         this.valueDecoder = valueDecoder;
@@ -47,7 +46,7 @@ public class SyncListUpdater<T> implements ISyncObject {
         CompoundTag root = tag.getCompound(name);
 
         if (root.getBoolean("f")) {
-            parent.get().clear();
+            parent.clear();
         }
 
         if (root.contains("s")) {
@@ -86,9 +85,8 @@ public class SyncListUpdater<T> implements ISyncObject {
     }
 
     private ListTag serializeSparseList(BitSet dirtyEntries) {
-        List<T> fullList = parent.get();
         ListTag list = new ListTag();
-        dirtyEntries.stream().forEach(i -> list.add(makeSparseEntry(i, fullList.get(i))));
+        dirtyEntries.stream().forEach(i -> list.add(makeSparseEntry(i, parent.get(i))));
         return list;
     }
 
@@ -108,12 +106,11 @@ public class SyncListUpdater<T> implements ISyncObject {
 
     private void setValueInternal(int index, Tag encodedValue) {
         T decoded = valueDecoder.apply(encodedValue);
-        List<T> list = parent.get();
         if (decoded != null) {
-            if (index < list.size()) {
-                list.set(index, decoded);
+            if (index < parent.size()) {
+                parent.set(index, decoded);
             } else {
-                MKCore.LOGGER.error("Failed set update item: Index {} out of range ({} max)", index, list.size());
+                MKCore.LOGGER.error("Failed set update item: Index {} out of range ({} max)", index, parent.size());
             }
         } else {
             MKCore.LOGGER.error("Failed to decode list entry {}: {}", index, encodedValue);
@@ -122,7 +119,7 @@ public class SyncListUpdater<T> implements ISyncObject {
 
     public Tag serializeStorage() {
         ListTag list = new ListTag();
-        parent.get().forEach(r -> list.add(valueEncoder.apply(r)));
+        parent.forEach(r -> list.add(valueEncoder.apply(r)));
         return list;
     }
 

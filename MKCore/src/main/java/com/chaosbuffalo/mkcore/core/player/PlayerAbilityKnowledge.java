@@ -27,7 +27,7 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
     private final SyncInt poolSize = new SyncInt("poolSize", GameConstants.DEFAULT_ABILITY_POOL_SIZE);
     private final SyncMapUpdater<ResourceLocation, MKAbilityInfo> knownAbilityUpdater =
             new SyncMapUpdater<>("known",
-                    () -> abilityInfoMap,
+                    abilityInfoMap,
                     ResourceLocation::toString,
                     ResourceLocation::tryParse,
                     PlayerAbilityKnowledge::createAbilityInfo

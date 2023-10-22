@@ -39,7 +39,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         this.name = name;
         this.groupId = groupId;
         activeAbilities = NonNullList.withSize(groupId.getMaxSlots(), MKCoreRegistry.INVALID_ABILITY);
-        activeUpdater = new ResourceListUpdater("active", () -> activeAbilities);
+        activeUpdater = new ResourceListUpdater("active", activeAbilities);
         slots = new SyncInt("slots", groupId.getDefaultSlots());
         addSyncPrivate(activeUpdater);
         addSyncPrivate(slots);
