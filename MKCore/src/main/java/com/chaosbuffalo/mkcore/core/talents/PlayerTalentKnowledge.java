@@ -20,6 +20,7 @@ import net.minecraft.sounds.SoundSource;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,6 +32,7 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     private final Map<ResourceLocation, TalentTreeRecord> talentTreeRecordMap = new HashMap<>();
     private final SyncInt talentXp = new SyncInt("xp", 0);
     private final PlayerRecordDispatcher dispatcher;
+    private final TreeSyncGroup treeGroup;
 
     public PlayerTalentKnowledge(MKPlayerData playerData) {
         this.playerData = playerData;
@@ -38,15 +40,10 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
         addSyncPrivate(talentPoints);
         addSyncPrivate(totalTalentPoints);
         addSyncPrivate(talentXp);
-        if (playerData.isClientSide()) {
-            addSyncPrivate(new ClientTreeSyncGroup());
-        } else {
-            for (TalentTreeDefinition def : MKCore.getTalentManager().getDefaultTrees()) {
-                if (!unlockTree(def.getTreeId())) {
-                    MKCore.LOGGER.error("Failed to unlock default talent tree: {}", def.getTreeId());
-                }
-            }
-        }
+        treeGroup = new TreeSyncGroup("trees");
+        addSyncPrivate(treeGroup);
+
+        unlockDefaultTrees(playerData);
     }
 
     public int getTalentXp() {
@@ -114,29 +111,40 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     }
 
     public boolean unlockTree(ResourceLocation treeId) {
-        TalentTreeRecord record = unlockTreeInternal(treeId);
-        if (record != null) {
-            sync.addPrivate(record.getUpdater(), true);
-            return true;
-        }
-        return false;
+        return unlockTree(treeId, true);
     }
 
-    private TalentTreeRecord unlockTreeInternal(ResourceLocation treeId) {
+    private boolean unlockTree(ResourceLocation treeId, boolean sendUpdate) {
         if (talentTreeRecordMap.containsKey(treeId)) {
             MKCore.LOGGER.warn("Player {} tried to unlock already-known talent tree {}", playerData.getEntity(), treeId);
-            return null;
+            return true;
         }
 
         TalentTreeDefinition tree = MKCore.getTalentManager().getTalentTree(treeId);
         if (tree == null) {
             MKCore.LOGGER.warn("Player {} tried to unlock unknown tree {}", playerData.getEntity(), treeId);
-            return null;
+            return false;
         }
 
         TalentTreeRecord record = tree.createRecord();
+        if (record == null) {
+            return false;
+        }
+
         talentTreeRecordMap.put(tree.getTreeId(), record);
-        return record;
+        treeGroup.add(record.getUpdater(), sendUpdate);
+        return true;
+    }
+
+    private void unlockDefaultTrees(MKPlayerData playerData) {
+        if (playerData.isClientSide())
+            return;
+
+        for (TalentTreeDefinition def : MKCore.getTalentManager().getDefaultTrees()) {
+            if (!unlockTree(def.getTreeId(), false)) {
+                MKCore.LOGGER.error("Failed to unlock default talent tree: {}", def.getTreeId());
+            }
+        }
     }
 
     public boolean knowsTree(ResourceLocation treeId) {
@@ -265,7 +273,7 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
             talentPoints.add(-treeRecord.getPointsSpent());
 
             talentTreeRecordMap.put(tree.getTreeId(), treeRecord);
-            sync.addPrivate(treeRecord.getUpdater(), true);
+            treeGroup.add(treeRecord.getUpdater(), false);
         }
     }
 
@@ -277,30 +285,28 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
         deserialize(new Dynamic<>(NbtOps.INSTANCE, tag));
     }
 
-    class ClientTreeSyncGroup extends DynamicSyncGroup {
+    class TreeSyncGroup extends DynamicSyncGroup {
+        public TreeSyncGroup(String name) {
+            super(name);
+        }
 
         @Override
-        protected void onKey(String key) {
+        protected void beforeClientUpdate(CompoundTag groupTag, boolean fullSync) {
+            if (fullSync) {
+                talentTreeRecordMap.clear();
+            }
+            super.beforeClientUpdate(groupTag, fullSync);
+        }
+
+        @Override
+        protected void preUpdateEntry(String key, Supplier<CompoundTag> value) {
             ResourceLocation treeId = ResourceLocation.tryParse(key);
             if (treeId == null)
                 return;
 
             if (MKCore.getTalentManager().getTalentTree(treeId) != null && !talentTreeRecordMap.containsKey(treeId)) {
-                TalentTreeRecord treeRecord = unlockTreeInternal(treeId);
-                if (treeRecord != null) {
-                    add(treeRecord.getUpdater());
-                }
+                unlockTree(treeId, false);
             }
-        }
-
-        @Override
-        public void serializeUpdate(CompoundTag tag) {
-            throw new IllegalStateException("ClientTreeSyncGroup should never call serializeUpdate!");
-        }
-
-        @Override
-        public void serializeFull(CompoundTag tag) {
-            throw new IllegalStateException("ClientTreeSyncGroup should never call serializeFull!");
         }
     }
 

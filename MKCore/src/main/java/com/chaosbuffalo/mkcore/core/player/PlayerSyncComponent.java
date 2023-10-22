@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
+import com.chaosbuffalo.mkcore.sync.NamedSyncGroup;
 import com.chaosbuffalo.mkcore.sync.SyncGroup;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
@@ -11,8 +12,8 @@ public class PlayerSyncComponent {
     private final SyncGroup privateUpdater;
 
     public PlayerSyncComponent(String name) {
-        publicUpdater = new SyncGroup(name);
-        privateUpdater = new SyncGroup(name);
+        publicUpdater = new NamedSyncGroup(name);
+        privateUpdater = new NamedSyncGroup(name);
     }
 
     public void attach(SyncController engine) {
@@ -35,13 +36,6 @@ public class PlayerSyncComponent {
     }
 
     public void addPrivate(ISyncObject syncObject) {
-        addPrivate(syncObject, false);
-    }
-
-    public void addPrivate(ISyncObject syncObject, boolean forceUpdate) {
         privateUpdater.add(syncObject);
-        if (forceUpdate) {
-            privateUpdater.forceDirty();
-        }
     }
 }

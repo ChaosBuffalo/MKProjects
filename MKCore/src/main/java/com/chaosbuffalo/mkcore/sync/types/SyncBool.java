@@ -59,6 +59,5 @@ public class SyncBool implements ISyncObject {
     @Override
     public void serializeFull(CompoundTag tag) {
         tag.putBoolean(name, value);
-        dirty = false;
     }
 }
