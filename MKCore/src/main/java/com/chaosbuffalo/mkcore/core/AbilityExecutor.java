@@ -103,7 +103,7 @@ public class AbilityExecutor {
     }
 
     public void setCooldown(ResourceLocation id, int ticks) {
-        MKCore.LOGGER.debug("setCooldown({}, {})", id, ticks);
+//        MKCore.LOGGER.debug("setCooldown({}, {})", id, ticks);
 
         if (!id.equals(MKCoreRegistry.INVALID_ABILITY)) {
             entityData.getStats().setTimer(id, ticks);
@@ -132,14 +132,14 @@ public class AbilityExecutor {
     }
 
     private void startCast(AbilityContext context, MKAbilityInfo abilityInfo, int castTime) {
-        MKCore.LOGGER.debug("startCast {} {}", abilityInfo.getId(), castTime);
+//        MKCore.LOGGER.debug("startCast {} {}", abilityInfo.getId(), castTime);
         currentCast = createServerCastingState(context, abilityInfo, castTime);
         currentCast.begin();
         PacketHandler.sendToTrackingAndSelf(EntityCastPacket.start(entityData, abilityInfo.getId(), castTime), entityData.getEntity());
     }
 
     public void startCastClient(ResourceLocation abilityId, int castTicks) {
-        MKCore.LOGGER.debug("startCastClient {} {}", abilityId, castTicks);
+//        MKCore.LOGGER.debug("startCastClient {} {}", abilityId, castTicks);
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
         if (ability != null) {
             currentCast = createClientCastingState(ability, castTicks);

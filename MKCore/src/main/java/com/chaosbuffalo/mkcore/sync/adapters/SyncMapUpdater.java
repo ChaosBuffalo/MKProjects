@@ -97,7 +97,10 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
         }
 
         if (root.contains("l")) {
-            deserializeMap(root.getCompound("l"), IMKSerializable::deserializeSync);
+            CompoundTag list = root.getCompound("l");
+            if (!list.isEmpty()) {
+                deserializeMap(list, IMKSerializable::deserializeSync);
+            }
         }
     }
 
@@ -184,5 +187,10 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
             backingMap.clear();
             deserializeMap(compoundTag, IMKSerializable::deserializeStorage);
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("SyncMap[name='%s', dirty=%d, map=%s]", rootName, dirty.size(), backingMap);
     }
 }

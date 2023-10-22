@@ -566,7 +566,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Nullable
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn, @Nullable CompoundTag dataTag) {
-        MKNpc.LOGGER.info("In initial spawn for {}", this);
+//        MKNpc.LOGGER.info("In initial spawn for {}", this);
         SpawnGroupData entityData = super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
         this.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).ifPresent((cap) -> {
             if (cap.wasMKSpawned()) {
