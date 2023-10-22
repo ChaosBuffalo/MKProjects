@@ -1,6 +1,8 @@
-package com.chaosbuffalo.mkcore.sync;
+package com.chaosbuffalo.mkcore.sync.adapters;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;

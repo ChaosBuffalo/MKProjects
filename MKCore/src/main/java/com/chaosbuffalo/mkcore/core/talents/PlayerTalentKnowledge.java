@@ -7,7 +7,7 @@ import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.core.records.PlayerRecordDispatcher;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.sync.DynamicSyncGroup;
-import com.chaosbuffalo.mkcore.sync.SyncInt;
+import com.chaosbuffalo.mkcore.sync.types.SyncInt;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;

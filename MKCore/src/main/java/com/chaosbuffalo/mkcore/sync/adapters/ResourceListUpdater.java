@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkcore.sync;
+package com.chaosbuffalo.mkcore.sync.adapters;
 
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
