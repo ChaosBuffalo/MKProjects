@@ -1,31 +1,37 @@
-package com.chaosbuffalo.mkcore.sync;
+package com.chaosbuffalo.mkcore.sync.types;
 
+import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import net.minecraft.nbt.CompoundTag;
 
-import java.util.function.BiConsumer;
-
-public class SyncObject<T> implements ISyncObject {
-    protected final String name;
-    private T value;
+public class SyncInt implements ISyncObject {
+    private final String name;
+    private int value;
     private boolean dirty;
-    private final BiConsumer<CompoundTag, SyncObject<T>> serializer;
-    private final BiConsumer<CompoundTag, SyncObject<T>> deserializer;
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
-    public SyncObject(String name, T value, BiConsumer<CompoundTag, SyncObject<T>> serializer, BiConsumer<CompoundTag, SyncObject<T>> deserializer) {
+    public SyncInt(String name, int value) {
         this.name = name;
-        this.serializer = serializer;
-        this.deserializer = deserializer;
-        set(value);
+        set(value, false);
     }
 
-    public void set(T value) {
+    public void set(int value) {
+        set(value, true);
+    }
+
+    public void set(int value, boolean setDirty) {
         this.value = value;
-        this.dirty = true;
-        parentNotifier.notifyUpdate(this);
+        if (setDirty) {
+            this.dirty = true;
+            parentNotifier.notifyUpdate(this);
+        }
     }
 
-    public T get() {
+    public void add(int value) {
+        set(get() + value);
+    }
+
+    public int get() {
         return value;
     }
 
@@ -42,7 +48,7 @@ public class SyncObject<T> implements ISyncObject {
     @Override
     public void deserializeUpdate(CompoundTag tag) {
         if (tag.contains(name)) {
-            deserializer.accept(tag, this);
+            this.value = tag.getInt(name);
         }
     }
 
@@ -56,7 +62,7 @@ public class SyncObject<T> implements ISyncObject {
 
     @Override
     public void serializeFull(CompoundTag tag) {
-        serializer.accept(tag, this);
+        tag.putInt(name, value);
         dirty = false;
     }
 }

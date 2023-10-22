@@ -1,5 +1,7 @@
-package com.chaosbuffalo.mkcore.sync;
+package com.chaosbuffalo.mkcore.sync.types;
 
+import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.Vec3;
 

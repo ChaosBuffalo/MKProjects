@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkcore.attributes.AttributeInstanceExtension;
 import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.sync.SyncInt;
+import com.chaosbuffalo.mkcore.sync.types.SyncInt;
 import com.chaosbuffalo.mkcore.utils.DynamicAttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;

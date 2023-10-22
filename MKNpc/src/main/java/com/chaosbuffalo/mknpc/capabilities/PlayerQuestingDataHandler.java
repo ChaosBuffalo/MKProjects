@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkcore.core.persona.IPersonaExtension;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtensionProvider;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
-import com.chaosbuffalo.mkcore.sync.SyncMapUpdater;
+import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.content.ContentDB;
