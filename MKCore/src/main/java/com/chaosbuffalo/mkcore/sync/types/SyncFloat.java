@@ -63,6 +63,5 @@ public class SyncFloat implements ISyncObject {
     @Override
     public void serializeFull(CompoundTag tag) {
         tag.putFloat(name, value);
-        dirty = false;
     }
 }

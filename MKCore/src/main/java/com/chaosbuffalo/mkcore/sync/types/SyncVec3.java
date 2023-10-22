@@ -73,6 +73,5 @@ public class SyncVec3 implements ISyncObject {
         root.putDouble("y", value.y);
         root.putDouble("z", value.z);
         tag.put(name, root);
-        dirty = false;
     }
 }

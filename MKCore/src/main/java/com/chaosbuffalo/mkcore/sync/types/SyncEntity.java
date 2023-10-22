@@ -84,7 +84,6 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
     @Override
     public void serializeFull(CompoundTag tag) {
         tag.putInt(name, value != null ? value.getId() : -1);
-        dirty = false;
     }
 
     static class ClientHandler {

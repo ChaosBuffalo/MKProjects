@@ -106,7 +106,7 @@ public class PlayerStats extends EntityStats {
     public void deserialize(CompoundTag tag) {
         abilityTracker.deserialize(tag.getCompound("cooldowns"));
         if (tag.contains("mana")) {
-            setMana(tag.getFloat("mana"));
+            setMana(tag.getFloat("mana"), false);
         }
     }
 }
