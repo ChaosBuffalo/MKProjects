@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 
 public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implements ISyncObject {
@@ -27,27 +26,17 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     private final Set<K> dirty = new HashSet<>();
     private final Function<K, V> valueFactory;
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
-    private BiPredicate<K, V> storageFilter = this::defaultEntryFilter;
-    private BiPredicate<K, V> syncFilter = this::defaultEntryFilter;
 
     public SyncMapUpdater(String rootName,
-                          Supplier<Map<K, V>> mapSupplier,
+                          Map<K, V> mapSupplier,
                           Function<K, String> keyEncoder,
                           Function<String, K> keyDecoder,
                           Function<K, V> valueFactory) {
         this.rootName = rootName;
-        this.backingMap = mapSupplier.get();
+        this.backingMap = mapSupplier;
         this.keyEncoder = keyEncoder;
         this.keyDecoder = keyDecoder;
         this.valueFactory = valueFactory;
-    }
-
-    public void setStorageFilter(BiPredicate<K, V> filter) {
-        storageFilter = filter != null ? filter : this::defaultEntryFilter;
-    }
-
-    public void setSyncFilter(BiPredicate<K, V> filter) {
-        syncFilter = filter != null ? filter : this::defaultEntryFilter;
     }
 
     public void markDirty(K key) {
@@ -68,18 +57,18 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     private ListTag gatherDirtyRemovals() {
         if (dirty.isEmpty())
             return null;
-        ListTag list = new ListTag();
 
+        ListTag removedKeys = new ListTag();
         dirty.removeIf(key -> {
             V value = backingMap.get(key);
             if (value == null) {
-                list.add(StringTag.valueOf(keyEncoder.apply(key)));
+                removedKeys.add(StringTag.valueOf(keyEncoder.apply(key)));
                 return true;
             }
             return false;
         });
 
-        return list;
+        return removedKeys;
     }
 
     private void processDirtyRemovals(ListTag list) {
@@ -89,8 +78,8 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
                 continue;
 
             K key = keyDecoder.apply(encodedKey);
-            V old = backingMap.remove(key);
-            MKCore.LOGGER.info("removing {} {} {} {}", encodedKey, key, old != null, backingMap.size());
+            backingMap.remove(key);
+//            MKCore.LOGGER.info("removing {} {} {} {}", encodedKey, key, old != null, backingMap.size());
         }
     }
 
@@ -113,7 +102,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     }
 
     private CompoundTag makeSyncMap(Collection<K> keySet) {
-        return serializeMap(keySet, IMKSerializable::serializeSync, syncFilter);
+        return serializeMap(keySet, IMKSerializable::serializeSync);
     }
 
     @Override
@@ -146,27 +135,19 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
         dirty.clear();
     }
 
-    private boolean defaultEntryFilter(K key, V value) {
-        return true;
-    }
-
     private CompoundTag serializeMap(Collection<K> keyCollection,
-                                     Function<V, Tag> valueSerializer,
-                                     BiPredicate<K, V> entryFilter) {
+                                     Function<V, Tag> valueSerializer) {
         CompoundTag list = new CompoundTag();
-        keyCollection.forEach(key -> {
+        for (K key : keyCollection) {
             V value = backingMap.get(key);
             if (value == null)
-                return;
-
-            if (!entryFilter.test(key, value))
-                return;
+                continue;
 
             Tag tag = valueSerializer.apply(value);
             if (tag != null) {
                 list.put(keyEncoder.apply(key), tag);
             }
-        });
+        }
         return list;
     }
 
@@ -195,17 +176,13 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     }
 
     public CompoundTag serializeStorage() {
-        return serializeStorage(storageFilter);
-    }
-
-    public CompoundTag serializeStorage(BiPredicate<K, V> entryFilter) {
-        return serializeMap(backingMap.keySet(), IMKSerializable::serializeStorage, entryFilter);
+        return serializeMap(backingMap.keySet(), IMKSerializable::serializeStorage);
     }
 
     public void deserializeStorage(Tag tag) {
-        if (tag instanceof CompoundTag) {
+        if (tag instanceof CompoundTag compoundTag) {
             backingMap.clear();
-            deserializeMap((CompoundTag) tag, IMKSerializable::deserializeStorage);
+            deserializeMap(compoundTag, IMKSerializable::deserializeStorage);
         }
     }
 }

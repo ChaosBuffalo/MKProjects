@@ -5,10 +5,10 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 public class ResourceListUpdater extends SyncListUpdater<ResourceLocation> {
-    public ResourceListUpdater(String name, Supplier<List<ResourceLocation>> list) {
+
+    public ResourceListUpdater(String name, List<ResourceLocation> list) {
         super(name, list, ResourceListUpdater::encode, ResourceListUpdater::decode);
     }
 

@@ -77,7 +77,7 @@ public class PlayerFactionHandler implements IPlayerFaction {
         public PersonaFactionData(Persona persona) {
             this.persona = persona;
             factionUpdater = new SyncMapUpdater<>("factions",
-                    () -> factionMap,
+                    factionMap,
                     ResourceLocation::toString,
                     ResourceLocation::tryParse,
                     this::createNewEntry
