@@ -4,7 +4,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.content.ContentDB;
-import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
+import com.chaosbuffalo.mknpc.world.gen.StructureStartExtension;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructure;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -50,7 +50,7 @@ public class WorldStructureHandler {
                         .toList();
                 for (StructureStart start : starts) {
                     over.setupStructureDataIfAbsent(start, event.level);
-                    activeStructures.visitStructure(IStructureStartMixin.getInstanceIdFromStart(start), player);
+                    activeStructures.visitStructure(StructureStartExtension.getInstanceId(start), player);
                 }
             }
             if (event.level.dimension() == Level.OVERWORLD) {
