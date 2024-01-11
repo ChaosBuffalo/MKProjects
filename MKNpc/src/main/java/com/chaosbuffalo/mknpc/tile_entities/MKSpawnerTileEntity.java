@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.tile_entities;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
+import com.chaosbuffalo.mkcore.utils.RandomCollection;
 import com.chaosbuffalo.mkcore.utils.WorldUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.blocks.MKSpawnerBlock;
@@ -13,7 +14,6 @@ import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.spawn.SpawnList;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
-import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -260,7 +260,7 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
 
     public void spawnEntity() {
         if (getLevel() != null) {
-            NpcDefinition definition = randomSpawns.next();
+            NpcDefinition definition = randomSpawns.next(getLevel().getRandom());
             Vec3 spawnPos = Vec3.atLowerCornerOf(getBlockPos()).add(0.5, 0.125, 0.5);
             double difficultyValue = WorldUtils.getDifficultyForGlobalPos(
                     GlobalPos.of(getLevel().dimension(), getBlockPos()));
