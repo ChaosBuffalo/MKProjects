@@ -1,11 +1,11 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
+import com.chaosbuffalo.mkcore.utils.RandomCollection;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
 import com.chaosbuffalo.mknpc.npc.option_entries.EquipmentOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
-import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
@@ -32,7 +32,7 @@ public class EquipmentOption extends WorldPermanentOption {
             for (NpcItemChoice choice : entry.getValue()) {
                 slotChoices.add(choice.weight, choice);
             }
-            equipmentEntry.setSlotChoice(entry.getKey(), slotChoices.next());
+            equipmentEntry.setSlotChoice(entry.getKey(), slotChoices.next(random));
         }
         return equipmentEntry;
     }
