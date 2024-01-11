@@ -4,7 +4,7 @@ import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.PointOfInterestEntry;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
-import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
+import com.chaosbuffalo.mknpc.world.gen.StructureStartExtension;
 import com.chaosbuffalo.mknpc.world.gen.StructureUtils;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -52,7 +52,7 @@ public class MKStructureCommands {
             starts.forEach(start -> {
                 ResourceLocation structureId = registry.getKey(start.getStructure());
                 player.sendSystemMessage(Component.translatable("mknpc.command.in_struct",
-                        structureId, IStructureStartMixin.getInstanceIdFromStart(start)));
+                        structureId, StructureStartExtension.getInstanceId(start)));
             });
         }
 
@@ -73,11 +73,11 @@ public class MKStructureCommands {
             Registry<Structure> registry = ctx.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE);
             starts.forEach(start -> {
                 ResourceLocation structureId = registry.getKey(start.getStructure());
-                UUID instanceId = IStructureStartMixin.getInstanceIdFromStart(start);
+                UUID instanceId = StructureStartExtension.getInstanceId(start);
 
                 ContentDB.getPrimaryData().getStructureData(instanceId).ifPresent(MKStructureEntry::reset);
                 player.sendSystemMessage(Component.translatable("mknpc.command.reset_struct",
-                        structureId, IStructureStartMixin.getInstanceIdFromStart(start)));
+                        structureId, StructureStartExtension.getInstanceId(start)));
             });
         }
         return Command.SINGLE_SUCCESS;
@@ -97,7 +97,7 @@ public class MKStructureCommands {
             IWorldNpcData cap = ContentDB.getPrimaryData();
             Registry<Structure> registry = ctx.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE);
             starts.forEach(start -> {
-                UUID startId = IStructureStartMixin.getInstanceIdFromStart(start);
+                UUID startId = StructureStartExtension.getInstanceId(start);
                 Optional<MKStructureEntry> entry = cap.getStructureData(startId);
                 ResourceLocation structureId = registry.getKey(start.getStructure());
                 if (entry.isPresent()) {

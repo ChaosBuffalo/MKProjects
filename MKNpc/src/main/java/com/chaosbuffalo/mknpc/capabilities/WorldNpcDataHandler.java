@@ -14,7 +14,7 @@ import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
-import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
+import com.chaosbuffalo.mknpc.world.gen.StructureStartExtension;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSinglePoolElement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructure;
 import com.mojang.datafixers.util.Pair;
@@ -92,7 +92,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
 
     @Override
     public void setupStructureDataIfAbsent(StructureStart start, Level level) {
-        UUID instanceId = IStructureStartMixin.getInstanceIdFromStart(start);
+        UUID instanceId = StructureStartExtension.getInstanceId(start);
         Structure struct = start.getStructure();
         ResourceLocation structId = level.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(struct);
         if (hasStructureInstance(structId, instanceId))
