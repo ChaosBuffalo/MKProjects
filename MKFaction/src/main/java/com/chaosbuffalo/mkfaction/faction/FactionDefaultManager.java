@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkfaction.faction;
 
+import com.chaosbuffalo.mkcore.utils.SingleJsonFileReloadListener;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
-import com.chaosbuffalo.mkfaction.util.SingleJsonFileReloadListener;
 import com.google.gson.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
