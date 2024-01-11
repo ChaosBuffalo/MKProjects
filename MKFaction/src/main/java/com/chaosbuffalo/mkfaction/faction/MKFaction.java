@@ -50,7 +50,7 @@ public class MKFaction {
     public String getTranslationKey() {
         ResourceLocation factionId = getId();
         if (factionId != null) {
-            return String.format("faction.%s.%s.name", factionId.getNamespace(), factionId.getPath());
+            return factionId.toLanguageKey("faction", "name");
         } else {
             return "faction.mkfaction.invalid.name";
         }
