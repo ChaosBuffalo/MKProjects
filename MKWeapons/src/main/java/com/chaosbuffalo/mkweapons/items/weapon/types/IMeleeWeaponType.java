@@ -26,6 +26,8 @@ public interface IMeleeWeaponType {
 
     float getMaxPoise();
 
+    boolean canBlock();
+
     List<IMeleeWeaponEffect> getWeaponEffects();
 
     <D> D serialize(DynamicOps<D> ops);

@@ -64,7 +64,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
         this.mkTier = tier;
         this.weaponEffects = new ArrayList<>();
         recalculateModifiers();
-        weaponEffects.addAll(tier.getMeleeWeaponEffects());
+        weaponEffects.addAll(tier.getTierEffects());
         weaponEffects.addAll(weaponType.getWeaponEffects());
     }
 
@@ -101,7 +101,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     public void reload() {
         weaponEffects.clear();
         recalculateModifiers();
-        weaponEffects.addAll(getMKTier().getMeleeWeaponEffects());
+        weaponEffects.addAll(getMKTier().getTierEffects());
         weaponEffects.addAll(getWeaponType().getWeaponEffects());
     }
 

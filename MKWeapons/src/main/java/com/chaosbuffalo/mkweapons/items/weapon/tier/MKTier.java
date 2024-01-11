@@ -2,11 +2,12 @@ package com.chaosbuffalo.mkweapons.items.weapon.tier;
 
 import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.LazyLoadedValue;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
+import net.minecraftforge.common.util.Lazy;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
@@ -18,7 +19,7 @@ public class MKTier implements IMKTier {
     private final float speed;
     private final float damage;
     private final int enchantmentValue;
-    private final LazyLoadedValue<Ingredient> repairIngredient;
+    private final Supplier<Ingredient> repairIngredient;
     private final TagKey<Block> blockTag;
     private final List<IMeleeWeaponEffect> weaponEffects;
     private final String name;
@@ -32,7 +33,7 @@ public class MKTier implements IMKTier {
         this.speed = pSpeed;
         this.damage = pDamage;
         this.enchantmentValue = pEnchantmentValue;
-        this.repairIngredient = new LazyLoadedValue<>(pRepairIngredient);
+        this.repairIngredient = Lazy.of(pRepairIngredient);
         this.blockTag = blockTag;
         this.name = name;
         weaponEffects = Arrays.asList(effects);
@@ -64,6 +65,7 @@ public class MKTier implements IMKTier {
         return this.enchantmentValue;
     }
 
+    @Nonnull
     @Override
     public Ingredient getRepairIngredient() {
         return this.repairIngredient.get();
@@ -81,17 +83,12 @@ public class MKTier implements IMKTier {
     }
 
     @Override
-    public Ingredient getMajorIngredient() {
-        return Ingredient.of(tag);
-    }
-
-    @Override
-    public TagKey<Item> getItemTag() {
+    public TagKey<Item> getPrimaryIngredientTag() {
         return tag;
     }
 
     @Override
-    public List<IMeleeWeaponEffect> getMeleeWeaponEffects() {
+    public List<IMeleeWeaponEffect> getTierEffects() {
         return weaponEffects;
     }
 }

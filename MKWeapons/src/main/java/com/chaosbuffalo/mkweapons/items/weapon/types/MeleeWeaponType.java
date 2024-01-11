@@ -10,7 +10,6 @@ import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MeleeWeaponType implements IMeleeWeaponType {
@@ -27,7 +26,7 @@ public class MeleeWeaponType implements IMeleeWeaponType {
 
     public MeleeWeaponType(ResourceLocation name, float damageMultiplier, float attackSpeed,
                            float critMultiplier, float critChance, float reach, boolean isTwoHanded,
-                           float blockEfficiency, float maxPoise, IMeleeWeaponEffect... effects) {
+                           float blockEfficiency, float maxPoise, List<IMeleeWeaponEffect> effects) {
         this.damageMultiplier = damageMultiplier;
         this.name = name;
         this.attackSpeed = attackSpeed;
@@ -36,18 +35,13 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         this.reach = reach;
         this.maxPoise = maxPoise;
         this.blockEfficiency = blockEfficiency;
-        this.effects = new ArrayList<>();
-        this.effects.addAll(Arrays.asList(effects));
+        this.effects = new ArrayList<>(effects);
         this.isTwoHanded = isTwoHanded;
     }
 
     @Override
     public boolean isTwoHanded() {
         return isTwoHanded;
-    }
-
-    public String getTranslationName() {
-        return String.format("mkweapon.melee.type.%s.%s", getName().getNamespace(), getName().getPath());
     }
 
     @Override
@@ -83,11 +77,10 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         maxPoise = dynamic.get("maxPoise").asFloat(20.0f);
         List<IMeleeWeaponEffect> deserializedEffects = dynamic.get("effects").asList(d -> {
             IItemEffect effect = ItemEffects.deserializeEffect(d);
-            if (effect instanceof IMeleeWeaponEffect) {
-                return (IMeleeWeaponEffect) effect;
+            if (effect instanceof IMeleeWeaponEffect meleeWeaponEffect) {
+                return meleeWeaponEffect;
             } else {
-                MKWeapons.LOGGER.error("Failed to deserialize {} not a melee effect type for {}",
-                        effect.getTypeName(), getName());
+                MKWeapons.LOGGER.error("Failed to deserialize melee weapon effect from '{}'", d);
                 return null;
             }
         });
@@ -133,7 +126,76 @@ public class MeleeWeaponType implements IMeleeWeaponType {
     }
 
     @Override
+    public boolean canBlock() {
+        return true;
+    }
+
+    @Override
     public ResourceLocation getName() {
         return name;
+    }
+
+    public static Builder builder(ResourceLocation id) {
+        return new Builder(id);
+    }
+
+    public static class Builder {
+
+        private final ResourceLocation name;
+        private float damageMultiplier = 1.0f;
+        private float attackSpeed = -2.4f;
+        private float critMultiplier = 1.5f;
+        private float critChance = 0.05f;
+        private float reachModifier = 0.0f;
+        private float blockEfficiency = 0.75f;
+        private float maxPoise = 20f;
+        private final List<IMeleeWeaponEffect> effects = new ArrayList<>();
+        private boolean isTwoHanded = false;
+
+        public Builder(ResourceLocation typeId) {
+            this.name = typeId;
+        }
+
+        public Builder damageMultiplier(float m) {
+            damageMultiplier = m;
+            return this;
+        }
+
+        public Builder attackSpeed(float s) {
+            attackSpeed = s;
+            return this;
+        }
+
+        public Builder critical(float mult, float chance) {
+            critChance = chance;
+            critMultiplier = mult;
+            return this;
+        }
+
+        public Builder reach(float r) {
+            reachModifier = r;
+            return this;
+        }
+
+        public Builder isTwoHanded() {
+            isTwoHanded = true;
+            return this;
+        }
+
+        public Builder blocking(float b, float m) {
+            blockEfficiency = b;
+            maxPoise = m;
+            return this;
+        }
+
+        public Builder effect(IMeleeWeaponEffect effect) {
+            effects.add(effect);
+            return this;
+        }
+
+        public MeleeWeaponType build() {
+            return new MeleeWeaponType(name, damageMultiplier, attackSpeed, critMultiplier, critChance, reachModifier,
+                    isTwoHanded, blockEfficiency, maxPoise, effects);
+        }
     }
 }
