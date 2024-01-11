@@ -12,9 +12,11 @@ public interface IMKTier extends Tier {
 
     String getName();
 
-    Ingredient getMajorIngredient();
+    default Ingredient getPrimaryIngredient() {
+        return Ingredient.of(getPrimaryIngredientTag());
+    }
 
-    TagKey<Item> getItemTag();
+    TagKey<Item> getPrimaryIngredientTag();
 
-    List<IMeleeWeaponEffect> getMeleeWeaponEffects();
+    List<IMeleeWeaponEffect> getTierEffects();
 }

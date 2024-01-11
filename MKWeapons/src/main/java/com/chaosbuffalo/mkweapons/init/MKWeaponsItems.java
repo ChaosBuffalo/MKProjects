@@ -17,9 +17,9 @@ import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import com.chaosbuffalo.mkweapons.items.weapon.types.WeaponTypeManager;
 import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tiers;
@@ -83,8 +83,7 @@ public class MKWeaponsItems {
             () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
     public static void putWeaponForLookup(IMKTier tier, IMeleeWeaponType weaponType, Item item) {
-        WEAPON_LOOKUP.putIfAbsent(tier, new HashMap<>());
-        WEAPON_LOOKUP.get(tier).put(weaponType, item);
+        WEAPON_LOOKUP.computeIfAbsent(tier, t -> new HashMap<>()).put(weaponType, item);
     }
 
     public static Item lookupWeapon(IMKTier tier, IMeleeWeaponType weaponType) {
@@ -92,48 +91,54 @@ public class MKWeaponsItems {
     }
 
     @SubscribeEvent
-    public static void registerItems(RegisterEvent evt) {
-        if (evt.getRegistryKey() != ForgeRegistries.ITEMS.getRegistryKey()) {
+    public static void registerItems(RegisterEvent event) {
+        if (event.getRegistryKey() != Registries.ITEM) {
             return;
         }
         MeleeWeaponTypes.registerWeaponTypes();
-        Set<Tuple<String, IMKTier>> materials = new HashSet<>();
-        materials.add(new Tuple<>("iron", IRON_TIER));
-        materials.add(new Tuple<>("wood", WOOD_TIER));
-        materials.add(new Tuple<>("diamond", DIAMOND_TIER));
-        materials.add(new Tuple<>("gold", GOLD_TIER));
-        materials.add(new Tuple<>("stone", STONE_TIER));
-        materials.add(new Tuple<>("netherite", NETHERITE_TIER));
+
+        Map<String, IMKTier> tiers = Map.of(
+                "wood", WOOD_TIER,
+                "gold", GOLD_TIER,
+                "iron", IRON_TIER,
+                "stone", STONE_TIER,
+                "diamond", DIAMOND_TIER,
+                "netherite", NETHERITE_TIER
+        );
+
         WEAPON_LOOKUP.clear();
         BOWS.clear();
         WEAPONS.clear();
-        for (Tuple<String, IMKTier> mat : materials) {
+        for (Map.Entry<String, IMKTier> mat : tiers.entrySet()) {
+            IMKTier tier = mat.getValue();
             for (IMeleeWeaponType weaponType : MeleeWeaponTypes.WEAPON_TYPES.values()) {
-                MKMeleeWeapon weapon = new MKMeleeWeapon(mat.getB(), weaponType,
-                        (new Item.Properties()));
+                MKMeleeWeapon weapon = new MKMeleeWeapon(tier, weaponType, new Item.Properties());
                 WEAPONS.add(weapon);
                 WeaponTypeManager.addMeleeWeapon(weapon);
-                putWeaponForLookup(mat.getB(), weaponType, weapon);
-                evt.register(ForgeRegistries.ITEMS.getRegistryKey(), new ResourceLocation(MKWeapons.MODID,
-                        String.format("%s_%s", weaponType.getName().getPath(), mat.getA())), () -> weapon);
+                putWeaponForLookup(tier, weaponType, weapon);
+                event.register(Registries.ITEM,
+                        MKWeapons.id(String.format("%s_%s", weaponType.getName().getPath(), mat.getKey())),
+                        () -> weapon);
             }
+
             RangedModifierEffect rangedMods = new RangedModifierEffect();
             rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT,
                     new AttributeModifier(RANGED_WEP_UUID, "Bow Crit", 0.05, AttributeModifier.Operation.ADDITION));
             rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT_MULTIPLIER,
                     new AttributeModifier(RANGED_WEP_UUID, "Bow Crit", 0.25, AttributeModifier.Operation.ADDITION));
             MKBow bow = new MKBow(
-                    new Item.Properties().durability(mat.getB().getUses() * 3), mat.getB(),
+                    new Item.Properties().durability(tier.getUses() * 3),
+                    tier,
                     GameConstants.TICKS_PER_SECOND * 2.5f, 4.0f,
                     new RapidFireRangedWeaponEffect(7, .10f),
                     rangedMods
             );
             BOWS.add(bow);
-            evt.register(ForgeRegistries.ITEMS.getRegistryKey(),
-                    new ResourceLocation(MKWeapons.MODID, String.format("longbow_%s", mat.getA())), () -> bow);
+            event.register(Registries.ITEM,
+                    new ResourceLocation(MKWeapons.MODID, String.format("longbow_%s", mat.getKey())), () -> bow);
         }
         TestNBTWeaponEffectItem testNBTWeaponEffectItem = new TestNBTWeaponEffectItem(new Item.Properties());
-        evt.register(ForgeRegistries.ITEMS.getRegistryKey(),
+        event.register(Registries.ITEM,
                 new ResourceLocation(MKWeapons.MODID, "test_nbt_effect"), () -> testNBTWeaponEffectItem);
     }
 
@@ -143,8 +148,8 @@ public class MKWeaponsItems {
                 if (entity == null) {
                     return 0.0F;
                 } else {
-                    return !(entity.getUseItem().getItem() instanceof MKBow) ? 0.0F :
-                            (float) (itemStack.getUseDuration() - entity.getUseItemRemainingTicks()) / bow.getDrawTime(itemStack, entity);
+                    return !(entity.getUseItem().getItem() instanceof MKBow mkBow) ? 0.0F :
+                            (float) (itemStack.getUseDuration() - entity.getUseItemRemainingTicks()) / mkBow.getDrawTime(itemStack, entity);
                 }
             });
             ItemProperties.register(bow, new ResourceLocation("pulling"), (itemStack, world, entity, seed) -> {
@@ -152,14 +157,12 @@ public class MKWeaponsItems {
             });
         }
         for (MKMeleeWeapon weapon : WEAPONS) {
-            if (MeleeWeaponTypes.WITH_BLOCKING.contains(weapon.getWeaponType())) {
+            if (weapon.getWeaponType().canBlock()) {
                 ItemProperties.register(weapon, new ResourceLocation("blocking"),
                         (itemStack, world, entity, seed) -> entity != null && entity.isUsingItem()
                                 && entity.getUseItem() == itemStack ? 1.0F : 0.0F);
             }
 
         }
-
-
     }
 }

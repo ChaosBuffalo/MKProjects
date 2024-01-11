@@ -12,6 +12,7 @@ import com.chaosbuffalo.mkweapons.items.effects.IWeaponEffectsExtension;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.WeaponTypeManager;
 import com.chaosbuffalo.mkweapons.network.PacketHandler;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
@@ -91,5 +92,9 @@ public class MKWeapons {
 
     public static LazyOptional<IArrowData> getArrowCapability(AbstractArrow entity) {
         return entity.getCapability(WeaponsCapabilities.ARROW_DATA_CAPABILITY);
+    }
+
+    public static ResourceLocation id(String path) {
+        return new ResourceLocation(MODID, path);
     }
 }
