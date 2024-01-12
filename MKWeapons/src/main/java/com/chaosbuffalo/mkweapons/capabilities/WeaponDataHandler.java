@@ -23,10 +23,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class WeaponDataHandler implements IWeaponData {
 
@@ -35,7 +32,7 @@ public class WeaponDataHandler implements IWeaponData {
     private final List<IMeleeWeaponEffect> cachedMeleeWeaponEffects;
     private final List<IRangedWeaponEffect> rangedWeaponEffects;
     private final List<IRangedWeaponEffect> cachedRangedWeaponEffects;
-    private final Map<EquipmentSlot, Multimap<Attribute, AttributeModifier>> modifiers = new HashMap<>();
+    private final Map<EquipmentSlot, Multimap<Attribute, AttributeModifier>> modifiers = new EnumMap<>(EquipmentSlot.class);
     private ResourceLocation ability;
     private boolean isCacheDirty;
 
