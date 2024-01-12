@@ -6,14 +6,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 public class EquipmentOptionEntry implements INpcOptionEntry {
     private final Map<EquipmentSlot, NpcItemChoice> itemChoices;
 
     public EquipmentOptionEntry() {
-        this.itemChoices = new HashMap<>();
+        itemChoices = new EnumMap<>(EquipmentSlot.class);
     }
 
     public void setSlotChoice(EquipmentSlot slot, NpcItemChoice choice) {
@@ -22,14 +22,14 @@ public class EquipmentOptionEntry implements INpcOptionEntry {
 
     @Override
     public void applyToEntity(Entity entity) {
-        if (entity instanceof LivingEntity) {
-            applyItemChoices((LivingEntity) entity);
+        if (entity instanceof LivingEntity livingEntity) {
+            applyItemChoices(livingEntity);
         }
     }
 
     public void applyItemChoices(LivingEntity entity) {
         for (Map.Entry<EquipmentSlot, NpcItemChoice> entry : itemChoices.entrySet()) {
-            NpcItemChoice.livingEquipmentAssign(entity, entry.getKey(), entry.getValue());
+            entry.getValue().equip(entity, entry.getKey());
         }
     }
 

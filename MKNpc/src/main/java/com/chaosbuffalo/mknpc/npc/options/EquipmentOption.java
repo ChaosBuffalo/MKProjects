@@ -21,7 +21,7 @@ public class EquipmentOption extends WorldPermanentOption {
 
     public EquipmentOption() {
         super(NAME);
-        itemChoices = new HashMap<>();
+        itemChoices = new EnumMap<>(EquipmentSlot.class);
     }
 
     @Override
@@ -38,10 +38,7 @@ public class EquipmentOption extends WorldPermanentOption {
     }
 
     public EquipmentOption addItemChoice(EquipmentSlot slot, NpcItemChoice choice) {
-        if (!itemChoices.containsKey(slot)) {
-            itemChoices.put(slot, new ArrayList<>());
-        }
-        itemChoices.get(slot).add(choice);
+        itemChoices.computeIfAbsent(slot, s -> new ArrayList<>()).add(choice);
         return this;
     }
 
