@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
+    public static final String DEFINITION_FOLDER = "mknpcs";
     private MinecraftServer server;
     private boolean serverStarted = false;
 
@@ -43,7 +44,7 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
     public static final Map<ResourceLocation, Supplier<NpcDefinitionOption>> OPTION_DESERIALIZERS = new HashMap<>();
 
     public NpcDefinitionManager() {
-        super(GSON, "mknpcs");
+        super(GSON, DEFINITION_FOLDER);
         MinecraftForge.EVENT_BUS.register(this);
     }
 

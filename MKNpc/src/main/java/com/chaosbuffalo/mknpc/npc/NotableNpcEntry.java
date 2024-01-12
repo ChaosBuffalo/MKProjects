@@ -53,7 +53,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
         return notableId;
     }
 
-    public MutableComponent getName() {
+    public Component getName() {
         return name;
     }
 
@@ -78,7 +78,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
     @Override
     public void deserializeNBT(CompoundTag nbt) {
         location = GlobalPos.CODEC.parse(NbtOps.INSTANCE, nbt.getCompound("location"))
-                .result().orElse(GlobalPos.of(Level.OVERWORLD, NbtUtils.readBlockPos(nbt.getCompound("location"))));
+                .getOrThrow(false, MKNpc.LOGGER::error);
         spawnerId = nbt.getUUID("spawnerId");
         structureId = nbt.getUUID("structureId");
         definition = new ResourceLocation(nbt.getString("definition"));
