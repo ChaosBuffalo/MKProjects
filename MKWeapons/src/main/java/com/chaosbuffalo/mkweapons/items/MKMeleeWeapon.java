@@ -121,12 +121,12 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
             MKCore.getEntityData(attacker).ifPresent(attackerData -> {
                 if (attackerData.getCombatExtension().getAttackStrengthTicks() >= EntityUtils.getCooldownPeriod(attacker)) {
                     for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
-                        effect.onHit(this, stack, target, attacker);
+                        effect.onHit(this, stack, attackerData, target);
                     }
                     List<MKCurioItemHandler> curios = MKAccessory.getMKCurios(attacker);
                     for (MKCurioItemHandler handler : curios) {
                         for (IAccessoryEffect effect : handler.getEffects()) {
-                            effect.onMeleeHit(this, stack, target, attacker);
+                            effect.onMeleeHit(this, stack, attackerData, target);
                         }
                     }
                 }

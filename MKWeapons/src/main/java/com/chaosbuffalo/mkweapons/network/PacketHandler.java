@@ -54,8 +54,8 @@ public class PacketHandler {
         if (entity.level.isClientSide)
             return;
 
-        if (entity instanceof ServerPlayer) {
-            sendToTrackingAndSelf(msg, (ServerPlayer) entity);
+        if (entity instanceof ServerPlayer serverPlayer) {
+            sendToTrackingAndSelf(msg, serverPlayer);
         } else {
             sendToTracking(msg, entity);
         }
