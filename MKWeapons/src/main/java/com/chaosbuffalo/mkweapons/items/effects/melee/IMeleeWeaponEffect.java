@@ -10,7 +10,8 @@ import net.minecraft.world.item.ItemStack;
 public interface IMeleeWeaponEffect extends IItemEffect {
 
     default void onHit(IMKMeleeWeapon weapon, ItemStack stack,
-                       LivingEntity target, LivingEntity attacker) {
+                       IMKEntityData attackerData, LivingEntity target) {
+
     }
 
     default float modifyDamageDealt(float damage, IMKMeleeWeapon weapon, ItemStack stack,

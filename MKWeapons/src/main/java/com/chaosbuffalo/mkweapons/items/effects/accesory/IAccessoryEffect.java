@@ -16,12 +16,12 @@ public interface IAccessoryEffect extends IItemEffect {
         return damage;
     }
 
-    default void livingCompleteAbility(LivingEntity caster, IMKEntityData entityData, MKAccessory accessory,
+    default void livingCompleteAbility(IMKEntityData entityData, MKAccessory accessory,
                                        ItemStack stack, MKAbility ability) {
 
     }
 
-    default void onMeleeHit(IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, LivingEntity attacker) {
+    default void onMeleeHit(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData, LivingEntity target) {
 
     }
 

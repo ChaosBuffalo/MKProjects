@@ -59,8 +59,8 @@ public class WeaponDataHandler implements IWeaponData {
     public List<IMeleeWeaponEffect> getMeleeEffects() {
         if (isCacheDirty) {
             cachedMeleeWeaponEffects.clear();
-            if (getItemStack().getItem() instanceof IMKMeleeWeapon) {
-                cachedMeleeWeaponEffects.addAll(((IMKMeleeWeapon) getItemStack().getItem()).getWeaponEffects());
+            if (getItemStack().getItem() instanceof IMKMeleeWeapon meleeWeapon) {
+                cachedMeleeWeaponEffects.addAll(meleeWeapon.getWeaponEffects());
             }
             cachedMeleeWeaponEffects.addAll(getStackMeleeEffects());
             isCacheDirty = false;
@@ -126,8 +126,8 @@ public class WeaponDataHandler implements IWeaponData {
     public List<IRangedWeaponEffect> getRangedEffects() {
         if (isCacheDirty) {
             cachedRangedWeaponEffects.clear();
-            if (getItemStack().getItem() instanceof IMKRangedWeapon) {
-                cachedRangedWeaponEffects.addAll(((IMKRangedWeapon) getItemStack().getItem()).getWeaponEffects());
+            if (getItemStack().getItem() instanceof IMKRangedWeapon rangedWeapon) {
+                cachedRangedWeaponEffects.addAll(rangedWeapon.getWeaponEffects());
             }
             cachedRangedWeaponEffects.addAll(getStackRangedEffects());
             isCacheDirty = false;
@@ -189,11 +189,11 @@ public class WeaponDataHandler implements IWeaponData {
             ListTag effectList = nbt.getList("melee_effects", Tag.TAG_COMPOUND);
             for (Tag effectNBT : effectList) {
                 IItemEffect effect = ItemEffects.deserializeEffect(new Dynamic<>(NbtOps.INSTANCE, effectNBT));
-                if (effect instanceof IMeleeWeaponEffect) {
-                    addMeleeWeaponEffect((IMeleeWeaponEffect) effect);
+                if (effect instanceof IMeleeWeaponEffect meleeEffect) {
+                    addMeleeWeaponEffect(meleeEffect);
                 } else {
-                    MKWeapons.LOGGER.error("Failed to deserialize melee effect of type {} for item {}", effect.getTypeName(),
-                            getItemStack());
+                    MKWeapons.LOGGER.error("Failed to deserialize melee effect for item {} from {}",
+                            getItemStack(), effectNBT);
                 }
             }
         }
@@ -201,11 +201,11 @@ public class WeaponDataHandler implements IWeaponData {
             ListTag rangedEffectList = nbt.getList("ranged_effects", Tag.TAG_COMPOUND);
             for (Tag effectNBT : rangedEffectList) {
                 IItemEffect effect = ItemEffects.deserializeEffect(new Dynamic<>(NbtOps.INSTANCE, effectNBT));
-                if (effect instanceof IRangedWeaponEffect) {
-                    addRangedWeaponEffect((IRangedWeaponEffect) effect);
+                if (effect instanceof IRangedWeaponEffect rangedEffect) {
+                    addRangedWeaponEffect(rangedEffect);
                 } else {
-                    MKWeapons.LOGGER.error("Failed to deserialize ranged effect of type {} for item {}", effect.getTypeName(),
-                            getItemStack());
+                    MKWeapons.LOGGER.error("Failed to deserialize ranged effect for item {} from {}",
+                            getItemStack(), effectNBT);
                 }
             }
         }

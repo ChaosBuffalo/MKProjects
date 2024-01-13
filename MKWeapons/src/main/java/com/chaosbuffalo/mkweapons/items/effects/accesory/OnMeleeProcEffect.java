@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.EntityTargetingAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.serialization.attributes.ScalableDoubleAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ScalableFloatAttribute;
 import com.chaosbuffalo.mkweapons.MKWeapons;
@@ -73,10 +74,9 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect {
     }
 
     @Override
-    public void onMeleeHit(IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        if (attacker.getRandom().nextDouble() >= (1.0 - procChance.value())) {
-            MKCore.getEntityData(attacker).ifPresent(entityData -> abilitySupplier.get().castAtEntity(entityData,
-                    target, attr -> skillLevel.value()));
+    public void onMeleeHit(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData, LivingEntity target) {
+        if (attackerData.getEntity().getRandom().nextDouble() >= (1.0 - procChance.value())) {
+            abilitySupplier.get().castAtEntity(attackerData, target, attr -> skillLevel.value());
         }
     }
 

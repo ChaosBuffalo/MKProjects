@@ -11,7 +11,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -58,10 +57,10 @@ public class RestoreManaOnCastEffect extends BaseAccessoryEffect {
     }
 
     @Override
-    public void livingCompleteAbility(LivingEntity caster, IMKEntityData entityData, MKAccessory accessory,
+    public void livingCompleteAbility(IMKEntityData entityData, MKAccessory accessory,
                                       ItemStack stack, MKAbility ability) {
-        if (!caster.getCommandSenderWorld().isClientSide() && entityData instanceof MKPlayerData playerData) {
-            double roll = caster.getRandom().nextDouble();
+        if (entityData.isServerSide() && entityData instanceof MKPlayerData playerData) {
+            double roll = entityData.getEntity().getRandom().nextDouble();
             if (roll >= (1.0 - getChance())) {
                 float mana = ability.getManaCost(entityData) * getPercentage();
                 playerData.getStats().addMana(mana);

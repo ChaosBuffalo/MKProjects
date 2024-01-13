@@ -54,37 +54,39 @@ public class MKWeaponsEventHandler {
 
     @SubscribeEvent
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
-        Item from = event.getFrom().getItem();
-        Item to = event.getTo().getItem();
+        ItemStack from = event.getFrom();
+        ItemStack to = event.getTo();
         if (event.getSlot() == EquipmentSlot.MAINHAND) {
-            if (from instanceof IMKWeapon weapon) {
-                weapon.getWeaponEffects(event.getFrom()).forEach(eff -> eff.onEntityUnequip(event.getEntity()));
+            if (from.getItem() instanceof IMKWeapon weapon) {
+                weapon.getWeaponEffects(from).forEach(eff -> eff.onEntityUnequip(event.getEntity()));
             }
-            if (to instanceof IMKWeapon weapon) {
-                weapon.getWeaponEffects(event.getTo()).forEach(eff -> eff.onEntityEquip(event.getEntity()));
-            }
-        }
-        if (event.getSlot().isArmor()) {
-            if (from instanceof IMKArmor armor) {
-                armor.getArmorEffects(event.getFrom()).forEach(eff -> eff.onEntityUnequip(event.getEntity()));
-            }
-            if (to instanceof IMKArmor armor) {
-                armor.getArmorEffects(event.getTo()).forEach(eff -> eff.onEntityEquip(event.getEntity()));
+            if (to.getItem() instanceof IMKWeapon weapon) {
+                weapon.getWeaponEffects(to).forEach(eff -> eff.onEntityEquip(event.getEntity()));
             }
         }
-        if (event.getEntity() instanceof ServerPlayer player) {
-            checkShieldRestriction(player);
+        else if (event.getSlot().isArmor()) {
+            if (from.getItem() instanceof IMKArmor armor) {
+                armor.getArmorEffects(from).forEach(eff -> eff.onEntityUnequip(event.getEntity()));
+            }
+            if (to.getItem() instanceof IMKArmor armor) {
+                armor.getArmorEffects(to).forEach(eff -> eff.onEntityEquip(event.getEntity()));
+            }
+        }
+
+        if (event.getSlot().getType() == EquipmentSlot.Type.HAND) {
+            if (event.getEntity() instanceof ServerPlayer player) {
+                checkShieldRestriction(player);
+            }
         }
     }
 
     private static void checkShieldRestriction(ServerPlayer player) {
         ItemStack main = player.getItemBySlot(EquipmentSlot.MAINHAND);
-        ItemStack offhand = player.getItemBySlot(EquipmentSlot.OFFHAND);
         if (main.getItem() instanceof IMKMeleeWeapon weapon) {
+            ItemStack offhand = player.getItemBySlot(EquipmentSlot.OFFHAND);
             if (weapon.getWeaponType().isTwoHanded() && offhand.getItem() instanceof ShieldItem) {
-                ItemStack off = player.getItemBySlot(EquipmentSlot.OFFHAND);
-                if (!player.getInventory().add(off)) {
-                    player.drop(off, true);
+                if (!player.getInventory().add(offhand)) {
+                    player.drop(offhand, true);
                 }
                 player.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
             }
@@ -108,7 +110,7 @@ public class MKWeaponsEventHandler {
         List<MKCurioItemHandler> curios = MKAccessory.getMKCurios(event.getEntity());
         for (MKCurioItemHandler handler : curios) {
             for (IAccessoryEffect effect : handler.getEffects()) {
-                effect.livingCompleteAbility(event.getEntity(), event.getEntityData(), handler.getAccessory(),
+                effect.livingCompleteAbility(event.getEntityData(), handler.getAccessory(),
                         handler.getStack(), event.getAbility());
             }
         }
@@ -142,10 +144,9 @@ public class MKWeaponsEventHandler {
             }
             if (isMelee) {
                 ItemStack mainHand = livingSource.getMainHandItem();
-                if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon) {
-                    Item item = mainHand.getItem();
-                    for (IMeleeWeaponEffect effect : ((IMKMeleeWeapon) item).getWeaponEffects(mainHand)) {
-                        effect.onHurt(newDamage, (IMKMeleeWeapon) item, mainHand, livingTarget, livingSource);
+                if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
+                    for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(mainHand)) {
+                        effect.onHurt(newDamage, meleeWeapon, mainHand, livingTarget, livingSource);
                     }
                 }
             }
