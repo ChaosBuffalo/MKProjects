@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.utils;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -51,7 +52,7 @@ public class EntityUtils {
         if (entity.getMainHandItem().isEmpty()) {
             return GameConstants.TICKS_PER_SECOND;
         } else {
-            return 1.0D / entity.getAttributeValue(Attributes.ATTACK_SPEED) *
+            return 1.0D / MKAttributes.getValueSafe(Attributes.ATTACK_SPEED, entity) *
                     GameConstants.TICKS_PER_SECOND;
         }
 
