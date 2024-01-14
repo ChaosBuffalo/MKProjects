@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 
 public class PlayerAttributeMonitor {
     private static final boolean LOG_EN = false;
+    private static final UUID EV_ID = UUID.randomUUID();
     private static final Lazy<Set<Attribute>> allInitialSync = Lazy.concurrentOf(PlayerAttributeMonitor::buildInitialSyncSet);
 
     private final MKPlayerData playerData;
@@ -36,13 +37,14 @@ public class PlayerAttributeMonitor {
     public PlayerAttributeMonitor(MKPlayerData playerData, Consumer<BooleanSupplier> tickRequest) {
         this.playerData = playerData;
         this.tickRequest = tickRequest;
+        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_WORLD, EV_ID, this::onJoinWorld);
     }
 
     public void subscribe(Attribute attribute, AttributeChangeHandler handler) {
         handlerMap.put(attribute, handler);
     }
 
-    public void onJoinWorld() {
+    private void onJoinWorld(PlayerEvents.JoinWorldEvent event) {
         if (playerData.getEntity() instanceof ServerPlayer serverPlayer) {
             // This setup is deferred until now because the entity is not fully constructed during the ctor.
             AttributeMapExtension.setModificationHandler(serverPlayer, this::onAttributeModified);

@@ -89,13 +89,6 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         return extension == null ? null : clazz.cast(extension);
     }
 
-    public void onJoinWorld() {
-        MKCore.LOGGER.debug("PlayerKnowledge.onJoinWorld");
-        entitlements.onJoinWorld();
-        talents.onJoinWorld();
-        loadout.onJoinWorld();
-    }
-
     public void onPersonaActivated() {
         MKCore.LOGGER.debug("PlayerKnowledge.onPersonaActivated");
         entitlements.onPersonaActivated();
@@ -106,8 +99,6 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
 
     public void onPersonaDeactivated() {
         MKCore.LOGGER.debug("PlayerKnowledge.onPersonaDeactivated");
-        entitlements.onPersonaDeactivated();
-        talents.onPersonaDeactivated();
         skills.onPersonaDeactivated();
         loadout.onPersonaDeactivated();
     }

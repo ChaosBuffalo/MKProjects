@@ -31,8 +31,8 @@ public class PlayerEquipment {
 
     public PlayerEquipment(MKPlayerData playerData) {
         this.playerData = playerData;
-        playerData.getEvents().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
-        playerData.getEvents().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated);
+        playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
+        playerData.events().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated);
     }
 
     public void onEquipmentChange(EquipmentSlot slot, ItemStack from, ItemStack to) {

@@ -40,17 +40,5 @@ public class PlayerRecordDispatcher {
             MKCore.LOGGER.debug("PlayerRecordDispatcher.onPersonaActivated.onRecordLoaded {}", r);
             getRecordHandler(r).onRecordLoaded(r);
         });
-
-        typeHandlerMap.values().forEach(IRecordTypeHandler::onPersonaActivated);
-    }
-
-    public void onPersonaDeactivated() {
-        MKCore.LOGGER.debug("PlayerRecordDispatcher.onPersonaDeactivated");
-        typeHandlerMap.values().forEach(IRecordTypeHandler::onPersonaDeactivated);
-    }
-
-    public void onJoinWorld() {
-        MKCore.LOGGER.debug("PlayerRecordDispatcher.onJoinWorld");
-        typeHandlerMap.values().forEach(IRecordTypeHandler::onJoinWorld);
     }
 }

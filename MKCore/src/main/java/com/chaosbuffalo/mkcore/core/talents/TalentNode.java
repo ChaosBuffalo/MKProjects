@@ -58,14 +58,14 @@ public class TalentNode {
     }
 
     public String getPositionString() {
-        return String.format("%s@%d", getLine().getName(), getIndex());
+        return String.format("%s:%s@%d", getLine().getTree().getTreeId(), getLine().getName(), getIndex());
     }
 
     @Override
     public String toString() {
         return "TalentNode{" +
                 "pos=" + getPositionString() +
-                "talent=" + talent +
+                ", talent=" + talent +
                 ", maxRanks=" + maxRanks +
                 '}';
     }
