@@ -115,14 +115,12 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     public void activate() {
         sync.attach(data.getSyncController());
         onPersonaActivated();
-        data.onPersonaActivated();
         extensions.values().forEach(IPersonaExtension::onPersonaActivated);
     }
 
     public void deactivate() {
         sync.detach(data.getSyncController());
         onPersonaDeactivated();
-        data.onPersonaDeactivated();
         extensions.values().forEach(IPersonaExtension::onPersonaDeactivated);
     }
 

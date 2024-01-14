@@ -36,10 +36,12 @@ public class MKPlayerData implements IMKEntityData {
     private final PlayerEffectHandler effectHandler;
     private final EntityPetModule pets;
     private final PlayerAttributeMonitor attributes;
+    private final PlayerEventListener events;
     private final Set<BooleanSupplier> tickCallbacks = new ObjectArraySet<>(4);
 
     public MKPlayerData(Player playerEntity) {
         player = Objects.requireNonNull(playerEntity);
+        events = new PlayerEventListener(this);
         syncController = new PlayerSyncController(this);
         personaManager = PersonaManager.getPersonaManager(this);
         abilityExecutor = new PlayerAbilityExecutor(this);
@@ -71,6 +73,10 @@ public class MKPlayerData implements IMKEntityData {
     @Override
     public PlayerCombatExtensionModule getCombatExtension() {
         return combatExtensionModule;
+    }
+
+    public PlayerEventListener getEvents() {
+        return events;
     }
 
     @Override
@@ -222,16 +228,6 @@ public class MKPlayerData implements IMKEntityData {
         stats.getSyncComponent().attach(engine);
         editorModule.getSyncComponent().attach(engine);
         pets.getSyncComponent().attach(engine);
-    }
-
-    public void onPersonaActivated() {
-        getEquipment().onPersonaActivated();
-        getStats().onPersonaActivated();
-    }
-
-    public void onPersonaDeactivated() {
-        getEquipment().onPersonaDeactivated();
-        getStats().onPersonaDeactivated();
     }
 
     public <T extends IPersonaExtension> T getPersonaExtension(Class<T> clazz) {

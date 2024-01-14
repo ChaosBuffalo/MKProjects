@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core.persona;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
 import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import net.minecraft.nbt.CompoundTag;
@@ -116,11 +117,17 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
     private void dispatchActivation(Persona persona) {
         setActivePersona(persona);
         persona.activate();
+
+        var event = new PlayerEvents.PersonaEvent(playerData, persona);
+        playerData.getEvents().trigger(PlayerEvents.PERSONA_ACTIVATE, event);
         MinecraftForge.EVENT_BUS.post(new PersonaEvent.PersonaActivated(persona));
     }
 
     private void dispatchDeactivation(Persona current) {
         current.deactivate();
+
+        var event = new PlayerEvents.PersonaEvent(playerData, current);
+        playerData.getEvents().trigger(PlayerEvents.PERSONA_DEACTIVATE, event);
         MinecraftForge.EVENT_BUS.post(new PersonaEvent.PersonaDeactivated(current));
     }
 
