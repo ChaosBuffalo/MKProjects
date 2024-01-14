@@ -36,12 +36,12 @@ public class MKPlayerData implements IMKEntityData {
     private final PlayerEffectHandler effectHandler;
     private final EntityPetModule pets;
     private final PlayerAttributeMonitor attributes;
-    private final PlayerEventListener events;
+    private final PlayerEventDispatcher events;
     private final Set<BooleanSupplier> tickCallbacks = new ObjectArraySet<>(4);
 
     public MKPlayerData(Player playerEntity) {
         player = Objects.requireNonNull(playerEntity);
-        events = new PlayerEventListener(this);
+        events = new PlayerEventDispatcher(this);
         syncController = new PlayerSyncController(this);
         personaManager = PersonaManager.getPersonaManager(this);
         abilityExecutor = new PlayerAbilityExecutor(this);
@@ -75,7 +75,7 @@ public class MKPlayerData implements IMKEntityData {
         return combatExtensionModule;
     }
 
-    public PlayerEventListener getEvents() {
+    public PlayerEventDispatcher events() {
         return events;
     }
 
@@ -160,13 +160,11 @@ public class MKPlayerData implements IMKEntityData {
     @Override
     public void onJoinWorld() {
         getPersonaManager().onJoinWorld();
-        getPersona().onJoinWorld();
-        getStats().onJoinWorld();
-        getAbilityExecutor().onJoinWorld();
         getEffects().onJoinWorld();
         getCombatExtension().onJoinWorld();
-        getAttributes().onJoinWorld();
+
         if (isServerSide()) {
+            events().trigger(PlayerEvents.SERVER_JOIN_WORLD, new PlayerEvents.JoinWorldEvent(this));
             initialSync();
         }
     }

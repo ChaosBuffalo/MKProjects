@@ -32,7 +32,6 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
 
     public void onJoinWorld() {
         ensurePersonaLoaded();
-        getActivePersona().onJoinWorld();
     }
 
     private void ensurePersonaLoaded() {
@@ -119,7 +118,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
         persona.activate();
 
         var event = new PlayerEvents.PersonaEvent(playerData, persona);
-        playerData.getEvents().trigger(PlayerEvents.PERSONA_ACTIVATE, event);
+        playerData.events().trigger(PlayerEvents.PERSONA_ACTIVATE, event);
         MinecraftForge.EVENT_BUS.post(new PersonaEvent.PersonaActivated(persona));
     }
 
@@ -127,7 +126,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
         current.deactivate();
 
         var event = new PlayerEvents.PersonaEvent(playerData, current);
-        playerData.getEvents().trigger(PlayerEvents.PERSONA_DEACTIVATE, event);
+        playerData.events().trigger(PlayerEvents.PERSONA_DEACTIVATE, event);
         MinecraftForge.EVENT_BUS.post(new PersonaEvent.PersonaDeactivated(current));
     }
 

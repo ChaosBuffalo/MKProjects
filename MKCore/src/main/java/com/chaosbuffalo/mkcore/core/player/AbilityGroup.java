@@ -288,10 +288,6 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         }
     }
 
-    public void onJoinWorld() {
-
-    }
-
     public void onPersonaActivated() {
         activeAbilities.forEach(this::ensureValidAbility);
         rebuildActiveToggleMap();

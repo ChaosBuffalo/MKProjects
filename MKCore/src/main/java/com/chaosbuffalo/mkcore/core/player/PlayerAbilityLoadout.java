@@ -95,10 +95,6 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
         itemAbilityGroup.deserializeNBT(tag.get("item"));
     }
 
-    public void onJoinWorld() {
-        abilityGroups.values().forEach(AbilityGroup::onJoinWorld);
-    }
-
     public void onPersonaActivated() {
         abilityGroups.values().forEach(AbilityGroup::onPersonaActivated);
     }

@@ -2,6 +2,8 @@ package com.chaosbuffalo.mkcore.core.talents.handlers;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
+import com.chaosbuffalo.mkcore.core.player.events.EPriority;
 import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import com.chaosbuffalo.mkcore.core.talents.TalentTypeHandler;
 import com.chaosbuffalo.mkcore.core.talents.nodes.AttributeTalentNode;
@@ -14,20 +16,21 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import java.util.*;
 
 public class AttributeTalentHandler extends TalentTypeHandler {
+    private static final UUID EV_ID = UUID.randomUUID();
 
     private final Map<AttributeTalent, AttributeEntry> attributeEntryMap = new HashMap<>();
 
     public AttributeTalentHandler(MKPlayerData playerData) {
         super(playerData);
+        playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated, EPriority.CONSUMER);
+        playerData.events().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated, EPriority.CONSUMER);
     }
 
-    @Override
-    public void onPersonaActivated() {
+    private void onPersonaActivated(PlayerEvents.PersonaEvent event) {
         applyAllAttributeModifiers();
     }
 
-    @Override
-    public void onPersonaDeactivated() {
+    private void onPersonaDeactivated(PlayerEvents.PersonaEvent event) {
         removeAllAttributeModifiers();
     }
 

@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKCombatFormulas;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entity.EntityStats;
+import com.chaosbuffalo.mkcore.core.player.events.EPriority;
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,7 +22,8 @@ public class PlayerStats extends EntityStats {
 
     public PlayerStats(MKPlayerData playerData) {
         super(playerData);
-        playerData.getEvents().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
+        playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
+        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_WORLD, EV_ID, this::onJoinWorld, EPriority.PROVIDER);
     }
 
     private Player getPlayer() {
@@ -32,11 +34,8 @@ public class PlayerStats extends EntityStats {
         return (MKPlayerData) entityData;
     }
 
-    public void onJoinWorld() {
-//        MKCore.LOGGER.info("PlayerStats.onJoinWorld");
-        if (entityData.isServerSide()) {
-            setupBaseStats();
-        }
+    private void onJoinWorld(PlayerEvents.JoinWorldEvent event) {
+        setupBaseStats();
     }
 
     private void addBaseStat(Attribute attribute, double value) {

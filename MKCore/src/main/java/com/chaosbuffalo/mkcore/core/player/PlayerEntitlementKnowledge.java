@@ -30,14 +30,4 @@ public class PlayerEntitlementKnowledge extends EntityEntitlementsKnowledge {
         dispatcher.onPersonaActivated();
         broadcastLoaded();
     }
-
-    public void onPersonaDeactivated() {
-        MKCore.LOGGER.debug("PlayerEntitlementKnowledge.onPersonaDeactivated");
-        dispatcher.onPersonaDeactivated();
-    }
-
-    public void onJoinWorld() {
-        MKCore.LOGGER.debug("PlayerEntitlementKnowledge.onJoinWorld");
-        dispatcher.onJoinWorld();
-    }
 }
