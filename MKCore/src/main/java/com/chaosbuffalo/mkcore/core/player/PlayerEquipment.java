@@ -24,11 +24,15 @@ public class PlayerEquipment {
             UUID.fromString("9b444ef7-5020-483e-b355-7b975958634a")
     };
 
+    private static final UUID EV_ID = UUID.randomUUID();
+
     private final MKPlayerData playerData;
     private MKAbility currentMainAbility = null;
 
     public PlayerEquipment(MKPlayerData playerData) {
         this.playerData = playerData;
+        playerData.getEvents().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
+        playerData.getEvents().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated);
     }
 
     public void onEquipmentChange(EquipmentSlot slot, ItemStack from, ItemStack to) {
@@ -138,7 +142,7 @@ public class PlayerEquipment {
         }
     }
 
-    public void onPersonaActivated() {
+    public void onPersonaActivated(PlayerEvents.PersonaEvent event) {
         Player player = playerData.getEntity();
         ItemStack mainHand = player.getItemBySlot(EquipmentSlot.MAINHAND);
         handleMainHandChange(mainHand);
@@ -148,7 +152,7 @@ public class PlayerEquipment {
         addItemAbility(player.getItemBySlot(EquipmentSlot.FEET));
     }
 
-    public void onPersonaDeactivated() {
+    private void onPersonaDeactivated(PlayerEvents.PersonaEvent event) {
         Player player = playerData.getEntity();
         handleMainHandChange(ItemStack.EMPTY);
         removeItemAbility(player.getItemBySlot(EquipmentSlot.HEAD));

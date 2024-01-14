@@ -8,18 +8,20 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entity.EntityStats;
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.UUID;
+
 
 public class PlayerStats extends EntityStats {
+    private static final UUID EV_ID = UUID.randomUUID();
 
     public PlayerStats(MKPlayerData playerData) {
         super(playerData);
-
+        playerData.getEvents().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
     }
 
     private Player getPlayer() {
@@ -78,7 +80,7 @@ public class PlayerStats extends EntityStats {
 
     public void refreshStats() {
         if (getHealth() > getMaxHealth()) {
-            setHealth(Mth.clamp(getHealth(), 0, getMaxHealth()));
+            setHealth(getHealth());
         }
         if (getMana() > getMaxMana()) {
             setMana(getMana());
@@ -88,12 +90,8 @@ public class PlayerStats extends EntityStats {
         }
     }
 
-    public void onPersonaActivated() {
+    private void onPersonaActivated(PlayerEvents.PersonaEvent event) {
         refreshStats();
-    }
-
-    public void onPersonaDeactivated() {
-
     }
 
     public CompoundTag serialize() {
