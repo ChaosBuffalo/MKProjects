@@ -71,7 +71,7 @@ public abstract class MKToggleAbility extends MKAbility {
     @Override
     public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
         if (isEffectActive(casterData)) {
-            removeEffect(castingEntity, casterData, skillSupplier);
+            removeEffect(casterData);
         } else {
             applyEffect(castingEntity, casterData, skillSupplier);
         }
@@ -85,7 +85,7 @@ public abstract class MKToggleAbility extends MKAbility {
         casterData.getAbilityExecutor().setToggleGroupAbility(getToggleGroupId(), this);
     }
 
-    public void removeEffect(LivingEntity castingEntity, IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
+    public void removeEffect(IMKEntityData casterData) {
         casterData.getAbilityExecutor().clearToggleGroupAbility(getToggleGroupId());
         if (isEffectActive(casterData)) {
             casterData.getEffects().removeEffect(getToggleEffect());

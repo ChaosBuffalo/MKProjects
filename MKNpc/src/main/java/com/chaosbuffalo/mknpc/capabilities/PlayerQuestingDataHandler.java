@@ -252,16 +252,6 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         }
 
         @Override
-        public void onPersonaActivated() {
-
-        }
-
-        @Override
-        public void onPersonaDeactivated() {
-
-        }
-
-        @Override
         public CompoundTag serialize() {
             CompoundTag tag = new CompoundTag();
             ListTag chainsNbt = new ListTag();
