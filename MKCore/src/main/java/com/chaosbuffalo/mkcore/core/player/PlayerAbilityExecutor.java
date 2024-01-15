@@ -1,22 +1,29 @@
 package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
-import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
+import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.AbilityExecutor;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.UUID;
+
 public class PlayerAbilityExecutor extends AbilityExecutor {
+    public static final UUID EV_ID = UUID.fromString("c14c2ba2-4a70-49a3-9999-7e8041d6e687");
 
     public PlayerAbilityExecutor(MKPlayerData playerData) {
         super(playerData);
+        playerData.events().subscribe(PlayerEvents.ABILITY_UNLEARNED, EV_ID, this::onUnlearnAbility);
     }
 
     private MKPlayerData getPlayerData() {
         return (MKPlayerData) entityData;
+    }
+
+    private void onUnlearnAbility(PlayerEvents.AbilityUnlearnEvent event) {
+        if (event.getAbilityInfo().getAbility() instanceof MKToggleAbility toggleAbility) {
+            toggleAbility.removeEffect(entityData);
+        }
     }
 
     public void executeHotBarAbility(AbilityGroupId group, int slot) {

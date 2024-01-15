@@ -121,7 +121,7 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         info.addSource(source);
         markDirty(info);
 
-        playerData.getLoadout().onAbilityLearned(info, source);
+        playerData.events().trigger(PlayerEvents.ABILITY_LEARNED, new PlayerEvents.AbilityLearnEvent(playerData, info, source));
         return true;
     }
 
@@ -137,8 +137,7 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         markDirty(info);
 
         if (!info.isCurrentlyKnown()) {
-            playerData.getAbilityExecutor().onAbilityUnlearned(info);
-            playerData.getLoadout().onAbilityUnlearned(info);
+            playerData.events().trigger(PlayerEvents.ABILITY_UNLEARNED, new PlayerEvents.AbilityUnlearnEvent(playerData, info));
             abilityInfoMap.remove(abilityId);
         }
         return true;

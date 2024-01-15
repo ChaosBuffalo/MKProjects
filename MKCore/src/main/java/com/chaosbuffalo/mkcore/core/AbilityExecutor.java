@@ -224,10 +224,6 @@ public class AbilityExecutor {
         MinecraftForge.EVENT_BUS.post(new EntityAbilityEvent.EntityCompleteAbilityEvent(ability, entityData));
     }
 
-    public void onAbilityUnlearned(MKAbilityInfo abilityInfo) {
-        updateToggleAbility(abilityInfo.getAbility());
-    }
-
     protected EntityCastingState createServerCastingState(AbilityContext context, MKAbilityInfo abilityInfo, int castTime) {
         return new ServerCastingState(context, this, abilityInfo, castTime);
     }
@@ -368,25 +364,6 @@ public class AbilityExecutor {
         }
     }
 
-    private void updateToggleAbility(MKAbility ability) {
-        if (!(ability instanceof MKToggleAbility toggle)) {
-            return;
-        }
-
-        LivingEntity entity = entityData.getEntity();
-        MKAbilityInfo info = entityData.getAbilities().getKnownAbility(ability.getAbilityId());
-        if (info != null) {
-            // If this is a toggle ability we must re-apply the effect to make sure it's working at the proper rank
-            if (toggle.isEffectActive(entityData)) {
-                toggle.removeEffect(entity, entityData, attr -> MKAbility.getSkillLevel(entity, attr));
-                toggle.applyEffect(entity, entityData, attr -> MKAbility.getSkillLevel(entity, attr));
-            }
-        } else {
-            // Unlearning, remove the effect
-            toggle.removeEffect(entity, entityData, attr -> MKAbility.getSkillLevel(entity, attr));
-        }
-    }
-
     public void clearToggleGroupAbility(ResourceLocation groupId) {
         activeToggleMap.remove(groupId);
     }
@@ -396,7 +373,7 @@ public class AbilityExecutor {
         // This can also be called when rebuilding the activeToggleMap after transferring dimensions and in that case
         // ability will be the same as current
         if (current != null && current != ability) {
-            current.removeEffect(entityData.getEntity(), entityData, attr -> MKAbility.getSkillLevel(entityData.getEntity(), attr));
+            current.removeEffect(entityData);
             setCooldown(current.getAbilityId(), entityData.getStats().getAbilityCooldown(current));
         }
         activeToggleMap.put(groupId, ability);

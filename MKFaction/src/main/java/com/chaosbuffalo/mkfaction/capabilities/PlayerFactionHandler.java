@@ -124,16 +124,6 @@ public class PlayerFactionHandler implements IPlayerFaction {
         }
 
         @Override
-        public void onPersonaActivated() {
-//            MKFactionMod.LOGGER.info("PersonaFactionData.onPersonaActivated");
-        }
-
-        @Override
-        public void onPersonaDeactivated() {
-//            MKFactionMod.LOGGER.info("PersonaFactionData.onPersonaDeactivated");
-        }
-
-        @Override
         public CompoundTag serialize() {
 //            MKFactionMod.LOGGER.info("PersonaFactionData.serialize");
             CompoundTag tag = new CompoundTag();
