@@ -22,7 +22,7 @@ public class PlayerEventDispatcher {
     }
 
     public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, UUID uuid, Consumer<T> function) {
-        subscribe(eventType, uuid, function, EPriority.LOWEST);
+        subscribe(eventType, uuid, function, EPriority.CONSUMER);
     }
 
     public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, UUID uuid, Consumer<T> function, EPriority priority) {
@@ -76,7 +76,7 @@ public class PlayerEventDispatcher {
 
         @Override
         public int compareTo(EventRecord<?> o) {
-            if (uuid == o.uuid) {
+            if (matches(o.uuid)) {
                 return 0;
             } else {
                 return priority.compareTo(o.priority);

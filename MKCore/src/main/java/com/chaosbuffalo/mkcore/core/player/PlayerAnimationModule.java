@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ParticleEffectInstance;
 
-import java.util.List;
+import java.util.Collection;
 
 public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
     private final PlayerSyncComponent sync = new PlayerSyncComponent("anim");
@@ -39,7 +39,7 @@ public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
         return effectInstanceTracker;
     }
 
-    public List<ParticleEffectInstance> getParticleInstances() {
+    public Collection<ParticleEffectInstance> getParticleInstances() {
         return effectInstanceTracker.getParticleInstances();
     }
 

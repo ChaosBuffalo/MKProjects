@@ -10,46 +10,40 @@ import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class ParticleEffectInstanceTracker implements ISyncObject {
 
-    protected List<ParticleEffectInstance> particleInstances;
+    protected final Map<UUID, ParticleEffectInstance> instanceMap;
     protected final Entity entity;
 
 
     public ParticleEffectInstanceTracker(Entity entity) {
-        particleInstances = new ArrayList<>();
         this.entity = entity;
+        instanceMap = new HashMap<>();
     }
 
     public Entity getEntity() {
         return entity;
     }
 
-    public List<ParticleEffectInstance> getParticleInstances() {
-        return particleInstances;
+    public Collection<ParticleEffectInstance> getParticleInstances() {
+        return instanceMap.values();
     }
 
     public boolean addParticleInstance(ParticleEffectInstance instance) {
-        Optional<ParticleEffectInstance> alreadyExists = particleInstances.stream().filter(
-                x -> x.getInstanceUUID().equals(instance.getInstanceUUID())).findAny();
-        if (alreadyExists.isPresent()) {
+        ParticleEffectInstance existing = instanceMap.get(instance.getInstanceUUID());
+        if (existing != null) {
             MKCore.LOGGER.error("Tried to add same particle instance twice {} to player {}", instance, entity);
             return false;
         } else {
-            particleInstances.add(instance);
+            instanceMap.put(instance.getInstanceUUID(), instance);
             return true;
         }
     }
 
     public void removeParticleInstance(UUID uuid) {
-        this.particleInstances = particleInstances.stream().filter(x -> !x.getInstanceUUID().equals(uuid))
-                .collect(Collectors.toList());
+        instanceMap.remove(uuid);
     }
 
 
@@ -59,9 +53,8 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
     }
 
     public void clearParticleEffects() {
-        for (ParticleEffectInstance inst : particleInstances) {
-            removeParticleInstance(inst.getInstanceUUID());
-        }
+        var keys = Set.copyOf(instanceMap.keySet());
+        keys.forEach(this::removeParticleInstance);
     }
 
     @Override
@@ -73,7 +66,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
     @Override
     public void deserializeUpdate(CompoundTag tag) {
         if (tag.contains("effectInstances")) {
-            particleInstances.clear();
+            instanceMap.clear();
             ListTag effectsNbt = tag.getList("effectInstances", Tag.TAG_COMPOUND);
             for (Tag effNbt : effectsNbt) {
                 Dynamic<?> dyn = new Dynamic<>(NbtOps.INSTANCE, effNbt);
@@ -154,7 +147,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         @Override
         public void serializeFull(CompoundTag tag) {
             ListTag effectsNbt = new ListTag();
-            for (ParticleEffectInstance instance : particleInstances) {
+            for (ParticleEffectInstance instance : instanceMap.values()) {
                 effectsNbt.add(instance.serialize(NbtOps.INSTANCE));
             }
             tag.put("effectInstances", effectsNbt);

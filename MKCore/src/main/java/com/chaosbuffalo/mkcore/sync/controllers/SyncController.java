@@ -19,8 +19,12 @@ public abstract class SyncController {
         return DEFAULT_VISIBILITY;
     }
 
+    protected SyncGroup createGroup(SyncVisibility visibility) {
+        return new SyncGroup();
+    }
+
     protected SyncGroup getVisibilityGroup(SyncVisibility visibility) {
-        return rootGroups.computeIfAbsent(visibility, v -> new SyncGroup());
+        return rootGroups.computeIfAbsent(visibility, this::createGroup);
     }
 
     public void add(ISyncObject syncObject, SyncVisibility visibility) {
