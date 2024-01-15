@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.core;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.editor.PlayerEditorModule;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtension;
@@ -24,11 +23,11 @@ import java.util.Set;
 import java.util.function.BooleanSupplier;
 
 public class MKPlayerData implements IMKEntityData {
-    private final Player player;
+    protected final Player player;
     private final PlayerAbilityExecutor abilityExecutor;
     private final PlayerStats stats;
     private final PersonaManager personaManager;
-    private final PlayerSyncController syncController;
+    protected final PlayerSyncController syncController;
     private final PlayerAnimationModule animationModule;
     private final PlayerEquipment equipment;
     private final PlayerCombatExtensionModule combatExtensionModule;
@@ -161,12 +160,6 @@ public class MKPlayerData implements IMKEntityData {
     public void onJoinWorld() {
         getPersonaManager().onJoinWorld();
         getEffects().onJoinWorld();
-        getCombatExtension().onJoinWorld();
-
-        if (isServerSide()) {
-            events().trigger(PlayerEvents.SERVER_JOIN_WORLD, new PlayerEvents.JoinWorldEvent(this));
-            initialSync();
-        }
     }
 
     private void onDeath() {
@@ -188,10 +181,6 @@ public class MKPlayerData implements IMKEntityData {
         if (!tickCallbacks.isEmpty()) {
             tickCallbacks.removeIf(BooleanSupplier::getAsBoolean);
         }
-
-        if (isServerSide()) {
-            syncState();
-        }
     }
 
     public void clone(MKPlayerData previous, boolean death) {
@@ -200,17 +189,6 @@ public class MKPlayerData implements IMKEntityData {
         }
         CompoundTag tag = previous.serializeNBT();
         deserializeNBT(tag);
-    }
-
-    private void syncState() {
-        syncController.syncUpdates();
-    }
-
-    public void initialSync() {
-        if (isServerSide()) {
-            MKCore.LOGGER.debug("Sending initial sync for {}", player);
-            syncController.sendFullSync((ServerPlayer) player);
-        }
     }
 
     @Override

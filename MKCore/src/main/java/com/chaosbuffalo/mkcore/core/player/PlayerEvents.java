@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.MKServerPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.events.EventType;
 import com.chaosbuffalo.mkcore.core.player.events.PlayerEvent;
@@ -9,7 +10,7 @@ public class PlayerEvents {
 
     public static final EventType<PersonaEvent> PERSONA_ACTIVATE = EventType.serverSide();
     public static final EventType<PersonaEvent> PERSONA_DEACTIVATE = EventType.serverSide();
-    public static final EventType<JoinWorldEvent> SERVER_JOIN_WORLD = EventType.serverSide();
+    public static final EventType<JoinWorldServerEvent> SERVER_JOIN_WORLD = EventType.serverSide();
 
     public static class PersonaEvent extends PlayerEvent<MKPlayerData> {
 
@@ -25,9 +26,9 @@ public class PlayerEvents {
         }
     }
 
-    public static final class JoinWorldEvent extends PlayerEvent<MKPlayerData> {
+    public static final class JoinWorldServerEvent extends PlayerEvent<MKServerPlayerData> {
 
-        public JoinWorldEvent(MKPlayerData playerData) {
+        public JoinWorldServerEvent(MKServerPlayerData playerData) {
             super(playerData);
         }
     }

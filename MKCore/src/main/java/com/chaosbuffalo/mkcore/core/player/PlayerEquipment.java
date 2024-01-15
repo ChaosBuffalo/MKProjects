@@ -24,7 +24,7 @@ public class PlayerEquipment {
             UUID.fromString("9b444ef7-5020-483e-b355-7b975958634a")
     };
 
-    private static final UUID EV_ID = UUID.randomUUID();
+    private static final UUID EV_ID = UUID.fromString("951a29de-b941-4c4d-9d01-dba4c68b7897");
 
     private final MKPlayerData playerData;
     private MKAbility currentMainAbility = null;
