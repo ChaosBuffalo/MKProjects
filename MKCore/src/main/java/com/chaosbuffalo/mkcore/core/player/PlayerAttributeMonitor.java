@@ -105,10 +105,8 @@ public class PlayerAttributeMonitor {
     private static Set<Attribute> buildInitialSyncSet() {
         ImmutableSet.Builder<Attribute> builder = ImmutableSet.builder();
         AttributeSupplier playerSupplier = DefaultAttributes.getSupplier(EntityType.PLAYER);
-        // Need to loop all attrs since AttributeSupplier won't let us grab the set
-        ForgeRegistries.ATTRIBUTES.getValues().forEach(attr -> {
-            if (playerSupplier.hasAttribute(attr) &&
-                    attr instanceof MKRangedAttribute mkAttr &&
+        playerSupplier.instances.forEach((attr, instance) -> {
+            if (attr instanceof MKRangedAttribute mkAttr &&
                     mkAttr.getSyncType().needsInitialSync()) {
                 builder.add(mkAttr);
             }
