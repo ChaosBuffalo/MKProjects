@@ -29,9 +29,9 @@ public class ParticleEffectsOption extends SimpleOption<List<ParticleEffectInsta
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, List<ParticleEffectInstance> value) {
-        if (entity instanceof MKEntity) {
+        if (entity instanceof MKEntity mkEntity) {
             for (ParticleEffectInstance inst : value) {
-                ((MKEntity) entity).getParticleEffectTracker().addParticleInstance(inst);
+                mkEntity.getParticleEffectTracker().addParticleInstance(inst);
             }
         }
     }
