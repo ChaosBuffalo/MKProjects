@@ -18,7 +18,7 @@ import java.util.UUID;
 
 
 public class PlayerStats extends EntityStats {
-    private static final UUID EV_ID = UUID.randomUUID();
+    private static final UUID EV_ID = UUID.fromString("77c81f2b-4edc-4341-9926-28983fc0e4c3");
 
     public PlayerStats(MKPlayerData playerData) {
         super(playerData);
@@ -34,7 +34,7 @@ public class PlayerStats extends EntityStats {
         return (MKPlayerData) entityData;
     }
 
-    private void onJoinWorld(PlayerEvents.JoinWorldEvent event) {
+    private void onJoinWorld(PlayerEvents.JoinWorldServerEvent event) {
         setupBaseStats();
     }
 

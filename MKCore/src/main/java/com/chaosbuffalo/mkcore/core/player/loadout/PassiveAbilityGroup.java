@@ -16,7 +16,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import java.util.UUID;
 
 public class PassiveAbilityGroup extends AbilityGroup {
-    private static final UUID EV_ID = UUID.randomUUID();
+    private static final UUID EV_ID = UUID.fromString("137dc36b-c68b-4ace-8627-78c4dc1b6b85");
 
     public PassiveAbilityGroup(MKPlayerData playerData) {
         super(playerData, "passive", AbilityGroupId.Passive);
@@ -40,7 +40,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
         removePassive(abilityId);
     }
 
-    private void onJoinWorld(PlayerEvents.JoinWorldEvent event) {
+    private void onJoinWorld(PlayerEvents.JoinWorldServerEvent event) {
         activateAllPassives(true);
     }
 

@@ -16,17 +16,19 @@ import java.util.Set;
 import java.util.UUID;
 
 public class PlayerCombatExtensionModule extends CombatExtensionModule implements IPlayerSyncComponentProvider {
+    private static final UUID EV_ID = UUID.fromString("fce9b2a1-c8ec-4c1d-9da4-63bdd95e2ff9");
     private static final UUID blockScalerUUID = UUID.fromString("8cabfe08-4ad3-4b8a-9b94-cb146f743c36");
     private final PlayerSyncComponent sync = new PlayerSyncComponent("combatExtension");
     private final SyncInt currentProjectileHitCount = new SyncInt("projectileHits", 0);
     private final Set<String> spellTag = new HashSet<>();
     private final DynamicAttributeModifier blockPoiseBonus;
 
-    public PlayerCombatExtensionModule(MKPlayerData entityData) {
-        super(entityData);
+    public PlayerCombatExtensionModule(MKPlayerData playerData) {
+        super(playerData);
         addSyncPrivate(currentProjectileHitCount);
         blockPoiseBonus = new DynamicAttributeModifier(blockScalerUUID, "block skill bonus",
                 this::getBlockSkillMaxPoiseBonus, AttributeModifier.Operation.MULTIPLY_TOTAL);
+        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_WORLD, EV_ID, this::onJoinWorldServer);
     }
 
     @Override
@@ -43,16 +45,13 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         return MKAbility.convertSkillToMultiplier(blockVal);
     }
 
-    public void onJoinWorld() {
-        if (getEntityData().isClientSide())
-            return;
-
+    private void onJoinWorldServer(PlayerEvents.JoinWorldServerEvent event) {
         AttributeInstance maxPoise = getEntityData().getEntity().getAttribute(MKAttributes.MAX_POISE);
         if (maxPoise != null) {
             maxPoise.removeModifier(blockScalerUUID);
             maxPoise.addTransientModifier(blockPoiseBonus);
         }
-        getPlayerData().getAttributes().subscribe(MKAttributes.BLOCK, PlayerCombatExtensionModule::onBlockChange);
+        getPlayerData().getAttributes().monitor(MKAttributes.BLOCK, PlayerCombatExtensionModule::onBlockChange);
     }
 
     private static void onBlockChange(MKPlayerData playerData, AttributeInstance attributeInstance) {

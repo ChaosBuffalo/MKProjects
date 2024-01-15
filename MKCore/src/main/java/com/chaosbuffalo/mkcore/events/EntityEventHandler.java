@@ -3,10 +3,7 @@ package com.chaosbuffalo.mkcore.events;
 import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
-import com.chaosbuffalo.mkcore.core.CastInterruptReason;
-import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.core.MKEntityData;
-import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.entities.ISyncControllerProvider;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mkcore.utils.CapabilityUtils;
@@ -46,11 +43,19 @@ public class EntityEventHandler {
         }
     }
 
+    private static MKPlayerData playerCapFactory(Player player) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            return new MKServerPlayerData(serverPlayer);
+        } else {
+            return new MKPlayerData(player);
+        }
+    }
+
     @SuppressWarnings("unused")
     @SubscribeEvent
     public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> e) {
         if (e.getObject() instanceof Player player) {
-            var provider = CapabilityUtils.provider(CoreCapabilities.PLAYER_CAPABILITY, MKPlayerData::new, player);
+            var provider = CapabilityUtils.provider(CoreCapabilities.PLAYER_CAPABILITY, EntityEventHandler::playerCapFactory, player);
 
             e.addCapability(CoreCapabilities.PLAYER_CAP_ID, provider);
         } else if (e.getObject() instanceof LivingEntity living) {

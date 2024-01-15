@@ -16,7 +16,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import java.util.*;
 
 public class AttributeTalentHandler extends TalentTypeHandler {
-    private static final UUID EV_ID = UUID.randomUUID();
+    private static final UUID EV_ID = UUID.fromString("e542745d-aa57-4093-b734-3df4deb101ff");
 
     private final Map<AttributeTalent, AttributeEntry> attributeEntryMap = new HashMap<>();
 
