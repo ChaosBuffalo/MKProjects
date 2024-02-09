@@ -12,15 +12,11 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class EntityEntitlementsKnowledge implements IMKEntityEntitlements {
     protected final IMKEntityData entityData;
     protected final Map<UUID, EntitlementInstance> entitlements = new HashMap<>();
-    protected final List<BiConsumer<EntitlementInstance, IMKEntityEntitlements>> changeCallbacks = new ArrayList<>();
-    protected final List<Consumer<IMKEntityEntitlements>> loadedCallbacks = new ArrayList<>();
 
     public EntityEntitlementsKnowledge(IMKEntityData entityData) {
         this.entityData = entityData;
@@ -40,7 +36,7 @@ public class EntityEntitlementsKnowledge implements IMKEntityEntitlements {
         if (instance.isValid() && !entitlements.containsKey(instance.getUUID())) {
             entitlements.put(instance.getUUID(), instance);
             if (doBroadcast) {
-                broadcastChange(instance);
+                onInstanceChanged(instance);
             }
         } else {
             MKCore.LOGGER.error("Trying to add invalid entitlement or already added entitlement: {}", instance);
@@ -56,7 +52,7 @@ public class EntityEntitlementsKnowledge implements IMKEntityEntitlements {
         if (instance.isValid()) {
             EntitlementInstance existing = entitlements.remove(instance.getUUID());
             if (existing != null) {
-                broadcastChange(instance);
+                onInstanceChanged(instance);
             }
         } else {
             MKCore.LOGGER.error("Trying to remove entitlement instance will null id");
@@ -106,21 +102,7 @@ public class EntityEntitlementsKnowledge implements IMKEntityEntitlements {
         return true;
     }
 
-    protected void broadcastChange(EntitlementInstance instance) {
-        changeCallbacks.forEach(x -> x.accept(instance, this));
-    }
+    protected void onInstanceChanged(EntitlementInstance instance) {
 
-    public void broadcastLoaded() {
-        loadedCallbacks.forEach(x -> x.accept(this));
-    }
-
-    @Override
-    public void addUpdatedCallback(BiConsumer<EntitlementInstance, IMKEntityEntitlements> entitlementConsumer) {
-        changeCallbacks.add(entitlementConsumer);
-    }
-
-    @Override
-    public void addLoadedCallback(Consumer<IMKEntityEntitlements> loadedConsumer) {
-        loadedCallbacks.add(loadedConsumer);
     }
 }

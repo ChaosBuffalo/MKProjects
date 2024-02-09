@@ -21,7 +21,4 @@ public interface IMKEntityEntitlements extends IMKSerializable<CompoundTag> {
 
     int getEntitlementLevel(MKEntitlement entitlement);
 
-    void addUpdatedCallback(BiConsumer<EntitlementInstance, IMKEntityEntitlements> entitlementConsumer);
-
-    void addLoadedCallback(Consumer<IMKEntityEntitlements> loadedConsumer);
 }
