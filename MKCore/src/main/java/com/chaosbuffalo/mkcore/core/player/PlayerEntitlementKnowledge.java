@@ -20,14 +20,13 @@ public class PlayerEntitlementKnowledge extends EntityEntitlementsKnowledge {
     }
 
     @Override
-    protected void broadcastChange(EntitlementInstance instance) {
-        super.broadcastChange(instance);
+    protected void onInstanceChanged(EntitlementInstance instance) {
+        super.onInstanceChanged(instance);
         dispatcher.onRecordUpdated(instance);
     }
 
     public void onPersonaActivated() {
         MKCore.LOGGER.debug("PlayerEntitlementKnowledge.onPersonaActivated");
         dispatcher.onPersonaActivated();
-        broadcastLoaded();
     }
 }

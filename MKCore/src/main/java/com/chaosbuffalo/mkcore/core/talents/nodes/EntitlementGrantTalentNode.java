@@ -16,7 +16,7 @@ public class EntitlementGrantTalentNode extends TalentNode {
 
     public EntitlementGrantTalentNode(EntitlementGrantTalent talent, Dynamic<?> entry) {
         super(talent, entry);
-        this.nodeId = entry.get("nodeId").asString().map(UUID::fromString).result().orElse(UUID.randomUUID());
+        this.nodeId = entry.get("nodeId").asString().map(UUID::fromString).result().orElseGet(UUID::randomUUID);
     }
 
     public EntitlementGrantTalentNode(Supplier<EntitlementGrantTalent> talent, UUID nodeId) {
