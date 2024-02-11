@@ -95,19 +95,8 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
                 .filter(TalentRecord::isKnown);
     }
 
-    public Stream<TalentRecord> getKnownTalentsStream(TalentType<?> type) {
-        return getKnownTalentsStream()
-                .filter(r -> r.getNode().getTalentType() == type);
-    }
-
     public Collection<ResourceLocation> getKnownTrees() {
         return Collections.unmodifiableCollection(talentTreeRecordMap.keySet());
-    }
-
-    public Set<ResourceLocation> getKnownTalentIds(TalentType<?> type) {
-        return getKnownTalentsStream(type)
-                .map(record -> record.getNode().getTalent().getTalentId())
-                .collect(Collectors.toSet());
     }
 
     public boolean unlockTree(ResourceLocation treeId) {
