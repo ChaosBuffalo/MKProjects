@@ -4,11 +4,9 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entitlements.EntitlementInstance;
 import com.chaosbuffalo.mkcore.core.entitlements.EntitlementTypeHandler;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
-import com.chaosbuffalo.mkcore.core.records.IRecordType;
 
 public class AbilitySlotEntitlement extends MKEntitlement {
     private final AbilityGroupId group;
-    private final IRecordType<AbilitySlotEntitlementHandler> recordType;
 
     public AbilitySlotEntitlement(AbilityGroupId group) {
         this(group, group.getMaxSlots());
@@ -17,12 +15,11 @@ public class AbilitySlotEntitlement extends MKEntitlement {
     public AbilitySlotEntitlement(AbilityGroupId group, int maxEntitlements) {
         super(maxEntitlements);
         this.group = group;
-        recordType = playerData -> new AbilitySlotEntitlementHandler(playerData, this);
     }
 
     @Override
-    public IRecordType<?> getRecordType() {
-        return recordType;
+    public EntitlementTypeHandler createTypeHandler(MKPlayerData playerData) {
+        return new AbilitySlotEntitlementHandler(playerData, this);
     }
 
     public static class AbilitySlotEntitlementHandler extends EntitlementTypeHandler {
