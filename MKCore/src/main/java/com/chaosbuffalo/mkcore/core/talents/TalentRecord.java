@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 
-public class TalentRecord implements IRecordInstance {
+public class TalentRecord implements IRecordInstance<TalentRecord> {
 
     private int currentRank;
     private final TalentNode node;
@@ -61,7 +61,7 @@ public class TalentRecord implements IRecordInstance {
     }
 
     @Override
-    public IRecordType<?> getRecordType() {
+    public IRecordType<TalentRecord> getRecordType() {
         return node.getTalentType();
     }
 }

@@ -12,7 +12,7 @@ import net.minecraft.network.chat.MutableComponent;
 
 import java.util.function.Function;
 
-public class TalentType<T extends IRecordTypeHandler<TalentRecord>> implements IRecordType<T> {
+public class TalentType<T extends IRecordTypeHandler<TalentRecord>> implements IRecordType<TalentRecord> {
     public static final TalentType<AttributeTalentHandler> ATTRIBUTE =
             new TalentType<>("mkcore.talent_type.attribute.name", AttributeTalentHandler::new)
                     .setDisplayName("mkcore.talent_type.tooltip_name");

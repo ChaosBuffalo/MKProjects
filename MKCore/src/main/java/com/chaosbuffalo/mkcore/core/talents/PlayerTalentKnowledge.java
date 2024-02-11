@@ -31,12 +31,12 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     private final SyncInt totalTalentPoints = new SyncInt("totalPoints", 0);
     private final Map<ResourceLocation, TalentTreeRecord> talentTreeRecordMap = new HashMap<>();
     private final SyncInt talentXp = new SyncInt("xp", 0);
-    private final PlayerRecordDispatcher dispatcher;
+    private final PlayerRecordDispatcher<TalentRecord> dispatcher;
     private final TreeSyncGroup treeGroup;
 
     public PlayerTalentKnowledge(MKPlayerData playerData) {
         this.playerData = playerData;
-        dispatcher = new PlayerRecordDispatcher(playerData, this::getKnownTalentsStream);
+        dispatcher = new PlayerRecordDispatcher<>(playerData, this::getKnownTalentsStream);
         addSyncPrivate(talentPoints);
         addSyncPrivate(totalTalentPoints);
         addSyncPrivate(talentXp);
@@ -138,10 +138,6 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
 
     public boolean knowsTree(ResourceLocation treeId) {
         return talentTreeRecordMap.containsKey(treeId);
-    }
-
-    public boolean knowsTalent(ResourceLocation talentId) {
-        return getKnownTalentsStream().anyMatch(rec -> rec.getNode().getTalent().getTalentId() == talentId);
     }
 
     public TalentTreeRecord getTree(ResourceLocation treeId) {

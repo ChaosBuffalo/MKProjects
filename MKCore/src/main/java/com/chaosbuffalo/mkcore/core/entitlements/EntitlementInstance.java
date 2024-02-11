@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.UUID;
 
-public class EntitlementInstance implements IRecordInstance {
+public class EntitlementInstance implements IRecordInstance<EntitlementInstance> {
 
     protected MKEntitlement entitlement;
     protected UUID uuid;
@@ -37,8 +37,8 @@ public class EntitlementInstance implements IRecordInstance {
     }
 
     @Override
-    public IRecordType<?> getRecordType() {
-        return entitlement.getRecordType();
+    public IRecordType<EntitlementInstance> getRecordType() {
+        return entitlement;
     }
 
     public <T> T serializeDynamic(DynamicOps<T> ops) {

@@ -8,11 +8,11 @@ import com.chaosbuffalo.mkcore.core.records.PlayerRecordDispatcher;
 
 public class PlayerEntitlementKnowledge extends EntityEntitlementsKnowledge {
 
-    private final PlayerRecordDispatcher dispatcher;
+    private final PlayerRecordDispatcher<EntitlementInstance> dispatcher;
 
     public PlayerEntitlementKnowledge(MKPlayerData entityData) {
         super(entityData);
-        dispatcher = new PlayerRecordDispatcher(entityData, this::getInstanceStream);
+        dispatcher = new PlayerRecordDispatcher<>(entityData, this::getInstanceStream);
     }
 
     private MKPlayerData getPlayerData() {

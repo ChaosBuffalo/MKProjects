@@ -5,19 +5,16 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entitlements.EntitlementInstance;
 import com.chaosbuffalo.mkcore.core.entitlements.EntitlementTypeHandler;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
-import com.chaosbuffalo.mkcore.core.records.IRecordType;
 
 public class AbilityPoolEntitlement extends MKEntitlement {
-    private final IRecordType<AbilityPoolEntitlementHandler> recordType;
 
     public AbilityPoolEntitlement(int maxEntitlements) {
         super(maxEntitlements);
-        recordType = playerData -> new AbilityPoolEntitlementHandler(playerData, this);
     }
 
     @Override
-    public IRecordType<?> getRecordType() {
-        return recordType;
+    public EntitlementTypeHandler createTypeHandler(MKPlayerData playerData) {
+        return new AbilityPoolEntitlementHandler(playerData, this);
     }
 
     public static class AbilityPoolEntitlementHandler extends EntitlementTypeHandler {
