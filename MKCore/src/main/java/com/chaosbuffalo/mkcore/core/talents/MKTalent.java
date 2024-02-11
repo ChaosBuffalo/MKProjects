@@ -32,17 +32,12 @@ public abstract class MKTalent {
     }
 
     public void describeTalent(IMKEntityData entityData, TalentRecord record, Consumer<Component> consumer) {
-        consumer.accept(getTalentDescription(record));
+        consumer.accept(getTalentDescription(record).withStyle(ChatFormatting.GRAY));
     }
 
-    public Component getTalentDescription(TalentRecord record) {
+    public MutableComponent getTalentDescription(TalentRecord record) {
         ResourceLocation talentId = getTalentId();
-        MutableComponent comp = Component.translatable(String.format("%s.%s.description", talentId.getNamespace(), talentId.getPath()));
-        return comp.withStyle(ChatFormatting.GRAY);
-    }
-
-    public Component getTalentTypeName() {
-        return getTalentType().getDisplayName().withStyle(ChatFormatting.GOLD);
+        return Component.translatable(String.format("%s.%s.description", talentId.getNamespace(), talentId.getPath()));
     }
 
     public ResourceLocation getIcon() {

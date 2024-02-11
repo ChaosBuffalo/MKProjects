@@ -39,7 +39,10 @@ public class AttributeTalentNode extends TalentNode {
 
     public <T> T serialize(DynamicOps<T> ops) {
         T value = super.serialize(ops);
-        Optional<T> merged = ops.mergeToMap(value, ops.createString("value"), ops.createDouble(perRank)).resultOrPartial(MKCore.LOGGER::error);
+        Optional<T> merged = ops.mergeToMap(value,
+                        ops.createString("value"),
+                        ops.createDouble(perRank))
+                .resultOrPartial(MKCore.LOGGER::error);
         return merged.orElse(value);
     }
 }
