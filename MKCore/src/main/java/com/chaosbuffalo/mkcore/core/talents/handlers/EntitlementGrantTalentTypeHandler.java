@@ -26,7 +26,7 @@ public class EntitlementGrantTalentTypeHandler extends TalentTypeHandler {
             if (record.isKnown()) {
                 playerData.getEntitlements().addEntitlement(new EntitlementInstance(entitlement.get(), slotNode.getNodeId()));
             } else {
-                playerData.getEntitlements().removeEntitlementByUUID(slotNode.getNodeId());
+                playerData.getEntitlements().removeEntitlement(slotNode.getNodeId());
             }
         }
     }
