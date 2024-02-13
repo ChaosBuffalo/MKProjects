@@ -49,7 +49,7 @@ public class TalentButton extends MKButton {
         this.tooltip = new ArrayList<>();
         MKTalent talent = record.getNode().getTalent();
         tooltip.add(talent.getTalentName());
-        tooltip.add(talent.getTalentType().getDisplayName().withStyle(ChatFormatting.GOLD));
+        tooltip.add(talent.getTypeDescription().withStyle(ChatFormatting.GOLD));
         talent.describeTalent(entityData, record, tooltip::add);
     }
 

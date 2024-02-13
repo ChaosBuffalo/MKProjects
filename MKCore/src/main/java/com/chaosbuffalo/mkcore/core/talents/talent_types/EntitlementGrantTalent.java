@@ -8,15 +8,15 @@ import com.mojang.serialization.Dynamic;
 
 public class EntitlementGrantTalent extends MKTalent {
 
-    private final TalentType<?> talentType;
+    private final TalentType talentType;
 
-    public EntitlementGrantTalent(TalentType<?> talentType) {
+    public EntitlementGrantTalent(TalentType talentType) {
         super();
         this.talentType = talentType;
     }
 
     @Override
-    public TalentType<?> getTalentType() {
+    public TalentType getTalentType() {
         return talentType;
     }
 

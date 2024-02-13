@@ -80,7 +80,7 @@ public class TalentLineDefinition {
     private <T> DataResult<TalentNode> deserializeNode(Dynamic<T> entry) {
         Optional<String> nameOpt = entry.get("name").asString()
                 .resultOrPartial(error -> MKCore.LOGGER.error("Failed to deserialize talent node: {}", error));
-        if (!nameOpt.isPresent()) {
+        if (nameOpt.isEmpty()) {
             return DataResult.error(() -> "Node did not have a name");
         }
 
