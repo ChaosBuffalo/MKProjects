@@ -109,7 +109,7 @@ public class AttributeTalent extends MKTalent {
     }
 
     @Override
-    public TalentType<?> getTalentType() {
+    public TalentType getTalentType() {
         return TalentType.ATTRIBUTE;
     }
 

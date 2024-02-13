@@ -62,6 +62,6 @@ public class TalentRecord implements IRecordInstance<TalentRecord> {
 
     @Override
     public IRecordType<TalentRecord> getRecordType() {
-        return node.getTalentType();
+        return node.getTalent().getTalentType();
     }
 }

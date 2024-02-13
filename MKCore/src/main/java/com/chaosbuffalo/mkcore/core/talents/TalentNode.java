@@ -41,10 +41,6 @@ public class TalentNode {
         return index;
     }
 
-    TalentType<?> getTalentType() {
-        return talent.getTalentType();
-    }
-
     public MKTalent getTalent() {
         return talent;
     }

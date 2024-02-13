@@ -12,9 +12,9 @@ import java.util.function.Supplier;
 
 public class AbilityGrantTalent extends MKTalent {
     private final Supplier<? extends MKAbility> ability;
-    private final TalentType<?> talentType;
+    private final TalentType talentType;
 
-    public AbilityGrantTalent(Supplier<? extends MKAbility> ability, TalentType<?> talentType) {
+    public AbilityGrantTalent(Supplier<? extends MKAbility> ability, TalentType talentType) {
         this.ability = ability;
         this.talentType = talentType;
     }
@@ -24,7 +24,7 @@ public class AbilityGrantTalent extends MKTalent {
     }
 
     @Override
-    public TalentType<?> getTalentType() {
+    public TalentType getTalentType() {
         return talentType;
     }
 

@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 public abstract class MKTalent {
 
-    public abstract TalentType<?> getTalentType();
+    public abstract TalentType getTalentType();
 
     public <T> TalentNode createNode(Dynamic<T> dynamic) {
         return new TalentNode(this, dynamic);
@@ -29,6 +29,10 @@ public abstract class MKTalent {
     public Component getTalentName() {
         ResourceLocation talentId = getTalentId();
         return Component.translatable(String.format("%s.%s.name", talentId.getNamespace(), talentId.getPath()));
+    }
+
+    public MutableComponent getTypeDescription() {
+        return getTalentType().getDisplayName();
     }
 
     public void describeTalent(IMKEntityData entityData, TalentRecord record, Consumer<Component> consumer) {

@@ -56,7 +56,10 @@ public class EntityEntitlementsKnowledge {
     }
 
     public int getEntitlementLevel(MKEntitlement entitlement) {
-        return (int) getInstanceStream().filter(instance -> instance.getEntitlement() == entitlement).count();
+        return (int) getInstanceStream()
+                .filter(instance -> instance.getEntitlement() == entitlement)
+                .limit(entitlement.getMaxEntitlements())
+                .count();
     }
 
     public CompoundTag serialize() {
