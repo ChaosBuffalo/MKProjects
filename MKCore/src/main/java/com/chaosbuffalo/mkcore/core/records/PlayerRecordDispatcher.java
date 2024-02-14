@@ -18,7 +18,6 @@ public class PlayerRecordDispatcher<T extends IRecordInstance<T>> {
         this.recordSupplier = recordSupplier;
     }
 
-    @SuppressWarnings("unchecked")
     private IRecordTypeHandler<T> getRecordHandler(IRecordInstance<T> record) {
         return getTypeHandler(record.getRecordType());
     }
@@ -27,10 +26,8 @@ public class PlayerRecordDispatcher<T extends IRecordInstance<T>> {
         getRecordHandler(record).onRecordUpdated(record);
     }
 
-    @SuppressWarnings("unchecked")
     public IRecordTypeHandler<T> getTypeHandler(IRecordType<T> type) {
         return typeHandlerMap.computeIfAbsent(type, t -> t.createTypeHandler(playerData));
-//        return (T) typeHandlerMap.computeIfAbsent(type, t -> type.createTypeHandler(playerData));
     }
 
     public void onPersonaActivated() {

@@ -23,6 +23,10 @@ public class EntityEntitlementsKnowledge {
         this.entityData = entityData;
     }
 
+    public Stream<EntitlementInstance> getInstanceStream() {
+        return entitlements.values().stream();
+    }
+
     public boolean hasEntitlement(MKEntitlement entitlement) {
         return getEntitlementLevel(entitlement) > 0;
     }
@@ -32,7 +36,7 @@ public class EntityEntitlementsKnowledge {
     }
 
     protected void addEntitlementInternal(EntitlementInstance instance, boolean doBroadcast) {
-        if (instance.isValid() && !entitlements.containsKey(instance.getUUID())) {
+        if (!entitlements.containsKey(instance.getUUID())) {
             entitlements.put(instance.getUUID(), instance);
             if (doBroadcast) {
                 onInstanceChanged(instance);
@@ -40,10 +44,6 @@ public class EntityEntitlementsKnowledge {
         } else {
             MKCore.LOGGER.error("Trying to add invalid entitlement or already added entitlement: {}", instance);
         }
-    }
-
-    public Stream<EntitlementInstance> getInstanceStream() {
-        return entitlements.values().stream();
     }
 
     public void removeEntitlement(UUID id) {
@@ -66,7 +66,9 @@ public class EntityEntitlementsKnowledge {
         CompoundTag tag = new CompoundTag();
         ListTag entitlementsTag = new ListTag();
         for (EntitlementInstance instance : entitlements.values()) {
-            entitlementsTag.add(instance.serializeDynamic(NbtOps.INSTANCE));
+            EntitlementInstance.CODEC.encodeStart(NbtOps.INSTANCE, instance)
+                    .resultOrPartial(MKCore.LOGGER::error)
+                    .ifPresent(entitlementsTag::add);
         }
         tag.put("entitlements", entitlementsTag);
         return tag;
@@ -76,10 +78,9 @@ public class EntityEntitlementsKnowledge {
         entitlements.clear();
         ListTag entitlementsTag = tag.getList("entitlements", Tag.TAG_COMPOUND);
         for (Tag entNbt : entitlementsTag) {
-            EntitlementInstance newEnt = new EntitlementInstance(new Dynamic<>(NbtOps.INSTANCE, entNbt));
-            if (newEnt.isValid()) {
-                addEntitlementInternal(newEnt, false);
-            }
+            EntitlementInstance.CODEC.parse(new Dynamic<>(NbtOps.INSTANCE, entNbt))
+                    .resultOrPartial(MKCore.LOGGER::error)
+                    .ifPresent(e -> addEntitlementInternal(e, false));
         }
         return true;
     }
