@@ -1,12 +1,10 @@
 package com.chaosbuffalo.mkcore.core.entitlements;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.core.records.IRecordType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-public abstract class MKEntitlement implements IRecordType<EntitlementInstance> {
+public abstract class MKEntitlement {
     private final int maxEntitlements;
 
     public MKEntitlement(int maxEntitlements) {
@@ -21,8 +19,7 @@ public abstract class MKEntitlement implements IRecordType<EntitlementInstance> 
         return maxEntitlements;
     }
 
-    @Override
-    public abstract EntitlementTypeHandler createTypeHandler(MKPlayerData playerData);
+    public abstract EntitlementType getEntitlementType();
 
     public Component getDescription() {
         ResourceLocation id = getId();
