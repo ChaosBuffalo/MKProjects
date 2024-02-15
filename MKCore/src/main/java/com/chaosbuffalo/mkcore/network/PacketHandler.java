@@ -38,8 +38,6 @@ public class PacketHandler {
                 PlayerAbilitiesSyncPacket::new, PlayerAbilitiesSyncPacket::handle);
         networkChannel.registerMessage(id++, CritMessagePacket.class, CritMessagePacket::toBytes,
                 CritMessagePacket::new, CritMessagePacket::handle);
-        networkChannel.registerMessage(id++, PlayerLeftClickEmptyPacket.class, PlayerLeftClickEmptyPacket::toBytes,
-                PlayerLeftClickEmptyPacket::new, PlayerLeftClickEmptyPacket::handle);
         networkChannel.registerMessage(id++, TalentPointActionPacket.class, TalentPointActionPacket::toBytes,
                 TalentPointActionPacket::new, TalentPointActionPacket::handle);
         networkChannel.registerMessage(id++, TalentDefinitionSyncPacket.class, TalentDefinitionSyncPacket::toBytes,
