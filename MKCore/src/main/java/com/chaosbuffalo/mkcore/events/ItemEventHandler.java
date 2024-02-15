@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkcore.events;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
-import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -53,11 +52,6 @@ public class ItemEventHandler {
         if (event.getEntity() instanceof Player) {
             MKCore.getPlayer(event.getEntity()).ifPresent(playerData -> {
                 playerData.getEquipment().onEquipmentChange(event.getSlot(), event.getFrom(), event.getTo());
-                SpellTriggers.LIVING_EQUIPMENT_CHANGE.onEquipmentChange(event, playerData);
-            });
-        } else {
-            MKCore.getEntityData(event.getEntity()).ifPresent(entityData -> {
-                SpellTriggers.LIVING_EQUIPMENT_CHANGE.onEquipmentChange(event, entityData);
             });
         }
     }
