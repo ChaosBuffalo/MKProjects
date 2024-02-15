@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.core.entity.EntityAbilityKnowledge;
 import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
+import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
 import com.chaosbuffalo.mkcore.core.entity.EntityStats;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
@@ -9,6 +10,7 @@ import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.common.util.Lazy;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,6 +22,7 @@ public class MKEntityData implements IMKEntityData {
     private final LivingEntity entity;
     private final AbilityExecutor abilityExecutor;
     private final EntityStats stats;
+    private final Lazy<EntityEquipment> equipment;
     private final EntityAbilityKnowledge abilities;
     private final CombatExtensionModule combatExtensionModule;
     private final EntityEffectHandler effectHandler;
@@ -32,6 +35,7 @@ public class MKEntityData implements IMKEntityData {
         abilities = new EntityAbilityKnowledge(this);
         abilityExecutor = new AbilityExecutor(this);
         stats = new EntityStats(this);
+        equipment = Lazy.of(() -> new EntityEquipment(this));
         combatExtensionModule = new CombatExtensionModule(this);
         effectHandler = new EntityEffectHandler(this);
         pets = new EntityPetModule(this);
@@ -66,6 +70,11 @@ public class MKEntityData implements IMKEntityData {
     @Override
     public EntityEffectHandler getEffects() {
         return effectHandler;
+    }
+
+    @Override
+    public EntityEquipment getEquipment() {
+        return equipment.get();
     }
 
     public void setInstanceTracker(@Nullable ParticleEffectInstanceTracker instanceTracker) {

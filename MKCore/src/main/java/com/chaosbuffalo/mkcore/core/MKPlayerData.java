@@ -112,6 +112,7 @@ public class MKPlayerData implements IMKEntityData {
         return getPersona().getEntitlements();
     }
 
+    @Override
     public PlayerEquipment getEquipment() {
         return equipment;
     }
