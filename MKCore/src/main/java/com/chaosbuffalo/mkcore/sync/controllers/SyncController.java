@@ -39,7 +39,7 @@ public abstract class SyncController {
         visibility.forEach(v -> getVisibilityGroup(v).deserializeUpdate(updateTag));
     }
 
-    public abstract void syncUpdates();
+    public abstract boolean syncUpdates();
 
     public abstract void sendFullSync(ServerPlayer otherPlayer);
 }

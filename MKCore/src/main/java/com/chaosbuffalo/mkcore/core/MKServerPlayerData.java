@@ -26,10 +26,6 @@ public final class MKServerPlayerData extends MKPlayerData {
     @Override
     public void update() {
         super.update();
-        syncState();
-    }
-
-    private void syncState() {
         syncController.syncUpdates();
     }
 
