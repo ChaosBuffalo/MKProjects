@@ -8,20 +8,17 @@ import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.capabilities.MKCurioItemHandler;
 import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
-import com.chaosbuffalo.mkweapons.items.armor.IMKArmor;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.IRangedWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
-import com.chaosbuffalo.mkweapons.items.weapon.IMKWeapon;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent;
@@ -54,25 +51,6 @@ public class MKWeaponsEventHandler {
 
     @SubscribeEvent
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
-        ItemStack from = event.getFrom();
-        ItemStack to = event.getTo();
-        if (event.getSlot() == EquipmentSlot.MAINHAND) {
-            if (from.getItem() instanceof IMKWeapon weapon) {
-                weapon.getWeaponEffects(from).forEach(eff -> eff.onEntityUnequip(event.getEntity()));
-            }
-            if (to.getItem() instanceof IMKWeapon weapon) {
-                weapon.getWeaponEffects(to).forEach(eff -> eff.onEntityEquip(event.getEntity()));
-            }
-        }
-        else if (event.getSlot().isArmor()) {
-            if (from.getItem() instanceof IMKArmor armor) {
-                armor.getArmorEffects(from).forEach(eff -> eff.onEntityUnequip(event.getEntity()));
-            }
-            if (to.getItem() instanceof IMKArmor armor) {
-                armor.getArmorEffects(to).forEach(eff -> eff.onEntityEquip(event.getEntity()));
-            }
-        }
-
         if (event.getSlot().getType() == EquipmentSlot.Type.HAND) {
             if (event.getEntity() instanceof ServerPlayer player) {
                 checkShieldRestriction(player);

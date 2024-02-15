@@ -240,7 +240,7 @@ public class ClientEventHandler {
             return;
 
         if (event.getItemStack().getItem() instanceof ArmorItem armorItem) {
-            ArmorClass armorClass = ArmorClass.getItemArmorClass(armorItem);
+            ArmorClass armorClass = ArmorClass.getItemArmorClass(event.getItemStack());
             if (armorClass == null) {
                 return;
             }
