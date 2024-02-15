@@ -77,6 +77,9 @@ public class EntityEventHandler {
 
     @SubscribeEvent
     public static void onPlayerGainXP(PlayerXpEvent.XpChange event) {
+        if (event.getAmount() == 0) {
+            return;
+        }
         MKCore.getPlayer(event.getEntity()).ifPresent(data -> {
             data.getTalents().addTalentXp(event.getAmount());
         });
