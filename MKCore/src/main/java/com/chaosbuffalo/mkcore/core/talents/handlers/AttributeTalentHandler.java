@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkcore.core.talents.handlers;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
-import com.chaosbuffalo.mkcore.core.player.events.EPriority;
+import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
 import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import com.chaosbuffalo.mkcore.core.talents.TalentTypeHandler;
 import com.chaosbuffalo.mkcore.core.talents.nodes.AttributeTalentNode;
@@ -22,8 +22,8 @@ public class AttributeTalentHandler extends TalentTypeHandler {
 
     public AttributeTalentHandler(MKPlayerData playerData) {
         super(playerData);
-        playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated, EPriority.CONSUMER);
-        playerData.events().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated, EPriority.CONSUMER);
+        playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated, EventPriorities.CONSUMER);
+        playerData.events().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated, EventPriorities.CONSUMER);
     }
 
     private void onPersonaActivated(PlayerEvents.PersonaEvent event) {

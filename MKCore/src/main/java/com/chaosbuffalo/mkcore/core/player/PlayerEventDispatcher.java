@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.core.player.events.EPriority;
+import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
 import com.chaosbuffalo.mkcore.core.player.events.EventType;
 import com.chaosbuffalo.mkcore.core.player.events.PlayerEvent;
 import com.google.common.collect.Multimap;
@@ -22,10 +22,10 @@ public class PlayerEventDispatcher {
     }
 
     public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, UUID uuid, Consumer<T> function) {
-        subscribe(eventType, uuid, function, EPriority.CONSUMER);
+        subscribe(eventType, uuid, function, EventPriorities.CONSUMER);
     }
 
-    public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, UUID uuid, Consumer<T> function, EPriority priority) {
+    public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, UUID uuid, Consumer<T> function, int priority) {
         if (!eventType.canFire(playerData.isClientSide())) {
             return;
         }
@@ -58,9 +58,9 @@ public class PlayerEventDispatcher {
     public static class EventRecord<T extends PlayerEvent<?>> implements Comparable<EventRecord<?>> {
         private final UUID uuid;
         private final Consumer<T> function;
-        private final EPriority priority;
+        private final int priority;
 
-        public EventRecord(UUID ownerId, Consumer<T> function, EPriority priority) {
+        public EventRecord(UUID ownerId, Consumer<T> function, int priority) {
             this.uuid = ownerId;
             this.function = function;
             this.priority = priority;
@@ -79,7 +79,7 @@ public class PlayerEventDispatcher {
             if (matches(o.uuid)) {
                 return 0;
             } else {
-                return priority.compareTo(o.priority);
+                return priority > o.priority ? 1 : -1;
             }
         }
     }
