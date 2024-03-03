@@ -1,7 +1,8 @@
 package com.chaosbuffalo.mkweapons.items.effects.melee;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.google.common.collect.ImmutableMap;
@@ -41,8 +42,10 @@ public class MeleeSkillScalingEffect extends BaseMeleeWeaponEffect {
     }
 
     @Override
-    public void onHit(IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        MKCore.getPlayer(attacker).ifPresent(x -> x.getSkills().tryScaledIncreaseSkill(skill, 0.5));
+    public void onHit(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData, LivingEntity target) {
+        if (attackerData instanceof MKPlayerData playerData) {
+            playerData.getSkills().tryScaledIncreaseSkill(skill, 0.5);
+        }
     }
 
     @Override
@@ -74,7 +77,7 @@ public class MeleeSkillScalingEffect extends BaseMeleeWeaponEffect {
     public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
         tooltip.add(Component.translatable(skill.getDescriptionId()).withStyle(color));
         if (Screen.hasShiftDown()) {
-            float skillLevel = player != null ?  MKAbility.getSkillLevel(player, skill) : 0.0f;
+            float skillLevel = player != null ? MKAbility.getSkillLevel(player, skill) : 0.0f;
             double bonus = skillLevel * baseDamage;
             tooltip.add(Component.translatable("mkweapons.weapon_effect.skill_scaling.description",
                     Component.translatable(skill.getDescriptionId()), MKAbility.NUMBER_FORMATTER.format(bonus)));

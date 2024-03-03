@@ -40,8 +40,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
 
         @Override
         public boolean equals(Object other) {
-            if (other instanceof AbilitySlotKey) {
-                AbilitySlotKey otherKey = (AbilitySlotKey) other;
+            if (other instanceof AbilitySlotKey otherKey) {
                 return slot == otherKey.slot && group.equals(otherKey.group);
             }
             return false;

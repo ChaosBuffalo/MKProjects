@@ -117,8 +117,8 @@ public class MKUFactions {
                         Component.literal("Forgotten in darkness, we seek to delve into the depths for hidden knowledge."))
                 .addGreeting(FactionGreetings.GreetingType.MEMBER,
                         Component.literal("Together we drift on dark currents from the past."))
-                .addGreeting(FactionGreetings.GreetingType.MEMBER, 
-                        Component.literal("Can you hear as I do, the call of her long forgotten waters?"))
+                .addGreeting(FactionGreetings.GreetingType.MEMBER,
+                        Component.literal("Can you hear the call of her long forgotten waters as I do?"))
                 .addGreeting(FactionGreetings.GreetingType.MEMBER,
                         Component.literal("In my dreams I follow her call into the depths beyond the light of the so-called sun."));
         return faction;

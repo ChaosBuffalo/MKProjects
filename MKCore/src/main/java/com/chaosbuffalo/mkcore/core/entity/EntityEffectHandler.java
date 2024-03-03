@@ -26,7 +26,7 @@ public class EntityEffectHandler {
         this.entityData = entityData;
     }
 
-    private class EffectSource {
+    public class EffectSource {
         private final UUID sourceId;
         protected final Map<MKEffect, MKActiveEffect> activeEffectMap = new HashMap<>();
 
@@ -70,7 +70,7 @@ public class EntityEffectHandler {
                 return;
             }
             if (activeEffect.getBehaviour().isTimed()) {
-                MKCore.LOGGER.debug("EntityEffectHandler.addEffect timed {} to {}", activeEffect, entityData.getEntity());
+//                MKCore.LOGGER.debug("EntityEffectHandler.addEffect timed {} to {}", activeEffect, entityData.getEntity());
                 MKActiveEffect existing = activeEffectMap.get(activeEffect.getEffect());
                 if (existing == null) {
                     activeEffectMap.put(activeEffect.getEffect(), activeEffect);
@@ -80,7 +80,7 @@ public class EntityEffectHandler {
                     onEffectUpdated(existing);
                 }
             } else {
-                MKCore.LOGGER.debug("EntityEffectHandler.addEffect instant {} to {}", activeEffect, entityData.getEntity());
+//                MKCore.LOGGER.debug("EntityEffectHandler.addEffect instant {} to {}", activeEffect, entityData.getEntity());
                 if (entityData.isServerSide()) {
                     activeEffect.getState().performEffect(entityData, activeEffect);
                 }
@@ -156,11 +156,11 @@ public class EntityEffectHandler {
         }
 
         public boolean hasEffects() {
-            return activeEffectMap.size() > 0;
+            return !activeEffectMap.isEmpty();
         }
 
         public boolean isEmpty() {
-            return activeEffectMap.size() == 0;
+            return activeEffectMap.isEmpty();
         }
 
         public Stream<MKActiveEffect> effectsStream() {

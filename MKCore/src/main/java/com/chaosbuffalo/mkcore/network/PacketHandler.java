@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.network;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.network.packets.EntityDataUpdatePacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.network.NetworkDirection;
@@ -27,8 +28,6 @@ public class PacketHandler {
 
     public static void registerMessages() {
         int id = 1;
-        networkChannel.registerMessage(id++, PlayerDataSyncPacket.class, PlayerDataSyncPacket::toBytes,
-                PlayerDataSyncPacket::new, PlayerDataSyncPacket::handle);
         networkChannel.registerMessage(id++, ExecuteActiveAbilityPacket.class, ExecuteActiveAbilityPacket::toBytes,
                 ExecuteActiveAbilityPacket::new, ExecuteActiveAbilityPacket::handle);
         networkChannel.registerMessage(id++, EntityCastPacket.class, EntityCastPacket::toBytes,
@@ -39,8 +38,6 @@ public class PacketHandler {
                 PlayerAbilitiesSyncPacket::new, PlayerAbilitiesSyncPacket::handle);
         networkChannel.registerMessage(id++, CritMessagePacket.class, CritMessagePacket::toBytes,
                 CritMessagePacket::new, CritMessagePacket::handle);
-        networkChannel.registerMessage(id++, PlayerLeftClickEmptyPacket.class, PlayerLeftClickEmptyPacket::toBytes,
-                PlayerLeftClickEmptyPacket::new, PlayerLeftClickEmptyPacket::handle);
         networkChannel.registerMessage(id++, TalentPointActionPacket.class, TalentPointActionPacket::toBytes,
                 TalentPointActionPacket::new, TalentPointActionPacket::handle);
         networkChannel.registerMessage(id++, TalentDefinitionSyncPacket.class, TalentDefinitionSyncPacket::toBytes,
@@ -63,12 +60,15 @@ public class PacketHandler {
                 ParticleAnimationEditorSyncPacket::new, ParticleAnimationEditorSyncPacket::handle);
         networkChannel.registerMessage(id++, WriteAnimationPacket.class, WriteAnimationPacket::toBytes,
                 WriteAnimationPacket::new, WriteAnimationPacket::handle);
-        networkChannel.registerMessage(id++, EntityDataSyncPacket.class, EntityDataSyncPacket::toBytes,
-                EntityDataSyncPacket::new, EntityDataSyncPacket::handle);
         networkChannel.registerMessage(id++, ForgetAbilitiesRequestPacket.class, ForgetAbilitiesRequestPacket::toBytes,
                 ForgetAbilitiesRequestPacket::new, ForgetAbilitiesRequestPacket::handle);
         networkChannel.registerMessage(id++, EntityEffectPacket.class, EntityEffectPacket::toBytes,
                 EntityEffectPacket::new, EntityEffectPacket::handle);
+        networkChannel.messageBuilder(EntityDataUpdatePacket.class, id++)
+                .consumerMainThread(EntityDataUpdatePacket::handleMainThread)
+                .encoder(EntityDataUpdatePacket::toBytes)
+                .decoder(EntityDataUpdatePacket::new)
+                .add();
     }
 
     public static <T> void sendMessageToServer(T msg) {

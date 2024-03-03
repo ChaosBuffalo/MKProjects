@@ -50,7 +50,7 @@ public class MKFaction {
     public String getTranslationKey() {
         ResourceLocation factionId = getId();
         if (factionId != null) {
-            return String.format("faction.%s.%s.name", factionId.getNamespace(), factionId.getPath());
+            return factionId.toLanguageKey("faction", "name");
         } else {
             return "faction.mkfaction.invalid.name";
         }
@@ -145,7 +145,7 @@ public class MKFaction {
                 .map(ResourceLocation::toString).sorted().map(ops::createString)));
         builder.put(ops.createString("firstNames"), ops.createList(firstNames.stream().sorted().map(ops::createString)));
         builder.put(ops.createString("lastNames"), ops.createList(lastNames.stream().sorted().map(ops::createString)));
-        if (customStatusNames.size() > 0) {
+        if (!customStatusNames.isEmpty()) {
             ImmutableMap.Builder<D, D> nameBuilder = ImmutableMap.builder();
             customStatusNames.forEach((status, name) -> nameBuilder.put(ops.createString(status.name()), ops.createString(name)));
             builder.put(ops.createString("statusNames"), ops.createMap(nameBuilder.build()));

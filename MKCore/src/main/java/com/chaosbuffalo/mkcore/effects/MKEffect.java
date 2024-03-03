@@ -128,7 +128,7 @@ public abstract class MKEffect {
     }
 
     private boolean hasAttributes() {
-        return attributeModifierMap.size() > 0;
+        return !attributeModifierMap.isEmpty();
     }
 
     public MKEffect addAttribute(Attribute attribute, UUID uuid, double amount, AttributeModifier.Operation operation) {

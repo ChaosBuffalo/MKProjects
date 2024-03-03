@@ -8,8 +8,8 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKAbilityKnowledge;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.sync.SyncInt;
-import com.chaosbuffalo.mkcore.sync.SyncMapUpdater;
+import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
+import com.chaosbuffalo.mkcore.sync.types.SyncInt;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -22,12 +22,12 @@ import java.util.stream.Stream;
 
 public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncComponentProvider {
     private final MKPlayerData playerData;
-    private final SyncComponent sync = new SyncComponent("abilities");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent("abilities");
     private final Map<ResourceLocation, MKAbilityInfo> abilityInfoMap = new HashMap<>();
     private final SyncInt poolSize = new SyncInt("poolSize", GameConstants.DEFAULT_ABILITY_POOL_SIZE);
     private final SyncMapUpdater<ResourceLocation, MKAbilityInfo> knownAbilityUpdater =
             new SyncMapUpdater<>("known",
-                    () -> abilityInfoMap,
+                    abilityInfoMap,
                     ResourceLocation::toString,
                     ResourceLocation::tryParse,
                     PlayerAbilityKnowledge::createAbilityInfo
@@ -83,7 +83,7 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
     }
 
     @Override
-    public SyncComponent getSyncComponent() {
+    public PlayerSyncComponent getSyncComponent() {
         return sync;
     }
 
@@ -121,7 +121,7 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         info.addSource(source);
         markDirty(info);
 
-        playerData.getLoadout().onAbilityLearned(info, source);
+        playerData.events().trigger(PlayerEvents.ABILITY_LEARNED, new PlayerEvents.AbilityLearnEvent(playerData, info, source));
         return true;
     }
 
@@ -137,8 +137,7 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         markDirty(info);
 
         if (!info.isCurrentlyKnown()) {
-            playerData.getAbilityExecutor().onAbilityUnlearned(info);
-            playerData.getLoadout().onAbilityUnlearned(info);
+            playerData.events().trigger(PlayerEvents.ABILITY_UNLEARNED, new PlayerEvents.AbilityUnlearnEvent(playerData, info));
             abilityInfoMap.remove(abilityId);
         }
         return true;

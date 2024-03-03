@@ -15,8 +15,6 @@ import java.util.List;
 
 public interface IWeaponData extends INBTSerializable<CompoundTag> {
 
-    void attach(ItemStack itemStack);
-
     ItemStack getItemStack();
 
     List<IMeleeWeaponEffect> getMeleeEffects();

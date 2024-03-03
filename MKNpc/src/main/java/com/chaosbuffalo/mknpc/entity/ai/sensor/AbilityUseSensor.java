@@ -1,12 +1,11 @@
 package com.chaosbuffalo.mknpc.entity.ai.sensor;
 
-import com.chaosbuffalo.mkcore.CoreCapabilities;
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityDecisionContext;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
+import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
@@ -31,34 +30,34 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
     protected void doTick(@Nonnull ServerLevel worldIn, MKEntity entityIn) {
         Optional<MKAbility> abilityOptional = entityIn.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get());
         int timeOut = entityIn.getBrain().getMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT.get()).orElse(0);
-        boolean isCasting = MKCore.getEntityData(entityIn).map(data -> data.getAbilityExecutor().isCasting()).orElse(false);
+        boolean isCasting = entityIn.getEntityDataCap().getAbilityExecutor().isCasting();
         if (abilityOptional.isPresent() && !isCasting && timeOut <= 20) {
             entityIn.getBrain().setMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT.get(), timeOut + 1);
             return;
         }
-        entityIn.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent(mkEntityData -> {
-            AbilityDecisionContext context = createAbilityDecisionContext(entityIn);
-            for (MKAbilityInfo ability : mkEntityData.getAbilities().getAbilitiesPriorityOrder()) {
-                MKAbility mkAbility = ability.getAbility();
-                if (!mkEntityData.getAbilityExecutor().canActivateAbility(mkAbility))
-                    continue;
 
-                AbilityTargetingDecision targetSelection = mkAbility.getUseCondition().getDecision(context);
-                if (targetSelection == AbilityTargetingDecision.UNDECIDED)
-                    continue;
+        MKEntityData mkEntityData = entityIn.getEntityDataCap();
+        AbilityDecisionContext context = createAbilityDecisionContext(entityIn);
+        for (MKAbilityInfo ability : mkEntityData.getAbilities().getAbilitiesPriorityOrder()) {
+            MKAbility mkAbility = ability.getAbility();
+            if (!mkEntityData.getAbilityExecutor().canActivateAbility(mkAbility))
+                continue;
 
-                if (mkAbility.isValidTarget(entityIn, targetSelection.getTargetEntity())) {
-                    entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_TARGET.get(), targetSelection.getTargetEntity());
-                    entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_POSITION_TARGET.get(), new TargetUtil.LivingOrPosition(targetSelection.getTargetEntity()));
-                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get(), mkAbility);
-                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
-                            entityIn.getMovementStrategy(targetSelection));
-                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get(), targetSelection.getTargetEntity());
-                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT.get(), 0);
-                    return;
-                }
+            AbilityTargetingDecision targetSelection = mkAbility.getUseCondition().getDecision(context);
+            if (targetSelection == AbilityTargetingDecision.UNDECIDED)
+                continue;
+
+            if (mkAbility.isValidTarget(entityIn, targetSelection.getTargetEntity())) {
+                entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_TARGET.get(), targetSelection.getTargetEntity());
+                entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_POSITION_TARGET.get(), new TargetUtil.LivingOrPosition(targetSelection.getTargetEntity()));
+                entityIn.getBrain().setMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get(), mkAbility);
+                entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
+                        entityIn.getMovementStrategy(targetSelection));
+                entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get(), targetSelection.getTargetEntity());
+                entityIn.getBrain().setMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT.get(), 0);
+                return;
             }
-        });
+        }
     }
 
     @Nonnull

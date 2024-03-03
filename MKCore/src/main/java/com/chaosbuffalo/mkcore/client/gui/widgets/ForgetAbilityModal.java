@@ -112,7 +112,7 @@ public class ForgetAbilityModal extends MKModal {
     }
 
     public boolean ready() {
-        return isLearning ? forgetting.size() == numberToForget : forgetting.size() > 0;
+        return isLearning ? forgetting.size() == numberToForget : !forgetting.isEmpty();
     }
 
 }

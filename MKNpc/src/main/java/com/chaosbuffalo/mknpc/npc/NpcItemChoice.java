@@ -22,6 +22,10 @@ public class NpcItemChoice implements INBTSerializable<CompoundTag> {
         this.dropChance = dropChance;
     }
 
+    public NpcItemChoice() {
+        this(ItemStack.EMPTY, 1.0, 0.0f);
+    }
+
     public void setWeight(double weight) {
         this.weight = weight;
     }
@@ -34,15 +38,10 @@ public class NpcItemChoice implements INBTSerializable<CompoundTag> {
         this.item = item;
     }
 
-    public NpcItemChoice() {
-        this(ItemStack.EMPTY, 1.0, 0.0f);
-    }
-
-    public static void livingEquipmentAssign(LivingEntity entity, EquipmentSlot slot, NpcItemChoice choice) {
-        entity.setItemSlot(slot, choice.item.copy());
-        if (entity instanceof Mob) {
-            Mob mobEntity = (Mob) entity;
-            mobEntity.setDropChance(slot, choice.dropChance);
+    public void equip(LivingEntity entity, EquipmentSlot slot) {
+        entity.setItemSlot(slot, item.copy());
+        if (entity instanceof Mob mobEntity) {
+            mobEntity.setDropChance(slot, dropChance);
         }
     }
 

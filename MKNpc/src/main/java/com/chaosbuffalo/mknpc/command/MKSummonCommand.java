@@ -30,7 +30,7 @@ public class MKSummonCommand {
     }
 
     static CompletableFuture<Suggestions> suggestNpcDefinitions(final CommandContext<CommandSourceStack> context,
-                                                                final SuggestionsBuilder builder) throws CommandSyntaxException {
+                                                                final SuggestionsBuilder builder) {
         return SharedSuggestionProvider.suggest(NpcDefinitionManager.DEFINITIONS.keySet().stream()
                 .map(ResourceLocation::toString), builder);
     }

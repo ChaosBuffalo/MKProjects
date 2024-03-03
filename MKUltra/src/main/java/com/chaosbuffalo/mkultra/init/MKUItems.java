@@ -21,6 +21,7 @@ import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import com.google.common.collect.Lists;
 import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Tuple;
@@ -50,7 +51,7 @@ public final class MKUItems {
     public static final UUID FEET_UUID = UUID.fromString("9baf459d-e898-402d-9915-af25a217fedd");
 
     public static MKTier BRONZE_TIER = new MKTier("bronze", 1, 150, 5.0F, 1.0F, 12,
-                () -> Ingredient.of(Items.COPPER_INGOT), BlockTags.NEEDS_IRON_TOOL, Tags.Items.INGOTS_COPPER,
+            () -> Ingredient.of(Items.COPPER_INGOT), BlockTags.NEEDS_IRON_TOOL, Tags.Items.INGOTS_COPPER,
             new ManaDrainWeaponEffect(0.5f, 0.5f));
 
     public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, MKUltra.MODID);
@@ -158,7 +159,7 @@ public final class MKUItems {
                     (new Item.Properties()),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                                    new AttributeModifier(CHEST_UUID,"seawoven", 6.0, AttributeModifier.Operation.ADDITION)),
+                                    new AttributeModifier(CHEST_UUID, "seawoven", 6.0, AttributeModifier.Operation.ADDITION)),
                             new AttributeOptionEntry(MKAttributes.MANA_REGEN,
                                     new AttributeModifier(CHEST_UUID, "seawoven", 1.0, AttributeModifier.Operation.ADDITION))
                     ))));
@@ -168,7 +169,7 @@ public final class MKUItems {
                     (new Item.Properties()),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                                    new AttributeModifier(FEET_UUID,"seawoven", 4.0, AttributeModifier.Operation.ADDITION))
+                                    new AttributeModifier(FEET_UUID, "seawoven", 4.0, AttributeModifier.Operation.ADDITION))
                     ))));
 
     public static RegistryObject<MKArmorItem> ancientBronzeHelmet = REGISTRY.register("ancient_bronze_helmet",
@@ -192,7 +193,7 @@ public final class MKUItems {
                     (new Item.Properties()),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(Attributes.MAX_HEALTH,
-                                    new AttributeModifier(CHEST_UUID,"ancient_bronze", 10.0, AttributeModifier.Operation.ADDITION)),
+                                    new AttributeModifier(CHEST_UUID, "ancient_bronze", 10.0, AttributeModifier.Operation.ADDITION)),
                             new AttributeOptionEntry(Attributes.ATTACK_DAMAGE,
                                     new AttributeModifier(CHEST_UUID, "ancient_bronze", 2.0, AttributeModifier.Operation.ADDITION))
                     ))));
@@ -202,7 +203,7 @@ public final class MKUItems {
                     (new Item.Properties()),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(Attributes.ATTACK_SPEED,
-                                    new AttributeModifier(FEET_UUID,"ancient_bronze", 0.12, AttributeModifier.Operation.MULTIPLY_TOTAL))
+                                    new AttributeModifier(FEET_UUID, "ancient_bronze", 0.12, AttributeModifier.Operation.MULTIPLY_TOTAL))
                     ))));
 
     public static RegistryObject<MKArmorItem> ancientPriestHelmet = REGISTRY.register("ancient_priest_helmet",
@@ -226,7 +227,7 @@ public final class MKUItems {
                     (new Item.Properties()),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                                    new AttributeModifier(CHEST_UUID,"ancient_priest", 10.0, AttributeModifier.Operation.ADDITION)),
+                                    new AttributeModifier(CHEST_UUID, "ancient_priest", 10.0, AttributeModifier.Operation.ADDITION)),
                             new AttributeOptionEntry(MKAttributes.MANA_REGEN,
                                     new AttributeModifier(CHEST_UUID, "ancient_priest", 1.5, AttributeModifier.Operation.ADDITION))
                     ))));
@@ -236,7 +237,7 @@ public final class MKUItems {
                     (new Item.Properties()),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.SPELL_CRIT_MULTIPLIER,
-                                    new AttributeModifier(FEET_UUID,"ancient_priest", 0.25, AttributeModifier.Operation.ADDITION))
+                                    new AttributeModifier(FEET_UUID, "ancient_priest", 0.25, AttributeModifier.Operation.ADDITION))
                     ))));
 
     public static RegistryObject<Item> destroyedTrooperHelmet = REGISTRY.register("destroyed_trooper_helmet",
@@ -272,8 +273,8 @@ public final class MKUItems {
     }
 
     @SubscribeEvent
-    public static void registerItems(RegisterEvent evt) {
-        if (evt.getRegistryKey() != ForgeRegistries.ITEMS.getRegistryKey()) {
+    public static void registerItems(RegisterEvent event) {
+        if (event.getRegistryKey() != Registries.ITEM) {
             return;
         }
         Set<Tuple<String, IMKTier>> materials = new HashSet<>();
@@ -287,7 +288,7 @@ public final class MKUItems {
                         (new Item.Properties()));
                 WEAPONS.add(weapon);
                 putWeaponForLookup(mat.getB(), weaponType, weapon);
-                evt.register(ForgeRegistries.ITEMS.getRegistryKey(), new ResourceLocation(MKUltra.MODID,
+                event.register(Registries.ITEM, new ResourceLocation(MKUltra.MODID,
                         String.format("%s_%s", weaponType.getName().getPath(), mat.getA())), () -> weapon);
             }
             RangedModifierEffect rangedMods = new RangedModifierEffect();
@@ -303,7 +304,7 @@ public final class MKUItems {
                     new RangedManaDrainEffect(0.5f, 0.5f)
             );
             BOWS.add(bow);
-            evt.register(ForgeRegistries.ITEMS.getRegistryKey(),
+            event.register(Registries.ITEM,
                     new ResourceLocation(MKUltra.MODID, String.format("longbow_%s", mat.getA())), () -> bow);
         }
     }
@@ -314,8 +315,8 @@ public final class MKUItems {
                 if (entity == null) {
                     return 0.0F;
                 } else {
-                    return !(entity.getUseItem().getItem() instanceof MKBow) ? 0.0F :
-                            (float) (itemStack.getUseDuration() - entity.getUseItemRemainingTicks()) / bow.getDrawTime(itemStack, entity);
+                    return !(entity.getUseItem().getItem() instanceof MKBow mkBow) ? 0.0F :
+                            (float) (itemStack.getUseDuration() - entity.getUseItemRemainingTicks()) / mkBow.getDrawTime(itemStack, entity);
                 }
             });
             ItemProperties.register(bow, new ResourceLocation("pulling"), (itemStack, world, entity, seed) -> {
@@ -323,7 +324,7 @@ public final class MKUItems {
             });
         }
         for (MKMeleeWeapon weapon : WEAPONS) {
-            if (MeleeWeaponTypes.WITH_BLOCKING.contains(weapon.getWeaponType())) {
+            if (weapon.getWeaponType().canBlock()) {
                 ItemProperties.register(weapon, new ResourceLocation("blocking"),
                         (itemStack, world, entity, seed) -> entity != null && entity.isUsingItem()
                                 && entity.getUseItem() == itemStack ? 1.0F : 0.0F);

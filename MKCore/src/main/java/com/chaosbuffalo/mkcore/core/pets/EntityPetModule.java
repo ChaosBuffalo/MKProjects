@@ -3,10 +3,10 @@ package com.chaosbuffalo.mkcore.core.pets;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
-import com.chaosbuffalo.mkcore.core.player.SyncComponent;
-import com.chaosbuffalo.mkcore.sync.SyncBool;
-import com.chaosbuffalo.mkcore.sync.SyncEntity;
-import com.chaosbuffalo.mkcore.sync.SyncMapUpdater;
+import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
+import com.chaosbuffalo.mkcore.sync.types.SyncBool;
+import com.chaosbuffalo.mkcore.sync.types.SyncEntity;
+import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,14 +18,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class EntityPetModule implements IPlayerSyncComponentProvider {
-    private final SyncComponent sync = new SyncComponent("petModule");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent("petModule");
     protected final IMKEntityData entityData;
     protected final SyncBool isPet = new SyncBool("isPet", false);
     protected final SyncEntity<LivingEntity> owner = new SyncEntity<>("owner", null, LivingEntity.class);
     protected final Map<ResourceLocation, MKPet<?>> pets = new HashMap<>();
     protected final Map<ResourceLocation, MKPet.ClientMKPet> clientPetMap = new HashMap<>();
     protected final SyncMapUpdater<ResourceLocation, MKPet.ClientMKPet> clientPets = new SyncMapUpdater<>("clientPets",
-            () -> clientPetMap, ResourceLocation::toString, ResourceLocation::tryParse, EntityPetModule::createClientPet);
+            clientPetMap, ResourceLocation::toString, ResourceLocation::tryParse, EntityPetModule::createClientPet);
 
     private static MKPet.ClientMKPet createClientPet(ResourceLocation petId) {
         return new MKPet.ClientMKPet(petId, null);
@@ -97,7 +97,7 @@ public class EntityPetModule implements IPlayerSyncComponentProvider {
     }
 
     @Override
-    public SyncComponent getSyncComponent() {
+    public PlayerSyncComponent getSyncComponent() {
         return sync;
     }
 

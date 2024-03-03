@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.core;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.editor.PlayerEditorModule;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtension;
@@ -9,8 +8,9 @@ import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
 import com.chaosbuffalo.mkcore.core.player.*;
 import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
-import com.chaosbuffalo.mkcore.sync.PlayerUpdateEngine;
-import com.chaosbuffalo.mkcore.sync.UpdateEngine;
+import com.chaosbuffalo.mkcore.sync.controllers.PlayerSyncController;
+import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -19,26 +19,33 @@ import net.minecraft.world.entity.player.Player;
 import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 public class MKPlayerData implements IMKEntityData {
-    private final Player player;
+    protected final Player player;
     private final PlayerAbilityExecutor abilityExecutor;
     private final PlayerStats stats;
     private final PersonaManager personaManager;
-    private final PlayerUpdateEngine updateEngine;
+    protected final PlayerSyncController syncController;
     private final PlayerAnimationModule animationModule;
     private final PlayerEquipment equipment;
     private final PlayerCombatExtensionModule combatExtensionModule;
     private final PlayerEditorModule editorModule;
     private final PlayerEffectHandler effectHandler;
     private final EntityPetModule pets;
+    private final PlayerAttributeMonitor attributes;
+    private final PlayerEventDispatcher events;
+    private final Set<BooleanSupplier> tickCallbacks = new ObjectArraySet<>(4);
 
     public MKPlayerData(Player playerEntity) {
         player = Objects.requireNonNull(playerEntity);
-        updateEngine = new PlayerUpdateEngine(this);
+        events = new PlayerEventDispatcher(this);
+        syncController = new PlayerSyncController(this);
         personaManager = PersonaManager.getPersonaManager(this);
         abilityExecutor = new PlayerAbilityExecutor(this);
         combatExtensionModule = new PlayerCombatExtensionModule(this);
+        attributes = new PlayerAttributeMonitor(this, this::enqueueTick);
         stats = new PlayerStats(this);
 
         animationModule = new PlayerAnimationModule(this);
@@ -50,7 +57,7 @@ public class MKPlayerData implements IMKEntityData {
         editorModule = new PlayerEditorModule(this);
         effectHandler = new PlayerEffectHandler(this);
         pets = new EntityPetModule(this);
-        attachUpdateEngine(updateEngine);
+        attachUpdateEngine(syncController);
     }
 
     private Persona getPersona() {
@@ -65,6 +72,10 @@ public class MKPlayerData implements IMKEntityData {
     @Override
     public PlayerCombatExtensionModule getCombatExtension() {
         return combatExtensionModule;
+    }
+
+    public PlayerEventDispatcher events() {
+        return events;
     }
 
     @Override
@@ -85,8 +96,8 @@ public class MKPlayerData implements IMKEntityData {
         return getPersona().getSkills();
     }
 
-    public PlayerUpdateEngine getUpdateEngine() {
-        return updateEngine;
+    public PlayerSyncController getSyncController() {
+        return syncController;
     }
 
     public PersonaManager getPersonaManager() {
@@ -101,6 +112,7 @@ public class MKPlayerData implements IMKEntityData {
         return getPersona().getEntitlements();
     }
 
+    @Override
     public PlayerEquipment getEquipment() {
         return equipment;
     }
@@ -116,6 +128,15 @@ public class MKPlayerData implements IMKEntityData {
     }
 
     @Override
+    public EntityPetModule getPets() {
+        return pets;
+    }
+
+    public PlayerEditorModule getEditor() {
+        return editorModule;
+    }
+
+    @Override
     public Optional<ParticleEffectInstanceTracker> getParticleEffectTracker() {
         return Optional.of(getAnimationModule().getEffectInstanceTracker());
     }
@@ -125,9 +146,8 @@ public class MKPlayerData implements IMKEntityData {
         return effectHandler;
     }
 
-    @Override
-    public boolean isServerSide() {
-        return player instanceof ServerPlayer;
+    public PlayerAttributeMonitor getAttributes() {
+        return attributes;
     }
 
     private void completeAbility(MKAbility ability) {
@@ -139,17 +159,8 @@ public class MKPlayerData implements IMKEntityData {
 
     @Override
     public void onJoinWorld() {
-        getPersonaManager().ensurePersonaLoaded();
-        getPersona().onJoinWorld();
-        getStats().onJoinWorld();
-        getAbilityExecutor().onJoinWorld();
+        getPersonaManager().onJoinWorld();
         getEffects().onJoinWorld();
-        if (isServerSide()) {
-            MKCore.LOGGER.info("server player joined world!");
-            initialSync();
-        } else {
-            MKCore.LOGGER.info("client player joined world!");
-        }
     }
 
     private void onDeath() {
@@ -157,56 +168,38 @@ public class MKPlayerData implements IMKEntityData {
         getPets().onDeath(Entity.RemovalReason.KILLED);
     }
 
-    public void update() {
-        getEntity().getCommandSenderWorld().getProfiler().push("MKPlayerData.update");
+    private void enqueueTick(BooleanSupplier callback) {
+        tickCallbacks.add(callback);
+    }
 
-        getEntity().getCommandSenderWorld().getProfiler().push("PlayerEffects.tick");
+    public void update() {
         getEffects().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("PlayerStats.tick");
         getStats().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("AbilityExecutor.tick");
         getAbilityExecutor().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("Animation.tick");
         getAnimationModule().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("PlayerCombat.tick");
         getCombatExtension().tick();
 
-        if (isServerSide()) {
-            getEntity().getCommandSenderWorld().getProfiler().popPush("Updater.sync");
-            syncState();
+        if (!tickCallbacks.isEmpty()) {
+            tickCallbacks.removeIf(BooleanSupplier::getAsBoolean);
         }
-        getEntity().getCommandSenderWorld().getProfiler().pop();
-
-        getEntity().getCommandSenderWorld().getProfiler().pop();
     }
 
     public void clone(MKPlayerData previous, boolean death) {
         if (death) {
             previous.onDeath();
         }
-        CompoundTag tag = previous.serialize();
-        deserialize(tag);
-    }
-
-    private void syncState() {
-        updateEngine.syncUpdates();
-    }
-
-    public void initialSync() {
-        if (isServerSide()) {
-            MKCore.LOGGER.debug("Sending initial sync for {}", player);
-            updateEngine.sendAll((ServerPlayer) player);
-        }
+        CompoundTag tag = previous.serializeNBT();
+        deserializeNBT(tag);
     }
 
     @Override
     public void onPlayerStartTracking(ServerPlayer otherPlayer) {
-        updateEngine.sendAll(otherPlayer);
+        syncController.sendFullSync(otherPlayer);
         getEffects().sendAllEffectsToPlayer(otherPlayer);
     }
 
     @Override
-    public void attachUpdateEngine(UpdateEngine engine) {
+    public void attachUpdateEngine(SyncController engine) {
         animationModule.getSyncComponent().attach(engine);
         combatExtensionModule.getSyncComponent().attach(engine);
         stats.getSyncComponent().attach(engine);
@@ -214,22 +207,12 @@ public class MKPlayerData implements IMKEntityData {
         pets.getSyncComponent().attach(engine);
     }
 
-    public void onPersonaActivated() {
-        getEquipment().onPersonaActivated();
-        getStats().onPersonaActivated();
-    }
-
-    public void onPersonaDeactivated() {
-        getEquipment().onPersonaDeactivated();
-        getStats().onPersonaDeactivated();
-    }
-
     public <T extends IPersonaExtension> T getPersonaExtension(Class<T> clazz) {
         return getPersona().getExtension(clazz);
     }
 
     @Override
-    public CompoundTag serialize() {
+    public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         tag.put("persona", personaManager.serialize());
         tag.put("stats", getStats().serialize());
@@ -239,17 +222,7 @@ public class MKPlayerData implements IMKEntityData {
     }
 
     @Override
-    public EntityPetModule getPets() {
-        return pets;
-    }
-
-    public PlayerEditorModule getEditor() {
-        return editorModule;
-    }
-
-
-    @Override
-    public void deserialize(CompoundTag tag) {
+    public void deserializeNBT(CompoundTag tag) {
         personaManager.deserialize(tag.getCompound("persona"));
         getStats().deserialize(tag.getCompound("stats"));
         getEditor().deserialize(tag.getCompound("editor"));

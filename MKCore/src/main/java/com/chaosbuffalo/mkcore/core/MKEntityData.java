@@ -2,13 +2,15 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.core.entity.EntityAbilityKnowledge;
 import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
+import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
 import com.chaosbuffalo.mkcore.core.entity.EntityStats;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
-import com.chaosbuffalo.mkcore.sync.UpdateEngine;
+import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.common.util.Lazy;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,31 +22,23 @@ public class MKEntityData implements IMKEntityData {
     private final LivingEntity entity;
     private final AbilityExecutor abilityExecutor;
     private final EntityStats stats;
-    private final EntityAbilityKnowledge knowledge;
+    private final Lazy<EntityEquipment> equipment;
+    private final EntityAbilityKnowledge abilities;
     private final CombatExtensionModule combatExtensionModule;
     private final EntityEffectHandler effectHandler;
     private final EntityPetModule pets;
-
     @Nullable
     private ParticleEffectInstanceTracker instanceTracker = null;
 
     public MKEntityData(LivingEntity livingEntity) {
         entity = Objects.requireNonNull(livingEntity);
-        knowledge = new EntityAbilityKnowledge(this);
+        abilities = new EntityAbilityKnowledge(this);
         abilityExecutor = new AbilityExecutor(this);
         stats = new EntityStats(this);
+        equipment = Lazy.of(() -> new EntityEquipment(this));
         combatExtensionModule = new CombatExtensionModule(this);
         effectHandler = new EntityEffectHandler(this);
         pets = new EntityPetModule(this);
-    }
-
-    public void setInstanceTracker(ParticleEffectInstanceTracker instanceTracker) {
-        this.instanceTracker = instanceTracker;
-    }
-
-    @Override
-    public Optional<ParticleEffectInstanceTracker> getParticleEffectTracker() {
-        return Optional.ofNullable(instanceTracker);
     }
 
     @Nonnull
@@ -60,7 +54,7 @@ public class MKEntityData implements IMKEntityData {
 
     @Override
     public EntityAbilityKnowledge getAbilities() {
-        return knowledge;
+        return abilities;
     }
 
     @Override
@@ -79,32 +73,29 @@ public class MKEntityData implements IMKEntityData {
     }
 
     @Override
+    public EntityEquipment getEquipment() {
+        return equipment.get();
+    }
+
+    public void setInstanceTracker(@Nullable ParticleEffectInstanceTracker instanceTracker) {
+        this.instanceTracker = instanceTracker;
+    }
+
+    @Override
+    public Optional<ParticleEffectInstanceTracker> getParticleEffectTracker() {
+        return Optional.ofNullable(instanceTracker);
+    }
+
+    @Override
     public void onJoinWorld() {
         getEffects().onJoinWorld();
     }
 
     public void update() {
-        getEntity().getCommandSenderWorld().getProfiler().push("MKEntityData.update");
-
-        getEntity().getCommandSenderWorld().getProfiler().push("EntityEffects.tick");
         getEffects().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("AbilityExecutor.tick");
         getAbilityExecutor().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("EntityStats.tick");
         getStats().tick();
-        getEntity().getCommandSenderWorld().getProfiler().popPush("EntityCombat.tick");
         getCombatExtension().tick();
-        getEntity().getCommandSenderWorld().getProfiler().pop();
-
-        getEntity().getCommandSenderWorld().getProfiler().pop();
-    }
-
-    @Override
-    public CompoundTag serialize() {
-        CompoundTag tag = new CompoundTag();
-        tag.put("knowledge", knowledge.serialize());
-        tag.put("effects", effectHandler.serialize());
-        return tag;
     }
 
     @Override
@@ -113,19 +104,27 @@ public class MKEntityData implements IMKEntityData {
     }
 
     @Override
-    public void deserialize(CompoundTag tag) {
-        knowledge.deserialize(tag.getCompound("knowledge"));
-        effectHandler.deserialize(tag.getCompound("effects"));
-    }
-
-    @Override
     public void onPlayerStartTracking(ServerPlayer playerEntity) {
         getEffects().sendAllEffectsToPlayer(playerEntity);
     }
 
     @Override
-    public void attachUpdateEngine(UpdateEngine engine) {
+    public void attachUpdateEngine(SyncController engine) {
         pets.getSyncComponent().attach(engine);
         stats.getSyncComponent().attach(engine);
+    }
+
+    @Override
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
+        tag.put("abilities", abilities.serialize());
+        tag.put("effects", effectHandler.serialize());
+        return tag;
+    }
+
+    @Override
+    public void deserializeNBT(CompoundTag nbt) {
+        abilities.deserialize(nbt.getCompound("abilities"));
+        effectHandler.deserialize(nbt.getCompound("effects"));
     }
 }

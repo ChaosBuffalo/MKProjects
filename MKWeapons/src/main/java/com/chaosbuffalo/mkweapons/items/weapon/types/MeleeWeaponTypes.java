@@ -7,12 +7,11 @@ import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 
 public class MeleeWeaponTypes {
 
-    public static final HashMap<ResourceLocation, IMeleeWeaponType> WEAPON_TYPES = new HashMap<net.minecraft.resources.ResourceLocation, IMeleeWeaponType>();
+    public static final Map<ResourceLocation, IMeleeWeaponType> WEAPON_TYPES = new HashMap<>();
 
     public static void addWeaponType(IMeleeWeaponType weaponType) {
         WEAPON_TYPES.put(weaponType.getName(), weaponType);
@@ -23,79 +22,103 @@ public class MeleeWeaponTypes {
         return WEAPON_TYPES.get(name);
     }
 
-    public static final MeleeWeaponType LONGSWORD_TYPE = new MeleeWeaponType(
-            new ResourceLocation(MKWeapons.MODID, "longsword"),
-            1.5f, -2.4f, 0.5f, 0.05f, 0.0f, false,
-            0.75f, 25f,
-            new MeleeSkillScalingEffect(4.5, MKAttributes.ONE_HAND_SLASH),
-            new FuryStrikeMeleeWeaponEffect(5, .25));
-    public static final MeleeWeaponType GREATSWORD_TYPE = new MeleeWeaponType(
-            new ResourceLocation(MKWeapons.MODID, "greatsword"),
-            2.5f, -3.0f, 0.9f, 0.10f, 1.0f, true,
-            0.8f, 25f,
-            new MeleeSkillScalingEffect(7.5, MKAttributes.TWO_HAND_SLASH),
-            new DoubleStrikeMeleeWeaponEffect(.2));
-    public static final MeleeWeaponType KATANA_TYPE = new MeleeWeaponType(
-            new ResourceLocation(MKWeapons.MODID, "katana"),
-            1.5f, -2.2f, 1.0f, 0.10f, 0.0f, true,
-            0.75f, 25f,
-            new MeleeSkillScalingEffect(4.5, MKAttributes.TWO_HAND_SLASH),
-            new ComboStrikeMeleeWeaponEffect(5, .25));
-    public static final MeleeWeaponType DAGGER_TYPE = new MeleeWeaponType(
-            new ResourceLocation(MKWeapons.MODID, "dagger"),
-            1.0f, -1.0f, 1.5f, 0.10f, -1.0f, false,
-            0.5f, 20f,
-            new MeleeSkillScalingEffect(3.0, MKAttributes.ONE_HAND_PIERCE),
-            new BleedMeleeWeaponEffect(1.0f, 10, 4, MKAttributes.ONE_HAND_PIERCE),
-            new ComboStrikeMeleeWeaponEffect(3, .50));
-    public static final MeleeWeaponType STAFF_TYPE = new MeleeWeaponType(
-            new ResourceLocation(MKWeapons.MODID, "staff"),
-            1.75f, -2.5f, 0.5f, 0.05f, 1.0f, true,
-            0.85f, 30f,
-            new MeleeSkillScalingEffect(5.25, MKAttributes.TWO_HAND_BLUNT),
-            new StunMeleeWeaponEffect(.20, 2),
-            new ComboStrikeMeleeWeaponEffect(5, .15));
-    public static final MeleeWeaponType SPEAR_TYPE = new MeleeWeaponType(
-            new ResourceLocation(MKWeapons.MODID, "spear"),
-            2.0f, -2.0f, 0.75f, 0.05f, 2.0f, true,
-            0.75f, 30f,
-            new MeleeSkillScalingEffect(6.0, MKAttributes.TWO_HAND_PIERCE),
-            new BleedMeleeWeaponEffect(0.75f, 5, 5, MKAttributes.TWO_HAND_PIERCE),
-            new FuryStrikeMeleeWeaponEffect(3, .4));
-    public static final MeleeWeaponType WARHAMMER_TYPE = new MeleeWeaponType(
-            new ResourceLocation(MKWeapons.MODID, "warhammer"),
-            2.25f, -2.75f, 0.25f, 0.05f, 1.0f, true,
-            0.8f, 25f,
-            new MeleeSkillScalingEffect(6.75, MKAttributes.TWO_HAND_BLUNT),
-            new UndeadDamageMeleeWeaponEffect(2.0f),
-            new StunMeleeWeaponEffect(.1, 5));
-    public static final MeleeWeaponType BATTLEAXE_TYPE = new MeleeWeaponType(
-            new ResourceLocation(MKWeapons.MODID, "battleaxe"),
-            2.25f, -3.2f, 0.75f, 0.05f, 0.0f, true,
-            0.8f, 25f,
-            new MeleeSkillScalingEffect(6.75, MKAttributes.TWO_HAND_SLASH),
-            new BleedMeleeWeaponEffect(1.0f, 2, 4, MKAttributes.TWO_HAND_SLASH));
-    public static final MeleeWeaponType MACE_TYPE = new MeleeWeaponType(
-            new ResourceLocation(MKWeapons.MODID, "mace"),
-            1.75f, -2.1f, 0.25f, 0.05f, 0.0f, false,
-            0.75f, 30f,
-            new MeleeSkillScalingEffect(5.25, MKAttributes.ONE_HAND_BLUNT),
-            new UndeadDamageMeleeWeaponEffect(1.5f),
-            new DoubleStrikeMeleeWeaponEffect(.1));
+    public static final MeleeWeaponType LONGSWORD_TYPE = MeleeWeaponType.builder(MKWeapons.id("longsword"))
+            .damageMultiplier(1.5f)
+            .attackSpeed(-2.4f)
+            .critical(0.5f, 0.5f)
+            .reach(0.0f)
+            .blocking(0.75f, 25)
+            .effect(new MeleeSkillScalingEffect(4.5, MKAttributes.ONE_HAND_SLASH))
+            .effect(new FuryStrikeMeleeWeaponEffect(5, .25))
+            .build();
 
-    public static final Set<IMeleeWeaponType> WITH_BLOCKING = new HashSet<>();
+    public static final MeleeWeaponType GREATSWORD_TYPE = MeleeWeaponType.builder(MKWeapons.id("greatsword"))
+            .damageMultiplier(2.5f)
+            .attackSpeed(-3)
+            .critical(0.9f, .10f)
+            .reach(1.0f)
+            .isTwoHanded()
+            .blocking(0.80f, 25)
+            .effect(new MeleeSkillScalingEffect(7.5, MKAttributes.TWO_HAND_SLASH))
+            .effect(new DoubleStrikeMeleeWeaponEffect(.2))
+            .build();
 
-    static {
-        WITH_BLOCKING.add(MeleeWeaponTypes.KATANA_TYPE);
-        WITH_BLOCKING.add(MeleeWeaponTypes.GREATSWORD_TYPE);
-        WITH_BLOCKING.add(MeleeWeaponTypes.BATTLEAXE_TYPE);
-        WITH_BLOCKING.add(MeleeWeaponTypes.DAGGER_TYPE);
-        WITH_BLOCKING.add(MeleeWeaponTypes.LONGSWORD_TYPE);
-        WITH_BLOCKING.add(MeleeWeaponTypes.MACE_TYPE);
-        WITH_BLOCKING.add(MeleeWeaponTypes.SPEAR_TYPE);
-        WITH_BLOCKING.add(MeleeWeaponTypes.STAFF_TYPE);
-        WITH_BLOCKING.add(MeleeWeaponTypes.WARHAMMER_TYPE);
-    }
+    public static final MeleeWeaponType KATANA_TYPE = MeleeWeaponType.builder(MKWeapons.id("katana"))
+            .damageMultiplier(1.5f)
+            .attackSpeed(-2.2f)
+            .critical(1.0f, 0.10f)
+            .isTwoHanded()
+            .blocking(0.75f, 25f)
+            .effect(new MeleeSkillScalingEffect(4.5, MKAttributes.TWO_HAND_SLASH))
+            .effect(new ComboStrikeMeleeWeaponEffect(5, .25))
+            .build();
+
+    public static final MeleeWeaponType DAGGER_TYPE = MeleeWeaponType.builder(MKWeapons.id("dagger"))
+            .damageMultiplier(1.0f)
+            .attackSpeed(-1.0f)
+            .critical(1.5f, 0.10f)
+            .reach(-1.0f)
+            .blocking(0.50f, 20f)
+            .effect(new MeleeSkillScalingEffect(3.0, MKAttributes.ONE_HAND_PIERCE))
+            .effect(new BleedMeleeWeaponEffect(1.0f, 10, 4, MKAttributes.ONE_HAND_PIERCE))
+            .effect(new ComboStrikeMeleeWeaponEffect(3, .50))
+            .build();
+
+    public static final MeleeWeaponType STAFF_TYPE = MeleeWeaponType.builder(MKWeapons.id("staff"))
+            .damageMultiplier(1.75f)
+            .attackSpeed(-2.5f)
+            .critical(0.5f, 0.05f)
+            .reach(1.0f)
+            .isTwoHanded()
+            .blocking(0.85f, 30f)
+            .effect(new MeleeSkillScalingEffect(5.25, MKAttributes.TWO_HAND_BLUNT))
+            .effect(new StunMeleeWeaponEffect(.20, 2))
+            .effect(new ComboStrikeMeleeWeaponEffect(5, .15))
+            .build();
+
+    public static final MeleeWeaponType SPEAR_TYPE = MeleeWeaponType.builder(MKWeapons.id("spear"))
+            .damageMultiplier(2.00f)
+            .attackSpeed(-2.0f)
+            .critical(0.75f, 0.05f)
+            .reach(2.0f)
+            .isTwoHanded()
+            .blocking(0.75f, 30f)
+            .effect(new MeleeSkillScalingEffect(6.0, MKAttributes.TWO_HAND_PIERCE))
+            .effect(new BleedMeleeWeaponEffect(0.75f, 5, 5, MKAttributes.TWO_HAND_PIERCE))
+            .effect(new FuryStrikeMeleeWeaponEffect(3, .4))
+            .build();
+
+    public static final MeleeWeaponType WARHAMMER_TYPE = MeleeWeaponType.builder(MKWeapons.id("warhammer"))
+            .damageMultiplier(2.25f)
+            .attackSpeed(-2.75f)
+            .critical(0.25f, 0.05f)
+            .reach(1.0f)
+            .isTwoHanded()
+            .blocking(0.80f, 25f)
+            .effect(new MeleeSkillScalingEffect(6.75, MKAttributes.TWO_HAND_BLUNT))
+            .effect(new UndeadDamageMeleeWeaponEffect(2.0f))
+            .effect(new StunMeleeWeaponEffect(.1, 5))
+            .build();
+
+    public static final MeleeWeaponType BATTLEAXE_TYPE = MeleeWeaponType.builder(MKWeapons.id("battleaxe"))
+            .damageMultiplier(2.25f)
+            .attackSpeed(-3.2f)
+            .critical(0.75f, 0.05f)
+            .isTwoHanded()
+            .blocking(0.80f, 25f)
+            .effect(new MeleeSkillScalingEffect(6.75, MKAttributes.TWO_HAND_SLASH))
+            .effect(new BleedMeleeWeaponEffect(1.0f, 2, 4, MKAttributes.TWO_HAND_SLASH))
+            .build();
+
+    public static final MeleeWeaponType MACE_TYPE = MeleeWeaponType.builder(MKWeapons.id("mace"))
+            .damageMultiplier(1.75f)
+            .attackSpeed(-2.1f)
+            .critical(0.25f, 0.05f)
+            .blocking(0.75f, 30f)
+            .effect(new MeleeSkillScalingEffect(5.25, MKAttributes.ONE_HAND_BLUNT))
+            .effect(new UndeadDamageMeleeWeaponEffect(1.5f))
+            .effect(new DoubleStrikeMeleeWeaponEffect(.1))
+            .build();
 
 
     public static void registerWeaponTypes() {

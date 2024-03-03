@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtension;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtensionProvider;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
-import com.chaosbuffalo.mkcore.sync.SyncMapUpdater;
+import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
@@ -13,7 +13,6 @@ import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.InterModComms;
 
 import javax.annotation.Nullable;
@@ -78,7 +77,7 @@ public class PlayerFactionHandler implements IPlayerFaction {
         public PersonaFactionData(Persona persona) {
             this.persona = persona;
             factionUpdater = new SyncMapUpdater<>("factions",
-                    () -> factionMap,
+                    factionMap,
                     ResourceLocation::toString,
                     ResourceLocation::tryParse,
                     this::createNewEntry
@@ -125,16 +124,6 @@ public class PlayerFactionHandler implements IPlayerFaction {
         }
 
         @Override
-        public void onPersonaActivated() {
-//            MKFactionMod.LOGGER.info("PersonaFactionData.onPersonaActivated");
-        }
-
-        @Override
-        public void onPersonaDeactivated() {
-//            MKFactionMod.LOGGER.info("PersonaFactionData.onPersonaDeactivated");
-        }
-
-        @Override
         public CompoundTag serialize() {
 //            MKFactionMod.LOGGER.info("PersonaFactionData.serialize");
             CompoundTag tag = new CompoundTag();
@@ -150,7 +139,6 @@ public class PlayerFactionHandler implements IPlayerFaction {
     }
 
     private static PersonaFactionData createNewPersonaData(Persona persona) {
-        MKFactionMod.LOGGER.debug("MKFaction creating new persona data for {}", persona.getEntity());
         return new PersonaFactionData(persona);
     }
 
@@ -161,22 +149,5 @@ public class PlayerFactionHandler implements IPlayerFaction {
             MKFactionMod.LOGGER.debug("Faction register persona by IMC");
             return factory;
         });
-    }
-
-    public static class Provider extends FactionCapabilities.Provider<Player, IPlayerFaction> {
-
-        public Provider(Player entity) {
-            super(entity);
-        }
-
-        @Override
-        IPlayerFaction makeData(Player attached) {
-            return new PlayerFactionHandler(attached);
-        }
-
-        @Override
-        Capability<IPlayerFaction> getCapability() {
-            return FactionCapabilities.PLAYER_FACTION_CAPABILITY;
-        }
     }
 }

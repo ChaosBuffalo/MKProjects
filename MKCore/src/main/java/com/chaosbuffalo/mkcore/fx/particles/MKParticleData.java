@@ -30,7 +30,7 @@ public class MKParticleData implements ParticleOptions {
     private final ParticleType<MKParticleData> particleType;
 
     public static PrimitiveCodec<MKParticleData> typeCodec(ParticleType<MKParticleData> type) {
-        return new PrimitiveCodec<MKParticleData>() {
+        return new PrimitiveCodec<>() {
 
 
             @Override

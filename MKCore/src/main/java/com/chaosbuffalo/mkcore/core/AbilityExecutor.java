@@ -98,12 +98,8 @@ public class AbilityExecutor {
         updateCurrentCast();
     }
 
-    public void onJoinWorld() {
-
-    }
-
     public void setCooldown(ResourceLocation id, int ticks) {
-        MKCore.LOGGER.debug("setCooldown({}, {})", id, ticks);
+//        MKCore.LOGGER.debug("setCooldown({}, {})", id, ticks);
 
         if (!id.equals(MKCoreRegistry.INVALID_ABILITY)) {
             entityData.getStats().setTimer(id, ticks);
@@ -132,14 +128,14 @@ public class AbilityExecutor {
     }
 
     private void startCast(AbilityContext context, MKAbilityInfo abilityInfo, int castTime) {
-        MKCore.LOGGER.debug("startCast {} {}", abilityInfo.getId(), castTime);
+//        MKCore.LOGGER.debug("startCast {} {}", abilityInfo.getId(), castTime);
         currentCast = createServerCastingState(context, abilityInfo, castTime);
         currentCast.begin();
         PacketHandler.sendToTrackingAndSelf(EntityCastPacket.start(entityData, abilityInfo.getId(), castTime), entityData.getEntity());
     }
 
     public void startCastClient(ResourceLocation abilityId, int castTicks) {
-        MKCore.LOGGER.debug("startCastClient {} {}", abilityId, castTicks);
+//        MKCore.LOGGER.debug("startCastClient {} {}", abilityId, castTicks);
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
         if (ability != null) {
             currentCast = createClientCastingState(ability, castTicks);
@@ -228,15 +224,11 @@ public class AbilityExecutor {
         MinecraftForge.EVENT_BUS.post(new EntityAbilityEvent.EntityCompleteAbilityEvent(ability, entityData));
     }
 
-    public void onAbilityUnlearned(MKAbilityInfo abilityInfo) {
-        updateToggleAbility(abilityInfo.getAbility());
-    }
-
-    protected ServerCastingState createServerCastingState(AbilityContext context, MKAbilityInfo abilityInfo, int castTime) {
+    protected EntityCastingState createServerCastingState(AbilityContext context, MKAbilityInfo abilityInfo, int castTime) {
         return new ServerCastingState(context, this, abilityInfo, castTime);
     }
 
-    protected ClientCastingState createClientCastingState(MKAbility ability, int castTicks) {
+    protected EntityCastingState createClientCastingState(MKAbility ability, int castTicks) {
         return new ClientCastingState(this, ability, castTicks);
     }
 
@@ -244,7 +236,7 @@ public class AbilityExecutor {
 
     }
 
-    static abstract class EntityCastingState {
+    protected static abstract class EntityCastingState {
         protected final MKAbility ability;
         protected final AbilityExecutor executor;
         protected int castTicks;
@@ -372,25 +364,6 @@ public class AbilityExecutor {
         }
     }
 
-    private void updateToggleAbility(MKAbility ability) {
-        if (!(ability instanceof MKToggleAbility toggle)) {
-            return;
-        }
-
-        LivingEntity entity = entityData.getEntity();
-        MKAbilityInfo info = entityData.getAbilities().getKnownAbility(ability.getAbilityId());
-        if (info != null) {
-            // If this is a toggle ability we must re-apply the effect to make sure it's working at the proper rank
-            if (toggle.isEffectActive(entityData)) {
-                toggle.removeEffect(entity, entityData, attr -> MKAbility.getSkillLevel(entity, attr));
-                toggle.applyEffect(entity, entityData, attr -> MKAbility.getSkillLevel(entity, attr));
-            }
-        } else {
-            // Unlearning, remove the effect
-            toggle.removeEffect(entity, entityData, attr -> MKAbility.getSkillLevel(entity, attr));
-        }
-    }
-
     public void clearToggleGroupAbility(ResourceLocation groupId) {
         activeToggleMap.remove(groupId);
     }
@@ -400,7 +373,7 @@ public class AbilityExecutor {
         // This can also be called when rebuilding the activeToggleMap after transferring dimensions and in that case
         // ability will be the same as current
         if (current != null && current != ability) {
-            current.removeEffect(entityData.getEntity(), entityData, attr -> MKAbility.getSkillLevel(entityData.getEntity(), attr));
+            current.removeEffect(entityData);
             setCooldown(current.getAbilityId(), entityData.getStats().getAbilityCooldown(current));
         }
         activeToggleMap.put(groupId, ability);

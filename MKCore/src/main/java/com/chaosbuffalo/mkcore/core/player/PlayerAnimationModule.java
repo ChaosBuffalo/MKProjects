@@ -5,10 +5,10 @@ import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ParticleEffectInstance;
 
-import java.util.List;
+import java.util.Collection;
 
 public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
-    private final SyncComponent sync = new SyncComponent("anim");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent("anim");
     private final MKPlayerData playerData;
     private final ParticleEffectInstanceTracker effectInstanceTracker;
     private int castAnimTimer;
@@ -16,7 +16,7 @@ public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
     private MKAbility castingAbility;
 
     @Override
-    public SyncComponent getSyncComponent() {
+    public PlayerSyncComponent getSyncComponent() {
         return sync;
     }
 
@@ -39,7 +39,7 @@ public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
         return effectInstanceTracker;
     }
 
-    public List<ParticleEffectInstance> getParticleInstances() {
+    public Collection<ParticleEffectInstance> getParticleInstances() {
         return effectInstanceTracker.getParticleInstances();
     }
 

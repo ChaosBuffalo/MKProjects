@@ -18,9 +18,9 @@ public class RadioButton<T> extends CenteringHorizontalLayout {
         setPaddings(2, 2, 0, 0);
         nestedRect = new NestedRect(x, y, 9, 9, UNSELECTED_COLOR);
         addWidget(nestedRect);
-        hoverTextButton = new HoverTextButton(fontRenderer, value.getName(), this::onSelected);
+        hoverTextButton = new HoverTextButton(fontRenderer, value.name(), this::onSelected);
         hoverTextButton.setIsCentered(false);
-        hoverTextButton.setWidth(Math.max(fontRenderer.width(value.getName()), 80));
+        hoverTextButton.setWidth(Math.max(fontRenderer.width(value.name()), 80));
         addWidget(hoverTextButton);
 
     }
@@ -35,7 +35,7 @@ public class RadioButton<T> extends CenteringHorizontalLayout {
     }
 
     public String getOptionName() {
-        return value.getName();
+        return value.name();
     }
 
     public void deselect() {

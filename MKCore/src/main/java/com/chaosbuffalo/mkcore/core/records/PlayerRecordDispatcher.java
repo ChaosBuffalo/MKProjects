@@ -8,28 +8,26 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public class PlayerRecordDispatcher {
+public class PlayerRecordDispatcher<T extends IRecordInstance<T>> {
     private final MKPlayerData playerData;
-    private final Supplier<Stream<? extends IRecordInstance>> recordSupplier;
-    private final Map<IRecordType<?>, IRecordTypeHandler<?>> typeHandlerMap = new HashMap<>();
+    private final Supplier<Stream<T>> recordSupplier;
+    private final Map<IRecordType<T>, IRecordTypeHandler<T>> typeHandlerMap = new HashMap<>();
 
-    public PlayerRecordDispatcher(MKPlayerData playerData, Supplier<Stream<? extends IRecordInstance>> recordSupplier) {
+    public PlayerRecordDispatcher(MKPlayerData playerData, Supplier<Stream<T>> recordSupplier) {
         this.playerData = playerData;
         this.recordSupplier = recordSupplier;
     }
 
-    @SuppressWarnings("unchecked")
-    private <T extends IRecordInstance> IRecordTypeHandler<T> getRecordHandler(IRecordInstance record) {
-        return (IRecordTypeHandler<T>) getTypeHandler(record.getRecordType());
+    private IRecordTypeHandler<T> getRecordHandler(IRecordInstance<T> record) {
+        return getTypeHandler(record.getRecordType());
     }
 
-    public <T extends IRecordInstance> void onRecordUpdated(T record) {
+    public void onRecordUpdated(T record) {
         getRecordHandler(record).onRecordUpdated(record);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends IRecordTypeHandler<?>> T getTypeHandler(IRecordType<T> type) {
-        return (T) typeHandlerMap.computeIfAbsent(type, t -> type.createTypeHandler(playerData));
+    public IRecordTypeHandler<T> getTypeHandler(IRecordType<T> type) {
+        return typeHandlerMap.computeIfAbsent(type, t -> t.createTypeHandler(playerData));
     }
 
     public void onPersonaActivated() {
@@ -40,17 +38,5 @@ public class PlayerRecordDispatcher {
             MKCore.LOGGER.debug("PlayerRecordDispatcher.onPersonaActivated.onRecordLoaded {}", r);
             getRecordHandler(r).onRecordLoaded(r);
         });
-
-        typeHandlerMap.values().forEach(IRecordTypeHandler::onPersonaActivated);
-    }
-
-    public void onPersonaDeactivated() {
-        MKCore.LOGGER.debug("PlayerRecordDispatcher.onPersonaDeactivated");
-        typeHandlerMap.values().forEach(IRecordTypeHandler::onPersonaDeactivated);
-    }
-
-    public void onJoinWorld() {
-        MKCore.LOGGER.debug("PlayerRecordDispatcher.onJoinWorld");
-        typeHandlerMap.values().forEach(IRecordTypeHandler::onJoinWorld);
     }
 }

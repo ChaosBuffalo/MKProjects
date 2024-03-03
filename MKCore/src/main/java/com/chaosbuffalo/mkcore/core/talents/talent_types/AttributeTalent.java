@@ -7,8 +7,8 @@ import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import com.chaosbuffalo.mkcore.core.talents.TalentType;
 import com.chaosbuffalo.mkcore.core.talents.nodes.AttributeTalentNode;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -74,7 +74,7 @@ public class AttributeTalent extends MKTalent {
     }
 
     @Override
-    public Component getTalentDescription(TalentRecord record) {
+    public MutableComponent getTalentDescription(TalentRecord record) {
         double perRank = 0;
         double currentValue = 0;
         if (record.getNode() instanceof AttributeTalentNode attrNode) {
@@ -93,7 +93,7 @@ public class AttributeTalent extends MKTalent {
             totalAmount = String.format("%.2f", currentValue);
         }
         String finalAmount = String.format("%s (%s)", amount, totalAmount);
-        return Component.translatable(getDescriptionTranslationKey(), finalAmount).withStyle(ChatFormatting.GRAY);
+        return Component.translatable(getDescriptionTranslationKey(), finalAmount);
     }
 
     public AttributeModifier createModifier(double value) {
@@ -109,7 +109,7 @@ public class AttributeTalent extends MKTalent {
     }
 
     @Override
-    public TalentType<?> getTalentType() {
+    public TalentType getTalentType() {
         return TalentType.ATTRIBUTE;
     }
 

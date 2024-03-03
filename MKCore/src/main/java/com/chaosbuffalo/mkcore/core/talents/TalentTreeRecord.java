@@ -118,7 +118,6 @@ public class TalentTreeRecord {
     }
 
     public boolean trySpendPoint(String line, int index) {
-        MKCore.LOGGER.debug("trySpendPoint({}, {})", line, index);
         TalentRecord record = getNodeRecord(line, index);
         if (record == null)
             return false;
@@ -128,7 +127,6 @@ public class TalentTreeRecord {
     }
 
     public boolean tryRefundPoint(String line, int index) {
-        MKCore.LOGGER.debug("tryRefundPoint({}, {})", line, index);
         TalentRecord record = getNodeRecord(line, index);
         if (record == null || !record.isKnown())
             return false;

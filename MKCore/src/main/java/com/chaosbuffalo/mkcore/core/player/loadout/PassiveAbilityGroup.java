@@ -8,15 +8,19 @@ import com.chaosbuffalo.mkcore.abilities.MKPassiveAbility;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
+import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 
+import java.util.UUID;
 
 public class PassiveAbilityGroup extends AbilityGroup {
+    private static final UUID EV_ID = UUID.fromString("137dc36b-c68b-4ace-8627-78c4dc1b6b85");
 
     public PassiveAbilityGroup(MKPlayerData playerData) {
         super(playerData, "passive", AbilityGroupId.Passive);
+        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_WORLD, EV_ID, this::onJoinWorld);
     }
 
     @Override
@@ -36,9 +40,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
         removePassive(abilityId);
     }
 
-    @Override
-    public void onJoinWorld() {
-        super.onJoinWorld();
+    private void onJoinWorld(PlayerEvents.JoinWorldServerEvent event) {
         activateAllPassives(true);
     }
 
@@ -72,7 +74,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
     }
 
     private void activateAllPassives(boolean willBeInWorld) {
-        if (!playerData.isServerSide())
+        if (playerData.isClientSide())
             return;
 
         // We come here during deserialization of the active persona, and it tries to apply effects which will crash the client because it's too early

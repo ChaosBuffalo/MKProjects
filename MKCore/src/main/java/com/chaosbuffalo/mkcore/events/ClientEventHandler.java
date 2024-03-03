@@ -9,7 +9,7 @@ import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.client.rendering.MKPlayerRenderer;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.core.MKRangedAttribute;
+import com.chaosbuffalo.mkcore.attributes.MKRangedAttribute;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
@@ -192,7 +192,7 @@ public class ClientEventHandler {
     public static void onRenderHand(RenderHandEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null && event.getHand() == InteractionHand.MAIN_HAND) {
-            var renderer =  mc.getEntityRenderDispatcher().getRenderer(mc.player);
+            var renderer = mc.getEntityRenderDispatcher().getRenderer(mc.player);
             if (renderer instanceof MKPlayerRenderer playerRenderer) {
                 playerRenderer.renderHandFirstPerson(mc.player);
             }
@@ -240,7 +240,7 @@ public class ClientEventHandler {
             return;
 
         if (event.getItemStack().getItem() instanceof ArmorItem armorItem) {
-            ArmorClass armorClass = ArmorClass.getItemArmorClass(armorItem);
+            ArmorClass armorClass = ArmorClass.getItemArmorClass(event.getItemStack());
             if (armorClass == null) {
                 return;
             }

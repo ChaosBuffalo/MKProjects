@@ -4,17 +4,19 @@ import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKAbilityProvider;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
 
-public class PlayerEquipment {
+public class PlayerEquipment extends EntityEquipment {
     private static final UUID[] ARMOR_CLASS_UUID_BY_SLOT = new UUID[]{
             UUID.fromString("536049db-3699-4cff-831c-52fe99b24269"),
             UUID.fromString("75a8a55f-13de-400f-a823-444e71729fd5"),
@@ -24,42 +26,50 @@ public class PlayerEquipment {
             UUID.fromString("9b444ef7-5020-483e-b355-7b975958634a")
     };
 
+    private static final UUID EV_ID = UUID.fromString("951a29de-b941-4c4d-9d01-dba4c68b7897");
+
     private final MKPlayerData playerData;
     private MKAbility currentMainAbility = null;
 
     public PlayerEquipment(MKPlayerData playerData) {
+        super(playerData);
         this.playerData = playerData;
+        playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
+        playerData.events().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated);
     }
 
-    public void onEquipmentChange(EquipmentSlot slot, ItemStack from, ItemStack to) {
-        // Currently, we only care about swapping items so modifications like durability are ignored
-        // FIXME: Find the is same item ignore durability func
-        if (ItemStack.isSameItemSameTags(from, to))
-            return;
-
-//        MKCore.LOGGER.info("Equipment[{}] {} -> {}", slot, from, to);
-        if (slot.getType() == EquipmentSlot.Type.ARMOR) {
-            handleArmorChange(slot, from, to);
+    @Override
+    protected void handleEquip(EquipmentSlot slot, ItemStack to) {
+        super.handleEquip(slot, to);
+        if (slot.isArmor()) {
+            applyArmorClassBonus(slot, to);
+            addItemAbility(to);
         } else if (slot == EquipmentSlot.MAINHAND) {
             handleMainHandChange(to);
         }
     }
 
-    private void handleArmorChange(EquipmentSlot slot, ItemStack from, ItemStack to) {
-        if (!from.isEmpty() && from.getItem() instanceof ArmorItem) {
-            removeArmorSlot(slot, from);
+    @Override
+    protected void handleRemoval(EquipmentSlot slot, ItemStack from) {
+        super.handleRemoval(slot, from);
+        if (slot.isArmor() && !from.isEmpty()) {
+            removeArmorClassBonus(slot, from);
+            removeItemAbility(from);
+        } else if (slot == EquipmentSlot.MAINHAND) {
+            clearItemAbility();
         }
-        if (!to.isEmpty() && to.getItem() instanceof ArmorItem) {
-            addArmorSlot(slot, to);
+    }
+
+    private void clearItemAbility() {
+        if (currentMainAbility != null) {
+            playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).clearSlot(0);
+            currentMainAbility = null;
         }
     }
 
     private void handleMainHandChange(ItemStack to) {
         // Clear the current ability if present
-        if (currentMainAbility != null) {
-            playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).clearSlot(0);
-            currentMainAbility = null;
-        }
+        clearItemAbility();
 
         if (to.getItem() instanceof IMKAbilityProvider provider) {
             currentMainAbility = provider.getAbility(to);
@@ -69,47 +79,41 @@ public class PlayerEquipment {
         }
     }
 
-    private void addArmorSlot(EquipmentSlot slot, ItemStack to) {
-        applyArmorClassBonus(slot, to);
-        addItemAbility(to);
-    }
-
-    private void removeArmorSlot(EquipmentSlot slot, ItemStack from) {
-        removeArmorClassBonus(slot, from);
-        removeItemAbility(from);
-    }
-
     private UUID getArmorClassSlotUUID(EquipmentSlot slot) {
         return ARMOR_CLASS_UUID_BY_SLOT[slot.ordinal()];
     }
 
     private void applyArmorClassBonus(EquipmentSlot slot, ItemStack to) {
-        ArmorClass armorClass = ArmorClass.getItemArmorClass((ArmorItem) to.getItem());
+        ArmorClass armorClass = ArmorClass.getItemArmorClass(to);
         if (armorClass != null) {
-            armorClass.getPositiveModifierMap(slot).forEach((attr, mod) -> {
-                AttributeModifier dup = createArmorClassSlotModifier(slot, mod);
-                playerData.getEntity().getAttribute(attr).addTransientModifier(dup);
-            });
-            armorClass.getNegativeModifierMap(slot).forEach((attr, mod) -> {
-                AttributeModifier dup = createArmorClassSlotModifier(slot, mod);
-                playerData.getEntity().getAttribute(attr).addTransientModifier(dup);
-            });
+            armorClass.getPositiveModifierMap(slot).forEach((attr, mod) -> tryAddModifier(attr, slot, mod));
+            armorClass.getNegativeModifierMap(slot).forEach((attr, mod) -> tryAddModifier(attr, slot, mod));
         }
     }
 
     private void removeArmorClassBonus(EquipmentSlot slot, ItemStack from) {
-        ArmorClass itemClass = ArmorClass.getItemArmorClass((ArmorItem) from.getItem());
+        ArmorClass itemClass = ArmorClass.getItemArmorClass(from);
         if (itemClass != null) {
             UUID uuid = getArmorClassSlotUUID(slot);
-            itemClass.getPositiveModifierMap(slot).keySet()
-                    .forEach(attr -> playerData.getEntity().getAttribute(attr).removeModifier(uuid));
-            itemClass.getNegativeModifierMap(slot).keySet()
-                    .forEach(attr -> playerData.getEntity().getAttribute(attr).removeModifier(uuid));
+            itemClass.getPositiveModifierMap(slot).keySet().forEach(attr -> tryRemoveModifier(attr, uuid));
+            itemClass.getNegativeModifierMap(slot).keySet().forEach(attr -> tryRemoveModifier(attr, uuid));
         }
     }
 
-    private AttributeModifier createArmorClassSlotModifier(EquipmentSlot slot, AttributeModifier template) {
-        return new AttributeModifier(getArmorClassSlotUUID(slot), template::getName, template.getAmount(), template.getOperation());
+    private void tryAddModifier(Attribute attribute, EquipmentSlot slot, AttributeModifier template) {
+        AttributeInstance instance = getEntityData().getEntity().getAttribute(attribute);
+        if (instance != null) {
+            UUID uuid = getArmorClassSlotUUID(slot);
+            AttributeModifier mod = new AttributeModifier(uuid, template::getName, template.getAmount(), template.getOperation());
+            instance.addTransientModifier(mod);
+        }
+    }
+
+    private void tryRemoveModifier(Attribute attr, UUID uuid) {
+        AttributeInstance instance = getEntityData().getEntity().getAttribute(attr);
+        if (instance != null) {
+            instance.removeModifier(uuid);
+        }
     }
 
     private void addItemAbility(ItemStack newItem) {
@@ -138,7 +142,7 @@ public class PlayerEquipment {
         }
     }
 
-    public void onPersonaActivated() {
+    public void onPersonaActivated(PlayerEvents.PersonaEvent event) {
         Player player = playerData.getEntity();
         ItemStack mainHand = player.getItemBySlot(EquipmentSlot.MAINHAND);
         handleMainHandChange(mainHand);
@@ -148,7 +152,7 @@ public class PlayerEquipment {
         addItemAbility(player.getItemBySlot(EquipmentSlot.FEET));
     }
 
-    public void onPersonaDeactivated() {
+    private void onPersonaDeactivated(PlayerEvents.PersonaEvent event) {
         Player player = playerData.getEntity();
         handleMainHandChange(ItemStack.EMPTY);
         removeItemAbility(player.getItemBySlot(EquipmentSlot.HEAD));

@@ -25,14 +25,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.network.NetworkHooks;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-
-import net.minecraft.world.entity.Entity.RemovalReason;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public abstract class BaseEffectEntity extends Entity implements IEntityAdditionalSpawnData {
     protected final List<WorldAreaEffectEntry> effects;
@@ -211,6 +208,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
             }
         }
     }
+
     protected void spawnClientParticles(ParticleDisplay display) {
         ParticleAnimation anim = ParticleAnimationManager.getAnimation(display.getParticles());
         if (anim != null) {
@@ -306,7 +304,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
             return true;
         }
         IMKEntityData entityData = getOwnerData();
-        if (entityData == null){
+        if (entityData == null) {
             onDeath(DeathReason.OWNER_NULL);
             return true;
         }
@@ -318,7 +316,6 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         if (stillWaiting) {
             return false;
         }
-
 
 
         reapplicationDelayMap.entrySet().removeIf(entry -> tickCount >= entry.getValue());
@@ -335,7 +332,6 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         if (result.isEmpty()) {
             return false;
         }
-
 
 
         for (LivingEntity target : result) {

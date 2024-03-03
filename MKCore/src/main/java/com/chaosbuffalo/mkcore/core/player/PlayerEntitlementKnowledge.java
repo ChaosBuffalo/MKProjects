@@ -8,11 +8,11 @@ import com.chaosbuffalo.mkcore.core.records.PlayerRecordDispatcher;
 
 public class PlayerEntitlementKnowledge extends EntityEntitlementsKnowledge {
 
-    private final PlayerRecordDispatcher dispatcher;
+    private final PlayerRecordDispatcher<EntitlementInstance> dispatcher;
 
     public PlayerEntitlementKnowledge(MKPlayerData entityData) {
         super(entityData);
-        dispatcher = new PlayerRecordDispatcher(entityData, this::getInstanceStream);
+        dispatcher = new PlayerRecordDispatcher<>(entityData, this::getInstanceStream);
     }
 
     private MKPlayerData getPlayerData() {
@@ -20,24 +20,13 @@ public class PlayerEntitlementKnowledge extends EntityEntitlementsKnowledge {
     }
 
     @Override
-    protected void broadcastChange(EntitlementInstance instance) {
-        super.broadcastChange(instance);
+    protected void onInstanceChanged(EntitlementInstance instance) {
+        super.onInstanceChanged(instance);
         dispatcher.onRecordUpdated(instance);
     }
 
     public void onPersonaActivated() {
         MKCore.LOGGER.debug("PlayerEntitlementKnowledge.onPersonaActivated");
         dispatcher.onPersonaActivated();
-        broadcastLoaded();
-    }
-
-    public void onPersonaDeactivated() {
-        MKCore.LOGGER.debug("PlayerEntitlementKnowledge.onPersonaDeactivated");
-        dispatcher.onPersonaDeactivated();
-    }
-
-    public void onJoinWorld() {
-        MKCore.LOGGER.debug("PlayerEntitlementKnowledge.onJoinWorld");
-        dispatcher.onJoinWorld();
     }
 }

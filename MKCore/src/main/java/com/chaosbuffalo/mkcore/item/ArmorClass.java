@@ -10,12 +10,13 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.item.ItemStack;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class ArmorClass {
@@ -61,11 +62,13 @@ public class ArmorClass {
     private final Map<Attribute, AttributeModifier> negativeModifierMap = new HashMap<>();
     private final TagKey<Item> tag;
 
-    public static ArmorClass getItemArmorClass(ArmorItem item) {
-        return CHECK_ORDER.stream()
-                .filter(armorClass -> armorClass.containsItem(item))
-                .findFirst()
-                .orElse(null);
+    public static ArmorClass getItemArmorClass(ItemStack item) {
+        for (ArmorClass armorClass : CHECK_ORDER) {
+            if (item.is(armorClass.tag)) {
+                return armorClass;
+            }
+        }
+        return null;
     }
 
     public ArmorClass(ResourceLocation location, TagKey<Item> tag) {
@@ -103,9 +106,5 @@ public class ArmorClass {
 
     public ResourceLocation getLocation() {
         return location;
-    }
-
-    private boolean containsItem(ArmorItem item) {
-        return tag == null || ForgeRegistries.ITEMS.tags().getTag(tag).contains(item);
     }
 }

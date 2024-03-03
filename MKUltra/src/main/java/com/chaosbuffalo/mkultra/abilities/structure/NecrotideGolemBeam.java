@@ -30,7 +30,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class NecrotideGolemBeam extends StructureAbility {
@@ -50,6 +49,7 @@ public class NecrotideGolemBeam extends StructureAbility {
     protected final FloatAttribute beamSpeedScale = new FloatAttribute("beam_speed_scale", 0.025f);
     protected final FloatAttribute beamDeathSelfDamage = new FloatAttribute("beam_death_damage", 25.0f);
     protected final IntAttribute charge_time = new IntAttribute("charge_time", GameConstants.TICKS_PER_SECOND * 2);
+
     @Override
     public TargetingContext getTargetContext() {
         return TargetingContexts.ENEMY;
@@ -88,34 +88,34 @@ public class NecrotideGolemBeam extends StructureAbility {
     public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
         super.endCast(castingEntity, casterData, context, skillSupplier);
         float skillLevel = skillSupplier.apply(MKAttributes.NECROMANCY);
-       getStructure(castingEntity).ifPresent(entry -> entry.getPoisWithTag("golem_lantern").forEach(
-               poi -> {
-                   BlockPos pos = poi.getLocation().pos().below(2);
-                   var builder = EntityEffectBuilder.createBlockAnchoredEffect(castingEntity, Vec3.atCenterOf(pos));
-                   builder.setBlock(Blocks.SOUL_LANTERN);
-                   MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_dark_1.get(),
-                                   castingEntity.getSoundSource())
-                           .ability(this);
-                   MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
-                                   base.value(), scale.value(), modifierScaling.value())
-                           .ability(this)
-                           .skillLevel(skillLevel);
-                   castingEntity.getLevel().setBlockAndUpdate(pos, Blocks.SOUL_LANTERN.defaultBlockState());
-                   builder.setRange(10.0f)
-                           .setTargetContext(TargetingContexts.ENEMY)
-                           .setBeamSpeed(beamSpeed.value() + beamSpeedScale.value() * skillLevel)
-                           .setParticles(new BaseEffectEntity.ParticleDisplay(pulse_particles.getValue(),
-                                   tickRate.value(), BaseEffectEntity.ParticleDisplay.DisplayType.CONTINUOUS))
-                           .setWaitingParticles(new BaseEffectEntity.ParticleDisplay(wait_particles.getValue(),
-                                   tickRate.value(), BaseEffectEntity.ParticleDisplay.DisplayType.CONTINUOUS))
-                           .duration(getCooldown(casterData))
-                           .effect(sound, TargetingContexts.ENEMY)
-                           .effect(damage, TargetingContexts.ENEMY)
-                           .waitTime(charge_time.value())
-                           .tickRate(tickRate.value())
-                           .setDeathCallback(this::onEffectDie);
-                   builder.spawn();
-               })
-       );
+        getStructure(castingEntity).ifPresent(entry -> entry.getPoisWithTag("golem_lantern").forEach(
+                poi -> {
+                    BlockPos pos = poi.getLocation().pos().below(2);
+                    var builder = EntityEffectBuilder.createBlockAnchoredEffect(castingEntity, Vec3.atCenterOf(pos));
+                    builder.setBlock(Blocks.SOUL_LANTERN);
+                    MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_dark_1.get(),
+                                    castingEntity.getSoundSource())
+                            .ability(this);
+                    MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
+                                    base.value(), scale.value(), modifierScaling.value())
+                            .ability(this)
+                            .skillLevel(skillLevel);
+                    castingEntity.getLevel().setBlockAndUpdate(pos, Blocks.SOUL_LANTERN.defaultBlockState());
+                    builder.setRange(10.0f)
+                            .setTargetContext(TargetingContexts.ENEMY)
+                            .setBeamSpeed(beamSpeed.value() + beamSpeedScale.value() * skillLevel)
+                            .setParticles(new BaseEffectEntity.ParticleDisplay(pulse_particles.getValue(),
+                                    tickRate.value(), BaseEffectEntity.ParticleDisplay.DisplayType.CONTINUOUS))
+                            .setWaitingParticles(new BaseEffectEntity.ParticleDisplay(wait_particles.getValue(),
+                                    tickRate.value(), BaseEffectEntity.ParticleDisplay.DisplayType.CONTINUOUS))
+                            .duration(getCooldown(casterData))
+                            .effect(sound, TargetingContexts.ENEMY)
+                            .effect(damage, TargetingContexts.ENEMY)
+                            .waitTime(charge_time.value())
+                            .tickRate(tickRate.value())
+                            .setDeathCallback(this::onEffectDie);
+                    builder.spawn();
+                })
+        );
     }
 }

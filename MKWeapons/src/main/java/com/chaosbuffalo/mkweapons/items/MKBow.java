@@ -116,8 +116,7 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
 
     @Override
     public void releaseUsing(ItemStack stack, Level worldIn, LivingEntity entityLiving, int timeLeft) {
-        if (entityLiving instanceof Player) {
-            Player player = (Player) entityLiving;
+        if (entityLiving instanceof Player player) {
             boolean doesntNeedAmmo = player.getAbilities().instabuild || EnchantmentHelper.getItemEnchantmentLevel(
                     Enchantments.INFINITY_ARROWS, stack) > 0;
             ItemStack ammoStack = player.getProjectile(stack);
@@ -186,11 +185,11 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
         Entity shooter = arrow.getOwner();
         double damage = arrow.getBaseDamage();
         damage += getMKTier().getAttackDamageBonus();
-        if (shooter instanceof LivingEntity) {
+        if (shooter instanceof LivingEntity shootingEntity) {
             MKWeapons.getArrowCapability(arrow).ifPresent(cap ->
-                    cap.setShootingWeapon(((LivingEntity) shooter).getMainHandItem()));
+                    cap.setShootingWeapon(shootingEntity.getMainHandItem()));
             for (IRangedWeaponEffect weaponEffect : getWeaponEffects(stack)) {
-                damage = weaponEffect.modifyArrowDamage(damage, (LivingEntity) shooter, arrow);
+                damage = weaponEffect.modifyArrowDamage(damage, shootingEntity, arrow);
             }
         }
         arrow.setBaseDamage(damage);

@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkweapons.items.effects.melee;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
@@ -78,9 +77,9 @@ public class DoubleStrikeMeleeWeaponEffect extends BaseMeleeWeaponEffect {
         if (roll >= (1.0 - chance)) {
             CombatExtensionModule combatModule = attackerData.getCombatExtension();
             double cooldownPeriod = EntityUtils.getCooldownPeriod(attacker);
-            combatModule.addEntityTicksSinceLastSwing((int) cooldownPeriod);
+            combatModule.increaseAttackStrengthTicks((int) cooldownPeriod);
             if (attacker instanceof ServerPlayer serverPlayer) {
-                PacketHandler.sendMessage(new ResetAttackSwingPacket(combatModule.getEntityTicksSinceLastSwing()),
+                PacketHandler.sendMessage(new ResetAttackSwingPacket(combatModule.getAttackStrengthTicks()),
                         serverPlayer);
             }
         }

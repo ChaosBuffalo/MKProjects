@@ -6,21 +6,26 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKCombatFormulas;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entity.EntityStats;
+import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.UUID;
+
 
 public class PlayerStats extends EntityStats {
+    private static final UUID EV_ID = UUID.fromString("77c81f2b-4edc-4341-9926-28983fc0e4c3");
 
     public PlayerStats(MKPlayerData playerData) {
         super(playerData);
-
+        playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated, EventPriorities.CONSUMER_PERSONA);
+        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_WORLD, EV_ID, this::onJoinWorld, EventPriorities.PROVIDER_PERSONA);
     }
+
     private Player getPlayer() {
         return (Player) getEntity();
     }
@@ -29,11 +34,8 @@ public class PlayerStats extends EntityStats {
         return (MKPlayerData) entityData;
     }
 
-    public void onJoinWorld() {
-//        MKCore.LOGGER.info("PlayerStats.onJoinWorld");
-        if (entityData.isServerSide()) {
-            setupBaseStats();
-        }
+    private void onJoinWorld(PlayerEvents.JoinWorldServerEvent event) {
+        setupBaseStats();
     }
 
     private void addBaseStat(Attribute attribute, double value) {
@@ -77,7 +79,7 @@ public class PlayerStats extends EntityStats {
 
     public void refreshStats() {
         if (getHealth() > getMaxHealth()) {
-            setHealth(Mth.clamp(getHealth(), 0, getMaxHealth()));
+            setHealth(getHealth());
         }
         if (getMana() > getMaxMana()) {
             setMana(getMana());
@@ -87,12 +89,8 @@ public class PlayerStats extends EntityStats {
         }
     }
 
-    public void onPersonaActivated() {
+    private void onPersonaActivated(PlayerEvents.PersonaEvent event) {
         refreshStats();
-    }
-
-    public void onPersonaDeactivated() {
-
     }
 
     public CompoundTag serialize() {
@@ -105,7 +103,7 @@ public class PlayerStats extends EntityStats {
     public void deserialize(CompoundTag tag) {
         abilityTracker.deserialize(tag.getCompound("cooldowns"));
         if (tag.contains("mana")) {
-            setMana(tag.getFloat("mana"));
+            setMana(tag.getFloat("mana"), false);
         }
     }
 }

@@ -3,11 +3,11 @@ package com.chaosbuffalo.mkcore.core.talents;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
-import com.chaosbuffalo.mkcore.core.player.SyncComponent;
+import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.core.records.PlayerRecordDispatcher;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.sync.DynamicSyncGroup;
-import com.chaosbuffalo.mkcore.sync.SyncInt;
+import com.chaosbuffalo.mkcore.sync.types.SyncInt;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
@@ -20,34 +20,30 @@ import net.minecraft.sounds.SoundSource;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     private final MKPlayerData playerData;
-    private final SyncComponent sync = new SyncComponent("talents");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent("talents");
     private final SyncInt talentPoints = new SyncInt("points", 0);
     private final SyncInt totalTalentPoints = new SyncInt("totalPoints", 0);
     private final Map<ResourceLocation, TalentTreeRecord> talentTreeRecordMap = new HashMap<>();
     private final SyncInt talentXp = new SyncInt("xp", 0);
-    private final PlayerRecordDispatcher dispatcher;
+    private final PlayerRecordDispatcher<TalentRecord> dispatcher;
+    private final TreeSyncGroup treeGroup;
 
     public PlayerTalentKnowledge(MKPlayerData playerData) {
         this.playerData = playerData;
-        dispatcher = new PlayerRecordDispatcher(playerData, this::getKnownTalentsStream);
+        dispatcher = new PlayerRecordDispatcher<>(playerData, this::getKnownTalentsStream);
         addSyncPrivate(talentPoints);
         addSyncPrivate(totalTalentPoints);
         addSyncPrivate(talentXp);
-        if (!playerData.isServerSide()) {
-            addSyncPrivate(new ClientTreeSyncGroup());
-        }
-        if (playerData.isServerSide()) {
-            for (TalentTreeDefinition def : MKCore.getTalentManager().getDefaultTrees()) {
-                if (!unlockTree(def.getTreeId())) {
-                    MKCore.LOGGER.error("Failed to unlock default talent tree: {}", def.getTreeId());
-                }
-            }
-        }
+        treeGroup = new TreeSyncGroup("trees");
+        addSyncPrivate(treeGroup);
+
+        unlockDefaultTrees(playerData);
     }
 
     public int getTalentXp() {
@@ -80,7 +76,7 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     }
 
     @Override
-    public SyncComponent getSyncComponent() {
+    public PlayerSyncComponent getSyncComponent() {
         return sync;
     }
 
@@ -99,53 +95,49 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
                 .filter(TalentRecord::isKnown);
     }
 
-    public Stream<TalentRecord> getKnownTalentsStream(TalentType<?> type) {
-        return getKnownTalentsStream()
-                .filter(r -> r.getNode().getTalentType() == type);
-    }
-
     public Collection<ResourceLocation> getKnownTrees() {
         return Collections.unmodifiableCollection(talentTreeRecordMap.keySet());
     }
 
-    public Set<ResourceLocation> getKnownTalentIds(TalentType<?> type) {
-        return getKnownTalentsStream(type)
-                .map(record -> record.getNode().getTalent().getTalentId())
-                .collect(Collectors.toSet());
-    }
-
     public boolean unlockTree(ResourceLocation treeId) {
-        TalentTreeRecord record = unlockTreeInternal(treeId);
-        if (record != null) {
-            sync.addPrivate(record.getUpdater(), true);
-            return true;
-        }
-        return false;
+        return unlockTree(treeId, true);
     }
 
-    private TalentTreeRecord unlockTreeInternal(ResourceLocation treeId) {
+    private boolean unlockTree(ResourceLocation treeId, boolean sendUpdate) {
         if (talentTreeRecordMap.containsKey(treeId)) {
             MKCore.LOGGER.warn("Player {} tried to unlock already-known talent tree {}", playerData.getEntity(), treeId);
-            return null;
+            return true;
         }
 
         TalentTreeDefinition tree = MKCore.getTalentManager().getTalentTree(treeId);
         if (tree == null) {
             MKCore.LOGGER.warn("Player {} tried to unlock unknown tree {}", playerData.getEntity(), treeId);
-            return null;
+            return false;
         }
 
         TalentTreeRecord record = tree.createRecord();
+        if (record == null) {
+            return false;
+        }
+
         talentTreeRecordMap.put(tree.getTreeId(), record);
-        return record;
+        treeGroup.add(record.getUpdater(), sendUpdate);
+        return true;
+    }
+
+    private void unlockDefaultTrees(MKPlayerData playerData) {
+        if (playerData.isClientSide())
+            return;
+
+        for (TalentTreeDefinition def : MKCore.getTalentManager().getDefaultTrees()) {
+            if (!unlockTree(def.getTreeId(), false)) {
+                MKCore.LOGGER.error("Failed to unlock default talent tree: {}", def.getTreeId());
+            }
+        }
     }
 
     public boolean knowsTree(ResourceLocation treeId) {
         return talentTreeRecordMap.containsKey(treeId);
-    }
-
-    public boolean knowsTalent(ResourceLocation talentId) {
-        return getKnownTalentsStream().anyMatch(rec -> rec.getNode().getTalent().getTalentId() == talentId);
     }
 
     public TalentTreeRecord getTree(ResourceLocation treeId) {
@@ -266,7 +258,7 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
             talentPoints.add(-treeRecord.getPointsSpent());
 
             talentTreeRecordMap.put(tree.getTreeId(), treeRecord);
-            sync.addPrivate(treeRecord.getUpdater(), true);
+            treeGroup.add(treeRecord.getUpdater(), false);
         }
     }
 
@@ -278,45 +270,33 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
         deserialize(new Dynamic<>(NbtOps.INSTANCE, tag));
     }
 
-    class ClientTreeSyncGroup extends DynamicSyncGroup {
+    class TreeSyncGroup extends DynamicSyncGroup {
+        public TreeSyncGroup(String name) {
+            super(name);
+        }
 
         @Override
-        protected void onKey(String key) {
+        protected void beforeClientUpdate(CompoundTag groupTag, boolean fullSync) {
+            if (fullSync) {
+                talentTreeRecordMap.clear();
+            }
+            super.beforeClientUpdate(groupTag, fullSync);
+        }
+
+        @Override
+        protected void preUpdateEntry(String key, Supplier<CompoundTag> value) {
             ResourceLocation treeId = ResourceLocation.tryParse(key);
             if (treeId == null)
                 return;
 
             if (MKCore.getTalentManager().getTalentTree(treeId) != null && !talentTreeRecordMap.containsKey(treeId)) {
-                TalentTreeRecord treeRecord = unlockTreeInternal(treeId);
-                if (treeRecord != null) {
-                    add(treeRecord.getUpdater());
-                }
+                unlockTree(treeId, false);
             }
-        }
-
-        @Override
-        public void serializeUpdate(CompoundTag tag) {
-            throw new IllegalStateException("ClientTreeSyncGroup should never call serializeUpdate!");
-        }
-
-        @Override
-        public void serializeFull(CompoundTag tag) {
-            throw new IllegalStateException("ClientTreeSyncGroup should never call serializeFull!");
         }
     }
 
     public void onPersonaActivated() {
         MKCore.LOGGER.debug("PlayerTalentKnowledge.onPersonaActivated");
         dispatcher.onPersonaActivated();
-    }
-
-    public void onPersonaDeactivated() {
-        MKCore.LOGGER.debug("PlayerTalentKnowledge.onPersonaDeactivated");
-        dispatcher.onPersonaDeactivated();
-    }
-
-    public void onJoinWorld() {
-        MKCore.LOGGER.debug("PlayerTalentKnowledge.onJoinWorld");
-        dispatcher.onJoinWorld();
     }
 }

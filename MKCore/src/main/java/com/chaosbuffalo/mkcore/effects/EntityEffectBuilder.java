@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkcore.entities.BlockAnchoredLineEffectEntity;
 import com.chaosbuffalo.mkcore.entities.LineEffectEntity;
 import com.chaosbuffalo.mkcore.entities.PointEffectEntity;
 import com.chaosbuffalo.targeting_api.TargetingContext;
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -17,7 +16,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Lazy;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {

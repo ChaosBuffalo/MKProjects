@@ -6,6 +6,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,13 +25,8 @@ public class MKWrapperTier implements IMKTier {
     }
 
     @Override
-    public TagKey<Item> getItemTag() {
+    public TagKey<Item> getPrimaryIngredientTag() {
         return tag;
-    }
-
-    @Override
-    public Ingredient getMajorIngredient() {
-        return Ingredient.of(tag);
     }
 
     @Override
@@ -63,13 +59,14 @@ public class MKWrapperTier implements IMKTier {
         return itemTier.getEnchantmentValue();
     }
 
+    @Nonnull
     @Override
     public Ingredient getRepairIngredient() {
         return itemTier.getRepairIngredient();
     }
 
     @Override
-    public List<IMeleeWeaponEffect> getMeleeWeaponEffects() {
+    public List<IMeleeWeaponEffect> getTierEffects() {
         return weaponEffects;
     }
 }

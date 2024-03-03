@@ -7,7 +7,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 
 import java.util.function.Function;
 
-public abstract class EntityTargetingAbility extends MKAbility{
+public abstract class EntityTargetingAbility extends MKAbility {
 
     public abstract void castAtEntity(IMKEntityData casterData, LivingEntity target, Function<Attribute, Float> skillSupplier);
 

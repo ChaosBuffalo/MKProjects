@@ -1,17 +1,19 @@
 package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
+import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
-import com.chaosbuffalo.mkcore.sync.UpdateEngine;
+import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-public interface IMKEntityData {
+public interface IMKEntityData extends INBTSerializable<CompoundTag> {
 
     @Nonnull
     LivingEntity getEntity();
@@ -36,15 +38,13 @@ public interface IMKEntityData {
 
     EntityEffectHandler getEffects();
 
-    CompoundTag serialize();
+    EntityEquipment getEquipment();
 
     EntityPetModule getPets();
-
-    void deserialize(CompoundTag nbt);
 
     void onJoinWorld();
 
     void onPlayerStartTracking(ServerPlayer playerEntity);
 
-    void attachUpdateEngine(UpdateEngine engine);
+    void attachUpdateEngine(SyncController engine);
 }

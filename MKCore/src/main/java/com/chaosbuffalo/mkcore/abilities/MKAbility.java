@@ -21,7 +21,9 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -116,8 +118,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
-        if (casterData instanceof MKPlayerData) {
-            MKPlayerData playerData = (MKPlayerData) casterData;
+        if (casterData instanceof MKPlayerData playerData) {
             MKAbilityInfo info = playerData.getAbilities().getKnownAbility(getAbilityId());
             if (info != null && info.usesAbilityPool()) {
                 consumer.accept(new IconTextComponent(POOL_SLOT_ICON, "mkcore.ability.description.uses_pool").withStyle(ChatFormatting.ITALIC));

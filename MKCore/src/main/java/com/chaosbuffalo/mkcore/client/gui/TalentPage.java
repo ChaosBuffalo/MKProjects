@@ -74,7 +74,7 @@ public class TalentPage extends PlayerPageBase {
         fieldTray.addWidget(totalTalents);
 
         talentScrollPanel = new ScrollingListPanelLayout(contentX, contentY, contentWidth, contentHeight);
-        talentTreeWidget = new TalentTreeWidget(playerData,0, 0,
+        talentTreeWidget = new TalentTreeWidget(playerData, 0, 0,
                 talentScrollPanel.getContentScrollView().getWidth(),
                 talentScrollPanel.getContentScrollView().getHeight(), font, this::getCurrentTree);
         talentScrollPanel.setContent(talentTreeWidget);

@@ -32,7 +32,7 @@ public enum MKUArmorMaterial implements ArmorMaterial {
             0.0f, 0.0f,
             () -> Ingredient.of(Items.COPPER_INGOT)),
 
-    ANCIENT_PRIEST_ROBES("mkultra:ancient_priest_robes", 15,new int[]{1, 3, 4, 1}, 20,
+    ANCIENT_PRIEST_ROBES("mkultra:ancient_priest_robes", 15, new int[]{1, 3, 4, 1}, 20,
             SoundEvents.ARMOR_EQUIP_LEATHER,
             0.0f, 0.0f,
             () -> Ingredient.of(Items.STRING)

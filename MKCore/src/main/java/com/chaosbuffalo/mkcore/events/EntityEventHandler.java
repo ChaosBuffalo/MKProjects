@@ -1,14 +1,12 @@
 package com.chaosbuffalo.mkcore.events;
 
-import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.CastInterruptReason;
-import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.core.MKEntityData;
-import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.entities.IUpdateEngineProvider;
+import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
+import com.chaosbuffalo.mkcore.core.*;
+import com.chaosbuffalo.mkcore.entities.ISyncControllerProvider;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
+import com.chaosbuffalo.mkcore.utils.CapabilityUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -45,13 +43,25 @@ public class EntityEventHandler {
         }
     }
 
+    private static MKPlayerData playerCapFactory(Player player) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            return new MKServerPlayerData(serverPlayer);
+        } else {
+            return new MKPlayerData(player);
+        }
+    }
+
     @SuppressWarnings("unused")
     @SubscribeEvent
     public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> e) {
-        if (e.getObject() instanceof Player playerEntity) {
-            CoreCapabilities.PlayerDataProvider.attach(e, playerEntity);
-        } else if (e.getObject() instanceof LivingEntity livingEntity) {
-            CoreCapabilities.EntityDataProvider.attach(e, livingEntity);
+        if (e.getObject() instanceof Player player) {
+            var provider = CapabilityUtils.provider(CoreCapabilities.PLAYER_CAPABILITY, EntityEventHandler::playerCapFactory, player);
+
+            e.addCapability(CoreCapabilities.PLAYER_CAP_ID, provider);
+        } else if (e.getObject() instanceof LivingEntity living) {
+            var provider = CapabilityUtils.provider(CoreCapabilities.ENTITY_CAPABILITY, MKEntityData::new, living);
+
+            e.addCapability(CoreCapabilities.ENTITY_CAP_ID, provider);
         }
     }
 
@@ -67,6 +77,9 @@ public class EntityEventHandler {
 
     @SubscribeEvent
     public static void onPlayerGainXP(PlayerXpEvent.XpChange event) {
+        if (event.getAmount() == 0) {
+            return;
+        }
         MKCore.getPlayer(event.getEntity()).ifPresent(data -> {
             data.getTalents().addTalentXp(event.getAmount());
         });
@@ -142,8 +155,8 @@ public class EntityEventHandler {
         if (event.getEntity() instanceof ServerPlayer playerEntity) {
             MKCore.getEntityData(event.getTarget())
                     .ifPresent(targetData -> targetData.onPlayerStartTracking(playerEntity));
-            if (event.getTarget() instanceof IUpdateEngineProvider provider) {
-                provider.getUpdateEngine().sendAll(playerEntity);
+            if (event.getTarget() instanceof ISyncControllerProvider provider) {
+                provider.getSyncController().sendFullSync(playerEntity);
             }
         }
     }

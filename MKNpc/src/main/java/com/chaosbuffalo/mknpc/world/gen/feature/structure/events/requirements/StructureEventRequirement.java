@@ -15,7 +15,6 @@ import net.minecraft.world.level.Level;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public abstract class StructureEventRequirement implements ISerializableAttributeContainer, IDynamicMapTypedSerializer {
     private static final String TYPE_ENTRY_NAME = "structReqType";

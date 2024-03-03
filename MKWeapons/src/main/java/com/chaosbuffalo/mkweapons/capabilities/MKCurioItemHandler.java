@@ -98,8 +98,7 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
     private void loadSlotModifiers(String slotId) {
         Multimap<Attribute, AttributeModifier> newMods = HashMultimap.create();
         for (IAccessoryEffect weaponEffect : getEffects()) {
-            if (weaponEffect instanceof ItemModifierEffect) {
-                ItemModifierEffect modEffect = (ItemModifierEffect) weaponEffect;
+            if (weaponEffect instanceof ItemModifierEffect modEffect) {
                 modEffect.getModifiers().forEach(e -> newMods.put(e.getAttribute(), e.getModifier()));
             }
         }

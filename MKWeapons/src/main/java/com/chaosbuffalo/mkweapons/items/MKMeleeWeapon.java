@@ -64,7 +64,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
         this.mkTier = tier;
         this.weaponEffects = new ArrayList<>();
         recalculateModifiers();
-        weaponEffects.addAll(tier.getMeleeWeaponEffects());
+        weaponEffects.addAll(tier.getTierEffects());
         weaponEffects.addAll(weaponType.getWeaponEffects());
     }
 
@@ -101,7 +101,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     public void reload() {
         weaponEffects.clear();
         recalculateModifiers();
-        weaponEffects.addAll(getMKTier().getMeleeWeaponEffects());
+        weaponEffects.addAll(getMKTier().getTierEffects());
         weaponEffects.addAll(getWeaponType().getWeaponEffects());
     }
 
@@ -117,21 +117,22 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
 
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        MKCore.getEntityData(attacker).ifPresent(cap -> {
-            if (!target.isBlocking()) {
-                if (cap.getCombatExtension().getEntityTicksSinceLastSwing() >= EntityUtils.getCooldownPeriod(attacker)) {
+        if (!target.isBlocking()) {
+            MKCore.getEntityData(attacker).ifPresent(attackerData -> {
+                if (attackerData.getCombatExtension().getAttackStrengthTicks() >= EntityUtils.getCooldownPeriod(attacker)) {
                     for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
-                        effect.onHit(this, stack, target, attacker);
+                        effect.onHit(this, stack, attackerData, target);
                     }
                     List<MKCurioItemHandler> curios = MKAccessory.getMKCurios(attacker);
                     for (MKCurioItemHandler handler : curios) {
                         for (IAccessoryEffect effect : handler.getEffects()) {
-                            effect.onMeleeHit(this, stack, target, attacker);
+                            effect.onMeleeHit(this, stack, attackerData, target);
                         }
                     }
                 }
-            }
-        });
+
+            });
+        }
 
         return super.hurtEnemy(stack, target, attacker);
     }

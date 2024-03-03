@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
-import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
+import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.events.PostAttackEvent;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
@@ -13,7 +13,6 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.EnumSet;
 import java.util.Optional;
@@ -76,15 +75,14 @@ public class MKMeleeAttackGoal extends Goal {
             mainHand.getItem().hurtEnemy(mainHand, enemy, entity);
         }
         entity.resetSwing();
-        LazyOptional<? extends IMKEntityData> entityData = MKCore.getEntityData(entity);
-        entityData.ifPresent(cap -> {
-            cap.getCombatExtension().recordSwing();
-            MinecraftForge.EVENT_BUS.post(new PostAttackEvent(cap));
-            if (cap.getCombatExtension().getCurrentSwingCount() > 0 &&
-                    cap.getCombatExtension().getCurrentSwingCount() % getComboCount() == 0) {
-                entity.subtractFromTicksSinceLastSwing(getComboDelay());
-            }
-        });
+
+        MKEntityData cap = entity.getEntityDataCap();
+        CombatExtensionModule combat = cap.getCombatExtension();
+        combat.recordSwingHit();
+        MinecraftForge.EVENT_BUS.post(new PostAttackEvent(cap));
+        if (combat.getCurrentSwingCount() > 0 && combat.getCurrentSwingCount() % getComboCount() == 0) {
+            entity.subtractFromTicksSinceLastSwing(getComboDelay());
+        }
     }
 
     public boolean isInMeleeRange(LivingEntity target) {
@@ -113,6 +111,4 @@ public class MKMeleeAttackGoal extends Goal {
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         return target != null && targetOpt.map((ent) -> ent.is(target) && isInMeleeRange(ent)).orElse(false);
     }
-
-
 }

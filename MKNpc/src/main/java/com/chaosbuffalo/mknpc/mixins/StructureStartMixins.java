@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.mixins;
 
-import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
+import com.chaosbuffalo.mknpc.world.gen.StructureStartExtension;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.IMKPoolPiece;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ChunkPos;
@@ -22,12 +22,14 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import java.util.UUID;
 
 @Mixin(StructureStart.class)
-public abstract class StructureStartMixins implements IStructureStartMixin {
+public abstract class StructureStartMixins implements StructureStartExtension {
 
     @Shadow
     @Final
     private PiecesContainer pieceContainer;
-    @Shadow @Final private Structure structure;
+    @Shadow
+    @Final
+    private Structure structure;
     @Unique
     protected UUID mknpc$instanceId;
 
@@ -61,9 +63,7 @@ public abstract class StructureStartMixins implements IStructureStartMixin {
             locals = LocalCapture.CAPTURE_FAILHARD)
     private static void loadStaticStart(StructurePieceSerializationContext piecescontainer, CompoundTag tag, long chunkpos, CallbackInfoReturnable<StructureStart> cir, String s) {
         if (cir.getReturnValue() != null && cir.getReturnValue().isValid()) {
-            if ((Object) cir.getReturnValue() instanceof IStructureStartMixin) {
-                ((IStructureStartMixin) (Object) cir.getReturnValue()).loadAdditional(tag);
-            }
+            StructureStartExtension.of(cir.getReturnValue()).mknpc_loadAdditional(tag);
         }
     }
 
@@ -73,7 +73,7 @@ public abstract class StructureStartMixins implements IStructureStartMixin {
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag) {
+    public void mknpc_loadAdditional(CompoundTag tag) {
         mknpc$instanceId = tag.getUUID("instanceId");
         setStartDataForPieces(pieceContainer);
     }

@@ -2,6 +2,8 @@ package com.chaosbuffalo.mkcore.core.talents.handlers;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
+import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
 import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import com.chaosbuffalo.mkcore.core.talents.TalentTypeHandler;
 import com.chaosbuffalo.mkcore.core.talents.nodes.AttributeTalentNode;
@@ -14,20 +16,21 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import java.util.*;
 
 public class AttributeTalentHandler extends TalentTypeHandler {
+    private static final UUID EV_ID = UUID.fromString("e542745d-aa57-4093-b734-3df4deb101ff");
 
     private final Map<AttributeTalent, AttributeEntry> attributeEntryMap = new HashMap<>();
 
     public AttributeTalentHandler(MKPlayerData playerData) {
         super(playerData);
+        playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated, EventPriorities.CONSUMER);
+        playerData.events().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated, EventPriorities.CONSUMER);
     }
 
-    @Override
-    public void onPersonaActivated() {
+    private void onPersonaActivated(PlayerEvents.PersonaEvent event) {
         applyAllAttributeModifiers();
     }
 
-    @Override
-    public void onPersonaDeactivated() {
+    private void onPersonaDeactivated(PlayerEvents.PersonaEvent event) {
         removeAllAttributeModifiers();
     }
 
@@ -81,9 +84,8 @@ public class AttributeTalentHandler extends TalentTypeHandler {
             return;
         }
 
-        AttributeModifier mod = entry.getModifier();
-        instance.removeModifier(mod);
-        instance.addTransientModifier(mod);
+        instance.removeModifier(entry.getUUID());
+        instance.addTransientModifier(entry.getModifier());
         if (entry.getAttributeTalent().requiresStatRefresh()) {
             playerData.getStats().refreshStats();
         }
@@ -96,8 +98,7 @@ public class AttributeTalentHandler extends TalentTypeHandler {
         if (entry != null) {
             AttributeInstance instance = playerData.getEntity().getAttribute(entry.getAttribute());
             if (instance != null) {
-                instance.removeModifier(entry.getModifier());
-//                dumpDirtyAttributes("removeAttribute");
+                instance.removeModifier(entry.getUUID());
             }
         }
     }
@@ -132,6 +133,10 @@ public class AttributeTalentHandler extends TalentTypeHandler {
 
         public AttributeTalent getAttributeTalent() {
             return attribute;
+        }
+
+        public UUID getUUID() {
+            return attribute.getUUID();
         }
 
         public Attribute getAttribute() {

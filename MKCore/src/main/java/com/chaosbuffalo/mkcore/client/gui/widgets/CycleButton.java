@@ -16,7 +16,7 @@ public class CycleButton<T> extends MKButton {
 
     public CycleButton(List<T> elements, Function<T, Component> describer, Consumer<T> onValueChanged) {
         super("");
-        Preconditions.checkState(elements.size() > 0, "Cycle button must have >0 elements");
+        Preconditions.checkState(!elements.isEmpty(), "Cycle button must have >0 elements");
         index = 0;
         this.elements = elements;
         this.describer = describer;

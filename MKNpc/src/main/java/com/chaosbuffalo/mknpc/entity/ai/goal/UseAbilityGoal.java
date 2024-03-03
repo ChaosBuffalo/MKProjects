@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
-import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
@@ -64,16 +63,12 @@ public class UseAbilityGoal extends Goal {
     }
 
     public boolean canActivate() {
-        return entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY)
-                .map(entityData -> entityData.getAbilityExecutor().canActivateAbility(currentAbility))
-                .orElse(false);
+        return entity.getEntityDataCap().getAbilityExecutor().canActivateAbility(currentAbility);
     }
 
     public boolean canContinueToUse() {
         return ticksSinceSeenTarget < CAN_SEE_TIMEOUT &&
-                entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY)
-                        .map(entityData -> entityData.getAbilityExecutor().isCasting())
-                        .orElse(false) &&
+                entity.getEntityDataCap().getAbilityExecutor().isCasting() &&
                 entity.getBrain().getMemory(MKAbilityMemories.ABILITY_TARGET.get())
                         .map(tar -> tar.isAlive() && tar.is(target))
                         .orElse(false) &&
@@ -89,9 +84,8 @@ public class UseAbilityGoal extends Goal {
             entity.getLookControl().setLookAt(target, 50.0f, 50.0f);
         }
         AbilityContext context = new BrainAbilityContext(entity);
-        MKNpc.LOGGER.debug("ai {} casting {} on {}", entity, currentAbility.getAbilityId(), target);
-        entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY)
-                .ifPresent(entityData -> entityData.getAbilityExecutor().executeAbilityWithContext(currentAbility.getAbilityId(), context));
+//        MKNpc.LOGGER.debug("ai {} casting {} on {}", entity, currentAbility.getAbilityId(), target);
+        entity.getEntityDataCap().getAbilityExecutor().executeAbilityWithContext(currentAbility.getAbilityId(), context);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
@@ -176,12 +175,10 @@ public class MKBowAttackGoal extends Goal {
                         float powerFactor = getLaunchPower(useTicks);
                         this.entity.attackEntityWithRangedAttack(target, powerFactor, getLaunchVelocity(powerFactor));
                         this.entity.stopUsingItem();
-                        boolean fullCooldown = MKCore.getEntityData(entity).map(cap -> {
-                            CombatExtensionModule combatExtensionModule = cap.getCombatExtension();
-                            return combatExtensionModule.getCurrentProjectileHitCount() > 0 &&
-                                    combatExtensionModule.getCurrentProjectileHitCount() % entity.getAttackComboCount() == 0;
 
-                        }).orElse(true);
+                        CombatExtensionModule combatExtensionModule = entity.getEntityDataCap().getCombatExtension();
+                        boolean fullCooldown = combatExtensionModule.getCurrentProjectileHitCount() > 0 &&
+                                combatExtensionModule.getCurrentProjectileHitCount() % entity.getAttackComboCount() == 0;
                         this.attackTime = fullCooldown ? entity.getAttackComboCooldown() : defaultCooldown;
                     }
                 }

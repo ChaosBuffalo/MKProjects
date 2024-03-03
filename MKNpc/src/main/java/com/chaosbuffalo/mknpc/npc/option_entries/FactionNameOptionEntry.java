@@ -20,7 +20,7 @@ public class FactionNameOptionEntry implements INpcOptionEntry, INameEntry {
 
     @Override
     public void applyToEntity(Entity entity) {
-        if (!name.equals("") && entity instanceof LivingEntity) {
+        if (!name.isEmpty() && entity instanceof LivingEntity) {
             entity.setCustomName(getName());
         }
     }

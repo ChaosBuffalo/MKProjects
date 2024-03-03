@@ -2,20 +2,20 @@ package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
 import com.chaosbuffalo.mkchat.dialogue.DialogueUtils;
-import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
-import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.pets.IMKPet;
 import com.chaosbuffalo.mkcore.core.pets.PetNonCombatBehavior;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
-import com.chaosbuffalo.mkcore.core.player.SyncComponent;
-import com.chaosbuffalo.mkcore.entities.IUpdateEngineProvider;
-import com.chaosbuffalo.mkcore.sync.EntityUpdateEngine;
+import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
+import com.chaosbuffalo.mkcore.entities.ISyncControllerProvider;
+import com.chaosbuffalo.mkcore.sync.controllers.EntitySyncController;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
@@ -84,15 +84,16 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 
-@SuppressWarnings("EntityConstructor")
-public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, IUpdateEngineProvider, IMKPet, ITargetingOwner {
+public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, ISyncControllerProvider, IMKPet, ITargetingOwner {
     private static final EntityDataAccessor<String> LOOK_STYLE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Float> SCALE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> IS_GHOST = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> GHOST_TRANSLUCENCY = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
+
     private static final EntityDataAccessor<Boolean> HAS_GHOST_ARMOR = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> GHOST_ARMOR_TRANSLUCENCY = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
-    private final SyncComponent animSync = new SyncComponent("anim");
+
+    private final PlayerSyncComponent animSync = new PlayerSyncComponent("anim");
     private int castAnimTimer;
     private VisualCastState visualCastState;
     private MKAbility castingAbility;
@@ -104,7 +105,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private int comboCooldownDefault;
     private int comboCount;
     private int comboCooldown;
-    private final EntityUpdateEngine updateEngine;
+    private final EntitySyncController syncController;
+    private final MKEntityData entityDataCap;
     private final ParticleEffectInstanceTracker particleEffectTracker;
     private final EntityTradeContainer entityTradeContainer;
     private final List<BossStage> bossStages = new ArrayList<>();
@@ -170,12 +172,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Nullable
     @Override
     public Entity getTargetingOwner() {
-        IMKEntityData data = MKCore.getEntityDataOrNull(this);
-        if (data != null) {
-            return data.getPets().getOwner();
-        } else {
-            return null;
-        }
+        return entityDataCap.getPets().getOwner();
     }
 
     public float getGhostTranslucency() {
@@ -198,18 +195,22 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         blockCooldown = GameConstants.TICKS_PER_SECOND * 2;
         blockDelay = GameConstants.TICKS_PER_SECOND / 2;
         blockHold = GameConstants.TICKS_PER_SECOND * 2;
-        updateEngine = new EntityUpdateEngine(this);
-        animSync.attach(updateEngine);
+        syncController = new EntitySyncController(this);
+        animSync.attach(syncController);
         particleEffectTracker = ParticleEffectInstanceTracker.getTracker(this);
         animSync.addPublic(particleEffectTracker);
         nonCombatMoveType = NonCombatMoveType.RANDOM_WANDER;
         combatMoveType = CombatMoveType.MELEE;
-        getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((mkEntityData -> {
-            mkEntityData.attachUpdateEngine(updateEngine);
-            mkEntityData.getAbilityExecutor().setStartCastCallback(this::startCast);
-            mkEntityData.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
-            mkEntityData.setInstanceTracker(particleEffectTracker);
-        }));
+
+        entityDataCap = getCapability(CoreCapabilities.ENTITY_CAPABILITY).orElseThrow(IllegalStateException::new);
+        entityDataCap.attachUpdateEngine(syncController);
+        entityDataCap.getAbilityExecutor().setStartCastCallback(this::startCast);
+        entityDataCap.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
+        entityDataCap.setInstanceTracker(particleEffectTracker);
+    }
+
+    public MKEntityData getEntityDataCap() {
+        return entityDataCap;
     }
 
     public boolean hasBossStages() {
@@ -255,7 +256,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     public void tick() {
         super.tick();
         if (!this.level.isClientSide()) {
-            updateEngine.syncUpdates();
+            syncController.syncUpdates();
         }
     }
 
@@ -322,8 +323,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     @Override
-    public EntityUpdateEngine getUpdateEngine() {
-        return updateEngine;
+    public EntitySyncController getSyncController() {
+        return syncController;
     }
 
     public double getLungeSpeed() {
@@ -577,8 +578,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     public void returnToSpawnTick() {
-        boolean isReturningToPlayer = MKCore.getEntityData(this).map(x -> x.getPets().isPet()
-                && x.getPets().getOwner() instanceof Player).orElse(false);
+        boolean isReturningToPlayer = entityDataCap.getPets().isPet() && entityDataCap.getPets().getOwner() instanceof Player;
         if (!isReturningToPlayer) {
             setHealth(Math.min(getHealth() + getMaxHealth() * .2f * 1.0f / GameConstants.TICKS_PER_SECOND,
                     getMaxHealth()));
@@ -588,7 +588,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Nullable
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn, @Nullable CompoundTag dataTag) {
-        MKNpc.LOGGER.info("In initial spawn for {}", this);
+//        MKNpc.LOGGER.info("In initial spawn for {}", this);
         SpawnGroupData entityData = super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
         this.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).ifPresent((cap) -> {
             if (cap.wasMKSpawned()) {
@@ -611,11 +611,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         newMap.put(entity, newMap.getOrDefault(entity, new ThreatMapEntry()).addThreat(value));
         this.brain.setMemory(MKMemoryModuleTypes.THREAT_MAP.get(), newMap);
         if (propagate) {
-            MKCore.getEntityData(this).ifPresent(x -> {
-                if (x.getPets().hasPet()) {
-                    x.getPets().addThreatToPets(entity, value, false);
-                }
-            });
+            if (entityDataCap.getPets().hasPet()) {
+                entityDataCap.getPets().addThreatToPets(entity, value, false);
+            }
         }
     }
 
@@ -862,7 +860,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             List<ThreatMapEntry> sorted = x.values().stream()
                     .sorted(Comparator.comparingDouble(ThreatMapEntry::getCurrentThreat))
                     .toList();
-            if (sorted.size() == 0) {
+            if (sorted.isEmpty()) {
                 return 0f;
             }
             return sorted.get(sorted.size() - 1).getCurrentThreat();

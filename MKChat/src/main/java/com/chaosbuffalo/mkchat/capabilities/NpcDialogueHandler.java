@@ -103,7 +103,7 @@ public class NpcDialogueHandler implements INpcDialogue {
 
     @Override
     public boolean hasDialogue() {
-        return primaryDialogueTreeName != null || secondaryTrees.size() > 0 || conversations.size() > 0;
+        return primaryDialogueTreeName != null || !secondaryTrees.isEmpty() || !conversations.isEmpty();
     }
 
     @Override

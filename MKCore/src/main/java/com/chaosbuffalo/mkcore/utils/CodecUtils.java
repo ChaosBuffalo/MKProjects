@@ -23,7 +23,7 @@ public class CodecUtils {
         }
     }
 
-    public static final PrimitiveCodec<DoubleStream> DOUBLE_STREAM = new PrimitiveCodec<DoubleStream>() {
+    public static final PrimitiveCodec<DoubleStream> DOUBLE_STREAM = new PrimitiveCodec<>() {
         @Override
         public <T> DataResult<DoubleStream> read(final DynamicOps<T> ops, final T input) {
             return ops.getStream(input).flatMap(stream -> {

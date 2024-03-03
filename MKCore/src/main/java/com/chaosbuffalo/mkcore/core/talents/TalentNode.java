@@ -41,10 +41,6 @@ public class TalentNode {
         return index;
     }
 
-    TalentType<?> getTalentType() {
-        return talent.getTalentType();
-    }
-
     public MKTalent getTalent() {
         return talent;
     }
@@ -58,14 +54,14 @@ public class TalentNode {
     }
 
     public String getPositionString() {
-        return String.format("%s@%d", getLine().getName(), getIndex());
+        return String.format("%s:%s@%d", getLine().getTree().getTreeId(), getLine().getName(), getIndex());
     }
 
     @Override
     public String toString() {
         return "TalentNode{" +
                 "pos=" + getPositionString() +
-                "talent=" + talent +
+                ", talent=" + talent +
                 ", maxRanks=" + maxRanks +
                 '}';
     }

@@ -190,7 +190,7 @@ public class AbilityCommand {
         MKCore.getPlayer(player).ifPresent(cap -> {
             PlayerAbilityKnowledge abilityKnowledge = cap.getAbilities();
             Collection<MKAbilityInfo> abilities = abilityKnowledge.getAllAbilities();
-            if (abilities.size() > 0) {
+            if (!abilities.isEmpty()) {
                 ChatUtils.sendMessageWithBrackets(player, "Known Abilities");
                 abilities.forEach(info -> {
                     ChatUtils.sendMessageWithBrackets(player, "%s: %b", info.getId(), info.isCurrentlyKnown());

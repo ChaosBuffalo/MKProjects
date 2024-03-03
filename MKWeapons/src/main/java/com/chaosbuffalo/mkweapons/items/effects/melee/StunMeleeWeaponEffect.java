@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkweapons.items.effects.melee;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.status.StunEffect;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
@@ -53,9 +54,9 @@ public class StunMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     }
 
     @Override
-    public void onHit(IMKMeleeWeapon weapon, ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        if (attacker.getRandom().nextDouble() >= (1.0 - stunChance)) {
-            MKEffectBuilder<?> stun = StunEffect.from(attacker)
+    public void onHit(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData, LivingEntity target) {
+        if (attackerData.getEntity().getRandom().nextDouble() >= (1.0 - stunChance)) {
+            MKEffectBuilder<?> stun = StunEffect.from(attackerData.getEntity())
                     .timed(stunDuration * GameConstants.TICKS_PER_SECOND);
             MKCore.getEntityData(target).ifPresent(targetData -> targetData.getEffects().addEffect(stun));
             MKParticles.spawn(target, new Vec3(0.0, target.getBbHeight(), 0.0), PARTICLES);

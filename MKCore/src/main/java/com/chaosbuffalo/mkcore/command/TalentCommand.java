@@ -169,7 +169,7 @@ public class TalentCommand {
         MKCore.getPlayer(player).ifPresent(cap -> {
             PlayerTalentKnowledge talents = cap.getTalents();
             Collection<ResourceLocation> knownTalents = talents.getKnownTrees();
-            if (knownTalents.size() > 0) {
+            if (!knownTalents.isEmpty()) {
                 ChatUtils.sendMessageWithBrackets(player, "Known Talent Trees");
                 knownTalents.forEach(info -> ChatUtils.sendMessage(player, "%s", info));
             } else {
@@ -226,7 +226,7 @@ public class TalentCommand {
             Collection<TalentRecord> knownTalents = talents.getKnownTalentsStream()
                     .sorted(Comparator.comparing(r -> r.getNode().getPositionString()))
                     .collect(Collectors.toList());
-            if (knownTalents.size() > 0) {
+            if (!knownTalents.isEmpty()) {
                 ChatUtils.sendMessageWithBrackets(player, "Known Talents");
                 knownTalents.forEach(info -> {
                     String msg = describeNode(info.getNode(), info);

@@ -1,41 +1,22 @@
 package com.chaosbuffalo.mkcore.sync;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import net.minecraft.nbt.CompoundTag;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public class SyncGroup implements ISyncObject, ISyncNotifier {
-    private final List<ISyncObject> components = new ArrayList<>();
-    private final Set<ISyncObject> dirty = new HashSet<>();
-    private String nestedName = null;
+public class SyncGroup implements ISyncObject {
+    protected static final String FULL_FLAG = "#f";
+    protected final List<ISyncObject> components = new ArrayList<>();
+    protected final Set<ISyncObject> dirty = new HashSet<>();
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
-    private boolean forceFull = false;
 
     public SyncGroup() {
 
     }
 
-    public SyncGroup(String name) {
-        nestedName = name;
-    }
-
-    public String getTagName() {
-        return nestedName;
-    }
-
     public void add(ISyncObject sync) {
         components.add(sync);
-        sync.setNotifier(this);
-    }
-
-    public void addAll(ISyncObject... objects) {
-        for (ISyncObject object : objects) {
-            add(object);
-        }
+        sync.setNotifier(this::childUpdated);
     }
 
     public void remove(ISyncObject syncObject) {
@@ -49,66 +30,70 @@ public class SyncGroup implements ISyncObject, ISyncNotifier {
         parentNotifier = notifier;
     }
 
-    @Override
-    public void notifyUpdate(ISyncObject syncObject) {
+    public void childUpdated(ISyncObject syncObject) {
         dirty.add(syncObject);
-        parentNotifier.notifyUpdate(this);
+        scheduleUpdate();
     }
 
-    public void forceDirty() {
-        forceFull = true;
+    public void scheduleUpdate() {
         parentNotifier.notifyUpdate(this);
     }
 
     @Override
     public boolean isDirty() {
-        return forceFull || !dirty.isEmpty();
+        return !dirty.isEmpty();
     }
 
-    private CompoundTag getUpdateRootTag(CompoundTag tag) {
-        return nestedName != null ? tag.getCompound(nestedName) : tag;
+    protected CompoundTag extractGroupTag(CompoundTag tag) {
+        return tag;
     }
 
-    private void writeUpdateRootTag(CompoundTag tag, CompoundTag filledRoot) {
-        if (nestedName != null && filledRoot.size() > 0) {
-            tag.put(nestedName, filledRoot);
-        }
+    protected void insertGroupTag(CompoundTag tag, CompoundTag filledRoot) {
+
+    }
+
+    protected void beforeClientUpdate(CompoundTag groupTag, boolean fullSync) {
+
     }
 
     @Override
     public void deserializeUpdate(CompoundTag tag) {
-        CompoundTag root = getUpdateRootTag(tag);
-        components.forEach(c -> c.deserializeUpdate(root));
+        CompoundTag groupTag = extractGroupTag(tag);
+        if (!groupTag.isEmpty()) {
+            boolean fullSync = groupTag.contains(FULL_FLAG);
+            beforeClientUpdate(groupTag, fullSync);
+        }
+        components.forEach(c -> c.deserializeUpdate(groupTag));
     }
 
     @Override
     public void serializeUpdate(CompoundTag tag) {
-        if (forceFull) {
-            MKCore.LOGGER.debug("SyncGroup.serializeUpdate({}) forced full", nestedName);
-            serializeFull(tag);
-        } else {
-            CompoundTag root = getUpdateRootTag(tag);
-            dirty.stream()
-                    .filter(ISyncObject::isDirty)
-                    .forEach(c -> c.serializeUpdate(root));
-            if (root.size() > 0) {
-                writeUpdateRootTag(tag, root);
-            }
-            dirty.clear();
+        if (dirty.isEmpty())
+            return;
+
+        CompoundTag groupTag = extractGroupTag(tag);
+        dirty.forEach(c -> c.serializeUpdate(groupTag));
+        if (!groupTag.isEmpty()) {
+            insertGroupTag(tag, groupTag);
         }
+        dirty.clear();
     }
 
     @Override
     public void serializeFull(CompoundTag tag) {
-        CompoundTag root = getUpdateRootTag(tag);
-        components.forEach(c -> c.serializeFull(root));
-        writeUpdateRootTag(tag, root);
-        dirty.clear();
-        forceFull = false;
+        if (components.isEmpty())
+            return;
+
+        CompoundTag groupTag = extractGroupTag(tag);
+        groupTag.putBoolean(FULL_FLAG, true);
+        components.forEach(c -> c.serializeFull(groupTag));
+        if (!groupTag.isEmpty()) {
+            insertGroupTag(tag, groupTag);
+        }
     }
 
     @Override
     public String toString() {
-        return String.format("SyncGroup[name='%s', components=%d, dirty=%d]", nestedName, components.size(), dirty.size());
+        return String.format("SyncGroup[components=%d, dirty=%d]", components.size(), dirty.size());
     }
 }

@@ -15,12 +15,7 @@ public class SpellTriggers {
     public static final FallTriggers FALL = new FallTriggers();
     public static final LivingHurtEntityTriggers LIVING_HURT_ENTITY = new LivingHurtEntityTriggers();
     public static final EntityHurtTriggers ENTITY_HURT = new EntityHurtTriggers();
-    public static final EntityAttackedTriggers LIVING_ATTACKED = new EntityAttackedTriggers();
-    public static final PlayerAttackEntityTriggers PLAYER_ATTACK_ENTITY = new PlayerAttackEntityTriggers();
-    public static final EmptyLeftClickTriggers EMPTY_LEFT_CLICK = new EmptyLeftClickTriggers();
     public static final LivingKillEntityTriggers LIVING_KILL_ENTITY = new LivingKillEntityTriggers();
-    public static final LivingDeathTriggers LIVING_DEATH = new LivingDeathTriggers();
-    public static final LivingEquipmentChangeTriggers LIVING_EQUIPMENT_CHANGE = new LivingEquipmentChangeTriggers();
 
     public static abstract class TriggerCollectionBase {
 

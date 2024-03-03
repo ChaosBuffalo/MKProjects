@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
@@ -48,7 +49,7 @@ public class TalentButton extends MKButton {
         this.tooltip = new ArrayList<>();
         MKTalent talent = record.getNode().getTalent();
         tooltip.add(talent.getTalentName());
-        tooltip.add(talent.getTalentTypeName());
+        tooltip.add(talent.getTypeDescription().withStyle(ChatFormatting.GOLD));
         talent.describeTalent(entityData, record, tooltip::add);
     }
 

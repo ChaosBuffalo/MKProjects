@@ -33,6 +33,7 @@ public class UltraTags {
         public static final TagKey<Structure> HYBOREAN_CRYPT = tag("hyborean_crypt");
 
         public static final TagKey<Structure> DECAYING_CHURCH = tag("decaying_church");
+
         private static TagKey<Structure> tag(String name) {
             return TagKey.create(Registries.STRUCTURE, new ResourceLocation(MKUltra.MODID, name));
         }

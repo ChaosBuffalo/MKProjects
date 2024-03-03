@@ -1,9 +1,10 @@
 package com.chaosbuffalo.mkweapons.event;
 
+import com.chaosbuffalo.mkcore.utils.CapabilityUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.capabilities.ArmorDataProvider;
-import com.chaosbuffalo.mkweapons.capabilities.ArrowDataProvider;
-import com.chaosbuffalo.mkweapons.capabilities.WeaponDataProvider;
+import com.chaosbuffalo.mkweapons.capabilities.ArmorDataHandler;
+import com.chaosbuffalo.mkweapons.capabilities.ArrowDataHandler;
+import com.chaosbuffalo.mkweapons.capabilities.WeaponDataHandler;
 import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
 import com.chaosbuffalo.mkweapons.items.armor.IMKArmor;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKWeapon;
@@ -18,22 +19,31 @@ import net.minecraftforge.fml.common.Mod;
 public class WeaponsCapabilityHandler {
 
     @SubscribeEvent
-    public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> e) {
-        if (e.getObject() instanceof AbstractArrow) {
-            e.addCapability(WeaponsCapabilities.MK_ARROW_CAP_ID,
-                    new ArrowDataProvider((AbstractArrow) e.getObject()));
+    public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> event) {
+        if (event.getObject() instanceof AbstractArrow arrow) {
+            var provider = CapabilityUtils.provider(WeaponsCapabilities.ARROW_DATA_CAPABILITY,
+                    ArrowDataHandler::new,
+                    arrow);
+
+            event.addCapability(WeaponsCapabilities.MK_ARROW_CAP_ID, provider);
         }
     }
 
     @SubscribeEvent
     public static void attachWeaponCapability(AttachCapabilitiesEvent<ItemStack> event) {
         if (event.getObject().getItem() instanceof IMKWeapon) {
-            event.addCapability(WeaponsCapabilities.MK_WEAPON_CAP_ID,
-                    new WeaponDataProvider(event.getObject()));
+            var provider = CapabilityUtils.provider(WeaponsCapabilities.WEAPON_DATA_CAPABILITY,
+                    WeaponDataHandler::new,
+                    event.getObject());
+
+            event.addCapability(WeaponsCapabilities.MK_WEAPON_CAP_ID, provider);
         }
         if (event.getObject().getItem() instanceof IMKArmor) {
-            event.addCapability(WeaponsCapabilities.MK_ARMOR_CAP_ID,
-                    new ArmorDataProvider(event.getObject()));
+            var provider = CapabilityUtils.provider(WeaponsCapabilities.ARMOR_DATA_CAPABILITY,
+                    ArmorDataHandler::new,
+                    event.getObject());
+
+            event.addCapability(WeaponsCapabilities.MK_ARMOR_CAP_ID, provider);
         }
     }
 }

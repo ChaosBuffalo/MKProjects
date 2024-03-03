@@ -7,8 +7,6 @@ import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
-import com.chaosbuffalo.mkcore.network.PlayerLeftClickEmptyPacket;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import net.minecraft.sounds.SoundEvent;
@@ -26,7 +24,6 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -56,34 +53,6 @@ public class CombatEventHandler {
         // Living is victim
         MKCore.getEntityData(livingTarget).ifPresent(targetData ->
                 SpellTriggers.ENTITY_HURT.onEntityHurtLiving(event, source, targetData));
-    }
-
-    @SubscribeEvent
-    public static void onAttackEntityEvent(AttackEntityEvent event) {
-        Player player = event.getEntity();
-        if (player.level.isClientSide)
-            return;
-        Entity target = event.getTarget();
-
-        SpellTriggers.PLAYER_ATTACK_ENTITY.onAttackEntity(player, target);
-        if (target.is)
-    }
-
-    @SubscribeEvent
-    public static void onLeftClickEmpty(PlayerInteractEvent.LeftClickEmpty event) {
-        if (event.getEntity().level.isClientSide) {
-            // Only send this spammy packet if someone will listen to it
-            if (SpellTriggers.EMPTY_LEFT_CLICK.hasTriggers()) {
-                PacketHandler.sendMessageToServer(new PlayerLeftClickEmptyPacket());
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onLeftClickEmptyServer(ServerSideLeftClickEmpty event) {
-        if (!event.getEntity().level.isClientSide) {
-            SpellTriggers.EMPTY_LEFT_CLICK.onEmptyLeftClick(event.getEntity(), event);
-        }
     }
 
     private static boolean canBlock(DamageSource source, LivingEntity entity) {
@@ -163,9 +132,6 @@ public class CombatEventHandler {
             if (mkDamageSource.shouldSuppressTriggers())
                 return;
         }
-        if (source instanceof LivingEntity attacker) {
-            SpellTriggers.LIVING_ATTACKED.onAttacked(attacker, target);
-        }
     }
 
     @SubscribeEvent
@@ -196,7 +162,5 @@ public class CombatEventHandler {
                 SpellTriggers.LIVING_KILL_ENTITY.onEntityDeath(event, source, killerData);
             });
         }
-
-        SpellTriggers.LIVING_DEATH.onEntityDeath(event, source, event.getEntity());
     }
 }

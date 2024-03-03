@@ -54,11 +54,9 @@ public class CleansingSeedProjectileEntity extends SpriteTrailProjectileEntity {
 
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
         SoundUtils.serverPlaySoundAtEntity(this, MKUSounds.spell_water_6.get(), cat);
-        if (caster instanceof LivingEntity && trace.getType() == HitResult.Type.ENTITY) {
-            LivingEntity casterLiving = (LivingEntity) caster;
+        if (caster instanceof LivingEntity casterLiving && trace.getType() == HitResult.Type.ENTITY) {
             EntityHitResult entityTrace = (EntityHitResult) trace;
-            if (entityTrace.getEntity() instanceof LivingEntity) {
-                LivingEntity target = (LivingEntity) entityTrace.getEntity();
+            if (entityTrace.getEntity() instanceof LivingEntity target) {
                 Targeting.TargetRelation relation = Targeting.getTargetRelation(caster, target);
                 CleansingSeedAbility ability = MKUAbilities.CLEANSING_SEED.get();
                 switch (relation) {
