@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.item.IMKEquipment;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -19,6 +18,7 @@ public class EntityEquipment {
     private static final UUID UNARMED_SKILL_MODIFIER = UUID.fromString("bfd1de0f-440c-4029-bcbd-eb25dd89ee83");
 
     private static final float UNARMED_BASE_DAMAGE = 2.0f;
+
 
     public EntityEquipment(IMKEntityData entityData) {
         this.entityData = entityData;
@@ -63,13 +63,13 @@ public class EntityEquipment {
         if (from == ItemStack.EMPTY) {
             removeUnarmedModifier();
         }
-
     }
 
     protected void handleEquip(EquipmentSlot slot, ItemStack to) {
         if (to.getItem() instanceof IMKEquipment equipment) {
             equipment.onEntityEquip(entityData.getEntity(), slot, to);
         }
+
         if (to == ItemStack.EMPTY) {
             addUnarmedModifier();
         }
