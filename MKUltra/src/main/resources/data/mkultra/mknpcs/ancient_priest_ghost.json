@@ -3,7 +3,7 @@
   "options": [
     {
       "optionType": "mknpc:render_group",
-      "value": "ghost_1"
+      "value": "ghost_clean"
     },
     {
       "attributes": [
@@ -24,11 +24,40 @@
     },
     {
       "optionType": "mknpc:name",
-      "value": "Forlorn Ghost"
+      "value": "An Ancient Priest"
     },
     {
-      "optionType": "mknpc:notable",
-      "value": true
+      "optionType": "mknpc:equipment",
+      "slotOptions": {
+        "chest": [
+          {
+            "dropChance": 0.05,
+            "item": "{id: \"mkultra:ancient_priest_chestplate\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          }
+        ],
+        "feet": [
+          {
+            "dropChance": 0.05,
+            "item": "{id: \"mkultra:ancient_priest_boots\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          }
+        ],
+        "head": [
+          {
+            "dropChance": 0.05,
+            "item": "{id: \"mkultra:ancient_priest_helmet\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          }
+        ],
+        "legs": [
+          {
+            "dropChance": 0.05,
+            "item": "{id: \"mkultra:ancient_priest_leggings\", Count: 1b, tag: {Damage: 0}}",
+            "weight": 1.0
+          }
+        ]
+      }
     },
     {
       "major_skills": [],
@@ -59,7 +88,7 @@
     },
     {
       "optionType": "mknpc:faction",
-      "value": "mkultra:see_of_solang"
+      "value": "mkfaction:undead"
     }
   ]
 }

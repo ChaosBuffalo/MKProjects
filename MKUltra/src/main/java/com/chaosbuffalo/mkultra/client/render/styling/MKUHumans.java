@@ -59,9 +59,25 @@ public class MKUHumans {
             new LayerStyle("clothes_1", 0.4F, true),
             new LayerStyle("hair_2", 0.45F, true));
 
+    public static final String GHOST_LONG_HAIR_NO_CLOTHES_NAME = "ghost_long_hair_no_clothes";
+    public static final String GHOST_LONG_HAIR_NO_CLOTHES_ARMORED_NAME = "ghost_long_hair_no_clothes_armored";
+
+    public static final ModelStyle ARMORED_GHOST_LONG_HAIR_NO_CLOTHES_STYLE = new ModelStyle(GHOST_LONG_HAIR_NO_CLOTHES_ARMORED_NAME,
+            true, false,
+            new LayerStyle("hair_1", 0.25F, true),
+            new LayerStyle("hair_2", 1.15F, true));
+    public static final ModelStyle GHOST_LONG_HAIR_NO_CLOTHES_STYLE = new ModelStyle(GHOST_LONG_HAIR_NO_CLOTHES_NAME,
+            true, true,
+            new LayerStyle("hair_1", 0.25F, true),
+            new LayerStyle("hair_2", 0.45F, true));
+
     public static ModelLook GHOST_LOOK_1 = new ModelLook(GHOST_LONG_HAIR_STYLE, GHOST_SKIN_1, GHOST_HAIR_1,
             MKUClothes.GHOST_LEATHERS_1, GHOST_HAIR_2);
     public static final String GHOST_1_NAME = "ghost_1";
+
+    public static ModelLook GHOST_LOOK_CLEAN = new ModelLook(GHOST_LONG_HAIR_NO_CLOTHES_STYLE, GHOST_SKIN_1, GHOST_HAIR_1, GHOST_HAIR_2);
+
+    public static final String GHOST_LOOK_CLEAN_NAME = "ghost_clean";
 
     public static ModelLook CLERIC_1_LOOK = new ModelLook(TWO_LAYER_CLOTHES_SHORT_HAIR, HUMAN_SKIN_1, HUMAN_HAIR_1,
             MKUClothes.SOLANG_ROBES_1, MKUClothes.SOLANG_ROBES_2);

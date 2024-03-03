@@ -4,11 +4,12 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "mknpc.refmap.json",
   "mixins": [
-    "StructureStartMixins",
     "LivingRendererMixins",
-    "PoolElementStructurePieceMixins"
+    "PoolElementStructurePieceMixins",
+    "StructureStartMixins"
   ],
   "client": [
+    "HumanoidArmorLayerMixins",
     "LivingRendererMixins"
   ],
   "minVersion": "0.8"

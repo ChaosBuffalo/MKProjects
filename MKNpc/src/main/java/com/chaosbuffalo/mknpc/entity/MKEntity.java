@@ -90,6 +90,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private static final EntityDataAccessor<Float> SCALE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> IS_GHOST = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> GHOST_TRANSLUCENCY = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Boolean> HAS_GHOST_ARMOR = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Float> GHOST_ARMOR_TRANSLUCENCY = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
     private final SyncComponent animSync = new SyncComponent("anim");
     private int castAnimTimer;
     private VisualCastState visualCastState;
@@ -145,8 +147,24 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return getEntityData().get(IS_GHOST);
     }
 
+    public boolean hasGhostArmor() {
+        return getEntityData().get(HAS_GHOST_ARMOR);
+    }
+
+    public void setGhostArmor(boolean ghost) {
+        getEntityData().set(HAS_GHOST_ARMOR, ghost);
+    }
+
+    public void setGhostArmorTranslucency(float translucency) {
+        getEntityData().set(GHOST_ARMOR_TRANSLUCENCY, translucency);
+    }
+
     public void setGhostTranslucency(float ghostTranslucency) {
         getEntityData().set(GHOST_TRANSLUCENCY, ghostTranslucency);
+    }
+
+    public float getGhostArmorTranslucency() {
+        return getEntityData().get(GHOST_ARMOR_TRANSLUCENCY);
     }
 
     @Nullable
@@ -334,6 +352,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         this.entityData.define(SCALE, 1.0f);
         this.entityData.define(IS_GHOST, false);
         this.entityData.define(GHOST_TRANSLUCENCY, 1.0f);
+        this.entityData.define(HAS_GHOST_ARMOR, false);
+        this.entityData.define(GHOST_ARMOR_TRANSLUCENCY, 1.0f);
     }
 
     @Override

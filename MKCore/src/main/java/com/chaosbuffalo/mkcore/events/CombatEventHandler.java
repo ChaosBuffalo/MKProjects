@@ -66,6 +66,7 @@ public class CombatEventHandler {
         Entity target = event.getTarget();
 
         SpellTriggers.PLAYER_ATTACK_ENTITY.onAttackEntity(player, target);
+        if (target.is)
     }
 
     @SubscribeEvent

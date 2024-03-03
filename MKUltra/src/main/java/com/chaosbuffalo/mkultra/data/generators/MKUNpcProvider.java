@@ -72,7 +72,8 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 writeDefinition(generateNecrotideSkeletalArcher(), cache),
                 writeDefinition(generateNecrotideSkeletalWarrior(), cache),
                 writeDefinition(generateSeawovenSkeleton(), cache),
-                writeDefinition(generateSeawovenWretch(), cache)
+                writeDefinition(generateSeawovenWretch(), cache),
+                writeDefinition(generateAncientPriestGhost(), cache)
         );
     }
 
@@ -350,7 +351,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         );
         def.addOption(new NameOption().setValue("Forlorn Ghost"));
         def.addOption(new NotableOption());
-        def.addOption(new GhostOption().setValue(1.0f));
+        def.addOption(new GhostOption().setValue(0.7f));
 //        def.addOption(new AbilitiesOption()
 //                .withAbilityOption(HealAbility.INSTANCE, 1, 1.0)
 //                .withAbilityOption(SmiteAbility.INSTANCE, 2, 1.0)
@@ -361,6 +362,42 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
 //                        new ResourceLocation("mkweapons:mace_iron"))), 1.0, 0.0f));
 //        def.addOption(equipOption);
         def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.FIGHTER));
+        return def;
+    }
+
+    private NpcDefinition generateAncientPriestGhost() {
+        NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "ancient_priest_ghost"),
+                MKUEntities.HUMAN_TYPE.getId(), null);
+        def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new RenderGroupOption().setValue(MKUHumans.GHOST_LOOK_CLEAN_NAME));
+        def.addOption(new MKSizeOption().setValue(1.0f));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 100.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 100.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 3.0))
+        );
+        def.addOption(new NameOption().setValue("An Ancient Priest"));
+        def.addOption(new GhostOption().setValue(0.7f));
+//        def.addOption(new AbilitiesOption()
+//                .withAbilityOption(HealAbility.INSTANCE, 1, 1.0)
+//                .withAbilityOption(SmiteAbility.INSTANCE, 2, 1.0)
+//        );
+//        EquipmentOption equipOption = new EquipmentOption();
+//        equipOption.addItemChoice(EquipmentSlotType.MAINHAND,
+//                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+//                        new ResourceLocation("mkweapons:mace_iron"))), 1.0, 0.0f));
+//        def.addOption(equipOption);
+        EquipmentOption equipOption = new EquipmentOption();
+        equipOption.addItemChoice(EquipmentSlot.HEAD,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientPriestHelmet.get()), 1.0, 0.05f));
+        equipOption.addItemChoice(EquipmentSlot.CHEST,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientPriestChestplate.get()), 1.0, 0.05f));
+        equipOption.addItemChoice(EquipmentSlot.LEGS,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientPriestLeggings.get()), 1.0, 0.05f));
+        equipOption.addItemChoice(EquipmentSlot.FEET,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientPriestBoots.get()), 1.0, 0.05f));
+        def.addOption(MKUNpcGenUtils.GetSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.FIGHTER));
+        def.addOption(equipOption);
         return def;
     }
 

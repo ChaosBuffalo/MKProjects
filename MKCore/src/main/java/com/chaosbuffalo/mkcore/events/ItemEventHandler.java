@@ -1,14 +1,19 @@
 package com.chaosbuffalo.mkcore.events;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
@@ -42,8 +47,31 @@ public class ItemEventHandler {
             UUID.fromString("e5a445c0-a08d-4cf5-960a-0945c505da94")
     };
 
+    private static final UUID UNARMED_SKILL_MODIFIER = UUID.fromString("bfd1de0f-440c-4029-bcbd-eb25dd89ee83");
+
+    private static final float UNARMED_BASE_DAMAGE = 2.0f;
+
     private static final UUID CRIT_CHANCE_MODIFIER = UUID.fromString("3935094f-87c5-49a8-bcde-ea29ce3bb5f9");
     private static final UUID CRIT_MULT_MODIFIER = UUID.fromString("c167f8f7-7bfc-4232-a321-ba635a4eb46f");
+
+
+    public static void removeUnarmedModifier(LivingEntity entity) {
+        AttributeInstance attr = entity.getAttribute(Attributes.ATTACK_DAMAGE);
+        if (attr != null) {
+            attr.removeModifier(UNARMED_SKILL_MODIFIER);
+        }
+    }
+
+    public static void addUnarmedModifier(LivingEntity entity) {
+        AttributeInstance attr = entity.getAttribute(Attributes.ATTACK_DAMAGE);
+        if (attr != null) {
+            if (attr.getModifier(UNARMED_SKILL_MODIFIER) == null) {
+                float skillLevel = MKAbility.getSkillLevel(entity, MKAttributes.HAND_TO_HAND);
+                attr.addTransientModifier(new AttributeModifier(UNARMED_SKILL_MODIFIER, "skill scaling",
+                        skillLevel * UNARMED_BASE_DAMAGE, AttributeModifier.Operation.ADDITION));
+            }
+        }
+    }
 
     @SubscribeEvent
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
@@ -59,6 +87,12 @@ public class ItemEventHandler {
             MKCore.getEntityData(event.getEntity()).ifPresent(entityData -> {
                 SpellTriggers.LIVING_EQUIPMENT_CHANGE.onEquipmentChange(event, entityData);
             });
+        }
+        if (event.getFrom() == ItemStack.EMPTY) {
+            removeUnarmedModifier(event.getEntity());
+        }
+        if (event.getTo() == ItemStack.EMPTY) {
+            addUnarmedModifier(event.getEntity());
         }
     }
 
