@@ -60,7 +60,7 @@ public class EntityEquipment {
         if (from.getItem() instanceof IMKEquipment equipment) {
             equipment.onEntityUnequip(entityData.getEntity(), slot, from);
         }
-        if (from == ItemStack.EMPTY) {
+        if (from.isEmpty()) {
             removeUnarmedModifier();
         }
     }
@@ -70,7 +70,7 @@ public class EntityEquipment {
             equipment.onEntityEquip(entityData.getEntity(), slot, to);
         }
 
-        if (to == ItemStack.EMPTY) {
+        if (to.isEmpty()) {
             addUnarmedModifier();
         }
     }

@@ -49,7 +49,7 @@ public class CombatEventHandler {
             MKCore.getEntityData(livingSource).ifPresent(sourceData ->
                     SpellTriggers.LIVING_HURT_ENTITY.onLivingHurtEntity(event, source, livingTarget, sourceData));
 
-            if (livingSource.getMainHandItem() == ItemStack.EMPTY) {
+            if (livingSource.getMainHandItem().isEmpty()) {
                 MKCore.getPlayer(trueSource).ifPresent(playerData -> {
                     playerData.getSkills().tryScaledIncreaseSkill(MKAttributes.HAND_TO_HAND, 0.5);
                 });
