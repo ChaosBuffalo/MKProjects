@@ -224,7 +224,7 @@ public class MKAttributes {
 
     public static final Attribute HAND_TO_HAND = new MKRangedAttribute("attribute.name.mk.hand_to_hand", 0, 0, GameConstants.SKILL_MAX)
             .setName(MKCore.makeRL("hand_to_hand"))
-            .setSyncable(true);
+            .setSyncType(AttributeSyncType.Private);
 
     public static final Attribute BLOCK = new MKRangedAttribute("attribute.name.mk.block", 0, 0, GameConstants.SKILL_MAX)
             .setName(MKCore.makeRL("block"))

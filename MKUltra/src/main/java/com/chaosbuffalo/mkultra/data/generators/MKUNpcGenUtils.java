@@ -44,6 +44,7 @@ public class MKUNpcGenUtils {
                         .addMajorSkill(MKAttributes.TWO_HAND_BLUNT)
                         .addMajorSkill(MKAttributes.TWO_HAND_SLASH)
                         .addMajorSkill(MKAttributes.TWO_HAND_PIERCE)
+                        .addMinorSkill(MKAttributes.HAND_TO_HAND)
                         .addMinorSkill(MKAttributes.PANKRATION)
                         .addRemedialSkill(MKAttributes.ARETE)
                         .addRemedialSkill(MKAttributes.PNEUMA);
@@ -62,6 +63,7 @@ public class MKUNpcGenUtils {
                         .addMinorSkill(MKAttributes.TWO_HAND_BLUNT)
                         .addMinorSkill(MKAttributes.TWO_HAND_SLASH)
                         .addMinorSkill(MKAttributes.TWO_HAND_PIERCE)
+                        .addMinorSkill(MKAttributes.HAND_TO_HAND)
                         .addRemedialSkill(MKAttributes.PANKRATION)
                         .addRemedialSkill(MKAttributes.ARETE)
                         .addRemedialSkill(MKAttributes.PNEUMA);

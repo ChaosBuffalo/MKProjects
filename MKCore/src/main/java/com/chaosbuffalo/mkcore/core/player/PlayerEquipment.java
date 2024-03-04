@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.core.player;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKAbilityProvider;
+import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
@@ -11,6 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -127,6 +129,40 @@ public class PlayerEquipment extends EntityEquipment {
                 playerData.getAbilities().learnAbility(ability, AbilitySource.forEquipmentSlot(slot));
             }
         }
+    }
+
+    @Override
+    public void addUnarmedModifier() {
+        super.addUnarmedModifier();
+        AttributeInstance attr = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT);
+        float skillLevel = MKAbility.getSkillLevel(playerData.getEntity(), MKAttributes.HAND_TO_HAND);
+        if (attr != null) {
+            if (attr.getModifier(UNARMED_SKILL_MODIFIER) == null) {
+                attr.addTransientModifier(new AttributeModifier(UNARMED_SKILL_MODIFIER, "skill scaling",
+                        0.05 + skillLevel / 100.0, AttributeModifier.Operation.ADDITION));
+            }
+        }
+        AttributeInstance crit = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT_MULTIPLIER);
+        if (crit != null) {
+            if (crit.getModifier(UNARMED_SKILL_MODIFIER) == null) {
+                crit.addTransientModifier(new AttributeModifier(UNARMED_SKILL_MODIFIER, "skill scaling",
+                        0.5 + skillLevel / 10.0, AttributeModifier.Operation.ADDITION));
+            }
+        }
+    }
+
+    @Override
+    public void removeUnarmedModifier() {
+        super.removeUnarmedModifier();
+        AttributeInstance attr = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT);
+        if (attr != null) {
+            attr.removeModifier(UNARMED_SKILL_MODIFIER);
+        }
+        AttributeInstance crit = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT_MULTIPLIER);
+        if (crit != null) {
+            crit.removeModifier(UNARMED_SKILL_MODIFIER);
+        }
+
     }
 
     private void removeItemAbility(ItemStack oldItem) {

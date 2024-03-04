@@ -15,9 +15,9 @@ import java.util.UUID;
 public class EntityEquipment {
 
     private final IMKEntityData entityData;
-    private static final UUID UNARMED_SKILL_MODIFIER = UUID.fromString("bfd1de0f-440c-4029-bcbd-eb25dd89ee83");
+    protected static final UUID UNARMED_SKILL_MODIFIER = UUID.fromString("bfd1de0f-440c-4029-bcbd-eb25dd89ee83");
 
-    private static final float UNARMED_BASE_DAMAGE = 2.0f;
+    protected static final float UNARMED_BASE_DAMAGE = 2.0f;
 
 
     public EntityEquipment(IMKEntityData entityData) {
