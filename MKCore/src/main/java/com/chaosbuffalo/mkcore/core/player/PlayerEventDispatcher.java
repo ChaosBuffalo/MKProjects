@@ -54,29 +54,20 @@ public class PlayerEventDispatcher {
         }
     }
 
-
-    public static class EventRecord<T extends PlayerEvent<?>> implements Comparable<EventRecord<?>> {
-        private final UUID uuid;
-        private final Consumer<T> function;
-        private final int priority;
-
-        public EventRecord(UUID ownerId, Consumer<T> function, int priority) {
-            this.uuid = ownerId;
-            this.function = function;
-            this.priority = priority;
-        }
+    public record EventRecord<T extends PlayerEvent<?>>(UUID id, Consumer<T> callback, int priority)
+            implements Comparable<EventRecord<?>> {
 
         public boolean matches(UUID uuid) {
-            return this.uuid.equals(uuid);
+            return id.equals(uuid);
         }
 
         public void trigger(T args) {
-            function.accept(args);
+            callback.accept(args);
         }
 
         @Override
         public int compareTo(EventRecord<?> o) {
-            if (matches(o.uuid)) {
+            if (matches(o.id)) {
                 return 0;
             } else {
                 return priority > o.priority ? 1 : -1;
