@@ -78,7 +78,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         pois = new HashMap<>();
         structureData = null;
         customStructureData = new NBTSerializableMappedData();
-        cooldownTracker = new AbilityTracker();
+        cooldownTracker = new AbilityTracker("timers");
     }
 
     public Map<String, List<PointOfInterestEntry>> getPointsOfInterest() {

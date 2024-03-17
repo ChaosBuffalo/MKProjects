@@ -15,6 +15,11 @@ public class SyncInt implements ISyncObject {
         set(value, false);
     }
 
+    @Override
+    public String getName() {
+        return name;
+    }
+
     public void set(int value) {
         set(value, true);
     }

@@ -10,6 +10,11 @@ public class NamedSyncGroup extends SyncGroup {
     }
 
     @Override
+    public String getName() {
+        return groupName;
+    }
+
+    @Override
     protected CompoundTag extractGroupTag(CompoundTag parentTag) {
         return parentTag.getCompound(groupName);
     }

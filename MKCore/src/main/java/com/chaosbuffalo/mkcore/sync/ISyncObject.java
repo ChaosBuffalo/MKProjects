@@ -4,6 +4,8 @@ import net.minecraft.nbt.CompoundTag;
 
 public interface ISyncObject {
 
+    String getName();
+
     void setNotifier(ISyncNotifier notifier);
 
     boolean isDirty();

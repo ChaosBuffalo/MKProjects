@@ -16,6 +16,16 @@ public class AbilityTracker implements ISyncObject {
 
     private int ticks;
     private final Map<ResourceLocation, TimerEntry> timers = new HashMap<>();
+    private final String name;
+
+    public AbilityTracker(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
 
     public boolean hasTimer(ResourceLocation timerId) {
         return getTimerTicksRemaining(timerId) > 0;
@@ -192,7 +202,8 @@ public class AbilityTracker implements ISyncObject {
         private final List<ResourceLocation> dirty = new ArrayList<>();
         private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
-        public AbilityTrackerServer() {
+        public AbilityTrackerServer(String name) {
+            super(name);
         }
 
         @Override
@@ -246,11 +257,11 @@ public class AbilityTracker implements ISyncObject {
     }
 
 
-    public static AbilityTracker getTracker(LivingEntity entity) {
+    public static AbilityTracker getTracker(String name, LivingEntity entity) {
         if (entity instanceof ServerPlayer) {
-            return new AbilityTrackerServer();
+            return new AbilityTrackerServer(name);
         } else {
-            return new AbilityTracker();
+            return new AbilityTracker(name);
         }
     }
 

@@ -16,11 +16,18 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
 
     protected final Map<UUID, ParticleEffectInstance> instanceMap;
     protected final Entity entity;
+    protected String name;
 
 
-    public ParticleEffectInstanceTracker(Entity entity) {
+    public ParticleEffectInstanceTracker(String name, Entity entity) {
+        this.name = name;
         this.entity = entity;
         instanceMap = new HashMap<>();
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     public Entity getEntity() {
@@ -116,8 +123,8 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         private final List<ParticleEffectInstance> toAddDirty;
         private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
-        public ParticleEffectInstanceTrackerServer(Entity entity) {
-            super(entity);
+        public ParticleEffectInstanceTrackerServer(String name, Entity entity) {
+            super(name, entity);
             toRemoveDirty = new ArrayList<>();
             toAddDirty = new ArrayList<>();
         }
@@ -177,11 +184,11 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         }
     }
 
-    public static ParticleEffectInstanceTracker getTracker(Entity entity) {
+    public static ParticleEffectInstanceTracker getTracker(String name, Entity entity) {
         if (!entity.getCommandSenderWorld().isClientSide()) {
-            return new ParticleEffectInstanceTrackerServer(entity);
+            return new ParticleEffectInstanceTrackerServer(name, entity);
         } else {
-            return new ParticleEffectInstanceTracker(entity);
+            return new ParticleEffectInstanceTracker(name, entity);
         }
     }
 }

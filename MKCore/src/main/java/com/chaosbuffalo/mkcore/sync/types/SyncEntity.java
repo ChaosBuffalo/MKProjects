@@ -23,6 +23,11 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
         set(value);
     }
 
+    @Override
+    public String getName() {
+        return name;
+    }
+
     public boolean isValid() {
         return value != null;
     }

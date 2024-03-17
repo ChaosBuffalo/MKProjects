@@ -24,6 +24,11 @@ public class ParticleEditorSyncComponent implements ISyncObject {
         this.dirty = false;
     }
 
+    @Override
+    public String getName() {
+        return name;
+    }
+
     public ParticleAnimation getAnimation() {
         return animation;
     }

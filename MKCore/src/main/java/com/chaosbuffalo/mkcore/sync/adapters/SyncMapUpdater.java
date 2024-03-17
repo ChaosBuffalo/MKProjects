@@ -39,6 +39,11 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
         this.valueFactory = valueFactory;
     }
 
+    @Override
+    public String getName() {
+        return rootName;
+    }
+
     public void markDirty(K key) {
         dirty.add(key);
         parentNotifier.notifyUpdate(this);

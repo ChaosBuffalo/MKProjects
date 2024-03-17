@@ -15,6 +15,11 @@ public class SyncBool implements ISyncObject {
         set(value, false);
     }
 
+    @Override
+    public String getName() {
+        return name;
+    }
+
     public void set(boolean value) {
         set(value, true);
     }

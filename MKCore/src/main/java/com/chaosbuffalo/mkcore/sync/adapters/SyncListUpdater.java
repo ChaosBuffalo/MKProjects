@@ -26,6 +26,11 @@ public class SyncListUpdater<T> implements ISyncObject {
         this.valueEncoder = valueEncoder;
     }
 
+    @Override
+    public String getName() {
+        return name;
+    }
+
     public void setDirty(int index) {
         dirtyEntries.set(index);
         parentNotifier.notifyUpdate(this);

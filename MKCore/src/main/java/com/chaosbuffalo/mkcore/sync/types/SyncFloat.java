@@ -15,6 +15,11 @@ public class SyncFloat implements ISyncObject {
         set(value, false);
     }
 
+    @Override
+    public String getName() {
+        return name;
+    }
+
     public void set(float value) {
         set(value, true);
     }

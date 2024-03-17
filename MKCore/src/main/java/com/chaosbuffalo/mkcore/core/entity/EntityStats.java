@@ -30,7 +30,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
 
     public EntityStats(IMKEntityData data) {
         entityData = data;
-        abilityTracker = AbilityTracker.getTracker(data.getEntity());
+        abilityTracker = AbilityTracker.getTracker("timers", data.getEntity());
         manaRegenTimer = 0f;
         addSyncPublic(mana);
         addSyncPrivate(poise);

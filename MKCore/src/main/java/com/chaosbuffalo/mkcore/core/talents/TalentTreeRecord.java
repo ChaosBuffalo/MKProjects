@@ -245,6 +245,12 @@ public class TalentTreeRecord {
         private final HashMap<String, BitSet> updatedLines = new HashMap<>();
         private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
+        @Nonnull
+        @Override
+        public String getName() {
+            return getTreeDefinition().getTreeId().toString();
+        }
+
         public void markUpdated(String lineName, int index) {
             getLineUpdater(lineName).set(index);
             parentNotifier.notifyUpdate(this);
@@ -266,7 +272,7 @@ public class TalentTreeRecord {
 
         @Override
         public void deserializeUpdate(CompoundTag tag) {
-            CompoundTag root = tag.getCompound(getTreeDefinition().getTreeId().toString());
+            CompoundTag root = tag.getCompound(getName());
 
             if (root.getBoolean("f")) {
                 lines.clear();
@@ -317,7 +323,7 @@ public class TalentTreeRecord {
             });
 
             root.put("u", updateTag);
-            tag.put(getTreeDefinition().getTreeId().toString(), root);
+            tag.put(getName(), root);
 
             updatedLines.clear();
         }
@@ -338,7 +344,7 @@ public class TalentTreeRecord {
             });
 
             root.put("u", updateTag);
-            tag.put(getTreeDefinition().getTreeId().toString(), root);
+            tag.put(getName(), root);
 
             updatedLines.clear();
         }
