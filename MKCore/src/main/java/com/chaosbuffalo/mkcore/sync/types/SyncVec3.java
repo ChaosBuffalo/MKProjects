@@ -8,42 +8,16 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
-public class SyncVec3 implements ISyncObject {
-
-    private final String name;
-    private Vec3 value;
-    private boolean dirty;
-    private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
+public class SyncVec3 extends SyncObject<Vec3> {
     @Nullable
-    Consumer<Vec3> onSetCallback;
+    private Consumer<Vec3> onSetCallback;
 
     public SyncVec3(String name, Vec3 value) {
-        this.value = value;
-        this.name = name;
+        super(name, value);
     }
 
     public void setCallback(Consumer<Vec3> onSetCallback) {
         this.onSetCallback = onSetCallback;
-    }
-
-    public Vec3 get() {
-        return value;
-    }
-
-    public void set(Vec3 value) {
-        this.value = value;
-        this.dirty = true;
-        parentNotifier.notifyUpdate(this);
-    }
-
-    @Override
-    public void setNotifier(ISyncNotifier notifier) {
-        parentNotifier = notifier;
-    }
-
-    @Override
-    public boolean isDirty() {
-        return dirty;
     }
 
     @Override
@@ -55,14 +29,6 @@ public class SyncVec3 implements ISyncObject {
             if (onSetCallback != null) {
                 onSetCallback.accept(prev);
             }
-        }
-    }
-
-    @Override
-    public void serializeUpdate(CompoundTag tag) {
-        if (dirty) {
-            serializeFull(tag);
-            dirty = false;
         }
     }
 
