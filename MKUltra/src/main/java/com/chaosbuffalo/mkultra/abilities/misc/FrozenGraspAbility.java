@@ -98,10 +98,9 @@ public class FrozenGraspAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context,
-                        Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.NECROMANCY);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
+        super.endCast(castingEntity, casterData, context);
+        float level = context.getSkill(MKAttributes.NECROMANCY);
         casterData.getEffects().addEffect(FrozenGraspEffect.applierFrom(castingEntity,
                 selfDuration.value() * GameConstants.TICKS_PER_SECOND, maxStacks.value()));
     }

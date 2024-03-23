@@ -79,7 +79,7 @@ public abstract class PositionFlurryAbility extends MKAbility {
             abilityToCast.ifPresent(ab -> {
                 for (LivingEntity ent : entities) {
                     if (Targeting.isValidTarget(getTargetContext(), castingEntity, ent)) {
-                        ab.castAtPosition(casterData, ent.position(), skillSupplier);
+                        ab.castAtPosition(casterData, ent.position(), context);
                     }
                 }
             });

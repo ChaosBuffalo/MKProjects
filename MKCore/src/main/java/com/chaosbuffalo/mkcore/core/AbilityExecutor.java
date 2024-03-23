@@ -210,7 +210,7 @@ public class AbilityExecutor {
     protected void completeAbility(MKAbility ability, MKAbilityInfo info, AbilityContext context) {
         // Finish the cast
         consumeResource(ability);
-        ability.endCast(entityData.getEntity(), entityData, context, (attr) -> MKAbility.getSkillLevel(entityData.getEntity(), attr));
+        ability.endCast(entityData.getEntity(), entityData, context);
         if (completeAbilityCallback != null) {
             completeAbilityCallback.accept(ability);
         }

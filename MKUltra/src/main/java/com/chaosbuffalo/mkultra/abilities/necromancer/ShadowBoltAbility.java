@@ -102,9 +102,9 @@ public class ShadowBoltAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
+        super.endCast(entity, data, context);
+        float level = context.getSkill(MKAttributes.EVOCATION);
         if (data.getEffects().isEffectActive(MKUEffects.SHADOWBRINGER.get())) {
             data.getEffects().removeEffect(MKUEffects.SHADOWBRINGER.get());
         }

@@ -78,7 +78,9 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect {
     @Override
     public void onMeleeHit(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData, LivingEntity target) {
         if (attackerData.getEntity().getRandom().nextDouble() >= (1.0 - procChance.value())) {
-            abilitySupplier.get().castAtEntity(attackerData, target, attr -> skillLevel.value());
+            AbilityContext context = new AbilityContext(attackerData);
+            context.setSkillResolver((e, attr) -> skillLevel.value());
+            abilitySupplier.get().castAtEntity(attackerData, target, context);
         }
     }
 

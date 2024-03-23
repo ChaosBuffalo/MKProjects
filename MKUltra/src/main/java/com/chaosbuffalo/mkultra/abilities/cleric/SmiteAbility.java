@@ -79,9 +79,9 @@ public class SmiteAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
+        super.endCast(entity, data, context);
+        float level = context.getSkill(MKAttributes.EVOCATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
 
             MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.HolyDamage.get(),

@@ -89,10 +89,9 @@ public class StunningShoutAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context,
-                        Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.PNEUMA);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
+        super.endCast(castingEntity, casterData, context);
+        float level = context.getSkill(MKAttributes.PNEUMA);
 
 
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.BleedDamage.get(),

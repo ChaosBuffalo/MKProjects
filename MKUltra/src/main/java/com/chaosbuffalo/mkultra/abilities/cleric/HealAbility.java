@@ -86,9 +86,9 @@ public class HealAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.RESTORATION);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
+        super.endCast(castingEntity, casterData, context);
+        float level = context.getSkill(MKAttributes.RESTORATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
 
             MKEffectBuilder<?> heal = ClericHealEffect.from(castingEntity, base.value(), scale.value(), modifierScaling.value())

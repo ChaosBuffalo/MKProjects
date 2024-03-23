@@ -81,9 +81,9 @@ public class WrathBeamAbility extends PositionTargetingAbility {
     }
 
     @Override
-    public void castAtPosition(IMKEntityData casterData, Vec3 position, Function<Attribute, Float> skillSupplier) {
+    public void castAtPosition(IMKEntityData casterData, Vec3 position, AbilityContext context) {
         LivingEntity castingEntity = casterData.getEntity();
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
+        float level = context.getSkill(MKAttributes.EVOCATION);
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.FireDamage.get(),
                         base.value(), scale.value(), modifierScaling.value())
                 .ability(this)

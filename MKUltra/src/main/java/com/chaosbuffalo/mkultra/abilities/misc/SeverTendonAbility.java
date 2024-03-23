@@ -21,10 +21,7 @@ import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.function.Function;
 
 public class SeverTendonAbility extends MKAbility {
     protected final FloatAttribute base = new FloatAttribute("base", 4.0f);
@@ -84,9 +81,9 @@ public class SeverTendonAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.PANKRATION);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
+        super.endCast(entity, data, context);
+        float level = context.getSkill(MKAttributes.PANKRATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.MeleeDamage.get(),
                             base.value(), scale.value(), modifierScaling.value())

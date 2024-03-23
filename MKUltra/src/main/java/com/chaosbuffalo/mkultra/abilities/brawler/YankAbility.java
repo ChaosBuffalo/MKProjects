@@ -18,10 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.function.Function;
 
 public class YankAbility extends MKAbility {
     public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "yank_cast");
@@ -67,9 +64,9 @@ public class YankAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.PANKRATION);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
+        super.endCast(entity, data, context);
+        float level = context.getSkill(MKAttributes.PANKRATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
             Vec3 yankPos = new Vec3(entity.getX(), entity.getY(0.6), entity.getZ());
             MKEffectBuilder<?> yank = YankEffect.from(entity, base.value(), scale.value(), yankPos)

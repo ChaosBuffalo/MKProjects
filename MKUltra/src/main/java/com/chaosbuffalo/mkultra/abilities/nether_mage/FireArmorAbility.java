@@ -69,9 +69,9 @@ public class FireArmorAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.ABJURATION);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
+        super.endCast(entity, data, context);
+        float level = context.getSkill(MKAttributes.ABJURATION);
         int duration = getBuffDuration(data, level, baseDuration.value(), scaleDuration.value());
 
         int oldAmp = Math.round(level);

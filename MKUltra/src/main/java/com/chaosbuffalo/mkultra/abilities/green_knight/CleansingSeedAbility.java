@@ -85,10 +85,10 @@ public class CleansingSeedAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
+        super.endCast(entity, data, context);
 
-        float level = skillSupplier.apply(MKAttributes.RESTORATION);
+        float level = context.getSkill(MKAttributes.RESTORATION);
         CleansingSeedProjectileEntity proj = new CleansingSeedProjectileEntity(MKUEntities.CLEANSING_SEED_TYPE.get(), entity.level);
         proj.setOwner(entity);
         proj.setSkillLevel(level);

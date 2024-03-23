@@ -113,8 +113,8 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
     }
 
     @Override
-    public void castAtEntity(IMKEntityData casterData, LivingEntity target, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.CONJURATION);
+    public void castAtEntity(IMKEntityData casterData, LivingEntity target, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.CONJURATION);
         MKEffectBuilder<?> dot = getDotCast(casterData, level)
                 .ability(this)
                 .skillLevel(level);
@@ -124,11 +124,5 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
         });
         SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_dark_7.get(), target.getSoundSource());
         MKParticles.spawn(target, new Vec3(0.0, 1.0, 0.0), castParticles.getValue());
-    }
-
-    @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-
     }
 }

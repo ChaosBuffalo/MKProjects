@@ -85,10 +85,10 @@ public class WarpCurseAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
+        super.endCast(castingEntity, casterData, context);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            float level = skillSupplier.apply(MKAttributes.ALTERATON);
+            float level = context.getSkill(MKAttributes.ALTERATON);
             int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value());
             MKEffectBuilder<?> warpCast = WarpCurseEffect.from(castingEntity, base.value(), scale.value(),
                             modifierScaling.value(), cast_particles.getValue())

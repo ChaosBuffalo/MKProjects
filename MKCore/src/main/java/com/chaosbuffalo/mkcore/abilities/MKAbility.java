@@ -347,8 +347,8 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft) {
     }
 
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context,
-                        Function<Attribute, Float> skillSupplier) {
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
+
     }
 
     public boolean isInterruptedBy(IMKEntityData targetData, CastInterruptReason reason) {

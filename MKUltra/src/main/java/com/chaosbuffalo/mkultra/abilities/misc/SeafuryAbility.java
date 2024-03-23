@@ -23,11 +23,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.function.Function;
 
 public class SeafuryAbility extends PositionTargetingAbility {
     private static final ResourceLocation WAIT_PARTICLES = new ResourceLocation(MKUltra.MODID, "seafury_wait");
@@ -77,10 +74,10 @@ public class SeafuryAbility extends PositionTargetingAbility {
     }
 
     @Override
-    public void castAtPosition(IMKEntityData casterData, Vec3 position, Function<Attribute, Float> skillSupplier) {
+    public void castAtPosition(IMKEntityData casterData, Vec3 position, AbilityContext context) {
         LivingEntity castingEntity = casterData.getEntity();
         Vec3 dir = position.subtract(castingEntity.position()).normalize();
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
+        float level = context.getSkill(MKAttributes.EVOCATION);
         for (int i = 0; i < iterations.value(); i++) {
             int delay = step_delay.value() * i;
             Vec3 pos = position.add(dir.scale(step.value() * i));
