@@ -44,12 +44,12 @@ public class AbilityTargeting {
             .addDynamicDescription(AbilityDescriptions::getRangeDescription);
 
     static AbilityContext noTarget(IMKEntityData entityData, MKAbility ability) {
-        return new AbilityContext(entityData);
+        return new AbilityContext(entityData, ability);
     }
 
     private static AbilityContext selectSelf(IMKEntityData entityData, MKAbility ability) {
         MKCore.LOGGER.debug("AbilityTargeting.SELF {} {}", ability.getAbilityId(), entityData.getEntity());
-        return AbilityContext.selfTarget(entityData);
+        return AbilityContext.selfTarget(entityData, ability);
     }
 
     private static AbilityContext selectSingle(IMKEntityData entityData, MKAbility ability) {
@@ -57,7 +57,7 @@ public class AbilityTargeting {
                 ability.getDistance(entityData.getEntity()),
                 ability::isValidTarget);
         MKCore.LOGGER.debug("AbilityTargeting.SINGLE_TARGET {} {} {}", ability.getAbilityId(), entityData.getEntity(), targetEntity);
-        return AbilityContext.singleTarget(entityData, targetEntity);
+        return AbilityContext.singleTarget(entityData, targetEntity, ability);
     }
 
     private static AbilityContext selectSingleOrSelf(IMKEntityData entityData, MKAbility ability) {
@@ -66,7 +66,7 @@ public class AbilityTargeting {
                 ability::isValidTarget);
         MKCore.LOGGER.debug("AbilityTargeting.SINGLE_TARGET_OR_SELF {} {} {}", ability.getAbilityId(),
                 entityData.getEntity(), targetEntity);
-        return AbilityContext.singleTarget(entityData, targetEntity);
+        return AbilityContext.singleTarget(entityData, targetEntity, ability);
     }
 
     private static AbilityContext selectPositionIncludeEntities(IMKEntityData entityData, MKAbility ability) {
@@ -74,6 +74,6 @@ public class AbilityTargeting {
                 ability::isValidTarget);
         MKCore.LOGGER.debug("AbilityTargeting.POSITION_INCLUDE_ENTITIES {} {} {}", ability.getAbilityId(),
                 entityData.getEntity(), targetPos != null ? targetPos : "EMPTY");
-        return AbilityContext.singleOrPositionTarget(entityData, targetPos);
+        return AbilityContext.singleOrPositionTarget(entityData, ability, targetPos);
     }
 }

@@ -21,7 +21,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.Lazy;
-import org.checkerframework.checker.units.qual.A;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -78,7 +77,7 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect {
     @Override
     public void onMeleeHit(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData, LivingEntity target) {
         if (attackerData.getEntity().getRandom().nextDouble() >= (1.0 - procChance.value())) {
-            AbilityContext context = new AbilityContext(attackerData);
+            AbilityContext context = AbilityContext.selfTarget(attackerData, abilitySupplier.get());
             context.setSkillResolver((e, attr) -> skillLevel.value());
             abilitySupplier.get().castAtEntity(attackerData, target, context);
         }
@@ -98,7 +97,7 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect {
                     MKAbility.PERCENT_FORMATTER.format(procChance.value()), MKAbility.NUMBER_FORMATTER.format(skillLevel.value())));
             if (player != null) {
                 MKCore.getEntityData(player).ifPresent(entityData -> {
-                    AbilityContext context = AbilityContext.forTooltip(entityData);
+                    AbilityContext context = AbilityContext.forCaster(entityData, ability);
                     tooltip.add(ability.getAbilityDescription(entityData, context));
                 });
             }

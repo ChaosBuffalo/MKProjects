@@ -15,7 +15,6 @@ import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.MinecraftForge;
 
 import javax.annotation.Nullable;

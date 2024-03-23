@@ -23,12 +23,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class FrozenGraspAbility extends MKAbility {
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 10);
@@ -93,8 +91,7 @@ public class FrozenGraspAbility extends MKAbility {
     @Override
     public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
         super.buildDescription(casterData, context, consumer);
-        AbilityDescriptions.getEffectModifiers(MKUEffects.FROZEN_GRASP.get(), casterData, false,
-                attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)).forEach(consumer);
+        AbilityDescriptions.getEffectModifiers(MKUEffects.FROZEN_GRASP.get(), context, false, consumer);
     }
 
     @Override

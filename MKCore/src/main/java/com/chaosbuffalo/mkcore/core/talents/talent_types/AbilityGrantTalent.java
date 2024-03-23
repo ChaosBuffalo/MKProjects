@@ -33,7 +33,7 @@ public class AbilityGrantTalent extends MKTalent {
     public void describeTalent(IMKEntityData entityData, TalentRecord record, Consumer<Component> consumer) {
         super.describeTalent(entityData, record, consumer);
         consumer.accept(ability.get().getAbilityName());
-        ability.get().buildDescription(entityData, AbilityContext.forTooltip(entityData), consumer);
+        ability.get().buildDescription(entityData, AbilityContext.forCaster(entityData, getAbility()), consumer);
 
     }
 

@@ -15,8 +15,8 @@ public abstract class PositionTargetingAbility extends EntityTargetingAbility {
 
     @Override
     public void castAtEntity(IMKEntityData casterData, LivingEntity target,
-                             AbilityContext skillSupplier) {
-        castAtPosition(casterData, target.position(), skillSupplier);
+                             AbilityContext context) {
+        castAtPosition(casterData, target.position(), context);
     }
 
     @Override

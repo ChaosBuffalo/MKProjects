@@ -72,7 +72,7 @@ public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
     @Override
     public void onHit(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData, LivingEntity target) {
         if (attackerData.getEntity().getRandom().nextDouble() >= (1.0 - procChance)) {
-            AbilityContext context = new AbilityContext(attackerData);
+            AbilityContext context = AbilityContext.selfTarget(attackerData, abilitySupplier.get());
             context.setSkillResolver((e, attr) -> skillLevel);
             abilitySupplier.get().castAtEntity(attackerData, target, context);
         }
@@ -88,7 +88,7 @@ public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
                     MKAbility.PERCENT_FORMATTER.format(procChance), MKAbility.NUMBER_FORMATTER.format(skillLevel)));
             if (player != null) {
                 MKCore.getEntityData(player).ifPresent(entityData -> {
-                    AbilityContext context = AbilityContext.forTooltip(entityData);
+                    AbilityContext context = AbilityContext.forCaster(entityData, abilitySupplier.get());
                     context.setSkillResolver((e, attr) -> skillLevel);
                     tooltip.add(abilitySupplier.get().getAbilityDescription(entityData, context));
                 });

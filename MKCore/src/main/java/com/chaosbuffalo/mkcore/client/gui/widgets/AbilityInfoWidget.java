@@ -48,7 +48,7 @@ public class AbilityInfoWidget extends MKStackLayoutVertical {
         } else {
             IconText abilityIcon = new AbilityIconText(0, 0, 16, fontRenderer, 16, screen, screen.getSelectedAbility());
             addWidget(abilityIcon);
-            screen.getSelectedAbility().buildDescription(playerData, AbilityContext.forTooltip(playerData) , this::addDescriptionLine);
+            screen.getSelectedAbility().buildDescription(playerData, AbilityContext.forCaster(playerData, screen.getSelectedAbility()) , this::addDescriptionLine);
         }
     }
 

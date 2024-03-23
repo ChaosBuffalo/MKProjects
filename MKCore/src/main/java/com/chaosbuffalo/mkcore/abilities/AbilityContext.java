@@ -2,31 +2,40 @@ package com.chaosbuffalo.mkcore.abilities;
 
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
-import com.google.common.collect.ImmutableMap;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class AbilityContext {
-    public static final AbilityContext EMPTY = new AbilityContext(ImmutableMap.of());
-
     private final Map<MemoryModuleType<?>, Optional<?>> memories;
-    private IMKEntityData casterData;
+    private final IMKEntityData casterData;
+    @Nullable
+    private BiFunction<IMKEntityData, Attribute, Float> skillValueOverrideProvider;
 
     public AbilityContext(IMKEntityData entityData) {
         memories = new HashMap<>();
         this.casterData = entityData;
     }
 
-    private AbilityContext(Map<MemoryModuleType<?>, Optional<?>> memories) {
-        this.memories = memories;
+    public AbilityContext(IMKEntityData entityData, MKAbility ability) {
+        memories = new HashMap<>();
+        this.casterData = entityData;
+    }
+
+    public AbilityContext(IMKEntityData entityData, MKAbilityInfo ability) {
+        memories = new HashMap<>();
+        this.casterData = entityData;
+    }
+
+    public IMKEntityData getCasterData() {
+        return casterData;
     }
 
     public <U> void setMemory(MemoryModuleType<U> memoryType,
@@ -66,33 +75,38 @@ public class AbilityContext {
         return type != null && type.isPresent();
     }
 
-
-    private BiFunction<IMKEntityData, Attribute, Float> supplier;
-
     public float getSkill(Attribute attribute) {
-        if (supplier != null) {
-            return supplier.apply(casterData, attribute);
+        if (skillValueOverrideProvider != null) {
+            return skillValueOverrideProvider.apply(casterData, attribute);
         }
         return MKAbility.getSkillLevel(casterData.getEntity(), attribute);
     }
 
     public void setSkillResolver(BiFunction<IMKEntityData, Attribute, Float> supplier) {
-        this.supplier = supplier;
+        this.skillValueOverrideProvider = supplier;
     }
 
-    public static AbilityContext forTooltip(IMKEntityData casterData) {
-        return new AbilityContext(casterData);
+    public static AbilityContext forCaster(IMKEntityData casterData, MKAbility ability) {
+        return new AbilityContext(casterData, ability);
     }
 
-    public static AbilityContext singleTarget(IMKEntityData casterData, LivingEntity target) {
-        return new AbilityContext(casterData).withMemory(MKAbilityMemories.ABILITY_TARGET, Optional.ofNullable(target));
+    public static AbilityContext singleTarget(IMKEntityData casterData, LivingEntity target, MKAbility ability) {
+        return new AbilityContext(casterData, ability).withMemory(MKAbilityMemories.ABILITY_TARGET, Optional.ofNullable(target));
     }
 
-    public static AbilityContext selfTarget(IMKEntityData targetData) {
-        return singleTarget(targetData, targetData.getEntity());
+    public static AbilityContext singleTarget(IMKEntityData casterData, LivingEntity target, MKAbilityInfo abilityInfo) {
+        return new AbilityContext(casterData, abilityInfo).withMemory(MKAbilityMemories.ABILITY_TARGET, Optional.ofNullable(target));
     }
 
-    public static AbilityContext singleOrPositionTarget(IMKEntityData casterData, TargetUtil.LivingOrPosition position) {
-        return new AbilityContext(casterData).withMemory(MKAbilityMemories.ABILITY_POSITION_TARGET, Optional.ofNullable(position));
+    public static AbilityContext selfTarget(IMKEntityData targetData, MKAbility ability) {
+        return singleTarget(targetData, targetData.getEntity(), ability);
+    }
+
+    public static AbilityContext selfTarget(IMKEntityData targetData, MKAbilityInfo abilityInfo) {
+        return singleTarget(targetData, targetData.getEntity(), abilityInfo);
+    }
+
+    public static AbilityContext singleOrPositionTarget(IMKEntityData casterData, MKAbility ability, TargetUtil.LivingOrPosition position) {
+        return new AbilityContext(casterData, ability).withMemory(MKAbilityMemories.ABILITY_POSITION_TARGET, Optional.ofNullable(position));
     }
 }

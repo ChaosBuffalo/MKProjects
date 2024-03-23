@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.EntityTargetingAbility;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.description.AbilityDescriptions;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
@@ -25,11 +24,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class EngulfingDarknessAbility extends EntityTargetingAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_casting");
@@ -66,8 +63,7 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
     @Override
     public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
         super.buildDescription(casterData, context, consumer);
-        AbilityDescriptions.getEffectModifiers(MKUEffects.ENGULFING_DARKNESS.get(), casterData, false,
-                attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)).forEach(consumer);
+        AbilityDescriptions.getEffectModifiers(MKUEffects.ENGULFING_DARKNESS.get(), context, false, consumer);
     }
 
     @Override
