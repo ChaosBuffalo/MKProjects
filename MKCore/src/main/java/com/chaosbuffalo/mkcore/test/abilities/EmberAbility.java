@@ -39,7 +39,7 @@ public class EmberAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(), damage.value(), 0.0f, 0, 1.0f);
         Component burn = Component.literal(burnTime.valueAsString()).withStyle(ChatFormatting.UNDERLINE);
         return Component.translatable(getDescriptionTranslationKey(), damageStr, burn);

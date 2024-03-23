@@ -50,8 +50,8 @@ public class GalvanizeAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.ABJURATION);
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.ABJURATION);
         int duration = getBuffDuration(entityData, level, base.value(), scale.value()) / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), duration);
     }

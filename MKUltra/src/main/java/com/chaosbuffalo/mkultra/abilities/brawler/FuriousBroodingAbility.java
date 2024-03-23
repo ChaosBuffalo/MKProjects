@@ -55,8 +55,8 @@ public class FuriousBroodingAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.PNEUMA);
+    public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.PNEUMA);
         Component damageStr = getHealDescription(casterData, baseValue.value(),
                 scaleValue.value(), level, modifierScaling.value());
         int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;

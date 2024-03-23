@@ -45,8 +45,8 @@ public abstract class MKToggleAbility extends MKAbility {
     }
 
     @Override
-    public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
-        super.buildDescription(casterData, consumer);
+    public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
+        super.buildDescription(casterData, context, consumer);
         AbilityDescriptions.getEffectModifiers(getToggleEffect(), casterData, false,
                 attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)).forEach(consumer);
     }

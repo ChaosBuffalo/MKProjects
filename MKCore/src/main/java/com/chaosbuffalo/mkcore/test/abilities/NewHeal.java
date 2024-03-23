@@ -38,8 +38,8 @@ public class NewHeal extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.RESTORATION);
+    public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.RESTORATION);
         Component valueStr = getHealDescription(casterData, base.value(),
                 scale.value(), level,
                 modifierScaling.value());

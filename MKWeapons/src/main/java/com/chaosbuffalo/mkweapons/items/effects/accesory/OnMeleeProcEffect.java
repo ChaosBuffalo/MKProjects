@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkweapons.items.effects.accesory;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.EntityTargetingAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -20,6 +21,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.Lazy;
+import org.checkerframework.checker.units.qual.A;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -94,7 +96,8 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect {
                     MKAbility.PERCENT_FORMATTER.format(procChance.value()), MKAbility.NUMBER_FORMATTER.format(skillLevel.value())));
             if (player != null) {
                 MKCore.getEntityData(player).ifPresent(entityData -> {
-                    tooltip.add(ability.getAbilityDescription(entityData, attr -> skillLevel.value()));
+                    AbilityContext context = AbilityContext.forTooltip(entityData);
+                    tooltip.add(ability.getAbilityDescription(entityData, context));
                 });
             }
         }

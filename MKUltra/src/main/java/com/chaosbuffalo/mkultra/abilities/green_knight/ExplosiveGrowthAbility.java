@@ -76,10 +76,10 @@ public class ExplosiveGrowthAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.MeleeDamage.get(), baseDamage.value(),
                 scaleDamage.value(),
-                skillSupplier.apply(MKAttributes.PANKRATION),
+                context.getSkill(MKAttributes.PANKRATION),
                 modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }

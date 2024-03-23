@@ -59,8 +59,8 @@ public class IgniteAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.EVOCATION);
         Component valueStr = getDamageDescription(entityData,
                 CoreDamageTypes.FireDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), valueStr, igniteDistance.value());

@@ -56,8 +56,8 @@ public class FlameWaveAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.EVOCATION);
         Component dmgStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(), base.value(), scale.value(),
                 level, modifierScaling.value());
         int dur = Math.round(baseDuration.value() + scaleDuration.value() * level);

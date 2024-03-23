@@ -29,7 +29,7 @@ public abstract class PositionFlurryAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         return Component.translatable("mkultra.ability.flurry.description",
                 abilityToCast.get().getAbilityName(),
                 NUMBER_FORMATTER.format(getDistance(entityData.getEntity())),
@@ -37,11 +37,11 @@ public abstract class PositionFlurryAbility extends MKAbility {
     }
 
     @Override
-    public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
-        super.buildDescription(casterData, consumer);
+    public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
+        super.buildDescription(casterData, context, consumer);
         abilityToCast.ifPresent(x -> {
             consumer.accept(x.getAbilityName().withStyle(ChatFormatting.UNDERLINE).withStyle(ChatFormatting.GRAY));
-            consumer.accept(x.getAbilityDescription(casterData, attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr))
+            consumer.accept(x.getAbilityDescription(casterData, context)
                     .plainCopy().withStyle(ChatFormatting.GRAY));
         });
     }

@@ -44,7 +44,7 @@ public class AbilityTargeting {
             .addDynamicDescription(AbilityDescriptions::getRangeDescription);
 
     static AbilityContext noTarget(IMKEntityData entityData, MKAbility ability) {
-        return AbilityContext.EMPTY;
+        return new AbilityContext(entityData);
     }
 
     private static AbilityContext selectSelf(IMKEntityData entityData, MKAbility ability) {
@@ -57,7 +57,7 @@ public class AbilityTargeting {
                 ability.getDistance(entityData.getEntity()),
                 ability::isValidTarget);
         MKCore.LOGGER.debug("AbilityTargeting.SINGLE_TARGET {} {} {}", ability.getAbilityId(), entityData.getEntity(), targetEntity);
-        return AbilityContext.singleTarget(targetEntity);
+        return AbilityContext.singleTarget(entityData, targetEntity);
     }
 
     private static AbilityContext selectSingleOrSelf(IMKEntityData entityData, MKAbility ability) {
@@ -66,7 +66,7 @@ public class AbilityTargeting {
                 ability::isValidTarget);
         MKCore.LOGGER.debug("AbilityTargeting.SINGLE_TARGET_OR_SELF {} {} {}", ability.getAbilityId(),
                 entityData.getEntity(), targetEntity);
-        return AbilityContext.singleTarget(targetEntity);
+        return AbilityContext.singleTarget(entityData, targetEntity);
     }
 
     private static AbilityContext selectPositionIncludeEntities(IMKEntityData entityData, MKAbility ability) {
@@ -74,6 +74,6 @@ public class AbilityTargeting {
                 ability::isValidTarget);
         MKCore.LOGGER.debug("AbilityTargeting.POSITION_INCLUDE_ENTITIES {} {} {}", ability.getAbilityId(),
                 entityData.getEntity(), targetPos != null ? targetPos : "EMPTY");
-        return AbilityContext.singleOrPositionTarget(targetPos);
+        return AbilityContext.singleOrPositionTarget(entityData, targetPos);
     }
 }

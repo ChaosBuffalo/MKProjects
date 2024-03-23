@@ -84,15 +84,15 @@ public class FrozenGraspAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.NECROMANCY);
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.NECROMANCY);
         float dur = convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()));
         return Component.translatable(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(maxStacks.value()), dur);
     }
 
     @Override
-    public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
-        super.buildDescription(casterData, consumer);
+    public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
+        super.buildDescription(casterData, context, consumer);
         AbilityDescriptions.getEffectModifiers(MKUEffects.FROZEN_GRASP.get(), casterData, false,
                 attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)).forEach(consumer);
     }

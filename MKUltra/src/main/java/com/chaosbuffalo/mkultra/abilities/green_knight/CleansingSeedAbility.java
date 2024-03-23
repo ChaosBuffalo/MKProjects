@@ -47,9 +47,9 @@ public class CleansingSeedAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.NatureDamage.get(), baseDamage.value(),
-                scaleDamage.value(), skillSupplier.apply(MKAttributes.RESTORATION),
+                scaleDamage.value(), context.getSkill(MKAttributes.RESTORATION),
                 modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }

@@ -81,11 +81,11 @@ public class SpiritBombAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.NatureDamage.get(),
                 baseDamage.value(),
                 scaleDamage.value(),
-                skillSupplier.apply(MKAttributes.EVOCATION),
+                context.getSkill(MKAttributes.EVOCATION),
                 modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }

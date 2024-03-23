@@ -117,7 +117,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return Component.translatable("mkcore.ability.description.skill", skillList);
     }
 
-    public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
+    public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
         if (casterData instanceof MKPlayerData playerData) {
             MKAbilityInfo info = playerData.getAbilities().getKnownAbility(getAbilityId());
             if (info != null && info.usesAbilityPool()) {
@@ -131,7 +131,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         consumer.accept(getCooldownDescription(casterData));
         consumer.accept(getCastTimeDescription(casterData));
         getTargetSelector().buildDescription(this, casterData, consumer);
-        consumer.accept(getAbilityDescription(casterData, (attr) -> getSkillLevel(casterData.getEntity(), attr)));
+        consumer.accept(getAbilityDescription(casterData, context));
     }
 
     protected Component getCooldownDescription(IMKEntityData casterData) {
@@ -152,7 +152,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return Component.translatable("mkcore.ability.description.mana_cost", getManaCost(casterData));
     }
 
-    public Component getAbilityDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
         return Component.translatable(getDescriptionTranslationKey());
     }
 

@@ -51,8 +51,8 @@ public class DrownAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.CONJURATION);
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.CONJURATION);
         Component dotStr = getDamageDescription(entityData,
                 CoreDamageTypes.NatureDamage.get(), baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(),

@@ -51,15 +51,15 @@ public class YaupAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.ARETE);
+    public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.ARETE);
         int duration = getBuffDuration(casterData, level, baseDuration.value(), scaleDuration.value()) / GameConstants.TICKS_PER_SECOND;
         return Component.translatable(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(duration));
     }
 
     @Override
-    public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
-        super.buildDescription(casterData, consumer);
+    public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
+        super.buildDescription(casterData, context, consumer);
         AbilityDescriptions.getEffectModifiers(MKUEffects.YAUP.get(), casterData, false,
                 attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)).forEach(consumer);
     }

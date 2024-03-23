@@ -44,8 +44,8 @@ public class HealAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.RESTORATION);
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.RESTORATION);
         Component valueStr = getHealDescription(entityData, base.value(),
                 scale.value(), level, modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), valueStr);
