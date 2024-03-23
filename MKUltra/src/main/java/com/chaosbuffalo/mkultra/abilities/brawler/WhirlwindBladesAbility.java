@@ -108,12 +108,11 @@ public class WhirlwindBladesAbility extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context,
-                             Function<Attribute, Float> skillSupplier) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, context, skillSupplier);
+    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context) {
+        super.continueCast(castingEntity, casterData, castTimeLeft, context);
         int tickSpeed = 6;
         if (castTimeLeft % tickSpeed == 0) {
-            float level = skillSupplier.apply(MKAttributes.PANKRATION);
+            float level = context.getSkill(MKAttributes.PANKRATION);
             int totalDuration = getCastTime(casterData);
             int count = (totalDuration - castTimeLeft) / tickSpeed;
             float baseAmount = perTick.value();

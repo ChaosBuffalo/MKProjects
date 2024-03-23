@@ -111,7 +111,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return formatEffectValue(value, scale, level, bonus, modifierScaling).withStyle(ChatFormatting.BLUE);
     }
 
-    protected Component getSkillDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
+    protected Component getSkillDescription(IMKEntityData casterData, AbilityContext context) {
         Component skillList = ComponentUtils.formatList(getSkillAttributes(),
                 attr -> Component.translatable(attr.getDescriptionId()));
         return Component.translatable("mkcore.ability.description.skill", skillList);
@@ -125,7 +125,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
             }
         }
         if (!skillAttributes.isEmpty()) {
-            consumer.accept(getSkillDescription(casterData, attr -> getSkillLevel(casterData.getEntity(), attr)));
+            consumer.accept(getSkillDescription(casterData, context));
         }
         consumer.accept(getManaCostDescription(casterData));
         consumer.accept(getCooldownDescription(casterData));
@@ -340,8 +340,8 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return getRequiredMemories().stream().allMatch(context::hasMemory);
     }
 
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context,
-                             Function<Attribute, Float> skillSupplier) {
+    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context) {
+
     }
 
     public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft) {

@@ -302,8 +302,7 @@ public class AbilityExecutor {
 
         @Override
         void activeTick() {
-            ability.continueCast(executor.entityData.getEntity(), executor.entityData, castTicks, abilityContext,
-                    (attr) -> MKAbility.getSkillLevel(executor.entityData.getEntity(), attr));
+            ability.continueCast(executor.entityData.getEntity(), executor.entityData, castTicks, abilityContext);
         }
 
         @Override
