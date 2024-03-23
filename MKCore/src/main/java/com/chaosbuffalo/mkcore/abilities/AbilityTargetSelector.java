@@ -14,13 +14,13 @@ import java.util.function.Consumer;
 
 public class AbilityTargetSelector {
 
-    private final BiFunction<IMKEntityData, MKAbility, AbilityContext> selector;
+    private final BiFunction<IMKEntityData, MKAbilityInfo, AbilityContext> selector;
     private Set<MemoryModuleType<?>> requiredMemories;
     private String descriptionKey;
     private final List<BiFunction<MKAbility, IMKEntityData, Component>> additionalDescriptors;
     private boolean showTargetType;
 
-    public AbilityTargetSelector(BiFunction<IMKEntityData, MKAbility, AbilityContext> selector) {
+    public AbilityTargetSelector(BiFunction<IMKEntityData, MKAbilityInfo, AbilityContext> selector) {
         this.selector = selector;
         this.additionalDescriptors = new ArrayList<>();
         this.showTargetType = true;
@@ -77,12 +77,8 @@ public class AbilityTargetSelector {
         }
     }
 
-    public BiFunction<IMKEntityData, MKAbility, AbilityContext> getSelector() {
-        return selector;
-    }
-
     public AbilityContext createContext(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
-        return selector.apply(casterData, abilityInfo.getAbility());
+        return selector.apply(casterData, abilityInfo);
     }
 
     public boolean validateContext(IMKEntityData casterData, AbilityContext context) {

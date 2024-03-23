@@ -106,7 +106,7 @@ public class AbilityContext {
         return singleTarget(targetData, targetData.getEntity(), abilityInfo);
     }
 
-    public static AbilityContext singleOrPositionTarget(IMKEntityData casterData, MKAbility ability, TargetUtil.LivingOrPosition position) {
+    public static AbilityContext singleOrPositionTarget(IMKEntityData casterData, MKAbilityInfo ability, TargetUtil.LivingOrPosition position) {
         return new AbilityContext(casterData, ability).withMemory(MKAbilityMemories.ABILITY_POSITION_TARGET, Optional.ofNullable(position));
     }
 }
