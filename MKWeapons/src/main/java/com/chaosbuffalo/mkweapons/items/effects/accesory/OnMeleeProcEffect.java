@@ -22,6 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.Lazy;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
@@ -30,13 +31,14 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect {
     protected ScalableDoubleAttribute procChance = new ScalableDoubleAttribute("proc_chance", 0.05, 0.05);
 
     protected ScalableFloatAttribute skillLevel = new ScalableFloatAttribute("skill_level", 0.0f, 0.0f);
+    @Nonnull
     private Supplier<? extends EntityTargetingAbility> abilitySupplier;
 
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID,
             "accessory_effect.on_hit_ability");
 
     public OnMeleeProcEffect(double procChanceMin, double procChanceMax, float skillLevelMin, float skillLevelMax,
-                             Supplier<? extends EntityTargetingAbility> abilitySupplier) {
+                             @Nonnull Supplier<? extends EntityTargetingAbility> abilitySupplier) {
         this();
         this.procChance.setValue(procChanceMin);
         this.procChance.setMin(procChanceMin);
@@ -50,6 +52,7 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect {
     public OnMeleeProcEffect() {
         super(NAME, ChatFormatting.GOLD);
         addAttributes(procChance, skillLevel);
+        abilitySupplier = () -> null;
     }
 
     @Override
@@ -59,7 +62,7 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect {
                 .ifPresent(abilityName -> {
                     MKAbility ability = MKCoreRegistry.ABILITIES.getValue(new ResourceLocation(abilityName));
                     if (ability instanceof EntityTargetingAbility entAbility) {
-                        abilitySupplier = Lazy.of(() -> entAbility);
+                        abilitySupplier = () -> entAbility;
                     }
                 });
     }
@@ -71,15 +74,20 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect {
             builder.put(ops.createString("ability"),
                     ops.createString(abilitySupplier.get().getAbilityId().toString()));
         }
+    }
 
+    protected AbilityContext createAbilityContext(IMKEntityData casterData) {
+        AbilityContext context = AbilityContext.forCaster(casterData, abilitySupplier.get());
+        context.setSkillResolver((e, attr) -> skillLevel.value());
+        return context;
     }
 
     @Override
     public void onMeleeHit(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData, LivingEntity target) {
-        if (attackerData.getEntity().getRandom().nextDouble() >= (1.0 - procChance.value())) {
-            AbilityContext context = AbilityContext.selfTarget(attackerData, abilitySupplier.get());
-            context.setSkillResolver((e, attr) -> skillLevel.value());
-            abilitySupplier.get().castAtEntity(attackerData, target, context);
+        EntityTargetingAbility ability = abilitySupplier.get();
+        if (ability != null && attackerData.getEntity().getRandom().nextDouble() >= (1.0 - procChance.value())) {
+            AbilityContext context = createAbilityContext(attackerData);
+            ability.castAtEntity(attackerData, target, context);
         }
     }
 
@@ -97,7 +105,7 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect {
                     MKAbility.PERCENT_FORMATTER.format(procChance.value()), MKAbility.NUMBER_FORMATTER.format(skillLevel.value())));
             if (player != null) {
                 MKCore.getEntityData(player).ifPresent(entityData -> {
-                    AbilityContext context = AbilityContext.forCaster(entityData, ability);
+                    AbilityContext context = createAbilityContext(entityData);
                     tooltip.add(ability.getAbilityDescription(entityData, context));
                 });
             }

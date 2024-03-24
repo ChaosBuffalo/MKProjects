@@ -90,23 +90,19 @@ public class AbilityContext {
         return new AbilityContext(casterData, ability);
     }
 
-    public static AbilityContext singleTarget(IMKEntityData casterData, LivingEntity target, MKAbility ability) {
-        return new AbilityContext(casterData, ability).withMemory(MKAbilityMemories.ABILITY_TARGET, Optional.ofNullable(target));
+    public static AbilityContext forCaster(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        return new AbilityContext(casterData, abilityInfo);
     }
 
     public static AbilityContext singleTarget(IMKEntityData casterData, LivingEntity target, MKAbilityInfo abilityInfo) {
-        return new AbilityContext(casterData, abilityInfo).withMemory(MKAbilityMemories.ABILITY_TARGET, Optional.ofNullable(target));
-    }
-
-    public static AbilityContext selfTarget(IMKEntityData targetData, MKAbility ability) {
-        return singleTarget(targetData, targetData.getEntity(), ability);
+        return forCaster(casterData, abilityInfo).withMemory(MKAbilityMemories.ABILITY_TARGET, Optional.ofNullable(target));
     }
 
     public static AbilityContext selfTarget(IMKEntityData targetData, MKAbilityInfo abilityInfo) {
         return singleTarget(targetData, targetData.getEntity(), abilityInfo);
     }
 
-    public static AbilityContext singleOrPositionTarget(IMKEntityData casterData, MKAbilityInfo ability, TargetUtil.LivingOrPosition position) {
-        return new AbilityContext(casterData, ability).withMemory(MKAbilityMemories.ABILITY_POSITION_TARGET, Optional.ofNullable(position));
+    public static AbilityContext singleOrPositionTarget(IMKEntityData casterData, MKAbilityInfo abilityInfo, TargetUtil.LivingOrPosition position) {
+        return forCaster(casterData, abilityInfo).withMemory(MKAbilityMemories.ABILITY_POSITION_TARGET, Optional.ofNullable(position));
     }
 }
