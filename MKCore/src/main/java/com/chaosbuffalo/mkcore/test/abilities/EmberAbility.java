@@ -12,33 +12,55 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.ParticleEffectSpawnPacket;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
+import com.chaosbuffalo.mkcore.serialization.components.MKComponentKey;
+import com.chaosbuffalo.mkcore.serialization.components.MKDataComponents;
+import com.chaosbuffalo.mkcore.serialization.components.MKDataSerializers;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class EmberAbility extends MKAbility {
+    private static final MKDataComponents.ComponentDefiner DEFINER = MKDataComponents.definer(EmberAbility.class);
+
+    public static final MKComponentKey<Float> DAMAGE = DEFINER.define("damage", MKDataSerializers.FLOAT);
+    public static final MKComponentKey<Integer> BURN_TIME = DEFINER.define("burnTime", MKDataSerializers.INT);
+
+
     private static final ResourceLocation TEST_PARTICLES = new ResourceLocation(MKCore.MOD_ID, "beam_effect");
-    protected final FloatAttribute damage = new FloatAttribute("damage", 6.0f);
-    protected final IntAttribute burnTime = new IntAttribute("burnTime", 5);
 
     public EmberAbility() {
         super();
-        setCastTime(GameConstants.TICKS_PER_SECOND / 2);
-        setCooldownSeconds(4);
-        setManaCost(6);
-        addAttributes(damage, burnTime);
+    }
+
+    @Override
+    protected void defineComponents(MKAbility.AbilityDefaultsBuilder builder) {
+        super.defineComponents(builder);
+        builder.castTicks(GameConstants.TICKS_PER_SECOND / 2);
+        builder.castSeconds(4);
+        builder.manaCost(6);
+        builder.set(DAMAGE, 6.0f);
+        builder.set(BURN_TIME, 5);
+    }
+
+    private float getDamage() {
+        return getComponentValue(DAMAGE);
+    }
+
+    private int getBurnTime() {
+        return getComponentValue(BURN_TIME);
     }
 
     @Override
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
-        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(), damage.value(), 0.0f, 0, 1.0f);
-        Component burn = Component.literal(burnTime.valueAsString()).withStyle(ChatFormatting.UNDERLINE);
+        Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(), getDamage(), 0.0f, 0, 1.0f);
+        Component burn = Component.literal(NUMBER_FORMATTER.format(getBurnTime())).withStyle(ChatFormatting.UNDERLINE);
         return Component.translatable(getDescriptionTranslationKey(), damageStr, burn);
     }
 
@@ -66,8 +88,8 @@ public class EmberAbility extends MKAbility {
     public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
         super.endCast(castingEntity, casterData, context);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            int burnDuration = burnTime.value();
-            float amount = damage.value();
+            int burnDuration = getBurnTime();
+            float amount = getDamage();
             MKCore.LOGGER.info("Ember damage {} burnTime {}", amount, burnDuration);
             targetEntity.setSecondsOnFire(burnDuration);
             targetEntity.hurt(MKDamageSource.causeAbilityDamage(targetEntity.getLevel(), CoreDamageTypes.FireDamage.get(),

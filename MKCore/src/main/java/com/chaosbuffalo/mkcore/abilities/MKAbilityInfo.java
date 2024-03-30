@@ -2,6 +2,8 @@ package com.chaosbuffalo.mkcore.abilities;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.AbilityType;
+import com.chaosbuffalo.mkcore.serialization.components.IMKDataMapProvider;
+import com.chaosbuffalo.mkcore.serialization.components.MKComponentMap;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -15,14 +17,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 
-public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
+public class MKAbilityInfo implements IMKSerializable<CompoundTag>, IMKDataMapProvider {
     private final MKAbility ability;
     private final Set<AbilitySource> sources = new HashSet<>(2);
     @Nullable
     private AbilitySource highestSource;
+    private final MKComponentMap components;
 
     public MKAbilityInfo(MKAbility ability) {
         this.ability = ability;
+        components = ability.getComponentMap().derive();
     }
 
     @Nonnull
@@ -36,6 +40,11 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
 
     public ResourceLocation getId() {
         return ability.getAbilityId();
+    }
+
+    @Override
+    public MKComponentMap getComponentMap() {
+        return components;
     }
 
     public boolean isCurrentlyKnown() {

@@ -12,6 +12,7 @@ import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
 import com.chaosbuffalo.mkcore.serialization.attributes.ISerializableAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
+import com.chaosbuffalo.mkcore.serialization.components.*;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mkcore.utils.text.IconTextComponent;
@@ -41,12 +42,15 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
-public abstract class MKAbility implements ISerializableAttributeContainer {
+public abstract class MKAbility implements ISerializableAttributeContainer, IMKDataMapProvider {
+    private static final MKDataComponents.ComponentDefiner DEFINER = MKDataComponents.definer(MKAbility.class);
+    public static final MKComponentKey<ResourceLocation> CASTING_PARTICLES = DEFINER.define("casting_particles", MKDataSerializers.RESOURCE_LOCATION);
+    public static final MKComponentKey<Float> MANA_COST = DEFINER.define("mana_cost", MKDataSerializers.FLOAT);
+    public static final MKComponentKey<Integer> COOLDOWN = DEFINER.define("cooldown", MKDataSerializers.INT);
+    public static final MKComponentKey<Integer> CAST_TIME = DEFINER.define("cast_time", MKDataSerializers.INT);
 
-    private int castTime;
-    private int cooldown;
-    private float manaCost;
     private final List<ISerializableAttribute<?>> attributes;
+    private final MKComponentMap componentMap;
     private AbilityUseCondition useCondition;
     private final Set<Attribute> skillAttributes;
     private static final ResourceLocation EMPTY_PARTICLES = new ResourceLocation(MKCore.MOD_ID, "fx.casting.empty");
@@ -58,21 +62,71 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
 
     public MKAbility() {
-        this.cooldown = GameConstants.TICKS_PER_SECOND;
-        this.castTime = 0;
-        this.manaCost = 1;
         this.attributes = new ArrayList<>();
         this.skillAttributes = new HashSet<>();
         setUseCondition(new StandardUseCondition(this));
         addAttribute(casting_particles);
+        componentMap = new MKComponentMap();
+        AbilityDefaultsBuilder builder = new AbilityDefaultsBuilder(componentMap);
+        builder.castTicks(0);
+        builder.cooldownSeconds(1);
+        builder.manaCost(1);
+        builder.castParticles(EMPTY_PARTICLES);
+        defineComponents(builder);
+    }
+
+    @Override
+    public MKComponentMap getComponentMap() {
+        return componentMap;
+    }
+
+    public record AbilityDefaultsBuilder(MKComponentMap components) {
+        public AbilityDefaultsBuilder castTicks(int castTicks) {
+            components.define(CAST_TIME, castTicks);
+            return this;
+        }
+
+        public AbilityDefaultsBuilder castSeconds(int seconds) {
+            return castTicks(seconds * GameConstants.TICKS_PER_SECOND);
+        }
+
+        public AbilityDefaultsBuilder cooldownTicks(int ticks) {
+            components.define(COOLDOWN, ticks);
+            return this;
+        }
+
+        public AbilityDefaultsBuilder cooldownSeconds(int seconds) {
+            return cooldownTicks(seconds * GameConstants.TICKS_PER_SECOND);
+        }
+
+        public AbilityDefaultsBuilder manaCost(float manaCost) {
+            components.define(MANA_COST, manaCost);
+            return this;
+        }
+
+        public AbilityDefaultsBuilder castParticles(ResourceLocation particles) {
+            components.define(CASTING_PARTICLES, particles);
+            return this;
+        }
+
+        public <T> AbilityDefaultsBuilder set(MKComponentKey<T> component, T defaultValue) {
+            components.define(component, defaultValue);
+            return this;
+        }
+    }
+
+    protected void defineComponents(AbilityDefaultsBuilder builder) {
+
     }
 
     public boolean hasCastingParticles() {
-        return casting_particles.getValue().compareTo(EMPTY_PARTICLES) != 0;
+        return !componentMap.isValueDefault(CASTING_PARTICLES);
+//        return casting_particles.getValue().compareTo(EMPTY_PARTICLES) != 0;
     }
 
     public ResourceLocation getCastingParticles() {
-        return casting_particles.getValue();
+        return componentMap.getComponentValue(CASTING_PARTICLES);
+//        return casting_particles.getValue();
     }
 
     public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType, float damage,
@@ -211,7 +265,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     protected int getBaseCastTime() {
-        return castTime;
+        return getComponentValue(CAST_TIME);
     }
 
     public int getCastTime(IMKEntityData casterData) {
@@ -219,7 +273,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     protected void setCastTime(int castTicks) {
-        castTime = castTicks;
+        setComponent(CAST_TIME, castTicks);
     }
 
     public boolean canApplyCastingSpeedModifier() {
@@ -235,15 +289,15 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     protected void setCooldownTicks(int ticks) {
-        this.cooldown = ticks;
+        setComponent(COOLDOWN, ticks);
     }
 
     protected void setCooldownSeconds(int seconds) {
-        this.cooldown = seconds * GameConstants.TICKS_PER_SECOND;
+        setCooldownTicks(seconds * GameConstants.TICKS_PER_SECOND);
     }
 
     protected int getBaseCooldown() {
-        return cooldown;
+        return getComponentValue(COOLDOWN);
     }
 
     public int getCooldown(IMKEntityData casterData) {
@@ -261,7 +315,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     protected float getBaseManaCost() {
-        return manaCost;
+        return getComponentValue(MANA_COST);
     }
 
     public float getManaCost(IMKEntityData casterData) {
@@ -277,7 +331,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     protected void setManaCost(float cost) {
-        manaCost = cost;
+        setComponent(MANA_COST, cost);
     }
 
     public boolean meetsCastingRequirements(IMKEntityData casterData, MKAbilityInfo info) {
@@ -288,20 +342,16 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     public <T> T serializeDynamic(DynamicOps<T> ops) {
         return ops.createMap(
                 ImmutableMap.of(
-                        ops.createString("cooldown"), ops.createInt(getBaseCooldown()),
-                        ops.createString("manaCost"), ops.createFloat(getBaseManaCost()),
-                        ops.createString("castTime"), ops.createInt(getBaseCastTime()),
-                        ops.createString("attributes"), serializeAttributeMap(ops)
+                        ops.createString("attributes"), serializeAttributeMap(ops),
+                        ops.createString("components"), componentMap.serializeNamedAttributeMap(ops)
                 )
         );
     }
 
     public <T> void deserializeDynamic(Dynamic<T> dynamic) {
         MKCore.LOGGER.debug("ability deserialize {}", dynamic.getValue());
-        setCooldownTicks(dynamic.get("cooldown").asInt(getBaseCooldown()));
-        setManaCost(dynamic.get("manaCost").asFloat(getBaseManaCost()));
-        setCastTime(dynamic.get("castTime").asInt(getBaseCastTime()));
         deserializeAttributeMap(dynamic, "attributes");
+        componentMap.deserializeNamedAttributeMap(dynamic, "components");
     }
 
     public static float convertDurationToSeconds(int dur) {
