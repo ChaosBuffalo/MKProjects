@@ -43,6 +43,9 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 public abstract class MKAbility implements ISerializableAttributeContainer, IMKDataMapProvider {
+    public static final NumberFormat PERCENT_FORMATTER = NumberFormat.getPercentInstance();
+    public static final NumberFormat INTEGER_FORMATTER = NumberFormat.getIntegerInstance();
+    public static final NumberFormat NUMBER_FORMATTER = NumberFormat.getNumberInstance();
     private static final MKDataComponents.ComponentDefiner DEFINER = MKDataComponents.definer(MKAbility.class);
     public static final MKComponentKey<ResourceLocation> CASTING_PARTICLES = DEFINER.define("casting_particles", MKDataSerializers.RESOURCE_LOCATION);
     public static final MKComponentKey<Float> MANA_COST = DEFINER.define("mana_cost", MKDataSerializers.FLOAT);
@@ -56,9 +59,6 @@ public abstract class MKAbility implements ISerializableAttributeContainer, IMKD
     private static final ResourceLocation EMPTY_PARTICLES = new ResourceLocation(MKCore.MOD_ID, "fx.casting.empty");
     protected final ResourceLocationAttribute casting_particles = new ResourceLocationAttribute("casting_particles", EMPTY_PARTICLES);
     public static final ResourceLocation POOL_SLOT_ICON = new ResourceLocation(MKCore.MOD_ID, "textures/talents/pool_count_icon_filled.png");
-    public static final NumberFormat PERCENT_FORMATTER = NumberFormat.getPercentInstance();
-    public static final NumberFormat INTEGER_FORMATTER = NumberFormat.getIntegerInstance();
-    public static final NumberFormat NUMBER_FORMATTER = NumberFormat.getNumberInstance();
 
 
     public MKAbility() {
@@ -66,7 +66,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer, IMKD
         this.skillAttributes = new HashSet<>();
         setUseCondition(new StandardUseCondition(this));
         addAttribute(casting_particles);
-        componentMap = new MKComponentMap();
+        componentMap = new MKComponentMap(this);
         AbilityDefaultsBuilder builder = new AbilityDefaultsBuilder(componentMap);
         builder.castTicks(0);
         builder.cooldownSeconds(1);
@@ -120,13 +120,11 @@ public abstract class MKAbility implements ISerializableAttributeContainer, IMKD
     }
 
     public boolean hasCastingParticles() {
-        return !componentMap.isValueDefault(CASTING_PARTICLES);
-//        return casting_particles.getValue().compareTo(EMPTY_PARTICLES) != 0;
+        return componentMap.getComponentValue(CASTING_PARTICLES).compareTo(EMPTY_PARTICLES) != 0;
     }
 
     public ResourceLocation getCastingParticles() {
         return componentMap.getComponentValue(CASTING_PARTICLES);
-//        return casting_particles.getValue();
     }
 
     public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType, float damage,
@@ -141,7 +139,6 @@ public abstract class MKAbility implements ISerializableAttributeContainer, IMKD
         damageStr.append(" ").append(damageType.getFormattedDisplayName());
         return damageStr;
     }
-
 
     protected MutableComponent formatEffectValue(float damage, float levelScale, float level, float bonus, float scaleMod) {
         float value = damage + (levelScale * level) + (bonus * scaleMod);
@@ -340,10 +337,20 @@ public abstract class MKAbility implements ISerializableAttributeContainer, IMKD
     }
 
     public <T> T serializeDynamic(DynamicOps<T> ops) {
+        return serializeDynamic(ops, false);
+    }
+
+    public <T> T serializeDatagen(DynamicOps<T> ops) {
+        return serializeDynamic(ops, true);
+    }
+
+    public <T> T serializeDynamic(DynamicOps<T> ops, boolean datagen) {
         return ops.createMap(
                 ImmutableMap.of(
                         ops.createString("attributes"), serializeAttributeMap(ops),
-                        ops.createString("components"), componentMap.serializeNamedAttributeMap(ops)
+                        ops.createString("components"), datagen ?
+                                componentMap.serializeAllNamedAttributesDatagen(ops) :
+                                componentMap.serializeNamedAttributeMap(ops)
                 )
         );
     }

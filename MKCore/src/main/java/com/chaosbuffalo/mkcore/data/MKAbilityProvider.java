@@ -26,7 +26,7 @@ public abstract class MKAbilityProvider extends MKDataProvider {
         String name = key.getPath().substring(8); // skip ability.
         Path local = Paths.get("data", key.getNamespace(), AbilityManager.DEFINITION_FOLDER, name + ".json");
         Path path = outputFolder.resolve(local);
-        JsonElement element = ability.serializeDynamic(JsonOps.INSTANCE);
+        JsonElement element = ability.serializeDatagen(JsonOps.INSTANCE);
         return DataProvider.saveStable(pOutput, element, path);
     }
 
