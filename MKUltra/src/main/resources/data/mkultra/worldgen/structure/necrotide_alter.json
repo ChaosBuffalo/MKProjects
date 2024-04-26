@@ -57,8 +57,8 @@
         ],
         "structEventType": "mknpc:struct_event.spawn_npc",
         "triggers": [
-          2,
-          1
+          1,
+          2
         ]
       }
     ]
