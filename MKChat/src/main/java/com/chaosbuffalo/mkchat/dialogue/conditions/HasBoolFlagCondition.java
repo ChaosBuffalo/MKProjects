@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkchat.dialogue.conditions;
 import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.capabilities.IPlayerDialogue;
 import com.chaosbuffalo.mkchat.dialogue.DialogueUtils;
-import com.chaosbuffalo.mkchat.dialogue.effects.AddFlag;
+import com.chaosbuffalo.mkchat.dialogue.effects.AddFlagEffect;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
@@ -21,7 +21,7 @@ public class HasBoolFlagCondition extends DialogueCondition {
     }
 
     public HasBoolFlagCondition() {
-        this(AddFlag.INVALID_FLAG);
+        this(AddFlagEffect.INVALID_FLAG);
     }
 
     @Override
@@ -31,7 +31,7 @@ public class HasBoolFlagCondition extends DialogueCondition {
 
     @Override
     public boolean meetsCondition(ServerPlayer player, LivingEntity source) {
-        if (flagName.equals(AddFlag.INVALID_FLAG)) {
+        if (flagName.equals(AddFlagEffect.INVALID_FLAG)) {
             return false;
         }
         return IPlayerDialogue.get(player)
@@ -45,7 +45,7 @@ public class HasBoolFlagCondition extends DialogueCondition {
         flagName = dynamic.get("flagName").asString()
                 .resultOrPartial(DialogueUtils::throwParseException)
                 .map(ResourceLocation::new)
-                .orElse(AddFlag.INVALID_FLAG);
+                .orElse(AddFlagEffect.INVALID_FLAG);
     }
 
     @Override

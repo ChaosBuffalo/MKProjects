@@ -2,33 +2,43 @@ package com.chaosbuffalo.mknpc.quest.dialogue.effects;
 
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
+import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffectType;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.content.ContentDB;
+import com.chaosbuffalo.mknpc.dialogue.effects.NpcDialogueEffectTypes;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class AdvanceQuestChainEffect extends DialogueEffect implements IReceivesChainId {
-    public static final ResourceLocation effectTypeName = new ResourceLocation(MKNpc.MODID, "advance_quest_chain");
+    public static final Codec<AdvanceQuestChainEffect> CODEC = RecordCodecBuilder.<AdvanceQuestChainEffect>mapCodec(builder ->
+            builder.group(
+                    UUIDUtil.STRING_CODEC.optionalFieldOf("chainId").forGetter(i -> i.chainId.equals(Util.NIL_UUID) ? Optional.empty() : Optional.of(i.chainId))
+            ).apply(builder, AdvanceQuestChainEffect::new)
+    ).codec();
+
     private UUID chainId;
 
+    private AdvanceQuestChainEffect(Optional<UUID> chainId) {
+        this(chainId.orElse(Util.NIL_UUID));
+    }
+
     public AdvanceQuestChainEffect(UUID chainId) {
-        this();
         this.chainId = chainId;
     }
 
-    public AdvanceQuestChainEffect() {
-        super(effectTypeName);
-        chainId = Util.NIL_UUID;
+    @Override
+    public DialogueEffectType<?> getType() {
+        return NpcDialogueEffectTypes.ADVANCE_QUEST_CHAIN.get();
     }
 
     @Override
@@ -42,8 +52,8 @@ public class AdvanceQuestChainEffect extends DialogueEffect implements IReceives
     }
 
     @Override
-    public void applyEffect(ServerPlayer serverPlayerEntity, LivingEntity livingEntity, DialogueNode dialogueNode) {
-        MKNpc.getPlayerQuestData(serverPlayerEntity).ifPresent(questLog -> {
+    public void applyEffect(ServerPlayer player, LivingEntity livingEntity, DialogueNode dialogueNode) {
+        MKNpc.getPlayerQuestData(player).ifPresent(questLog -> {
             QuestChainInstance questChain = ContentDB.getQuestInstance(chainId);
             if (questChain == null) {
                 return;
@@ -59,19 +69,5 @@ public class AdvanceQuestChainEffect extends DialogueEffect implements IReceives
                 }
             });
         });
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(Util.NIL_UUID);
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        if (!chainId.equals(Util.NIL_UUID)) {
-            builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
-        }
     }
 }

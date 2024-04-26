@@ -1,4 +1,5 @@
 {
+  "hailPrompt": "hail",
   "nodes": [
     {
       "id": "root",
@@ -9,18 +10,18 @@
       "message": "I have already helped you as much as I can."
     },
     {
-      "id": "grant_level",
-      "message": "Here is 1 level.",
       "effects": [
         {
-          "dialogueEffectType": "mkchat:dialogue_effect.add_level",
+          "type": "mkchat:add_level",
           "amount": 1
         },
         {
-          "dialogueEffectType": "mkchat:dialogue_effect.add_flag",
-          "flagName": "mkchat:grant_level"
+          "type": "mkchat:add_flag",
+          "flag": "mkchat:grant_level"
         }
-      ]
+      ],
+      "id": "grant_level",
+      "message": "Here is 1 level."
     },
     {
       "id": "already_granted",
@@ -31,59 +32,58 @@
     {
       "id": "need_xp",
       "message": "need some xp",
-      "triggerPhrase": "need xp",
-      "suggestedText": "I need xp.",
       "responses": [
         {
-          "responseNodeId": "grant_level",
           "conditions": [
             {
               "dialogueConditionType": "mkchat:dialogue_condition.has_bool_flag",
-              "invert": true,
-              "flagName": "mkchat:grant_level"
+              "flagName": "mkchat:grant_level",
+              "invert": true
             }
-          ]
+          ],
+          "responseNodeId": "grant_level"
         },
         {
-          "responseNodeId": "already_granted",
           "conditions": [
             {
               "dialogueConditionType": "mkchat:dialogue_condition.has_bool_flag",
-              "invert": false,
-              "flagName": "mkchat:grant_level"
+              "flagName": "mkchat:grant_level",
+              "invert": false
             }
-          ]
+          ],
+          "responseNodeId": "already_granted"
         }
-      ]
+      ],
+      "suggestedText": "I need xp.",
+      "triggerPhrase": "need xp"
     },
     {
       "id": "hail",
       "message": "",
-      "triggerPhrase": "",
-      "suggestedText": "",
       "responses": [
         {
-          "responseNodeId": "root",
           "conditions": [
             {
               "dialogueConditionType": "mkchat:dialogue_condition.has_bool_flag",
-              "invert": true,
-              "flagName": "mkchat:grant_level"
+              "flagName": "mkchat:grant_level",
+              "invert": true
             }
-          ]
+          ],
+          "responseNodeId": "root"
         },
         {
-          "responseNodeId": "cant_help",
           "conditions": [
             {
               "dialogueConditionType": "mkchat:dialogue_condition.has_bool_flag",
-              "invert": false,
-              "flagName": "mkchat:grant_level"
+              "flagName": "mkchat:grant_level",
+              "invert": false
             }
-          ]
+          ],
+          "responseNodeId": "cant_help"
         }
-      ]
+      ],
+      "suggestedText": "",
+      "triggerPhrase": ""
     }
-  ],
-  "hailPrompt": "hail"
+  ]
 }

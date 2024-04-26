@@ -17,7 +17,7 @@
       {
         "effects": [
           {
-            "dialogueEffectType": "mknpc:start_quest_chain"
+            "type": "mknpc:start_quest_chain"
           }
         ],
         "id": "ambushed",
@@ -132,7 +132,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "return_to_initiate",
                     "questName": "return_to_initiate"
                   }
@@ -237,7 +237,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "test_complete",
                     "questName": "test_complete"
                   }

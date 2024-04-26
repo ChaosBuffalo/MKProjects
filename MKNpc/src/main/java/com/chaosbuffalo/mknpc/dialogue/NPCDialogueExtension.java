@@ -6,13 +6,8 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.IDialogueExtension;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.content.ContentDB;
-import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.*;
-import com.chaosbuffalo.mknpc.quest.dialogue.effects.AdvanceQuestChainEffect;
-import com.chaosbuffalo.mknpc.quest.dialogue.effects.GrantEntitlementEffect;
-import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
-import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.fml.InterModComms;
 
@@ -38,11 +33,6 @@ public class NPCDialogueExtension implements IDialogueExtension {
     @Override
     public void registerDialogueExtension() {
         MKNpc.LOGGER.info("Registering MKNpc Dialogue Extension");
-        ChatRegistries.putEffectDeserializer(OpenLearnAbilitiesEffect.effectTypeName, OpenLearnAbilitiesEffect::new);
-        ChatRegistries.putEffectDeserializer(AdvanceQuestChainEffect.effectTypeName, AdvanceQuestChainEffect::new);
-        ChatRegistries.putEffectDeserializer(StartQuestChainEffect.effectTypeName, StartQuestChainEffect::new);
-        ChatRegistries.putEffectDeserializer(ObjectiveCompleteEffect.effectTypeName, ObjectiveCompleteEffect::new);
-        ChatRegistries.putEffectDeserializer(GrantEntitlementEffect.effectTypeName, GrantEntitlementEffect::new);
 
         ChatRegistries.putConditionDeserializer(OnQuestCondition.conditionTypeName, OnQuestCondition::new);
         ChatRegistries.putConditionDeserializer(OnQuestChainCondition.conditionTypeName, OnQuestChainCondition::new);

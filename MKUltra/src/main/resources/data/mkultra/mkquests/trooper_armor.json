@@ -5,7 +5,7 @@
       {
         "effects": [
           {
-            "dialogueEffectType": "mknpc:start_quest_chain"
+            "type": "mknpc:start_quest_chain"
           }
         ],
         "id": "start_quest",

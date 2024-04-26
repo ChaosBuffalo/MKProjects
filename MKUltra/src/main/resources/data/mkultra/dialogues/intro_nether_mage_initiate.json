@@ -12,7 +12,7 @@
     {
       "effects": [
         {
-          "dialogueEffectType": "mknpc:open_learn_abilities"
+          "type": "mknpc:open_learn_abilities"
         }
       ],
       "id": "open_training",

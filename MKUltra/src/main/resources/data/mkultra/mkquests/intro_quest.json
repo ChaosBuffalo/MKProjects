@@ -5,7 +5,7 @@
       {
         "effects": [
           {
-            "dialogueEffectType": "mknpc:start_quest_chain"
+            "type": "mknpc:start_quest_chain"
           }
         ],
         "id": "start_quest",
@@ -81,7 +81,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "talk_to_smith",
                     "questName": "talk_to_smith"
                   }
@@ -177,7 +177,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "return_to_smith",
                     "questName": "return_to_smith"
                   }
@@ -242,7 +242,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "green_lady_talent",
                     "questName": "green_lady_talent"
                   }
@@ -298,7 +298,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:open_learn_abilities"
+                    "type": "mknpc:open_learn_abilities"
                   }
                 ],
                 "id": "open_training",
@@ -311,7 +311,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "return_to_green_lady",
                     "questName": "return_to_green_lady"
                   }
@@ -398,7 +398,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "after_green_lady",
                     "questName": "after_ability"
                   }
@@ -409,7 +409,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:open_learn_abilities"
+                    "type": "mknpc:open_learn_abilities"
                   }
                 ],
                 "id": "open_training_ability",
@@ -514,7 +514,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "after_kill",
                     "questName": "first_kill"
                   }
@@ -594,7 +594,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "after_kill_captain",
                     "questName": "kill_captain"
                   }
@@ -673,7 +673,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "talk_to_ghost",
                     "questName": "talk_to_ghost"
                   }
@@ -844,7 +844,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "after_kill_burning",
                     "questName": "kill_burning"
                   }

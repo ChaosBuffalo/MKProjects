@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
+import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
@@ -92,7 +93,7 @@ public class DialogueNode extends DialogueObject {
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
         if (!effects.isEmpty()) {
-            builder.put(ops.createString("effects"), ops.createList(effects.stream().map(x -> x.serialize(ops))));
+            builder.put(ops.createString("effects"), ops.createList(effects.stream().flatMap(x -> DialogueEffect.CODEC.encodeStart(ops, x).resultOrPartial(MKChat.LOGGER::error).stream())));
         }
     }
 
@@ -100,9 +101,7 @@ public class DialogueNode extends DialogueObject {
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
         effects.clear();
-        dynamic.get("effects")
-                .asList(DialogueEffect::fromDynamic)
-                .forEach(dr -> dr.resultOrPartial(DialogueUtils::throwParseException).ifPresent(effects::add));
+        dynamic.get("effects").asStream().forEach(d -> DialogueEffect.CODEC.parse(d).resultOrPartial(MKChat.LOGGER::error).ifPresent(effects::add));
     }
 
     public static Builder builder(String nodeId) {

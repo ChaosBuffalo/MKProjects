@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkchat.data;
 import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.dialogue.*;
 import com.chaosbuffalo.mkchat.dialogue.conditions.HasBoolFlagCondition;
-import com.chaosbuffalo.mkchat.dialogue.effects.AddFlag;
+import com.chaosbuffalo.mkchat.dialogue.effects.AddFlagEffect;
 import com.chaosbuffalo.mkchat.dialogue.effects.AddLevelEffect;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
@@ -38,7 +38,7 @@ public class MKChatGenerator {
             DialogueNode grantLevel = new DialogueNode("grant_level", "Here is 1 level.");
             grantLevel.addEffect(new AddLevelEffect(1));
             ResourceLocation levelFlag = new ResourceLocation(MKChat.MODID, "grant_level");
-            grantLevel.addEffect(new AddFlag(levelFlag));
+            grantLevel.addEffect(new AddFlagEffect(levelFlag));
 
             tree.addNode(grantLevel);
 
@@ -67,12 +67,13 @@ public class MKChatGenerator {
                             .addCondition(new HasBoolFlagCondition(levelFlag))
                     );
 
-            tree.addPrompt(hail);
+
 
             DialogueNode root = new DialogueNode("root", String.format("Hello %s, I am %s. Do you %s",
                     DialogueContexts.PLAYER_NAME_CONTEXT, DialogueContexts.ENTITY_NAME_CONTEXT, needXp.getPromptEmbed()));
 
             tree.addNode(root);
+            tree.addPrompt(hail);
 
             tree.setHailPrompt(hail);
 

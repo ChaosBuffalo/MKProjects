@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.npc.IMKNpcExtension;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.dialogue.NpcDialogueUtils;
+import com.chaosbuffalo.mknpc.dialogue.effects.NpcDialogueEffectTypes;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEventManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -66,6 +67,7 @@ public class MKNpc {
         MKMemoryModuleTypes.register(modBus);
         MKSensorTypes.register(modBus);
         MKNpcWorldGen.register(modBus);
+        NpcDialogueEffectTypes.REGISTRY.register(modBus);
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {

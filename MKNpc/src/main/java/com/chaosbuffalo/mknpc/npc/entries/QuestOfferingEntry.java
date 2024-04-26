@@ -70,8 +70,8 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
         for (DialoguePrompt prompt : specializedTree.getPrompts().values()) {
             for (DialogueResponse resp : prompt.getResponses()) {
                 for (DialogueCondition condition : resp.getConditions()) {
-                    if (condition instanceof IReceivesChainId) {
-                        ((IReceivesChainId) condition).setChainId(buildResult.instance.getQuestId());
+                    if (condition instanceof IReceivesChainId chainedCondition) {
+                        chainedCondition.setChainId(buildResult.instance.getQuestId());
                     }
                 }
             }

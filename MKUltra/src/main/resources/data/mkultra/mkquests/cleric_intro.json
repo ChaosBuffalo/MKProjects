@@ -21,7 +21,7 @@
       {
         "effects": [
           {
-            "dialogueEffectType": "mknpc:start_quest_chain"
+            "type": "mknpc:start_quest_chain"
           }
         ],
         "id": "apprentice",
@@ -130,7 +130,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "talk_to_apprentice",
                     "questName": "talk_to_apprentice"
                   }
@@ -225,7 +225,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "return_to_apprentice",
                     "questName": "return_to_apprentice"
                   }
@@ -281,7 +281,7 @@
               {
                 "effects": [
                   {
-                    "dialogueEffectType": "mknpc:objective_completion",
+                    "type": "mknpc:objective_completion",
                     "objectiveName": "return_to_acolyte",
                     "questName": "return_to_acolyte"
                   }

@@ -114,7 +114,7 @@ public class QuestDefinition {
     }
 
     public void setupStartQuestResponse(DialogueNode startQuestResponse, DialoguePrompt prompt, DialogueCondition... extraConditions) {
-        startQuestResponse.addEffect(new StartQuestChainEffect());
+        startQuestResponse.addEffect(new StartQuestChainEffect(Util.NIL_UUID));
         addStartNode(startQuestResponse);
         DialogueResponse startResponse = new DialogueResponse(startQuestResponse)
                 .addCondition(new CanStartQuestCondition(Util.NIL_UUID, isRepeatable()));
