@@ -1,10 +1,11 @@
-package com.chaosbuffalo.mknpc.dialogue.effects;
+package com.chaosbuffalo.mknpc.dialogue;
 
 import com.chaosbuffalo.mkchat.ChatRegistries;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffectType;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.dialogue.effects.GrantEntitlementEffect;
+import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.AdvanceQuestChainEffect;
-import com.chaosbuffalo.mknpc.quest.dialogue.effects.GrantEntitlementEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
 import net.minecraftforge.registries.DeferredRegister;

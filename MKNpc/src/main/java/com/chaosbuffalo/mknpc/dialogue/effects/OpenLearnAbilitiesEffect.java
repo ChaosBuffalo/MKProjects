@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffectType;
 import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainingEntity;
+import com.chaosbuffalo.mknpc.dialogue.NpcDialogueEffectTypes;
 import com.mojang.serialization.Codec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;

@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.quest.dialogue.effects;
+package com.chaosbuffalo.mknpc.dialogue.effects;
 
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
@@ -7,7 +7,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.entitlements.EntitlementInstance;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
-import com.chaosbuffalo.mknpc.dialogue.effects.NpcDialogueEffectTypes;
+import com.chaosbuffalo.mknpc.dialogue.NpcDialogueEffectTypes;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;

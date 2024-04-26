@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffectType;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.content.ContentDB;
-import com.chaosbuffalo.mknpc.dialogue.effects.NpcDialogueEffectTypes;
+import com.chaosbuffalo.mknpc.dialogue.NpcDialogueEffectTypes;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;

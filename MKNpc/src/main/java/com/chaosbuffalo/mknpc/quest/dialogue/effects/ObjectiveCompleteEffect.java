@@ -7,7 +7,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.content.ContentDB;
-import com.chaosbuffalo.mknpc.dialogue.effects.NpcDialogueEffectTypes;
+import com.chaosbuffalo.mknpc.dialogue.NpcDialogueEffectTypes;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.mojang.serialization.Codec;
