@@ -27,9 +27,8 @@
           {
             "conditions": [
               {
-                "allowRepeat": false,
-                "dialogueConditionType": "mknpc:can_start_chain_condition",
-                "invert": false
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": false
               }
             ],
             "responseNodeId": "start_quest"
@@ -45,9 +44,8 @@
           {
             "conditions": [
               {
-                "allowRepeat": false,
-                "dialogueConditionType": "mknpc:can_start_chain_condition",
-                "invert": false
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": false
               }
             ],
             "responseNodeId": "hail"
@@ -194,8 +192,7 @@
                   {
                     "conditions": [
                       {
-                        "dialogueConditionType": "mknpc:has_weapon_in_hand",
-                        "invert": false
+                        "type": "mknpc:has_weapon_in_hand"
                       }
                     ],
                     "responseNodeId": "return_to_smith_w_cond"
@@ -339,8 +336,7 @@
                   {
                     "conditions": [
                       {
-                        "dialogueConditionType": "mknpc:has_spent_talents",
-                        "invert": false,
+                        "type": "mknpc:has_spent_talents",
                         "talentCount": 1
                       }
                     ],
@@ -424,13 +420,12 @@
                   {
                     "conditions": [
                       {
+                        "type": "mknpc:has_trained_abilities",
                         "abilities": [
                           "mkultra:ability.skin_like_wood",
                           "mkultra:ability.natures_remedy"
                         ],
-                        "allMatch": false,
-                        "dialogueConditionType": "mknpc:has_trained_abilities",
-                        "invert": false
+                        "allMatch": false
                       }
                     ],
                     "responseNodeId": "after_green_lady_w_cond"
@@ -531,8 +526,7 @@
                   {
                     "conditions": [
                       {
-                        "dialogueConditionType": "mknpc:objectives_complete",
-                        "invert": false,
+                        "type": "mknpc:objectives_complete",
                         "objectiveNames": [
                           "kill_zombies",
                           "kill_archers"
@@ -615,8 +609,7 @@
                   {
                     "conditions": [
                       {
-                        "dialogueConditionType": "mknpc:objectives_complete",
-                        "invert": false,
+                        "type": "mknpc:objectives_complete",
                         "objectiveNames": [
                           "kill_captain"
                         ],
@@ -865,8 +858,7 @@
                   {
                     "conditions": [
                       {
-                        "dialogueConditionType": "mknpc:objectives_complete",
-                        "invert": false,
+                        "type": "mknpc:objectives_complete",
                         "objectiveNames": [
                           "kill_burning"
                         ],

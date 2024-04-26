@@ -3,8 +3,8 @@ package com.chaosbuffalo.mkchat;
 import com.chaosbuffalo.mkchat.dialogue.DialogueContext;
 import com.chaosbuffalo.mkchat.dialogue.DialogueProviders;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
-import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
-import com.chaosbuffalo.mkchat.dialogue.conditions.HasBoolFlagCondition;
+import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueConditionType;
+import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueConditionTypes;
 import com.chaosbuffalo.mkchat.dialogue.effects.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -18,31 +18,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class ChatRegistries {
     public static final ResourceLocation EFFECT_TYPES_REGISTRY_NAME = new ResourceLocation(MKChat.MODID, "dialogue_effect_types");
+    public static final ResourceLocation CONDITION_TYPES_REGISTRY_NAME = new ResourceLocation(MKChat.MODID, "dialogue_condition_types");
     public static IForgeRegistry<DialogueEffectType<?>> DIALOGUE_EFFECTS = null;
+    public static IForgeRegistry<DialogueConditionType<?>> DIALOGUE_CONDITIONS = null;
 
 
     private static final Map<String, BiFunction<String, DialogueTree, Component>> textComponentProviders = new HashMap<>();
     private static final Map<String, Function<DialogueContext, Component>> contextProviders = new HashMap<>();
-
-    private static final Map<ResourceLocation, Supplier<DialogueCondition>> conditionDeserializers = new HashMap<>();
-
-    public static void putConditionDeserializer(ResourceLocation typeName, Supplier<DialogueCondition> func) {
-        conditionDeserializers.put(typeName, func);
-    }
-
-    @Nullable
-    public static DialogueCondition createDialogueCondition(ResourceLocation conditionType) {
-        var factory = conditionDeserializers.get(conditionType);
-        if (factory == null) {
-            MKChat.LOGGER.error("Failed to deserialize dialogue condition {}", conditionType);
-            return null;
-        }
-        return factory.get();
-    }
 
     public static void putTextComponentProvider(String typeName, BiFunction<String, DialogueTree, Component> func) {
         textComponentProviders.put(typeName, func);
@@ -63,7 +48,6 @@ public class ChatRegistries {
     }
 
     public static void setup() {
-        putConditionDeserializer(HasBoolFlagCondition.conditionTypeName, HasBoolFlagCondition::new);
         putTextComponentProvider("context", DialogueProviders::contextProvider);
         putTextComponentProvider("prompt", DialogueProviders::promptProvider);
         putTextComponentProvider("item", DialogueProviders::itemProvider);
@@ -74,10 +58,13 @@ public class ChatRegistries {
     public static void createRegistries(NewRegistryEvent event) {
         event.create(new RegistryBuilder<DialogueEffectType<?>>()
                 .setName(EFFECT_TYPES_REGISTRY_NAME), r -> DIALOGUE_EFFECTS = r);
+        event.create(new RegistryBuilder<DialogueConditionType<?>>()
+                .setName(CONDITION_TYPES_REGISTRY_NAME), r -> DIALOGUE_CONDITIONS = r);
     }
 
     public static void register(IEventBus modBus) {
         modBus.addListener(ChatRegistries::createRegistries);
         DialogueEffectTypes.REGISTRY.register(modBus);
+        DialogueConditionTypes.REGISTRY.register(modBus);
     }
 }

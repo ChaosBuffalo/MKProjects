@@ -34,17 +34,6 @@ public class NPCDialogueExtension implements IDialogueExtension {
     public void registerDialogueExtension() {
         MKNpc.LOGGER.info("Registering MKNpc Dialogue Extension");
 
-        ChatRegistries.putConditionDeserializer(OnQuestCondition.conditionTypeName, OnQuestCondition::new);
-        ChatRegistries.putConditionDeserializer(OnQuestChainCondition.conditionTypeName, OnQuestChainCondition::new);
-        ChatRegistries.putConditionDeserializer(PendingGenerationCondition.conditionTypeName, PendingGenerationCondition::new);
-        ChatRegistries.putConditionDeserializer(HasGeneratedQuestsCondition.conditionTypeName, HasGeneratedQuestsCondition::new);
-        ChatRegistries.putConditionDeserializer(HasWeaponInHandCondition.conditionTypeName, HasWeaponInHandCondition::new);
-        ChatRegistries.putConditionDeserializer(HasSpentTalentPointsCondition.conditionTypeName, HasSpentTalentPointsCondition::new);
-        ChatRegistries.putConditionDeserializer(HasTrainedAbilitiesCondition.conditionTypeName, HasTrainedAbilitiesCondition::new);
-        ChatRegistries.putConditionDeserializer(ObjectivesCompleteCondition.conditionTypeName, ObjectivesCompleteCondition::new);
-        ChatRegistries.putConditionDeserializer(HasEntitlementCondition.conditionTypeName, HasEntitlementCondition::new);
-        ChatRegistries.putConditionDeserializer(CanStartQuestCondition.conditionTypeName, CanStartQuestCondition::new);
-
         ChatRegistries.putTextComponentProvider("notable", NPCDialogueExtension::notable);
     }
 }

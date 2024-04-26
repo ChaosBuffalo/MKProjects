@@ -27,9 +27,8 @@
           {
             "conditions": [
               {
-                "allowRepeat": true,
-                "dialogueConditionType": "mknpc:can_start_chain_condition",
-                "invert": false
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": true
               }
             ],
             "responseNodeId": "start_quest"
@@ -45,9 +44,8 @@
           {
             "conditions": [
               {
-                "allowRepeat": true,
-                "dialogueConditionType": "mknpc:can_start_chain_condition",
-                "invert": false
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": true
               }
             ],
             "responseNodeId": "hail"

@@ -1,51 +1,51 @@
 package com.chaosbuffalo.mknpc.quest.dialogue.conditions;
 
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
+import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueConditionType;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
-import net.minecraft.resources.ResourceLocation;
+import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.Util;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class OnQuestChainCondition extends DialogueCondition {
+    public static final Codec<OnQuestChainCondition> CODEC = RecordCodecBuilder.<OnQuestChainCondition>mapCodec(builder ->
+            builder.group(
+                    UUIDUtil.STRING_CODEC.optionalFieldOf("questId").forGetter(i -> i.questId.equals(Util.NIL_UUID) ? Optional.empty() : Optional.of(i.questId))
+            ).apply(builder, OnQuestChainCondition::new)
+    ).codec();
 
-    public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "on_quest_chain_condition");
-    private UUID questId;
+    private final UUID questId;
+
+    private OnQuestChainCondition(Optional<UUID> questId) {
+        this(questId.orElse(Util.NIL_UUID));
+    }
 
     public OnQuestChainCondition(UUID questId) {
-        super(conditionTypeName);
         this.questId = questId;
     }
 
-    public OnQuestChainCondition() {
-        this(UUID.randomUUID());
+    @Override
+    public DialogueConditionType<? extends DialogueCondition> getType() {
+        return NpcDialogueConditionTypes.ON_QUEST_CHAIN.get();
     }
 
     @Override
     public boolean meetsCondition(ServerPlayer player, LivingEntity source) {
-        return MKNpc.getPlayerQuestData(player).map(x -> x.getQuestStatus(questId)
-                == PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS).orElse(false);
+        return MKNpc.getPlayerQuestData(player)
+                .map(x -> x.getQuestStatus(questId) == PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS)
+                .orElse(false);
     }
 
     @Override
     public OnQuestChainCondition copy() {
         return new OnQuestChainCondition(questId);
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        this.questId = UUID.fromString(dynamic.get("questId").asString(questId.toString()));
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("questId"), ops.createString(questId.toString()));
     }
 }

@@ -2,7 +2,8 @@ package com.chaosbuffalo.mkchat.data;
 
 import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.dialogue.*;
-import com.chaosbuffalo.mkchat.dialogue.conditions.HasBoolFlagCondition;
+import com.chaosbuffalo.mkchat.dialogue.conditions.HasFlagCondition;
+import com.chaosbuffalo.mkchat.dialogue.conditions.InvertCondition;
 import com.chaosbuffalo.mkchat.dialogue.effects.AddFlagEffect;
 import com.chaosbuffalo.mkchat.dialogue.effects.AddLevelEffect;
 import net.minecraft.data.CachedOutput;
@@ -54,17 +55,17 @@ public class MKChatGenerator {
             DialoguePrompt needXp = new DialoguePrompt("need_xp", "need xp",
                     "I need xp.", "need some xp");
             needXp.addResponse(new DialogueResponse("grant_level")
-                    .addCondition(new HasBoolFlagCondition(levelFlag).setInvert(true)));
+                    .addCondition(new InvertCondition(new HasFlagCondition(levelFlag))));
             needXp.addResponse(new DialogueResponse("already_granted")
-                    .addCondition(new HasBoolFlagCondition(levelFlag)));
+                    .addCondition(new HasFlagCondition(levelFlag)));
 
             tree.addPrompt(needXp);
 
             DialoguePrompt hail = new DialoguePrompt("hail", "", "", "")
                     .addResponse(new DialogueResponse("root")
-                            .addCondition(new HasBoolFlagCondition(levelFlag).setInvert(true)))
+                            .addCondition(new InvertCondition(new HasFlagCondition(levelFlag))))
                     .addResponse(new DialogueResponse("cant_help")
-                            .addCondition(new HasBoolFlagCondition(levelFlag))
+                            .addCondition(new HasFlagCondition(levelFlag))
                     );
 
 

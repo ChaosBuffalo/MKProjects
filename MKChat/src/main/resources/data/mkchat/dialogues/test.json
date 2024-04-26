@@ -36,9 +36,11 @@
         {
           "conditions": [
             {
-              "dialogueConditionType": "mkchat:dialogue_condition.has_bool_flag",
-              "flagName": "mkchat:grant_level",
-              "invert": true
+              "type": "mkchat:invert",
+              "condition": {
+                "type": "mkchat:has_flag",
+                "flag": "mkchat:grant_level"
+              }
             }
           ],
           "responseNodeId": "grant_level"
@@ -46,9 +48,8 @@
         {
           "conditions": [
             {
-              "dialogueConditionType": "mkchat:dialogue_condition.has_bool_flag",
-              "flagName": "mkchat:grant_level",
-              "invert": false
+              "type": "mkchat:has_flag",
+              "flag": "mkchat:grant_level"
             }
           ],
           "responseNodeId": "already_granted"
@@ -64,9 +65,11 @@
         {
           "conditions": [
             {
-              "dialogueConditionType": "mkchat:dialogue_condition.has_bool_flag",
-              "flagName": "mkchat:grant_level",
-              "invert": true
+              "type": "mkchat:invert",
+              "condition": {
+                "type": "mkchat:has_flag",
+                "flag": "mkchat:grant_level"
+              }
             }
           ],
           "responseNodeId": "root"
@@ -74,9 +77,8 @@
         {
           "conditions": [
             {
-              "dialogueConditionType": "mkchat:dialogue_condition.has_bool_flag",
-              "flagName": "mkchat:grant_level",
-              "invert": false
+              "type": "mkchat:has_flag",
+              "flag": "mkchat:grant_level"
             }
           ],
           "responseNodeId": "cant_help"

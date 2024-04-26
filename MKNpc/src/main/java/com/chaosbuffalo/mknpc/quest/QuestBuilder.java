@@ -73,7 +73,7 @@ public class QuestBuilder {
                 talkTo.location.structureName, talkTo.location.structureIndex, talkTo.npcDef, description);
         DialogueNode completeNode = new DialogueNode(String.format("%s_complete", objectiveName), withComplete);
         DialogueResponse completeResponse = new DialogueResponse(completeNode.getId());
-        completeResponse.addCondition(new ObjectivesCompleteCondition(quest.getQuestName(), objectives.toArray(new String[0])));
+        completeResponse.addCondition(new ObjectivesCompleteCondition(quest.getQuestName(), objectives));
         completeNode.addEffect(new ObjectiveCompleteEffect(talkObj.getObjectiveName(), quest.getQuestName()));
         DialogueNode withoutCompleteNode = new DialogueNode(String.format("%s_wo_complete", objectiveName), withoutComplete);
         DialogueResponse withoutResponse = new DialogueResponse(withoutCompleteNode.getId());

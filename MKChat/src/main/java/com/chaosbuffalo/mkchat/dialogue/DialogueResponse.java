@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
+import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
@@ -75,9 +76,7 @@ public class DialogueResponse {
         responseNodeId = decodeKey(dynamic)
                 .orElseThrow(IllegalStateException::new);
         conditions.clear();
-        dynamic.get("conditions")
-                .asList(DialogueCondition::fromDynamic)
-                .forEach(dr -> dr.resultOrPartial(DialogueUtils::throwParseException).ifPresent(conditions::add));
+        dynamic.get("conditions").asStream().forEach(d -> DialogueCondition.CODEC.parse(d).resultOrPartial(MKChat.LOGGER::error).ifPresent(conditions::add));
     }
 
     public <D> D serialize(DynamicOps<D> ops) {
@@ -85,7 +84,7 @@ public class DialogueResponse {
         builder.put(ops.createString("responseNodeId"), ops.createString(responseNodeId));
         if (!conditions.isEmpty()) {
             builder.put(ops.createString("conditions"),
-                    ops.createList(conditions.stream().map(x -> x.serialize(ops))));
+                    ops.createList(conditions.stream().flatMap(x -> DialogueCondition.CODEC.encodeStart(ops, x).resultOrPartial(MKChat.LOGGER::error).stream())));
         }
         return ops.createMap(builder.build());
     }

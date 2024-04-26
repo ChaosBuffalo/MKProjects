@@ -57,9 +57,8 @@
           {
             "conditions": [
               {
-                "allowRepeat": false,
-                "dialogueConditionType": "mknpc:can_start_chain_condition",
-                "invert": false
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": false
               }
             ],
             "responseNodeId": "ambushed"
@@ -75,9 +74,8 @@
           {
             "conditions": [
               {
-                "allowRepeat": false,
-                "dialogueConditionType": "mknpc:can_start_chain_condition",
-                "invert": false
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": false
               }
             ],
             "responseNodeId": "intro"
