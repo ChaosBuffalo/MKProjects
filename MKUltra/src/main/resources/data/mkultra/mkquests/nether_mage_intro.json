@@ -174,18 +174,21 @@
       "questName": "return_to_initiate",
       "rewards": [
         {
-          "attributes": {
-            "loot_slot": "mkweapons:main_hand",
-            "loot_tier": "mkultra:burning_staff"
+          "type": "mknpc:mk_loot",
+          "description": {
+            "translate": "mkultra.quest_reward.receive_item.name",
+            "with": [
+              {
+                "text": "Burning Staff"
+              }
+            ]
           },
-          "description": "{\"translate\":\"mkultra.quest_reward.receive_item.name\",\"with\":[{\"text\":\"Burning Staff\"}]}",
-          "rewardType": "mknpc:quest_reward.mk_loot"
+          "loot_slot": "mkweapons:main_hand",
+          "loot_tier": "mkultra:burning_staff"
         },
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         }
       ]
     },
@@ -208,10 +211,8 @@
       "questName": "test_staff",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         }
       ]
     },
@@ -276,16 +277,14 @@
       "questName": "test_complete",
       "rewards": [
         {
-          "attributes": {
+          "type": "mknpc:entitlement",
+          "value": {
             "entitlement": "mkultra:nether_mage.intro.tier_1"
-          },
-          "rewardType": "mknpc:quest_reward.entitlement"
+          }
         },
         {
-          "attributes": {
-            "xp": 50
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 50
         }
       ]
     }

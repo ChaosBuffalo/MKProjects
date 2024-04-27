@@ -7,7 +7,6 @@ import com.chaosbuffalo.mkchat.dialogue.IDialogueExtension;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
-import com.chaosbuffalo.mknpc.quest.dialogue.conditions.*;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.fml.InterModComms;
 

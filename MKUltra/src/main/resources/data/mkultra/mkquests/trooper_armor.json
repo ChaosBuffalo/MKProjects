@@ -84,18 +84,21 @@
       "questName": "tradeHelmet",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         },
         {
-          "attributes": {
-            "loot_slot": "mkweapons:head",
-            "loot_tier": "mkultra:trooper_knight_armor"
+          "type": "mknpc:mk_loot",
+          "description": {
+            "translate": "mkultra.quest_reward.receive_item.name",
+            "with": [
+              {
+                "translate": "item.mkultra.trooper_knight_helmet"
+              }
+            ]
           },
-          "description": "{\"translate\":\"mkultra.quest_reward.receive_item.name\",\"with\":[{\"translate\":\"item.mkultra.trooper_knight_helmet\"}]}",
-          "rewardType": "mknpc:quest_reward.mk_loot"
+          "loot_slot": "mkweapons:head",
+          "loot_tier": "mkultra:trooper_knight_armor"
         }
       ]
     },
@@ -124,18 +127,21 @@
       "questName": "tradeLeggings",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         },
         {
-          "attributes": {
-            "loot_slot": "mkweapons:legs",
-            "loot_tier": "mkultra:trooper_knight_armor"
+          "type": "mknpc:mk_loot",
+          "description": {
+            "translate": "mkultra.quest_reward.receive_item.name",
+            "with": [
+              {
+                "translate": "item.mkultra.trooper_knight_leggings"
+              }
+            ]
           },
-          "description": "{\"translate\":\"mkultra.quest_reward.receive_item.name\",\"with\":[{\"translate\":\"item.mkultra.trooper_knight_leggings\"}]}",
-          "rewardType": "mknpc:quest_reward.mk_loot"
+          "loot_slot": "mkweapons:legs",
+          "loot_tier": "mkultra:trooper_knight_armor"
         }
       ]
     },
@@ -164,18 +170,21 @@
       "questName": "tradeBoots",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         },
         {
-          "attributes": {
-            "loot_slot": "mkweapons:feet",
-            "loot_tier": "mkultra:trooper_knight_armor"
+          "type": "mknpc:mk_loot",
+          "description": {
+            "translate": "mkultra.quest_reward.receive_item.name",
+            "with": [
+              {
+                "translate": "item.mkultra.trooper_knight_boots"
+              }
+            ]
           },
-          "description": "{\"translate\":\"mkultra.quest_reward.receive_item.name\",\"with\":[{\"translate\":\"item.mkultra.trooper_knight_boots\"}]}",
-          "rewardType": "mknpc:quest_reward.mk_loot"
+          "loot_slot": "mkweapons:feet",
+          "loot_tier": "mkultra:trooper_knight_armor"
         }
       ]
     },
@@ -204,18 +213,21 @@
       "questName": "tradeChestplate",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         },
         {
-          "attributes": {
-            "loot_slot": "mkweapons:chest",
-            "loot_tier": "mkultra:trooper_knight_armor"
+          "type": "mknpc:mk_loot",
+          "description": {
+            "translate": "mkultra.quest_reward.receive_item.name",
+            "with": [
+              {
+                "translate": "item.mkultra.trooper_knight_chestplate"
+              }
+            ]
           },
-          "description": "{\"translate\":\"mkultra.quest_reward.receive_item.name\",\"with\":[{\"translate\":\"item.mkultra.trooper_knight_chestplate\"}]}",
-          "rewardType": "mknpc:quest_reward.mk_loot"
+          "loot_slot": "mkweapons:chest",
+          "loot_tier": "mkultra:trooper_knight_armor"
         }
       ]
     }

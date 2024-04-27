@@ -168,10 +168,8 @@
       "questName": "talk_to_apprentice",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         }
       ]
     },
@@ -196,10 +194,8 @@
       "questName": "loot_necklace",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         }
       ]
     },
@@ -252,10 +248,8 @@
       "questName": "return_to_apprentice",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         }
       ]
     },
@@ -308,16 +302,14 @@
       "questName": "return_to_acolyte",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         },
         {
-          "attributes": {
+          "type": "mknpc:entitlement",
+          "value": {
             "entitlement": "mkultra:cleric.intro.tier_1"
-          },
-          "rewardType": "mknpc:quest_reward.entitlement"
+          }
         }
       ]
     }

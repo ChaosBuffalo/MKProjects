@@ -108,10 +108,8 @@
       "questName": "talk_to_smith",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         }
       ]
     },
@@ -144,10 +142,8 @@
       "questName": "equip_yourself",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         }
       ]
     },
@@ -212,10 +208,8 @@
       "questName": "return_to_smith",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         }
       ]
     },
@@ -268,10 +262,8 @@
       "questName": "green_lady_talent",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         }
       ]
     },
@@ -357,16 +349,14 @@
       "questName": "return_to_green_lady",
       "rewards": [
         {
-          "attributes": {
-            "xp": 50
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 50
         },
         {
-          "attributes": {
+          "type": "mknpc:entitlement",
+          "value": {
             "entitlement": "mkultra:green_knight.tier_1"
-          },
-          "rewardType": "mknpc:quest_reward.entitlement"
+          }
         }
       ]
     },
@@ -456,10 +446,8 @@
       "questName": "after_ability",
       "rewards": [
         {
-          "attributes": {
-            "xp": 50
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 50
         }
       ]
     },
@@ -551,10 +539,8 @@
       "questName": "first_kill",
       "rewards": [
         {
-          "attributes": {
-            "xp": 50
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 50
         }
       ]
     },
@@ -633,16 +619,14 @@
       "questName": "kill_captain",
       "rewards": [
         {
-          "attributes": {
-            "xp": 100
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 100
         },
         {
-          "attributes": {
+          "type": "mknpc:entitlement",
+          "value": {
             "entitlement": "mkultra:green_knight.tier_2"
-          },
-          "rewardType": "mknpc:quest_reward.entitlement"
+          }
         }
       ]
     },
@@ -800,10 +784,8 @@
       "questName": "talk_to_ghost",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         }
       ]
     },
@@ -882,22 +864,18 @@
       "questName": "kill_burning",
       "rewards": [
         {
-          "attributes": {
-            "xp": 100
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 100
         },
         {
-          "attributes": {
+          "type": "mknpc:entitlement",
+          "value": {
             "entitlement": "mkultra:green_knight.tier_3"
-          },
-          "rewardType": "mknpc:quest_reward.entitlement"
+          }
         },
         {
-          "attributes": {
-            "tree_name": "mkultra:green_knight_talents"
-          },
-          "rewardType": "mknpc:quest_reward.talent_tree"
+          "type": "mknpc:talent_tree",
+          "tree_name": "mkultra:green_knight_talents"
         }
       ]
     }

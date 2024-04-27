@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.npc.IMKNpcExtension;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
+import com.chaosbuffalo.mknpc.quest.QuestRegistries;
 import com.chaosbuffalo.mknpc.quest.dialogue.NpcDialogueUtils;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueEffectTypes;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEventManager;
@@ -70,6 +71,7 @@ public class MKNpc {
         MKNpcWorldGen.register(modBus);
         NpcDialogueEffectTypes.REGISTRY.register(modBus);
         NpcDialogueConditionTypes.REGISTRY.register(modBus);
+        QuestRegistries.register(modBus);
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
