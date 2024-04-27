@@ -1,6 +1,7 @@
 {
   "dialogue": {
-    "hailPrompt": "hail",
+    "dialogueId": "mknpc:give_quest.mkultra.trooper_armor",
+    "hailPromptId": "hail",
     "nodes": [
       {
         "effects": [
@@ -8,18 +9,18 @@
             "type": "mknpc:start_quest_chain"
           }
         ],
-        "id": "start_quest",
-        "message": "For the full set I will need 20 {item:mkultra:corrupted_pig_iron_plate}, a {item:mkultra:destroyed_trooper_helmet}, a {item:mkultra:destroyed_trooper_leggings}, a {item:mkultra:destroyed_trooper_chestplate}, and a {item:mkultra:destroyed_trooper_boots}."
+        "message": "For the full set I will need 20 {item:mkultra:corrupted_pig_iron_plate}, a {item:mkultra:destroyed_trooper_helmet}, a {item:mkultra:destroyed_trooper_leggings}, a {item:mkultra:destroyed_trooper_chestplate}, and a {item:mkultra:destroyed_trooper_boots}.",
+        "nodeId": "start_quest"
       },
       {
-        "id": "hail",
-        "message": "I make armor for the Green Knights. We're running low on supplies but if you can salvage some parts from the zombies in the castle If you {prompt:start_quest} I should be able to put something together."
+        "message": "I make armor for the Green Knights. We're running low on supplies but if you can salvage some parts from the zombies in the castle If you {prompt:start_quest} I should be able to put something together.",
+        "nodeId": "hail"
       }
     ],
     "prompts": [
       {
-        "id": "start_quest",
-        "message": "need some armor.",
+        "highlightedText": "need some armor.",
+        "promptId": "start_quest",
         "responses": [
           {
             "responseNodeId": "start_quest"
@@ -34,12 +35,12 @@
             "responseNodeId": "start_quest"
           }
         ],
-        "suggestedText": "I need some armor",
+        "suggestionFillText": "I need some armor",
         "triggerPhrase": "need some armor"
       },
       {
-        "id": "hail",
-        "message": "",
+        "highlightedText": "",
+        "promptId": "hail",
         "responses": [
           {
             "conditions": [
@@ -51,7 +52,7 @@
             "responseNodeId": "hail"
           }
         ],
-        "suggestedText": "",
+        "suggestionFillText": "",
         "triggerPhrase": ""
       }
     ]

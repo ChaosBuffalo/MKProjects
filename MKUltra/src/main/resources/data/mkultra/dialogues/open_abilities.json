@@ -1,9 +1,10 @@
 {
-  "hailPrompt": "hail",
+  "dialogueId": "mkultra:open_abilities",
+  "hailPromptId": "hail",
   "nodes": [
     {
-      "id": "root",
-      "message": "Hello {context:player_name}, welcome to the MKU alpha. Do you {prompt:need_training}"
+      "message": "Hello {context:player_name}, welcome to the MKU alpha. Do you {prompt:need_training}",
+      "nodeId": "root"
     },
     {
       "effects": [
@@ -11,31 +12,31 @@
           "type": "mknpc:open_learn_abilities"
         }
       ],
-      "id": "open_training",
-      "message": "Let me see what I can teach you."
+      "message": "Let me see what I can teach you.",
+      "nodeId": "open_training"
     }
   ],
   "prompts": [
     {
-      "id": "need_training",
-      "message": "need training?",
+      "highlightedText": "need training?",
+      "promptId": "need_training",
       "responses": [
         {
           "responseNodeId": "open_training"
         }
       ],
-      "suggestedText": "I need training.",
+      "suggestionFillText": "I need training.",
       "triggerPhrase": "need training"
     },
     {
-      "id": "hail",
-      "message": "",
+      "highlightedText": "",
+      "promptId": "hail",
       "responses": [
         {
           "responseNodeId": "root"
         }
       ],
-      "suggestedText": "",
+      "suggestionFillText": "",
       "triggerPhrase": ""
     }
   ]

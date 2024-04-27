@@ -1,10 +1,8 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
 import com.chaosbuffalo.mkchat.MKChat;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -14,17 +12,34 @@ import net.minecraft.world.entity.LivingEntity;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class DialoguePrompt extends DialogueObject {
+    public static final Codec<DialoguePrompt> CODEC = RecordCodecBuilder.<DialoguePrompt>mapCodec(builder -> {
+        return builder.group(
+                Codec.STRING.fieldOf("promptId").forGetter(DialogueObject::getId),
+                Codec.STRING.fieldOf("highlightedText").forGetter(DialogueObject::getRawMessage),
+                Codec.STRING.fieldOf("triggerPhrase").forGetter(i -> i.triggerPhrase),
+                Codec.STRING.fieldOf("suggestionFillText").forGetter(i -> i.suggestionFillText),
+                Codec.list(DialogueResponse.CODEC).optionalFieldOf("responses", Collections.emptyList()).forGetter(i -> i.responses)
+        ).apply(builder, DialoguePrompt::new);
+    }).codec();
+
     public static final String EMPTY_TRIGGER_PHRASE = "";
     public static final String EMPTY_SUGGESTION_TEXT = "";
     private final List<DialogueResponse> responses;
     private String triggerPhrase;
     private String suggestionFillText;
+
+    private DialoguePrompt(String promptId, String highlight, String triggerPhrase, String suggestionFillText, List<DialogueResponse> responses) {
+        super(promptId, highlight);
+        this.triggerPhrase = triggerPhrase;
+        this.suggestionFillText = suggestionFillText;
+        this.responses = new ArrayList<>(responses);
+    }
 
     public DialoguePrompt(String promptId, String triggerPhrase, String suggestionFillText, String highlightText) {
         super(promptId, highlightText);
@@ -47,7 +62,7 @@ public class DialoguePrompt extends DialogueObject {
     }
 
     public DialoguePrompt copy() {
-        DialoguePrompt newPrompt = new DialoguePrompt(getId());
+        DialoguePrompt newPrompt = new DialoguePrompt(getId(), triggerPhrase, suggestionFillText, getRawMessage());
         responses.forEach(r -> newPrompt.addResponse(r.copy()));
         return newPrompt;
     }
@@ -119,44 +134,6 @@ public class DialoguePrompt extends DialogueObject {
 
     public Stream<String> getRequiredNodes() {
         return responses.stream().map(DialogueResponse::getResponseNodeId);
-    }
-
-    public static <D> DataResult<DialoguePrompt> fromDynamic(Dynamic<D> dynamic) {
-        Optional<String> nameResult = decodeKey(dynamic);
-        if (nameResult.isEmpty()) {
-            return DataResult.error(() -> "Failed to decode dialogue response id");
-        }
-
-        DialoguePrompt prompt = new DialoguePrompt(nameResult.get());
-        prompt.deserialize(dynamic);
-        if (prompt.isValid()) {
-            return DataResult.success(prompt);
-        }
-        return DataResult.error(() -> "Unable to decode dialogue prompt: " + nameResult.get());
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("triggerPhrase"), ops.createString(triggerPhrase));
-        builder.put(ops.createString("suggestedText"), ops.createString(suggestionFillText));
-        if (!responses.isEmpty()) {
-            builder.put(ops.createString("responses"), ops.createList(responses.stream().map(x -> x.serialize(ops))));
-        }
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        triggerPhrase = dynamic.get("triggerPhrase").asString()
-                .resultOrPartial(DialogueUtils::throwParseException)
-                .orElseThrow(IllegalStateException::new);
-        suggestionFillText = dynamic.get("suggestedText").asString()
-                .resultOrPartial(DialogueUtils::throwParseException)
-                .orElseThrow(IllegalStateException::new);
-        responses.clear();
-        dynamic.get("responses").asList(DialogueResponse::fromDynamic)
-                .forEach(dr -> dr.resultOrPartial(DialogueUtils::throwParseException).ifPresent(responses::add));
     }
 
     public static Builder builder(String promptId) {

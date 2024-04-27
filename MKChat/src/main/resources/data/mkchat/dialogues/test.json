@@ -1,13 +1,14 @@
 {
-  "hailPrompt": "hail",
+  "dialogueId": "mkchat:test",
+  "hailPromptId": "hail",
   "nodes": [
     {
-      "id": "root",
-      "message": "Hello {context:player_name}, I am {context:entity_name}. Do you {prompt:need_xp}"
+      "message": "Hello {context:player_name}, I am {context:entity_name}. Do you {prompt:need_xp}",
+      "nodeId": "root"
     },
     {
-      "id": "cant_help",
-      "message": "I have already helped you as much as I can."
+      "message": "I have already helped you as much as I can.",
+      "nodeId": "cant_help"
     },
     {
       "effects": [
@@ -20,18 +21,18 @@
           "flag": "mkchat:grant_level"
         }
       ],
-      "id": "grant_level",
-      "message": "Here is 1 level."
+      "message": "Here is 1 level.",
+      "nodeId": "grant_level"
     },
     {
-      "id": "already_granted",
-      "message": "You already got a level, don't be greedy."
+      "message": "You already got a level, don't be greedy.",
+      "nodeId": "already_granted"
     }
   ],
   "prompts": [
     {
-      "id": "need_xp",
-      "message": "need some xp",
+      "highlightedText": "need some xp",
+      "promptId": "need_xp",
       "responses": [
         {
           "conditions": [
@@ -55,12 +56,12 @@
           "responseNodeId": "already_granted"
         }
       ],
-      "suggestedText": "I need xp.",
+      "suggestionFillText": "I need xp.",
       "triggerPhrase": "need xp"
     },
     {
-      "id": "hail",
-      "message": "",
+      "highlightedText": "",
+      "promptId": "hail",
       "responses": [
         {
           "conditions": [
@@ -84,7 +85,7 @@
           "responseNodeId": "cant_help"
         }
       ],
-      "suggestedText": "",
+      "suggestionFillText": "",
       "triggerPhrase": ""
     }
   ]

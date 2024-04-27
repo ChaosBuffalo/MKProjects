@@ -2,22 +2,26 @@ package com.chaosbuffalo.mkchat.dialogue;
 
 import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class DialogueNode extends DialogueObject {
+    public static final Codec<DialogueNode> CODEC = RecordCodecBuilder.<DialogueNode>mapCodec(builder -> {
+        return builder.group(
+                Codec.STRING.fieldOf("nodeId").forGetter(DialogueObject::getId),
+                Codec.STRING.fieldOf("message").forGetter(DialogueObject::getRawMessage),
+                Codec.list(DialogueEffect.CODEC).optionalFieldOf("effects", Collections.emptyList()).forGetter(i -> i.effects)
+        ).apply(builder, DialogueNode::new);
+    }).codec();
+
     private final List<DialogueEffect> effects;
 
     public DialogueNode(String nodeId, String rawMessage) {
@@ -73,35 +77,6 @@ public class DialogueNode extends DialogueObject {
                 effect.applyEffect(player, source, this);
             }
         }
-    }
-
-    public static <D> DataResult<DialogueNode> fromDynamic(Dynamic<D> dynamic) {
-        Optional<String> name = decodeKey(dynamic);
-        if (name.isEmpty()) {
-            return DataResult.error(() -> "Failed to decode dialogue node id: " + dynamic);
-        }
-
-        DialogueNode prompt = new DialogueNode(name.get());
-        prompt.deserialize(dynamic);
-        if (prompt.isValid()) {
-            return DataResult.success(prompt);
-        }
-        return DataResult.error(() -> "Unable to decode dialogue node: " + name.get());
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        if (!effects.isEmpty()) {
-            builder.put(ops.createString("effects"), ops.createList(effects.stream().flatMap(x -> DialogueEffect.CODEC.encodeStart(ops, x).resultOrPartial(MKChat.LOGGER::error).stream())));
-        }
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        effects.clear();
-        dynamic.get("effects").asStream().forEach(d -> DialogueEffect.CODEC.parse(d).resultOrPartial(MKChat.LOGGER::error).ifPresent(effects::add));
     }
 
     public static Builder builder(String nodeId) {

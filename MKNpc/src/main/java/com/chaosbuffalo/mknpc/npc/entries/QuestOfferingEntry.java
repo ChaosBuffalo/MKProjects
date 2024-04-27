@@ -58,7 +58,8 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
     }
 
     private DialogueTree specializeTree(QuestDefinition definition, QuestChainBuildResult buildResult) {
-        DialogueTree specializedTree = definition.getStartQuestTree().copy();
+        UUID chainId = buildResult.instance.getQuestId();
+        DialogueTree specializedTree = definition.getStartQuestTree().copy(makeTreeId(chainId));
         for (DialogueNode node : specializedTree.getNodes().values()) {
             for (DialogueEffect effect : node.getEffects()) {
                 if (effect instanceof IReceivesChainId advEffect) {
@@ -130,8 +131,7 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
             questId = nbt.getUUID("questId");
         }
         if (nbt.contains("dialogue")) {
-            tree = new DialogueTree(makeTreeId(questId));
-            tree.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt.get("dialogue")));
+            tree = DialogueTree.deserializeTreeFromDynamic(new Dynamic<>(NbtOps.INSTANCE, nbt.get("dialogue")));
         }
     }
 }

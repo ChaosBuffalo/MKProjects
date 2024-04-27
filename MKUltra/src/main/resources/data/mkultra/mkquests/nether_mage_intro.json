@@ -1,18 +1,19 @@
 {
   "dialogue": {
-    "hailPrompt": "hail",
+    "dialogueId": "mknpc:give_quest.mkultra.nether_mage_intro",
+    "hailPromptId": "hail",
     "nodes": [
       {
-        "id": "assignment",
-        "message": "I was sent here to test a new magical staff my master has been working on, but I dropped it when I was {prompt:ambushed} in the library."
+        "message": "I was sent here to test a new magical staff my master has been working on, but I dropped it when I was {prompt:ambushed} in the library.",
+        "nodeId": "assignment"
       },
       {
-        "id": "nether_mage_guild",
-        "message": "The Nether Mage's Guild studies the Fire and Shadow Magics associated with the Nether dimension. We have guild halls all over the place, I'm surprised you haven't heard of us!"
+        "message": "The Nether Mage's Guild studies the Fire and Shadow Magics associated with the Nether dimension. We have guild halls all over the place, I'm surprised you haven't heard of us!",
+        "nodeId": "nether_mage_guild"
       },
       {
-        "id": "intro",
-        "message": "Hello, I'm {context:entity_name}. The {prompt:nether_mage_guild} sent me out here to research the appearance of this castle. However, I was overwhelmed by zombies and found shelter in this cave. Perhaps you can help me finish {prompt:assignment}."
+        "message": "Hello, I'm {context:entity_name}. The {prompt:nether_mage_guild} sent me out here to research the appearance of this castle. However, I was overwhelmed by zombies and found shelter in this cave. Perhaps you can help me finish {prompt:assignment}.",
+        "nodeId": "intro"
       },
       {
         "effects": [
@@ -20,36 +21,36 @@
             "type": "mknpc:start_quest_chain"
           }
         ],
-        "id": "ambushed",
-        "message": "{context:player_name} will you retrieve my staff from {mk_quest_notable:mkultra:intro_castle#0#mkultra:imperial_magus}?"
+        "message": "{context:player_name} will you retrieve my staff from {mk_quest_notable:mkultra:intro_castle#0#mkultra:imperial_magus}?",
+        "nodeId": "ambushed"
       }
     ],
     "prompts": [
       {
-        "id": "assignment",
-        "message": "my assignment",
+        "highlightedText": "my assignment",
+        "promptId": "assignment",
         "responses": [
           {
             "responseNodeId": "assignment"
           }
         ],
-        "suggestedText": "I will help with your assignment.",
+        "suggestionFillText": "I will help with your assignment.",
         "triggerPhrase": "assignment"
       },
       {
-        "id": "nether_mage_guild",
-        "message": "guild",
+        "highlightedText": "guild",
+        "promptId": "nether_mage_guild",
         "responses": [
           {
             "responseNodeId": "nether_mage_guild"
           }
         ],
-        "suggestedText": "What guild?",
+        "suggestionFillText": "What guild?",
         "triggerPhrase": "guild"
       },
       {
-        "id": "ambushed",
-        "message": "ambushed",
+        "highlightedText": "ambushed",
+        "promptId": "ambushed",
         "responses": [
           {
             "responseNodeId": "ambushed"
@@ -64,12 +65,12 @@
             "responseNodeId": "ambushed"
           }
         ],
-        "suggestedText": "You were ambushed?",
+        "suggestionFillText": "You were ambushed?",
         "triggerPhrase": "ambushed"
       },
       {
-        "id": "hail",
-        "message": "",
+        "highlightedText": "",
+        "promptId": "hail",
         "responses": [
           {
             "conditions": [
@@ -81,7 +82,7 @@
             "responseNodeId": "intro"
           }
         ],
-        "suggestedText": "",
+        "suggestionFillText": "",
         "triggerPhrase": ""
       }
     ]
@@ -125,7 +126,8 @@
             "{\"text\":\"Talk to the Initiate again.\"}"
           ],
           "dialogue": {
-            "hailPrompt": "hail",
+            "dialogueId": "mknpc:quest.dialogue.return_to_initiate",
+            "hailPromptId": "hail",
             "nodes": [
               {
                 "effects": [
@@ -135,35 +137,35 @@
                     "questName": "return_to_initiate"
                   }
                 ],
-                "id": "kill_zombies",
-                "message": "Great, return to me when you've delivered 10 killing blows with the fireball from the staff."
+                "message": "Great, return to me when you've delivered 10 killing blows with the fireball from the staff.",
+                "nodeId": "kill_zombies"
               },
               {
-                "id": "return_to_initiate_hail",
-                "message": "Thanks for retrieving this staff, you really saved my ass. Will you do one more thing for me? My assignment was to use this staff to {prompt:kill_zombies} here to test its efficacy."
+                "message": "Thanks for retrieving this staff, you really saved my ass. Will you do one more thing for me? My assignment was to use this staff to {prompt:kill_zombies} here to test its efficacy.",
+                "nodeId": "return_to_initiate_hail"
               }
             ],
             "prompts": [
               {
-                "id": "kill_zombies",
-                "message": "kill some of the zombies",
+                "highlightedText": "kill some of the zombies",
+                "promptId": "kill_zombies",
                 "responses": [
                   {
                     "responseNodeId": "kill_zombies"
                   }
                 ],
-                "suggestedText": "I will kill some of the zombies.",
+                "suggestionFillText": "I will kill some of the zombies.",
                 "triggerPhrase": "kill some of the zombies"
               },
               {
-                "id": "hail",
-                "message": "",
+                "highlightedText": "",
+                "promptId": "hail",
                 "responses": [
                   {
                     "responseNodeId": "return_to_initiate_hail"
                   }
                 ],
-                "suggestedText": "",
+                "suggestionFillText": "",
                 "triggerPhrase": ""
               }
             ]
@@ -231,7 +233,8 @@
             "{\"text\":\"Talk to the Initiate\"}"
           ],
           "dialogue": {
-            "hailPrompt": "hail",
+            "dialogueId": "mknpc:quest.dialogue.test_complete",
+            "hailPromptId": "hail",
             "nodes": [
               {
                 "effects": [
@@ -241,32 +244,32 @@
                     "questName": "test_complete"
                   }
                 ],
-                "id": "test_complete_hail",
-                "message": "Looks like the staff is in working order. You know you weren't half bad at this, you should consider joining {prompt:nether_mage_guild}. In the meantime, I can {prompt:open_training} a few spells. "
+                "message": "Looks like the staff is in working order. You know you weren't half bad at this, you should consider joining {prompt:nether_mage_guild}. In the meantime, I can {prompt:open_training} a few spells. ",
+                "nodeId": "test_complete_hail"
               }
             ],
             "prompts": [
               {
-                "id": "nether_mage_guild",
-                "message": "the Guild",
-                "suggestedText": "What guild?",
+                "highlightedText": "the Guild",
+                "promptId": "nether_mage_guild",
+                "suggestionFillText": "What guild?",
                 "triggerPhrase": "guild"
               },
               {
-                "id": "open_training",
-                "message": "teach you",
-                "suggestedText": "Will you teach me?",
+                "highlightedText": "teach you",
+                "promptId": "open_training",
+                "suggestionFillText": "Will you teach me?",
                 "triggerPhrase": "teach me"
               },
               {
-                "id": "hail",
-                "message": "",
+                "highlightedText": "",
+                "promptId": "hail",
                 "responses": [
                   {
                     "responseNodeId": "test_complete_hail"
                   }
                 ],
-                "suggestedText": "",
+                "suggestionFillText": "",
                 "triggerPhrase": ""
               }
             ]

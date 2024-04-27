@@ -1,24 +1,38 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.chaosbuffalo.mkchat.MKChat;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class DialogueTree {
+    public static final Codec<DialogueTree> CODEC = RecordCodecBuilder.<DialogueTree>mapCodec(builder -> {
+        return builder.group(
+                ResourceLocation.CODEC.fieldOf("dialogueId").forGetter(i -> i.dialogueName),
+                Codec.list(DialogueNode.CODEC).fieldOf("nodes").forGetter(i -> List.copyOf(i.nodes.values())),
+                Codec.list(DialoguePrompt.CODEC).fieldOf("prompts").forGetter(i -> List.copyOf(i.prompts.values())),
+                Codec.STRING.optionalFieldOf("hailPromptId").forGetter(i -> Optional.ofNullable(i.hailPromptId))
+        ).apply(builder, DialogueTree::new);
+    }).codec();
+
     private final ResourceLocation dialogueName;
     private final Map<String, DialogueNode> nodes;
     private final Map<String, DialoguePrompt> prompts;
     private String hailPromptId;
+
+    private DialogueTree(ResourceLocation dialogueName, Collection<DialogueNode> nodes, Collection<DialoguePrompt> prompts, Optional<String> hail) {
+        this(dialogueName);
+        nodes.forEach(this::addNode);
+        prompts.forEach(this::addPrompt);
+        setHailPromptId(hail.orElse(null));
+    }
 
     public DialogueTree(ResourceLocation dialogueName) {
         this.dialogueName = dialogueName;
@@ -46,11 +60,22 @@ public class DialogueTree {
         return prompts.get(name);
     }
 
-    public DialogueTree copy() {
-        DialogueTree newTree = new DialogueTree(dialogueName);
-        Tag nbt = serialize(NbtOps.INSTANCE);
-        newTree.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt));
+    public DialogueTree copy(ResourceLocation newTreeId) {
+        DialogueTree newTree = new DialogueTree(newTreeId);
+        nodes.values().forEach(n -> {
+            DialogueNode newNode = n.copy();
+            newTree.addNode(newNode);
+        });
+        prompts.values().forEach(p -> {
+            DialoguePrompt newPrompt = p.copy();
+            newTree.addPrompt(newPrompt);
+        });
+        newTree.setHailPromptId(hailPromptId);
         return newTree;
+    }
+
+    public DialogueTree copy() {
+        return copy(dialogueName);
     }
 
     public void addPrompt(DialoguePrompt prompt) {
@@ -111,42 +136,16 @@ public class DialogueTree {
         return false;
     }
 
-    private <T extends DialogueObject, D> D serializeList(DynamicOps<D> ops, Map<String, T> nodes) {
-        ImmutableList.Builder<D> builder = ImmutableList.builder();
-        nodes.forEach((key, value) -> builder.add(value.serialize(ops)));
-        return ops.createList(builder.build().stream());
-    }
-
     public <D> D serialize(DynamicOps<D> ops) {
-        ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
-        builder.put(ops.createString("nodes"), serializeList(ops, nodes));
-        builder.put(ops.createString("prompts"), serializeList(ops, prompts));
-
-        if (getHailPrompt() != null) {
-            builder.put(ops.createString("hailPrompt"), ops.createString(getHailPrompt().getId()));
-        }
-        return ops.createMap(builder.build());
+        return CODEC.encodeStart(ops, this).getOrThrow(false, MKChat.LOGGER::error);
     }
 
     public static <D> DialogueTree deserializeTreeFromDynamic(ResourceLocation name, Dynamic<D> dynamic) {
-        DialogueTree tree = new DialogueTree(name);
-        tree.deserialize(dynamic);
-        return tree;
+        return CODEC.parse(dynamic).getOrThrow(false, MKChat.LOGGER::error);
     }
 
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        nodes.clear();
-        dynamic.get("nodes").asList(DialogueNode::fromDynamic)
-                .forEach(dr -> dr.resultOrPartial(DialogueUtils::throwParseException).ifPresent(this::addNode));
-
-        prompts.clear();
-        dynamic.get("prompts").asList(DialoguePrompt::fromDynamic)
-                .forEach(dr -> dr.resultOrPartial(DialogueUtils::throwParseException).ifPresent(this::addPrompt));
-
-        // Optional
-        dynamic.get("hailPrompt").asString()
-                .result()
-                .ifPresent(this::setHailPromptId);
+    public static <D> DialogueTree deserializeTreeFromDynamic(Dynamic<D> dynamic) {
+        return CODEC.parse(dynamic).getOrThrow(false, MKChat.LOGGER::error);
     }
 
     protected void internalMerge(DialogueTree other) {

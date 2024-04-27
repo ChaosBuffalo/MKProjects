@@ -3,20 +3,35 @@ package com.chaosbuffalo.mkchat.dialogue;
 import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 public class DialogueResponse {
+    public static final Codec<DialogueResponse> CODEC = RecordCodecBuilder.<DialogueResponse>mapCodec(builder ->
+            builder.group(
+                    Codec.STRING.fieldOf("responseNodeId").forGetter(i -> i.responseNodeId),
+                    Codec.list(DialogueCondition.CODEC).optionalFieldOf("conditions", Collections.emptyList()).forGetter(i -> i.conditions)
+            ).apply(builder, DialogueResponse::new)).codec();
+
+
     public static final String INVALID_RESPONSE_ID = "dialogue_response.invalid";
     private final List<DialogueCondition> conditions;
     private String responseNodeId;
+
+    private DialogueResponse(String nodeId, List<DialogueCondition> conditions) {
+        responseNodeId = nodeId;
+        this.conditions = conditions;
+    }
 
     public DialogueResponse(String nodeId) {
         this.responseNodeId = nodeId;
