@@ -1,12 +1,12 @@
 package com.chaosbuffalo.mknpc.quest;
 
+import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
-import com.chaosbuffalo.mknpc.quest.data.QuestChainData;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
@@ -27,19 +27,38 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
 
     private UUID questId;
     private QuestDefinition definition;
-    private QuestChainData questChainData;
+    private Map<String, QuestData> questData;
     private Map<UUID, DialogueTree> dialogueTrees = new HashMap<>();
     private UUID questSourceNpc;
 
     public QuestChainInstance(QuestDefinition definition, Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
         questId = UUID.randomUUID();
         this.definition = definition;
-        questChainData = new QuestChainData(definition, questStructures);
+        questData = new HashMap<>();
+        for (Quest quest : definition.getQuestChain()) {
+            QuestData qData = new QuestData(quest);
+            for (QuestObjective<?> objective : quest.getObjectives()) {
+                objective.createDataForQuest(qData, questStructures);
+            }
+            questData.put(quest.getQuestName(), qData);
+        }
     }
 
     public void generateDialogue(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
-        questChainData.generateDialogue(this, getDialogueTreeName(), definition, questStructures,
-                getSpeakingRoles(), dialogueTrees);
+        ResourceLocation dialogueName = getDialogueTreeName();
+        Map<ResourceLocation, UUID> speakingRoles = getSpeakingRoles();
+
+        for (Map.Entry<ResourceLocation, UUID> entry : speakingRoles.entrySet()) {
+            DialogueTree tree = new DialogueTree(dialogueName);
+            DialoguePrompt hailPrompt = new DialoguePrompt("hail");
+            tree.addPrompt(hailPrompt);
+            tree.setHailPrompt(hailPrompt);
+
+            for (Quest quest : definition.getQuestChain()) {
+                tree = quest.generateDialogueForNpc(this, entry.getKey(), entry.getValue(), tree, questStructures, definition);
+            }
+            dialogueTrees.put(entry.getValue(), tree);
+        }
     }
 
     public void setQuestSourceNpc(UUID questSourceNpc) {
@@ -50,7 +69,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
     public Map<ResourceLocation, UUID> getSpeakingRoles() {
         Map<ResourceLocation, UUID> speakingRoles = new HashMap<>();
         for (Quest quest : definition.getQuestChain()) {
-            QuestData questData = questChainData.getQuestData(quest.getQuestName());
+            QuestData questData = getQuestData(quest);
             for (QuestObjective<?> obj : quest.getObjectives()) {
                 if (obj instanceof TalkToNpcObjective talkObj) {
                     UUIDInstanceData instanceData = talkObj.getInstanceData(questData);
@@ -94,8 +113,8 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         }
     }
 
-    public QuestChainData getQuestChainData() {
-        return questChainData;
+    public QuestData getQuestData(Quest quest) {
+        return questData.get(quest.getQuestName());
     }
 
     public QuestDefinition getDefinition() {
@@ -107,7 +126,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         CompoundTag nbt = new CompoundTag();
         nbt.putUUID("questId", questId);
         nbt.putString("definitionId", definition.getName().toString());
-        nbt.put("questData", questChainData.serializeNBT());
+        nbt.put("questData", serializeQuestParameters());
         if (questSourceNpc != null) {
             nbt.putUUID("questSource", questSourceNpc);
         }
@@ -120,6 +139,14 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         return nbt;
     }
 
+    private CompoundTag serializeQuestParameters() {
+        CompoundTag questNbt = new CompoundTag();
+        for (Map.Entry<String, QuestData> entry : questData.entrySet()) {
+            questNbt.put(entry.getKey(), entry.getValue().serializeNBT());
+        }
+        return questNbt;
+    }
+
     protected ResourceLocation getDialogueTreeName() {
         return new ResourceLocation(MKNpc.MODID, String.format("quest_dialogue.%s", questId.toString()));
     }
@@ -128,7 +155,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
     public void deserializeNBT(CompoundTag nbt) {
         questId = nbt.getUUID("questId");
         definition = QuestDefinitionManager.getDefinition(new ResourceLocation(nbt.getString("definitionId")));
-        questChainData = new QuestChainData(definition, nbt.getCompound("questData"));
+        deserializeQuestParameters(nbt.getCompound("questData"));
         if (nbt.contains("questSource")) {
             questSourceNpc = nbt.getUUID("questSource");
         }
@@ -142,6 +169,17 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         }
 //        dialogueTree = new DialogueTree(getDialogueTreeName());
 //        dialogueTree.deserialize(new Dynamic<>(NBTDynamicOps.INSTANCE, nbt.get("dialogueTree")));
+    }
+
+    private void deserializeQuestParameters(CompoundTag tag) {
+        for (String key : tag.getAllKeys()) {
+            Quest source = definition.getQuest(key);
+            if (source != null) {
+                QuestData data = new QuestData(source);
+                data.deserializeNBT(tag.getCompound(key), source);
+                questData.put(source.getQuestName(), data);
+            }
+        }
     }
 
     public void signalQuestProgress(IWorldNpcData worldData, IPlayerQuestingData questingData, Quest currentQuest, PlayerQuestChainInstance playerInstance, boolean manualAdvance) {

@@ -39,7 +39,7 @@ public class OnQuestCondition extends DialogueCondition {
     public boolean meetsCondition(ServerPlayer player, LivingEntity source) {
         return MKNpc.getPlayerQuestData(player)
                 .map(x -> x.getQuestStatus(questId) == PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS &&
-                        x.getCurrentQuestSteps(questId).orElse(Collections.emptyList()).contains(questStep))
+                        x.getCurrentQuestSteps(questId).contains(questStep))
                 .orElse(false);
     }
 

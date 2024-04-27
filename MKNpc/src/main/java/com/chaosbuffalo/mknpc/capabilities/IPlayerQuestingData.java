@@ -28,5 +28,5 @@ public interface IPlayerQuestingData extends INBTSerializable<CompoundTag> {
 
     PlayerQuestingDataHandler.QuestStatus getQuestStatus(UUID questId);
 
-    Optional<List<String>> getCurrentQuestSteps(UUID questId);
+    List<String> getCurrentQuestSteps(UUID questId);
 }

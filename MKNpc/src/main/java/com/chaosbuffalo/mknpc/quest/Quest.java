@@ -67,7 +67,7 @@ public class Quest {
                                                UUID npcId, DialogueTree tree,
                                                Map<ResourceLocation, List<MKStructureEntry>> questStructures,
                                                QuestDefinition definition) {
-        QuestData questData = questChain.getQuestChainData().getQuestData(getQuestName());
+        QuestData questData = questChain.getQuestData(this);
         for (QuestObjective<?> obj : getObjectives()) {
             if (obj instanceof TalkToNpcObjective talkObj) {
                 UUIDInstanceData instanceData = talkObj.getInstanceData(questData);

@@ -69,7 +69,7 @@ public class QuestGiverInventoryContainer extends ChestMenu {
                         for (QuestObjective<?> obj : currentQuest.getObjectives()) {
                             PlayerQuestData playerData = chain.getQuestData(currentQuest.getQuestName());
                             PlayerQuestObjectiveData playerObj = playerData.getObjective(obj.getObjectiveName());
-                            QuestData questData = questChain.getQuestChainData().getQuestData(questName);
+                            QuestData questData = questChain.getQuestData(currentQuest);
                             if (obj instanceof ITradeObjectiveHandler tradeObj) {
                                 if (tradeObj.canTradeWith(entity, playerIn, playerObj,
                                         questData, chain)) {
