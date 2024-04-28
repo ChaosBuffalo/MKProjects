@@ -11,8 +11,6 @@ import com.chaosbuffalo.mkcore.utils.DynamicAttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 public class PlayerCombatExtensionModule extends CombatExtensionModule implements IPlayerSyncComponentProvider {
@@ -20,7 +18,6 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
     private static final UUID blockScalerUUID = UUID.fromString("8cabfe08-4ad3-4b8a-9b94-cb146f743c36");
     private final PlayerSyncComponent sync = new PlayerSyncComponent("combatExtension");
     private final SyncInt currentProjectileHitCount = new SyncInt("projectileHits", 0);
-    private final Set<String> spellTag = new HashSet<>();
     private final DynamicAttributeModifier blockPoiseBonus;
 
     public PlayerCombatExtensionModule(MKPlayerData playerData) {
@@ -69,18 +66,6 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
     @Override
     public void setCurrentProjectileHitCount(int currentProjectileHitCount) {
         this.currentProjectileHitCount.set(currentProjectileHitCount);
-    }
-
-    public void addSpellTag(String tag) {
-        spellTag.add(tag);
-    }
-
-    public void removeSpellTag(String tag) {
-        spellTag.remove(tag);
-    }
-
-    public boolean hasSpellTag(String tag) {
-        return spellTag.contains(tag);
     }
 
 }
