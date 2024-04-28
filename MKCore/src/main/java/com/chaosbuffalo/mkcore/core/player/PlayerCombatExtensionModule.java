@@ -2,12 +2,11 @@ package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
-import com.chaosbuffalo.mkcore.attributes.AttributeInstanceExtension;
 import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
-import com.chaosbuffalo.mkcore.utils.DynamicAttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
@@ -18,14 +17,12 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
     private static final UUID blockScalerUUID = UUID.fromString("8cabfe08-4ad3-4b8a-9b94-cb146f743c36");
     private final PlayerSyncComponent sync = new PlayerSyncComponent("combatExtension");
     private final SyncInt currentProjectileHitCount = new SyncInt("projectileHits", 0);
-    private final DynamicAttributeModifier blockPoiseBonus;
+
 
     public PlayerCombatExtensionModule(MKPlayerData playerData) {
         super(playerData);
         addSyncPrivate(currentProjectileHitCount);
-        blockPoiseBonus = new DynamicAttributeModifier(blockScalerUUID, "block skill bonus",
-                this::getBlockSkillMaxPoiseBonus, AttributeModifier.Operation.MULTIPLY_TOTAL);
-        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_WORLD, EV_ID, this::onJoinWorldServer);
+        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_WORLD, EV_ID, PlayerCombatExtensionModule::onJoinWorldServer);
     }
 
     @Override
@@ -37,26 +34,30 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         return (MKPlayerData) getEntityData();
     }
 
-    private double getBlockSkillMaxPoiseBonus() {
-        double blockVal = getEntityData().getEntity().getAttributeValue(MKAttributes.BLOCK);
+    private static double getBlockSkillMaxPoiseBonus(IMKEntityData entityData) {
+        double blockVal = entityData.getEntity().getAttributeValue(MKAttributes.BLOCK);
         return MKAbility.convertSkillToMultiplier(blockVal);
     }
 
-    private void onJoinWorldServer(PlayerEvents.JoinWorldServerEvent event) {
-        AttributeInstance maxPoise = getEntityData().getEntity().getAttribute(MKAttributes.MAX_POISE);
+    private static void updatePoiseBonus(MKPlayerData playerData) {
+        AttributeInstance maxPoise = playerData.getEntity().getAttribute(MKAttributes.MAX_POISE);
         if (maxPoise != null) {
             maxPoise.removeModifier(blockScalerUUID);
+            AttributeModifier blockPoiseBonus = new AttributeModifier(blockScalerUUID, "block skill bonus",
+                    getBlockSkillMaxPoiseBonus(playerData), AttributeModifier.Operation.MULTIPLY_TOTAL);
             maxPoise.addTransientModifier(blockPoiseBonus);
         }
-        getPlayerData().getAttributes().monitor(MKAttributes.BLOCK, PlayerCombatExtensionModule::onBlockChange);
+    }
+
+    private static void onJoinWorldServer(PlayerEvents.JoinWorldServerEvent event) {
+        updatePoiseBonus(event.getPlayerData());
+        event.getPlayerData().getAttributes().monitor(MKAttributes.BLOCK, PlayerCombatExtensionModule::onBlockChange);
     }
 
     private static void onBlockChange(MKPlayerData playerData, AttributeInstance attributeInstance) {
         MKCore.LOGGER.info("recomputing max_poise value due to block attribute update");
-        AttributeInstance maxPoise = playerData.getEntity().getAttribute(MKAttributes.MAX_POISE);
-        if (maxPoise != null) {
-            AttributeInstanceExtension.recomputeValue(maxPoise);
-        }
+
+        updatePoiseBonus(playerData);
     }
 
     public int getCurrentProjectileHitCount() {
