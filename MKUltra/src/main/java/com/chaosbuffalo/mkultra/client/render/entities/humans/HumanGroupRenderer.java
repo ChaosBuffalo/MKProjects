@@ -22,10 +22,13 @@ public class HumanGroupRenderer extends BipedGroupRenderer<HumanEntity, MKBipedM
         putRenderer(MKUHumans.GHOST_LONG_HAIR_ARMORED_NAME, new HumanRenderer(context, MKUHumans.ARMORED_GHOST_LONG_HAIR_STYLE, entityType));
         putRenderer(MKUHumans.TWO_LAYER_ARMOR_SHORT_HAIR_NAME, new HumanRenderer(context, MKUHumans.TWO_LAYER_ARMOR_SHORT_HAIR, entityType));
         putRenderer(MKUHumans.TWO_LAYER_ARMOR_NO_HAIR_NAME, new HumanRenderer(context, MKUHumans.TWO_LAYER_ARMOR_NO_HAIR, entityType));
+        putRenderer(MKUHumans.GHOST_LONG_HAIR_NO_CLOTHES_NAME, new HumanRenderer(context, MKUHumans.GHOST_LONG_HAIR_NO_CLOTHES_STYLE, entityType));
+        putRenderer(MKUHumans.GHOST_LONG_HAIR_NO_CLOTHES_ARMORED_NAME, new HumanRenderer(context, MKUHumans.ARMORED_GHOST_LONG_HAIR_NO_CLOTHES_STYLE, entityType));
         putLook(MKUHumans.DEFAULT_NAME, MKUHumans.HUMAN_BASE);
         putLook(MKUHumans.CLERIC_1_NAME, MKUHumans.CLERIC_1_LOOK);
         putLook(MKUHumans.CLERIC_2_NAME, MKUHumans.CLERIC_2_LOOK);
         putLook(MKUHumans.GHOST_1_NAME, MKUHumans.GHOST_LOOK_1);
+        putLook(MKUHumans.GHOST_LOOK_CLEAN_NAME, MKUHumans.GHOST_LOOK_CLEAN);
         putLook(MKUHumans.NETHER_MAGE_1_NAME, MKUHumans.NETHER_MAGE_1_LOOK);
         putLook(MKUHumans.TEMPLE_GUARD_1_NAME, MKUHumans.TEMPLE_GUARD_1_LOOK);
         putLook(MKUHumans.TEMPLE_GUARD_2_NAME, MKUHumans.TEMPLE_GUARD_2_LOOK);

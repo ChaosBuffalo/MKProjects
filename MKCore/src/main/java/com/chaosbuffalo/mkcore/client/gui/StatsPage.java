@@ -63,6 +63,7 @@ public class StatsPage extends StatPageBase {
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.TWO_HAND_SLASH);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.TWO_HAND_BLUNT);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.TWO_HAND_PIERCE);
+        STAT_PANEL_ATTRIBUTES.add(MKAttributes.HAND_TO_HAND);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.BLOCK);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.BLOCK_EFFICIENCY);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.MAX_POISE);

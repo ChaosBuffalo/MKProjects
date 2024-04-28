@@ -222,10 +222,13 @@ public class MKAttributes {
             .setName(MKCore.makeRL("one_hand_pierce"))
             .setSyncType(AttributeSyncType.Private);
 
+    public static final Attribute HAND_TO_HAND = new MKRangedAttribute("attribute.name.mk.hand_to_hand", 0, 0, GameConstants.SKILL_MAX)
+            .setName(MKCore.makeRL("hand_to_hand"))
+            .setSyncType(AttributeSyncType.Private);
+
     public static final Attribute BLOCK = new MKRangedAttribute("attribute.name.mk.block", 0, 0, GameConstants.SKILL_MAX)
             .setName(MKCore.makeRL("block"))
             .setSyncType(AttributeSyncType.Private);
-
 
     public static final Attribute MAX_POISE = new MKRangedAttribute("attribute.name.mk.max_poise", 0, 0, 2048)
             .setName(MKCore.makeRL("max_poise"))
@@ -246,7 +249,6 @@ public class MKAttributes {
     public static final Attribute HEAL_EFFICIENCY = new MKRangedAttribute("attribute.name.mk.heal_efficiency", 1.0, 0, 1000.0)
             .setName(MKCore.makeRL("heal_efficiency"))
             .setSyncType(AttributeSyncType.Private);
-
 
     public static double getValueSafe(Attribute attr, LivingEntity target) {
         AttributeInstance instance = target.getAttribute(attr);
@@ -307,6 +309,7 @@ public class MKAttributes {
         consumer.accept(HEAL_EFFICIENCY);
         consumer.accept(MAX_MANA);
         consumer.accept(MANA_REGEN);
+        consumer.accept(HAND_TO_HAND);
     }
 
     public static void iteratePlayerAttributes(Consumer<Attribute> consumer) {

@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.events.ItemEventHandler;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
@@ -43,6 +44,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         map.put(MKAttributes.ONE_HAND_PIERCE, PlayerSkills::onWeaponSkillChange);
         map.put(MKAttributes.TWO_HAND_PIERCE, PlayerSkills::onWeaponSkillChange);
         map.put(MKAttributes.MARKSMANSHIP, PlayerSkills::onWeaponSkillChange);
+        map.put(MKAttributes.HAND_TO_HAND, PlayerSkills::onUnarmedSkillChange);
         return map;
     });
 
@@ -58,6 +60,16 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         ItemStack mainHand = playerData.getEntity().getItemBySlot(EquipmentSlot.MAINHAND);
         if (mainHand.getItem() instanceof IReceivesSkillChange receiver) {
             receiver.onSkillChange(mainHand, playerData.getEntity());
+        }
+    }
+
+    private static void onUnarmedSkillChange(MKPlayerData playerData, double value) {
+        ItemStack mainHand = playerData.getEntity().getItemBySlot(EquipmentSlot.MAINHAND);
+        if (mainHand.getItem() instanceof IReceivesSkillChange receiver) {
+            receiver.onSkillChange(mainHand, playerData.getEntity());
+        } else if (mainHand == ItemStack.EMPTY) {
+            playerData.getEquipment().removeUnarmedModifier();
+            playerData.getEquipment().addUnarmedModifier();
         }
     }
 

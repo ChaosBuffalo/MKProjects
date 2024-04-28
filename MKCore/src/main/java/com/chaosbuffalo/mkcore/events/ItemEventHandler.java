@@ -40,18 +40,22 @@ public class ItemEventHandler {
             UUID.fromString("e5a445c0-a08d-4cf5-960a-0945c505da94")
     };
 
+
     private static final UUID CRIT_CHANCE_MODIFIER = UUID.fromString("3935094f-87c5-49a8-bcde-ea29ce3bb5f9");
     private static final UUID CRIT_MULT_MODIFIER = UUID.fromString("c167f8f7-7bfc-4232-a321-ba635a4eb46f");
+
+
+
 
     @SubscribeEvent
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
         if (event.getEntity().getCommandSenderWorld().isClientSide()) {
             return;
         }
-
         MKCore.getEntityData(event.getEntity()).ifPresent(entityData -> {
             entityData.getEquipment().onEquipmentChange(event.getSlot(), event.getFrom(), event.getTo());
         });
+
     }
 
     private static AttributeModifier createDefaultSlotModifier(UUID uuid, double amount, AttributeModifier.Operation op) {
