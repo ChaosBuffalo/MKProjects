@@ -10,13 +10,13 @@ public abstract class OnStackEffect extends MKEffect {
         super(Category);
     }
 
-    protected abstract void Detonate(IMKEntityData targetData, MKActiveEffect instance);
+    protected abstract void detonate(IMKEntityData targetData, MKActiveEffect instance);
 
     @Override
     public boolean onInstanceUpdated(IMKEntityData targetData, MKActiveEffect instance) {
         super.onInstanceUpdated(targetData, instance);
         if (instance.getStackCount() == instance.getState().getMaxStacks()) {
-            Detonate(targetData, instance);
+            detonate(targetData, instance);
             return true;
         }
         return false;

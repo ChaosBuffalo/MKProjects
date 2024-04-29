@@ -39,9 +39,8 @@ public class HolyWordEffect extends OnStackEffect {
         return new MKEffectBuilder<>(this, sourceEntity, this::makeState);
     }
 
-
     @Override
-    protected void Detonate(IMKEntityData targetData, MKActiveEffect instance) {
+    protected void detonate(IMKEntityData targetData, MKActiveEffect instance) {
         State state = instance.getState(TypeToken.of(State.class));
         float duration = state.getScaledValue(1, instance.getSkillLevel());
         int stunDur = MKCombatFormulas.secondsToTicks(duration);
