@@ -1,16 +1,17 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
-import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class DialogueNode extends DialogueObject {
@@ -35,6 +36,10 @@ public class DialogueNode extends DialogueObject {
     private DialogueNode(String nodeId, String rawMessage, List<DialogueEffect> effects) {
         super(nodeId, rawMessage);
         this.effects = effects;
+    }
+
+    public static Builder builder(String nodeId) {
+        return new Builder(nodeId);
     }
 
     public DialogueNode copy() {
@@ -77,10 +82,6 @@ public class DialogueNode extends DialogueObject {
                 effect.applyEffect(player, source, this);
             }
         }
-    }
-
-    public static Builder builder(String nodeId) {
-        return new Builder(nodeId);
     }
 
     public static class Builder {

@@ -38,7 +38,7 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         super(NAME, name, structure, index, description);
         addAttribute(this.npcDefinition);
         this.npcDefinition.setValue(npcDefinition);
-        tree = new DialogueTree(new ResourceLocation(MKNpc.MODID, String.format("quest.dialogue.%s", name)));
+        tree = new DialogueTree(makeDialogueTreeId(name));
         DialoguePrompt hailPrompt = new DialoguePrompt("hail");
         tree.addPrompt(hailPrompt);
         tree.setHailPrompt(hailPrompt);
@@ -51,6 +51,10 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
 
     public ResourceLocation getNpcDefinition() {
         return npcDefinition.getValue();
+    }
+
+    private ResourceLocation makeDialogueTreeId(String name) {
+        return new ResourceLocation(MKNpc.MODID, String.format("quest.dialogue.%s", name));
     }
 
     @Override
@@ -94,7 +98,7 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
-        tree = DialogueTree.deserializeTreeFromDynamic(new ResourceLocation(MKNpc.MODID, String.format("quest.dialogue.%s", getObjectiveName())),
+        tree = DialogueTree.deserialize(makeDialogueTreeId(getObjectiveName()),
                 dynamic.get("dialogue").result().orElseThrow(() -> new IllegalStateException(String.format("TalkToNpcObjective: %s missing dialogue", getObjectiveName()))));
 
     }

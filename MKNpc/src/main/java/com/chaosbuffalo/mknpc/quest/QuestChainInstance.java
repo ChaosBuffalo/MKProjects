@@ -160,7 +160,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         dialogueTrees.clear();
         for (String key : dialogueNbt.getAllKeys()) {
             UUID npcId = UUID.fromString(key);
-            DialogueTree newTree = DialogueTree.deserializeTreeFromDynamic(new Dynamic<>(NbtOps.INSTANCE, dialogueNbt.get(key)));
+            DialogueTree newTree = DialogueTree.deserialize(new Dynamic<>(NbtOps.INSTANCE, dialogueNbt.get(key)));
             dialogueTrees.put(npcId, newTree);
         }
     }

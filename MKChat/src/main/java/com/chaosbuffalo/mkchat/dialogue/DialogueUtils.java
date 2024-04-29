@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
 import com.chaosbuffalo.mkchat.ChatConstants;
-import com.chaosbuffalo.mkchat.MKChat;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -46,8 +45,4 @@ public class DialogueUtils {
         return String.format("%d {item:%s}", item.getCount(), id.toString());
     }
 
-    public static void throwParseException(String message) {
-        MKChat.LOGGER.error(message);
-        throw new DialogueDataParsingException(message);
-    }
 }

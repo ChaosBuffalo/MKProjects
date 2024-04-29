@@ -18,7 +18,7 @@ public class DialogueTree {
                 ResourceLocation.CODEC.fieldOf("dialogueId").forGetter(i -> i.dialogueName),
                 Codec.list(DialogueNode.CODEC).fieldOf("nodes").forGetter(i -> List.copyOf(i.nodes.values())),
                 Codec.list(DialoguePrompt.CODEC).fieldOf("prompts").forGetter(i -> List.copyOf(i.prompts.values())),
-                Codec.STRING.optionalFieldOf("hailPromptId").forGetter(i -> Optional.ofNullable(i.hailPromptId))
+                Codec.STRING.optionalFieldOf("hailPromptId", null).forGetter(i -> i.hailPromptId)
         ).apply(builder, DialogueTree::new);
     }).codec();
 
@@ -27,11 +27,11 @@ public class DialogueTree {
     private final Map<String, DialoguePrompt> prompts;
     private String hailPromptId;
 
-    private DialogueTree(ResourceLocation dialogueName, Collection<DialogueNode> nodes, Collection<DialoguePrompt> prompts, Optional<String> hail) {
+    private DialogueTree(ResourceLocation dialogueName, Collection<DialogueNode> nodes, Collection<DialoguePrompt> prompts, String hail) {
         this(dialogueName);
         nodes.forEach(this::addNode);
         prompts.forEach(this::addPrompt);
-        setHailPromptId(hail.orElse(null));
+        setHailPromptId(hail);
     }
 
     public DialogueTree(ResourceLocation dialogueName) {
@@ -104,7 +104,7 @@ public class DialogueTree {
         return getPrompt(hailPromptId);
     }
 
-    public void setHailPromptId(String hailPromptId) {
+    public void setHailPromptId(@Nullable String hailPromptId) {
         if (hailPromptId == null) {
             this.hailPromptId = null;
             return;
@@ -140,11 +140,15 @@ public class DialogueTree {
         return CODEC.encodeStart(ops, this).getOrThrow(false, MKChat.LOGGER::error);
     }
 
-    public static <D> DialogueTree deserializeTreeFromDynamic(ResourceLocation name, Dynamic<D> dynamic) {
-        return CODEC.parse(dynamic).getOrThrow(false, MKChat.LOGGER::error);
+    public static <D> DialogueTree deserialize(ResourceLocation name, Dynamic<D> dynamic) {
+        DialogueTree tree = deserialize(dynamic);
+        if (tree.getDialogueName().compareTo(name) != 0) {
+            MKChat.LOGGER.warn("Dialogue tree {} did not match expected tree name {}", tree.dialogueName, name);
+        }
+        return tree;
     }
 
-    public static <D> DialogueTree deserializeTreeFromDynamic(Dynamic<D> dynamic) {
+    public static <D> DialogueTree deserialize(Dynamic<D> dynamic) {
         return CODEC.parse(dynamic).getOrThrow(false, MKChat.LOGGER::error);
     }
 

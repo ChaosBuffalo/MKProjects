@@ -51,7 +51,7 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
             MKChat.LOGGER.info("Found dialogue tree file: {}", resourcelocation);
             if (resourcelocation.getPath().startsWith("_"))
                 continue; //Forge: filter anything beginning with "_" as it's used for metadata.
-            DialogueTree tree = DialogueTree.deserializeTreeFromDynamic(entry.getKey(),
+            DialogueTree tree = DialogueTree.deserialize(entry.getKey(),
                     new Dynamic<>(JsonOps.INSTANCE, entry.getValue()));
             trees.put(tree.getDialogueName(), tree);
         }

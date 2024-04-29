@@ -204,7 +204,7 @@ public class QuestDefinition {
             }
         });
         reqs.forEach(x -> x.ifPresent(this::addRequirement));
-        startQuestTree = DialogueTree.deserializeTreeFromDynamic(makeTreeId(getName()),
+        startQuestTree = DialogueTree.deserialize(makeTreeId(getName()),
                 dynamic.get("dialogue").result().orElseThrow(() -> new IllegalStateException(String.format(
                         "QuestDefinition: %s missing start quest dialogue", getName().toString()))));
     }
