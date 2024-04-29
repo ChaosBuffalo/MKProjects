@@ -1,47 +1,41 @@
 package com.chaosbuffalo.mkchat.dialogue.effects;
 
-import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.resources.ResourceLocation;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 public class AddLevelEffect extends DialogueEffect {
-    private int levelAmount;
-    public static ResourceLocation effectTypeName = new ResourceLocation(MKChat.MODID, "dialogue_effect.add_level");
+    public static final Codec<AddLevelEffect> CODEC = RecordCodecBuilder.<AddLevelEffect>mapCodec(builder ->
+            builder.group(
+                    Codec.INT.fieldOf("amount").forGetter(i -> i.levelAmount)
+            ).apply(builder, AddLevelEffect::new)
+    ).codec();
+
+    private final int levelAmount;
 
     public AddLevelEffect(int levelAmount) {
-        super(effectTypeName);
+        super();
         this.levelAmount = levelAmount;
     }
 
-    public AddLevelEffect() {
-        this(0);
+    @Override
+    public DialogueEffectType<?> getType() {
+        return DialogueEffectTypes.ADD_LEVEL.get();
     }
 
     @Override
     public AddLevelEffect copy() {
         // No runtime mutable state
-        return new AddLevelEffect(levelAmount);
+        return this;
     }
 
     @Override
     public void applyEffect(ServerPlayer player, LivingEntity source, DialogueNode node) {
         player.giveExperienceLevels(levelAmount);
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        this.levelAmount = dynamic.get("amount").asInt(0);
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("amount"), ops.createInt(levelAmount));
     }
 }

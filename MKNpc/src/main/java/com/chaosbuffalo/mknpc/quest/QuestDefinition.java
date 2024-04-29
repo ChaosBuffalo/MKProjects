@@ -114,7 +114,7 @@ public class QuestDefinition {
     }
 
     public void setupStartQuestResponse(DialogueNode startQuestResponse, DialoguePrompt prompt, DialogueCondition... extraConditions) {
-        startQuestResponse.addEffect(new StartQuestChainEffect());
+        startQuestResponse.addEffect(new StartQuestChainEffect(Util.NIL_UUID));
         addStartNode(startQuestResponse);
         DialogueResponse startResponse = new DialogueResponse(startQuestResponse)
                 .addCondition(new CanStartQuestCondition(Util.NIL_UUID, isRepeatable()));
@@ -204,7 +204,7 @@ public class QuestDefinition {
             }
         });
         reqs.forEach(x -> x.ifPresent(this::addRequirement));
-        startQuestTree = DialogueTree.deserializeTreeFromDynamic(makeTreeId(getName()),
+        startQuestTree = DialogueTree.deserialize(makeTreeId(getName()),
                 dynamic.get("dialogue").result().orElseThrow(() -> new IllegalStateException(String.format(
                         "QuestDefinition: %s missing start quest dialogue", getName().toString()))));
     }

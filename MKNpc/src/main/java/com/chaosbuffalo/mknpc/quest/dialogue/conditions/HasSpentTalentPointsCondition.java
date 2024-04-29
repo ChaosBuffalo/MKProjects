@@ -1,28 +1,31 @@
 package com.chaosbuffalo.mknpc.quest.dialogue.conditions;
 
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
+import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueConditionType;
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mknpc.MKNpc;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
-import net.minecraft.resources.ResourceLocation;
+import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 
 public class HasSpentTalentPointsCondition extends DialogueCondition {
+    public static final Codec<HasSpentTalentPointsCondition> CODEC = RecordCodecBuilder.<HasSpentTalentPointsCondition>mapCodec(builder ->
+            builder.group(
+                    Codec.INT.fieldOf("talentCount").forGetter(i -> i.talentCount)
+            ).apply(builder, HasSpentTalentPointsCondition::new)
+    ).codec();
 
-    public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "has_spent_talents");
-    private int talentCount;
+    private final int talentCount;
 
     public HasSpentTalentPointsCondition(int talentCount) {
-        super(conditionTypeName);
         this.talentCount = talentCount;
     }
 
-    public HasSpentTalentPointsCondition() {
-        this(0);
+    @Override
+    public DialogueConditionType<? extends DialogueCondition> getType() {
+        return NpcDialogueConditionTypes.HAS_SPENT_TALENTS.get();
     }
 
     @Override
@@ -38,17 +41,5 @@ public class HasSpentTalentPointsCondition extends DialogueCondition {
     @Override
     public HasSpentTalentPointsCondition copy() {
         return new HasSpentTalentPointsCondition(talentCount);
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("talentCount"), ops.createInt(talentCount));
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        this.talentCount = dynamic.get("talentCount").asInt(0);
     }
 }

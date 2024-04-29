@@ -1,18 +1,20 @@
 package com.chaosbuffalo.mknpc.quest.dialogue.conditions;
 
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
-import com.chaosbuffalo.mknpc.MKNpc;
-import net.minecraft.resources.ResourceLocation;
+import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueConditionType;
+import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
+import com.mojang.serialization.Codec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.*;
 
 public class HasWeaponInHandCondition extends DialogueCondition {
+    private static final HasWeaponInHandCondition INSTANCE = new HasWeaponInHandCondition();
+    public static final Codec<HasWeaponInHandCondition> CODEC = Codec.unit(INSTANCE);
 
-    public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "has_weapon_in_hand");
-
-    public HasWeaponInHandCondition() {
-        super(conditionTypeName);
+    @Override
+    public DialogueConditionType<? extends DialogueCondition> getType() {
+        return NpcDialogueConditionTypes.HAS_WEAPON_IN_HAND.get();
     }
 
     @Override
@@ -23,7 +25,6 @@ public class HasWeaponInHandCondition extends DialogueCondition {
 
     @Override
     public HasWeaponInHandCondition copy() {
-        return new HasWeaponInHandCondition();
+        return this;
     }
 }
-

@@ -129,7 +129,7 @@ public class EntityHandler {
                                 if (obj instanceof IContainerObjectiveHandler containerObj) {
                                     PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
                                     PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
-                                    QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
+                                    QuestData qData = questChain.getQuestData(currentQuest);
                                     if (containerObj.onLootChest(player, pObj, qData, chestCap)) {
                                         questChain.signalQuestProgress(ContentDB.getQuestDB(), x, currentQuest, pQuestChain, false);
                                         return;
@@ -181,7 +181,7 @@ public class EntityHandler {
                                 if (obj instanceof IKillObjectiveHandler killObj) {
                                     PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
                                     PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
-                                    QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
+                                    QuestData qData = questChain.getQuestData(currentQuest);
                                     if (killObj.onPlayerKillNpcDefEntity(player, pObj, def, event, qData, pQuestChain)) {
                                         questChain.signalQuestProgress(ContentDB.getQuestDB(), pData, currentQuest, pQuestChain, false);
                                     }

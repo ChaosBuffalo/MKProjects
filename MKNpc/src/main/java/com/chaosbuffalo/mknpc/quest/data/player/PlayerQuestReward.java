@@ -7,7 +7,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public class PlayerQuestReward implements INBTSerializable<CompoundTag> {
-    MutableComponent description;
+    private Component description;
 
 
     public PlayerQuestReward(QuestReward questReward) {
@@ -18,7 +18,7 @@ public class PlayerQuestReward implements INBTSerializable<CompoundTag> {
         deserializeNBT(nbt);
     }
 
-    public MutableComponent getDescription() {
+    public Component getDescription() {
         return description;
     }
 

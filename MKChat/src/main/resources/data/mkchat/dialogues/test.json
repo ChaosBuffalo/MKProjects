@@ -1,89 +1,92 @@
 {
+  "dialogueId": "mkchat:test",
+  "hailPromptId": "hail",
   "nodes": [
     {
-      "id": "root",
-      "message": "Hello {context:player_name}, I am {context:entity_name}. Do you {prompt:need_xp}"
+      "message": "Hello {context:player_name}, I am {context:entity_name}. Do you {prompt:need_xp}",
+      "nodeId": "root"
     },
     {
-      "id": "cant_help",
-      "message": "I have already helped you as much as I can."
+      "message": "I have already helped you as much as I can.",
+      "nodeId": "cant_help"
     },
     {
-      "id": "grant_level",
-      "message": "Here is 1 level.",
       "effects": [
         {
-          "dialogueEffectType": "mkchat:dialogue_effect.add_level",
+          "type": "mkchat:add_level",
           "amount": 1
         },
         {
-          "dialogueEffectType": "mkchat:dialogue_effect.add_flag",
-          "flagName": "mkchat:grant_level"
+          "type": "mkchat:add_flag",
+          "flag": "mkchat:grant_level"
         }
-      ]
+      ],
+      "message": "Here is 1 level.",
+      "nodeId": "grant_level"
     },
     {
-      "id": "already_granted",
-      "message": "You already got a level, don't be greedy."
+      "message": "You already got a level, don't be greedy.",
+      "nodeId": "already_granted"
     }
   ],
   "prompts": [
     {
-      "id": "need_xp",
-      "message": "need some xp",
-      "triggerPhrase": "need xp",
-      "suggestedText": "I need xp.",
+      "highlightedText": "need some xp",
+      "promptId": "need_xp",
       "responses": [
         {
-          "responseNodeId": "grant_level",
           "conditions": [
             {
-              "dialogueConditionType": "mkchat:dialogue_condition.has_bool_flag",
-              "invert": true,
-              "flagName": "mkchat:grant_level"
+              "type": "mkchat:invert",
+              "condition": {
+                "type": "mkchat:has_flag",
+                "flag": "mkchat:grant_level"
+              }
             }
-          ]
+          ],
+          "responseNodeId": "grant_level"
         },
         {
-          "responseNodeId": "already_granted",
           "conditions": [
             {
-              "dialogueConditionType": "mkchat:dialogue_condition.has_bool_flag",
-              "invert": false,
-              "flagName": "mkchat:grant_level"
+              "type": "mkchat:has_flag",
+              "flag": "mkchat:grant_level"
             }
-          ]
+          ],
+          "responseNodeId": "already_granted"
         }
-      ]
+      ],
+      "suggestionFillText": "I need xp.",
+      "triggerPhrase": "need xp"
     },
     {
-      "id": "hail",
-      "message": "",
-      "triggerPhrase": "",
-      "suggestedText": "",
+      "highlightedText": "",
+      "promptId": "hail",
       "responses": [
         {
-          "responseNodeId": "root",
           "conditions": [
             {
-              "dialogueConditionType": "mkchat:dialogue_condition.has_bool_flag",
-              "invert": true,
-              "flagName": "mkchat:grant_level"
+              "type": "mkchat:invert",
+              "condition": {
+                "type": "mkchat:has_flag",
+                "flag": "mkchat:grant_level"
+              }
             }
-          ]
+          ],
+          "responseNodeId": "root"
         },
         {
-          "responseNodeId": "cant_help",
           "conditions": [
             {
-              "dialogueConditionType": "mkchat:dialogue_condition.has_bool_flag",
-              "invert": false,
-              "flagName": "mkchat:grant_level"
+              "type": "mkchat:has_flag",
+              "flag": "mkchat:grant_level"
             }
-          ]
+          ],
+          "responseNodeId": "cant_help"
         }
-      ]
+      ],
+      "suggestionFillText": "",
+      "triggerPhrase": ""
     }
-  ],
-  "hailPrompt": "hail"
+  ]
 }

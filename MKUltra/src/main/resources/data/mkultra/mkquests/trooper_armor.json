@@ -1,25 +1,26 @@
 {
   "dialogue": {
-    "hailPrompt": "hail",
+    "dialogueId": "mknpc:give_quest.mkultra.trooper_armor",
+    "hailPromptId": "hail",
     "nodes": [
       {
         "effects": [
           {
-            "dialogueEffectType": "mknpc:start_quest_chain"
+            "type": "mknpc:start_quest_chain"
           }
         ],
-        "id": "start_quest",
-        "message": "For the full set I will need 20 {item:mkultra:corrupted_pig_iron_plate}, a {item:mkultra:destroyed_trooper_helmet}, a {item:mkultra:destroyed_trooper_leggings}, a {item:mkultra:destroyed_trooper_chestplate}, and a {item:mkultra:destroyed_trooper_boots}."
+        "message": "For the full set I will need 20 {item:mkultra:corrupted_pig_iron_plate}, a {item:mkultra:destroyed_trooper_helmet}, a {item:mkultra:destroyed_trooper_leggings}, a {item:mkultra:destroyed_trooper_chestplate}, and a {item:mkultra:destroyed_trooper_boots}.",
+        "nodeId": "start_quest"
       },
       {
-        "id": "hail",
-        "message": "I make armor for the Green Knights. We're running low on supplies but if you can salvage some parts from the zombies in the castle If you {prompt:start_quest} I should be able to put something together."
+        "message": "I make armor for the Green Knights. We're running low on supplies but if you can salvage some parts from the zombies in the castle If you {prompt:start_quest} I should be able to put something together.",
+        "nodeId": "hail"
       }
     ],
     "prompts": [
       {
-        "id": "start_quest",
-        "message": "need some armor.",
+        "highlightedText": "need some armor.",
+        "promptId": "start_quest",
         "responses": [
           {
             "responseNodeId": "start_quest"
@@ -27,33 +28,31 @@
           {
             "conditions": [
               {
-                "allowRepeat": true,
-                "dialogueConditionType": "mknpc:can_start_chain_condition",
-                "invert": false
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": true
               }
             ],
             "responseNodeId": "start_quest"
           }
         ],
-        "suggestedText": "I need some armor",
+        "suggestionFillText": "I need some armor",
         "triggerPhrase": "need some armor"
       },
       {
-        "id": "hail",
-        "message": "",
+        "highlightedText": "",
+        "promptId": "hail",
         "responses": [
           {
             "conditions": [
               {
-                "allowRepeat": true,
-                "dialogueConditionType": "mknpc:can_start_chain_condition",
-                "invert": false
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": true
               }
             ],
             "responseNodeId": "hail"
           }
         ],
-        "suggestedText": "",
+        "suggestionFillText": "",
         "triggerPhrase": ""
       }
     ]
@@ -86,18 +85,21 @@
       "questName": "tradeHelmet",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         },
         {
-          "attributes": {
-            "loot_slot": "mkweapons:head",
-            "loot_tier": "mkultra:trooper_knight_armor"
+          "type": "mknpc:mk_loot",
+          "description": {
+            "translate": "mkultra.quest_reward.receive_item.name",
+            "with": [
+              {
+                "translate": "item.mkultra.trooper_knight_helmet"
+              }
+            ]
           },
-          "description": "{\"translate\":\"mkultra.quest_reward.receive_item.name\",\"with\":[{\"translate\":\"item.mkultra.trooper_knight_helmet\"}]}",
-          "rewardType": "mknpc:quest_reward.mk_loot"
+          "loot_slot": "mkweapons:head",
+          "loot_tier": "mkultra:trooper_knight_armor"
         }
       ]
     },
@@ -126,18 +128,21 @@
       "questName": "tradeLeggings",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         },
         {
-          "attributes": {
-            "loot_slot": "mkweapons:legs",
-            "loot_tier": "mkultra:trooper_knight_armor"
+          "type": "mknpc:mk_loot",
+          "description": {
+            "translate": "mkultra.quest_reward.receive_item.name",
+            "with": [
+              {
+                "translate": "item.mkultra.trooper_knight_leggings"
+              }
+            ]
           },
-          "description": "{\"translate\":\"mkultra.quest_reward.receive_item.name\",\"with\":[{\"translate\":\"item.mkultra.trooper_knight_leggings\"}]}",
-          "rewardType": "mknpc:quest_reward.mk_loot"
+          "loot_slot": "mkweapons:legs",
+          "loot_tier": "mkultra:trooper_knight_armor"
         }
       ]
     },
@@ -166,18 +171,21 @@
       "questName": "tradeBoots",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         },
         {
-          "attributes": {
-            "loot_slot": "mkweapons:feet",
-            "loot_tier": "mkultra:trooper_knight_armor"
+          "type": "mknpc:mk_loot",
+          "description": {
+            "translate": "mkultra.quest_reward.receive_item.name",
+            "with": [
+              {
+                "translate": "item.mkultra.trooper_knight_boots"
+              }
+            ]
           },
-          "description": "{\"translate\":\"mkultra.quest_reward.receive_item.name\",\"with\":[{\"translate\":\"item.mkultra.trooper_knight_boots\"}]}",
-          "rewardType": "mknpc:quest_reward.mk_loot"
+          "loot_slot": "mkweapons:feet",
+          "loot_tier": "mkultra:trooper_knight_armor"
         }
       ]
     },
@@ -206,18 +214,21 @@
       "questName": "tradeChestplate",
       "rewards": [
         {
-          "attributes": {
-            "xp": 25
-          },
-          "rewardType": "mknpc:quest_reward.xp"
+          "type": "mknpc:xp",
+          "xp_amount": 25
         },
         {
-          "attributes": {
-            "loot_slot": "mkweapons:chest",
-            "loot_tier": "mkultra:trooper_knight_armor"
+          "type": "mknpc:mk_loot",
+          "description": {
+            "translate": "mkultra.quest_reward.receive_item.name",
+            "with": [
+              {
+                "translate": "item.mkultra.trooper_knight_chestplate"
+              }
+            ]
           },
-          "description": "{\"translate\":\"mkultra.quest_reward.receive_item.name\",\"with\":[{\"translate\":\"item.mkultra.trooper_knight_chestplate\"}]}",
-          "rewardType": "mknpc:quest_reward.mk_loot"
+          "loot_slot": "mkweapons:chest",
+          "loot_tier": "mkultra:trooper_knight_armor"
         }
       ]
     }
