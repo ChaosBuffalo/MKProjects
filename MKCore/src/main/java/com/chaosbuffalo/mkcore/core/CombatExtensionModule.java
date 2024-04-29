@@ -2,10 +2,14 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class CombatExtensionModule {
     private static final int COMBAT_TIMEOUT = GameConstants.TICKS_PER_SECOND * 8;
     private static final int PROJECTILE_COMBO_TIMEOUT = GameConstants.TICKS_PER_SECOND * 30;
     private final IMKEntityData entityData;
+    private final Set<String> spellTag = new HashSet<>();
     private int lastSwingHitTick;
     private int currentSwingCount;
     private int lastProjectileHitTick;
@@ -88,5 +92,17 @@ public class CombatExtensionModule {
 
     public boolean isMidProjectileCombo() {
         return getCurrentProjectileHitCount() > 0;
+    }
+
+    public void addSpellTag(String tag) {
+        spellTag.add(tag);
+    }
+
+    public void removeSpellTag(String tag) {
+        spellTag.remove(tag);
+    }
+
+    public boolean hasSpellTag(String tag) {
+        return spellTag.contains(tag);
     }
 }

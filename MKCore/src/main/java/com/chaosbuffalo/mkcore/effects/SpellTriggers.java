@@ -27,20 +27,16 @@ public class SpellTriggers {
             if (!hasTriggers())
                 return true;
 
-            if (source instanceof MKPlayerData playerData) {
-                if (playerData.getCombatExtension().hasSpellTag(tag)) {
-                    return true;
-                }
-                playerData.getCombatExtension().addSpellTag(tag);
-                return false;
+
+            if (source.getCombatExtension().hasSpellTag(tag)) {
+                return true;
             }
-            return true;
+            source.getCombatExtension().addSpellTag(tag);
+            return false;
         }
 
         protected void endTrigger(IMKEntityData source, String tag) {
-            if (source instanceof MKPlayerData playerData) {
-                playerData.getCombatExtension().removeSpellTag(tag);
-            }
+            source.getCombatExtension().removeSpellTag(tag);
         }
     }
 
