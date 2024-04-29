@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkweapons.items.effects.melee;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.EntityTargetingAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -17,8 +18,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.Lazy;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
@@ -26,12 +27,13 @@ import java.util.function.Supplier;
 public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
     private double procChance;
     private float skillLevel;
+    @Nonnull
     private Supplier<? extends EntityTargetingAbility> abilitySupplier;
 
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID,
             "weapon_effect.on_hit_ability");
 
-    public OnHitAbilityEffect(double procChance, float skillLevel, Supplier<? extends EntityTargetingAbility> abilitySupplier) {
+    public OnHitAbilityEffect(double procChance, float skillLevel, @Nonnull Supplier<? extends EntityTargetingAbility> abilitySupplier) {
         this();
         this.procChance = procChance;
         this.skillLevel = skillLevel;
@@ -40,6 +42,7 @@ public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
 
     public OnHitAbilityEffect() {
         super(NAME, ChatFormatting.GOLD);
+        abilitySupplier = () -> null;
     }
 
     @Override
@@ -51,7 +54,7 @@ public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
                 .ifPresent(abilityName -> {
                     MKAbility ability = MKCoreRegistry.ABILITIES.getValue(new ResourceLocation(abilityName));
                     if (ability instanceof EntityTargetingAbility entAbility) {
-                        abilitySupplier = Lazy.of(() -> entAbility);
+                        abilitySupplier = () -> entAbility;
                     }
                 });
     }
@@ -65,27 +68,39 @@ public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
             builder.put(ops.createString("ability"),
                     ops.createString(abilitySupplier.get().getAbilityId().toString()));
         }
+    }
 
+    protected AbilityContext createAbilityContext(IMKEntityData casterData) {
+        AbilityContext context = AbilityContext.forCaster(casterData, abilitySupplier.get());
+        context.setSkillResolver((e, attr) -> skillLevel);
+        return context;
     }
 
     @Override
     public void onHit(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData, LivingEntity target) {
-        if (attackerData.getEntity().getRandom().nextDouble() >= (1.0 - procChance)) {
-            abilitySupplier.get().castAtEntity(attackerData, target, attr -> skillLevel);
+        EntityTargetingAbility ability = abilitySupplier.get();
+        if (ability != null && attackerData.getEntity().getRandom().nextDouble() >= (1.0 - procChance)) {
+            AbilityContext context = createAbilityContext(attackerData);
+            ability.castAtEntity(attackerData, target, context);
         }
     }
 
     @Override
     public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
+        MKAbility ability = abilitySupplier.get();
+        if (ability == null)
+            return;
+
         tooltip.add(Component.translatable(String.format("%s.%s.name",
-                this.getTypeName().getNamespace(), this.getTypeName().getPath()), abilitySupplier.get().getAbilityName()).withStyle(color));
+                this.getTypeName().getNamespace(), this.getTypeName().getPath()), ability.getAbilityName()).withStyle(color));
         if (Screen.hasShiftDown()) {
             tooltip.add(Component.translatable(String.format("%s.%s.description",
                             this.getTypeName().getNamespace(), this.getTypeName().getPath()),
                     MKAbility.PERCENT_FORMATTER.format(procChance), MKAbility.NUMBER_FORMATTER.format(skillLevel)));
             if (player != null) {
                 MKCore.getEntityData(player).ifPresent(entityData -> {
-                    tooltip.add(abilitySupplier.get().getAbilityDescription(entityData, attr -> skillLevel));
+                    AbilityContext context = createAbilityContext(entityData);
+                    tooltip.add(ability.getAbilityDescription(entityData, context));
                 });
             }
         }

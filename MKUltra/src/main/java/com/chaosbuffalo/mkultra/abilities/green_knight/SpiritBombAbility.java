@@ -81,19 +81,19 @@ public class SpiritBombAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.NatureDamage.get(),
                 baseDamage.value(),
                 scaleDamage.value(),
-                skillSupplier.apply(MKAttributes.EVOCATION),
+                context.getSkill(MKAttributes.EVOCATION),
                 modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
+        super.endCast(entity, data, context);
+        float level = context.getSkill(MKAttributes.EVOCATION);
         SpiritBombProjectileEntity proj = new SpiritBombProjectileEntity(MKUEntities.SPIRIT_BOMB_TYPE.get(), entity.level);
         proj.setOwner(entity);
         proj.setSkillLevel(level);

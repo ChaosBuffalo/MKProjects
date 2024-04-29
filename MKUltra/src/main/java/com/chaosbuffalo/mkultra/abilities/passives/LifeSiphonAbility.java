@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkultra.abilities.passives;
 
+import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKPassiveAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -34,8 +35,8 @@ public class LifeSiphonAbility extends MKPassiveAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.NECROMANCY);
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.NECROMANCY);
         Component valueStr = getHealDescription(entityData, base.value(), scale.value(), level, modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), valueStr);
     }

@@ -83,7 +83,7 @@ public class UseAbilityGoal extends Goal {
             entity.lookAt(target, 360.0f, 360.0f);
             entity.getLookControl().setLookAt(target, 50.0f, 50.0f);
         }
-        AbilityContext context = new BrainAbilityContext(entity);
+        AbilityContext context = new BrainAbilityContext(entity.getEntityDataCap(), currentAbility);
 //        MKNpc.LOGGER.debug("ai {} casting {} on {}", entity, currentAbility.getAbilityId(), target);
         entity.getEntityDataCap().getAbilityExecutor().executeAbilityWithContext(currentAbility.getAbilityId(), context);
     }

@@ -9,18 +9,16 @@ import com.chaosbuffalo.targeting_api.Targeting;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public abstract class PositionFlurryAbility extends MKAbility {
     protected final IntAttribute tickRate = new IntAttribute("tickRate", GameConstants.TICKS_PER_SECOND / 2);
-    protected final net.minecraftforge.registries.RegistryObject<? extends PositionTargetingAbility> abilityToCast;
+    protected final RegistryObject<? extends PositionTargetingAbility> abilityToCast;
 
     public PositionFlurryAbility(RegistryObject<? extends PositionTargetingAbility> abilityToCast) {
         super();
@@ -29,7 +27,7 @@ public abstract class PositionFlurryAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         return Component.translatable("mkultra.ability.flurry.description",
                 abilityToCast.get().getAbilityName(),
                 NUMBER_FORMATTER.format(getDistance(entityData.getEntity())),
@@ -37,11 +35,11 @@ public abstract class PositionFlurryAbility extends MKAbility {
     }
 
     @Override
-    public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
-        super.buildDescription(casterData, consumer);
+    public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
+        super.buildDescription(casterData, context, consumer);
         abilityToCast.ifPresent(x -> {
             consumer.accept(x.getAbilityName().withStyle(ChatFormatting.UNDERLINE).withStyle(ChatFormatting.GRAY));
-            consumer.accept(x.getAbilityDescription(casterData, attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr))
+            consumer.accept(x.getAbilityDescription(casterData, context)
                     .plainCopy().withStyle(ChatFormatting.GRAY));
         });
     }
@@ -67,9 +65,8 @@ public abstract class PositionFlurryAbility extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context,
-                             Function<Attribute, Float> skillSupplier) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, context, skillSupplier);
+    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context) {
+        super.continueCast(castingEntity, casterData, castTimeLeft, context);
         if (castTimeLeft % tickRate.value() == 0) {
             float dist = getDistance(castingEntity);
             Vec3 minBound = castingEntity.position().subtract(dist, 1.0, dist);
@@ -79,7 +76,7 @@ public abstract class PositionFlurryAbility extends MKAbility {
             abilityToCast.ifPresent(ab -> {
                 for (LivingEntity ent : entities) {
                     if (Targeting.isValidTarget(getTargetContext(), castingEntity, ent)) {
-                        ab.castAtPosition(casterData, ent.position(), skillSupplier);
+                        ab.castAtPosition(casterData, ent.position(), context);
                     }
                 }
             });

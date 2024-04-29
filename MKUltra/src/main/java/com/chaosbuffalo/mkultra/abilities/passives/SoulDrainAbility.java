@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkultra.abilities.passives;
 
+import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKPassiveAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
@@ -32,8 +33,8 @@ public class SoulDrainAbility extends MKPassiveAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float value = getDrainValue(skillSupplier);
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
+        float value = getDrainValue(context::getSkill);
         return Component.translatable(getDescriptionTranslationKey(), value);
     }
 }

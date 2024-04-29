@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
+import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.client.gui.IAbilityScreen;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.utils.text.IconTextComponent;
@@ -47,7 +48,7 @@ public class AbilityInfoWidget extends MKStackLayoutVertical {
         } else {
             IconText abilityIcon = new AbilityIconText(0, 0, 16, fontRenderer, 16, screen, screen.getSelectedAbility());
             addWidget(abilityIcon);
-            screen.getSelectedAbility().buildDescription(playerData, this::addDescriptionLine);
+            screen.getSelectedAbility().buildDescription(playerData, AbilityContext.forCaster(playerData, screen.getSelectedAbility()) , this::addDescriptionLine);
         }
     }
 

@@ -21,7 +21,7 @@ public abstract class BaseItemEffect implements IItemEffect {
     public final static ResourceLocation INVALID_EFFECT_TYPE = new ResourceLocation(MKWeapons.MODID, "weapon_effect.error");
     private final ResourceLocation name;
     protected final ChatFormatting color;
-    private List<ISerializableAttribute<?>> attributes = new ArrayList<>();
+    private final List<ISerializableAttribute<?>> attributes = new ArrayList<>();
     private static final String TYPE_ENTRY_NAME = "itemEffectType";
 
     public BaseItemEffect(ResourceLocation name, ChatFormatting color) {

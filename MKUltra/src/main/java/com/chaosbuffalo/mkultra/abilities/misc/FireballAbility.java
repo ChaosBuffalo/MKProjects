@@ -57,8 +57,8 @@ public class FireballAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float skillLevel = skillSupplier.apply(MKAttributes.EVOCATION);
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
+        float skillLevel = context.getSkill(MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(), baseDamage.value(),
                 scaleDamage.value(), skillLevel,
                 modifierScaling.value());
@@ -97,9 +97,9 @@ public class FireballAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.EVOCATION);
+    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
+        super.endCast(entity, data, context);
+        float level = context.getSkill(MKAttributes.EVOCATION);
         FireballProjectileEntity proj = new FireballProjectileEntity(MKUEntities.FIREBALL_TYPE.get(), entity.level);
         proj.setOwner(entity);
         proj.setSkillLevel(level);

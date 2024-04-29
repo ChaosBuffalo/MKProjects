@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkultra.abilities.necromancer;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.PositionTargetingAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
@@ -23,11 +24,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
 public class ShadowPulseAbility extends PositionTargetingAbility {
     private static final ResourceLocation PULSE_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_pulse_detonate");
@@ -61,8 +60,8 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
 
 
     @Override
-    public Component getAbilityDescription(IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.CONJURATION);
+    public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.CONJURATION);
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         Component detonateStr = getDamageDescription(casterData, CoreDamageTypes.ShadowDamage.get(), detonateBase.value(), detonateScale.value(), level, modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(),
@@ -90,11 +89,11 @@ public class ShadowPulseAbility extends PositionTargetingAbility {
     }
 
     @Override
-    public void castAtPosition(IMKEntityData casterData, Vec3 position, Function<Attribute, Float> skillSupplier) {
+    public void castAtPosition(IMKEntityData casterData, Vec3 position, AbilityContext context) {
         LivingEntity castingEntity = casterData.getEntity();
         Vec3 pulseOffset = new Vec3(0.0, 0.5, 0.0);
         Vec3 pulsePos = position.add(pulseOffset);
-        float level = skillSupplier.apply(MKAttributes.CONJURATION);
+        float level = context.getSkill(MKAttributes.CONJURATION);
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
                         base.value(), scale.value(), modifierScaling.value())
                 .ability(this)

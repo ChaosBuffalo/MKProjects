@@ -69,7 +69,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
     private void activatePassive(ResourceLocation abilityId) {
         MKAbilityInfo info = playerData.getAbilities().getKnownAbility(abilityId);
         if (info != null && info.getAbility() instanceof MKPassiveAbility) {
-            info.getAbility().executeWithContext(playerData, AbilityContext.selfTarget(playerData), info);
+            info.getAbility().executeWithContext(playerData, AbilityContext.selfTarget(playerData, info), info);
         }
     }
 

@@ -72,8 +72,8 @@ public class WhirlwindBladesAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.PANKRATION);
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.PANKRATION);
         Component baseDamage = getDamageDescription(entityData,
                 CoreDamageTypes.MeleeDamage.get(), base.value(), scale.value(), level, 0.0f);
         float periodSeconds = 6.0f / GameConstants.TICKS_PER_SECOND;
@@ -108,12 +108,11 @@ public class WhirlwindBladesAbility extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context,
-                             Function<Attribute, Float> skillSupplier) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, context, skillSupplier);
+    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context) {
+        super.continueCast(castingEntity, casterData, castTimeLeft, context);
         int tickSpeed = 6;
         if (castTimeLeft % tickSpeed == 0) {
-            float level = skillSupplier.apply(MKAttributes.PANKRATION);
+            float level = context.getSkill(MKAttributes.PANKRATION);
             int totalDuration = getCastTime(casterData);
             int count = (totalDuration - castTimeLeft) / tickSpeed;
             float baseAmount = perTick.value();

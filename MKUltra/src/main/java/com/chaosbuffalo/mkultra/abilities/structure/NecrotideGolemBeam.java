@@ -26,11 +26,8 @@ import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.function.Function;
 
 public class NecrotideGolemBeam extends StructureAbility {
 
@@ -85,9 +82,9 @@ public class NecrotideGolemBeam extends StructureAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
-        float skillLevel = skillSupplier.apply(MKAttributes.NECROMANCY);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
+        super.endCast(castingEntity, casterData, context);
+        float skillLevel = context.getSkill(MKAttributes.NECROMANCY);
         getStructure(castingEntity).ifPresent(entry -> entry.getPoisWithTag("golem_lantern").forEach(
                 poi -> {
                     BlockPos pos = poi.getLocation().pos().below(2);

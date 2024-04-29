@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.EntityTargetingAbility;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.description.AbilityDescriptions;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
@@ -25,11 +24,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class EngulfingDarknessAbility extends EntityTargetingAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_casting");
@@ -64,15 +61,14 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
     }
 
     @Override
-    public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
-        super.buildDescription(casterData, consumer);
-        AbilityDescriptions.getEffectModifiers(MKUEffects.ENGULFING_DARKNESS.get(), casterData, false,
-                attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)).forEach(consumer);
+    public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
+        super.buildDescription(casterData, context, consumer);
+        AbilityDescriptions.getEffectModifiers(MKUEffects.ENGULFING_DARKNESS.get(), context, false, consumer);
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.CONJURATION);
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.CONJURATION);
         Component dotStr = getDamageDescription(entityData,
                 CoreDamageTypes.ShadowDamage.get(), baseDot.value(), scaleDot.value(), level, dotModifierScaling.value());
         float dotDur = convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()));
@@ -113,8 +109,8 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
     }
 
     @Override
-    public void castAtEntity(IMKEntityData casterData, LivingEntity target, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.CONJURATION);
+    public void castAtEntity(IMKEntityData casterData, LivingEntity target, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.CONJURATION);
         MKEffectBuilder<?> dot = getDotCast(casterData, level)
                 .ability(this)
                 .skillLevel(level);
@@ -124,11 +120,5 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
         });
         SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_dark_7.get(), target.getSoundSource());
         MKParticles.spawn(target, new Vec3(0.0, 1.0, 0.0), castParticles.getValue());
-    }
-
-    @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(entity, data, context, skillSupplier);
-
     }
 }
