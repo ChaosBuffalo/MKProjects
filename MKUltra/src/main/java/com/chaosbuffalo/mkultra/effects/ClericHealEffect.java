@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkcore.core.healing.MKHealing;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
-import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
+import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -45,7 +45,7 @@ public class ClericHealEffect extends MKEffect {
         return new State();
     }
 
-    public static class State extends ScalingValueEffectState {
+    public static class State extends ScalingDamageEffectState {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {

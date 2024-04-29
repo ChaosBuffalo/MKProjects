@@ -84,11 +84,13 @@ public abstract class MKEffect {
     }
 
     // Effect was updated while the entity was in the world
-    public void onInstanceUpdated(IMKEntityData targetData, MKActiveEffect activeEffect) {
+    // Return true to remove effect
+    public boolean onInstanceUpdated(IMKEntityData targetData, MKActiveEffect activeEffect) {
         if (hasAttributes()) {
             removeAttributesModifiers(targetData);
             applyAttributesModifiers(targetData, activeEffect);
         }
+        return false;
     }
 
     // Effect was removed while the entity was in the world

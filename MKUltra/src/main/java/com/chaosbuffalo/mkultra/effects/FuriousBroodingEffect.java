@@ -8,7 +8,7 @@ import com.chaosbuffalo.mkcore.core.healing.MKHealing;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
-import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
+import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -53,7 +53,7 @@ public class FuriousBroodingEffect extends MKEffect {
         return new MKEffectBuilder<>(this, sourceEntity, this::makeState);
     }
 
-    public static class State extends ScalingValueEffectState {
+    public static class State extends ScalingDamageEffectState {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {

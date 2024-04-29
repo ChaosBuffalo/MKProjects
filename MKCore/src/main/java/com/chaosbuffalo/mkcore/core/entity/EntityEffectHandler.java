@@ -113,8 +113,11 @@ public class EntityEffectHandler {
         protected void onEffectUpdated(MKActiveEffect activeEffect) {
 //            MKCore.LOGGER.debug("EntityEffectHandler.onEffectUpdated {}", activeEffect);
             if (entityData.isServerSide()) {
-                activeEffect.getEffect().onInstanceUpdated(entityData, activeEffect);
-                sendEffectSet(activeEffect);
+                if (activeEffect.getEffect().onInstanceUpdated(entityData, activeEffect)) {
+                    removeEffectInstance(activeEffect);
+                } else {
+                    sendEffectSet(activeEffect);
+                }
             }
         }
 
