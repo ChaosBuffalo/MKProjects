@@ -141,6 +141,7 @@
         "mkcore:two_hand_slash"
       ],
       "minor_skills": [
+        "mkcore:hand_to_hand",
         "mkcore:pankration"
       ],
       "optionType": "mknpc:skills",

@@ -236,9 +236,10 @@
   "repeatable": true,
   "requirements": [
     {
-      "attributes": {},
-      "entitlement": "mkultra:green_knight.tier_1",
-      "questReqType": "mknpc:quest_requirement.has_entitlement"
+      "type": "mknpc:has_entitlement",
+      "value": {
+        "entitlement": "mkultra:green_knight.tier_1"
+      }
     }
   ]
 }

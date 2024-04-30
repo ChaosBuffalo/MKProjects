@@ -166,6 +166,7 @@
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",
+        "mkcore:hand_to_hand",
         "mkcore:pankration",
         "mkcore:restoration"
       ],
