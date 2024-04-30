@@ -65,21 +65,23 @@
       "description": "{\"text\":\"The Green Smith needs some scrap metal and a helmet from the pigs in the castle.\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:green_smith",
-            "objectiveName": "tradeHelmetObj",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
-          "description": [
-            "{\"translate\":\"mknpc.trade.item_needed\",\"with\":[\"2\",{\"translate\":\"item.mkultra.corrupted_pig_iron_plate\"}]}",
-            "{\"translate\":\"mknpc.trade.item_needed\",\"with\":[\"1\",{\"translate\":\"item.mkultra.destroyed_trooper_helmet\"}]}"
-          ],
+          "type": "mknpc:trade_with_npc",
           "items": [
-            "{id: \"mkultra:corrupted_pig_iron_plate\", Count: 2b}",
-            "{id: \"mkultra:destroyed_trooper_helmet\", Count: 1b}"
+            {
+              "Count": 2,
+              "id": "mkultra:corrupted_pig_iron_plate"
+            },
+            {
+              "Count": 1,
+              "id": "mkultra:destroyed_trooper_helmet"
+            }
           ],
-          "objectiveType": "mknpc:objective.trade_with_npc"
+          "npcDefinition": "mkultra:green_smith",
+          "objectiveName": "tradeHelmetObj",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "tradeHelmet",
@@ -108,21 +110,23 @@
       "description": "{\"text\":\"The Green Smith needs some scrap metal and a pair of leggings from the pigs in the castle.\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:green_smith",
-            "objectiveName": "tradeHelmetObj",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
-          "description": [
-            "{\"translate\":\"mknpc.trade.item_needed\",\"with\":[\"6\",{\"translate\":\"item.mkultra.corrupted_pig_iron_plate\"}]}",
-            "{\"translate\":\"mknpc.trade.item_needed\",\"with\":[\"1\",{\"translate\":\"item.mkultra.destroyed_trooper_leggings\"}]}"
-          ],
+          "type": "mknpc:trade_with_npc",
           "items": [
-            "{id: \"mkultra:corrupted_pig_iron_plate\", Count: 6b}",
-            "{id: \"mkultra:destroyed_trooper_leggings\", Count: 1b}"
+            {
+              "Count": 6,
+              "id": "mkultra:corrupted_pig_iron_plate"
+            },
+            {
+              "Count": 1,
+              "id": "mkultra:destroyed_trooper_leggings"
+            }
           ],
-          "objectiveType": "mknpc:objective.trade_with_npc"
+          "npcDefinition": "mkultra:green_smith",
+          "objectiveName": "tradeHelmetObj",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "tradeLeggings",
@@ -151,21 +155,23 @@
       "description": "{\"text\":\"The Green Smith needs some scrap metal and a pair of boots from the pigs in the castle.\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:green_smith",
-            "objectiveName": "tradeLeggingsObj",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
-          "description": [
-            "{\"translate\":\"mknpc.trade.item_needed\",\"with\":[\"4\",{\"translate\":\"item.mkultra.corrupted_pig_iron_plate\"}]}",
-            "{\"translate\":\"mknpc.trade.item_needed\",\"with\":[\"1\",{\"translate\":\"item.mkultra.destroyed_trooper_boots\"}]}"
-          ],
+          "type": "mknpc:trade_with_npc",
           "items": [
-            "{id: \"mkultra:corrupted_pig_iron_plate\", Count: 4b}",
-            "{id: \"mkultra:destroyed_trooper_boots\", Count: 1b}"
+            {
+              "Count": 4,
+              "id": "mkultra:corrupted_pig_iron_plate"
+            },
+            {
+              "Count": 1,
+              "id": "mkultra:destroyed_trooper_boots"
+            }
           ],
-          "objectiveType": "mknpc:objective.trade_with_npc"
+          "npcDefinition": "mkultra:green_smith",
+          "objectiveName": "tradeLeggingsObj",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "tradeBoots",
@@ -194,21 +200,23 @@
       "description": "{\"text\":\"The Green Smith needs some scrap metal and the chestplate from the pigs in the castle.\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:green_smith",
-            "objectiveName": "tradeChestObj",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
-          "description": [
-            "{\"translate\":\"mknpc.trade.item_needed\",\"with\":[\"8\",{\"translate\":\"item.mkultra.corrupted_pig_iron_plate\"}]}",
-            "{\"translate\":\"mknpc.trade.item_needed\",\"with\":[\"1\",{\"translate\":\"item.mkultra.destroyed_trooper_chestplate\"}]}"
-          ],
+          "type": "mknpc:trade_with_npc",
           "items": [
-            "{id: \"mkultra:corrupted_pig_iron_plate\", Count: 8b}",
-            "{id: \"mkultra:destroyed_trooper_chestplate\", Count: 1b}"
+            {
+              "Count": 8,
+              "id": "mkultra:corrupted_pig_iron_plate"
+            },
+            {
+              "Count": 1,
+              "id": "mkultra:destroyed_trooper_chestplate"
+            }
           ],
-          "objectiveType": "mknpc:objective.trade_with_npc"
+          "npcDefinition": "mkultra:green_smith",
+          "objectiveName": "tradeChestObj",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "tradeChestplate",

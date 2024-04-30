@@ -11,7 +11,6 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestReward;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
-import com.chaosbuffalo.mknpc.quest.objectives.StructureInstanceObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
@@ -103,7 +102,7 @@ public class Quest {
     public <D> D serialize(DynamicOps<D> ops) {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("questName"), ops.createString(questName));
-        builder.put(ops.createString("objectives"), ops.createList(objectives.stream().map(x -> x.serialize(ops))));
+        builder.put(ops.createString("objectives"), ops.createList(objectives.stream().flatMap(x -> QuestObjective.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
         builder.put(ops.createString("description"), ops.createString(Component.Serializer.toJson(description)));
         builder.put(ops.createString("autoComplete"), ops.createBoolean(autoComplete));
         builder.put(ops.createString("rewards"), ops.createList(rewards.stream().flatMap(x -> QuestReward.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
@@ -115,19 +114,10 @@ public class Quest {
         autoComplete = dynamic.get("autoComplete").asBoolean(false);
         description = Component.Serializer.fromJson(
                 dynamic.get("description").asString(Component.Serializer.toJson(defaultDescription)));
-        List<Optional<QuestObjective<?>>> objectives = dynamic.get("objectives").asList(x -> {
-            ResourceLocation type = QuestObjective.getType(x);
-            Supplier<QuestObjective<?>> sup = QuestDefinitionManager.getObjectiveDeserializer(type);
-            if (sup != null) {
-                QuestObjective<?> obj = sup.get();
-                obj.deserialize(x);
-                return Optional.of(obj);
-            }
-            return Optional.empty();
+
+        dynamic.get("objectives").asStream().forEach(x -> {
+            QuestObjective.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addObjective);
         });
-        for (Optional<QuestObjective<?>> objOpt : objectives) {
-            objOpt.ifPresent(this::addObjective);
-        }
 
         dynamic.get("rewards").asStream().forEach(x -> {
             QuestReward.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addReward);
@@ -139,10 +129,10 @@ public class Quest {
     }
 
     public List<Pair<ResourceLocation, Integer>> getStructuresNeeded() {
-        return objectives.stream().filter(x -> x instanceof StructureInstanceObjective)
-                .map(x -> (StructureInstanceObjective<?>) x)
-                .map(x -> new Pair<>(x.getStructureName(), x.getStructureIndex() + 1))
-                .collect(Collectors.toList());
+        return objectives.stream()
+                .flatMap(x -> x.getStructure().stream())
+                .map(l -> new Pair<>(l.getStructureId(), l.getIndex() + 1))
+                .toList();
     }
 
 

@@ -110,14 +110,11 @@
       "description": "{\"text\":\"You need to find the Apprentice somewhere in the castle. Perhaps near the library..\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:solangian_apprentice",
-            "objectiveName": "talk_to_apprentice",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Talk to the apprentice\"}"
+            {
+              "text": "Talk to the apprentice"
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.talk_to_apprentice",
@@ -164,7 +161,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:solangian_apprentice",
+          "objectiveName": "talk_to_apprentice",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "talk_to_apprentice",
@@ -180,17 +182,16 @@
       "description": "{\"text\":\"The Apprentice wants you to retrieve their necklace from a zombie in the library.\"}",
       "objectives": [
         {
-          "attributes": {
-            "chance": 1.0,
-            "count": 1,
-            "npcDefinition": "mkultra:imperial_magus",
-            "objectiveName": "loot_necklace",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
+          "type": "mknpc:quest_loot_notable",
+          "itemDescription": {
+            "text": "The Apprentice's Necklace"
           },
-          "description": [],
-          "itemDescription": "{\"text\":\"The Apprentice's Necklace\"}",
-          "objectiveType": "mknpc:objective.quest_loot_notable"
+          "npcDefinition": "mkultra:imperial_magus",
+          "objectiveName": "loot_necklace",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "loot_necklace",
@@ -206,14 +207,11 @@
       "description": "{\"text\":\"Return the necklace to the Apprentice\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:solangian_apprentice",
-            "objectiveName": "return_to_apprentice",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Talk to the apprentice\"}"
+            {
+              "text": "Talk to the apprentice"
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.return_to_apprentice",
@@ -245,7 +243,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:solangian_apprentice",
+          "objectiveName": "return_to_apprentice",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "return_to_apprentice",
@@ -261,14 +264,11 @@
       "description": "{\"text\":\"Return to the Acolyte and let them know the Apprentice is safe.\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:solangian_acolyte",
-            "objectiveName": "return_to_acolyte",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Return to the Acolyte\"}"
+            {
+              "text": "Return to the Acolyte"
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.return_to_acolyte",
@@ -300,7 +300,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:solangian_acolyte",
+          "objectiveName": "return_to_acolyte",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "return_to_acolyte",

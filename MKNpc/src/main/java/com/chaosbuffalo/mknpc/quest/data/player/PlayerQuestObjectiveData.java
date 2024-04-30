@@ -15,13 +15,13 @@ import java.util.List;
 public class PlayerQuestObjectiveData extends NBTSerializableMappedData {
 
     private String objectiveName;
-    private List<MutableComponent> description = new ArrayList<>();
+    private final List<Component> description = new ArrayList<>();
 
-    public PlayerQuestObjectiveData(String objectiveName, MutableComponent... description) {
+    public PlayerQuestObjectiveData(String objectiveName, Component... description) {
         this(objectiveName, Arrays.asList(description));
     }
 
-    public PlayerQuestObjectiveData(String objectiveName, List<MutableComponent> description) {
+    public PlayerQuestObjectiveData(String objectiveName, List<Component> description) {
         this.objectiveName = objectiveName;
         this.description.addAll(description);
     }
@@ -31,7 +31,7 @@ public class PlayerQuestObjectiveData extends NBTSerializableMappedData {
         this.description.addAll(Arrays.asList(description));
     }
 
-    public List<MutableComponent> getDescription() {
+    public List<Component> getDescription() {
         return description;
     }
 
@@ -52,7 +52,7 @@ public class PlayerQuestObjectiveData extends NBTSerializableMappedData {
         CompoundTag nbt = super.serializeNBT();
         nbt.putString("name", objectiveName);
         ListTag descriptions = new ListTag();
-        for (MutableComponent comp : this.description) {
+        for (Component comp : this.description) {
             descriptions.add(StringTag.valueOf(Component.Serializer.toJson(comp)));
         }
         nbt.put("description", descriptions);
