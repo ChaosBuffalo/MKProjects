@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestBuilder;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
+import com.chaosbuffalo.mknpc.quest.QuestStructureLocation;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasSpentTalentPointsCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasTrainedAbilitiesCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasWeaponInHandCondition;
@@ -33,6 +34,7 @@ import net.minecraft.world.level.block.Blocks;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class MKUQuestProvider extends QuestDefinitionProvider {
@@ -52,7 +54,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
     }
 
     private QuestDefinition generateIntroMageQuest() {
-        QuestBuilder.QuestLocation introCastle = new QuestBuilder.QuestLocation(UltraStructures.INTRO_CASTLE.location(), 0);
+        QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), 0);
         QuestBuilder.QuestNpc initiate = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "nether_mage_initiate"));
         QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "imperial_magus"));
 
@@ -154,7 +156,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
     }
 
     private QuestDefinition generateIntroClericQuest() {
-        QuestBuilder.QuestLocation introCastle = new QuestBuilder.QuestLocation(UltraStructures.INTRO_CASTLE.location(), 0);
+        QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), 0);
         QuestBuilder.QuestNpc acolyte = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "solangian_acolyte"));
         QuestBuilder.QuestNpc apprentice = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "solangian_apprentice"));
         QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "imperial_magus"));
@@ -270,6 +272,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
     }
 
     private QuestDefinition generateTrooperArmorQuest() {
+        QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), 0);
+        ResourceLocation greenSmith = new ResourceLocation(MKUltra.MODID, "green_smith");
+
         QuestDefinition def = new QuestDefinition(new ResourceLocation(MKUltra.MODID, "trooper_armor"));
         def.addRequirement(new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier1.get()));
         def.setRepeatable(true);
@@ -295,10 +300,12 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         helmet.setAutoComplete(true);
         TradeItemsObjective helmetTrade = new TradeItemsObjective(
                 "tradeHelmetObj",
-                UltraStructures.INTRO_CASTLE.location(), 0,
-                new ResourceLocation(MKUltra.MODID, "green_smith"));
-        helmetTrade.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate.get(), 2));
-        helmetTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperHelmet.get()));
+                introCastle,
+                greenSmith,
+                List.of(
+                        new ItemStack(MKUItems.corruptedPigIronPlate.get(), 2),
+                        new ItemStack(MKUItems.destroyedTrooperHelmet.get())
+                ));
         helmet.addObjective(helmetTrade);
         helmet.addReward(new XpReward(25));
         helmet.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"),
@@ -311,10 +318,12 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         leggings.setAutoComplete(true);
         TradeItemsObjective leggingsTrade = new TradeItemsObjective(
                 "tradeHelmetObj",
-                UltraStructures.INTRO_CASTLE.location(), 0,
-                new ResourceLocation(MKUltra.MODID, "green_smith"));
-        leggingsTrade.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate.get(), 6));
-        leggingsTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperLeggings.get()));
+                introCastle,
+                greenSmith,
+                List.of(
+                        new ItemStack(MKUItems.corruptedPigIronPlate.get(), 6),
+                        new ItemStack(MKUItems.destroyedTrooperLeggings.get())
+                ));
         leggings.addObjective(leggingsTrade);
         leggings.addReward(new XpReward(25));
         leggings.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"),
@@ -327,10 +336,12 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         boots.setAutoComplete(true);
         TradeItemsObjective bootTrade = new TradeItemsObjective(
                 "tradeLeggingsObj",
-                UltraStructures.INTRO_CASTLE.location(), 0,
-                new ResourceLocation(MKUltra.MODID, "green_smith"));
-        bootTrade.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate.get(), 4));
-        bootTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperBoots.get()));
+                introCastle,
+                greenSmith,
+                List.of(
+                        new ItemStack(MKUItems.corruptedPigIronPlate.get(), 4),
+                        new ItemStack(MKUItems.destroyedTrooperBoots.get())
+                ));
         boots.addObjective(bootTrade);
         boots.addReward(new XpReward(25));
         boots.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"),
@@ -343,10 +354,12 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         chestplate.setAutoComplete(true);
         TradeItemsObjective chestplateTrade = new TradeItemsObjective(
                 "tradeChestObj",
-                UltraStructures.INTRO_CASTLE.location(), 0,
-                new ResourceLocation(MKUltra.MODID, "green_smith"));
-        chestplateTrade.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate.get(), 8));
-        chestplateTrade.addItemStack(new ItemStack(MKUItems.destroyedTrooperChestplate.get()));
+                introCastle,
+                greenSmith,
+                List.of(
+                        new ItemStack(MKUItems.corruptedPigIronPlate.get(), 8),
+                        new ItemStack(MKUItems.destroyedTrooperChestplate.get())
+                ));
         chestplate.addObjective(chestplateTrade);
         chestplate.addReward(new XpReward(25));
         chestplate.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"),
@@ -359,7 +372,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
 
     private QuestDefinition generateIntroQuest() {
 
-        QuestBuilder.QuestLocation introCastle = new QuestBuilder.QuestLocation(UltraStructures.INTRO_CASTLE.location(), 0);
+        QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), 0);
         QuestBuilder.QuestNpc greenLady = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "green_lady"));
         QuestBuilder.QuestNpc piglinCaptain = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "trooper_captain"));
         QuestBuilder.QuestNpc greenSmith = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "green_smith"));

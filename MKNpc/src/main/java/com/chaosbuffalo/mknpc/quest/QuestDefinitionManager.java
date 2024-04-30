@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.quest;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.quest.objectives.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -19,10 +18,8 @@ import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
     public static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
@@ -34,16 +31,9 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
 
     public static final Map<ResourceLocation, QuestDefinition> DEFINITIONS = new HashMap<>();
 
-    public static final Map<ResourceLocation, Supplier<QuestObjective<?>>> OBJECTIVE_DESERIALIZERS = new HashMap<>();
-
     public QuestDefinitionManager() {
         super(GSON, DEFINITION_FOLDER);
         MinecraftForge.EVENT_BUS.register(this);
-    }
-
-
-    public static void putObjectiveDeserializer(ResourceLocation name, Supplier<QuestObjective<?>> deserializer) {
-        OBJECTIVE_DESERIALIZERS.put(name, deserializer);
     }
 
     @SubscribeEvent
@@ -51,20 +41,7 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
         event.addListener(this);
     }
 
-    @Nullable
-    public static Supplier<QuestObjective<?>> getObjectiveDeserializer(ResourceLocation name) {
-        return OBJECTIVE_DESERIALIZERS.get(name);
-    }
-
     public static void setupDeserializers() {
-        putObjectiveDeserializer(LootChestObjective.NAME, LootChestObjective::new);
-        putObjectiveDeserializer(TalkToNpcObjective.NAME, TalkToNpcObjective::new);
-        putObjectiveDeserializer(KillNpcDefObjective.NAME, KillNpcDefObjective::new);
-        putObjectiveDeserializer(TradeItemsObjective.NAME, TradeItemsObjective::new);
-        putObjectiveDeserializer(KillNotableNpcObjective.NAME, KillNotableNpcObjective::new);
-        putObjectiveDeserializer(QuestLootNpcObjective.NAME, QuestLootNpcObjective::new);
-        putObjectiveDeserializer(QuestLootNotableObjective.NAME, QuestLootNotableObjective::new);
-        putObjectiveDeserializer(KillWithAbilityObjective.NAME, KillWithAbilityObjective::new);
     }
 
     @Override

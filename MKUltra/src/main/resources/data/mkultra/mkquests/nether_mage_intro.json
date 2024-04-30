@@ -95,17 +95,16 @@
       "description": "{\"text\":\"The Nether Mage Initiate wants you to retrieve a staff from the library.\"}",
       "objectives": [
         {
-          "attributes": {
-            "chance": 1.0,
-            "count": 1,
-            "npcDefinition": "mkultra:imperial_magus",
-            "objectiveName": "loot_staff",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
+          "type": "mknpc:quest_loot_notable",
+          "itemDescription": {
+            "text": "The Magic Staff"
           },
-          "description": [],
-          "itemDescription": "{\"text\":\"The Magic Staff\"}",
-          "objectiveType": "mknpc:objective.quest_loot_notable"
+          "npcDefinition": "mkultra:imperial_magus",
+          "objectiveName": "loot_staff",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "get_staff",
@@ -116,14 +115,11 @@
       "description": "{\"text\":\"Return to the Initiate with the Magic Staff\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:nether_mage_initiate",
-            "objectiveName": "return_to_initiate",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Talk to the Initiate again.\"}"
+            {
+              "text": "Talk to the Initiate again."
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.return_to_initiate",
@@ -170,7 +166,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:nether_mage_initiate",
+          "objectiveName": "return_to_initiate",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "return_to_initiate",
@@ -199,15 +200,12 @@
       "description": "{\"text\":\"Land Killing Blows with the Fireball Ability granted by the Initiate's Staff\"}",
       "objectives": [
         {
-          "attributes": {
+          "type": "mknpc:kill_with_ability",
+          "value": {
             "ability": "mkultra:ability.fireball",
             "count": 10,
             "objectiveName": "test_staff"
-          },
-          "description": [
-            "{\"text\":\"Placeholder\"}"
-          ],
-          "objectiveType": "mknpc:objective.kill_w_ability"
+          }
         }
       ],
       "questName": "test_staff",
@@ -223,14 +221,11 @@
       "description": "{\"text\":\"Return to the Initiate\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:nether_mage_initiate",
-            "objectiveName": "test_complete",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Talk to the Initiate\"}"
+            {
+              "text": "Talk to the Initiate"
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.test_complete",
@@ -274,7 +269,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:nether_mage_initiate",
+          "objectiveName": "test_complete",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "test_complete",
