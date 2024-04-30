@@ -20,7 +20,6 @@ import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class QuestDefinition {
@@ -171,7 +170,7 @@ public class QuestDefinition {
         builder.put(ops.createString("quests"), ops.createList(questChain.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("repeatable"), ops.createBoolean(isRepeatable()));
         builder.put(ops.createString("questName"), ops.createString(Component.Serializer.toJson(questName)));
-        builder.put(ops.createString("requirements"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
+        builder.put(ops.createString("requirements"), ops.createList(requirements.stream().flatMap(x -> QuestRequirement.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
         builder.put(ops.createString("questMode"), ops.createInt(getMode().ordinal()));
         builder.put(ops.createString("dialogue"), startQuestTree.serialize(ops));
         return ops.createMap(builder.build());
@@ -192,18 +191,9 @@ public class QuestDefinition {
         questName = Component.Serializer.fromJson(
                 dynamic.get("questName").asString(Component.Serializer.toJson(defaultQuestName)));
         mode = QuestMode.values()[dynamic.get("questMode").asInt(0)];
-        List<Optional<QuestRequirement>> reqs = dynamic.get("requirements").asList(x -> {
-            ResourceLocation type = QuestRequirement.getType(x);
-            Supplier<QuestRequirement> deserializer = QuestDefinitionManager.getRequirementDeserializer(type);
-            if (deserializer == null) {
-                return Optional.empty();
-            } else {
-                QuestRequirement req = deserializer.get();
-                req.deserialize(x);
-                return Optional.of(req);
-            }
+        dynamic.get("requirements").asStream().forEach(x -> {
+            QuestRequirement.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addRequirement);
         });
-        reqs.forEach(x -> x.ifPresent(this::addRequirement));
         startQuestTree = DialogueTree.deserialize(makeTreeId(getName()),
                 dynamic.get("dialogue").result().orElseThrow(() -> new IllegalStateException(String.format(
                         "QuestDefinition: %s missing start quest dialogue", getName().toString()))));

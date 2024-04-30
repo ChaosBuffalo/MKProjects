@@ -46,6 +46,7 @@
     {
       "major_skills": [],
       "minor_skills": [
+        "mkcore:hand_to_hand",
         "mkcore:one_hand_blunt",
         "mkcore:one_hand_pierce",
         "mkcore:one_hand_slash",

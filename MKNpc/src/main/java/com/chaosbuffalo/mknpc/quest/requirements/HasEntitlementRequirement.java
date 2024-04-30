@@ -4,38 +4,30 @@ import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
-import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasEntitlementCondition;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
-import net.minecraft.resources.ResourceLocation;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 
 public class HasEntitlementRequirement extends QuestRequirement {
-    public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID, "quest_requirement.has_entitlement");
-    private MKEntitlement entitlement;
+    public static final Codec<HasEntitlementRequirement> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
+            RecordCodecBuilder.<HasEntitlementRequirement>mapCodec(builder ->
+                    builder.group(
+                            MKCoreRegistry.ENTITLEMENTS.getCodec().fieldOf("entitlement").forGetter(i -> i.entitlement)
+                    ).apply(builder, HasEntitlementRequirement::new)
+            ).codec());
+
+
+    private final MKEntitlement entitlement;
 
     public HasEntitlementRequirement(MKEntitlement entitlement) {
-        super(TYPE_NAME);
         this.entitlement = entitlement;
     }
 
-    public HasEntitlementRequirement() {
-        super(TYPE_NAME);
-    }
-
     @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("entitlement"), ops.createString(entitlement.getId().toString()));
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        dynamic.get("entitlement").asString().result().ifPresent(
-                x -> entitlement = MKCoreRegistry.getEntitlement(new ResourceLocation(x)));
+    public QuestRequirementType<? extends QuestRequirement> getType() {
+        return QuestRequirementTypes.HAS_ENTITLEMENT.get();
     }
 
     @Override

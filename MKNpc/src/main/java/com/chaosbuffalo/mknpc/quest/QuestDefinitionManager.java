@@ -2,8 +2,6 @@ package com.chaosbuffalo.mknpc.quest;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.quest.objectives.*;
-import com.chaosbuffalo.mknpc.quest.requirements.HasEntitlementRequirement;
-import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -37,7 +35,6 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
     public static final Map<ResourceLocation, QuestDefinition> DEFINITIONS = new HashMap<>();
 
     public static final Map<ResourceLocation, Supplier<QuestObjective<?>>> OBJECTIVE_DESERIALIZERS = new HashMap<>();
-    public static final Map<ResourceLocation, Supplier<QuestRequirement>> REQUIREMENT_DESERIALIZERS = new HashMap<>();
 
     public QuestDefinitionManager() {
         super(GSON, DEFINITION_FOLDER);
@@ -49,18 +46,9 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
         OBJECTIVE_DESERIALIZERS.put(name, deserializer);
     }
 
-    public static void putRequirementDeserializer(ResourceLocation name, Supplier<QuestRequirement> deserializer) {
-        REQUIREMENT_DESERIALIZERS.put(name, deserializer);
-    }
-
     @SubscribeEvent
     public void subscribeEvent(AddReloadListenerEvent event) {
         event.addListener(this);
-    }
-
-    @Nullable
-    public static Supplier<QuestRequirement> getRequirementDeserializer(ResourceLocation name) {
-        return REQUIREMENT_DESERIALIZERS.get(name);
     }
 
     @Nullable
@@ -73,7 +61,6 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
         putObjectiveDeserializer(TalkToNpcObjective.NAME, TalkToNpcObjective::new);
         putObjectiveDeserializer(KillNpcDefObjective.NAME, KillNpcDefObjective::new);
         putObjectiveDeserializer(TradeItemsObjective.NAME, TradeItemsObjective::new);
-        putRequirementDeserializer(HasEntitlementRequirement.TYPE_NAME, HasEntitlementRequirement::new);
         putObjectiveDeserializer(KillNotableNpcObjective.NAME, KillNotableNpcObjective::new);
         putObjectiveDeserializer(QuestLootNpcObjective.NAME, QuestLootNpcObjective::new);
         putObjectiveDeserializer(QuestLootNotableObjective.NAME, QuestLootNotableObjective::new);
@@ -84,11 +71,9 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
     protected void apply(Map<ResourceLocation, JsonElement> objectIn, ResourceManager resourceManagerIn, ProfilerFiller profilerIn) {
         DEFINITIONS.clear();
         for (Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
-            ResourceLocation resourcelocation = entry.getKey();
-            MKNpc.LOGGER.info("Found Quest Definition file: {}", resourcelocation);
-            if (resourcelocation.getPath().startsWith("_"))
-                continue; //Forge: filter anything beginning with "_" as it's used for metadata.
-            QuestDefinition def = new QuestDefinition(resourcelocation);
+            ResourceLocation definitionId = entry.getKey();
+            MKNpc.LOGGER.info("Found Quest Definition file: {}", definitionId);
+            QuestDefinition def = new QuestDefinition(definitionId);
             def.deserialize(new Dynamic<>(JsonOps.INSTANCE, entry.getValue()));
             DEFINITIONS.put(def.getName(), def);
         }
