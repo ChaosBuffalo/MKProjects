@@ -7,8 +7,14 @@ import com.chaosbuffalo.mkweapons.data.MKWeaponModelProvider;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraftforge.client.model.generators.ItemModelBuilder;
+import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import java.util.Objects;
 
 
 public class MKUItemModelProvider extends MKWeaponModelProvider {
@@ -53,9 +59,19 @@ public class MKUItemModelProvider extends MKWeaponModelProvider {
         for (MKBow bow : MKUItems.BOWS) {
             makeBowModels(bow);
         }
+        projectileItem(MKUItems.holyWordProjectileItem.get());
     }
 
     private void makeSimpleItem(Item item) {
         basicItem(item);
+    }
+
+    public ItemModelBuilder projectileItem(Item item) {
+        return projectileItem(Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(item)));
+    }
+    public ItemModelBuilder projectileItem(ResourceLocation item) {
+        return this.getBuilder(item.toString())
+                .parent(new ModelFile.UncheckedModelFile("mkultra:item/standarditem"))
+                .texture("layer0", new ResourceLocation(item.getNamespace(), "item/" + item.getPath()));
     }
 }

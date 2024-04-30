@@ -1,0 +1,45 @@
+package com.chaosbuffalo.mkultra.entities.projectiles;
+
+import com.chaosbuffalo.mkultra.abilities.misc.ProjectileAbility;
+import com.chaosbuffalo.targeting_api.TargetingContext;
+import com.chaosbuffalo.targeting_api.TargetingContexts;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
+
+import java.util.function.Supplier;
+
+public abstract class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
+    protected final Supplier<? extends ProjectileAbility> abilitySupplier;
+
+    public AbilityProjectileEntity(EntityType<? extends Projectile> entityTypeIn, Level worldIn,
+                                   ItemStack stack, Supplier<? extends ProjectileAbility> ability) {
+        super(entityTypeIn, worldIn, stack);
+        this.abilitySupplier = ability;
+    }
+
+    @Override
+    protected boolean onImpact(Entity caster, HitResult result, int amplifier) {
+        if (!this.level.isClientSide && caster instanceof LivingEntity casterLiving) {
+            ProjectileAbility ability = abilitySupplier.get();
+            if (ability != null) {
+                return ability.onImpact(this, casterLiving, result, amplifier);
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public float getGravityVelocity() {
+        return 0.0f;
+    }
+
+    @Override
+    protected TargetingContext getTargetContext() {
+        return TargetingContexts.ENEMY;
+    }
+}
