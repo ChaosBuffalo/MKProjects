@@ -1,46 +1,48 @@
 {
-  "hailPrompt": "hail",
+  "dialogueId": "mkultra:intro_cleric_acolyte",
+  "hailPromptId": "hail",
   "nodes": [
     {
-      "id": "hail_wo",
-      "message": "Greetings. I am {context:entity_name}, a humble servant of the Holy See of Solang. I've been sent here to investigate the undead uprising."
+      "message": "Greetings. I am {context:entity_name}, a humble servant of the Holy See of Solang. I've been sent here to investigate the undead uprising.",
+      "nodeId": "hail_wo"
     },
     {
-      "id": "hail_w",
-      "message": "Are you in need of some additional {prompt:open_training} to aid your fight against the undead."
+      "message": "Are you in need of some additional {prompt:open_training} to aid your fight against the undead.",
+      "nodeId": "hail_w"
     },
     {
       "effects": [
         {
-          "dialogueEffectType": "mknpc:open_learn_abilities"
+          "type": "mknpc:open_learn_abilities"
         }
       ],
-      "id": "open_training",
-      "message": "Let me see what I can teach you."
+      "message": "Let me see what I can teach you.",
+      "nodeId": "open_training"
     }
   ],
   "prompts": [
     {
-      "id": "open_training",
-      "message": "magical abilities",
+      "highlightedText": "magical abilities",
+      "promptId": "open_training",
       "responses": [
         {
           "responseNodeId": "open_training"
         }
       ],
-      "suggestedText": "what magical abilities?",
+      "suggestionFillText": "what magical abilities?",
       "triggerPhrase": "magical abilities"
     },
     {
-      "id": "hail",
-      "message": "",
+      "highlightedText": "",
+      "promptId": "hail",
       "responses": [
         {
           "conditions": [
             {
-              "dialogueConditionType": "mknpc:has_entitlement",
-              "entitlement": "mkultra:cleric.intro.tier_1",
-              "invert": false
+              "type": "mknpc:has_entitlement",
+              "value": {
+                "entitlement": "mkultra:cleric.intro.tier_1"
+              }
             }
           ],
           "responseNodeId": "hail_w"
@@ -49,7 +51,7 @@
           "responseNodeId": "hail_wo"
         }
       ],
-      "suggestedText": "",
+      "suggestionFillText": "",
       "triggerPhrase": ""
     }
   ]

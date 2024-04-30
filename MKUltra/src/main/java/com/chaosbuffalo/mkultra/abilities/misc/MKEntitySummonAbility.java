@@ -74,8 +74,8 @@ public class MKEntitySummonAbility extends MKAbility {
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context, Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
+        super.endCast(castingEntity, casterData, context);
         TargetUtil.LivingOrPosition target = context.getMemory(MKAbilityMemories.ABILITY_POSITION_TARGET).orElse(null);
         if (target == null) {
             return;
@@ -86,7 +86,7 @@ public class MKEntitySummonAbility extends MKAbility {
                 UUID id = casterData instanceof MKPlayerData playerData ?
                         playerData.getPersonaManager().getActivePersona().getPersonaId() :
                         MKNpc.getNpcData(castingEntity).map(IEntityNpcData::getSpawnID).orElse(castingEntity.getUUID());
-                Entity entity = def.createEntity(castingEntity.getCommandSenderWorld(), target.getPosition().get(), id, skillSupplier.apply(summoningSkill));
+                Entity entity = def.createEntity(castingEntity.getCommandSenderWorld(), target.getPosition().get(), id, context.getSkill(summoningSkill));
                 MKPet<MKEntity> pet = MKPet.makePetFromEntity(MKEntity.class, getAbilityId(), entity);
                 if (pet.getEntity() != null) {
                     casterData.getPets().addPet(pet);

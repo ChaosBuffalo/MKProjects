@@ -14,9 +14,6 @@ import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-
-import java.util.function.Function;
 
 public abstract class MKSongAbility extends MKToggleAbility {
     public MKSongAbility() {
@@ -42,8 +39,8 @@ public abstract class MKSongAbility extends MKToggleAbility {
     public abstract int getPulseEffectTicks();
 
     @Override
-    public void applyEffect(LivingEntity castingEntity, IMKEntityData casterData, Function<Attribute, Float> skillSupplier) {
-        super.applyEffect(castingEntity, casterData, skillSupplier);
+    public void applyEffect(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
+        super.applyEffect(castingEntity, casterData, context);
         applySustainEffect(casterData);
     }
 

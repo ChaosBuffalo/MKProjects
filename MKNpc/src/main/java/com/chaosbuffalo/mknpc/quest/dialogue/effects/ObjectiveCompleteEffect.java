@@ -2,30 +2,42 @@ package com.chaosbuffalo.mknpc.quest.dialogue.effects;
 
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
+import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffectType;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.content.ContentDB;
+import com.chaosbuffalo.mknpc.dialogue.NpcDialogueEffectTypes;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class ObjectiveCompleteEffect extends DialogueEffect implements IReceivesChainId {
-    public static final ResourceLocation effectTypeName = new ResourceLocation(MKNpc.MODID, "objective_completion");
+    public static final Codec<ObjectiveCompleteEffect> CODEC = RecordCodecBuilder.<ObjectiveCompleteEffect>mapCodec(builder ->
+            builder.group(
+                    UUIDUtil.STRING_CODEC.optionalFieldOf("chainId").forGetter(i -> i.chainId.equals(Util.NIL_UUID) ? Optional.empty() : Optional.of(i.chainId)),
+                    Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
+                    Codec.STRING.fieldOf("questName").forGetter(i -> i.questName)
+            ).apply(builder, ObjectiveCompleteEffect::new)
+    ).codec();
+
     private UUID chainId;
-    private String objectiveName;
-    private String questName;
+    private final String objectiveName;
+    private final String questName;
+
+    private ObjectiveCompleteEffect(Optional<UUID> chainId, String objectiveName, String questName) {
+        this(chainId.orElse(Util.NIL_UUID), objectiveName, questName);
+    }
 
     public ObjectiveCompleteEffect(UUID chainId, String objectiveName, String questName) {
-        this();
         this.chainId = chainId;
         this.objectiveName = objectiveName;
         this.questName = questName;
@@ -35,11 +47,9 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
         this(Util.NIL_UUID, objectiveName, questName);
     }
 
-    public ObjectiveCompleteEffect() {
-        super(effectTypeName);
-        chainId = Util.NIL_UUID;
-        objectiveName = "invalid";
-        questName = "default";
+    @Override
+    public DialogueEffectType<?> getType() {
+        return NpcDialogueEffectTypes.OBJECTIVE_COMPLETE.get();
     }
 
     @Override
@@ -53,13 +63,13 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
     }
 
     @Override
-    public void applyEffect(ServerPlayer serverPlayerEntity, LivingEntity livingEntity, DialogueNode dialogueNode) {
+    public void applyEffect(ServerPlayer player, LivingEntity livingEntity, DialogueNode dialogueNode) {
         QuestChainInstance questChain = ContentDB.getQuestInstance(chainId);
         if (questChain == null) {
             return;
         }
 
-        IPlayerQuestingData questingData = MKNpc.getPlayerQuestData(serverPlayerEntity).resolve().orElse(null);
+        IPlayerQuestingData questingData = MKNpc.getPlayerQuestData(player).resolve().orElse(null);
         if (questingData == null) {
             return;
         }
@@ -73,23 +83,5 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
             }
             questChain.signalObjectiveComplete(objectiveName, questDB, questingData, currentQuest, playerChain);
         });
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        if (!chainId.equals(Util.NIL_UUID)) {
-            builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
-        }
-        builder.put(ops.createString("objectiveName"), ops.createString(objectiveName));
-        builder.put(ops.createString("questName"), ops.createString(questName));
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(Util.NIL_UUID);
-        objectiveName = dynamic.get("objectiveName").asString("invalid");
-        questName = dynamic.get("questName").asString("defualt");
     }
 }

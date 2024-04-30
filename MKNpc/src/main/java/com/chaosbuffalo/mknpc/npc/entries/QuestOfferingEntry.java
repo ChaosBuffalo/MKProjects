@@ -58,11 +58,12 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
     }
 
     private DialogueTree specializeTree(QuestDefinition definition, QuestChainBuildResult buildResult) {
-        DialogueTree specializedTree = definition.getStartQuestTree().copy();
+        UUID chainId = buildResult.instance.getQuestId();
+        DialogueTree specializedTree = definition.getStartQuestTree().copy(makeTreeId(chainId));
         for (DialogueNode node : specializedTree.getNodes().values()) {
             for (DialogueEffect effect : node.getEffects()) {
                 if (effect instanceof IReceivesChainId advEffect) {
-                    advEffect.setChainId(buildResult.instance.getQuestId());
+                    advEffect.setChainId(chainId);
                 }
             }
             TalkToNpcObjective.handleQuestRawMessageManipulation(node, buildResult.questStructures, buildResult.instance);
@@ -70,8 +71,8 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
         for (DialoguePrompt prompt : specializedTree.getPrompts().values()) {
             for (DialogueResponse resp : prompt.getResponses()) {
                 for (DialogueCondition condition : resp.getConditions()) {
-                    if (condition instanceof IReceivesChainId) {
-                        ((IReceivesChainId) condition).setChainId(buildResult.instance.getQuestId());
+                    if (condition instanceof IReceivesChainId chainedCondition) {
+                        chainedCondition.setChainId(chainId);
                     }
                 }
             }
@@ -130,8 +131,7 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
             questId = nbt.getUUID("questId");
         }
         if (nbt.contains("dialogue")) {
-            tree = new DialogueTree(makeTreeId(questId));
-            tree.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt.get("dialogue")));
+            tree = DialogueTree.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt.get("dialogue")));
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.core.talents.talent_types;
 
+import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.talents.MKTalent;
@@ -32,7 +33,7 @@ public class AbilityGrantTalent extends MKTalent {
     public void describeTalent(IMKEntityData entityData, TalentRecord record, Consumer<Component> consumer) {
         super.describeTalent(entityData, record, consumer);
         consumer.accept(ability.get().getAbilityName());
-        ability.get().buildDescription(entityData, consumer);
+        ability.get().buildDescription(entityData, AbilityContext.forCaster(entityData, getAbility()), consumer);
 
     }
 

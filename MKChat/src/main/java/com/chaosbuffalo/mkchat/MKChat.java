@@ -31,6 +31,7 @@ public class MKChat {
         modBus.addListener(this::processIMC);
         modBus.addListener(ChatCapabilities::registerCapabilities);
         ChatEntityTypes.ENTITY_TYPES.register(modBus);
+        ChatRegistries.register(modBus);
 
         MinecraftForge.EVENT_BUS.register(this);
         dialogueManager = new DialogueManager();

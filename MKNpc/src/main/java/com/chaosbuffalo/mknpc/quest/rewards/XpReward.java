@@ -1,42 +1,38 @@
 package com.chaosbuffalo.mknpc.quest.rewards;
 
-import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
-import com.chaosbuffalo.mknpc.MKNpc;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
 public class XpReward extends QuestReward {
-    public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID, "quest_reward.xp");
-    protected final IntAttribute xpAmount = new IntAttribute("xp", 0);
+    public static final Codec<XpReward> CODEC = RecordCodecBuilder.<XpReward>mapCodec(builder ->
+            builder.group(
+                    Codec.INT.fieldOf("xp_amount").forGetter(i -> i.xpAmount)
+            ).apply(builder, XpReward::new)
+    ).codec();
 
+    private final int xpAmount;
 
     public XpReward(int xp) {
-        super(TYPE_NAME, defaultDescription);
-        addAttribute(xpAmount);
-        xpAmount.setValue(xp);
-    }
-
-    public XpReward() {
-        this(0);
+        this.xpAmount = xp;
     }
 
     @Override
-    public MutableComponent getDescription() {
-        return Component.translatable("mknpc.quest_reward.xp.name", xpAmount.value());
+    public QuestRewardType<? extends QuestReward> getType() {
+        return QuestRewardTypes.XP_REWARD.get();
     }
 
     @Override
-    protected boolean hasPersistentDescription() {
-        return false;
+    public Component getDescription() {
+        return Component.translatable("mknpc.quest_reward.xp.name", xpAmount);
     }
 
     @Override
     public void grantReward(Player player) {
-        player.giveExperiencePoints(xpAmount.value());
-        player.sendSystemMessage(Component.translatable("mknpc.quest_reward.xp.message", xpAmount.value())
+        player.giveExperiencePoints(xpAmount);
+        player.sendSystemMessage(Component.translatable("mknpc.quest_reward.xp.message", xpAmount)
                 .withStyle(ChatFormatting.GOLD));
     }
 }

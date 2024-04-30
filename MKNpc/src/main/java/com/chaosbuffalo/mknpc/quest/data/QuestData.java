@@ -11,10 +11,10 @@ import java.util.Map;
 public class QuestData {
 
     private final Map<String, ObjectiveInstanceData> objectives = new HashMap<>();
-    private String questName;
+    private final Quest questDefinition;
 
-    public QuestData(String questName) {
-        this.questName = questName;
+    public QuestData(Quest quest) {
+        this.questDefinition = quest;
     }
 
     public void putObjective(String objectiveName, ObjectiveInstanceData data) {
@@ -26,7 +26,7 @@ public class QuestData {
     }
 
     public String getQuestName() {
-        return questName;
+        return questDefinition.getQuestName();
     }
 
     public CompoundTag serializeNBT() {
@@ -46,7 +46,6 @@ public class QuestData {
             if (obj != null) {
                 putObjective(obj.getObjectiveName(), obj.loadInstanceData(objectiveNbt.getCompound(key)));
             }
-
         }
     }
 }

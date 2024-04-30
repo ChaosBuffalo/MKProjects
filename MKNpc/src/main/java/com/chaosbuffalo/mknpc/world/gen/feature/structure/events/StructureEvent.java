@@ -122,7 +122,7 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
         builder.put(ops.createString("requirements"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("conditions"), ops.createList(conditions.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("event_name"), ops.createString(getEventName()));
-        builder.put(ops.createString("triggers"), ops.createList(triggers.stream().map(x -> ops.createInt(x.ordinal()))));
+        builder.put(ops.createString("triggers"), ops.createList(triggers.stream().sorted().map(x -> ops.createInt(x.ordinal()))));
     }
 
     public List<StructureEventRequirement> getRequirements() {

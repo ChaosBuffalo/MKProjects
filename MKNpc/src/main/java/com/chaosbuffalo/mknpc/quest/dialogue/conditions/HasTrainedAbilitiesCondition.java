@@ -1,11 +1,12 @@
 package com.chaosbuffalo.mknpc.quest.dialogue.conditions;
 
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
+import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueConditionType;
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mknpc.MKNpc;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
+import com.google.common.collect.ImmutableList;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -13,23 +14,32 @@ import net.minecraft.world.entity.LivingEntity;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public class HasTrainedAbilitiesCondition extends DialogueCondition {
-    public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "has_trained_abilities");
+    public static final Codec<HasTrainedAbilitiesCondition> CODEC = RecordCodecBuilder.<HasTrainedAbilitiesCondition>mapCodec(builder ->
+            builder.group(
+                    Codec.list(ResourceLocation.CODEC).fieldOf("abilities").forGetter(i -> i.abilities),
+                    Codec.BOOL.fieldOf("allMatch").forGetter(i -> i.allMatch)
+            ).apply(builder, HasTrainedAbilitiesCondition::new)
+    ).codec();
+
     private final List<ResourceLocation> abilities = new ArrayList<>();
-    private boolean allMatch;
+    private final boolean allMatch;
+
+    private HasTrainedAbilitiesCondition(List<ResourceLocation> abilities, boolean allMatch) {
+        this.abilities.addAll(abilities);
+        this.allMatch = allMatch;
+    }
 
     public HasTrainedAbilitiesCondition(boolean allMatch, ResourceLocation... loc) {
-        super(conditionTypeName);
         abilities.addAll(Arrays.asList(loc));
         this.allMatch = allMatch;
     }
 
-    public HasTrainedAbilitiesCondition() {
-        super(conditionTypeName);
+    @Override
+    public DialogueConditionType<? extends DialogueCondition> getType() {
+        return NpcDialogueConditionTypes.HAS_TRAINED_ABILITIES.get();
     }
-
 
     @Override
     public boolean meetsCondition(ServerPlayer player, LivingEntity source) {
@@ -44,23 +54,6 @@ public class HasTrainedAbilitiesCondition extends DialogueCondition {
 
     @Override
     public HasTrainedAbilitiesCondition copy() {
-        return new HasTrainedAbilitiesCondition(allMatch, abilities.toArray(new ResourceLocation[0]));
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        this.allMatch = dynamic.get("allMatch").asBoolean(false);
-        List<Optional<ResourceLocation>> locs = dynamic.get("abilities").asList(
-                d -> d.asString().result().map(ResourceLocation::new));
-        locs.forEach(loc -> loc.ifPresent(abilities::add));
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("allMatch"), ops.createBoolean(allMatch));
-        builder.put(ops.createString("abilities"),
-                ops.createList(abilities.stream().map(x -> ops.createString(x.toString()))));
+        return new HasTrainedAbilitiesCondition(ImmutableList.copyOf(abilities), allMatch);
     }
 }

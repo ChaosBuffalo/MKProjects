@@ -15,7 +15,6 @@ import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.MinecraftForge;
 
 import javax.annotation.Nullable;
@@ -210,7 +209,7 @@ public class AbilityExecutor {
     protected void completeAbility(MKAbility ability, MKAbilityInfo info, AbilityContext context) {
         // Finish the cast
         consumeResource(ability);
-        ability.endCast(entityData.getEntity(), entityData, context, (attr) -> MKAbility.getSkillLevel(entityData.getEntity(), attr));
+        ability.endCast(entityData.getEntity(), entityData, context);
         if (completeAbilityCallback != null) {
             completeAbilityCallback.accept(ability);
         }
@@ -302,8 +301,7 @@ public class AbilityExecutor {
 
         @Override
         void activeTick() {
-            ability.continueCast(executor.entityData.getEntity(), executor.entityData, castTicks, abilityContext,
-                    (attr) -> MKAbility.getSkillLevel(executor.entityData.getEntity(), attr));
+            ability.continueCast(executor.entityData.getEntity(), executor.entityData, castTicks, abilityContext);
         }
 
         @Override

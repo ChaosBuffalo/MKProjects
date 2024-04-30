@@ -26,12 +26,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class FrozenGraspAbility extends MKAbility {
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 10);
@@ -89,24 +87,22 @@ public class FrozenGraspAbility extends MKAbility {
     }
 
     @Override
-    public Component getAbilityDescription(IMKEntityData entityData, Function<Attribute, Float> skillSupplier) {
-        float level = skillSupplier.apply(MKAttributes.NECROMANCY);
+    public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
+        float level = context.getSkill(MKAttributes.NECROMANCY);
         float dur = convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()));
         return Component.translatable(getDescriptionTranslationKey(), INTEGER_FORMATTER.format(maxStacks.value()), dur);
     }
 
     @Override
-    public void buildDescription(IMKEntityData casterData, Consumer<Component> consumer) {
-        super.buildDescription(casterData, consumer);
-        AbilityDescriptions.getEffectModifiers(MKUEffects.FROZEN_GRASP.get(), casterData, false,
-                attr -> MKAbility.getSkillLevel(casterData.getEntity(), attr)).forEach(consumer);
+    public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
+        super.buildDescription(casterData, context, consumer);
+        AbilityDescriptions.getEffectModifiers(MKUEffects.FROZEN_GRASP.get(), context, false, consumer);
     }
 
     @Override
-    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context,
-                        Function<Attribute, Float> skillSupplier) {
-        super.endCast(castingEntity, casterData, context, skillSupplier);
-        float level = skillSupplier.apply(MKAttributes.NECROMANCY);
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
+        super.endCast(castingEntity, casterData, context);
+        float level = context.getSkill(MKAttributes.NECROMANCY);
         casterData.getEffects().addEffect(FrozenGraspEffect.applierFrom(castingEntity,
                 selfDuration.value() * GameConstants.TICKS_PER_SECOND, maxStacks.value()));
     }

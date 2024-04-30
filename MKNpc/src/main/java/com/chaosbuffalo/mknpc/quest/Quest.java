@@ -67,7 +67,7 @@ public class Quest {
                                                UUID npcId, DialogueTree tree,
                                                Map<ResourceLocation, List<MKStructureEntry>> questStructures,
                                                QuestDefinition definition) {
-        QuestData questData = questChain.getQuestChainData().getQuestData(getQuestName());
+        QuestData questData = questChain.getQuestData(this);
         for (QuestObjective<?> obj : getObjectives()) {
             if (obj instanceof TalkToNpcObjective talkObj) {
                 UUIDInstanceData instanceData = talkObj.getInstanceData(questData);
@@ -106,7 +106,7 @@ public class Quest {
         builder.put(ops.createString("objectives"), ops.createList(objectives.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("description"), ops.createString(Component.Serializer.toJson(description)));
         builder.put(ops.createString("autoComplete"), ops.createBoolean(autoComplete));
-        builder.put(ops.createString("rewards"), ops.createList(rewards.stream().map(x -> x.serialize(ops))));
+        builder.put(ops.createString("rewards"), ops.createList(rewards.stream().flatMap(x -> QuestReward.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
         return ops.createMap(builder.build());
     }
 
@@ -129,19 +129,9 @@ public class Quest {
             objOpt.ifPresent(this::addObjective);
         }
 
-        List<Optional<QuestReward>> rewards = dynamic.get("rewards").asList(x -> {
-            ResourceLocation type = QuestReward.getType(x);
-            Supplier<QuestReward> sup = QuestDefinitionManager.getRewardDeserializer(type);
-            if (sup != null) {
-                QuestReward reward = sup.get();
-                reward.deserialize(x);
-                return Optional.of(reward);
-            }
-            return Optional.empty();
+        dynamic.get("rewards").asStream().forEach(x -> {
+            QuestReward.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addReward);
         });
-        for (Optional<QuestReward> rewardOpt : rewards) {
-            rewardOpt.ifPresent(this::addReward);
-        }
     }
 
     public List<QuestObjective<?>> getObjectives() {
@@ -182,6 +172,5 @@ public class Quest {
         for (QuestReward reward : rewards) {
             reward.grantReward(playerData.getPlayer());
         }
-
     }
 }
