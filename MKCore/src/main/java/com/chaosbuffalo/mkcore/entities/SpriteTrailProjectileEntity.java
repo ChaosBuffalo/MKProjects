@@ -1,6 +1,5 @@
-package com.chaosbuffalo.mkultra.entities.projectiles;
+package com.chaosbuffalo.mkcore.entities;
 
-import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.Projectile;

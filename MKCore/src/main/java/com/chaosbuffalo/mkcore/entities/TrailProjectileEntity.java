@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkultra.entities.projectiles;
+package com.chaosbuffalo.mkcore.entities;
 
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;

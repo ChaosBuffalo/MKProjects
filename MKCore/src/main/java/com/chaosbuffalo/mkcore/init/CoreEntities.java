@@ -1,10 +1,8 @@
 package com.chaosbuffalo.mkcore.init;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.entities.BlockAnchoredLineEffectEntity;
-import com.chaosbuffalo.mkcore.entities.LineEffectEntity;
-import com.chaosbuffalo.mkcore.entities.MKAreaEffectEntity;
-import com.chaosbuffalo.mkcore.entities.PointEffectEntity;
+import com.chaosbuffalo.mkcore.entities.*;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -60,6 +58,16 @@ public class CoreEntities {
                     .noSummon()
                     .noSave()
                     .build("mk_point_effect"));
+
+    public static final net.minecraftforge.registries.RegistryObject<EntityType<AbilityProjectileEntity>> ABILITY_PROJECTILE_TYPE = ENTITIES.register(
+            "ability_projectile", () -> EntityType.Builder.of(AbilityProjectileEntity::new, MobCategory.MISC)
+                    .fireImmune()
+                    .sized(0.25f, 0.25f)
+                    .setTrackingRange(5)
+                    .setUpdateInterval(10)
+                    .setShouldReceiveVelocityUpdates(true)
+                    .noSave()
+                    .build("ability_projectile"));
 
     public static void register(IEventBus modBus) {
         ENTITIES.register(modBus);

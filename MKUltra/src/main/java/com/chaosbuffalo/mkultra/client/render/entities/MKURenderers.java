@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkultra.client.render.entities;
 
+import com.chaosbuffalo.mkcore.client.rendering.entities.SpriteProjectileRenderer;
 import com.chaosbuffalo.mknpc.client.render.models.MKBipedModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKGolemModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKPiglinModel;
@@ -44,8 +45,6 @@ public class MKURenderers {
         evt.registerEntityRenderer(MKUEntities.DROWN_TYPE.get(),
                 (context) -> new SpriteProjectileRenderer<>(context, 1.0f, true));
         evt.registerEntityRenderer(MKUEntities.FIREBALL_TYPE.get(),
-                (context) -> new SpriteProjectileRenderer<>(context, 1.0f, true));
-        evt.registerEntityRenderer(MKUEntities.ABILITY_PROJECTILE_TYPE.get(),
                 (context) -> new SpriteProjectileRenderer<>(context, 1.0f, true));
         evt.registerEntityRenderer(MKUEntities.ORC_TYPE.get(), (context) -> new OrcGroupRenderer(context, MKUEntities.ORC_TYPE.getId()));
         evt.registerEntityRenderer(MKUEntities.HUMAN_TYPE.get(), (context) -> new HumanGroupRenderer(context, MKUEntities.HUMAN_TYPE.getId()));

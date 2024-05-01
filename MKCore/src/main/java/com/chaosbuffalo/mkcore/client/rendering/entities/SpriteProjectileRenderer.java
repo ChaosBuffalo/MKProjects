@@ -1,7 +1,7 @@
-package com.chaosbuffalo.mkultra.client.render.entities;
+package com.chaosbuffalo.mkcore.client.rendering.entities;
 
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
-import com.chaosbuffalo.mkultra.entities.IMKRenderAsItem;
+import com.chaosbuffalo.mkcore.entities.IMKRenderAsItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;

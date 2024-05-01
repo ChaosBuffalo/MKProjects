@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkultra.init;
 
+import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mknpc.entity.MKGolemEntity;
 import com.chaosbuffalo.mknpc.entity.MKSkeletonEntity;
 import com.chaosbuffalo.mknpc.entity.MKZombifiedPiglinEntity;
@@ -87,15 +88,6 @@ public class MKUEntities {
                     .noSave()
                     .build(new ResourceLocation(MKUltra.MODID, "fireball_projectile").toString()));
 
-    public static final net.minecraftforge.registries.RegistryObject<EntityType<AbilityProjectileEntity>> ABILITY_PROJECTILE_TYPE = REGISTRY.register(
-            "ability_projectile", () -> EntityType.Builder.of(AbilityProjectileEntity::new, MobCategory.MISC)
-                    .fireImmune()
-                    .sized(0.25f, 0.25f)
-                    .setTrackingRange(5)
-                    .setUpdateInterval(10)
-                    .setShouldReceiveVelocityUpdates(true)
-                    .noSave()
-                    .build(new ResourceLocation(MKUltra.MODID, "ability_projectile").toString()));
 
     public static final RegistryObject<EntityType<ShadowBoltProjectileEntity>> SHADOWBOLT_TYPE = REGISTRY.register(
             "shadow_bolt_projectile", () -> EntityType.Builder.of(ShadowBoltProjectileEntity::new, MobCategory.MISC)

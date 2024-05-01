@@ -1,13 +1,12 @@
-package com.chaosbuffalo.mkultra.entities.projectiles;
+package com.chaosbuffalo.mkcore.entities;
 
-import com.chaosbuffalo.mkultra.abilities.misc.ProjectileAbility;
+import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 
@@ -30,6 +29,31 @@ public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
             ProjectileAbility ability = abilitySupplier.get();
             if (ability != null) {
                 return ability.onImpact(this, casterLiving, result, amplifier);
+            }
+        }
+        return false;
+    }
+
+    @Override
+    protected boolean onAirProc(Entity caster, int amplifier) {
+        if (abilitySupplier != null && !this.level.isClientSide && caster instanceof LivingEntity casterLiving)
+        {
+            ProjectileAbility ability = abilitySupplier.get();
+            if (ability != null) {
+                return ability.onAirProc(this, casterLiving, amplifier);
+            }
+        }
+        return false;
+
+    }
+
+    @Override
+    protected boolean onGroundProc(Entity caster, int amplifier) {
+        if (abilitySupplier != null && !this.level.isClientSide && caster instanceof LivingEntity casterLiving)
+        {
+            ProjectileAbility ability = abilitySupplier.get();
+            if (ability != null) {
+                return ability.onGroundProc(this, casterLiving, amplifier);
             }
         }
         return false;

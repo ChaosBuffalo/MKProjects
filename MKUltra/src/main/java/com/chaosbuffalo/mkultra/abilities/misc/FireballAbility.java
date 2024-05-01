@@ -7,16 +7,15 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
+import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
-import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.entities.projectiles.AbilityProjectileEntity;
-import com.chaosbuffalo.mkultra.entities.projectiles.FireballProjectileEntity;
+import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
-import com.chaosbuffalo.mkultra.init.MKUEntities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
 import net.minecraft.network.chat.Component;
@@ -44,6 +43,8 @@ public class FireballAbility extends ProjectileAbility {
         setCastTime(GameConstants.TICKS_PER_SECOND);
         addAttributes(radius);
         casting_particles.setDefaultValue(CASTING_PARTICLES);
+        trail_particles.setDefaultValue(TRAIL_PARTICLES);
+        detonate_particles.setDefaultValue(DETONATE_PARTICLES);
     }
 
     public float getExplosionRadius() {
@@ -64,7 +65,7 @@ public class FireballAbility extends ProjectileAbility {
     public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
         SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_fire_4.get(), cat);
-        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), DETONATE_PARTICLES);
+        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonate_particles.getValue());
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.FireDamage.get(),
                         getBaseDamage(),
                         getScaleDamage(),
@@ -94,10 +95,11 @@ public class FireballAbility extends ProjectileAbility {
 
     @Override
     public AbilityProjectileEntity makeProjectile(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        AbilityProjectileEntity projectile = new AbilityProjectileEntity(MKUEntities.ABILITY_PROJECTILE_TYPE.get(), entity.level);
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), entity.level);
         projectile.setAbility(() -> this);
-        projectile.setTrailAnimation(TRAIL_PARTICLES);
+        projectile.setTrailAnimation(trail_particles.getValue());
         projectile.setItem(new ItemStack(MKUItems.fireballProjectileItem.get()));
+        projectile.setDeathTime(GameConstants.TICKS_PER_SECOND * 5);
         return projectile;
     }
 
