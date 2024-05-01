@@ -5,15 +5,14 @@ import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.options.NpcDefinitionOption;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -24,14 +23,34 @@ import java.util.Optional;
 
 
 public class BossStage {
+    public static final Codec<BossStage> CODEC = RecordCodecBuilder.<BossStage>mapCodec(builder -> {
+        return builder.group(
+                NpcDefinitionOption.CODEC.listOf().fieldOf("options").forGetter(i -> i.options),
+                ResourceLocation.CODEC.optionalFieldOf("transitionParticles").forGetter(i -> Optional.ofNullable(i.transitionParticles)),
+                ResourceLocation.CODEC.optionalFieldOf("transitionSound").forGetter(i -> Optional.ofNullable(i.transitionSound)),
+                ParticleMode.CODEC.optionalFieldOf("particleMode", ParticleMode.MIDDLE).forGetter(i -> i.particleMode)
+        ).apply(builder, BossStage::new);
+    }).codec();
 
-    private final List<NpcDefinitionOption> options = new ArrayList<>();
+    public enum ParticleMode implements StringRepresentable {
+        MIDDLE("middle"),
+        LINE_HEIGHT("line_height");
 
-    public enum ParticleMode {
-        MIDDLE,
-        LINE_HEIGHT
+        public static final Codec<ParticleMode> CODEC = StringRepresentable.fromEnum(ParticleMode::values);
+
+        private final String name;
+
+        ParticleMode(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return name;
+        }
     }
 
+    private final List<NpcDefinitionOption> options = new ArrayList<>();
     private ParticleMode particleMode;
 
     @Nullable
@@ -40,6 +59,13 @@ public class BossStage {
     private ResourceLocation transitionParticles;
     @Nullable
     private ResourceLocation transitionSound;
+
+    private BossStage(List<NpcDefinitionOption> options, Optional<ResourceLocation> transitionParticles, Optional<ResourceLocation> transitionSound, ParticleMode particleMode) {
+        this.options.addAll(options);
+        this.transitionParticles = transitionParticles.orElse(null);
+        this.transitionSound = transitionSound.orElse(null);
+        this.particleMode = particleMode;
+    }
 
     public BossStage() {
         particleMode = ParticleMode.MIDDLE;
@@ -83,10 +109,8 @@ public class BossStage {
     }
 
     public BossStage copy() {
-        BossStage newStage = new BossStage();
-        Tag nbt = serialize(NbtOps.INSTANCE);
-        newStage.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt));
-        return newStage;
+        Tag tag = CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow(false, MKNpc.LOGGER::error);
+        return CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow(false, MKNpc.LOGGER::error);
     }
 
     public void setParticleMode(ParticleMode particleMode) {
@@ -118,38 +142,6 @@ public class BossStage {
                 }
             }
         }
-    }
-
-    public <D> D serialize(DynamicOps<D> ops) {
-        ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
-        builder.put(ops.createString("options"), ops.createList(options.stream().map(entry -> entry.serialize(ops))));
-        if (transitionParticles != null) {
-            builder.put(ops.createString("transitionParticles"), ops.createString(transitionParticles.toString()));
-        }
-        builder.put(ops.createString("particleMode"), ops.createInt(particleMode.ordinal()));
-        if (transitionSound != null) {
-            builder.put(ops.createString("transitionSound"), ops.createString(transitionSound.toString()));
-        }
-        return ops.createMap(builder.build());
-
-    }
-
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        List<Optional<NpcDefinitionOption>> newOptions = dynamic.get("options").asList(valueD -> {
-            ResourceLocation type = NpcDefinitionOption.getType(valueD);
-            NpcDefinitionOption opt = NpcDefinitionManager.getNpcOption(type);
-            if (opt != null) {
-                opt.deserialize(valueD);
-            }
-            return opt != null ? Optional.of(opt) : Optional.empty();
-        });
-        options.clear();
-        for (Optional<NpcDefinitionOption> option : newOptions) {
-            option.ifPresent(options::add);
-        }
-        dynamic.get("transitionParticles").asString().result().ifPresent(x -> transitionParticles = new ResourceLocation(x));
-        dynamic.get("transitionSound").asString().result().ifPresent(x -> transitionSound = new ResourceLocation(x));
-        particleMode = ParticleMode.values()[dynamic.get("particleMode").asInt(0)];
     }
 
 }

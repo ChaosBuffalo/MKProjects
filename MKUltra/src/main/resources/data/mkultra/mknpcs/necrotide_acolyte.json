@@ -2,72 +2,71 @@
   "entityType": "mkultra:human",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "necrotide_cultist_1"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 50.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 50.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 2.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "A Necrotide Acolyte"
     },
     {
-      "optionType": "mknpc:abilities",
-      "options": [
+      "type": "mknpc:abilities",
+      "value": [
         {
-          "abilityName": "mkultra:ability.shadow_bolt",
+          "abilityId": "mkultra:ability.shadow_bolt",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.drown",
+          "abilityId": "mkultra:ability.drown",
           "chance": 0.5,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.shadow_pulse",
+          "abilityId": "mkultra:ability.shadow_pulse",
           "chance": 0.5,
           "priority": 3
         }
       ]
     },
     {
-      "major_skills": [],
+      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",
         "mkcore:conjuration",
         "mkcore:evocation"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
     },
     {
-      "optionType": "mknpc:faction_battlecry"
+      "type": "mknpc:faction_battlecry"
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 0.95
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkultra:necrotide_cultists"
     }
   ]

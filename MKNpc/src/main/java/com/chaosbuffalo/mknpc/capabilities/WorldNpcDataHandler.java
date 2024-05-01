@@ -23,6 +23,7 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -298,7 +299,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         CompoundTag spawnConfig = new CompoundTag();
         for (UUID entityId : worldPermanentSpawnConfigurations.keySet()) {
             WorldPermanentSpawnConfiguration config = worldPermanentSpawnConfigurations.get(entityId);
-            spawnConfig.put(entityId.toString(), config.serializeNBT());
+            spawnConfig.put(entityId.toString(), config.serialize(NbtOps.INSTANCE));
         }
         tag.put("spawnConfigs", spawnConfig);
         ListTag structuresNbt = new ListTag();
@@ -319,8 +320,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         CompoundTag spawnConfigNbt = nbt.getCompound("spawnConfigs");
         for (String idKey : spawnConfigNbt.getAllKeys()) {
             UUID entityId = UUID.fromString(idKey);
-            WorldPermanentSpawnConfiguration config = new WorldPermanentSpawnConfiguration();
-            config.deserializeNBT(spawnConfigNbt.getCompound(idKey));
+            WorldPermanentSpawnConfiguration config = WorldPermanentSpawnConfiguration.deserialize(NbtOps.INSTANCE, spawnConfigNbt.get(idKey));
             worldPermanentSpawnConfigurations.put(entityId, config);
         }
         ListTag structuresNbt = nbt.getList("structures", Tag.TAG_COMPOUND);

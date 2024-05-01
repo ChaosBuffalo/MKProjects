@@ -5,23 +5,23 @@
         "duration": 0,
         "tickStart": 0
       },
+      "colorTrack": {
+        "attributes": {
+          "blue": 0.9490196,
+          "blueVariance": 0.0,
+          "green": 1.0,
+          "greenVariance": 0.0,
+          "red": 0.0,
+          "redVariance": 0.0
+        },
+        "trackType": "mkcore:particle_anim.lerp_color"
+      },
       "scaleTrack": {
-        "trackType": "mkcore:particle_anim.render_scale",
         "attributes": {
           "maxVariance": 0.25,
           "renderScale": 0.5
-        }
-      },
-      "colorTrack": {
-        "trackType": "mkcore:particle_anim.lerp_color",
-        "attributes": {
-          "red": 0.0,
-          "green": 1.0,
-          "blue": 0.9490196,
-          "blueVariance": 0.0,
-          "redVariance": 0.0,
-          "greenVariance": 0.0
-        }
+        },
+        "trackType": "mkcore:particle_anim.render_scale"
       }
     },
     {
@@ -30,12 +30,12 @@
         "tickStart": 0
       },
       "motionTrack": {
-        "trackType": "mkcore:particle_anim.orbit_in_plane",
         "attributes": {
-          "centralGravity": 0.019999999552965164,
-          "rpmVariance": 0.0,
-          "rpm": 10.0
-        }
+          "ramp": 0.25,
+          "rpm": 10.0,
+          "rpmVariance": 0.0
+        },
+        "trackType": "mkcore:particle_anim.orbit_in_plane"
       }
     },
     {
@@ -44,12 +44,12 @@
         "tickStart": 20
       },
       "motionTrack": {
-        "trackType": "mkcore:particle_anim.orbit_in_plane",
         "attributes": {
-          "centralGravity": 0.0,
-          "rpmVariance": 0.0,
-          "rpm": 15.0
-        }
+          "ramp": 0.25,
+          "rpm": 15.0,
+          "rpmVariance": 0.0
+        },
+        "trackType": "mkcore:particle_anim.orbit_in_plane"
       }
     },
     {
@@ -57,23 +57,23 @@
         "duration": 40,
         "tickStart": 0
       },
+      "colorTrack": {
+        "attributes": {
+          "blue": 0.5,
+          "blueVariance": 0.0,
+          "green": 0.5,
+          "greenVariance": 0.0,
+          "red": 0.0,
+          "redVariance": 0.0
+        },
+        "trackType": "mkcore:particle_anim.lerp_color"
+      },
       "scaleTrack": {
-        "trackType": "mkcore:particle_anim.render_scale",
         "attributes": {
           "maxVariance": 0.05,
           "renderScale": 0.15
-        }
-      },
-      "colorTrack": {
-        "trackType": "mkcore:particle_anim.lerp_color",
-        "attributes": {
-          "red": 0.0,
-          "green": 0.5,
-          "blue": 0.5,
-          "blueVariance": 0.0,
-          "redVariance": 0.0,
-          "greenVariance": 0.0
-        }
+        },
+        "trackType": "mkcore:particle_anim.render_scale"
       }
     },
     {
@@ -81,35 +81,36 @@
         "duration": 40,
         "tickStart": 40
       },
-      "motionTrack": {
-        "trackType": "mkcore:particle_anim.brownian_motion",
+      "colorTrack": {
         "attributes": {
-          "tickInterval": 5,
-          "magnitude": 0.025,
-          "doX": true,
+          "blue": 1.0,
+          "blueVariance": 0.0,
+          "green": 0.0,
+          "greenVariance": 0.0,
+          "red": 1.0,
+          "redVariance": 0.0
+        },
+        "trackType": "mkcore:particle_anim.lerp_color"
+      },
+      "motionTrack": {
+        "attributes": {
           "doGravity": true,
+          "doX": true,
+          "doY": true,
           "doZ": true,
-          "doY": true
-        }
+          "magnitude": 0.025,
+          "tickInterval": 5
+        },
+        "trackType": "mkcore:particle_anim.brownian_motion"
       },
       "scaleTrack": {
-        "trackType": "mkcore:particle_anim.render_scale",
         "attributes": {
           "maxVariance": 0.0,
           "renderScale": 0.01
-        }
-      },
-      "colorTrack": {
-        "trackType": "mkcore:particle_anim.lerp_color",
-        "attributes": {
-          "red": 1.0,
-          "green": 0.0,
-          "blue": 1.0,
-          "blueVariance": 0.0,
-          "redVariance": 0.0,
-          "greenVariance": 0.0
-        }
+        },
+        "trackType": "mkcore:particle_anim.render_scale"
       }
     }
-  ]
+  ],
+  "particleType": "mkcore:magic_cross"
 }

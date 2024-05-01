@@ -2,32 +2,32 @@
   "entityType": "mkultra:golem",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "necrotide_golem"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 500.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 500.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 5.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "A Necrotide Construction"
     },
     {
-      "dropChances": 1,
+      "type": "mknpc:extra_loot",
       "lootOptions": [
         {
           "lootSlotName": "mkweapons:rings",
@@ -36,30 +36,27 @@
         },
         {
           "lootSlotName": "mkweapons:hands",
-          "lootSlotTier": "mkultra:necrotide_golem",
-          "weight": 1.0
+          "lootSlotTier": "mkultra:necrotide_golem"
         }
-      ],
-      "noLootChance": 0.0,
-      "noLootIncrease": 0.0,
-      "optionType": "mknpc:extra_loot"
+      ]
     },
     {
-      "optionType": "mknpc:abilities",
-      "options": [
+      "type": "mknpc:abilities",
+      "value": [
         {
-          "abilityName": "mkultra:ability.shadow_bolt",
+          "abilityId": "mkultra:ability.shadow_bolt",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.necrotide_golem_beam",
+          "abilityId": "mkultra:ability.necrotide_golem_beam",
           "chance": 1.0,
           "priority": 1
         }
       ]
     },
     {
+      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:conjuration",
         "mkcore:necromancy"
@@ -69,21 +66,20 @@
         "mkcore:alteration",
         "mkcore:evocation"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
     },
     {
-      "optionType": "mknpc:notable",
+      "type": "mknpc:notable",
       "value": true
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 1.25
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkultra:necrotide_cultists"
     }
   ]

@@ -14,38 +14,49 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
-import com.mojang.serialization.Dynamic;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.UUID;
 
-public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
-    private ResourceLocation questDef;
+public class QuestOfferingEntry {
+    public static final Codec<QuestOfferingEntry> CODEC = RecordCodecBuilder.<QuestOfferingEntry>mapCodec(builder -> {
+        return builder.group(
+                ResourceLocation.CODEC.fieldOf("questDefinitionId").forGetter(i -> i.questDef),
+                UUIDUtil.STRING_CODEC.optionalFieldOf("questId").forGetter(i -> Optional.ofNullable(i.questId)),
+                DialogueTree.CODEC.optionalFieldOf("tree").forGetter(i -> Optional.ofNullable(i.tree))
+        ).apply(builder, QuestOfferingEntry::new);
+    }).codec();
+
+
+    private final ResourceLocation questDef;
     @Nullable
     private UUID questId;
     @Nullable
     private DialogueTree tree;
+
+    private QuestOfferingEntry(ResourceLocation questDef, Optional<UUID> questId, Optional<DialogueTree> tree) {
+        this.questDef = questDef;
+        this.questId = questId.orElse(null);
+        this.tree = tree.orElse(null);
+    }
 
     public QuestOfferingEntry(ResourceLocation questDef) {
         this.questDef = questDef;
         this.questId = null;
     }
 
-    @Nullable
-    public DialogueTree getTree() {
-        return tree;
-    }
-
     public ResourceLocation getQuestDef() {
         return questDef;
     }
 
-    public QuestOfferingEntry(CompoundTag nbt) {
-        deserializeNBT(nbt);
+    @Nullable
+    public DialogueTree getTree() {
+        return tree;
     }
 
     @Nullable
@@ -106,32 +117,6 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
         if (questId == null) {
             MKNpc.LOGGER.debug("Set quest id called in quest generation with null id {}", questDef);
             return;
-        }
-
-
-    }
-
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag nbt = new CompoundTag();
-        nbt.putString("questDef", questDef.toString());
-        if (questId != null) {
-            nbt.putUUID("questId", questId);
-        }
-        if (tree != null) {
-            nbt.put("dialogue", tree.serialize(NbtOps.INSTANCE));
-        }
-        return nbt;
-    }
-
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        questDef = new ResourceLocation(nbt.getString("questDef"));
-        if (nbt.contains("questId")) {
-            questId = nbt.getUUID("questId");
-        }
-        if (nbt.contains("dialogue")) {
-            tree = DialogueTree.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt.get("dialogue")));
         }
     }
 }

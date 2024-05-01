@@ -2,9 +2,8 @@ package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -13,29 +12,42 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class SkillOption extends NpcDefinitionOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "skills");
+    public static final Codec<SkillOption> CODEC = RecordCodecBuilder.<SkillOption>mapCodec(builder -> {
+        return builder.group(
+                ForgeRegistries.ATTRIBUTES.getCodec().listOf().optionalFieldOf("minor_skills", List.of()).forGetter(i -> sortedList(i.minorSkills)),
+                ForgeRegistries.ATTRIBUTES.getCodec().listOf().optionalFieldOf("major_skills", List.of()).forGetter(i -> sortedList(i.majorSkills)),
+                ForgeRegistries.ATTRIBUTES.getCodec().listOf().optionalFieldOf("remedial_skills", List.of()).forGetter(i -> sortedList(i.remedialSkills))
+        ).apply(builder, SkillOption::new);
+    }).codec();
+
     private final Set<Attribute> minorSkills = new HashSet<>();
     private final Set<Attribute> majorSkills = new HashSet<>();
     private final Set<Attribute> remedialSkills = new HashSet<>();
 
-    public SkillOption(ResourceLocation name, ApplyOrder order) {
-        super(name, order);
+    private SkillOption(List<Attribute> minor, List<Attribute> major, List<Attribute> remedial) {
+        super(NAME, ApplyOrder.EARLY);
+        minorSkills.addAll(minor);
+        majorSkills.addAll(major);
+        remedialSkills.addAll(remedial);
     }
 
     public SkillOption() {
         super(NAME, ApplyOrder.EARLY);
     }
 
+    private static List<Attribute> sortedList(Collection<Attribute> input) {
+        Comparator<Attribute> comp = Comparator.comparing(ForgeRegistries.ATTRIBUTES::getKey);
+        return input.stream().sorted(comp).toList();
+    }
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
-        if (entity instanceof LivingEntity) {
-            AttributeMap manager = ((LivingEntity) entity).getAttributes();
+        if (entity instanceof LivingEntity living) {
+            AttributeMap manager = living.getAttributes();
             for (Attribute attr : remedialSkills) {
                 AttributeInstance instance = manager.getInstance(attr);
                 if (instance != null) {
@@ -55,40 +67,6 @@ public class SkillOption extends NpcDefinitionOption {
                 }
             }
         }
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        List<Attribute> minor_skill_entries = dynamic.get("minor_skills").asList(d ->
-                ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(
-                        d.asString("mknpc:invalid_attribute"))));
-        minorSkills.clear();
-        minorSkills.addAll(minor_skill_entries);
-        List<Attribute> major_skill_entries = dynamic.get("major_skills").asList(d ->
-                ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(
-                        d.asString("mknpc:invalid_attribute"))));
-        majorSkills.clear();
-        majorSkills.addAll(major_skill_entries);
-        List<Attribute> remedial_skill_entries = dynamic.get("remedial_skills").asList(d ->
-                ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(
-                        d.asString("mknpc:invalid_attribute"))));
-        remedialSkills.clear();
-        remedialSkills.addAll(remedial_skill_entries);
-    }
-
-    private static String skillId(Attribute attribute) {
-        return ForgeRegistries.ATTRIBUTES.getKey(attribute).toString();
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("minor_skills"), ops.createList(minorSkills.stream()
-                .map(SkillOption::skillId).sorted().map(ops::createString)));
-        builder.put(ops.createString("major_skills"), ops.createList(majorSkills.stream()
-                .map(SkillOption::skillId).sorted().map(ops::createString)));
-        builder.put(ops.createString("remedial_skills"), ops.createList(remedialSkills.stream()
-                .map(SkillOption::skillId).sorted().map(ops::createString)));
     }
 
     public SkillOption addMajorSkill(Attribute skill) {

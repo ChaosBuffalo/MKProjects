@@ -2,43 +2,50 @@
   "entityType": "mkultra:zombified_piglin",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "zombie_pig"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 15.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 15.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 1.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "Shambling Archer"
     },
     {
-      "optionType": "mknpc:equipment",
-      "slotOptions": {
+      "type": "mknpc:equipment",
+      "value": {
         "mainhand": [
           {
             "dropChance": 0.0,
-            "item": "{id: \"minecraft:bow\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "minecraft:bow",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ]
       }
     },
     {
+      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:marksmanship"
       ],
@@ -47,7 +54,6 @@
         "mkcore:one_hand_pierce",
         "mkcore:one_hand_slash"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:arete",
         "mkcore:pankration",
@@ -55,15 +61,15 @@
       ]
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 0.85
     },
     {
-      "optionType": "mknpc:experience",
+      "type": "mknpc:experience",
       "value": 5
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkultra:imperial_dead"
     }
   ]

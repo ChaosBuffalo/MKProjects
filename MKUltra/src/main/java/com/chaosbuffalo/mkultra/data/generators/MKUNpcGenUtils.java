@@ -17,7 +17,7 @@ public class MKUNpcGenUtils {
     }
 
 
-    public static SkillOption GetSkillOptionForClass(NpcSkillClass skillClass) {
+    public static SkillOption getSkillOptionForClass(NpcSkillClass skillClass) {
         switch (skillClass) {
             case CLERIC:
                 return new SkillOption()
@@ -68,7 +68,7 @@ public class MKUNpcGenUtils {
                         .addRemedialSkill(MKAttributes.ARETE)
                         .addRemedialSkill(MKAttributes.PNEUMA);
             case PALADIN:
-                return GetSkillOptionForClass(NpcSkillClass.WARRIOR)
+                return getSkillOptionForClass(NpcSkillClass.WARRIOR)
                         .addMinorSkill(MKAttributes.RESTORATION)
                         .addMinorSkill(MKAttributes.ALTERATON)
                         .addMinorSkill(MKAttributes.ABJURATION)

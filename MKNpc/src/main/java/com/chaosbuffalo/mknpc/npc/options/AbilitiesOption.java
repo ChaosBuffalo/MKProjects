@@ -6,9 +6,8 @@ import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.option_entries.AbilitiesOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.google.common.collect.ImmutableList;
+import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
@@ -17,19 +16,22 @@ import java.util.List;
 
 public class AbilitiesOption extends WorldPermanentOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "abilities");
+    public static final Codec<AbilitiesOption> CODEC = Codec.list(NpcAbilityEntry.CODEC).xmap(AbilitiesOption::new, i -> i.abilities);
+
     private final List<NpcAbilityEntry> abilities;
+
+    private AbilitiesOption(List<NpcAbilityEntry> abilities) {
+        super(NAME);
+        this.abilities = ImmutableList.copyOf(abilities);
+    }
 
     public AbilitiesOption() {
         super(NAME);
         abilities = new ArrayList<>();
     }
 
-    protected void addAbilityEntry(NpcAbilityEntry entry) {
-        abilities.add(entry);
-    }
-
     public AbilitiesOption withAbilityOption(MKAbility ability, int priority, double chance) {
-        addAbilityEntry(new NpcAbilityEntry(ability.getAbilityId(), priority, chance));
+        abilities.add(new NpcAbilityEntry(ability.getAbilityId(), priority, chance));
         return this;
     }
 
@@ -42,22 +44,5 @@ public class AbilitiesOption extends WorldPermanentOption {
             }
         }
         return new AbilitiesOptionEntry(finalChoices);
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("options"), ops.createList(abilities.stream().map(x -> x.serialize(ops))));
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        List<NpcAbilityEntry> entries = dynamic.get("options").asList(d -> {
-            NpcAbilityEntry entry = new NpcAbilityEntry();
-            entry.deserialize(d);
-            return entry;
-        });
-        abilities.clear();
-        abilities.addAll(entries);
     }
 }

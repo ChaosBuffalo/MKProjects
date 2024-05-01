@@ -78,23 +78,23 @@ public class MKNpcGenerator {
         private NpcDefinition generateTestSkeleton() {
             NpcDefinition def = new NpcDefinition(new ResourceLocation(MKNpc.MODID, "test_skeleton"),
                     new ResourceLocation(MKNpc.MODID, "skeleton"), null);
-            def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
-            def.addOption(new MKSizeOption().setValue(0.25f));
-            def.addOption(new RenderGroupOption().setValue("wither_king"));
+            def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+            def.addOption(new MKSizeOption(0.25f));
+            def.addOption(new RenderGroupOption("wither_king"));
             return def;
         }
 
         private NpcDefinition generateTestLady() {
             NpcDefinition def = new NpcDefinition(new ResourceLocation(MKNpc.MODID, "test"),
                     new ResourceLocation(MKNpc.MODID, "green_lady"), null);
-            def.addOption(new NameOption().setValue("Test Lady"));
+            def.addOption(new NameOption("Test Lady"));
             def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 100)));
-            def.addOption(new FactionOption().setValue(MKFactions.VILLAGER_FACTION_NAME));
-            def.addOption(new DialogueOption().setValue(new ResourceLocation(MKChat.MODID, "test")));
+            def.addOption(new FactionOption(MKFactions.VILLAGER_FACTION_NAME));
+            def.addOption(new DialogueOption(new ResourceLocation(MKChat.MODID, "test")));
             def.addOption(new EquipmentOption()
                     .addItemChoice(EquipmentSlot.MAINHAND, new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
-                            new ResourceLocation(MKWeapons.MODID, "katana_iron"))), 5, 1.1f)
-                    ).addItemChoice(EquipmentSlot.MAINHAND, new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                            new ResourceLocation(MKWeapons.MODID, "katana_iron"))), 5, 1.1f))
+                    .addItemChoice(EquipmentSlot.MAINHAND, new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
                             new ResourceLocation(MKWeapons.MODID, "dagger_iron"))), 10, 1.1f))
             );
             return def;
@@ -103,12 +103,10 @@ public class MKNpcGenerator {
         private NpcDefinition generateTestLady2() {
             NpcDefinition def = new NpcDefinition(new ResourceLocation(MKNpc.MODID, "test2"), null,
                     new ResourceLocation(MKNpc.MODID, "test"));
-            def.addOption(new FactionOption().setValue(MKFactions.UNDEAD_FACTION_NAME));
-            def.addOption(new NotableOption().setValue(true));
+            def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+            def.addOption(new NotableOption());
             def.addOption(new FactionNameOption().setHasLastName(true).setTitle("Chief"));
             return def;
         }
     }
-
-
 }

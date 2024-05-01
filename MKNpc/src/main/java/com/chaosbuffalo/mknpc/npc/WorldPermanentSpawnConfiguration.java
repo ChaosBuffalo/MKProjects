@@ -1,17 +1,27 @@
 package com.chaosbuffalo.mknpc.npc;
 
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.WorldPermanentOption;
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.HashMap;
+import java.util.Map;
 
 
-public class WorldPermanentSpawnConfiguration implements INBTSerializable<CompoundTag> {
+public class WorldPermanentSpawnConfiguration {
+    public static final Codec<WorldPermanentSpawnConfiguration> CODEC = Codec.unboundedMap(
+                    ResourceLocation.CODEC, Codec.unboundedMap(ResourceLocation.CODEC, NpcDefinitionManager.ENTRY_CODEC))
+            .xmap(WorldPermanentSpawnConfiguration::new, i -> i.definitionMap);
 
-    private final HashMap<ResourceLocation, HashMap<ResourceLocation, INpcOptionEntry>> definitionMap;
+
+    private final Map<ResourceLocation, Map<ResourceLocation, INpcOptionEntry>> definitionMap;
+
+    private WorldPermanentSpawnConfiguration(Map<ResourceLocation, Map<ResourceLocation, INpcOptionEntry>> map) {
+        definitionMap = new HashMap<>(map);
+    }
 
     public WorldPermanentSpawnConfiguration() {
         definitionMap = new HashMap<>();
@@ -38,37 +48,11 @@ public class WorldPermanentSpawnConfiguration implements INBTSerializable<Compou
         definitionMap.get(definition.getDefinitionName()).put(option.getName(), optionEntry);
     }
 
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag tag = new CompoundTag();
-        for (ResourceLocation definitionName : definitionMap.keySet()) {
-            CompoundTag defTag = new CompoundTag();
-            HashMap<ResourceLocation, INpcOptionEntry> optionMap = definitionMap.get(definitionName);
-            for (ResourceLocation attributeName : optionMap.keySet()) {
-                INpcOptionEntry entry = optionMap.get(attributeName);
-                defTag.put(attributeName.toString(), entry.serializeNBT());
-            }
-            tag.put(definitionName.toString(), defTag);
-        }
-        return tag;
+    public <D> D serialize(DynamicOps<D> ops) {
+        return CODEC.encodeStart(ops, this).getOrThrow(false, MKNpc.LOGGER::error);
     }
 
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        definitionMap.clear();
-        for (String defKey : nbt.getAllKeys()) {
-            ResourceLocation defLoc = new ResourceLocation(defKey);
-            CompoundTag defTag = nbt.getCompound(defKey);
-            HashMap<ResourceLocation, INpcOptionEntry> entryMap = new HashMap<>();
-            for (String entryKey : defTag.getAllKeys()) {
-                ResourceLocation entryLoc = new ResourceLocation(entryKey);
-                INpcOptionEntry entry = NpcDefinitionManager.getNpcOptionEntry(entryLoc);
-                if (entry != null) {
-                    entry.deserializeNBT(defTag.getCompound(entryKey));
-                    entryMap.put(entryLoc, entry);
-                }
-            }
-            definitionMap.put(defLoc, entryMap);
-        }
+    public static <D> WorldPermanentSpawnConfiguration deserialize(DynamicOps<D> ops, D input) {
+        return CODEC.parse(ops, input).getOrThrow(false, MKNpc.LOGGER::error);
     }
 }

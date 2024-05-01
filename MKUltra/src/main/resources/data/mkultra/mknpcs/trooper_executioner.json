@@ -2,37 +2,37 @@
   "entityType": "mkultra:zombified_piglin",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "destroyed_skeletal_trooper"
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "Trooper Executioner"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 180.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 180.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 2.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
+      "type": "mknpc:extra_loot",
       "dropChances": 2,
       "lootOptions": [
         {
           "lootSlotName": "mkweapons:main_hand",
-          "lootSlotTier": "mkultra:trooper_executioner",
-          "weight": 1.0
+          "lootSlotTier": "mkultra:trooper_executioner"
         },
         {
           "lootSlotName": "mkweapons:rings",
@@ -41,47 +41,52 @@
         }
       ],
       "noLootChance": 0.2,
-      "noLootIncrease": 0.25,
-      "optionType": "mknpc:extra_loot"
+      "noLootIncrease": 0.25
     },
     {
-      "optionType": "mknpc:equipment",
-      "slotOptions": {
+      "type": "mknpc:equipment",
+      "value": {
         "mainhand": [
           {
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:battleaxe_stone\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:battleaxe_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ]
       }
     },
     {
-      "optionType": "mknpc:notable",
+      "type": "mknpc:notable",
       "value": true
     },
     {
-      "optionType": "mknpc:abilities",
-      "options": [
+      "type": "mknpc:abilities",
+      "value": [
         {
-          "abilityName": "mkultra:ability.furious_brooding",
+          "abilityId": "mkultra:ability.furious_brooding",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.whirlwind_blades",
+          "abilityId": "mkultra:ability.whirlwind_blades",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.yank",
+          "abilityId": "mkultra:ability.yank",
           "chance": 1.0,
           "priority": 2
         }
       ]
     },
     {
-      "major_skills": [],
+      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:hand_to_hand",
         "mkcore:one_hand_blunt",
@@ -91,7 +96,6 @@
         "mkcore:two_hand_pierce",
         "mkcore:two_hand_slash"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:arete",
         "mkcore:pankration",
@@ -99,25 +103,24 @@
       ]
     },
     {
-      "optionType": "mknpc:lunge_speed",
+      "type": "mknpc:lunge_speed",
       "value": 0.75
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 1.0
     },
     {
-      "optionType": "mknpc:experience",
+      "type": "mknpc:experience",
       "value": 20
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkultra:imperial_dead"
     },
     {
-      "cooldown": 20,
-      "count": 3,
-      "optionType": "mknpc:mk_combo"
+      "type": "mknpc:mk_combo",
+      "count": 3
     }
   ]
 }

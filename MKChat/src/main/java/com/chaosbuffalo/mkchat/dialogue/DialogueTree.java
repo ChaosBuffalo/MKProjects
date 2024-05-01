@@ -18,7 +18,7 @@ public class DialogueTree {
                 ResourceLocation.CODEC.fieldOf("dialogueId").forGetter(i -> i.dialogueName),
                 Codec.list(DialogueNode.CODEC).fieldOf("nodes").forGetter(i -> List.copyOf(i.nodes.values())),
                 Codec.list(DialoguePrompt.CODEC).fieldOf("prompts").forGetter(i -> List.copyOf(i.prompts.values())),
-                Codec.STRING.optionalFieldOf("hailPromptId", null).forGetter(i -> i.hailPromptId)
+                Codec.STRING.optionalFieldOf("hailPromptId").forGetter(i -> Optional.ofNullable(i.hailPromptId))
         ).apply(builder, DialogueTree::new);
     }).codec();
 
@@ -27,11 +27,11 @@ public class DialogueTree {
     private final Map<String, DialoguePrompt> prompts;
     private String hailPromptId;
 
-    private DialogueTree(ResourceLocation dialogueName, Collection<DialogueNode> nodes, Collection<DialoguePrompt> prompts, String hail) {
+    private DialogueTree(ResourceLocation dialogueName, Collection<DialogueNode> nodes, Collection<DialoguePrompt> prompts, Optional<String> hail) {
         this(dialogueName);
         nodes.forEach(this::addNode);
         prompts.forEach(this::addPrompt);
-        setHailPromptId(hail);
+        hail.ifPresent(this::setHailPromptId);
     }
 
     public DialogueTree(ResourceLocation dialogueName) {

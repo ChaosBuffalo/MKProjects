@@ -1,64 +1,38 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
-import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ParticleEffectInstance;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.google.common.collect.ImmutableList;
+import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class ParticleEffectsOption extends SimpleOption<List<ParticleEffectInstance>> {
+public class ParticleEffectsOption extends NpcDefinitionOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "particle_effects");
+    public static final Codec<ParticleEffectsOption> CODEC = ParticleEffectInstance.CODEC.listOf().xmap(ParticleEffectsOption::new, ParticleEffectsOption::getValue);
 
-    public ParticleEffectsOption() {
-        super(NAME);
+    private final List<ParticleEffectInstance> instances;
+
+    public ParticleEffectsOption(List<ParticleEffectInstance> effects) {
+        super(NAME, ApplyOrder.MIDDLE);
+        instances = ImmutableList.copyOf(effects);
     }
 
-    public ParticleEffectsOption withEffects(List<ParticleEffectInstance> effectInstances) {
-        setValue(effectInstances);
-        return this;
+    public List<ParticleEffectInstance> getValue() {
+        return instances;
     }
 
     @Override
-    public void applyToEntity(NpcDefinition definition, Entity entity, List<ParticleEffectInstance> value) {
+    public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
         if (entity instanceof MKEntity mkEntity) {
-            for (ParticleEffectInstance inst : value) {
+            for (ParticleEffectInstance inst : instances) {
                 mkEntity.getParticleEffectTracker().addParticleInstance(inst);
             }
         }
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("value"), ops.createList(getValue().stream().map(
-                x -> x.serialize(ops))));
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        List<ParticleEffectInstance> val = new ArrayList<>();
-        List<DataResult<ParticleEffectInstance>> decoded = dynamic.get("value").asList(x -> {
-            ResourceLocation type = ParticleEffectInstance.getType(x);
-            ParticleEffectInstance inst = ParticleAnimationManager.getEffectInstance(type);
-            if (inst != null) {
-                inst.deserialize(x);
-                return DataResult.success(inst);
-            }
-            return DataResult.error(() -> String.format("Failed to decode effect type %s", type.toString()));
-        });
-        for (DataResult<ParticleEffectInstance> data : decoded) {
-            data.result().ifPresent(val::add);
-        }
-        setValue(val);
     }
 
     @Override

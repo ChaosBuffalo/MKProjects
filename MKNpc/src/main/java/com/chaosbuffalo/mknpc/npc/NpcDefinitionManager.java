@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.npc;
 
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.network.NpcDefinitionClientUpdatePacket;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
@@ -8,6 +9,7 @@ import com.chaosbuffalo.mknpc.npc.options.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.ResourceLocation;
@@ -24,12 +26,10 @@ import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.network.NetworkDirection;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
     public static final String DEFINITION_FOLDER = "mknpcs";
@@ -40,8 +40,8 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
     public static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
     public static final Map<ResourceLocation, NpcDefinition> DEFINITIONS = new HashMap<>();
     public static final Map<ResourceLocation, NpcDefinitionClient> CLIENT_DEFINITIONS = new HashMap<>();
-    public static final Map<ResourceLocation, Supplier<INpcOptionEntry>> ENTRY_DESERIALIZERS = new HashMap<>();
-    public static final Map<ResourceLocation, Supplier<NpcDefinitionOption>> OPTION_DESERIALIZERS = new HashMap<>();
+    private static final Map<ResourceLocation, Codec<? extends NpcDefinitionOption>> OPTION_CODEC_MAP = new HashMap<>();
+    private static final Map<ResourceLocation, Codec<? extends INpcOptionEntry>> ENTRY_CODEC_MAP = new HashMap<>();
 
     public NpcDefinitionManager() {
         super(GSON, DEFINITION_FOLDER);
@@ -66,62 +66,48 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
     }
 
     public static void setupDeserializers() {
-        putOptionEntryDeserializer(AbilitiesOption.NAME, AbilitiesOptionEntry::new);
-        putOptionEntryDeserializer(EquipmentOption.NAME, EquipmentOptionEntry::new);
-        putOptionDeserializer(EquipmentOption.NAME, EquipmentOption::new);
-        putOptionDeserializer(AbilitiesOption.NAME, AbilitiesOption::new);
-        putOptionDeserializer(AttributesOption.NAME, AttributesOption::new);
-        putOptionDeserializer(NameOption.NAME, NameOption::new);
-        putOptionDeserializer(ExperienceOption.NAME, ExperienceOption::new);
-        putOptionDeserializer(FactionOption.NAME, FactionOption::new);
-        putOptionDeserializer(DialogueOption.NAME, DialogueOption::new);
-        putOptionDeserializer(FactionNameOption.NAME, FactionNameOption::new);
-        putOptionEntryDeserializer(FactionNameOption.NAME, FactionNameOptionEntry::new);
-        putOptionDeserializer(NotableOption.NAME, NotableOption::new);
-        putOptionDeserializer(RenderGroupOption.NAME, RenderGroupOption::new);
-        putOptionDeserializer(MKSizeOption.NAME, MKSizeOption::new);
-        putOptionDeserializer(MKComboSettingsOption.NAME, MKComboSettingsOption::new);
-        putOptionDeserializer(LungeSpeedOption.NAME, LungeSpeedOption::new);
-        putOptionDeserializer(AbilityTrainingOption.NAME, AbilityTrainingOption::new);
-        putOptionDeserializer(ParticleEffectsOption.NAME, ParticleEffectsOption::new);
-        putOptionDeserializer(ExtraLootOption.NAME, ExtraLootOption::new);
-        putOptionDeserializer(QuestOfferingOption.NAME, QuestOfferingOption::new);
-        putOptionEntryDeserializer(QuestOfferingOption.NAME, QuestOptionsEntry::new);
-        putOptionDeserializer(BossStageOption.NAME, BossStageOption::new);
-        putOptionDeserializer(TempAbilitiesOption.NAME, TempAbilitiesOption::new);
-        putOptionDeserializer(GhostOption.NAME, GhostOption::new);
-        putOptionDeserializer(SkillOption.NAME, SkillOption::new);
-        putOptionDeserializer(FactionBattlecryOption.NAME, FactionBattlecryOption::new);
-        putOptionEntryDeserializer(FactionBattlecryOption.NAME, FactionBattlecryOptionEntry::new);
+        putOptionEntryDeserializer(AbilitiesOption.NAME, AbilitiesOptionEntry.CODEC);
+        putOptionEntryDeserializer(EquipmentOption.NAME, EquipmentOptionEntry.CODEC);
+        putOptionDeserializer(EquipmentOption.NAME, EquipmentOption.CODEC);
+        putOptionDeserializer(AbilitiesOption.NAME, AbilitiesOption.CODEC);
+        putOptionDeserializer(AttributesOption.NAME, AttributesOption.CODEC);
+        putOptionDeserializer(NameOption.NAME, NameOption.CODEC);
+        putOptionDeserializer(ExperienceOption.NAME, ExperienceOption.CODEC);
+        putOptionDeserializer(FactionOption.NAME, FactionOption.CODEC);
+        putOptionDeserializer(DialogueOption.NAME, DialogueOption.CODEC);
+        putOptionDeserializer(FactionNameOption.NAME, FactionNameOption.CODEC);
+        putOptionEntryDeserializer(FactionNameOption.NAME, FactionNameOptionEntry.CODEC);
+        putOptionDeserializer(NotableOption.NAME, NotableOption.CODEC);
+        putOptionDeserializer(RenderGroupOption.NAME, RenderGroupOption.CODEC);
+        putOptionDeserializer(MKSizeOption.NAME, MKSizeOption.CODEC);
+        putOptionDeserializer(MKComboSettingsOption.NAME, MKComboSettingsOption.CODEC);
+        putOptionDeserializer(LungeSpeedOption.NAME, LungeSpeedOption.CODEC);
+        putOptionDeserializer(AbilityTrainingOption.NAME, AbilityTrainingOption.CODEC);
+        putOptionDeserializer(ParticleEffectsOption.NAME, ParticleEffectsOption.CODEC);
+        putOptionDeserializer(ExtraLootOption.NAME, ExtraLootOption.CODEC);
+        putOptionDeserializer(QuestOfferingOption.NAME, QuestOfferingOption.CODEC);
+        putOptionEntryDeserializer(QuestOfferingOption.NAME, QuestOptionsEntry.CODEC);
+        putOptionDeserializer(BossStageOption.NAME, BossStageOption.CODEC);
+        putOptionDeserializer(TempAbilitiesOption.NAME, TempAbilitiesOption.CODEC);
+        putOptionDeserializer(GhostOption.NAME, GhostOption.CODEC);
+        putOptionDeserializer(SkillOption.NAME, SkillOption.CODEC);
+        putOptionDeserializer(FactionBattlecryOption.NAME, FactionBattlecryOption.CODEC);
+        putOptionEntryDeserializer(FactionBattlecryOption.NAME, FactionBattlecryOptionEntry.CODEC);
     }
 
+    public static final Codec<NpcDefinitionOption> NPC_OPTION_CODEC = CommonCodecs.createMapBackedDispatch(
+            ResourceLocation.CODEC, OPTION_CODEC_MAP, NpcDefinitionOption::getName);
+    public static final Codec<INpcOptionEntry> ENTRY_CODEC = CommonCodecs.createMapBackedDispatch(
+            ResourceLocation.CODEC, ENTRY_CODEC_MAP, INpcOptionEntry::getOptionId);
+
     public static void putOptionDeserializer(ResourceLocation optionName,
-                                             Supplier<NpcDefinitionOption> optionFunction) {
-        OPTION_DESERIALIZERS.put(optionName, optionFunction);
+                                             Codec<? extends NpcDefinitionOption> optionCodec) {
+        OPTION_CODEC_MAP.put(optionName, optionCodec);
     }
 
     public static void putOptionEntryDeserializer(ResourceLocation entryName,
-                                                  Supplier<INpcOptionEntry> entryFunction) {
-        ENTRY_DESERIALIZERS.put(entryName, entryFunction);
-    }
-
-    @Nullable
-    public static INpcOptionEntry getNpcOptionEntry(ResourceLocation entryName) {
-        if (!ENTRY_DESERIALIZERS.containsKey(entryName)) {
-            MKNpc.LOGGER.error("Failed to deserialize option entry {}", entryName);
-            return null;
-        }
-        return ENTRY_DESERIALIZERS.get(entryName).get();
-    }
-
-    @Nullable
-    public static NpcDefinitionOption getNpcOption(ResourceLocation optionName) {
-
-        if (!OPTION_DESERIALIZERS.containsKey(optionName)) {
-            MKNpc.LOGGER.error("Failed to deserialize option {}", optionName);
-            return null;
-        }
-        return OPTION_DESERIALIZERS.get(optionName).get();
+                                                  Codec<? extends INpcOptionEntry> codec) {
+        ENTRY_CODEC_MAP.put(entryName, codec);
     }
 
     @Override

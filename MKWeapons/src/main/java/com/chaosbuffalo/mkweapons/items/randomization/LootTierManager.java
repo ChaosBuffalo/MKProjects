@@ -19,10 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LootTierManager extends SimpleJsonResourceReloadListener {
-    public static final ResourceLocation INVALID_LOOT_TIER = new ResourceLocation(MKWeapons.MODID,
-            "loot_tier.invalid");
-    public static final ResourceLocation INVALID_RANDOMIZATION_TEMPLATE = new ResourceLocation(MKWeapons.MODID,
-            "randomization_template.invalid");
     private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
     public static final Map<ResourceLocation, LootTier> LOOT_TIERS = new HashMap<>();
 

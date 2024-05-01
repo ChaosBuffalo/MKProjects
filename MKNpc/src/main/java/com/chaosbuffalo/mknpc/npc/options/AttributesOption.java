@@ -3,9 +3,8 @@ package com.chaosbuffalo.mknpc.npc.options;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.google.common.collect.ImmutableList;
+import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,7 +16,14 @@ import java.util.List;
 
 public class AttributesOption extends NpcDefinitionOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "attributes");
+    public static final Codec<AttributesOption> CODEC = NpcAttributeEntry.CODEC.listOf().xmap(AttributesOption::new, i -> i.attributes);
+
     private final List<NpcAttributeEntry> attributes;
+
+    private AttributesOption(List<NpcAttributeEntry> list) {
+        super(NAME, ApplyOrder.MIDDLE);
+        attributes = ImmutableList.copyOf(list);
+    }
 
     public AttributesOption() {
         super(NAME, ApplyOrder.MIDDLE);
@@ -30,31 +36,14 @@ public class AttributesOption extends NpcDefinitionOption {
     }
 
     @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        List<NpcAttributeEntry> entries = dynamic.get("attributes").asList(d -> {
-            NpcAttributeEntry entry = new NpcAttributeEntry();
-            entry.deserialize(d);
-            return entry;
-        });
-        attributes.clear();
-        attributes.addAll(entries);
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("attributes"), ops.createList(attributes.stream().map(x -> x.serialize(ops))));
-    }
-
-    @Override
     public boolean canBeBossStage() {
         return true;
     }
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
-        if (entity instanceof LivingEntity) {
-            AttributeMap manager = ((LivingEntity) entity).getAttributes();
+        if (entity instanceof LivingEntity living) {
+            AttributeMap manager = living.getAttributes();
             for (NpcAttributeEntry entry : attributes) {
                 AttributeInstance instance = manager.getInstance(entry.getAttribute());
                 if (instance != null) {

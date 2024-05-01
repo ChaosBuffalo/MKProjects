@@ -2,48 +2,61 @@
   "entityType": "mkultra:hyborean_skeleton",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "hyborean_archer"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 25.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 25.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 1.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "Decaying Archer"
     },
     {
-      "optionType": "mknpc:equipment",
-      "slotOptions": {
+      "type": "mknpc:equipment",
+      "value": {
         "mainhand": [
           {
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:longbow_stone\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:longbow_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 10.0
           },
           {
             "dropChance": 1.1,
-            "item": "{id: \"mkultra:longbow_bronze\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:longbow_bronze",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 4.0
           }
         ]
       }
     },
     {
+      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:marksmanship"
       ],
@@ -52,7 +65,6 @@
         "mkcore:one_hand_pierce",
         "mkcore:one_hand_slash"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:arete",
         "mkcore:pankration",
@@ -60,11 +72,11 @@
       ]
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 0.95
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkfaction:undead"
     }
   ]

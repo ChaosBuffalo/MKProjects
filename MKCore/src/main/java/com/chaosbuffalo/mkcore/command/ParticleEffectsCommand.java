@@ -37,7 +37,7 @@ public class ParticleEffectsCommand {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         ResourceLocation particleAnimation = ctx.getArgument("particleAnimation", ResourceLocation.class);
         String bone = StringArgumentType.getString(ctx, "bone");
-        BoneEffectInstance inst = new BoneEffectInstance(UUID.randomUUID(), bone, particleAnimation);
+        BoneEffectInstance inst = new BoneEffectInstance(UUID.randomUUID(), particleAnimation, bone);
         MKCore.getPlayer(player).ifPresent(playerData -> {
             playerData.getAnimationModule().getEffectInstanceTracker().addParticleInstance(inst);
             ChatUtils.sendMessageWithBrackets(player, "Added %s to effect to bone: %s", particleAnimation.toString(), bone);

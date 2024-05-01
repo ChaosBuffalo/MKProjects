@@ -3,8 +3,11 @@ package com.chaosbuffalo.mknpc.npc.option_entries;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
+import com.chaosbuffalo.mknpc.npc.options.QuestOfferingOption;
+import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -14,8 +17,14 @@ import java.util.List;
 import java.util.Map;
 
 public class QuestOptionsEntry implements INpcOptionEntry {
+    public static final Codec<QuestOptionsEntry> CODEC = Codec.unboundedMap(ResourceLocation.CODEC, QuestOfferingEntry.CODEC)
+            .xmap(QuestOptionsEntry::new, i -> i.questOfferings);
 
-    private Map<ResourceLocation, QuestOfferingEntry> questOfferings = new HashMap<>();
+    private final Map<ResourceLocation, QuestOfferingEntry> questOfferings = new HashMap<>();
+
+    private QuestOptionsEntry(Map<ResourceLocation, QuestOfferingEntry> map) {
+        questOfferings.putAll(map);
+    }
 
     public QuestOptionsEntry(List<ResourceLocation> locs) {
         for (ResourceLocation loc : locs) {
@@ -23,8 +32,9 @@ public class QuestOptionsEntry implements INpcOptionEntry {
         }
     }
 
-    public QuestOptionsEntry() {
-
+    @Override
+    public ResourceLocation getOptionId() {
+        return QuestOfferingOption.NAME;
     }
 
     @Override
@@ -63,7 +73,7 @@ public class QuestOptionsEntry implements INpcOptionEntry {
         CompoundTag nbt = new CompoundTag();
         ListTag offeringNbt = new ListTag();
         for (QuestOfferingEntry entry : questOfferings.values()) {
-            offeringNbt.add(entry.serializeNBT());
+            offeringNbt.add(QuestOfferingEntry.CODEC.encodeStart(NbtOps.INSTANCE, entry).getOrThrow(false, MKNpc.LOGGER::error));
         }
         nbt.put("offerings", offeringNbt);
         return nbt;
@@ -73,7 +83,7 @@ public class QuestOptionsEntry implements INpcOptionEntry {
     public void deserializeNBT(CompoundTag nbt) {
         ListTag offeringNbt = nbt.getList("offerings", Tag.TAG_COMPOUND);
         for (Tag offering : offeringNbt) {
-            QuestOfferingEntry newEntry = new QuestOfferingEntry((CompoundTag) offering);
+            QuestOfferingEntry newEntry = QuestOfferingEntry.CODEC.parse(NbtOps.INSTANCE, offering).getOrThrow(false, MKNpc.LOGGER::error);
             questOfferings.put(newEntry.getQuestDef(), newEntry);
         }
     }

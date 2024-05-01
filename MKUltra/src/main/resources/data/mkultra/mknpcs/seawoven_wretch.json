@@ -2,41 +2,42 @@
   "entityType": "mkultra:hyborean_skeleton",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "seawoven_wretch"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 35.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 35.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 2.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "A Seawoven Wretch"
     },
     {
-      "optionType": "mknpc:abilities",
-      "options": [
+      "type": "mknpc:abilities",
+      "value": [
         {
-          "abilityName": "mkultra:ability.frozen_grasp",
+          "abilityId": "mkultra:ability.frozen_grasp",
           "chance": 1.0,
           "priority": 1
         }
       ]
     },
     {
+      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:conjuration",
         "mkcore:necromancy"
@@ -46,17 +47,16 @@
         "mkcore:alteration",
         "mkcore:evocation"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 0.92
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkfaction:undead"
     }
   ]

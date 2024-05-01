@@ -7,7 +7,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.option_entries.FactionBattlecryOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
-import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
@@ -16,12 +16,12 @@ import java.util.List;
 
 public class FactionBattlecryOption extends WorldPermanentOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "faction_battlecry");
-
+    public static final FactionBattlecryOption INSTANCE = new FactionBattlecryOption();
+    public static final Codec<FactionBattlecryOption> CODEC = Codec.unit(INSTANCE);
 
     public FactionBattlecryOption() {
         super(NAME, ApplyOrder.LATE);
     }
-
 
     @Nullable
     private static <T> T getRandomEntry(RandomSource random, List<T> list) {
@@ -35,15 +35,10 @@ public class FactionBattlecryOption extends WorldPermanentOption {
     protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
         MKFaction faction = MKFactionRegistry.getFaction(definition.getFactionName());
         if (faction != null) {
-            return faction.getGreetings().getGreetingsWithMembers(FactionGreetings.GreetingType.BATTLECRY).map(
-                    x -> new FactionBattlecryOptionEntry(getRandomEntry(random, x))
-            ).orElse(new FactionBattlecryOptionEntry());
+            return faction.getGreetings().getGreetingsWithMembers(FactionGreetings.GreetingType.BATTLECRY)
+                    .map(x -> new FactionBattlecryOptionEntry(getRandomEntry(random, x)))
+                    .orElse(new FactionBattlecryOptionEntry());
         }
         return new FactionBattlecryOptionEntry();
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-
     }
 }
