@@ -1,4 +1,5 @@
 {
+  "name": "mkultra:burning_staff",
   "slotItems": {
     "mkweapons:main_hand": [
       {
@@ -6,148 +7,152 @@
           "lootSlot": "mkweapons:main_hand",
           "options": [
             {
-              "abilityId": "mkultra:ability.fireball",
-              "randomizationType": "mkweapons:option.ability",
-              "slotName": "mkweapons:randomization.ability",
-              "weight": 1.0
+              "type": "mkweapons:option.ability",
+              "value": {
+                "ability": "mkultra:ability.fireball"
+              }
             },
             {
-              "name": "{\"text\":\"Burning Staff\"}",
-              "randomizationType": "mkweapons:name",
-              "slotName": "mkweapons:randomization.name",
-              "weight": 1.0
+              "type": "mkweapons:name",
+              "name": {
+                "text": "Burning Staff"
+              }
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "minecraft:generic.max_health",
-                  "Name": "mkultra:burning_staff",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.max_health",
                   "maxValue": 10.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:burning_staff",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "mkcore:max_mana",
-                  "Name": "mkultra:burning_staff",
-                  "Operation": 0,
+                  "attribute": "mkcore:max_mana",
                   "maxValue": 10.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:burning_staff",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.25,
-                  "AttributeName": "mkcore:mana_regen",
-                  "Name": "mkultra:burning_staff",
-                  "Operation": 0,
+                  "attribute": "mkcore:mana_regen",
                   "maxValue": 2.0,
-                  "minValue": 0.25
+                  "minValue": 0.25,
+                  "modifier": {
+                    "amount": 0.25,
+                    "name": "mkultra:burning_staff",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.05,
-                  "AttributeName": "minecraft:generic.movement_speed",
-                  "Name": "mkultra:burning_staff",
-                  "Operation": 2,
+                  "attribute": "minecraft:generic.movement_speed",
                   "maxValue": 0.15,
-                  "minValue": 0.05
+                  "minValue": 0.05,
+                  "modifier": {
+                    "amount": 0.05,
+                    "name": "mkultra:burning_staff",
+                    "operation": 2
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "minecraft:generic.attack_damage",
-                  "Name": "mkultra:burning_staff",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.attack_damage",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:burning_staff",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "minecraft:generic.armor",
-                  "Name": "mkultra:burning_staff",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.armor",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:burning_staff",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "mkcore:nature_damage",
-                  "Name": "mkultra:burning_staff",
-                  "Operation": 0,
+                  "attribute": "mkcore:nature_damage",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:burning_staff",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             }
           ],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkweapons:staff_iron\", Count: 1b, tag: {Damage: 0}}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkweapons:staff_iron",
+                "tag": {
+                  "Damage": 0
+                }
+              }
             }
           ],
           "templates": [
             {
               "template": {
+                "name": "mkultra:blade_crit",
                 "slots": [
                   "mkweapons:randomization.ability",
                   "mkweapons:randomization.name",
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:blade_crit"
-              },
-              "weight": 1.0
+                ]
+              }
             },
             {
               "template": {
+                "name": "mkultra:blade",
                 "slots": [
                   "mkweapons:randomization.ability",
                   "mkweapons:randomization.name"
-                ],
-                "templateType": "mkultra:blade"
+                ]
               },
               "weight": 10.0
             }

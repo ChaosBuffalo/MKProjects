@@ -3,10 +3,13 @@ package com.chaosbuffalo.mkweapons.items.effects.accesory;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.serialization.attributes.ScalableDoubleAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.ScalableFloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.ScalableDouble;
+import com.chaosbuffalo.mkcore.serialization.attributes.ScalableFloat;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
+import com.chaosbuffalo.mkweapons.items.effects.IDifficultyAwareEffect;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -17,43 +20,36 @@ import net.minecraft.world.item.ItemStack;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class RestoreManaOnCastEffect extends BaseAccessoryEffect {
-
-    protected final ScalableDoubleAttribute chance = new ScalableDoubleAttribute("chance", 0.0, 0.0);
-    protected final ScalableFloatAttribute percentage = new ScalableFloatAttribute("percentage", 0.0f, 1.0f);
-
+public class RestoreManaOnCastEffect extends BaseAccessoryEffect implements IDifficultyAwareEffect {
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "accessory_effect.restore_mana");
+    public static final Codec<RestoreManaOnCastEffect> CODEC = RecordCodecBuilder.<RestoreManaOnCastEffect>mapCodec(builder -> {
+        return builder.group(
+                ScalableDouble.CODEC.fieldOf("chance").forGetter(i -> i.chance),
+                ScalableFloat.CODEC.fieldOf("percentage").forGetter(i -> i.percentage)
+        ).apply(builder, RestoreManaOnCastEffect::new);
+    }).codec();
 
-    public RestoreManaOnCastEffect() {
+    protected final ScalableDouble chance;
+    protected final ScalableFloat percentage;
+
+    private RestoreManaOnCastEffect(ScalableDouble chance, ScalableFloat percentage) {
         super(NAME, ChatFormatting.AQUA);
-        addAttributes(chance, percentage);
+        this.chance = chance;
+        this.percentage = percentage;
     }
 
     public RestoreManaOnCastEffect(double chanceMin, double chanceMax, float restorePercentageMin, float restorePercentageMax) {
-        this();
-        this.chance.setValue(chanceMin);
-        this.chance.setMin(chanceMin);
-        this.chance.setMax(chanceMax);
-        this.percentage.setValue(restorePercentageMin);
-        this.percentage.setMin(restorePercentageMin);
-        this.percentage.setMax(restorePercentageMax);
+        super(NAME, ChatFormatting.AQUA);
+        this.chance = new ScalableDouble(chanceMin, chanceMax);
+        this.percentage = new ScalableFloat(restorePercentageMin, restorePercentageMax);
     }
 
     public double getChance() {
         return chance.value();
     }
 
-    public void setChance(double chance) {
-        this.chance.setValue(chance);
-    }
-
     public float getPercentage() {
         return percentage.value();
-    }
-
-
-    public void setPercentage(float percentage) {
-        this.percentage.setValue(percentage);
     }
 
     @Override
@@ -80,5 +76,9 @@ public class RestoreManaOnCastEffect extends BaseAccessoryEffect {
         }
     }
 
-
+    @Override
+    public void tuneEffect(double difficultyPercentage) {
+        chance.scale(difficultyPercentage);
+        percentage.scale(difficultyPercentage);
+    }
 }

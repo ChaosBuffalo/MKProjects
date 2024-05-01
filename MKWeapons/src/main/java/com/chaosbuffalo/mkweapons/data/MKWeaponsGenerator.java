@@ -21,11 +21,9 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -59,14 +57,17 @@ public class MKWeaponsGenerator {
 
         private LootTier generateTierOne() {
             LootTier tier = new LootTier(new ResourceLocation(MKWeapons.MODID, "tier_one"));
-            Set<IMKTier> weaponTiers = new HashSet<>();
-            weaponTiers.add(MKWeaponsItems.STONE_TIER);
-            weaponTiers.add(MKWeaponsItems.WOOD_TIER);
+            List<IMKTier> weaponTiers = List.of(MKWeaponsItems.STONE_TIER, MKWeaponsItems.WOOD_TIER);
 
             LootItemTemplate weaponTemplate = new LootItemTemplate(LootSlotManager.MAIN_HAND);
 
+            // Sort the items for stable datagen output
+            List<MKMeleeWeapon> sorted = new ArrayList<>(MKWeaponsItems.WEAPONS);
+            Comparator<MKMeleeWeapon> comp = Comparator.comparing((MKMeleeWeapon w) -> w.getMKTier().getName())
+                    .thenComparing(ForgeRegistries.ITEMS::getKey);
+            sorted.sort(comp);
 
-            for (MKMeleeWeapon weapon : MKWeaponsItems.WEAPONS) {
+            for (MKMeleeWeapon weapon : sorted) {
                 if (weaponTiers.contains(weapon.getMKTier())) {
                     weaponTemplate.addItem(weapon);
                 }

@@ -1,33 +1,34 @@
 package com.chaosbuffalo.mkweapons.items.randomization;
 
-import com.chaosbuffalo.mkcore.utils.SerializationUtils;
-import com.google.common.collect.ImmutableMap;
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
+import com.chaosbuffalo.mkweapons.MKWeapons;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
 
 public class RandomizationItemEntry {
-    public ItemStack item;
-    public double weight;
+    public static final Codec<RandomizationItemEntry> CODEC = RecordCodecBuilder.<RandomizationItemEntry>mapCodec(builder -> {
+        return builder.group(
+                CommonCodecs.ITEM_STACK.fieldOf("item").forGetter(i -> i.item),
+                Codec.DOUBLE.optionalFieldOf("weight", 1.0).forGetter(i -> i.weight)
+        ).apply(builder, RandomizationItemEntry::new);
+    }).codec();
+
+    public final ItemStack item;
+    public final double weight;
 
     public RandomizationItemEntry(ItemStack item, double weight) {
         this.item = item;
         this.weight = weight;
     }
 
-    public RandomizationItemEntry() {
-        this(ItemStack.EMPTY, 1.0);
-    }
-
     public <D> D serialize(DynamicOps<D> ops) {
-        return ops.createMap(ImmutableMap.of(
-                ops.createString("itemStack"), SerializationUtils.serializeItemStack(ops, this.item),
-                ops.createString("weight"), ops.createDouble(weight)
-        ));
+        return CODEC.encodeStart(ops, this).getOrThrow(false, MKWeapons.LOGGER::error);
     }
 
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        this.item = dynamic.get("itemStack").map(SerializationUtils::deserializeItemStack).result().orElse(ItemStack.EMPTY);
-        this.weight = dynamic.get("weight").asDouble(1.0);
+    public static <D> RandomizationItemEntry deserialize(Dynamic<D> dynamic) {
+        return CODEC.parse(dynamic).getOrThrow(false, MKWeapons.LOGGER::error);
     }
 }

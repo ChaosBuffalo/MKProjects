@@ -5,6 +5,8 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -15,15 +17,30 @@ import net.minecraft.world.item.ItemStack;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ComboStrikeMeleeWeaponEffect extends SwingMeleeWeaponEffect {
+public class ComboStrikeMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.combo_strike");
+    public static final Codec<ComboStrikeMeleeWeaponEffect> CODEC = RecordCodecBuilder.<ComboStrikeMeleeWeaponEffect>mapCodec(builder -> {
+        return builder.group(
+                Codec.INT.fieldOf("numberOfHits").forGetter(ComboStrikeMeleeWeaponEffect::getNumberOfHits),
+                Codec.DOUBLE.fieldOf("perHit").forGetter(ComboStrikeMeleeWeaponEffect::getPerHit)
+        ).apply(builder, ComboStrikeMeleeWeaponEffect::new);
+    }).codec();
+
+    protected final int numberOfHits;
+    protected final double perHit;
 
     public ComboStrikeMeleeWeaponEffect(int numberOfHits, double perHit) {
-        super(NAME, ChatFormatting.GREEN, numberOfHits, perHit);
+        super(NAME, ChatFormatting.GREEN);
+        this.numberOfHits = numberOfHits;
+        this.perHit = perHit;
     }
 
-    public ComboStrikeMeleeWeaponEffect() {
-        super(NAME, ChatFormatting.GREEN);
+    public double getPerHit() {
+        return perHit;
+    }
+
+    public int getNumberOfHits() {
+        return numberOfHits;
     }
 
     @Override

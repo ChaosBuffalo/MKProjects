@@ -1,22 +1,22 @@
 {
-  "damageMultiplier": 1.5,
   "attackSpeed": -2.2,
-  "reach": 0.0,
-  "critMultiplier": 1.0,
+  "blockEfficiency": 0.75,
   "critChance": 0.1,
-  "isTwoHanded": true,
+  "critMultiplier": 1.0,
+  "damageMultiplier": 1.5,
   "effects": [
     {
-      "itemEffectType": "mkweapons:weapon_effect.skill_scaling",
+      "type": "mkweapons:weapon_effect.skill_scaling",
       "baseDamage": 4.5,
       "skill": "mkcore:two_hand_slash"
     },
     {
-      "itemEffectType": "mkweapons:weapon_effect.combo_strike",
+      "type": "mkweapons:weapon_effect.combo_strike",
       "numberOfHits": 5,
       "perHit": 0.25
     }
   ],
-  "blockEfficiency": 0.75,
-  "maxPoise": 25.0
+  "isTwoHanded": true,
+  "maxPoise": 25.0,
+  "reach": 0.0
 }

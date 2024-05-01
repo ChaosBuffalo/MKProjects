@@ -1,4 +1,5 @@
 {
+  "name": "mkultra:zombie_trooper",
   "slotItems": {
     "mkweapons:items": [
       {
@@ -7,33 +8,43 @@
           "options": [],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkultra:corrupted_pig_iron_plate\", Count: 1b}",
+              "item": {
+                "Count": 1,
+                "id": "mkultra:corrupted_pig_iron_plate"
+              },
               "weight": 10.0
             },
             {
-              "itemStack": "{id: \"mkultra:destroyed_trooper_boots\", Count: 1b}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkultra:destroyed_trooper_boots"
+              }
             },
             {
-              "itemStack": "{id: \"mkultra:destroyed_trooper_chestplate\", Count: 1b}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkultra:destroyed_trooper_chestplate"
+              }
             },
             {
-              "itemStack": "{id: \"mkultra:destroyed_trooper_leggings\", Count: 1b}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkultra:destroyed_trooper_leggings"
+              }
             },
             {
-              "itemStack": "{id: \"mkultra:destroyed_trooper_helmet\", Count: 1b}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkultra:destroyed_trooper_helmet"
+              }
             }
           ],
           "templates": [
             {
               "template": {
-                "slots": [],
-                "templateType": "mkultra:empty"
-              },
-              "weight": 1.0
+                "name": "mkultra:empty",
+                "slots": []
+              }
             }
           ]
         },

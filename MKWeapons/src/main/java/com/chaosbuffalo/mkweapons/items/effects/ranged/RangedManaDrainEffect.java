@@ -4,9 +4,8 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -22,42 +21,21 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class RangedManaDrainEffect extends BaseRangedWeaponEffect {
-
-    private float damageMultiplier;
-    private float efficiency;
-
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.ranged_mana_drain");
+    public static final Codec<RangedManaDrainEffect> CODEC = RecordCodecBuilder.<RangedManaDrainEffect>mapCodec(builder -> {
+        return builder.group(
+                Codec.FLOAT.fieldOf("damage_multiplier").forGetter(i -> i.damageMultiplier),
+                Codec.FLOAT.fieldOf("efficiency").forGetter(i -> i.efficiency)
+        ).apply(builder, RangedManaDrainEffect::new);
+    }).codec();
+
+    private final float damageMultiplier;
+    private final float efficiency;
 
     public RangedManaDrainEffect(float damageMultiplier, float efficiency) {
-        this();
-        this.damageMultiplier = damageMultiplier;
-        this.efficiency = efficiency;
-    }
-
-    public RangedManaDrainEffect() {
         super(NAME, ChatFormatting.DARK_AQUA);
-    }
-
-    public void setDamageMultiplier(float damageMultiplier) {
         this.damageMultiplier = damageMultiplier;
-    }
-
-    public void setEfficiency(float efficiency) {
         this.efficiency = efficiency;
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        setEfficiency(dynamic.get("efficiency").asFloat(0.5f));
-        setDamageMultiplier(dynamic.get("damage_multiplier").asFloat(0.5f));
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("damage_multiplier"), ops.createFloat(damageMultiplier));
-        builder.put(ops.createString("efficiency"), ops.createFloat(efficiency));
     }
 
     @Override

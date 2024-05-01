@@ -1,12 +1,16 @@
 {
   "attributes": {
-    "baseBurnDamage": 4.0,
+    "baseDamage": 4.0,
     "baseDuration": 10,
-    "burn_cast_particles": "mkultra:drown_effect",
     "casting_particles": "mkultra:drown_casting",
-    "dotModifierScaling": 0.2,
-    "scaleBurnDamage": 2.0,
-    "scaleDuration": 2
+    "detonate_particles": "mkultra:drown_detonate",
+    "modifierScaling": 0.2,
+    "projectileInaccuracy": 0.2,
+    "projectileSpeed": 0.9,
+    "scaleDamage": 2.0,
+    "scaleDuration": 2,
+    "tick_particles": "mkultra:drown_effect",
+    "trail_particles": "mkultra:drown_trail"
   },
   "castTime": 20,
   "cooldown": 200,

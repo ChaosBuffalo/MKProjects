@@ -1,4 +1,5 @@
 {
+  "name": "mkultra:hyborean_sorcerer_queen",
   "slotItems": {
     "mkweapons:earrings": [
       {
@@ -6,41 +7,43 @@
           "lootSlot": "mkweapons:earrings",
           "options": [
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.05,
-                  "AttributeName": "mkcore:spell_crit_multiplier",
-                  "Name": "mkultra:hyborean_sorcerer_queen",
-                  "Operation": 0,
+                  "attribute": "mkcore:spell_crit_multiplier",
                   "maxValue": 0.2,
-                  "minValue": 0.05
+                  "minValue": 0.05,
+                  "modifier": {
+                    "amount": 0.05,
+                    "name": "mkultra:hyborean_sorcerer_queen",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
-              "name": "{\"text\":\"Earring of Power\"}",
-              "randomizationType": "mkweapons:name",
-              "slotName": "mkweapons:randomization.name",
-              "weight": 1.0
+              "type": "mkweapons:name",
+              "name": {
+                "text": "Earring of Power"
+              }
             }
           ],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkweapons:silver_earring\", Count: 1b}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkweapons:silver_earring"
+              }
             }
           ],
           "templates": [
             {
               "template": {
+                "name": "mkultra:earring",
                 "slots": [
                   "mkweapons:randomization.attributes",
                   "mkweapons:randomization.name"
-                ],
-                "templateType": "mkultra:earring"
+                ]
               },
               "weight": 15.0
             }
@@ -55,133 +58,138 @@
           "lootSlot": "mkweapons:main_hand",
           "options": [
             {
-              "abilityId": "mkultra:ability.flame_wave",
-              "randomizationType": "mkweapons:option.ability",
-              "slotName": "mkweapons:randomization.ability",
-              "weight": 1.0
+              "type": "mkweapons:option.ability",
+              "value": {
+                "ability": "mkultra:ability.flame_wave"
+              }
             },
             {
-              "name": "{\"text\":\"Staff of Flames\"}",
-              "randomizationType": "mkweapons:name",
-              "slotName": "mkweapons:randomization.name",
-              "weight": 1.0
+              "type": "mkweapons:name",
+              "name": {
+                "text": "Staff of Flames"
+              }
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 5.0,
-                  "AttributeName": "minecraft:generic.max_health",
-                  "Name": "mkultra:hyborean_sorcerer_queen",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.max_health",
                   "maxValue": 20.0,
-                  "minValue": 5.0
+                  "minValue": 5.0,
+                  "modifier": {
+                    "amount": 5.0,
+                    "name": "mkultra:hyborean_sorcerer_queen",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 5.0,
-                  "AttributeName": "mkcore:max_mana",
-                  "Name": "mkultra:hyborean_sorcerer_queen",
-                  "Operation": 0,
+                  "attribute": "mkcore:max_mana",
                   "maxValue": 20.0,
-                  "minValue": 5.0
+                  "minValue": 5.0,
+                  "modifier": {
+                    "amount": 5.0,
+                    "name": "mkultra:hyborean_sorcerer_queen",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.5,
-                  "AttributeName": "mkcore:mana_regen",
-                  "Name": "mkultra:hyborean_sorcerer_queen",
-                  "Operation": 0,
+                  "attribute": "mkcore:mana_regen",
                   "maxValue": 4.0,
-                  "minValue": 0.5
+                  "minValue": 0.5,
+                  "modifier": {
+                    "amount": 0.5,
+                    "name": "mkultra:hyborean_sorcerer_queen",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "minecraft:generic.attack_damage",
-                  "Name": "mkultra:hyborean_sorcerer_queen",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.attack_damage",
                   "maxValue": 6.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:hyborean_sorcerer_queen",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "minecraft:generic.armor",
-                  "Name": "mkultra:hyborean_sorcerer_queen",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.armor",
                   "maxValue": 8.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:hyborean_sorcerer_queen",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "mkcore:fire_damage",
-                  "Name": "mkultra:hyborean_sorcerer_queen",
-                  "Operation": 0,
+                  "attribute": "mkcore:fire_damage",
                   "maxValue": 6.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:hyborean_sorcerer_queen",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             }
           ],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkultra:staff_bronze\", Count: 1b, tag: {Damage: 0}}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkultra:staff_bronze",
+                "tag": {
+                  "Damage": 0
+                }
+              }
             }
           ],
           "templates": [
             {
               "template": {
+                "name": "mkultra:staff_crit",
                 "slots": [
                   "mkweapons:randomization.ability",
                   "mkweapons:randomization.name",
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:staff_crit"
+                ]
               },
               "weight": 5.0
             },
             {
               "template": {
+                "name": "mkultra:staff",
                 "slots": [
                   "mkweapons:randomization.ability",
                   "mkweapons:randomization.name"
-                ],
-                "templateType": "mkultra:staff"
+                ]
               },
               "weight": 10.0
             }

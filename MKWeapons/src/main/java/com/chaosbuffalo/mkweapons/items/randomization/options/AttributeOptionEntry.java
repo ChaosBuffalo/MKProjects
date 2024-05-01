@@ -1,28 +1,48 @@
 package com.chaosbuffalo.mkweapons.items.randomization.options;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Optional;
 import java.util.UUID;
 
+
 public class AttributeOptionEntry {
-    private AttributeModifier modifier;
-    private Attribute attribute;
-    private double minValue;
-    private double maxValue;
+    public static final Codec<AttributeModifier> MODIFIER_OPTIONAL_ID_CODEC = RecordCodecBuilder.<AttributeModifier>mapCodec(builder -> {
+        return builder.group(
+                UUIDUtil.STRING_CODEC.optionalFieldOf("id", Util.NIL_UUID).forGetter(AttributeModifier::getId),
+                Codec.STRING.fieldOf("name").forGetter(AttributeModifier::getName),
+                Codec.DOUBLE.fieldOf("amount").forGetter(AttributeModifier::getAmount),
+                CommonCodecs.ATTRIBUTE_MODIFIER_OPERATION_CODEC.fieldOf("operation").forGetter(AttributeModifier::getOperation)
+        ).apply(builder, AttributeModifier::new);
+    }).codec();
+
+    public static final Codec<AttributeOptionEntry> CODEC = RecordCodecBuilder.<AttributeOptionEntry>mapCodec(builder -> {
+        return builder.group(
+                ForgeRegistries.ATTRIBUTES.getCodec().fieldOf("attribute").forGetter(AttributeOptionEntry::getAttribute),
+                MODIFIER_OPTIONAL_ID_CODEC.fieldOf("modifier").forGetter(AttributeOptionEntry::getModifier),
+                Codec.DOUBLE.fieldOf("minValue").forGetter(i -> i.minValue),
+                Codec.DOUBLE.fieldOf("maxValue").forGetter(i -> i.maxValue)
+        ).apply(builder, AttributeOptionEntry::new);
+    }).codec();
+
+    private final AttributeModifier modifier;
+    private final Attribute attribute;
+    private final double minValue;
+    private final double maxValue;
 
     public AttributeOptionEntry(Attribute attribute, AttributeModifier modifier, double minValue, double maxValue) {
         this.modifier = modifier;
@@ -33,10 +53,6 @@ public class AttributeOptionEntry {
 
     public AttributeOptionEntry(Attribute attribute, AttributeModifier modifier) {
         this(attribute, modifier, modifier.getAmount(), modifier.getAmount());
-    }
-
-    public AttributeOptionEntry() {
-
     }
 
     public AttributeModifier getModifier() {
@@ -53,18 +69,8 @@ public class AttributeOptionEntry {
                 finalAmount, modifier.getOperation()), minValue, maxValue);
     }
 
-    public <D> D serialize(DynamicOps<D> ops) {
-        ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
-        builder.put(ops.createString("Name"), ops.createString(modifier.getName()));
-        builder.put(ops.createString("Amount"), ops.createDouble(modifier.getAmount()));
-        builder.put(ops.createString("Operation"), ops.createInt(modifier.getOperation().toValue()));
-        builder.put(ops.createString("AttributeName"), ops.createString(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString()));
-        builder.put(ops.createString("minValue"), ops.createDouble(minValue));
-        builder.put(ops.createString("maxValue"), ops.createDouble(maxValue));
-        if (!modifier.getId().equals(Util.NIL_UUID)) {
-            builder.put(ops.createString("UUID"), ops.createString(modifier.getId().toString()));
-        }
-        return ops.createMap(builder.build());
+    public AttributeOptionEntry createScaledModifier(double difficultyScale) {
+        return getModifier().getId().equals(Util.NIL_UUID) ? copy(difficultyScale) : this;
     }
 
 
@@ -89,24 +95,11 @@ public class AttributeOptionEntry {
         return Component.translatable(translationKey, I18n.get(attribute.getDescriptionId()), amount).withStyle(ChatFormatting.GRAY);
     }
 
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        Optional<String> name = dynamic.get("Name").asString().result();
-        UUID uuid = dynamic.get("UUID").asString().result().map(UUID::fromString).orElse(Util.NIL_UUID);
-        double amount = dynamic.get("Amount").asDouble(0.0);
-        int op = dynamic.get("Operation").asInt(0);
-        if (name.isPresent()) {
-            modifier = new AttributeModifier(uuid, name.get(), amount, AttributeModifier.Operation.fromValue(op));
-        } else {
-            MKWeapons.LOGGER.error("Failed to decode attribute modifier {} : {}", name, dynamic);
-        }
-        minValue = dynamic.get("minValue").asDouble(1.0);
-        maxValue = dynamic.get("maxValue").asDouble(1.0);
-        Optional<String> attributeName = dynamic.get("AttributeName").asString().result();
-        if (attributeName.isPresent()) {
-            this.attribute = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(attributeName.get()));
-        } else {
-            MKWeapons.LOGGER.error("Failed to decode attribute name {}", dynamic);
-        }
+    public <D> D serialize(DynamicOps<D> ops) {
+        return CODEC.encodeStart(ops, this).getOrThrow(false, MKWeapons.LOGGER::error);
     }
 
+    public static <D> AttributeOptionEntry deserialize(Dynamic<D> dynamic) {
+        return CODEC.parse(dynamic).getOrThrow(false, MKWeapons.LOGGER::error);
+    }
 }

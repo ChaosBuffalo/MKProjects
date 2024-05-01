@@ -1,4 +1,5 @@
 {
+  "name": "mkultra:necrotide_golem",
   "slotItems": {
     "mkweapons:hands": [
       {
@@ -6,148 +7,147 @@
           "lootSlot": "mkweapons:hands",
           "options": [
             {
+              "type": "mkweapons:accessory_effect",
               "effects": [
                 {
-                  "ability": "mkultra:ability.engulfing_darkness",
-                  "attributes": {
+                  "type": "mkweapons:accessory_effect.on_hit_ability",
+                  "value": {
+                    "ability": "mkultra:ability.engulfing_darkness",
                     "proc_chance": {
                       "max": 0.15,
-                      "min": 0.05,
-                      "value": 0.05
+                      "min": 0.05
                     },
                     "skill_level": {
                       "max": 100.0,
-                      "min": 0.0,
-                      "value": 0.0
+                      "min": 0.0
                     }
-                  },
-                  "itemEffectType": "mkweapons:accessory_effect.on_hit_ability"
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:accessory_effect",
-              "slotName": "mkweapons:randomization.effect",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 6.0,
-                  "AttributeName": "minecraft:generic.max_health",
-                  "Name": "mkultra:necrotide_golem",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.max_health",
                   "maxValue": 30.0,
-                  "minValue": 6.0
+                  "minValue": 6.0,
+                  "modifier": {
+                    "amount": 6.0,
+                    "name": "mkultra:necrotide_golem",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 6.0,
-                  "AttributeName": "mkcore:max_mana",
-                  "Name": "mkultra:necrotide_golem",
-                  "Operation": 0,
+                  "attribute": "mkcore:max_mana",
                   "maxValue": 30.0,
-                  "minValue": 6.0
+                  "minValue": 6.0,
+                  "modifier": {
+                    "amount": 6.0,
+                    "name": "mkultra:necrotide_golem",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.5,
-                  "AttributeName": "mkcore:mana_regen",
-                  "Name": "mkultra:necrotide_golem",
-                  "Operation": 0,
+                  "attribute": "mkcore:mana_regen",
                   "maxValue": 4.0,
-                  "minValue": 0.5
+                  "minValue": 0.5,
+                  "modifier": {
+                    "amount": 0.5,
+                    "name": "mkultra:necrotide_golem",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "mkcore:necromancy",
-                  "Name": "mkultra:necrotide_golem",
-                  "Operation": 0,
+                  "attribute": "mkcore:necromancy",
                   "maxValue": 10.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:necrotide_golem",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "mkcore:shadow_damage",
-                  "Name": "mkultra:necrotide_golem",
-                  "Operation": 0,
+                  "attribute": "mkcore:shadow_damage",
                   "maxValue": 8.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:necrotide_golem",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.05,
-                  "AttributeName": "mkcore:shadow_resistance",
-                  "Name": "mkultra:necrotide_golem",
-                  "Operation": 0,
+                  "attribute": "mkcore:shadow_resistance",
                   "maxValue": 0.2,
-                  "minValue": 0.05
+                  "minValue": 0.05,
+                  "modifier": {
+                    "amount": 0.05,
+                    "name": "mkultra:necrotide_golem",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             }
           ],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkultra:corrupted_gauntlets\", Count: 1b}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkultra:corrupted_gauntlets"
+              }
             },
             {
-              "itemStack": "{id: \"mkultra:necrotide_band\", Count: 1b}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkultra:necrotide_band"
+              }
             }
           ],
           "templates": [
             {
               "template": {
+                "name": "mkultra:corrupted_gauntlets_crit",
                 "slots": [
                   "mkweapons:randomization.effect",
                   "mkweapons:randomization.attributes",
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:corrupted_gauntlets_crit"
-              },
-              "weight": 1.0
+                ]
+              }
             },
             {
               "template": {
+                "name": "mkultra:corrupted_gauntlets",
                 "slots": [
                   "mkweapons:randomization.effect",
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:corrupted_gauntlets"
+                ]
               },
               "weight": 10.0
             }
@@ -162,138 +162,131 @@
           "lootSlot": "mkweapons:rings",
           "options": [
             {
+              "type": "mkweapons:accessory_effect",
               "effects": [
                 {
-                  "attributes": {
-                    "chance": {
-                      "max": 0.25,
-                      "min": 0.05,
-                      "value": 0.05
-                    },
-                    "percentage": {
-                      "max": 1.0,
-                      "min": 0.10000000149011612,
-                      "value": 0.1
-                    }
+                  "type": "mkweapons:accessory_effect.restore_mana",
+                  "chance": {
+                    "max": 0.25,
+                    "min": 0.05
                   },
-                  "itemEffectType": "mkweapons:accessory_effect.restore_mana"
+                  "percentage": {
+                    "max": 1.0,
+                    "min": 0.1
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:accessory_effect",
-              "slotName": "mkweapons:randomization.effect",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 6.0,
-                  "AttributeName": "minecraft:generic.max_health",
-                  "Name": "mkultra:necrotide_golem",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.max_health",
                   "maxValue": 30.0,
-                  "minValue": 6.0
+                  "minValue": 6.0,
+                  "modifier": {
+                    "amount": 6.0,
+                    "name": "mkultra:necrotide_golem",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 6.0,
-                  "AttributeName": "mkcore:max_mana",
-                  "Name": "mkultra:necrotide_golem",
-                  "Operation": 0,
+                  "attribute": "mkcore:max_mana",
                   "maxValue": 30.0,
-                  "minValue": 6.0
+                  "minValue": 6.0,
+                  "modifier": {
+                    "amount": 6.0,
+                    "name": "mkultra:necrotide_golem",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.5,
-                  "AttributeName": "mkcore:mana_regen",
-                  "Name": "mkultra:necrotide_golem",
-                  "Operation": 0,
+                  "attribute": "mkcore:mana_regen",
                   "maxValue": 4.0,
-                  "minValue": 0.5
+                  "minValue": 0.5,
+                  "modifier": {
+                    "amount": 0.5,
+                    "name": "mkultra:necrotide_golem",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "mkcore:necromancy",
-                  "Name": "mkultra:necrotide_golem",
-                  "Operation": 0,
+                  "attribute": "mkcore:necromancy",
                   "maxValue": 10.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:necrotide_golem",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "mkcore:shadow_damage",
-                  "Name": "mkultra:necrotide_golem",
-                  "Operation": 0,
+                  "attribute": "mkcore:shadow_damage",
                   "maxValue": 8.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:necrotide_golem",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.05,
-                  "AttributeName": "mkcore:shadow_resistance",
-                  "Name": "mkultra:necrotide_golem",
-                  "Operation": 0,
+                  "attribute": "mkcore:shadow_resistance",
                   "maxValue": 0.2,
-                  "minValue": 0.05
+                  "minValue": 0.05,
+                  "modifier": {
+                    "amount": 0.05,
+                    "name": "mkultra:necrotide_golem",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             }
           ],
           "potentialItems": [],
           "templates": [
             {
               "template": {
+                "name": "mkultra:necrotide_band_crit",
                 "slots": [
                   "mkweapons:randomization.effect",
                   "mkweapons:randomization.attributes",
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:necrotide_band_crit"
-              },
-              "weight": 1.0
+                ]
+              }
             },
             {
               "template": {
+                "name": "mkultra:necrotide_band",
                 "slots": [
                   "mkweapons:randomization.effect",
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:necrotide_band"
+                ]
               },
               "weight": 10.0
             }

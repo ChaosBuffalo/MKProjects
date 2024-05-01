@@ -6,74 +6,64 @@ import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.EntityTargetingAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.serialization.attributes.ScalableDoubleAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.ScalableFloatAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.ScalableDouble;
+import com.chaosbuffalo.mkcore.serialization.attributes.ScalableFloat;
 import com.chaosbuffalo.mkweapons.MKWeapons;
+import com.chaosbuffalo.mkweapons.items.effects.IDifficultyAwareEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.Lazy;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class OnMeleeProcEffect extends BaseAccessoryEffect {
-    protected ScalableDoubleAttribute procChance = new ScalableDoubleAttribute("proc_chance", 0.05, 0.05);
+public class OnMeleeProcEffect extends BaseAccessoryEffect implements IDifficultyAwareEffect {
+    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "accessory_effect.on_hit_ability");
+    public static final Codec<OnMeleeProcEffect> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
+            RecordCodecBuilder.<OnMeleeProcEffect>mapCodec(builder -> {
+                return builder.group(
+                        ScalableDouble.CODEC.fieldOf("proc_chance").forGetter(i -> i.procChance),
+                        ScalableFloat.CODEC.fieldOf("skill_level").forGetter(i -> i.skillLevel),
+                        MKCoreRegistry.ABILITIES.getCodec().comapFlatMap(ability -> {
+                            if (ability instanceof EntityTargetingAbility targetingAbility) {
+                                return DataResult.success(targetingAbility);
+                            }
+                            return DataResult.error(() -> "Ability " + ability + " is not an EntityTargetingAbility");
+                        }, Function.identity()).fieldOf("ability").forGetter(i -> i.abilitySupplier.get())
+                ).apply(builder, OnMeleeProcEffect::new);
+            }).codec());
 
-    protected ScalableFloatAttribute skillLevel = new ScalableFloatAttribute("skill_level", 0.0f, 0.0f);
+
+    protected final ScalableDouble procChance;
+    protected final ScalableFloat skillLevel;
     @Nonnull
-    private Supplier<? extends EntityTargetingAbility> abilitySupplier;
+    private final Supplier<? extends EntityTargetingAbility> abilitySupplier;
 
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID,
-            "accessory_effect.on_hit_ability");
+    private OnMeleeProcEffect(ScalableDouble procChance, ScalableFloat skillLevel, EntityTargetingAbility targetingAbility) {
+        super(NAME, ChatFormatting.GOLD);
+        this.procChance = procChance;
+        this.skillLevel = skillLevel;
+        abilitySupplier = () -> targetingAbility;
+    }
 
     public OnMeleeProcEffect(double procChanceMin, double procChanceMax, float skillLevelMin, float skillLevelMax,
                              @Nonnull Supplier<? extends EntityTargetingAbility> abilitySupplier) {
-        this();
-        this.procChance.setValue(procChanceMin);
-        this.procChance.setMin(procChanceMin);
-        this.procChance.setMax(procChanceMax);
-        this.skillLevel.setMin(skillLevelMin);
-        this.skillLevel.setMax(skillLevelMax);
-        this.skillLevel.setValue(skillLevelMin);
-        this.abilitySupplier = abilitySupplier;
-    }
-
-    public OnMeleeProcEffect() {
         super(NAME, ChatFormatting.GOLD);
-        addAttributes(procChance, skillLevel);
-        abilitySupplier = () -> null;
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        dynamic.get("ability").asString().result()
-                .ifPresent(abilityName -> {
-                    MKAbility ability = MKCoreRegistry.ABILITIES.getValue(new ResourceLocation(abilityName));
-                    if (ability instanceof EntityTargetingAbility entAbility) {
-                        abilitySupplier = () -> entAbility;
-                    }
-                });
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        if (abilitySupplier.get() != null) {
-            builder.put(ops.createString("ability"),
-                    ops.createString(abilitySupplier.get().getAbilityId().toString()));
-        }
+        this.procChance = new ScalableDouble(procChanceMin, procChanceMax);
+        this.skillLevel = new ScalableFloat(skillLevelMin, skillLevelMax);
+        this.abilitySupplier = abilitySupplier;
     }
 
     protected AbilityContext createAbilityContext(IMKEntityData casterData) {
@@ -110,5 +100,11 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect {
                 });
             }
         }
+    }
+
+    @Override
+    public void tuneEffect(double difficultyPercentage) {
+        procChance.scale(difficultyPercentage);
+        skillLevel.scale(difficultyPercentage);
     }
 }

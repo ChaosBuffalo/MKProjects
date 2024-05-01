@@ -7,9 +7,7 @@ import com.chaosbuffalo.mkcore.network.ResetAttackSwingPacket;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -23,40 +21,19 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class DoubleStrikeMeleeWeaponEffect extends BaseMeleeWeaponEffect {
-
-    private double chance;
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.double_strike");
+    public static final Codec<DoubleStrikeMeleeWeaponEffect> CODEC = Codec.DOUBLE.xmap(DoubleStrikeMeleeWeaponEffect::new, DoubleStrikeMeleeWeaponEffect::getChance);
+
+    private final double chance;
 
     public DoubleStrikeMeleeWeaponEffect(double chance) {
-        this();
-        this.chance = chance;
-    }
-
-    public DoubleStrikeMeleeWeaponEffect() {
         super(NAME, ChatFormatting.DARK_AQUA);
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        setChance(dynamic.get("chance").asDouble(0.05));
+        this.chance = chance;
     }
 
     public double getChance() {
         return chance;
     }
-
-    public void setChance(double chance) {
-        this.chance = chance;
-    }
-
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("chance"), ops.createDouble(getChance()));
-    }
-
 
     @Override
     public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
