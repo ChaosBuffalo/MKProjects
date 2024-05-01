@@ -16,7 +16,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
@@ -27,24 +26,14 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class NpcDefinition {
-    private ResourceLocation entityType;
-    private final ResourceLocation definitionName;
-    private final ResourceLocation parentName;
-    public static final NpcDefinitionOption INVALID_OPTION = new InvalidOption();
-    private NpcDefinition parent;
-    private final Map<ResourceLocation, NpcDefinitionOption> options;
-    private static final List<NpcDefinitionOption.ApplyOrder> orders = new ArrayList<>();
     private static final UUID HEALTH_SCALING_UUID = UUID.fromString("3508a0ad-a2d5-40f2-8ce7-110401cc1a2c");
 
-    static {
-        orders.add(NpcDefinitionOption.ApplyOrder.EARLY);
-        orders.add(NpcDefinitionOption.ApplyOrder.MIDDLE);
-        orders.add(NpcDefinitionOption.ApplyOrder.LATE);
-    }
+    private final ResourceLocation definitionName;
+    private final ResourceLocation parentName;
+    private ResourceLocation entityType;
+    private NpcDefinition parent;
+    private final Map<ResourceLocation, NpcDefinitionOption> options;
 
-    boolean hasParentName() {
-        return parentName != null;
-    }
 
     public NpcDefinition(ResourceLocation definitionName, ResourceLocation entityType, ResourceLocation parentName) {
         this.definitionName = definitionName;
@@ -53,29 +42,24 @@ public class NpcDefinition {
         this.options = new HashMap<>();
     }
 
+    public NpcDefinition(ResourceLocation definitionName, ResourceLocation entityType) {
+        this(definitionName, entityType, null);
+    }
 
-    public boolean isNotable() {
-        if (hasOption(NotableOption.NAME)) {
-            NotableOption option = (NotableOption) getOption(NotableOption.NAME);
-            return option.getValue();
-        }
-        return false;
+    public ResourceLocation getDefinitionName() {
+        return definitionName;
+    }
+
+    boolean hasParentName() {
+        return parentName != null;
+    }
+
+    public ResourceLocation getParentName() {
+        return parentName;
     }
 
     public boolean hasParent() {
         return parent != null;
-    }
-
-    public boolean isWorldPermanent() {
-        for (NpcDefinitionOption option : options.values()) {
-            if (option instanceof WorldPermanentOption) {
-                return true;
-            }
-        }
-        if (hasParent()) {
-            return getParent().isWorldPermanent();
-        }
-        return false;
     }
 
     public NpcDefinition getParent() {
@@ -96,6 +80,10 @@ public class NpcDefinition {
         }
     }
 
+    public ResourceLocation getEntityType() {
+        return entityType;
+    }
+
     public NpcDefinition getAncestor() {
         if (!hasParent()) {
             return this;
@@ -104,25 +92,13 @@ public class NpcDefinition {
         }
     }
 
-    public ResourceLocation getParentName() {
-        return parentName;
-    }
-
-    public ResourceLocation getDefinitionName() {
-        return definitionName;
-    }
-
-    public boolean hasOption(ResourceLocation optionName) {
-        return options.containsKey(optionName) || (hasParent() && parent.hasOption(optionName));
-    }
-
+    @Nullable
     public NpcDefinitionOption getOption(ResourceLocation optionName) {
-        if (!hasOption(optionName)) {
-            return null;
+        NpcDefinitionOption localOption = options.get(optionName);
+        if (localOption != null) {
+            return localOption;
         }
-        if (options.containsKey(optionName)) {
-            return options.get(optionName);
-        } else if (hasParent()) {
+        else if (hasParent()) {
             return getParent().getOption(optionName);
         }
         return null;
@@ -132,9 +108,15 @@ public class NpcDefinition {
         options.put(option.getName(), option);
     }
 
+    public boolean isNotable() {
+        if (getOption(NotableOption.NAME) instanceof NotableOption option) {
+            return option.isNotable();
+        }
+        return false;
+    }
+
     public ResourceLocation getFactionName() {
-        if (hasOption(FactionOption.NAME)) {
-            FactionOption option = (FactionOption) getOption(FactionOption.NAME);
+        if (getOption(FactionOption.NAME) instanceof FactionOption option) {
             return option.getValue();
         }
         return MKFaction.INVALID_FACTION;
@@ -143,8 +125,8 @@ public class NpcDefinition {
     @Nullable
     public String getDisplayName() {
         for (NpcDefinitionOption option : options.values()) {
-            if (option instanceof INameProvider) {
-                return ((INameProvider) option).getDisplayName();
+            if (option instanceof INameProvider provider) {
+                return provider.getDisplayName();
             }
         }
         if (hasParent()) {
@@ -154,15 +136,10 @@ public class NpcDefinition {
         }
     }
 
-
-    public ResourceLocation getEntityType() {
-        return entityType;
-    }
-
     public MutableComponent getNameForEntity(Level world, UUID spawnId) {
         for (NpcDefinitionOption option : options.values()) {
-            if (option instanceof INameProvider) {
-                return ((INameProvider) option).getEntityName(this, world, spawnId);
+            if (option instanceof INameProvider provider) {
+                return provider.getEntityName(this, world, spawnId);
             }
         }
         if (hasParent()) {
@@ -173,14 +150,12 @@ public class NpcDefinition {
     }
 
     public void applyDefinition(Entity entity, double difficultyValue) {
-        for (NpcDefinitionOption.ApplyOrder order : orders) {
-            apply(entity, order, difficultyValue);
-        }
+        apply(entity, NpcDefinitionOption.ApplyOrder.EARLY, difficultyValue);
+        apply(entity, NpcDefinitionOption.ApplyOrder.MIDDLE, difficultyValue);
+        apply(entity, NpcDefinitionOption.ApplyOrder.LATE, difficultyValue);
         applyDifficultyScaling(entity, difficultyValue);
 
         //We need to apply equipment before the tick so that the following operations reflect correct values
-
-
         // hack to make sure we're at our new max health
         if (entity instanceof LivingEntity living) {
             living.setHealth(living.getMaxHealth());
@@ -193,10 +168,9 @@ public class NpcDefinition {
     }
 
     private void applyDifficultyScaling(Entity entity, double difficultyValue) {
-        if (entity instanceof LivingEntity) {
+        if (entity instanceof LivingEntity living) {
             double diffScale = difficultyValue / GameConstants.SKILL_POINTS_PER_LEVEL;
-            AttributeMap manager = ((LivingEntity) entity).getAttributes();
-            AttributeInstance inst = manager.getInstance(Attributes.MAX_HEALTH);
+            AttributeInstance inst = living.getAttribute(Attributes.MAX_HEALTH);
             if (inst != null) {
                 inst.addTransientModifier(new AttributeModifier(
                         HEALTH_SCALING_UUID, "Health Difficulty Scaling",
@@ -238,27 +212,16 @@ public class NpcDefinition {
         D type = getDynamicType(ops);
         return ops.mergeToMap(type, ImmutableMap.of(
                         ops.createString("options"),
-                        ops.createList(options.values().stream().map(entry -> entry.serialize(ops)))
+                        ops.createList(options.values().stream().flatMap(entry -> NpcDefinitionOption.CODEC.encodeStart(ops, entry).resultOrPartial(MKNpc.LOGGER::error).stream()))
                 )
         ).result().orElse(type);
-
     }
 
     public <D> void deserialize(Dynamic<D> dynamic) {
-        List<NpcDefinitionOption> newOptions = dynamic.get("options").asList(valueD -> {
-            ResourceLocation type = NpcDefinitionOption.getType(valueD);
-            NpcDefinitionOption opt = NpcDefinitionManager.getNpcOption(type);
-            if (opt != null) {
-                opt.deserialize(valueD);
-            }
-            return opt != null ? opt : INVALID_OPTION;
-        });
         options.clear();
-        for (NpcDefinitionOption option : newOptions) {
-            if (!option.getName().equals(NpcDefinitionOption.INVALID_OPTION) && !option.equals(INVALID_OPTION)) {
-                options.put(option.getName(), option);
-            }
-        }
+        dynamic.get("options").asStream().forEach(x -> {
+            NpcDefinitionOption.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(o -> options.put(o.getName(), o));
+        });
     }
 
     public static <D> NpcDefinition deserializeDefinitionFromDynamic(ResourceLocation name, Dynamic<D> dynamic) {

@@ -2,49 +2,48 @@
   "entityType": "mkultra:hyborean_skeleton",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "burning_skeleton"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 250.0
         },
         {
-          "attributeName": "minecraft:generic.armor",
+          "attribute": "minecraft:generic.armor",
           "value": 10.0
         },
         {
-          "attributeName": "minecraft:generic.attack_damage",
+          "attribute": "minecraft:generic.attack_damage",
           "value": 5.0
         },
         {
-          "attributeName": "mkcore:bleed_resistance",
+          "attribute": "mkcore:bleed_resistance",
           "value": 1.25
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 250.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 2.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "Burning Revenant"
     },
     {
-      "dropChances": 1,
+      "type": "mknpc:extra_loot",
       "lootOptions": [
         {
           "lootSlotName": "mkweapons:main_hand",
-          "lootSlotTier": "mkultra:burning_skeleton",
-          "weight": 1.0
+          "lootSlotTier": "mkultra:burning_skeleton"
         },
         {
           "lootSlotName": "mkweapons:rings",
@@ -57,113 +56,113 @@
           "weight": 2.0
         }
       ],
-      "noLootChance": 0.1,
-      "noLootIncrease": 0.0,
-      "optionType": "mknpc:extra_loot"
+      "noLootChance": 0.1
     },
     {
-      "optionType": "mknpc:equipment",
-      "slotOptions": {
+      "type": "mknpc:equipment",
+      "value": {
         "mainhand": [
           {
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:dagger_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ]
       }
     },
     {
-      "optionType": "mknpc:notable",
+      "type": "mknpc:notable",
       "value": true
     },
     {
-      "optionType": "mknpc:boss_stage",
-      "stages": [
+      "type": "mknpc:boss_stage",
+      "value": [
         {
           "options": [
             {
-              "optionType": "mknpc:temp_abilities",
-              "options": [
+              "type": "mknpc:temp_abilities",
+              "value": [
                 {
-                  "abilityName": "mkultra:ability.fire_armor",
+                  "abilityId": "mkultra:ability.fire_armor",
                   "chance": 1.0,
                   "priority": 3
                 },
                 {
-                  "abilityName": "mkultra:ability.fireball",
+                  "abilityId": "mkultra:ability.fireball",
                   "chance": 1.0,
                   "priority": 2
                 },
                 {
-                  "abilityName": "mkultra:ability.wrath_beam",
+                  "abilityId": "mkultra:ability.wrath_beam",
                   "chance": 1.0,
                   "priority": 1
                 }
               ]
             }
-          ],
-          "particleMode": 0
+          ]
         },
         {
           "options": [
             {
-              "optionType": "mknpc:temp_abilities",
-              "options": [
+              "type": "mknpc:temp_abilities",
+              "value": [
                 {
-                  "abilityName": "mkultra:ability.fireball",
+                  "abilityId": "mkultra:ability.fireball",
                   "chance": 1.0,
                   "priority": 3
                 },
                 {
-                  "abilityName": "mkultra:ability.wrath_beam_flurry",
+                  "abilityId": "mkultra:ability.wrath_beam_flurry",
                   "chance": 1.0,
                   "priority": 1
                 }
               ]
             }
           ],
-          "particleMode": 1,
+          "particleMode": "line_height",
           "transitionParticles": "mkultra:wrath_skeleton_transition",
           "transitionSound": "mkultra:spell_dark_8"
         }
       ]
     },
     {
-      "major_skills": [],
+      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",
         "mkcore:conjuration",
         "mkcore:evocation"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 1.0
     },
     {
-      "optionType": "mknpc:experience",
+      "type": "mknpc:experience",
       "value": 50
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkultra:hyborean_dead"
     },
     {
-      "optionType": "mknpc:particle_effects",
+      "type": "mknpc:particle_effects",
       "value": [
         {
           "type": "mkcore:effect_instance.bone",
-          "attributes": {
-            "boneName": "head",
-            "particleAnimName": "mkultra:burning_skeleton_head"
-          },
-          "instanceUUID": "3e7496f1-f5bf-45e6-b8e5-64192633ae9f"
+          "boneName": "head",
+          "instanceUUID": "3e7496f1-f5bf-45e6-b8e5-64192633ae9f",
+          "particleAnimName": "mkultra:burning_skeleton_head"
         }
       ]
     }

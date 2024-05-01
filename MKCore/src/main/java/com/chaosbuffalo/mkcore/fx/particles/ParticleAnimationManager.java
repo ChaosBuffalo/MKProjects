@@ -11,9 +11,11 @@ import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ParticleEffectInsta
 import com.chaosbuffalo.mkcore.fx.particles.spawn_patterns.*;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.ParticleAnimationsSyncPacket;
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.particles.ParticleType;
@@ -74,7 +76,9 @@ public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
     public static final Map<ResourceLocation, TrackDeserializerEntry> TRACK_DESERIALIZERS = new HashMap<>();
     public static final Map<ResourceLocation, ParticleAnimation> ANIMATIONS = new HashMap<>();
     public static final Map<ResourceLocation, Supplier<ParticleSpawnPattern>> SPAWN_PATTERN_DESERIALIZERS = new HashMap<>();
-    public static final Map<ResourceLocation, Supplier<ParticleEffectInstance>> EFFECT_INSTANCE_DESERIALIZERS = new HashMap<>();
+    public static final Map<ResourceLocation, Codec<? extends ParticleEffectInstance>> EFFECT_INSTANCE_CODEC_MAP = new HashMap<>();
+    public static final Codec<ParticleEffectInstance> EFFECT_INSTANCE_CODEC =
+            CommonCodecs.createMapBackedDispatch(ResourceLocation.CODEC, EFFECT_INSTANCE_CODEC_MAP, ParticleEffectInstance::getTypeName);
 
     public ParticleAnimationManager() {
         super(GSON, DEFINITION_FOLDER);
@@ -122,11 +126,11 @@ public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
         putSpawnPatternDeserializer(SinglePositionSpawnPattern.TYPE, SinglePositionSpawnPattern::new);
         putSpawnPatternDeserializer(AdvancedLineSpawnPattern.TYPE, AdvancedLineSpawnPattern::new);
 
-        putEffectInstanceDeserializer(BoneEffectInstance.TYPE, BoneEffectInstance::new);
+        putEffectInstanceDeserializer(BoneEffectInstance.TYPE, BoneEffectInstance.CODEC);
     }
 
-    public static void putEffectInstanceDeserializer(ResourceLocation name, Supplier<ParticleEffectInstance> supplier) {
-        EFFECT_INSTANCE_DESERIALIZERS.put(name, supplier);
+    public static void putEffectInstanceDeserializer(ResourceLocation name, Codec<? extends ParticleEffectInstance> codec) {
+        EFFECT_INSTANCE_CODEC_MAP.put(name, codec);
     }
 
     public static void putSpawnPatternDeserializer(ResourceLocation name, Supplier<ParticleSpawnPattern> supplier) {
@@ -141,15 +145,6 @@ public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
     public static List<ResourceLocation> getTypeNamesForTrackType(ParticleAnimationTrack.AnimationTrackType trackType) {
         return TRACK_DESERIALIZERS.entrySet().stream().filter(x -> x.getValue().trackType == trackType)
                 .map(Map.Entry::getKey).collect(Collectors.toList());
-    }
-
-    @Nullable
-    public static ParticleEffectInstance getEffectInstance(ResourceLocation name) {
-        if (!EFFECT_INSTANCE_DESERIALIZERS.containsKey(name)) {
-            MKCore.LOGGER.error("Failed to deserialize effect instance {}", name);
-            return null;
-        }
-        return EFFECT_INSTANCE_DESERIALIZERS.get(name).get();
     }
 
     @Nullable

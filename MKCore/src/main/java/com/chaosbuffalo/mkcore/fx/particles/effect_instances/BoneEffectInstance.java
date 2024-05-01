@@ -4,7 +4,9 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCSkeleton;
-import com.chaosbuffalo.mkcore.serialization.attributes.StringAttribute;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -14,25 +16,26 @@ import java.util.UUID;
 
 public class BoneEffectInstance extends ParticleEffectInstance {
     public static final ResourceLocation TYPE = MKCore.makeRL("effect_instance.bone");
-    protected final StringAttribute boneName = new StringAttribute("boneName", BipedSkeleton.ROOT_BONE_NAME);
+    public static final Codec<BoneEffectInstance> CODEC = RecordCodecBuilder.<BoneEffectInstance>mapCodec(builder -> {
+        return builder.group(
+                UUIDUtil.STRING_CODEC.fieldOf("instanceUUID").forGetter(ParticleEffectInstance::getInstanceUUID),
+                ResourceLocation.CODEC.fieldOf("particleAnimName").forGetter(ParticleEffectInstance::getParticleAnimName),
+                Codec.STRING.optionalFieldOf("boneName", BipedSkeleton.ROOT_BONE_NAME).forGetter(i -> i.boneName)
+        ).apply(builder, BoneEffectInstance::new);
+    }).codec();
 
-    public BoneEffectInstance() {
-        super(TYPE);
-        addAttribute(boneName);
-    }
+    private final String boneName;
 
-    public BoneEffectInstance(UUID instanceUUID, String boneName, ResourceLocation particleName) {
+    public BoneEffectInstance(UUID instanceUUID, ResourceLocation particleName, String boneName) {
         super(TYPE, instanceUUID);
-        addAttribute(this.boneName);
-        this.boneName.setValue(boneName);
-        this.particleAnimName.setValue(particleName);
+        this.particleAnimName = particleName;
+        this.boneName = boneName;
     }
 
     @Override
     public void update(Entity entity, MCSkeleton skeleton, float partialTicks, Vec3 offset) {
-        if (entity instanceof LivingEntity) {
-            MCBone.getPositionOfBoneInWorld((LivingEntity) entity, skeleton,
-                    partialTicks, offset, boneName.getValue()).ifPresent(x ->
+        if (entity instanceof LivingEntity living) {
+            MCBone.getPositionOfBoneInWorld(living, skeleton, partialTicks, offset, boneName).ifPresent(x ->
                     getAnimation().ifPresent(anim -> anim.spawn(entity.getCommandSenderWorld(), x, null)));
         }
     }

@@ -8,9 +8,8 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.option_entries.FactionNameOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INameEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -18,17 +17,26 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class FactionNameOption extends WorldPermanentOption implements INameProvider {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "faction_name");
+    public static final Codec<FactionNameOption> CODEC = RecordCodecBuilder.<FactionNameOption>mapCodec(builder -> {
+        return builder.group(
+                Codec.STRING.optionalFieldOf("title").forGetter(i -> Optional.ofNullable(i.title)),
+                Codec.BOOL.optionalFieldOf("hasLastName", false).forGetter(i -> i.hasLastName)
+        ).apply(builder, FactionNameOption::new);
+    }).codec();
 
     @Nullable
     private String title;
     private boolean hasLastName;
+
+    private FactionNameOption(Optional<String> title, boolean hasLastName) {
+        super(NAME, ApplyOrder.LATE);
+        this.title = title.orElse(null);
+        this.hasLastName = hasLastName;
+    }
 
     public FactionNameOption() {
         super(NAME, ApplyOrder.LATE);
@@ -78,13 +86,12 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
         return name;
     }
 
-
     @Nullable
     private static <T> T getRandomEntry(RandomSource random, Set<T> set) {
-        List<T> list = new ArrayList<>(set);
-        if (list.size() <= 0) {
+        if (set.isEmpty()) {
             return null;
         }
+        List<T> list = new ArrayList<>(set);
         return list.get(random.nextInt(list.size()));
     }
 
@@ -112,19 +119,5 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
             }
         }
         return new FactionNameOptionEntry(name);
-    }
-
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        this.title = dynamic.get("title").asString(null);
-        this.hasLastName = dynamic.get("hasLastName").asBoolean(false);
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("title"), ops.createString(title));
-        builder.put(ops.createString("hasLastName"), ops.createBoolean(hasLastName));
     }
 }

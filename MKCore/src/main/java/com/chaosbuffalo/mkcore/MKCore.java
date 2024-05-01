@@ -77,12 +77,12 @@ public class MKCore {
         particleAnimationManager = new ParticleAnimationManager();
 
         MKConfig.init();
+        AbilityManager.setupDeserializers();
+        ParticleAnimationManager.setupDeserializers();
     }
 
     private void setup(final FMLCommonSetupEvent event) {
         PacketHandler.setupHandler();
-        ParticleAnimationManager.setupDeserializers();
-        AbilityManager.setupDeserializers();
     }
 
     private void loadComplete(final FMLLoadCompleteEvent event) {

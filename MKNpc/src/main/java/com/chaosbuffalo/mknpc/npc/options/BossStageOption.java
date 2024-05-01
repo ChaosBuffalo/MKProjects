@@ -4,9 +4,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
@@ -15,13 +13,18 @@ import java.util.List;
 
 public class BossStageOption extends NpcDefinitionOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "boss_stage");
+    public static final Codec<BossStageOption> CODEC = BossStage.CODEC.listOf().xmap(BossStageOption::new, i -> i.stages);
+
     private final List<BossStage> stages = new ArrayList<>();
 
+    public BossStageOption(List<BossStage> stages) {
+        this();
+        this.stages.addAll(stages);
+    }
 
     public BossStageOption() {
         super(NAME, ApplyOrder.MIDDLE);
     }
-
 
     public void addStage(BossStage stage) {
         this.stages.add(stage);
@@ -33,28 +36,12 @@ public class BossStageOption extends NpcDefinitionOption {
     }
 
     @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        stages.clear();
-        stages.addAll(dynamic.get("stages").asList(x -> {
-            BossStage newStage = new BossStage();
-            newStage.deserialize(x);
-            return newStage;
-        }));
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("stages"), ops.createList(stages.stream().map(x -> x.serialize(ops))));
-    }
-
-    @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
-        if (entity instanceof MKEntity) {
+        if (entity instanceof MKEntity mkEntity) {
             for (BossStage stage : stages) {
                 BossStage copy = stage.copy();
                 copy.setDefinition(definition);
-                ((MKEntity) entity).addBossStage(copy);
+                mkEntity.addBossStage(copy);
             }
         } else {
             MKNpc.LOGGER.warn("Failed to apply boss stage option {} is not an MKEntity", entity);

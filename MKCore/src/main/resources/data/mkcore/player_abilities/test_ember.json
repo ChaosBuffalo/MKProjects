@@ -1,9 +1,10 @@
 {
-  "cooldown": 80,
-  "manaCost": 6.0,
-  "castTime": 10,
   "attributes": {
-    "damage": 6.0,
-    "burnTime": 5
-  }
+    "burnTime": 5,
+    "casting_particles": "mkcore:fx.casting.empty",
+    "damage": 6.0
+  },
+  "castTime": 10,
+  "cooldown": 80,
+  "manaCost": 6.0
 }

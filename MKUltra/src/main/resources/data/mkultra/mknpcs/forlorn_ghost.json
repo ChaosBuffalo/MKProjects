@@ -2,36 +2,36 @@
   "entityType": "mkultra:human",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "ghost_1"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 100.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 100.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 3.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "Forlorn Ghost"
     },
     {
-      "optionType": "mknpc:notable",
+      "type": "mknpc:notable",
       "value": true
     },
     {
-      "major_skills": [],
+      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:hand_to_hand",
         "mkcore:one_hand_blunt",
@@ -41,7 +41,6 @@
         "mkcore:two_hand_pierce",
         "mkcore:two_hand_slash"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:arete",
         "mkcore:pankration",
@@ -49,17 +48,17 @@
       ]
     },
     {
+      "type": "mknpc:ghost",
       "armor_translucency": 0.7,
       "ghost_armor": true,
-      "optionType": "mknpc:ghost",
-      "value": 0.7
+      "ghost_translucency": 0.7
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 1.0
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkultra:see_of_solang"
     }
   ]

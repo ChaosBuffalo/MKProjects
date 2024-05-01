@@ -65,8 +65,8 @@ public class OnHitEffect extends MKEffect {
     protected void addParticles(IMKEntityData targetData) {
         targetData.getParticleEffectTracker().ifPresent(x -> {
             x.addParticleInstance(new BoneEffectInstance(effectUUID,
-                    targetData.getEntity().getMainArm() == HumanoidArm.RIGHT ? BipedSkeleton.RIGHT_HAND_BONE_NAME : BipedSkeleton.LEFT_HAND_BONE_NAME,
-                    particles));
+                    particles, targetData.getEntity().getMainArm() == HumanoidArm.RIGHT ? BipedSkeleton.RIGHT_HAND_BONE_NAME : BipedSkeleton.LEFT_HAND_BONE_NAME
+            ));
         });
     }
 

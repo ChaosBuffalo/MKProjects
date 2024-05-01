@@ -72,6 +72,7 @@ public class MKNpc {
         NpcDialogueEffectTypes.REGISTRY.register(modBus);
         NpcDialogueConditionTypes.REGISTRY.register(modBus);
         QuestRegistries.register(modBus);
+        NpcDefinitionManager.setupDeserializers();
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {

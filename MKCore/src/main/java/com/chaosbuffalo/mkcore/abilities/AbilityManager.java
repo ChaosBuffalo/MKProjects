@@ -8,10 +8,12 @@ import com.chaosbuffalo.mkcore.abilities.training.requirements.HasEntitlementReq
 import com.chaosbuffalo.mkcore.abilities.training.requirements.HeldItemRequirement;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.PlayerAbilitiesSyncPacket;
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.ResourceLocation;
@@ -23,7 +25,6 @@ import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +32,6 @@ public class AbilityManager extends SimpleJsonResourceReloadListener {
     public static final String DEFINITION_FOLDER = "player_abilities";
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-    public static final Map<ResourceLocation, AbilityTrainingRequirement.Deserializer> REQ_DESERIALIZERS = new HashMap<>();
 
     public AbilityManager() {
         super(GSON, DEFINITION_FOLDER);
@@ -53,14 +53,13 @@ public class AbilityManager extends SimpleJsonResourceReloadListener {
     }
 
     public static void setTrainingRequirementDeserializer(ResourceLocation name,
-                                                          AbilityTrainingRequirement.Deserializer supplier) {
-        REQ_DESERIALIZERS.put(name, supplier);
+                                                          Codec<? extends AbilityTrainingRequirement> codec) {
+        REQUIREMENT_CODEC_MAP.put(name, codec);
     }
 
-    @Nullable
-    public static AbilityTrainingRequirement.Deserializer getTrainingRequirementDeserializer(ResourceLocation name) {
-        return REQ_DESERIALIZERS.get(name);
-    }
+    private static final Map<ResourceLocation, Codec<? extends AbilityTrainingRequirement>> REQUIREMENT_CODEC_MAP = new HashMap<>();
+    public static final Codec<AbilityTrainingRequirement> TRAINING_REQUIREMENT_CODEC =
+            CommonCodecs.createMapBackedDispatch(ResourceLocation.CODEC, REQUIREMENT_CODEC_MAP, AbilityTrainingRequirement::getTypeName);
 
     @SubscribeEvent
     public void onDataPackSync(OnDatapackSyncEvent event) {
@@ -77,9 +76,9 @@ public class AbilityManager extends SimpleJsonResourceReloadListener {
     }
 
     public static void setupDeserializers() {
-        setTrainingRequirementDeserializer(ExperienceLevelRequirement.TYPE_NAME, ExperienceLevelRequirement::new);
-        setTrainingRequirementDeserializer(HasEntitlementRequirement.TYPE_NAME, HasEntitlementRequirement::new);
-        setTrainingRequirementDeserializer(HeldItemRequirement.TYPE_NAME, HeldItemRequirement::new);
+        setTrainingRequirementDeserializer(ExperienceLevelRequirement.TYPE_NAME, ExperienceLevelRequirement.CODEC);
+        setTrainingRequirementDeserializer(HasEntitlementRequirement.TYPE_NAME, HasEntitlementRequirement.CODEC);
+        setTrainingRequirementDeserializer(HeldItemRequirement.TYPE_NAME, HasEntitlementRequirement.CODEC);
     }
 
     private boolean parse(ResourceLocation loc, JsonObject json) {

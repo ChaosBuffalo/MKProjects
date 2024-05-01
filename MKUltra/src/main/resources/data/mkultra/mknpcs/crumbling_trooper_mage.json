@@ -2,93 +2,97 @@
   "entityType": "mkultra:zombified_piglin",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "zombie_pig_magus"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 30.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 30.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 1.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "Crumbling Trooper Mage"
     },
     {
+      "type": "mknpc:extra_loot",
       "dropChances": 2,
       "lootOptions": [
         {
           "lootSlotName": "mkweapons:items",
-          "lootSlotTier": "mkultra:zombie_trooper",
-          "weight": 1.0
+          "lootSlotTier": "mkultra:zombie_trooper"
         }
       ],
       "noLootChance": 0.1,
-      "noLootIncrease": 0.25,
-      "optionType": "mknpc:extra_loot"
+      "noLootIncrease": 0.25
     },
     {
-      "optionType": "mknpc:equipment",
-      "slotOptions": {
+      "type": "mknpc:equipment",
+      "value": {
         "mainhand": [
           {
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:dagger_stone\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:dagger_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ]
       }
     },
     {
-      "optionType": "mknpc:abilities",
-      "options": [
+      "type": "mknpc:abilities",
+      "value": [
         {
-          "abilityName": "mkultra:ability.fireball",
+          "abilityId": "mkultra:ability.fireball",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.ember",
+          "abilityId": "mkultra:ability.ember",
           "chance": 0.5,
           "priority": 2
         }
       ]
     },
     {
-      "major_skills": [],
+      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",
         "mkcore:conjuration",
         "mkcore:evocation"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 0.95
     },
     {
-      "optionType": "mknpc:experience",
+      "type": "mknpc:experience",
       "value": 10
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkultra:imperial_dead"
     }
   ]

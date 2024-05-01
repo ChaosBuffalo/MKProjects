@@ -2,124 +2,120 @@
   "entityType": "mkultra:orc",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "green_lady"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 400.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 400.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 10.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:dialogue",
+      "type": "mknpc:dialogue",
       "value": "mkultra:open_abilities"
     },
     {
-      "optionType": "mknpc:ability_trainings",
+      "type": "mknpc:ability_trainings",
       "value": [
         {
           "ability": "mkultra:ability.skin_like_wood",
-          "reqs": [
+          "requirements": [
             {
-              "attributes": {},
-              "entitlement": "mkultra:green_knight.tier_1",
-              "reqType": "mkcore:training_req.has_entitlement"
+              "type": "mkcore:training_req.has_entitlement",
+              "value": "mkultra:green_knight.tier_1"
             }
           ]
         },
         {
           "ability": "mkultra:ability.natures_remedy",
-          "reqs": [
+          "requirements": [
             {
-              "attributes": {},
-              "entitlement": "mkultra:green_knight.tier_1",
-              "reqType": "mkcore:training_req.has_entitlement"
+              "type": "mkcore:training_req.has_entitlement",
+              "value": "mkultra:green_knight.tier_1"
             }
           ]
         },
         {
           "ability": "mkultra:ability.spirit_bomb",
-          "reqs": [
+          "requirements": [
             {
-              "attributes": {},
-              "entitlement": "mkultra:green_knight.tier_2",
-              "reqType": "mkcore:training_req.has_entitlement"
+              "type": "mkcore:training_req.has_entitlement",
+              "value": "mkultra:green_knight.tier_2"
             }
           ]
         },
         {
           "ability": "mkultra:ability.cleansing_seed",
-          "reqs": [
+          "requirements": [
             {
-              "attributes": {},
-              "entitlement": "mkultra:green_knight.tier_2",
-              "reqType": "mkcore:training_req.has_entitlement"
+              "type": "mkcore:training_req.has_entitlement",
+              "value": "mkultra:green_knight.tier_2"
             }
           ]
         },
         {
           "ability": "mkultra:ability.explosive_growth",
-          "reqs": [
+          "requirements": [
             {
-              "attributes": {},
-              "entitlement": "mkultra:green_knight.tier_3",
-              "reqType": "mkcore:training_req.has_entitlement"
+              "type": "mkcore:training_req.has_entitlement",
+              "value": "mkultra:green_knight.tier_3"
             }
           ]
         }
       ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "Green Lady"
     },
     {
-      "optionType": "mknpc:abilities",
-      "options": [
+      "type": "mknpc:abilities",
+      "value": [
         {
-          "abilityName": "mkultra:ability.skin_like_wood",
+          "abilityId": "mkultra:ability.skin_like_wood",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.natures_remedy",
+          "abilityId": "mkultra:ability.natures_remedy",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.spirit_bomb",
+          "abilityId": "mkultra:ability.spirit_bomb",
           "chance": 1.0,
           "priority": 4
         },
         {
-          "abilityName": "mkultra:ability.natures_remedy",
+          "abilityId": "mkultra:ability.natures_remedy",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.cleansing_seed",
+          "abilityId": "mkultra:ability.cleansing_seed",
           "chance": 1.0,
           "priority": 5
         }
       ]
     },
     {
-      "optionType": "mknpc:notable",
+      "type": "mknpc:notable",
       "value": true
     },
     {
+      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:alteration",
         "mkcore:restoration"
@@ -129,25 +125,24 @@
         "mkcore:evocation",
         "mkcore:necromancy"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_blunt",
         "mkcore:two_hand_blunt"
       ]
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 1.1
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkultra:green_knights"
     },
     {
-      "offerings": [
+      "type": "mknpc:offer_quests",
+      "value": [
         "mkultra:intro_quest"
-      ],
-      "optionType": "mknpc:offer_quests"
+      ]
     }
   ]
 }

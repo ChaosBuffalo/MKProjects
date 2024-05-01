@@ -1,8 +1,12 @@
 {
-  "cooldown": 100,
-  "manaCost": 4.0,
-  "castTime": 40,
   "attributes": {
-    "casting_particles": "mkcore:fx.casting.test"
-  }
+    "base": 5.0,
+    "cast_particles": "mkcore:heal_cast",
+    "casting_particles": "mkcore:heal_casting",
+    "modifierScaling": 1.0,
+    "scale": 5.0
+  },
+  "castTime": 5,
+  "cooldown": 120,
+  "manaCost": 4.0
 }

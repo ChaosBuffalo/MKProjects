@@ -120,9 +120,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             if (entity.getRandom().nextDouble() >= noLoot) {
                 RandomCollection<LootOptionEntry> rolls = new RandomCollection<>();
                 for (LootOptionEntry option : options) {
-                    if (option.isValidConfiguration()) {
-                        rolls.add(option.weight, option);
-                    }
+                    rolls.add(option.weight, option);
                 }
                 if (rolls.size() > 0) {
                     LootOptionEntry selected = rolls.next(entity.getRandom());

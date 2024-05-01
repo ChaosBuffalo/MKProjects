@@ -1,21 +1,27 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
+import com.chaosbuffalo.mknpc.npc.options.FactionNameOption;
+import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
 
 public class FactionNameOptionEntry implements INpcOptionEntry, INameEntry {
-    private String name;
+    public static final Codec<FactionNameOptionEntry> CODEC = Codec.STRING.xmap(FactionNameOptionEntry::new, i -> i.name);
 
-    public FactionNameOptionEntry() {
-        this.name = "";
-    }
+    private String name;
 
     public FactionNameOptionEntry(String name) {
         this.name = name;
+    }
+
+    @Override
+    public ResourceLocation getOptionId() {
+        return FactionNameOption.NAME;
     }
 
     @Override
