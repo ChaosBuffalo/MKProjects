@@ -45,7 +45,7 @@ public class SpiritBombProjectileEntity extends SpriteTrailProjectileEntity {
         setDoAirProc(true);
         setDoGroundProc(true);
         setGroundProcTime(GameConstants.TICKS_PER_SECOND);
-        setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
+        setTrailAnimation(TRAIL_PARTICLES);
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
+import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -16,6 +17,7 @@ import com.chaosbuffalo.mkultra.entities.projectiles.AbilityProjectileEntity;
 import com.chaosbuffalo.mkultra.entities.projectiles.FireballProjectileEntity;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import com.chaosbuffalo.mkultra.init.MKUEntities;
+import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -23,6 +25,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -32,6 +35,7 @@ public class FireballAbility extends ProjectileAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_casting");
     protected final FloatAttribute radius = new FloatAttribute("explosionRadius", 2.0f);
     public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_detonate");
+    public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_trail");
 
     public FireballAbility() {
         super(MKAttributes.EVOCATION);
@@ -90,7 +94,11 @@ public class FireballAbility extends ProjectileAbility {
 
     @Override
     public AbilityProjectileEntity makeProjectile(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        return new FireballProjectileEntity(MKUEntities.FIREBALL_TYPE.get(), entity.level);
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(MKUEntities.ABILITY_PROJECTILE_TYPE.get(), entity.level);
+        projectile.setAbility(() -> this);
+        projectile.setTrailAnimation(TRAIL_PARTICLES);
+        projectile.setItem(new ItemStack(MKUItems.fireballProjectileItem.get()));
+        return projectile;
     }
 
     @Nullable

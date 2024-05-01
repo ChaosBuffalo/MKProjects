@@ -13,18 +13,20 @@ import net.minecraft.world.phys.HitResult;
 
 import java.util.function.Supplier;
 
-public abstract class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
-    protected final Supplier<? extends ProjectileAbility> abilitySupplier;
+public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
+    protected Supplier<? extends ProjectileAbility> abilitySupplier;
 
-    public AbilityProjectileEntity(EntityType<? extends Projectile> entityTypeIn, Level worldIn,
-                                   ItemStack stack, Supplier<? extends ProjectileAbility> ability) {
-        super(entityTypeIn, worldIn, stack);
-        this.abilitySupplier = ability;
+    public AbilityProjectileEntity(EntityType<? extends Projectile> entityTypeIn, Level worldIn) {
+        super(entityTypeIn, worldIn);
+    }
+
+    public void setAbility(Supplier<? extends ProjectileAbility> abilitySupplier) {
+        this.abilitySupplier = abilitySupplier;
     }
 
     @Override
     protected boolean onImpact(Entity caster, HitResult result, int amplifier) {
-        if (!this.level.isClientSide && caster instanceof LivingEntity casterLiving) {
+        if (abilitySupplier != null && !this.level.isClientSide && caster instanceof LivingEntity casterLiving) {
             ProjectileAbility ability = abilitySupplier.get();
             if (ability != null) {
                 return ability.onImpact(this, casterLiving, result, amplifier);

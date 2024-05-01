@@ -35,7 +35,7 @@ public class DrownProjectileEntity extends SpriteTrailProjectileEntity {
                                  Level worldIn) {
         super(entityTypeIn, worldIn, new ItemStack(MKUItems.drownProjectileItem.get()));
         setDeathTime(GameConstants.TICKS_PER_SECOND * 3);
-        setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
+        setTrailAnimation(TRAIL_PARTICLES);
     }
 
     @Override

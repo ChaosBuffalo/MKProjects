@@ -38,7 +38,7 @@ public class ShadowBoltProjectileEntity extends SpriteTrailProjectileEntity {
                                       Level worldIn) {
         super(entityTypeIn, worldIn, new ItemStack(MKUItems.shadowBoltProjectileItem.get()));
         setDeathTime(GameConstants.TICKS_PER_SECOND * 6);
-        setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
+        setTrailAnimation(TRAIL_PARTICLES);
     }
 
 

@@ -42,7 +42,7 @@ public class CleansingSeedProjectileEntity extends SpriteTrailProjectileEntity {
                                          Level worldIn) {
         super(entityTypeIn, worldIn, new ItemStack(MKUItems.cleansingSeedProjectileItem.get()));
         setDeathTime(40);
-        setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
+        setTrailAnimation(TRAIL_PARTICLES);
     }
 
     @Override

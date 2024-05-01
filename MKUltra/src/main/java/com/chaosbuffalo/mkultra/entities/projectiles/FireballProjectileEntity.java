@@ -36,8 +36,10 @@ public class FireballProjectileEntity extends AbilityProjectileEntity {
 
     public FireballProjectileEntity(EntityType<? extends Projectile> entityTypeIn,
                                     Level worldIn) {
-        super(entityTypeIn, worldIn, new ItemStack(MKUItems.fireballProjectileItem.get()), MKUAbilities.FIREBALL);
+        super(entityTypeIn, worldIn);
+        setItem(new ItemStack(MKUItems.fireballProjectileItem.get()));
+        setAbility(MKUAbilities.FIREBALL);
         setDeathTime(GameConstants.TICKS_PER_SECOND * 5);
-        setTrailAnimation(ParticleAnimationManager.ANIMATIONS.get(TRAIL_PARTICLES));
+        setTrailAnimation(TRAIL_PARTICLES);
     }
 }
