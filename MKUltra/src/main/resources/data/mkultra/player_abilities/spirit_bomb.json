@@ -2,10 +2,12 @@
   "attributes": {
     "baseDamage": 4.0,
     "casting_particles": "mkultra:spirit_bomb_casting",
-    "modifierScaling": 1.0,
+    "detonate_particles": "mkultra:spirit_bomb_detonate",
+    "modifierScaling": 1.25,
     "projectileInaccuracy": 0.2,
     "projectileSpeed": 1.25,
-    "scaleDamage": 4.0
+    "scaleDamage": 4.0,
+    "trail_particles": "mkultra:spirit_bomb_trail"
   },
   "castTime": 25,
   "cooldown": 200,

@@ -9,9 +9,6 @@ import java.util.Map;
 
 public class RandomizationSlotManager {
 
-    public static final ResourceLocation INVALID_SLOT = new ResourceLocation(MKWeapons.MODID,
-            "randomization.invalid");
-
     public static final IRandomizationSlot ATTRIBUTE_SLOT = new RandomizationSlot(
             new ResourceLocation(MKWeapons.MODID, "randomization.attributes"), ChatFormatting.DARK_GREEN, false);
 

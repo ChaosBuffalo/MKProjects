@@ -13,9 +13,8 @@ import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -27,10 +26,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AttributeOption extends BaseRandomizationOption {
+    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "attributes");
+    public static final Codec<AttributeOption> CODEC = RecordCodecBuilder.<AttributeOption>mapCodec(builder -> {
+        return builder.group(
+                IRandomizationSlot.CODEC.optionalFieldOf("slot", RandomizationSlotManager.ATTRIBUTE_SLOT).forGetter(BaseRandomizationOption::getSlot),
+                Codec.DOUBLE.optionalFieldOf("weight", 1.0).forGetter(BaseRandomizationOption::getWeight),
+                AttributeOptionEntry.CODEC.listOf().fieldOf("modifiers").forGetter(i -> i.modifiers)
+        ).apply(builder, AttributeOption::new);
+    }).codec();
 
     private final List<AttributeOptionEntry> modifiers;
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "attributes");
 
+    private AttributeOption(IRandomizationSlot slot, double weight, List<AttributeOptionEntry> modifiers) {
+        super(NAME, slot, weight);
+        this.modifiers = modifiers;
+    }
 
     public AttributeOption() {
         this(RandomizationSlotManager.ATTRIBUTE_SLOT);
@@ -38,11 +48,11 @@ public class AttributeOption extends BaseRandomizationOption {
 
     public AttributeOption(IRandomizationSlot slot) {
         super(NAME, slot);
-        modifiers = new ArrayList<>();
+        this.modifiers = new ArrayList<>();
     }
 
     public List<AttributeOptionEntry> getModifiers(double difficulty) {
-        return modifiers.stream().map(mod -> mod.getModifier().getId().equals(Util.NIL_UUID) ? mod.copy(difficulty) : mod).collect(Collectors.toList());
+        return modifiers.stream().map(mod -> mod.createScaledModifier(difficulty)).collect(Collectors.toList());
     }
 
     public void addFixedAttributeModifier(Attribute attribute, AttributeModifier attributeModifier) {
@@ -79,29 +89,6 @@ public class AttributeOption extends BaseRandomizationOption {
             MKAccessory.getAccessoryHandler(stack).ifPresent(
                     cap -> cap.addEffect(new AccessoryModifierEffect(getModifiers(difficulty)))
             );
-        }
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("modifiers"),
-                ops.createList(modifiers.stream().map(mod -> mod.serialize(ops))));
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        List<AttributeOptionEntry> deserialized = dynamic.get("modifiers").asList(dyn -> {
-            AttributeOptionEntry entry = new AttributeOptionEntry();
-            entry.deserialize(dyn);
-            return entry;
-        });
-        modifiers.clear();
-        for (AttributeOptionEntry mod : deserialized) {
-            if (mod != null) {
-                modifiers.add(mod);
-            }
         }
     }
 }

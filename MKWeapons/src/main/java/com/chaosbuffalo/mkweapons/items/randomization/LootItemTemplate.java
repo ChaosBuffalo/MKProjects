@@ -1,18 +1,16 @@
 package com.chaosbuffalo.mkweapons.items.randomization;
 
-import com.chaosbuffalo.mkcore.serialization.IDynamicMapSerializer;
 import com.chaosbuffalo.mkcore.utils.RandomCollection;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.randomization.options.IRandomizationOption;
-import com.chaosbuffalo.mkweapons.items.randomization.options.RandomizationOptionManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.IRandomizationSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
-import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.randomization.templates.RandomizationTemplate;
 import com.chaosbuffalo.mkweapons.items.randomization.templates.RandomizationTemplateEntry;
-import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
@@ -25,14 +23,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class LootItemTemplate implements IDynamicMapSerializer {
-    private LootSlot lootSlot;
+public class LootItemTemplate {
+    public static final Codec<LootItemTemplate> CODEC = RecordCodecBuilder.<LootItemTemplate>mapCodec(builder -> {
+        return builder.group(
+                LootSlot.CODEC.fieldOf("lootSlot").forGetter(LootItemTemplate::getLootSlot),
+                RandomizationItemEntry.CODEC.listOf().fieldOf("potentialItems").forGetter(i -> i.potentialItems),
+                IRandomizationOption.CODEC.listOf().fieldOf("options").forGetter(i -> i.options),
+                RandomizationTemplateEntry.CODEC.listOf().fieldOf("templates").forGetter(i -> new ArrayList<>(i.templates.values()))
+        ).apply(builder, LootItemTemplate::new);
+    }).codec();
+
+    private final LootSlot lootSlot;
     private final List<RandomizationItemEntry> potentialItems;
     private final List<IRandomizationOption> options;
     private final Map<ResourceLocation, RandomizationTemplateEntry> templates;
 
-    public LootItemTemplate() {
-        this(LootSlotManager.INVALID);
+    private LootItemTemplate(LootSlot lootSlot, List<RandomizationItemEntry> potentialItems, List<IRandomizationOption> options,
+                             List<RandomizationTemplateEntry> templates) {
+        this.lootSlot = lootSlot;
+        this.potentialItems = potentialItems;
+        this.options = options;
+        this.templates = new HashMap<>(templates.size());
+        templates.forEach(x -> this.templates.put(x.template.getName(), x));
     }
 
     public LootItemTemplate(LootSlot lootSlot) {
@@ -152,33 +164,11 @@ public class LootItemTemplate implements IDynamicMapSerializer {
 
     }
 
-    @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        lootSlot = LootSlotManager.getSlotFromName(dynamic.get("lootSlot").asString().map(ResourceLocation::new).result().orElse(LootSlotManager.INVALID_LOOT_SLOT));
-        List<RandomizationItemEntry> itemEntries = dynamic.get("potentialItems").asList(x -> {
-            RandomizationItemEntry newEntry = new RandomizationItemEntry();
-            newEntry.deserialize(x);
-            return newEntry;
-        });
-        potentialItems.clear();
-        potentialItems.addAll(itemEntries);
-        List<IRandomizationOption> opts = dynamic.get("options").asList(RandomizationOptionManager::deserializeOption);
-        options.clear();
-        options.addAll(opts);
-        List<RandomizationTemplateEntry> temps = dynamic.get("templates").asList(x -> {
-            RandomizationTemplateEntry newEntry = new RandomizationTemplateEntry();
-            newEntry.deserialize(x);
-            return newEntry;
-        });
-        templates.clear();
-        temps.stream().filter(x -> x.template != null).forEach(x -> templates.put(x.template.getName(), x));
+    public <D> D serialize(DynamicOps<D> ops) {
+        return CODEC.encodeStart(ops, this).getOrThrow(false, MKWeapons.LOGGER::error);
     }
 
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> dynamicOps, ImmutableMap.Builder<D, D> builder) {
-        builder.put(dynamicOps.createString("potentialItems"), dynamicOps.createList(potentialItems.stream().map(x -> x.serialize(dynamicOps))));
-        builder.put(dynamicOps.createString("lootSlot"), dynamicOps.createString(lootSlot.getName().toString()));
-        builder.put(dynamicOps.createString("options"), dynamicOps.createList(options.stream().map(x -> x.serialize(dynamicOps))));
-        builder.put(dynamicOps.createString("templates"), dynamicOps.createList(templates.values().stream().map(x -> x.serialize(dynamicOps))));
+    public static <D> LootItemTemplate deserialize(Dynamic<D> dynamic) {
+        return CODEC.parse(dynamic).getOrThrow(false, MKWeapons.LOGGER::error);
     }
 }

@@ -5,9 +5,8 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -27,16 +26,18 @@ import java.util.UUID;
 
 public class MeleeSkillScalingEffect extends BaseMeleeWeaponEffect {
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.skill_scaling");
+    public static final Codec<MeleeSkillScalingEffect> CODEC = RecordCodecBuilder.<MeleeSkillScalingEffect>mapCodec(builder -> {
+        return builder.group(
+                Codec.DOUBLE.fieldOf("baseDamage").forGetter(i -> i.baseDamage),
+                ForgeRegistries.ATTRIBUTES.getCodec().fieldOf("skill").forGetter(i -> i.skill)
+        ).apply(builder, MeleeSkillScalingEffect::new);
+    }).codec();
     public static final UUID skillScaling = UUID.fromString("5db76231-686d-417e-952b-92f33c4c1b37");
-    private double baseDamage;
-    private Attribute skill;
-
-    public MeleeSkillScalingEffect() {
-        super(NAME, ChatFormatting.GRAY);
-    }
+    private final double baseDamage;
+    private final Attribute skill;
 
     public MeleeSkillScalingEffect(double baseDamage, Attribute skill) {
-        this();
+        super(NAME, ChatFormatting.GRAY);
         this.baseDamage = baseDamage;
         this.skill = skill;
     }
@@ -82,19 +83,5 @@ public class MeleeSkillScalingEffect extends BaseMeleeWeaponEffect {
             tooltip.add(Component.translatable("mkweapons.weapon_effect.skill_scaling.description",
                     Component.translatable(skill.getDescriptionId()), MKAbility.NUMBER_FORMATTER.format(bonus)));
         }
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        baseDamage = dynamic.get("baseDamage").asDouble(0.0);
-        dynamic.get("skill").asString().result().ifPresent(x -> {
-            skill = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(x));
-        });
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        builder.put(ops.createString("baseDamage"), ops.createDouble(baseDamage));
-        builder.put(ops.createString("skill"), ops.createString(ForgeRegistries.ATTRIBUTES.getKey(skill).toString()));
     }
 }

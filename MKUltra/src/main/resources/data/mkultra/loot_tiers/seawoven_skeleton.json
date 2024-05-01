@@ -1,4 +1,5 @@
 {
+  "name": "mkultra:seawoven_skeleton",
   "slotItems": {
     "mkweapons:items": [
       {
@@ -7,17 +8,18 @@
           "options": [],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkultra:seawoven_scrap\", Count: 1b}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkultra:seawoven_scrap"
+              }
             }
           ],
           "templates": [
             {
               "template": {
-                "slots": [],
-                "templateType": "mkultra:empty"
-              },
-              "weight": 1.0
+                "name": "mkultra:empty",
+                "slots": []
+              }
             }
           ]
         },

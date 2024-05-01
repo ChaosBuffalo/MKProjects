@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.quest.objectives;
 
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
@@ -28,8 +29,8 @@ public class LootChestObjective extends QuestObjective<UUIDInstanceData> impleme
                 Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
                 QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
                 Codec.STRING.fieldOf("chestTag").forGetter(i -> i.chestTag),
-                Codec.list(ItemStack.CODEC).fieldOf("items").forGetter(i -> i.itemsToAdd),
-                Codec.list(ExtraCodecs.COMPONENT).fieldOf("description").forGetter(i -> i.description)
+                CommonCodecs.ITEM_STACK.listOf().fieldOf("items").forGetter(i -> i.itemsToAdd),
+                ExtraCodecs.COMPONENT.listOf().fieldOf("description").forGetter(i -> i.description)
         ).apply(builder, LootChestObjective::new);
     }).codec();
 

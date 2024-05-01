@@ -1,4 +1,5 @@
 {
+  "name": "mkultra:ancient_king",
   "slotItems": {
     "mkweapons:earrings": [
       {
@@ -6,41 +7,43 @@
           "lootSlot": "mkweapons:earrings",
           "options": [
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.05,
-                  "AttributeName": "mkcore:melee_crit_multiplier",
-                  "Name": "mkultra:ancient_king",
-                  "Operation": 0,
+                  "attribute": "mkcore:melee_crit_multiplier",
                   "maxValue": 0.2,
-                  "minValue": 0.05
+                  "minValue": 0.05,
+                  "modifier": {
+                    "amount": 0.05,
+                    "name": "mkultra:ancient_king",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
-              "name": "{\"text\":\"Earring of Might\"}",
-              "randomizationType": "mkweapons:name",
-              "slotName": "mkweapons:randomization.name",
-              "weight": 1.0
+              "type": "mkweapons:name",
+              "name": {
+                "text": "Earring of Might"
+              }
             }
           ],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkweapons:copper_earring\", Count: 1b}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkweapons:copper_earring"
+              }
             }
           ],
           "templates": [
             {
               "template": {
+                "name": "mkultra:earring",
                 "slots": [
                   "mkweapons:randomization.attributes",
                   "mkweapons:randomization.name"
-                ],
-                "templateType": "mkultra:earring"
+                ]
               },
               "weight": 15.0
             }
@@ -55,41 +58,43 @@
           "lootSlot": "mkweapons:rings",
           "options": [
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.02,
-                  "AttributeName": "mkcore:spell_crit_chance",
-                  "Name": "mkultra:ancient_king",
-                  "Operation": 0,
+                  "attribute": "mkcore:spell_crit_chance",
                   "maxValue": 0.1,
-                  "minValue": 0.02
+                  "minValue": 0.02,
+                  "modifier": {
+                    "amount": 0.02,
+                    "name": "mkultra:ancient_king",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
-              "name": "{\"text\":\"Ring of Destruction\"}",
-              "randomizationType": "mkweapons:name",
-              "slotName": "mkweapons:randomization.name",
-              "weight": 1.0
+              "type": "mkweapons:name",
+              "name": {
+                "text": "Ring of Destruction"
+              }
             }
           ],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkweapons:silver_ring\", Count: 1b}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkweapons:silver_ring"
+              }
             }
           ],
           "templates": [
             {
               "template": {
+                "name": "mkultra:ring",
                 "slots": [
                   "mkweapons:randomization.attributes",
                   "mkweapons:randomization.name"
-                ],
-                "templateType": "mkultra:ring"
+                ]
               },
               "weight": 15.0
             }
@@ -102,41 +107,43 @@
           "lootSlot": "mkweapons:rings",
           "options": [
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.02,
-                  "AttributeName": "mkcore:melee_crit_chance",
-                  "Name": "mkultra:ancient_king",
-                  "Operation": 0,
+                  "attribute": "mkcore:melee_crit_chance",
                   "maxValue": 0.1,
-                  "minValue": 0.02
+                  "minValue": 0.02,
+                  "modifier": {
+                    "amount": 0.02,
+                    "name": "mkultra:ancient_king",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
-              "name": "{\"text\":\"Ring of Keen Edges\"}",
-              "randomizationType": "mkweapons:name",
-              "slotName": "mkweapons:randomization.name",
-              "weight": 1.0
+              "type": "mkweapons:name",
+              "name": {
+                "text": "Ring of Keen Edges"
+              }
             }
           ],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkweapons:copper_ring\", Count: 1b}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkweapons:copper_ring"
+              }
             }
           ],
           "templates": [
             {
               "template": {
+                "name": "mkultra:ring",
                 "slots": [
                   "mkweapons:randomization.attributes",
                   "mkweapons:randomization.name"
-                ],
-                "templateType": "mkultra:ring"
+                ]
               },
               "weight": 15.0
             }

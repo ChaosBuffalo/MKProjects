@@ -2,8 +2,9 @@
   "parent": "mkweapons:item/longbow_base",
   "overrides": [
     {
-      "model": "mkweapons:item/longbow_stone_pulling_0",
+      "model": "mkweapons:item/longbow_stone_pulling_2",
       "predicate": {
+        "minecraft:pull": 0.9,
         "minecraft:pulling": 1.0
       }
     },
@@ -15,9 +16,8 @@
       }
     },
     {
-      "model": "mkweapons:item/longbow_stone_pulling_2",
+      "model": "mkweapons:item/longbow_stone_pulling_0",
       "predicate": {
-        "minecraft:pull": 0.9,
         "minecraft:pulling": 1.0
       }
     }

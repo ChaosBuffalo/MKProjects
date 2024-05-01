@@ -1,29 +1,29 @@
 {
-  "damageMultiplier": 2.0,
   "attackSpeed": -2.0,
-  "reach": 2.0,
-  "critMultiplier": 0.75,
+  "blockEfficiency": 0.75,
   "critChance": 0.05,
-  "isTwoHanded": true,
+  "critMultiplier": 0.75,
+  "damageMultiplier": 2.0,
   "effects": [
     {
-      "itemEffectType": "mkweapons:weapon_effect.skill_scaling",
+      "type": "mkweapons:weapon_effect.skill_scaling",
       "baseDamage": 6.0,
       "skill": "mkcore:two_hand_pierce"
     },
     {
-      "itemEffectType": "mkweapons:weapon_effect.bleed",
-      "damageMultiplier": 1.5,
-      "maxStacks": 5,
+      "type": "mkweapons:weapon_effect.bleed",
+      "damageMultiplier": 0.75,
       "durationSeconds": 5,
+      "maxStacks": 5,
       "skill": "mkcore:two_hand_pierce"
     },
     {
-      "itemEffectType": "mkweapons:weapon_effect.fury_strike",
+      "type": "mkweapons:weapon_effect.fury_strike",
       "numberOfHits": 3,
       "perHit": 0.4
     }
   ],
-  "blockEfficiency": 0.75,
-  "maxPoise": 30.0
+  "isTwoHanded": true,
+  "maxPoise": 30.0,
+  "reach": 2.0
 }

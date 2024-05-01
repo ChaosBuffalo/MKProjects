@@ -1,8 +1,5 @@
 package com.chaosbuffalo.mkweapons.items.weapon.types;
 
-import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
-import com.chaosbuffalo.mkweapons.items.effects.ItemEffects;
 import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
@@ -75,16 +72,8 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         isTwoHanded = dynamic.get("isTwoHanded").asBoolean(false);
         blockEfficiency = dynamic.get("blockEfficiency").asFloat(0.75f);
         maxPoise = dynamic.get("maxPoise").asFloat(20.0f);
-        List<IMeleeWeaponEffect> deserializedEffects = dynamic.get("effects").asList(d -> {
-            IItemEffect effect = ItemEffects.deserializeEffect(d);
-            if (effect instanceof IMeleeWeaponEffect meleeWeaponEffect) {
-                return meleeWeaponEffect;
-            } else {
-                MKWeapons.LOGGER.error("Failed to deserialize melee weapon effect from '{}'", d);
-                return null;
-            }
-        });
         effects.clear();
+        List<IMeleeWeaponEffect> deserializedEffects = dynamic.get("effects").asList(IMeleeWeaponEffect::deserialize);
         for (IMeleeWeaponEffect effect : deserializedEffects) {
             if (effect != null) {
                 effects.add(effect);

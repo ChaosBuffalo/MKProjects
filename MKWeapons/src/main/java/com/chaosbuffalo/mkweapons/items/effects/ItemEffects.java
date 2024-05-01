@@ -1,72 +1,85 @@
 package com.chaosbuffalo.mkweapons.items.effects;
 
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.AccessoryModifierEffect;
+import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.OnMeleeProcEffect;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.RestoreManaOnCastEffect;
 import com.chaosbuffalo.mkweapons.items.effects.armor.ArmorModifierEffect;
+import com.chaosbuffalo.mkweapons.items.effects.armor.IArmorEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.*;
-import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedManaDrainEffect;
-import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedModifierEffect;
-import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedSkillScalingEffect;
-import com.chaosbuffalo.mkweapons.items.effects.ranged.RapidFireRangedWeaponEffect;
-import com.mojang.serialization.Dynamic;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
+import com.chaosbuffalo.mkweapons.items.effects.ranged.*;
+import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class ItemEffects {
 
-    public static final Map<ResourceLocation, Supplier<IItemEffect>> ITEM_EFFECT_DESERIALIZERS =
+    public static final Map<ResourceLocation, Codec<? extends IMeleeWeaponEffect>> MELEE_EFFECT_CODECS =
             new HashMap<>();
+    public static final Codec<IMeleeWeaponEffect> MELEE_EFFECT_CODEC =
+            CommonCodecs.createMapBackedDispatch(ResourceLocation.CODEC, MELEE_EFFECT_CODECS, IItemEffect::getTypeName);
+    public static final Map<ResourceLocation, Codec<? extends IRangedWeaponEffect>> RANGED_EFFECT_CODECS =
+            new HashMap<>();
+    public static final Codec<IRangedWeaponEffect> RANGED_EFFECT_CODEC =
+            CommonCodecs.createMapBackedDispatch(ResourceLocation.CODEC, RANGED_EFFECT_CODECS, IItemEffect::getTypeName);
+    public static final Map<ResourceLocation, Codec<? extends IAccessoryEffect>> ACCESSORY_EFFECT_CODECS =
+            new HashMap<>();
+    public static final Codec<IAccessoryEffect> ACCESSORY_EFFECT_CODEC =
+            CommonCodecs.createMapBackedDispatch(ResourceLocation.CODEC, ACCESSORY_EFFECT_CODECS, IItemEffect::getTypeName);
+    public static final Map<ResourceLocation, Codec<? extends IArmorEffect>> ARMOR_EFFECT_CODECS =
+            new HashMap<>();
+    public static final Codec<IArmorEffect> ARMOR_EFFECT_CODEC =
+            CommonCodecs.createMapBackedDispatch(ResourceLocation.CODEC, ARMOR_EFFECT_CODECS, IItemEffect::getTypeName);
 
-    public static void addWeaponEffectDeserializer(ResourceLocation type,
-                                                   Supplier<IItemEffect> deserializer) {
-        ITEM_EFFECT_DESERIALIZERS.put(type, deserializer);
+    public static void meleeEffect(ResourceLocation type,
+                                   Codec<? extends IMeleeWeaponEffect> codec) {
+        MELEE_EFFECT_CODECS.put(type, codec);
+    }
+
+    public static void rangedEffect(ResourceLocation type,
+                                    Codec<? extends IRangedWeaponEffect> codec) {
+        RANGED_EFFECT_CODECS.put(type, codec);
+    }
+
+    public static void armorEffect(ResourceLocation type,
+                                   Codec<? extends IArmorEffect> codec) {
+        ARMOR_EFFECT_CODECS.put(type, codec);
+    }
+
+    public static void accessoryEffect(ResourceLocation type,
+                                       Codec<? extends IAccessoryEffect> codec) {
+        ACCESSORY_EFFECT_CODECS.put(type, codec);
     }
 
     static {
-        addWeaponEffectDeserializer(BleedMeleeWeaponEffect.NAME, BleedMeleeWeaponEffect::new);
-        addWeaponEffectDeserializer(ComboStrikeMeleeWeaponEffect.NAME, ComboStrikeMeleeWeaponEffect::new);
-        addWeaponEffectDeserializer(DoubleStrikeMeleeWeaponEffect.NAME, DoubleStrikeMeleeWeaponEffect::new);
-        addWeaponEffectDeserializer(FuryStrikeMeleeWeaponEffect.NAME, FuryStrikeMeleeWeaponEffect::new);
-        addWeaponEffectDeserializer(StunMeleeWeaponEffect.NAME, StunMeleeWeaponEffect::new);
-        addWeaponEffectDeserializer(UndeadDamageMeleeWeaponEffect.NAME, UndeadDamageMeleeWeaponEffect::new);
-        addWeaponEffectDeserializer(ArmorModifierEffect.NAME, ArmorModifierEffect::new);
-        addWeaponEffectDeserializer(MeleeModifierEffect.NAME, MeleeModifierEffect::new);
-        addWeaponEffectDeserializer(RangedModifierEffect.NAME, RangedModifierEffect::new);
-        addWeaponEffectDeserializer(RapidFireRangedWeaponEffect.NAME, RapidFireRangedWeaponEffect::new);
-        addWeaponEffectDeserializer(AccessoryModifierEffect.NAME, AccessoryModifierEffect::new);
-        addWeaponEffectDeserializer(MeleeSkillScalingEffect.NAME, MeleeSkillScalingEffect::new);
-        addWeaponEffectDeserializer(RangedSkillScalingEffect.NAME, RangedSkillScalingEffect::new);
-        addWeaponEffectDeserializer(OnHitAbilityEffect.NAME, OnHitAbilityEffect::new);
-        addWeaponEffectDeserializer(LivingDamageMeleeWeaponEffect.NAME, LivingDamageMeleeWeaponEffect::new);
-        addWeaponEffectDeserializer(ManaDrainWeaponEffect.NAME, ManaDrainWeaponEffect::new);
-        addWeaponEffectDeserializer(RangedManaDrainEffect.NAME, RangedManaDrainEffect::new);
-        addWeaponEffectDeserializer(RestoreManaOnCastEffect.NAME, RestoreManaOnCastEffect::new);
-        addWeaponEffectDeserializer(OnMeleeProcEffect.NAME, OnMeleeProcEffect::new);
-    }
+        // melee
+        meleeEffect(MeleeModifierEffect.NAME, MeleeModifierEffect.CODEC);
+        meleeEffect(BleedMeleeWeaponEffect.NAME, BleedMeleeWeaponEffect.CODEC);
+        meleeEffect(ComboStrikeMeleeWeaponEffect.NAME, ComboStrikeMeleeWeaponEffect.CODEC);
+        meleeEffect(DoubleStrikeMeleeWeaponEffect.NAME, DoubleStrikeMeleeWeaponEffect.CODEC);
+        meleeEffect(FuryStrikeMeleeWeaponEffect.NAME, FuryStrikeMeleeWeaponEffect.CODEC);
+        meleeEffect(StunMeleeWeaponEffect.NAME, StunMeleeWeaponEffect.CODEC);
+        meleeEffect(UndeadDamageMeleeWeaponEffect.NAME, UndeadDamageMeleeWeaponEffect.CODEC);
+        meleeEffect(MeleeSkillScalingEffect.NAME, MeleeSkillScalingEffect.CODEC);
+        meleeEffect(OnHitAbilityEffect.NAME, OnHitAbilityEffect.CODEC);
+        meleeEffect(LivingDamageMeleeWeaponEffect.NAME, LivingDamageMeleeWeaponEffect.CODEC);
+        meleeEffect(ManaDrainWeaponEffect.NAME, ManaDrainWeaponEffect.CODEC);
 
-    @Nullable
-    public static <D> IItemEffect deserializeEffect(Dynamic<D> dynamic) {
-        ResourceLocation type = BaseItemEffect.getType(dynamic);
-        Supplier<IItemEffect> deserializer = ITEM_EFFECT_DESERIALIZERS.get(type);
-        if (deserializer == null) {
-            return null;
-        }
-        IItemEffect weaponEffect = deserializer.get();
-        if (weaponEffect != null) {
-            weaponEffect.deserialize(dynamic);
-        }
-        return weaponEffect;
-    }
+        // ranged
+        rangedEffect(RangedModifierEffect.NAME, RangedModifierEffect.CODEC);
+        rangedEffect(RangedSkillScalingEffect.NAME, RangedSkillScalingEffect.CODEC);
+        rangedEffect(RangedManaDrainEffect.NAME, RangedManaDrainEffect.CODEC);
+        rangedEffect(RapidFireRangedWeaponEffect.NAME, RapidFireRangedWeaponEffect.CODEC);
 
-    public static <T extends IItemEffect> T copyEffect(T effect) {
-        Tag tag = effect.serialize(NbtOps.INSTANCE);
-        return (T) deserializeEffect(new Dynamic<>(NbtOps.INSTANCE, tag));
+        // armor
+        armorEffect(ArmorModifierEffect.NAME, ArmorModifierEffect.CODEC);
+
+        // acc
+        accessoryEffect(AccessoryModifierEffect.NAME, AccessoryModifierEffect.CODEC);
+        accessoryEffect(RestoreManaOnCastEffect.NAME, RestoreManaOnCastEffect.CODEC);
+        accessoryEffect(OnMeleeProcEffect.NAME, OnMeleeProcEffect.CODEC);
     }
 }

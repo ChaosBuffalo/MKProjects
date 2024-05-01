@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.npc;
 
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
@@ -12,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 public class NpcItemChoice {
     public static final Codec<NpcItemChoice> CODEC = RecordCodecBuilder.<NpcItemChoice>mapCodec(builder -> {
         return builder.group(
-                ItemStack.CODEC.fieldOf("item").forGetter(i -> i.item),
+                CommonCodecs.ITEM_STACK.fieldOf("item").forGetter(i -> i.item),
                 Codec.DOUBLE.fieldOf("weight").forGetter(i -> i.weight),
                 Codec.FLOAT.fieldOf("dropChance").forGetter(i -> i.dropChance)
         ).apply(builder, NpcItemChoice::new);

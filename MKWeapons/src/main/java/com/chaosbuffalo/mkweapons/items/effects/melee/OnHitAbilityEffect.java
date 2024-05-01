@@ -8,13 +8,14 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -22,52 +23,40 @@ import net.minecraft.world.item.ItemStack;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
-    private double procChance;
-    private float skillLevel;
-    @Nonnull
-    private Supplier<? extends EntityTargetingAbility> abilitySupplier;
+    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.on_hit_ability");
+    public static final Codec<OnHitAbilityEffect> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
+            RecordCodecBuilder.<OnHitAbilityEffect>mapCodec(builder -> {
+                return builder.group(
+                        Codec.DOUBLE.fieldOf("chance").forGetter(i -> i.procChance),
+                        Codec.FLOAT.fieldOf("skill_level").forGetter(i -> i.skillLevel),
+                        MKCoreRegistry.ABILITIES.getCodec().comapFlatMap(ability -> {
+                            if (ability instanceof EntityTargetingAbility targetingAbility) {
+                                return DataResult.success(targetingAbility);
+                            }
+                            return DataResult.error(() -> "Ability " + ability + " is not an EntityTargetingAbility");
+                        }, Function.identity()).fieldOf("ability").forGetter(i -> i.abilitySupplier.get())
+                ).apply(builder, OnHitAbilityEffect::new);
+            }).codec());
 
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID,
-            "weapon_effect.on_hit_ability");
+
+    private final double procChance;
+    private final float skillLevel;
+    @Nonnull
+    private final Supplier<? extends EntityTargetingAbility> abilitySupplier;
+
+    public OnHitAbilityEffect(double procChance, float skillLevel, EntityTargetingAbility ability) {
+        this(procChance, skillLevel, () -> ability);
+    }
 
     public OnHitAbilityEffect(double procChance, float skillLevel, @Nonnull Supplier<? extends EntityTargetingAbility> abilitySupplier) {
-        this();
+        super(NAME, ChatFormatting.GOLD);
         this.procChance = procChance;
         this.skillLevel = skillLevel;
         this.abilitySupplier = abilitySupplier;
-    }
-
-    public OnHitAbilityEffect() {
-        super(NAME, ChatFormatting.GOLD);
-        abilitySupplier = () -> null;
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        procChance = dynamic.get("chance").asDouble(0.05);
-        skillLevel = dynamic.get("skill_level").asFloat(0f);
-        dynamic.get("ability").asString().result()
-                .ifPresent(abilityName -> {
-                    MKAbility ability = MKCoreRegistry.ABILITIES.getValue(new ResourceLocation(abilityName));
-                    if (ability instanceof EntityTargetingAbility entAbility) {
-                        abilitySupplier = () -> entAbility;
-                    }
-                });
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("chance"), ops.createDouble(procChance));
-        builder.put(ops.createString("skill_level"), ops.createFloat(skillLevel));
-        if (abilitySupplier.get() != null) {
-            builder.put(ops.createString("ability"),
-                    ops.createString(abilitySupplier.get().getAbilityId().toString()));
-        }
     }
 
     protected AbilityContext createAbilityContext(IMKEntityData casterData) {

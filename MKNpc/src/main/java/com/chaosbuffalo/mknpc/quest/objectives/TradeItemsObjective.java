@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.quest.objectives;
 
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
@@ -33,7 +34,7 @@ public class TradeItemsObjective extends QuestObjective<UUIDInstanceData> implem
                 Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
                 QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
                 ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
-                Codec.list(ItemStack.CODEC).fieldOf("items").forGetter(i -> i.neededItems)
+                CommonCodecs.ITEM_STACK.listOf().fieldOf("items").forGetter(i -> i.neededItems)
         ).apply(builder, TradeItemsObjective::new);
     }).codec();
 

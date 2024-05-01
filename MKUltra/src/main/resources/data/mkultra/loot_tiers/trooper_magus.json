@@ -1,4 +1,5 @@
 {
+  "name": "mkultra:trooper_magus",
   "slotItems": {
     "mkweapons:earrings": [
       {
@@ -6,41 +7,43 @@
           "lootSlot": "mkweapons:earrings",
           "options": [
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.25,
-                  "AttributeName": "mkcore:mana_regen",
-                  "Name": "mkultra:trooper_magus",
-                  "Operation": 0,
+                  "attribute": "mkcore:mana_regen",
                   "maxValue": 2.5,
-                  "minValue": 0.25
+                  "minValue": 0.25,
+                  "modifier": {
+                    "amount": 0.25,
+                    "name": "mkultra:trooper_magus",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
-              "name": "{\"text\":\"Earring of Quickening Thoughts\"}",
-              "randomizationType": "mkweapons:name",
-              "slotName": "mkweapons:randomization.name",
-              "weight": 1.0
+              "type": "mkweapons:name",
+              "name": {
+                "text": "Earring of Quickening Thoughts"
+              }
             }
           ],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkweapons:silver_earring\", Count: 1b}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkweapons:silver_earring"
+              }
             }
           ],
           "templates": [
             {
               "template": {
+                "name": "mkultra:earring",
                 "slots": [
                   "mkweapons:randomization.attributes",
                   "mkweapons:randomization.name"
-                ],
-                "templateType": "mkultra:earring"
+                ]
               },
               "weight": 15.0
             }
@@ -55,41 +58,43 @@
           "lootSlot": "mkweapons:rings",
           "options": [
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 4.0,
-                  "AttributeName": "mkcore:max_mana",
-                  "Name": "mkultra:trooper_magus",
-                  "Operation": 0,
+                  "attribute": "mkcore:max_mana",
                   "maxValue": 20.0,
-                  "minValue": 4.0
+                  "minValue": 4.0,
+                  "modifier": {
+                    "amount": 4.0,
+                    "name": "mkultra:trooper_magus",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
-              "name": "{\"text\":\"Ring of Minor Mana\"}",
-              "randomizationType": "mkweapons:name",
-              "slotName": "mkweapons:randomization.name",
-              "weight": 1.0
+              "type": "mkweapons:name",
+              "name": {
+                "text": "Ring of Minor Mana"
+              }
             }
           ],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkweapons:silver_ring\", Count: 1b}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkweapons:silver_ring"
+              }
             }
           ],
           "templates": [
             {
               "template": {
+                "name": "mkultra:ring",
                 "slots": [
                   "mkweapons:randomization.attributes",
                   "mkweapons:randomization.name"
-                ],
-                "templateType": "mkultra:ring"
+                ]
               },
               "weight": 15.0
             }

@@ -1,39 +1,32 @@
 package com.chaosbuffalo.mkweapons.items.randomization.options;
 
-import com.mojang.serialization.Dynamic;
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
+import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class RandomizationOptionManager {
 
-    public static final Map<ResourceLocation, Supplier<IRandomizationOption>> OPTION_DESERIALIZERS =
+    public static final Map<ResourceLocation, Codec<? extends IRandomizationOption>> OPTION_CODECS =
             new HashMap<>();
+    public static final Codec<IRandomizationOption> RANDOMIZATION_OPTION_CODEC =
+            CommonCodecs.createMapBackedDispatch(ResourceLocation.CODEC, OPTION_CODECS, IRandomizationOption::getName);
 
-    public static void addOptionDeserializer(ResourceLocation type,
-                                             Supplier<IRandomizationOption> deserializer) {
-        OPTION_DESERIALIZERS.put(type, deserializer);
+    public static void registerOption(ResourceLocation type,
+                                      Codec<? extends IRandomizationOption> codec) {
+        OPTION_CODECS.put(type, codec);
     }
 
     static {
-        addOptionDeserializer(AttributeOption.NAME, AttributeOption::new);
-        addOptionDeserializer(AccessoryEffectOption.NAME, AccessoryEffectOption::new);
-        addOptionDeserializer(ArmorEffectOption.NAME, ArmorEffectOption::new);
-        addOptionDeserializer(MeleeEffectOption.NAME, MeleeEffectOption::new);
-        addOptionDeserializer(RangedEffectOption.NAME, RangedEffectOption::new);
-        addOptionDeserializer(AddAbilityOption.NAME, AddAbilityOption::new);
-        addOptionDeserializer(NameOption.NAME, NameOption::new);
-        addOptionDeserializer(PrefixNameOption.NAME, PrefixNameOption::new);
-    }
-
-    public static <D> IRandomizationOption deserializeOption(Dynamic<D> dynamic) {
-        ResourceLocation type = BaseRandomizationOption.getType(dynamic);
-        IRandomizationOption option = OPTION_DESERIALIZERS.get(type).get();
-        if (option != null) {
-            option.deserialize(dynamic);
-        }
-        return option;
+        registerOption(AttributeOption.NAME, AttributeOption.CODEC);
+        registerOption(AccessoryEffectOption.NAME, AccessoryEffectOption.CODEC);
+        registerOption(ArmorEffectOption.NAME, ArmorEffectOption.CODEC);
+        registerOption(MeleeEffectOption.NAME, MeleeEffectOption.CODEC);
+        registerOption(RangedEffectOption.NAME, RangedEffectOption.CODEC);
+        registerOption(AddAbilityOption.NAME, AddAbilityOption.CODEC);
+        registerOption(NameOption.NAME, NameOption.CODEC);
+        registerOption(PrefixNameOption.NAME, PrefixNameOption.CODEC);
     }
 }

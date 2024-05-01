@@ -9,9 +9,6 @@ import java.util.Map;
 
 public class LootSlotManager {
 
-    public static final ResourceLocation INVALID_LOOT_SLOT = new ResourceLocation(MKWeapons.MODID,
-            "loot_slot.invalid");
-
     public static final LootSlot MAIN_HAND = new LootSlot(new ResourceLocation(MKWeapons.MODID, "main_hand"),
             EquipmentSlot.MAINHAND);
     public static final LootSlot OFF_HAND = new LootSlot(new ResourceLocation(MKWeapons.MODID, "off_hand"),
@@ -25,8 +22,6 @@ public class LootSlotManager {
     public static final LootSlot FEET = new LootSlot(new ResourceLocation(MKWeapons.MODID, "feet"),
             EquipmentSlot.FEET);
 
-    public static final LootSlot INVALID = new LootSlot(INVALID_LOOT_SLOT, (ent, item) -> {
-    });
     public static final LootSlot ITEMS = new LootSlot(new ResourceLocation(MKWeapons.MODID, "items"),
             (ent, item) -> {
             });
@@ -58,7 +53,6 @@ public class LootSlotManager {
         addLootSlot(LEGS);
         addLootSlot(HEAD);
         addLootSlot(FEET);
-        addLootSlot(INVALID);
         addLootSlot(ITEMS);
         addLootSlot(RINGS);
         addLootSlot(EARRINGS);

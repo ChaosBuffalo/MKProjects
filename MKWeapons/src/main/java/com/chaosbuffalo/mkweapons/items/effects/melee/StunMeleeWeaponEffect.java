@@ -8,9 +8,8 @@ import com.chaosbuffalo.mkcore.effects.status.StunEffect;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -24,33 +23,22 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class StunMeleeWeaponEffect extends BaseMeleeWeaponEffect {
-    private int stunDuration;
-    private double stunChance;
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.stun");
+    public static final Codec<StunMeleeWeaponEffect> CODEC = RecordCodecBuilder.<StunMeleeWeaponEffect>mapCodec(builder -> {
+        return builder.group(
+                Codec.DOUBLE.fieldOf("chance").forGetter(i -> i.stunChance),
+                Codec.INT.fieldOf("duration").forGetter(i -> i.stunDuration)
+        ).apply(builder, StunMeleeWeaponEffect::new);
+    }).codec();
     public static final ResourceLocation PARTICLES = new ResourceLocation(MKWeapons.MODID, "stun_effect");
 
+    private final int stunDuration;
+    private final double stunChance;
+
     public StunMeleeWeaponEffect(double stunChance, int stunSeconds) {
-        this();
+        super(NAME, ChatFormatting.DARK_PURPLE);
         this.stunChance = stunChance;
         this.stunDuration = stunSeconds;
-    }
-
-    public StunMeleeWeaponEffect() {
-        super(NAME, ChatFormatting.DARK_PURPLE);
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        stunChance = dynamic.get("chance").asDouble(0.05);
-        stunDuration = dynamic.get("duration").asInt(2);
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("duration"), ops.createInt(stunDuration));
-        builder.put(ops.createString("chance"), ops.createDouble(stunChance));
     }
 
     @Override
