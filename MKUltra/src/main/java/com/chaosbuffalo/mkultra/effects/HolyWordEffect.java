@@ -24,9 +24,13 @@ public class HolyWordEffect extends OnStackEffect {
         return new State();
     }
 
-    public static MKEffectBuilder<State> from(LivingEntity source, float baseStunSeconds, float scalingSeconds, float modifierScaling) {
+    public static MKEffectBuilder<State> from(LivingEntity source, float baseStunSeconds, float scalingSeconds, float modifierScaling,
+                                              int maxStacks) {
         return MKUEffects.HOLY_WORD_EFFECT.get().builder(source)
-                .state(s -> s.setScalingParameters(baseStunSeconds, scalingSeconds, modifierScaling));
+                .state(s -> {
+                    s.setScalingParameters(baseStunSeconds, scalingSeconds, modifierScaling);
+                    s.setMaxStacks(maxStacks);
+                });
     }
 
     @Override

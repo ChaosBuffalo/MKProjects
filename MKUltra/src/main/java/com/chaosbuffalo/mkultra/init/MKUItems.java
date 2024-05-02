@@ -71,7 +71,7 @@ public final class MKUItems {
     public static RegistryObject<Item> drownProjectileItem = REGISTRY.register("drown_projectile",
             () -> new Item(new Item.Properties()));
 
-    public static RegistryObject<Item> holyWordProjectileItem = REGISTRY.register("holy_word",
+    public static RegistryObject<Item> holyWordProjectileItem = REGISTRY.register("holy_word_projectile",
             () -> new Item(new Item.Properties()));
 
     public static RegistryObject<Item> corruptedGauntlets = REGISTRY.register("corrupted_gauntlets",

@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.entities;
 import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -14,13 +15,19 @@ import java.util.function.Supplier;
 
 public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
     protected Supplier<? extends ProjectileAbility> abilitySupplier;
+    protected float gravityVelocity;
 
     public AbilityProjectileEntity(EntityType<? extends Projectile> entityTypeIn, Level worldIn) {
         super(entityTypeIn, worldIn);
+        gravityVelocity = 0.0f;
     }
 
     public void setAbility(Supplier<? extends ProjectileAbility> abilitySupplier) {
         this.abilitySupplier = abilitySupplier;
+    }
+
+    public void setGravityVelocity(float gravityVelocity) {
+        this.gravityVelocity = gravityVelocity;
     }
 
     @Override
@@ -61,11 +68,23 @@ public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
 
     @Override
     public float getGravityVelocity() {
-        return 0.0f;
+        return gravityVelocity;
     }
 
     @Override
     protected TargetingContext getTargetContext() {
         return TargetingContexts.ENEMY;
+    }
+
+    @Override
+    public void writeSpawnData(FriendlyByteBuf buffer) {
+        super.writeSpawnData(buffer);
+        buffer.writeFloat(getGravityVelocity());
+    }
+
+    @Override
+    public void readSpawnData(FriendlyByteBuf additionalData) {
+        super.readSpawnData(additionalData);
+        setGravityVelocity(additionalData.readFloat());
     }
 }

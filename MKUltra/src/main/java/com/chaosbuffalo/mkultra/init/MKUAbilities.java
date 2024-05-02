@@ -41,6 +41,9 @@ public class MKUAbilities {
     public static final RegistryObject<FrozenGraspAbility> FROZEN_GRASP = REGISTRY.register("ability.frozen_grasp",
             FrozenGraspAbility::new);
 
+    public static final RegistryObject<HolyWordAbility> HOLY_WORD = REGISTRY.register("ability.holy_word",
+            HolyWordAbility::new);
+
     //necromancer
     public static final RegistryObject<MKEntitySummonAbility> TEST_SUMMON = REGISTRY.register("ability.test_summon",
             () -> new MKEntitySummonAbility(new ResourceLocation(MKUltra.MODID, "hyborean_sorcerer_queen"), MKAttributes.NECROMANCY));
