@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
-import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
+import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -43,7 +43,7 @@ public class MKAbilityDamageEffect extends MKEffect {
         return new MKEffectBuilder<>(this, sourceEntity, this::makeState);
     }
 
-    public static class State extends ScalingValueEffectState {
+    public static class State extends ScalingDamageEffectState {
 
         @Override
         public boolean validateOnLoad(MKActiveEffect activeEffect) {

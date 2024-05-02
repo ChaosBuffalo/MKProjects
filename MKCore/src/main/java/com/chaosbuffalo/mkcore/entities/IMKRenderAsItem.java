@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkultra.entities;
+package com.chaosbuffalo.mkcore.entities;
 
 import net.minecraft.world.item.ItemStack;
 

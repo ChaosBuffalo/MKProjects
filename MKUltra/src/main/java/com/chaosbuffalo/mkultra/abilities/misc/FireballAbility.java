@@ -2,54 +2,49 @@ package com.chaosbuffalo.mkultra.abilities.misc;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
+import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
+import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.entities.projectiles.FireballProjectileEntity;
-import com.chaosbuffalo.mkultra.init.MKUEntities;
+import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
+import com.chaosbuffalo.mkultra.init.MKUEffects;
+import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
-import com.chaosbuffalo.targeting_api.TargetingContext;
-import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
-public class FireballAbility extends MKAbility {
+public class FireballAbility extends ProjectileAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_casting");
-    protected final FloatAttribute baseDamage = new FloatAttribute("baseDamage", 6.0f);
-    protected final FloatAttribute scaleDamage = new FloatAttribute("scaleDamage", 2.0f);
-    protected final FloatAttribute projectileSpeed = new FloatAttribute("projectileSpeed", 1.25f);
-    protected final FloatAttribute projectileInaccuracy = new FloatAttribute("projectileInaccuracy", 0.2f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
     protected final FloatAttribute radius = new FloatAttribute("explosionRadius", 2.0f);
+    public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_detonate");
+    public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_trail");
 
     public FireballAbility() {
-        super();
+        super(MKAttributes.EVOCATION);
         setCooldownSeconds(4);
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND);
-        addAttributes(baseDamage, scaleDamage, projectileSpeed, projectileInaccuracy,
-                modifierScaling, radius);
-        addSkillAttribute(MKAttributes.EVOCATION);
+        addAttributes(radius);
         casting_particles.setDefaultValue(CASTING_PARTICLES);
-    }
-
-    public float getBaseDamage() {
-        return baseDamage.value();
-    }
-
-    public float getScaleDamage() {
-        return scaleDamage.value();
+        trail_particles.setDefaultValue(TRAIL_PARTICLES);
+        detonate_particles.setDefaultValue(DETONATE_PARTICLES);
     }
 
     public float getExplosionRadius() {
@@ -61,14 +56,51 @@ public class FireballAbility extends MKAbility {
         float skillLevel = context.getSkill(MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(), baseDamage.value(),
                 scaleDamage.value(), skillLevel,
-                modifierScaling.value());
+                getModifierScaling());
         return Component.translatable(getDescriptionTranslationKey(), damageStr, getExplosionRadius(),
                 (skillLevel + 1) * .1f * 100.0f, skillLevel + 1);
     }
 
     @Override
-    public float getDistance(LivingEntity entity) {
-        return 50.0f;
+    public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
+        SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
+        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_fire_4.get(), cat);
+        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonate_particles.getValue());
+        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.FireDamage.get(),
+                        getBaseDamage(),
+                        getScaleDamage(),
+                        getModifierScaling())
+                .ability(this)
+                .directEntity(projectile)
+                .skillLevel(getSkillLevel(caster, skill))
+                .amplify(amplifier);
+
+        MKEffectBuilder<?> fireBreak = MKUEffects.BREAK_FIRE.get().builder(caster)
+                .ability(this)
+                .directEntity(projectile)
+                .timed(Math.round((getSkillLevel(caster, skill) + 1) * GameConstants.TICKS_PER_SECOND))
+                .skillLevel(getSkillLevel(caster, skill))
+                .amplify(amplifier);
+
+        AreaEffectBuilder.createOnEntity(caster, projectile)
+                .effect(damage, getTargetContext())
+                .effect(fireBreak, getTargetContext())
+                .instant()
+                .color(16737330).radius(getExplosionRadius(), true)
+                .disableParticle()
+                .spawn();
+
+        return true;
+    }
+
+    @Override
+    public AbilityProjectileEntity makeProjectile(LivingEntity entity, IMKEntityData data, AbilityContext context) {
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), entity.level);
+        projectile.setAbility(() -> this);
+        projectile.setTrailAnimation(trail_particles.getValue());
+        projectile.setItem(new ItemStack(MKUItems.fireballProjectileItem.get()));
+        projectile.setDeathTime(GameConstants.TICKS_PER_SECOND * 5);
+        return projectile;
     }
 
     @Nullable
@@ -78,32 +110,8 @@ public class FireballAbility extends MKAbility {
     }
 
     @Override
-    public TargetingContext getTargetContext() {
-        return TargetingContexts.ENEMY;
-    }
-
-    @Override
-    public AbilityTargetSelector getTargetSelector() {
-        return AbilityTargeting.PROJECTILE;
-    }
-
-    public float getModifierScaling() {
-        return modifierScaling.value();
-    }
-
-    @Override
     public SoundEvent getCastingSoundEvent() {
         return MKUSounds.hostile_casting_fire.get();
     }
 
-    @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        super.endCast(entity, data, context);
-        float level = context.getSkill(MKAttributes.EVOCATION);
-        FireballProjectileEntity proj = new FireballProjectileEntity(MKUEntities.FIREBALL_TYPE.get(), entity.level);
-        proj.setOwner(entity);
-        proj.setSkillLevel(level);
-        shootProjectile(proj, projectileSpeed.value(), projectileInaccuracy.value(), entity, context);
-        entity.level.addFreshEntity(proj);
-    }
 }

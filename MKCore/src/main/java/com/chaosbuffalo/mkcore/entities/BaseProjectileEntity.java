@@ -26,7 +26,7 @@ import net.minecraftforge.network.NetworkHooks;
 import javax.annotation.Nullable;
 
 public abstract class BaseProjectileEntity extends Projectile implements IClientUpdatable, IEntityAdditionalSpawnData {
-
+    public static final float DEFAULT_MC_GRAVITY = 0.03F;
     @Nullable
     private BlockState inBlockState;
     protected boolean inGround;
@@ -313,7 +313,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
     }
 
     public float getGravityVelocity() {
-        return 0.03F;
+        return DEFAULT_MC_GRAVITY;
     }
 
 //    @Override

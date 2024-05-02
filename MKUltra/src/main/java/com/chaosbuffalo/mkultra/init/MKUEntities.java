@@ -6,7 +6,6 @@ import com.chaosbuffalo.mknpc.entity.MKZombifiedPiglinEntity;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.entities.humans.HumanEntity;
 import com.chaosbuffalo.mkultra.entities.orcs.OrcEntity;
-import com.chaosbuffalo.mkultra.entities.projectiles.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -56,56 +55,6 @@ public class MKUEntities {
                     .sized(EntityType.ZOMBIE.getWidth(), EntityType.ZOMBIE.getHeight())
                     .build(new ResourceLocation(MKUltra.MODID, HUMAN_NAME).toString()));
 
-
-    public static final RegistryObject<EntityType<CleansingSeedProjectileEntity>> CLEANSING_SEED_TYPE = REGISTRY.register(
-            "cleansing_seed_projectile", () -> EntityType.Builder.of(CleansingSeedProjectileEntity::new, MobCategory.MISC)
-                    .fireImmune()
-                    .sized(0.25f, 0.25f)
-                    .setTrackingRange(5)
-                    .setUpdateInterval(10)
-                    .setShouldReceiveVelocityUpdates(true)
-                    .noSave()
-                    .build(new ResourceLocation(MKUltra.MODID, "cleansing_seed_projectile").toString()));
-
-    public static final net.minecraftforge.registries.RegistryObject<EntityType<SpiritBombProjectileEntity>> SPIRIT_BOMB_TYPE = REGISTRY.register(
-            "spirit_bomb", () -> EntityType.Builder.of(SpiritBombProjectileEntity::new, MobCategory.MISC)
-                    .fireImmune()
-                    .sized(0.15f, 0.15f)
-                    .setTrackingRange(5)
-                    .setUpdateInterval(10)
-                    .setShouldReceiveVelocityUpdates(true)
-                    .noSave()
-                    .build(new ResourceLocation(MKUltra.MODID, "spirit_bomb_projectile").toString()));
-
-    public static final net.minecraftforge.registries.RegistryObject<EntityType<FireballProjectileEntity>> FIREBALL_TYPE = REGISTRY.register(
-            "fireball_projectile", () -> EntityType.Builder.of(FireballProjectileEntity::new, MobCategory.MISC)
-                    .fireImmune()
-                    .sized(0.25f, 0.25f)
-                    .setTrackingRange(5)
-                    .setUpdateInterval(10)
-                    .setShouldReceiveVelocityUpdates(true)
-                    .noSave()
-                    .build(new ResourceLocation(MKUltra.MODID, "fireball_projectile").toString()));
-
-    public static final RegistryObject<EntityType<ShadowBoltProjectileEntity>> SHADOWBOLT_TYPE = REGISTRY.register(
-            "shadow_bolt_projectile", () -> EntityType.Builder.of(ShadowBoltProjectileEntity::new, MobCategory.MISC)
-                    .fireImmune()
-                    .sized(0.25f, 0.25f)
-                    .setTrackingRange(5)
-                    .setUpdateInterval(10)
-                    .setShouldReceiveVelocityUpdates(true)
-                    .noSave()
-                    .build(new ResourceLocation(MKUltra.MODID, "shadow_bolt_projectile").toString()));
-
-    public static final RegistryObject<EntityType<DrownProjectileEntity>> DROWN_TYPE = REGISTRY.register(
-            "drown_projectile", () -> EntityType.Builder.of(DrownProjectileEntity::new, MobCategory.MISC)
-                    .fireImmune()
-                    .sized(0.25f, 0.25f)
-                    .setTrackingRange(5)
-                    .setUpdateInterval(10)
-                    .setShouldReceiveVelocityUpdates(true)
-                    .noSave()
-                    .build(new ResourceLocation(MKUltra.MODID, "drown_projectile").toString()));
 
 
     public static void register(IEventBus bus) {

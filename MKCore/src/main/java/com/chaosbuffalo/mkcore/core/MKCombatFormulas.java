@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.core;
 
+import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -20,6 +21,10 @@ public class MKCombatFormulas {
         float mod = MAX_RATE - castSpeed;
         float newTicks = mod * originalCastTicks;
         return (int) newTicks;
+    }
+
+    public static int secondsToTicks(float seconds) {
+        return Math.round(GameConstants.TICKS_PER_SECOND * seconds);
     }
 
     public static float applyManaCostReduction(IMKEntityData playerData, float originalCost) {

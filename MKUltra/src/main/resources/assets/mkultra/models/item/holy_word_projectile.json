@@ -1,0 +1,6 @@
+{
+  "parent": "mkultra:item/standarditem",
+  "textures": {
+    "layer0": "mkultra:item/holy_word_projectile"
+  }
+}

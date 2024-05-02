@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.client.rendering;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.client.rendering.entities.SpriteProjectileRenderer;
 import com.chaosbuffalo.mkcore.fx.particles.IndicatorParticle;
 import com.chaosbuffalo.mkcore.fx.particles.MKParticle;
 import com.chaosbuffalo.mkcore.fx.particles.MKParticleData;
@@ -25,6 +26,8 @@ public class MKRenderers {
         event.registerEntityRenderer(CoreEntities.LINE_EFFECT.get(), BaseEffectEntityRenderer::new);
         event.registerEntityRenderer(CoreEntities.POINT_EFFECT.get(), BaseEffectEntityRenderer::new);
         event.registerEntityRenderer(CoreEntities.BLOCK_ANCHORED_LINE_EFFECT.get(), BaseEffectEntityRenderer::new);
+        event.registerEntityRenderer(CoreEntities.ABILITY_PROJECTILE_TYPE.get(),
+                (context) -> new SpriteProjectileRenderer<>(context, 1.0f, true));
     }
 
     @SubscribeEvent

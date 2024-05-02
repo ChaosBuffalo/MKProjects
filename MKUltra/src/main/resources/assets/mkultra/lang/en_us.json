@@ -139,5 +139,10 @@
   "item.mkultra.ancient_priest_chestplate": "Ancient Priest Robes",
   "item.mkultra.ancient_priest_boots": "Ancient Priest Boots",
   "item.mkultra.ancient_priest_helmet": "Ancient Priest Hood",
-  "item.mkultra.ancient_priest_leggings": "Ancient Priest Pants"
+  "item.mkultra.ancient_priest_leggings": "Ancient Priest Pants",
+  "mkultra.ability.drown.name": "Drown",
+  "mkultra.ability.drown.description": "Fills the targets lungs with water dealing %s every %s seconds for %s seconds.",
+  "mkultra.ability.holy_word.name": "Holy Word",
+  "mkultra.ability.holy_word.description": "Strikes the target with the word of God, dealing %s and applying a stack of %s lasting %s seconds, when %s stacks are reached, stuns the target for %s seconds.",
+  "mk_effect.mkultra.effect.holy_word": "Holy Judgement"
 }

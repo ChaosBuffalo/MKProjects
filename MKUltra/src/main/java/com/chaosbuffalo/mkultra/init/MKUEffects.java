@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.OnHitEffect;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.effects.status.MKResistance;
+import com.chaosbuffalo.mkcore.effects.status.OnStackEffect;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.misc.FrozenGraspAbility;
 import com.chaosbuffalo.mkultra.effects.*;
@@ -98,6 +99,9 @@ public class MKUEffects {
 
     public static final RegistryObject<FrozenGraspEffect> FROZEN_GRASP = REGISTRY.register("effect.frozen_grasp",
             FrozenGraspEffect::new);
+
+    public static final RegistryObject<HolyWordEffect> HOLY_WORD_EFFECT = REGISTRY.register("effect.holy_word",
+            HolyWordEffect::new);
 
     public static final RegistryObject<OnHitEffect> FROZEN_GRASP_APPLIER = REGISTRY.register(
             "effect.frozen_grasp_applier",

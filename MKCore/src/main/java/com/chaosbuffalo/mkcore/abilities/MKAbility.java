@@ -49,7 +49,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     private final List<ISerializableAttribute<?>> attributes;
     private AbilityUseCondition useCondition;
     private final Set<Attribute> skillAttributes;
-    private static final ResourceLocation EMPTY_PARTICLES = new ResourceLocation(MKCore.MOD_ID, "fx.casting.empty");
+    protected static final ResourceLocation EMPTY_PARTICLES = new ResourceLocation(MKCore.MOD_ID, "fx.casting.empty");
     protected final ResourceLocationAttribute casting_particles = new ResourceLocationAttribute("casting_particles", EMPTY_PARTICLES);
     public static final ResourceLocation POOL_SLOT_ICON = new ResourceLocation(MKCore.MOD_ID, "textures/talents/pool_count_icon_filled.png");
     public static final NumberFormat PERCENT_FORMATTER = NumberFormat.getPercentInstance();

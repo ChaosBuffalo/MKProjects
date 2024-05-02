@@ -43,6 +43,10 @@ public abstract class MKEffectState {
         this.maxStacks = max;
     }
 
+    public int getMaxStacks() {
+        return maxStacks;
+    }
+
     @Deprecated
     @Nullable
     protected Entity findEntity(Entity entity, UUID entityId, Level world) {

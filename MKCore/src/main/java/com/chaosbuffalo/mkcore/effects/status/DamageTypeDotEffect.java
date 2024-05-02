@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
-import com.chaosbuffalo.mkcore.effects.ScalingValueEffectState;
+import com.chaosbuffalo.mkcore.effects.ScalingDamageEffectState;
 import net.minecraft.world.effect.MobEffectCategory;
 
 public abstract class DamageTypeDotEffect extends MKEffect {
@@ -13,7 +13,7 @@ public abstract class DamageTypeDotEffect extends MKEffect {
         super(MobEffectCategory.HARMFUL);
     }
 
-    public static class State extends ScalingValueEffectState {
+    public static class State extends ScalingDamageEffectState {
         private String effectName;
 
         @Override

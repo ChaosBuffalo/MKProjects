@@ -1,48 +1,57 @@
 package com.chaosbuffalo.mkultra.abilities.green_knight;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
+import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
+import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.init.CoreEntities;
+import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.entities.projectiles.CleansingSeedProjectileEntity;
-import com.chaosbuffalo.mkultra.init.MKUEntities;
+import com.chaosbuffalo.mkultra.effects.CureEffect;
+import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
+import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
-public class CleansingSeedAbility extends MKAbility {
+public class CleansingSeedAbility extends ProjectileAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "cleansing_seed_casting");
-    protected final FloatAttribute baseDamage = new FloatAttribute("baseDamage", 4.0f);
-    protected final FloatAttribute scaleDamage = new FloatAttribute("scaleDamage", 4.0f);
-    protected final FloatAttribute projectileSpeed = new FloatAttribute("projectileSpeed", 1.25f);
-    protected final FloatAttribute projectileInaccuracy = new FloatAttribute("projectileInaccuracy", 0.2f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "cleansing_seed_trail");
+    public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "cleansing_seed_detonate");
+
 
     public CleansingSeedAbility() {
-        super();
+        super(MKAttributes.RESTORATION);
         setCooldownSeconds(8);
         setManaCost(4);
         setCastTime(GameConstants.TICKS_PER_SECOND - 5);
-        addAttributes(baseDamage, scaleDamage, projectileSpeed, projectileInaccuracy, modifierScaling);
-        addSkillAttribute(MKAttributes.RESTORATION);
         casting_particles.setDefaultValue(CASTING_PARTICLES);
+        baseDamage.setDefaultValue(4.0f);
+        scaleDamage.setDefaultValue(4.0f);
+        trail_particles.setDefaultValue(TRAIL_PARTICLES);
+        detonate_particles.setDefaultValue(DETONATE_PARTICLES);
     }
 
-    public float getDamageForLevel(float level) {
+    protected float getDamageForLevel(float level) {
         return baseDamage.value() + scaleDamage.value() * level;
     }
 
@@ -65,34 +74,55 @@ public class CleansingSeedAbility extends MKAbility {
         return TargetingContexts.ALL;
     }
 
+
     @Override
-    public AbilityTargetSelector getTargetSelector() {
-        return AbilityTargeting.PROJECTILE;
+    public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
+        SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
+        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_water_6.get(), cat);
+        if (result.getType() == HitResult.Type.ENTITY) {
+            EntityHitResult entityTrace = (EntityHitResult) result;
+            if (entityTrace.getEntity() instanceof LivingEntity target) {
+                Targeting.TargetRelation relation = Targeting.getTargetRelation(caster, target);
+                switch (relation) {
+                    case FRIEND: {
+                        MKEffectBuilder<?> cure = CureEffect.from(caster)
+                                .ability(this)
+                                .directEntity(projectile)
+                                .skillLevel(getSkillLevel(caster, skill))
+                                .amplify(amplifier);
+
+                        MKCore.getEntityData(target).ifPresent(targetData -> targetData.getEffects().addEffect(cure));
+
+                        SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_water_2.get(), cat);
+                        break;
+                    }
+                    case ENEMY: {
+                        target.hurt(MKDamageSource.causeAbilityDamage(target.getLevel(), CoreDamageTypes.NatureDamage.get(),
+                                        getAbilityId(), projectile, caster,
+                                        getModifierScaling()), getDamageForLevel(getSkillLevel(caster, skill)));
+                        SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_water_8.get(), cat);
+                        break;
+                    }
+                }
+            }
+        }
+        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonate_particles.getValue());
+        return true;
     }
 
-    public float getModifierScaling() {
-        return modifierScaling.value();
+    @Override
+    public AbilityProjectileEntity makeProjectile(LivingEntity entity, IMKEntityData data, AbilityContext context) {
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), entity.level);
+        projectile.setAbility(() -> this);
+        projectile.setTrailAnimation(trail_particles.getValue());
+        projectile.setItem(new ItemStack(MKUItems.cleansingSeedProjectileItem.get()));
+        projectile.setDeathTime(GameConstants.TICKS_PER_SECOND * 2);
+        projectile.setGravityVelocity(BaseProjectileEntity.DEFAULT_MC_GRAVITY);
+        return projectile;
     }
 
     @Override
     public SoundEvent getCastingSoundEvent() {
         return MKUSounds.casting_water.get();
-    }
-
-    @Override
-    public float getDistance(LivingEntity entity) {
-        return 50.0f;
-    }
-
-    @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        super.endCast(entity, data, context);
-
-        float level = context.getSkill(MKAttributes.RESTORATION);
-        CleansingSeedProjectileEntity proj = new CleansingSeedProjectileEntity(MKUEntities.CLEANSING_SEED_TYPE.get(), entity.level);
-        proj.setOwner(entity);
-        proj.setSkillLevel(level);
-        shootProjectile(proj, projectileSpeed.value(), projectileInaccuracy.value(), entity, context);
-        entity.level.addFreshEntity(proj);
     }
 }

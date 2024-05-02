@@ -1,60 +1,49 @@
 package com.chaosbuffalo.mkultra.abilities.green_knight;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
+import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
+import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.init.CoreEntities;
+import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.entities.projectiles.SpiritBombProjectileEntity;
-import com.chaosbuffalo.mkultra.init.MKUEntities;
+import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
-import com.chaosbuffalo.targeting_api.TargetingContext;
-import com.chaosbuffalo.targeting_api.TargetingContexts;
+import com.chaosbuffalo.targeting_api.Targeting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
-public class SpiritBombAbility extends MKAbility {
+public class SpiritBombAbility extends ProjectileAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_casting");
-    protected final FloatAttribute baseDamage = new FloatAttribute("baseDamage", 4.0f);
-    protected final FloatAttribute scaleDamage = new FloatAttribute("scaleDamage", 4.0f);
-    protected final FloatAttribute projectileSpeed = new FloatAttribute("projectileSpeed", 1.25f);
-    protected final FloatAttribute projectileInaccuracy = new FloatAttribute("projectileInaccuracy", 0.2f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_trail");
+    public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_detonate");
 
     public SpiritBombAbility() {
-        super();
+        super(MKAttributes.EVOCATION);
         setCooldownSeconds(10);
         setCastTime(GameConstants.TICKS_PER_SECOND + (GameConstants.TICKS_PER_SECOND / 4));
         setManaCost(4);
-        addAttributes(baseDamage, scaleDamage, projectileSpeed, projectileInaccuracy, modifierScaling);
-        addSkillAttribute(MKAttributes.EVOCATION);
+        baseDamage.setDefaultValue(4.0f);
+        scaleDamage.setDefaultValue(4.0f);
+        modifierScaling.setDefaultValue(1.25f);
         casting_particles.setDefaultValue(CASTING_PARTICLES);
-    }
-
-    @Override
-    public float getDistance(LivingEntity entity) {
-        return 50.0f;
-    }
-
-    @Override
-    public TargetingContext getTargetContext() {
-        return TargetingContexts.ENEMY;
-    }
-
-    @Override
-    public AbilityTargetSelector getTargetSelector() {
-        return AbilityTargeting.PROJECTILE;
+        trail_particles.setDefaultValue(TRAIL_PARTICLES);
+        detonate_particles.setDefaultValue(DETONATE_PARTICLES);
     }
 
     @Override
@@ -68,18 +57,6 @@ public class SpiritBombAbility extends MKAbility {
         return MKUSounds.spell_magic_whoosh_1.get();
     }
 
-    public float getBaseDamage() {
-        return baseDamage.value();
-    }
-
-    public float getScaleDamage() {
-        return scaleDamage.value();
-    }
-
-    public float getModifierScaling() {
-        return modifierScaling.value();
-    }
-
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.NatureDamage.get(),
@@ -90,14 +67,69 @@ public class SpiritBombAbility extends MKAbility {
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
     }
 
+    private boolean doEffect(AbilityProjectileEntity projectile, LivingEntity caster, int amplifier) {
+        MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.NatureDamage.get(),
+                        getBaseDamage(),
+                        getScaleDamage(),
+                        getModifierScaling())
+                .ability(this)
+                .directEntity(projectile)
+                .skillLevel(getSkillLevel(caster, skill))
+                .amplify(amplifier);
+
+        AreaEffectBuilder.createOnEntity(caster, projectile)
+                .effect(damage, getTargetContext())
+                .instant()
+                .color(65535)
+                .radius(4.0f, true)
+                .disableParticle()
+                .spawn();
+        SoundSource cat = caster.getSoundSource();
+        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_magic_explosion.get(), cat);
+        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonate_particles.getValue());
+        return true;
+    }
+
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        super.endCast(entity, data, context);
-        float level = context.getSkill(MKAttributes.EVOCATION);
-        SpiritBombProjectileEntity proj = new SpiritBombProjectileEntity(MKUEntities.SPIRIT_BOMB_TYPE.get(), entity.level);
-        proj.setOwner(entity);
-        proj.setSkillLevel(level);
-        shootProjectile(proj, projectileSpeed.value(), projectileInaccuracy.value(), entity, context);
-        entity.level.addFreshEntity(proj);
+    public boolean onAirProc(AbilityProjectileEntity projectile, LivingEntity caster, int amplifier) {
+        return doEffect(projectile, caster, amplifier);
+    }
+
+    @Override
+    public boolean onGroundProc(AbilityProjectileEntity projectile, LivingEntity caster, int amplifier) {
+        return doEffect(projectile, caster, amplifier);
+    }
+
+    @Override
+    public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
+        SoundSource cat = caster.getSoundSource();
+        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_thunder_3.get(), cat);
+        switch (result.getType()) {
+            case BLOCK, MISS:
+                break;
+            case ENTITY:
+                EntityHitResult entityTrace = (EntityHitResult) result;
+                if (entityTrace.getEntity() instanceof LivingEntity target) {
+                    if (Targeting.isValidTarget(getTargetContext(), caster, target)) {
+                        projectile.setDeltaMovement(0.0, 0.0, 0.0);
+                    }
+                }
+                break;
+        }
+        return false;
+    }
+
+    @Override
+    public AbilityProjectileEntity makeProjectile(LivingEntity entity, IMKEntityData data, AbilityContext context) {
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), entity.level);
+        projectile.setAbility(() -> this);
+        projectile.setTrailAnimation(trail_particles.getValue());
+        projectile.setItem(new ItemStack(MKUItems.spiritBombProjectileItem.get()));
+        projectile.setDeathTime(GameConstants.TICKS_PER_SECOND * 3);
+        projectile.setAirProcTime(GameConstants.TICKS_PER_SECOND);
+        projectile.setDoAirProc(true);
+        projectile.setDoGroundProc(true);
+        projectile.setGroundProcTime(GameConstants.TICKS_PER_SECOND);
+        return projectile;
     }
 }

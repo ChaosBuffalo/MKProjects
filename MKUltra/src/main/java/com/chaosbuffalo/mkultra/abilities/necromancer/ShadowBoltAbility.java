@@ -1,54 +1,47 @@
 package com.chaosbuffalo.mkultra.abilities.necromancer;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargetSelector;
-import com.chaosbuffalo.mkcore.abilities.AbilityTargeting;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
+import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
+import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
+import com.chaosbuffalo.mkcore.init.CoreEntities;
+import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.entities.projectiles.ShadowBoltProjectileEntity;
-import com.chaosbuffalo.mkultra.init.MKUEffects;
-import com.chaosbuffalo.mkultra.init.MKUEntities;
-import com.chaosbuffalo.mkultra.init.MKUSounds;
-import com.chaosbuffalo.targeting_api.TargetingContext;
-import com.chaosbuffalo.targeting_api.TargetingContexts;
+import com.chaosbuffalo.mkultra.init.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
-public class ShadowBoltAbility extends MKAbility {
+public class ShadowBoltAbility extends ProjectileAbility {
     public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_casting");
-    protected final FloatAttribute baseDamage = new FloatAttribute("baseDamage", 8.0f);
-    protected final FloatAttribute scaleDamage = new FloatAttribute("scaleDamage", 4.0f);
-    protected final FloatAttribute projectileSpeed = new FloatAttribute("projectileSpeed", 1.25f);
-    protected final FloatAttribute projectileInaccuracy = new FloatAttribute("projectileInaccuracy", 0.2f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_trail");
+    public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_detonate");
 
     public ShadowBoltAbility() {
-        super();
+        super(MKAttributes.EVOCATION);
         setCooldownSeconds(8);
         setManaCost(7);
         setCastTime(GameConstants.TICKS_PER_SECOND);
-        addAttributes(baseDamage, scaleDamage, projectileSpeed, projectileInaccuracy, modifierScaling);
-        addSkillAttribute(MKAttributes.EVOCATION);
+        baseDamage.setDefaultValue(8.0f);
+        scaleDamage.setDefaultValue(4.0f);
         casting_particles.setDefaultValue(CASTING_PARTICLES);
-    }
-
-    public float getBaseDamage() {
-        return baseDamage.value();
-    }
-
-    public float getScaleDamage() {
-        return scaleDamage.value();
+        trail_particles.setDefaultValue(TRAIL_PARTICLES);
+        detonate_particles.setDefaultValue(DETONATE_PARTICLES);
     }
 
     @Override
@@ -64,16 +57,11 @@ public class ShadowBoltAbility extends MKAbility {
 
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
-        float skillLevel = context.getSkill(MKAttributes.EVOCATION);
+        float skillLevel = context.getSkill(skill);
         Component damageStr = getDamageDescription(entityData, CoreDamageTypes.ShadowDamage.get(), baseDamage.value(),
                 scaleDamage.value(), skillLevel,
                 modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(), damageStr);
-    }
-
-    @Override
-    public float getDistance(LivingEntity entity) {
-        return 50.0f;
     }
 
     @Nullable
@@ -83,19 +71,37 @@ public class ShadowBoltAbility extends MKAbility {
     }
 
     @Override
-    public TargetingContext getTargetContext() {
-        return TargetingContexts.ENEMY;
+    public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
+        SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
+        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_dark_8.get(), cat);
+        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonate_particles.getValue());
+
+        if (result.getType().equals(HitResult.Type.ENTITY)) {
+            EntityHitResult entityTrace = (EntityHitResult) result;
+            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.ShadowDamage.get(),
+                            getBaseDamage(),
+                            getScaleDamage(),
+                            getModifierScaling())
+                    .ability(this)
+                    .directEntity(projectile)
+                    .skillLevel(getSkillLevel(caster, skill))
+                    .amplify(amplifier);
+            MKCore.getEntityData(entityTrace.getEntity()).ifPresent(x -> {
+                x.getEffects().addEffect(damage);
+            });
+        }
+        return true;
     }
 
     @Override
-    public AbilityTargetSelector getTargetSelector() {
-        return AbilityTargeting.PROJECTILE;
+    public AbilityProjectileEntity makeProjectile(LivingEntity entity, IMKEntityData data, AbilityContext context) {
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), entity.level);
+        projectile.setAbility(() -> this);
+        projectile.setTrailAnimation(trail_particles.getValue());
+        projectile.setItem(new ItemStack(MKUItems.shadowBoltProjectileItem.get()));
+        projectile.setDeathTime(GameConstants.TICKS_PER_SECOND * 6);
+        return projectile;
     }
-
-    public float getModifierScaling() {
-        return modifierScaling.value();
-    }
-
     @Override
     public SoundEvent getCastingSoundEvent() {
         return MKUSounds.casting_shadow.get();
@@ -103,15 +109,9 @@ public class ShadowBoltAbility extends MKAbility {
 
     @Override
     public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        super.endCast(entity, data, context);
-        float level = context.getSkill(MKAttributes.EVOCATION);
         if (data.getEffects().isEffectActive(MKUEffects.SHADOWBRINGER.get())) {
             data.getEffects().removeEffect(MKUEffects.SHADOWBRINGER.get());
         }
-        ShadowBoltProjectileEntity proj = new ShadowBoltProjectileEntity(MKUEntities.SHADOWBOLT_TYPE.get(), entity.level);
-        proj.setOwner(entity);
-        proj.setSkillLevel(level);
-        shootProjectile(proj, projectileSpeed.value(), projectileInaccuracy.value(), entity, context);
-        entity.level.addFreshEntity(proj);
+        super.endCast(entity, data, context);
     }
 }
