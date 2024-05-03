@@ -81,7 +81,7 @@ public class QuestLootNotableObjective extends QuestObjective<UUIDInstanceData> 
         if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = getInstanceData(quest);
             boolean applies = event.getEntity().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY)
-                    .map(x -> x.getNotableUUID().equals(objData.getUuid()))
+                    .map(x -> x.getNotableUUID().equals(objData.getUUID()))
                     .orElse(false);
             if (applies && player.getRandom().nextDouble() <= chanceToFind) {
                 int currentCount = objectiveData.getInt("lootCount");
@@ -123,7 +123,7 @@ public class QuestLootNotableObjective extends QuestObjective<UUIDInstanceData> 
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription());
-        NotableNpcEntry notable = worldData.getNotableNpc(objData.getUuid());
+        NotableNpcEntry notable = worldData.getNotableNpc(objData.getUUID());
         if (notable != null) {
             newObj.setDescription(getDescriptionWithCount(notable.getName(), 0));
             newObj.putBlockPos("npcPos", notable.getLocation());

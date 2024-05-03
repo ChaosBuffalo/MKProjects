@@ -75,7 +75,7 @@ public class LootChestObjective extends QuestObjective<UUIDInstanceData> impleme
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription());
-        NotableChestEntry chest = worldData.getNotableChest(objData.getUuid());
+        NotableChestEntry chest = worldData.getNotableChest(objData.getUUID());
         if (chest != null) {
             newObj.putBlockPos("chestPos", chest.getLocation());
         }
@@ -90,7 +90,7 @@ public class LootChestObjective extends QuestObjective<UUIDInstanceData> impleme
         if (objectiveData.getBool("hasLooted")) {
             return false;
         }
-        if (chestData.getChestId() != null && chestData.getChestId().equals(objData.getUuid())) {
+        if (chestData.getChestId() != null && chestData.getChestId().equals(objData.getUUID())) {
             objectiveData.putBool("hasLooted", true);
             objectiveData.removeBlockPos("chestPos");
             signalCompleted(objectiveData);

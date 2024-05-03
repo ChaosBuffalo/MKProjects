@@ -68,15 +68,10 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> {
     }
 
     public void signalCompleted(PlayerQuestObjectiveData objectiveData) {
-        objectiveData.putBool("isComplete", true);
+        objectiveData.setComplete(true);
     }
-
 
     public boolean isComplete(PlayerQuestObjectiveData playerData) {
-        return playerData.getBool("isComplete");
-    }
-
-    public void createDataForQuest(QuestData data, Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
-        data.putObjective(getObjectiveName(), generateInstanceData(questStructures));
+        return playerData.isComplete();
     }
 }

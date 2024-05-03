@@ -86,7 +86,7 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
         if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = getInstanceData(quest);
             boolean applies = event.getEntity().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
-                    x -> x.getStructureId().map(structId -> structId.equals(objData.getUuid())).orElse(false)).orElse(false)
+                    x -> x.getStructureId().map(structId -> structId.equals(objData.getUUID())).orElse(false)).orElse(false)
                     && def.getDefinitionName().equals(npcDefinition);
             if (applies && player.getRandom().nextDouble() <= chanceToFind) {
                 int currentCount = objectiveData.getInt("lootCount");

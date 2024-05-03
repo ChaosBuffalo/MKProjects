@@ -158,7 +158,7 @@ public class TalkToNpcObjective extends QuestObjective<UUIDInstanceData> {
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription());
-        NotableNpcEntry entry = worldData.getNotableNpc(objData.getUuid());
+        NotableNpcEntry entry = worldData.getNotableNpc(objData.getUUID());
         if (entry != null) {
             newObj.putBlockPos("npcPos", entry.getLocation());
         }

@@ -10,7 +10,6 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.objectives.*;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
@@ -22,7 +21,7 @@ import java.util.function.Consumer;
 public class QuestBuilder {
     private Quest quest;
 
-    public QuestBuilder(String questName, MutableComponent description) {
+    public QuestBuilder(String questName, Component description) {
         this.quest = new Quest(questName, description);
     }
 
@@ -59,13 +58,13 @@ public class QuestBuilder {
         return this;
     }
 
-    public QuestBuilder questLootFromNotable(String objectiveName, QuestNpc npc, double chance, int count, MutableComponent itemDescription) {
+    public QuestBuilder questLootFromNotable(String objectiveName, QuestNpc npc, double chance, int count, Component itemDescription) {
         QuestLootNotableObjective obj = new QuestLootNotableObjective(objectiveName, npc.location, npc.npcDef, chance, count, itemDescription);
         objective(obj);
         return this;
     }
 
-    public QuestBuilder hailWithObjectives(String objectiveName, MutableComponent description,
+    public QuestBuilder hailWithObjectives(String objectiveName, Component description,
                                            QuestNpc talkTo, String withComplete,
                                            String withoutComplete, List<String> objectives,
                                            @Nullable Consumer<TalkToNpcObjective> additionalLogic) {
@@ -86,7 +85,7 @@ public class QuestBuilder {
         return this;
     }
 
-    public QuestBuilder hailWithCondition(String objectiveName, MutableComponent description,
+    public QuestBuilder hailWithCondition(String objectiveName, Component description,
                                           QuestNpc talkTo, String withCondition, String withoutCondition,
                                           DialogueCondition withCond,
                                           @Nullable Consumer<TalkToNpcObjective> additionalLogic) {
