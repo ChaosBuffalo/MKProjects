@@ -60,9 +60,8 @@ public class MKJigsawBuilder {
         return this;
     }
 
-    public MKJigsawBuilder addEvent(String name, StructureEvent event) {
-        event.setEventName(name);
-        events.put(name, event);
+    public MKJigsawBuilder addEvent(StructureEvent event) {
+        events.put(event.getEventName(), event);
         return this;
     }
 
@@ -84,7 +83,7 @@ public class MKJigsawBuilder {
         var struct = new MKJigsawStructure(settings, templatePool, startJigsawName, maxDepth, heightProvider,
                 useExpansionHack, heightmapTypes, maxDistFromCenter, new CompoundTag());
         for (var entry : events.entrySet()) {
-            struct.addEvent(entry.getKey(), entry.getValue());
+            struct.addEvent(entry.getValue());
         }
         return struct;
     }

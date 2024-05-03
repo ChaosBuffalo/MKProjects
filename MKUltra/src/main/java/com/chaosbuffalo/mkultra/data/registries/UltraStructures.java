@@ -63,7 +63,7 @@ public class UltraStructures {
                         emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_NECROTIDE_ALTER),
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE),
                         templates.getOrThrow(NecrotideAlterPools.BASE))
-                        .addEvent("summon_golem", new SpawnNpcDefinitionEvent(
+                        .addEvent(new SpawnNpcDefinitionEvent("summon_golem",
                                 new ResourceLocation(MKUltra.MODID, "necrotide_golem"),
                                 "golem_spawn", "golem_look", MKEntity.NonCombatMoveType.STATIONARY)
                                 .addNotableDeadCondition(new ResourceLocation(MKUltra.MODID, "skeletal_lock"), true)

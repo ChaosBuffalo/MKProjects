@@ -5,14 +5,11 @@ import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEventManager;
-import com.mojang.serialization.Dynamic;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -20,7 +17,6 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public abstract class MKStructure extends Structure {
 
@@ -53,14 +49,8 @@ public abstract class MKStructure extends Structure {
 
         for (int i = 0; i < evList.size(); i++) {
             CompoundTag evTag = evList.getCompound(i);
-            Dynamic<?> dyn = new Dynamic<>(NbtOps.INSTANCE, evTag);
-            ResourceLocation type = StructureEvent.getType(dyn);
-            Supplier<StructureEvent> supplier = StructureEventManager.getEventDeserializer(type);
-            if (supplier != null) {
-                StructureEvent ev = supplier.get();
-                ev.deserialize(dyn);
-                addEvent(ev.getEventName(), ev);
-            }
+
+            StructureEvent.CODEC.parse(NbtOps.INSTANCE, evTag).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addEvent);
         }
     }
 
@@ -77,9 +67,8 @@ public abstract class MKStructure extends Structure {
         deserializeEvents(tag.get("structure_events"));
     }
 
-    public MKStructure addEvent(String name, StructureEvent event) {
-        event.setEventName(name);
-        events.put(name, event);
+    public MKStructure addEvent(StructureEvent event) {
+        events.put(event.getEventName(), event);
         return this;
     }
 

@@ -18,12 +18,7 @@
   "structure_events": {
     "structure_events": [
       {
-        "attributes": {
-          "cooldown": 12000,
-          "faceTag": "golem_look",
-          "npcDefinition": "mkultra:necrotide_golem",
-          "poiTag": "golem_spawn"
-        },
+        "type": "mknpc:struct_event.spawn_npc",
         "conditions": [
           {
             "type": "mknpc:struct_condition.notable_dead",
@@ -31,8 +26,12 @@
             "npcDefinition": "mkultra:skeletal_lock"
           }
         ],
+        "cooldown": 12000,
         "event_name": "summon_golem",
-        "moveType": 0,
+        "faceTag": "golem_look",
+        "moveType": "STATIONARY",
+        "npcDefinition": "mkultra:necrotide_golem",
+        "poiTag": "golem_spawn",
         "requirements": [
           {
             "type": "mknpc:struct_requirement.has_poi",
@@ -47,10 +46,9 @@
             "npcDefinition": "mkultra:skeletal_lock"
           }
         ],
-        "structEventType": "mknpc:struct_event.spawn_npc",
         "triggers": [
-          1,
-          2
+          "ON_ACTIVATE",
+          "ON_DEATH"
         ]
       }
     ]
