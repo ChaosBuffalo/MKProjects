@@ -152,18 +152,11 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
             }
         });
         reqs.forEach(x -> x.ifPresent(this::addRequirement));
-        List<Optional<StructureEventCondition>> conds = dynamic.get("conditions").asList(x -> {
-            ResourceLocation type = StructureEventCondition.getType(x);
-            Supplier<StructureEventCondition> deserializer = StructureEventManager.getConditionDeserializer(type);
-            if (deserializer == null) {
-                return Optional.empty();
-            } else {
-                StructureEventCondition cond = deserializer.get();
-                cond.deserialize(x);
-                return Optional.of(cond);
-            }
+
+        dynamic.get("conditions").asStream().forEach(d -> {
+            StructureEventCondition.CODEC.parse(d).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addCondition);
         });
-        conds.forEach(x -> x.ifPresent(this::addCondition));
+
         setEventName(dynamic.get("event_name").asString("name_not_found"));
         triggers.clear();
         triggers.addAll(dynamic.get("triggers").asIntStream().mapToObj(x -> EventTrigger.values()[x]).collect(Collectors.toSet()));
