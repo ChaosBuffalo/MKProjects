@@ -39,8 +39,6 @@ public class FactionManager extends SimpleJsonResourceReloadListener {
         MKFactionMod.LOGGER.debug("FactionManager reloading all files");
         for (Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
             ResourceLocation factionId = entry.getKey();
-            if (factionId.getPath().startsWith("_"))
-                continue; //Forge: filter anything beginning with "_" as it's used for metadata.
 
             MKFactionMod.LOGGER.debug("Found file: {}", factionId);
             parseFaction(factionId, entry.getValue().getAsJsonObject());

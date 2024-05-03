@@ -94,8 +94,6 @@ public class MKNpc {
     }
 
     private void internalIMCSetup() {
-        NpcDefinitionManager.setupDeserializers();
-        QuestDefinitionManager.setupDeserializers();
         StructureEventManager.setupDeserializers();
     }
 

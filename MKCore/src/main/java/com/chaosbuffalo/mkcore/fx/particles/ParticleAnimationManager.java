@@ -172,8 +172,6 @@ public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
         for (Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
             ResourceLocation resourcelocation = entry.getKey();
             MKCore.LOGGER.info("Particle Animation Definition file: {}", resourcelocation);
-            if (resourcelocation.getPath().startsWith("_"))
-                continue; //Forge: filter anything beginning with "_" as it's used for metadata.
             ParticleAnimation anim = ParticleAnimation.deserializeFromDynamic(entry.getKey(),
                     new Dynamic<>(JsonOps.INSTANCE, entry.getValue()));
             ANIMATIONS.put(entry.getKey(), anim);

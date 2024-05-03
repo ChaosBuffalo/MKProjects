@@ -46,9 +46,6 @@ public class TalentManager extends SimpleJsonResourceReloadListener {
 
         MKCore.LOGGER.info("Loading Talent definitions from json");
         for (Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
-            ResourceLocation location = entry.getKey();
-            if (location.getPath().startsWith("_"))
-                continue; //Forge: filter anything beginning with "_" as it's used for metadata.
             parse(entry.getKey(), entry.getValue().getAsJsonObject());
         }
         defaultTrees = null;
