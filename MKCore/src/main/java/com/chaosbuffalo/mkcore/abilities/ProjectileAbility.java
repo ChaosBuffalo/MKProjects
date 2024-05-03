@@ -11,6 +11,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.HitResult;
 
+
 public abstract class ProjectileAbility extends MKAbility {
     protected final FloatAttribute baseDamage = new FloatAttribute("baseDamage", 6.0f);
     protected final FloatAttribute scaleDamage = new FloatAttribute("scaleDamage", 2.0f);

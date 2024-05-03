@@ -11,6 +11,8 @@ import com.chaosbuffalo.mkcore.test.MKCoreTestItems;
 import com.chaosbuffalo.mkcore.test.MKCoreTestTalents;
 import com.chaosbuffalo.mkcore.test.MKTestAbilities;
 import com.chaosbuffalo.mkcore.test.MKTestEffects;
+import com.chaosbuffalo.mkcore.utils.location.LocationProviderType;
+import com.chaosbuffalo.mkcore.utils.location.LocationProviderTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -39,6 +41,9 @@ public class MKCoreRegistry {
     public static IForgeRegistry<MKTalent> TALENTS = null;
     public static IForgeRegistry<MKEntitlement> ENTITLEMENTS = null;
 
+    public static final ResourceLocation LOC_PROVIDER_TYPES_NAME = new ResourceLocation(MKCore.MOD_ID, "loc_provider_types");
+    public static IForgeRegistry<LocationProviderType<?>> LOC_PROVIDER_TYPES = null;
+
     @Nullable
     public static MKAbility getAbility(ResourceLocation abilityId) {
         return ABILITIES.getValue(abilityId);
@@ -66,6 +71,8 @@ public class MKCoreRegistry {
                 .setName(TALENT_REGISTRY_NAME), r -> TALENTS = r);
         event.create(new RegistryBuilder<MKEntitlement>()
                 .setName(ENTITLEMENT_REGISTRY_NAME), r -> ENTITLEMENTS = r);
+        event.create(new RegistryBuilder<LocationProviderType<?>>()
+                .setName(LOC_PROVIDER_TYPES_NAME), r -> LOC_PROVIDER_TYPES = r);
     }
 
     public static void register(IEventBus modBus) {
@@ -82,5 +89,6 @@ public class MKCoreRegistry {
         MKTestAbilities.register(modBus);
         MKCoreTestItems.register(modBus);
         MKCoreTestTalents.register(modBus);
+        LocationProviderTypes.register(modBus);
     }
 }

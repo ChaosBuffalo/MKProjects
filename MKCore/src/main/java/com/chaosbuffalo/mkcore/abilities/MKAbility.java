@@ -362,7 +362,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     protected void shootProjectile(BaseProjectileEntity projectileEntity, float velocity, float accuracy,
                                    LivingEntity entity, AbilityContext context) {
         Vec3 startPos = entity.position().add(new Vec3(0, entity.getEyeHeight(), 0));
-        startPos.add(Vec3.directionFromRotation(entity.getRotationVector()).multiply(.5, 0.0, .5));
+        startPos = startPos.add(Vec3.directionFromRotation(entity.getRotationVector()).multiply(.5, 0.0, .5));
         projectileEntity.setPos(startPos.x, startPos.y, startPos.z);
         if (entity instanceof Player) {
             projectileEntity.shoot(entity, entity.getXRot(), entity.getYRot(), 0, velocity, accuracy);
