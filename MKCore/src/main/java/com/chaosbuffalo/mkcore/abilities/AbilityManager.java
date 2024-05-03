@@ -46,8 +46,6 @@ public class AbilityManager extends SimpleJsonResourceReloadListener {
         for (Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
             ResourceLocation resourcelocation = entry.getKey();
             MKCore.LOGGER.debug("Found file: {}", resourcelocation);
-            if (resourcelocation.getPath().startsWith("_"))
-                continue; //Forge: filter anything beginning with "_" as it's used for metadata.
             parse(entry.getKey(), entry.getValue().getAsJsonObject());
         }
     }

@@ -7,16 +7,11 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.OnDatapackSyncEvent;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,24 +19,16 @@ import java.util.Map;
 public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
     public static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
     public static final String DEFINITION_FOLDER = "mkquests";
-    private MinecraftServer server;
-    private boolean serverStarted = false;
-
-    public static final ResourceLocation INVALID_QUEST = new ResourceLocation(MKNpc.MODID, "invalid_quest");
 
     public static final Map<ResourceLocation, QuestDefinition> DEFINITIONS = new HashMap<>();
 
     public QuestDefinitionManager() {
         super(GSON, DEFINITION_FOLDER);
-        MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.addListener(this::addReloadListener);
     }
 
-    @SubscribeEvent
-    public void subscribeEvent(AddReloadListenerEvent event) {
+    private void addReloadListener(AddReloadListenerEvent event) {
         event.addListener(this);
-    }
-
-    public static void setupDeserializers() {
     }
 
     @Override
@@ -58,22 +45,5 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
 
     public static QuestDefinition getDefinition(ResourceLocation questName) {
         return DEFINITIONS.get(questName);
-    }
-
-    @SubscribeEvent
-    public void serverStop(ServerStoppingEvent event) {
-        serverStarted = false;
-        server = null;
-    }
-
-    @SubscribeEvent
-    public void serverStart(ServerAboutToStartEvent event) {
-        server = event.getServer();
-        serverStarted = true;
-    }
-
-    @SubscribeEvent
-    public void onDataPackSync(OnDatapackSyncEvent event) {
-
     }
 }
