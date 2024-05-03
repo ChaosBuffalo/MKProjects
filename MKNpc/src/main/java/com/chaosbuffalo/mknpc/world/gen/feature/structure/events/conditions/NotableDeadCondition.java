@@ -16,8 +16,8 @@ public class NotableDeadCondition extends StructureEventCondition {
             "struct_condition.notable_dead");
     public static final Codec<NotableDeadCondition> CODEC = RecordCodecBuilder.<NotableDeadCondition>mapCodec(builder -> {
         return builder.group(
-               ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
-               Codec.BOOL.fieldOf("allNotables").forGetter(i -> i.allNotables)
+                ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
+                Codec.BOOL.fieldOf("allNotables").forGetter(i -> i.allNotables)
         ).apply(builder, NotableDeadCondition::new);
     }).codec();
 

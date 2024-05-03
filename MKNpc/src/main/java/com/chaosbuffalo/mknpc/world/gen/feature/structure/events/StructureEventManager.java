@@ -10,10 +10,8 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.St
 import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class StructureEventManager {
 
@@ -25,7 +23,9 @@ public class StructureEventManager {
     public static final Codec<StructureEventCondition> COND_CODEC = CommonCodecs
             .createMapBackedDispatch(ResourceLocation.CODEC, COND_CODECS, StructureEventCondition::getTypeName);
 
-    public static final Map<ResourceLocation, Supplier<StructureEvent>> EVENT_DESERIALIZERS = new HashMap<>();
+    public static final Map<ResourceLocation, Codec<? extends StructureEvent>> EVENT_CODECS = new HashMap<>();
+    public static final Codec<StructureEvent> EVENT_CODEC = CommonCodecs
+            .createMapBackedDispatch(ResourceLocation.CODEC, EVENT_CODECS, StructureEvent::getTypeName);
 
     public static void registerRequirement(ResourceLocation name,
                                            Codec<? extends StructureEventRequirement> codec) {
@@ -36,20 +36,14 @@ public class StructureEventManager {
         COND_CODECS.put(name, codec);
     }
 
-    public static void putEventDeserializer(ResourceLocation name,
-                                            Supplier<StructureEvent> function) {
-        EVENT_DESERIALIZERS.put(name, function);
+    public static void registerEventType(ResourceLocation name, Codec<? extends StructureEvent> codec) {
+        EVENT_CODECS.put(name, codec);
     }
 
     public static void setupDeserializers() {
         registerRequirement(StructureHasPoiRequirement.TYPE_NAME, StructureHasPoiRequirement.CODEC);
         registerRequirement(StructureHasNotableRequirement.TYPE_NAME, StructureHasNotableRequirement.CODEC);
         registerCondition(NotableDeadCondition.TYPE_NAME, NotableDeadCondition.CODEC);
-        putEventDeserializer(SpawnNpcDefinitionEvent.TYPE_NAME, SpawnNpcDefinitionEvent::new);
-    }
-
-    @Nullable
-    public static Supplier<StructureEvent> getEventDeserializer(ResourceLocation name) {
-        return EVENT_DESERIALIZERS.get(name);
+        registerEventType(SpawnNpcDefinitionEvent.TYPE_NAME, SpawnNpcDefinitionEvent.CODEC);
     }
 }
