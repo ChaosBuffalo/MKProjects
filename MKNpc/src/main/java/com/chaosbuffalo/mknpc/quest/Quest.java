@@ -19,12 +19,9 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class Quest {
 
@@ -34,24 +31,16 @@ public class Quest {
     private final List<QuestReward> rewards;
     private final List<QuestRequirement> requirements;
     private String questName;
-    private MutableComponent description;
-    public static final MutableComponent defaultDescription = Component.literal("Placeholder Quest Description");
+    private Component description;
+    public static final Component defaultDescription = Component.literal("Placeholder Quest Description");
 
-    public Quest(String questName, MutableComponent description) {
+    public Quest(String questName, Component description) {
         this.questName = questName;
+        this.description = description;
         this.objectives = new ArrayList<>();
         this.objectiveIndex = new HashMap<>();
         this.rewards = new ArrayList<>();
         this.requirements = new ArrayList<>();
-        this.description = description;
-    }
-
-    public void setAutoComplete(boolean autoComplete) {
-        this.autoComplete = autoComplete;
-    }
-
-    public boolean shouldAutoComplete() {
-        return autoComplete;
     }
 
     public Quest() {
@@ -62,6 +51,18 @@ public class Quest {
         return questName;
     }
 
+    public Component getDescription() {
+        return description;
+    }
+
+    public void setAutoComplete(boolean autoComplete) {
+        this.autoComplete = autoComplete;
+    }
+
+    public boolean shouldAutoComplete() {
+        return autoComplete;
+    }
+
     public DialogueTree generateDialogueForNpc(QuestChainInstance questChain, ResourceLocation npcDefinitionName,
                                                UUID npcId, DialogueTree tree,
                                                Map<ResourceLocation, List<MKStructureEntry>> questStructures,
@@ -70,7 +71,7 @@ public class Quest {
         for (QuestObjective<?> obj : getObjectives()) {
             if (obj instanceof TalkToNpcObjective talkObj) {
                 UUIDInstanceData instanceData = talkObj.getInstanceData(questData);
-                if (instanceData.getUuid().equals(npcId)) {
+                if (instanceData.getUUID().equals(npcId)) {
                     tree = talkObj.generateDialogueForNpc(this, questChain, npcDefinitionName, npcId, tree, questStructures, definition);
                 }
             }
@@ -95,8 +96,44 @@ public class Quest {
         return objectiveIndex.get(name);
     }
 
-    public MutableComponent getDescription() {
-        return description;
+    public List<QuestObjective<?>> getObjectives() {
+        return objectives;
+    }
+
+    public List<Pair<ResourceLocation, Integer>> getStructuresNeeded() {
+        return objectives.stream()
+                .flatMap(x -> x.getStructure().stream())
+                .map(l -> new Pair<>(l.getStructureId(), l.getIndex() + 1))
+                .toList();
+    }
+
+
+    public boolean isStructureRelevant(MKStructureEntry entry) {
+        return objectives.stream().allMatch(x -> x.isStructureRelevant(entry));
+    }
+
+    public PlayerQuestData generatePlayerQuestData(IWorldNpcData worldData, QuestData instanceData) {
+        PlayerQuestData data = new PlayerQuestData(getQuestName(), getDescription());
+        objectives.forEach(x -> {
+            PlayerQuestObjectiveData obj = x.generatePlayerData(worldData, instanceData);
+            obj.setComplete(false);
+            data.putObjective(x.getObjectiveName(), obj);
+        });
+        rewards.forEach(x -> {
+            PlayerQuestReward questReward = new PlayerQuestReward(x);
+            data.addReward(questReward);
+        });
+        return data;
+    }
+
+    public boolean isComplete(PlayerQuestData data) {
+        return objectives.stream().allMatch(x -> x.isComplete(data.getObjective(x.getObjectiveName())));
+    }
+
+    public void grantRewards(IPlayerQuestingData playerData) {
+        for (QuestReward reward : rewards) {
+            reward.grantReward(playerData.getPlayer());
+        }
     }
 
     public <D> D serialize(DynamicOps<D> ops) {
@@ -122,45 +159,5 @@ public class Quest {
         dynamic.get("rewards").asStream().forEach(x -> {
             QuestReward.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addReward);
         });
-    }
-
-    public List<QuestObjective<?>> getObjectives() {
-        return objectives;
-    }
-
-    public List<Pair<ResourceLocation, Integer>> getStructuresNeeded() {
-        return objectives.stream()
-                .flatMap(x -> x.getStructure().stream())
-                .map(l -> new Pair<>(l.getStructureId(), l.getIndex() + 1))
-                .toList();
-    }
-
-
-    public boolean isStructureRelevant(MKStructureEntry entry) {
-        return objectives.stream().allMatch(x -> x.isStructureRelevant(entry));
-    }
-
-    public PlayerQuestData generatePlayerQuestData(IWorldNpcData worldData, QuestData instanceData) {
-        PlayerQuestData data = new PlayerQuestData(getQuestName(), getDescription());
-        objectives.forEach(x -> {
-            PlayerQuestObjectiveData obj = x.generatePlayerData(worldData, instanceData);
-            obj.putBool("isComplete", false);
-            data.putObjective(x.getObjectiveName(), obj);
-        });
-        rewards.forEach(x -> {
-            PlayerQuestReward questReward = new PlayerQuestReward(x);
-            data.addReward(questReward);
-        });
-        return data;
-    }
-
-    public boolean isComplete(PlayerQuestData data) {
-        return objectives.stream().allMatch(x -> x.isComplete(data.getObjective(x.getObjectiveName())));
-    }
-
-    public void grantRewards(IPlayerQuestingData playerData) {
-        for (QuestReward reward : rewards) {
-            reward.grantReward(playerData.getPlayer());
-        }
     }
 }

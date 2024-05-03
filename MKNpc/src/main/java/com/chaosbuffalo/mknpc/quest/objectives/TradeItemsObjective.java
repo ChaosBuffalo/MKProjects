@@ -74,7 +74,7 @@ public class TradeItemsObjective extends QuestObjective<UUIDInstanceData> implem
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription());
-        NotableNpcEntry entry = worldData.getNotableNpc(objData.getUuid());
+        NotableNpcEntry entry = worldData.getNotableNpc(objData.getUUID());
         if (entry != null) {
             newObj.putBlockPos("npcPos", entry.getLocation());
         }
@@ -94,7 +94,7 @@ public class TradeItemsObjective extends QuestObjective<UUIDInstanceData> implem
                                 QuestData questData, PlayerQuestChainInstance chainInstance) {
         UUIDInstanceData objData = getInstanceData(questData);
         return trader.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY)
-                .map(x -> x.getNotableUUID().equals(objData.getUuid())).orElse(false);
+                .map(x -> x.getNotableUUID().equals(objData.getUUID())).orElse(false);
     }
 
     @Nullable

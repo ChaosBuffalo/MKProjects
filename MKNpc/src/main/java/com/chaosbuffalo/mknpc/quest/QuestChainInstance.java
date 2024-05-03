@@ -37,7 +37,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         for (Quest quest : definition.getQuestChain()) {
             QuestData qData = new QuestData(quest);
             for (QuestObjective<?> objective : quest.getObjectives()) {
-                objective.createDataForQuest(qData, questStructures);
+                qData.putObjective(objective.getObjectiveName(), objective.generateInstanceData(questStructures));
             }
             questData.put(quest.getQuestName(), qData);
         }
@@ -75,10 +75,10 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
             for (QuestObjective<?> obj : quest.getObjectives()) {
                 if (obj instanceof TalkToNpcObjective talkObj) {
                     UUIDInstanceData instanceData = talkObj.getInstanceData(questData);
-                    if (speakingRoles.containsKey(talkObj.getNpcDefinition()) && !speakingRoles.get(talkObj.getNpcDefinition()).equals(instanceData.getUuid())) {
+                    if (speakingRoles.containsKey(talkObj.getNpcDefinition()) && !speakingRoles.get(talkObj.getNpcDefinition()).equals(instanceData.getUUID())) {
                         MKNpc.LOGGER.warn("Error: quest chain has 2 different npc definition with speaking roles {}", talkObj.getNpcDefinition());
                     }
-                    speakingRoles.put(talkObj.getNpcDefinition(), instanceData.getUuid());
+                    speakingRoles.put(talkObj.getNpcDefinition(), instanceData.getUUID());
                 }
             }
         }

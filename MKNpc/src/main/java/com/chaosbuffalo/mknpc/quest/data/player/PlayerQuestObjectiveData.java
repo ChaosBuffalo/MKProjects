@@ -6,45 +6,48 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class PlayerQuestObjectiveData extends NBTSerializableMappedData {
 
-    private String objectiveName;
     private final List<Component> description = new ArrayList<>();
-
-    public PlayerQuestObjectiveData(String objectiveName, Component... description) {
-        this(objectiveName, Arrays.asList(description));
-    }
+    private String objectiveName;
 
     public PlayerQuestObjectiveData(String objectiveName, List<Component> description) {
         this.objectiveName = objectiveName;
         this.description.addAll(description);
     }
 
-    public void setDescription(MutableComponent... description) {
-        this.description.clear();
-        this.description.addAll(Arrays.asList(description));
+    public PlayerQuestObjectiveData(CompoundTag nbt) {
+        deserializeNBT(nbt);
     }
 
     public List<Component> getDescription() {
         return description;
     }
 
+    public void setDescription(Component component) {
+        description.clear();
+        description.add(component);
+    }
+
+    public void setDescription(List<Component> components) {
+        description.clear();
+        description.addAll(components);
+    }
+
     public String getObjectiveName() {
         return objectiveName;
     }
 
-    public PlayerQuestObjectiveData(CompoundTag nbt) {
-        deserializeNBT(nbt);
-    }
-
     public boolean isComplete() {
         return getBool("isComplete");
+    }
+
+    public void setComplete(boolean complete) {
+        putBool("isComplete", complete);
     }
 
     @Override

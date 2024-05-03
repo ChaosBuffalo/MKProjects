@@ -31,7 +31,7 @@ public class NpcDialogueUtils {
         QuestDialogueHandlers.put(name, handler);
     }
 
-    public static final Function<QuestDialogueParse, String> NotableHandler = (parseData) -> {
+    public static String notableHandler(QuestDialogueParse parseData) {
         String[] splitArgs = parseData.args.split("#");
         ResourceLocation structureName = new ResourceLocation(splitArgs[0]);
         int index = Integer.parseInt(splitArgs[1]);
@@ -39,10 +39,10 @@ public class NpcDialogueUtils {
         Optional<NotableNpcEntry> npc = parseData.questStructures.get(structureName).get(index)
                 .getFirstNotableOfType(defName);
         return npc.map(x -> String.format("{notable:%s}", x.getNotableId())).orElse("#notable.not_found#");
-    };
+    }
 
     public static void setupMKNpcHandlers() {
-        putDialogueHandler("mk_quest_notable", NotableHandler);
+        putDialogueHandler("mk_quest_notable", NpcDialogueUtils::notableHandler);
     }
 
     public static String getNotableNpcRaw(ResourceLocation structureName, int index, ResourceLocation defName) {
