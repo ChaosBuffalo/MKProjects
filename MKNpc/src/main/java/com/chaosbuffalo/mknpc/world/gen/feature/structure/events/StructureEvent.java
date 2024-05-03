@@ -18,7 +18,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public abstract class StructureEvent implements ISerializableAttributeContainer, IDynamicMapTypedSerializer {
@@ -140,18 +139,10 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         deserializeAttributeMap(dynamic, "attributes");
-        List<Optional<StructureEventRequirement>> reqs = dynamic.get("requirements").asList(x -> {
-            ResourceLocation type = StructureEventRequirement.getType(x);
-            Supplier<StructureEventRequirement> deserializer = StructureEventManager.getRequirementDeserializer(type);
-            if (deserializer == null) {
-                return Optional.empty();
-            } else {
-                StructureEventRequirement req = deserializer.get();
-                req.deserialize(x);
-                return Optional.of(req);
-            }
+
+        dynamic.get("requirements").asStream().forEach(d -> {
+            StructureEventRequirement.CODEC.parse(d).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addRequirement);
         });
-        reqs.forEach(x -> x.ifPresent(this::addRequirement));
 
         dynamic.get("conditions").asStream().forEach(d -> {
             StructureEventCondition.CODEC.parse(d).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addCondition);

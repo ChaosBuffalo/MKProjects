@@ -17,16 +17,19 @@ import java.util.function.Supplier;
 
 public class StructureEventManager {
 
-    public static final Map<ResourceLocation, Supplier<StructureEventRequirement>> REQ_DESERIALIZERS = new HashMap<>();
+    public static final Map<ResourceLocation, Codec<? extends StructureEventRequirement>> REQ_CODECS = new HashMap<>();
+    public static final Codec<StructureEventRequirement> REQ_CODEC = CommonCodecs
+            .createMapBackedDispatch(ResourceLocation.CODEC, REQ_CODECS, StructureEventRequirement::getTypeName);
+
     public static final Map<ResourceLocation, Codec<? extends StructureEventCondition>> COND_CODECS = new HashMap<>();
     public static final Codec<StructureEventCondition> COND_CODEC = CommonCodecs
             .createMapBackedDispatch(ResourceLocation.CODEC, COND_CODECS, StructureEventCondition::getTypeName);
+
     public static final Map<ResourceLocation, Supplier<StructureEvent>> EVENT_DESERIALIZERS = new HashMap<>();
 
-
-    public static void putRequirementDeserializer(ResourceLocation name,
-                                                  Supplier<StructureEventRequirement> function) {
-        REQ_DESERIALIZERS.put(name, function);
+    public static void registerRequirement(ResourceLocation name,
+                                           Codec<? extends StructureEventRequirement> codec) {
+        REQ_CODECS.put(name, codec);
     }
 
     public static void registerCondition(ResourceLocation name, Codec<? extends StructureEventCondition> codec) {
@@ -39,15 +42,10 @@ public class StructureEventManager {
     }
 
     public static void setupDeserializers() {
-        putRequirementDeserializer(StructureHasPoiRequirement.TYPE_NAME, StructureHasPoiRequirement::new);
-        putRequirementDeserializer(StructureHasNotableRequirement.TYPE_NAME, StructureHasNotableRequirement::new);
+        registerRequirement(StructureHasPoiRequirement.TYPE_NAME, StructureHasPoiRequirement.CODEC);
+        registerRequirement(StructureHasNotableRequirement.TYPE_NAME, StructureHasNotableRequirement.CODEC);
         registerCondition(NotableDeadCondition.TYPE_NAME, NotableDeadCondition.CODEC);
         putEventDeserializer(SpawnNpcDefinitionEvent.TYPE_NAME, SpawnNpcDefinitionEvent::new);
-    }
-
-    @Nullable
-    public static Supplier<StructureEventRequirement> getRequirementDeserializer(ResourceLocation name) {
-        return REQ_DESERIALIZERS.get(name);
     }
 
     @Nullable
