@@ -26,11 +26,9 @@
         },
         "conditions": [
           {
-            "attributes": {
-              "allNotables": 1,
-              "npcDefinition": "mkultra:skeletal_lock"
-            },
-            "structCondType": "mknpc:struct_condition.notable_dead"
+            "type": "mknpc:struct_condition.notable_dead",
+            "allNotables": 1,
+            "npcDefinition": "mkultra:skeletal_lock"
           }
         ],
         "event_name": "summon_golem",

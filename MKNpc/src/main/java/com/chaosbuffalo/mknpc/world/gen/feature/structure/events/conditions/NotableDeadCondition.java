@@ -1,13 +1,12 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions;
 
-import com.chaosbuffalo.mkcore.serialization.attributes.BooleanAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -15,28 +14,29 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 public class NotableDeadCondition extends StructureEventCondition {
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID,
             "struct_condition.notable_dead");
-    protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute(
-            "npcDefinition", NpcDefinitionManager.INVALID_NPC_DEF);
-    protected BooleanAttribute allNotables = new BooleanAttribute("allNotables", false);
+    public static final Codec<NotableDeadCondition> CODEC = RecordCodecBuilder.<NotableDeadCondition>mapCodec(builder -> {
+        return builder.group(
+               ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
+               Codec.BOOL.fieldOf("allNotables").forGetter(i -> i.allNotables)
+        ).apply(builder, NotableDeadCondition::new);
+    }).codec();
+
+    private final ResourceLocation npcDefinition;
+    private final boolean allNotables;
 
     public NotableDeadCondition(ResourceLocation npcDefinitionName, boolean allNotablesIn) {
-        this();
-        this.allNotables.setValue(allNotablesIn);
-        npcDefinition.setValue(npcDefinitionName);
-
-    }
-
-    public NotableDeadCondition() {
         super(TYPE_NAME);
-        addAttributes(npcDefinition, allNotables);
+        this.allNotables = allNotablesIn;
+        this.npcDefinition = npcDefinitionName;
+
     }
 
     @Override
     public boolean meetsCondition(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
-        return allNotables.value() ?
-                entry.getAllNotablesOfType(npcDefinition.getValue()).stream()
+        return allNotables ?
+                entry.getAllNotablesOfType(npcDefinition).stream()
                         .allMatch(x -> checkSpawnerDead(x, world)) :
-                entry.getFirstNotableOfType(npcDefinition.getValue())
+                entry.getFirstNotableOfType(npcDefinition)
                         .map(x -> checkSpawnerDead(x, world)).orElse(false);
     }
 
