@@ -45,8 +45,8 @@ public class DrownAbility extends ProjectileAbility {
         setCastTime(GameConstants.TICKS_PER_SECOND);
         addAttributes(baseDuration, scaleDuration, tick_particles);
         casting_particles.setDefaultValue(CASTING_PARTICLES);
-        trail_particles.setDefaultValue(TRAIL_PARTICLES);
-        detonate_particles.setDefaultValue(DETONATE_PARTICLES);
+        trailParticles.setDefaultValue(TRAIL_PARTICLES);
+        detonateParticles.setDefaultValue(DETONATE_PARTICLES);
         projectileSpeed.setDefaultValue(0.9f);
         baseDamage.setDefaultValue(4.0f);
         scaleDamage.setDefaultValue(2.0f);
@@ -77,7 +77,7 @@ public class DrownAbility extends ProjectileAbility {
     public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
         SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_water_5.get(), cat);
-        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonate_particles.getValue());
+        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
         if (result.getType().equals(HitResult.Type.ENTITY)) {
             EntityHitResult entityTrace = (EntityHitResult) result;
             MKCore.getEntityData(caster).ifPresent(casterData -> {
@@ -94,7 +94,7 @@ public class DrownAbility extends ProjectileAbility {
     public AbilityProjectileEntity makeProjectile(LivingEntity entity, IMKEntityData data, AbilityContext context) {
         AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), entity.level);
         projectile.setAbility(() -> this);
-        projectile.setTrailAnimation(trail_particles.getValue());
+        projectile.setTrailAnimation(trailParticles.getValue());
         projectile.setItem(new ItemStack(MKUItems.drownProjectileItem.get()));
         projectile.setDeathTime(GameConstants.TICKS_PER_SECOND * 3);
         return projectile;

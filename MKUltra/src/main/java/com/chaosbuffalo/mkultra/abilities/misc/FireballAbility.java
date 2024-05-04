@@ -43,8 +43,8 @@ public class FireballAbility extends ProjectileAbility {
         setCastTime(GameConstants.TICKS_PER_SECOND);
         addAttributes(radius);
         casting_particles.setDefaultValue(CASTING_PARTICLES);
-        trail_particles.setDefaultValue(TRAIL_PARTICLES);
-        detonate_particles.setDefaultValue(DETONATE_PARTICLES);
+        trailParticles.setDefaultValue(TRAIL_PARTICLES);
+        detonateParticles.setDefaultValue(DETONATE_PARTICLES);
     }
 
     public float getExplosionRadius() {
@@ -65,7 +65,7 @@ public class FireballAbility extends ProjectileAbility {
     public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
         SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_fire_4.get(), cat);
-        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonate_particles.getValue());
+        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.FireDamage.get(),
                         getBaseDamage(),
                         getScaleDamage(),
@@ -97,7 +97,7 @@ public class FireballAbility extends ProjectileAbility {
     public AbilityProjectileEntity makeProjectile(LivingEntity entity, IMKEntityData data, AbilityContext context) {
         AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), entity.level);
         projectile.setAbility(() -> this);
-        projectile.setTrailAnimation(trail_particles.getValue());
+        projectile.setTrailAnimation(trailParticles.getValue());
         projectile.setItem(new ItemStack(MKUItems.fireballProjectileItem.get()));
         projectile.setDeathTime(GameConstants.TICKS_PER_SECOND * 5);
         return projectile;

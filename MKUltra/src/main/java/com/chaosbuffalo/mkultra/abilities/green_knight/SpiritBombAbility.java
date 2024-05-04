@@ -42,8 +42,8 @@ public class SpiritBombAbility extends ProjectileAbility {
         scaleDamage.setDefaultValue(4.0f);
         modifierScaling.setDefaultValue(1.25f);
         casting_particles.setDefaultValue(CASTING_PARTICLES);
-        trail_particles.setDefaultValue(TRAIL_PARTICLES);
-        detonate_particles.setDefaultValue(DETONATE_PARTICLES);
+        trailParticles.setDefaultValue(TRAIL_PARTICLES);
+        detonateParticles.setDefaultValue(DETONATE_PARTICLES);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class SpiritBombAbility extends ProjectileAbility {
                 .spawn();
         SoundSource cat = caster.getSoundSource();
         SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_magic_explosion.get(), cat);
-        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonate_particles.getValue());
+        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
         return true;
     }
 
@@ -123,7 +123,7 @@ public class SpiritBombAbility extends ProjectileAbility {
     public AbilityProjectileEntity makeProjectile(LivingEntity entity, IMKEntityData data, AbilityContext context) {
         AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), entity.level);
         projectile.setAbility(() -> this);
-        projectile.setTrailAnimation(trail_particles.getValue());
+        projectile.setTrailAnimation(trailParticles.getValue());
         projectile.setItem(new ItemStack(MKUItems.spiritBombProjectileItem.get()));
         projectile.setDeathTime(GameConstants.TICKS_PER_SECOND * 3);
         projectile.setAirProcTime(GameConstants.TICKS_PER_SECOND);

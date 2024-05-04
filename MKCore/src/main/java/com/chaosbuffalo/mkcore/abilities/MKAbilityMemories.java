@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.abilities;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -20,6 +21,9 @@ public class MKAbilityMemories {
             () -> new MemoryModuleType<>(Optional.empty()));
 
     public static RegistryObject<MemoryModuleType<TargetUtil.LivingOrPosition>> ABILITY_POSITION_TARGET = REGISTRY.register("ability_position_target",
+            () -> new MemoryModuleType<>(Optional.empty()));
+
+    public static RegistryObject<MemoryModuleType<BaseProjectileEntity>> CURRENT_PROJECTILE = REGISTRY.register("current_projectile",
             () -> new MemoryModuleType<>(Optional.empty()));
 
     public static void register(IEventBus modBus) {

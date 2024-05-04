@@ -33,5 +33,5 @@ public abstract class LocationProvider {
 
     public abstract LocationProviderType<? extends LocationProvider> getType();
 
-    public abstract WorldLocationResult getPosition(LivingEntity entity, int index);
+    public abstract WorldLocationResult getPosition(LivingEntity entity, Vec2 rotation, int index);
 }

@@ -44,6 +44,8 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
     private int groundProcTime;
     private float skillLevel;
     private boolean doGroundProc;
+    private boolean isShot;
+    private int preFireTicks;
 
     public BaseProjectileEntity(EntityType<? extends Projectile> entityTypeIn, Level worldIn) {
         super(entityTypeIn, worldIn);
@@ -56,6 +58,8 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         this.setDoAirProc(false);
         this.setAmplifier(0);
         this.setSkillLevel(0.0f);
+        isShot = false;
+        preFireTicks = 0;
         setup();
     }
 
@@ -194,8 +198,8 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         float y = -Mth.sin((rotationPitchIn + pitchOffset) * ONE_DEGREE);
         float z = Mth.cos(rotationYawIn * ONE_DEGREE) * Mth.cos(rotationPitchIn * ONE_DEGREE);
         this.shoot(x, y, z, velocity, inaccuracy);
-        this.setDeltaMovement(this.getDeltaMovement().add(source.getDeltaMovement().x, source.isOnGround() ? 0.0D : source.getDeltaMovement().y,
-                source.getDeltaMovement().z));
+//        this.setDeltaMovement(this.getDeltaMovement().add(source.getDeltaMovement().x, source.isOnGround() ? 0.0D : source.getDeltaMovement().y,
+//                source.getDeltaMovement().z));
     }
 
     @Override
@@ -213,6 +217,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         this.setDeltaMovement(x, y, z);
         calculateOriginalPitchYaw(getDeltaMovement());
         this.ticksInGround = 0;
+        isShot = true;
     }
 
     public boolean isInGround() {
@@ -369,12 +374,17 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         this.xOld = this.getX();
         this.yOld = this.getY();
         this.zOld = this.getZ();
+
         super.tick();
+        if (!level.isClientSide && !isShot) {
+            preFireTicks++;
+            return;
+        }
         if (!isAlive()) {
             return;
         }
 
-        if (this.tickCount == this.getDeathTime()) {
+        if (this.tickCount - preFireTicks == this.getDeathTime()) {
             this.remove(RemovalReason.KILLED);
         }
 

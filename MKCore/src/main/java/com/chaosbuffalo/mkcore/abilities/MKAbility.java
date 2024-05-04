@@ -320,6 +320,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     public void executeWithContext(IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
         casterData.getAbilityExecutor().startAbility(context, abilityInfo);
+        startCast(casterData.getEntity(), casterData, context);
     }
 
     public Component getTargetContextLocalization() {
@@ -337,6 +338,10 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     public boolean isExecutableContext(AbilityContext context) {
         return getRequiredMemories().stream().allMatch(context::hasMemory);
+    }
+
+    public void startCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
+
     }
 
     public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context) {

@@ -27,12 +27,12 @@ public class SingleLocationProvider extends LocationProvider {
     }
 
     @Override
-    public WorldLocationResult getPosition(LivingEntity entity, int index) {
+    public WorldLocationResult getPosition(LivingEntity entity, Vec2 rotation, int index) {
         if (index >= max) {
             return new WorldLocationResult();
         }
         Vec3 startPos = entity.position().add(new Vec3(0, entity.getEyeHeight() * percentEyeHeight, 0));
-        startPos = startPos.add(Vec3.directionFromRotation(entity.getRotationVector()).multiply(offset));
-        return new WorldLocationResult(startPos, new Vec2(entity.getXRot(), entity.getYRot()));
+        startPos = startPos.add(Vec3.directionFromRotation(rotation).multiply(offset));
+        return new WorldLocationResult(startPos, rotation);
     }
 }
