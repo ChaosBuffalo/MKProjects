@@ -6,7 +6,8 @@ public enum CastInterruptReason {
     Stun(false),
     CounterSpell(false),
     Teleport(false),
-    Death(true);
+    Death(true),
+    Logout(true);
 
     private final boolean noBypass;
 
