@@ -295,6 +295,12 @@ public class AbilityExecutor {
             abilityContext = context;
         }
 
+        @Override
+        void begin() {
+            super.begin();
+            ability.startCast(executor.entityData, abilityContext);
+        }
+
         public AbilityContext getAbilityContext() {
             return abilityContext;
         }
@@ -312,7 +318,7 @@ public class AbilityExecutor {
         @Override
         void interrupt(CastInterruptReason reason) {
             super.interrupt(reason);
-            ability.interruptCast(reason, executor.entityData.getEntity(), executor.entityData, abilityContext);
+            ability.interruptCast(reason, executor.entityData, abilityContext);
             PacketHandler.sendToTrackingAndSelf(EntityCastPacket.interrupt(executor.entityData, reason), executor.entityData.getEntity());
         }
     }

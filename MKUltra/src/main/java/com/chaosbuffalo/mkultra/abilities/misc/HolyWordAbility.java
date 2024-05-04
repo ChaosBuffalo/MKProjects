@@ -126,8 +126,8 @@ public class HolyWordAbility extends ProjectileAbility {
     }
 
     @Override
-    public AbilityProjectileEntity makeProjectile(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), entity.level);
+    public AbilityProjectileEntity makeProjectile(IMKEntityData data, AbilityContext context) {
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level);
         projectile.setAbility(() -> this);
         projectile.setTrailAnimation(trailParticles.getValue());
         projectile.setItem(new ItemStack(MKUItems.holyWordProjectileItem.get()));

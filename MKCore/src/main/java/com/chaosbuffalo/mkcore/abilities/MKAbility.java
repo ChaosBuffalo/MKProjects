@@ -320,7 +320,6 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     public void executeWithContext(IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
         casterData.getAbilityExecutor().startAbility(context, abilityInfo);
-        startCast(casterData.getEntity(), casterData, context);
     }
 
     public Component getTargetContextLocalization() {
@@ -340,7 +339,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return getRequiredMemories().stream().allMatch(context::hasMemory);
     }
 
-    public void startCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
+    public void startCast(IMKEntityData casterData, AbilityContext context) {
 
     }
 
@@ -403,7 +402,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return MKCombatFormulas.applyBuffDurationModifier(casterData, duration);
     }
 
-    public void interruptCast(CastInterruptReason reason, LivingEntity castingEntity, IMKEntityData casterData,
+    public void interruptCast(CastInterruptReason reason, IMKEntityData casterData,
                               AbilityContext context) {
     }
 }

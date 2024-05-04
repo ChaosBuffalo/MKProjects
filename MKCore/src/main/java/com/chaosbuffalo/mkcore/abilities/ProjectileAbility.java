@@ -18,7 +18,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
@@ -81,30 +80,30 @@ public abstract class ProjectileAbility extends MKAbility {
         return false;
     }
 
-    public abstract AbilityProjectileEntity makeProjectile(LivingEntity entity, IMKEntityData data, AbilityContext context);
+    public abstract AbilityProjectileEntity makeProjectile(IMKEntityData data, AbilityContext context);
 
 
     @Override
-    public void startCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
-        super.startCast(castingEntity, casterData, context);
-        if (!(castingEntity instanceof Player)) {
+    public void startCast(IMKEntityData casterData, AbilityContext context) {
+        super.startCast(casterData, context);
+        if (!(casterData.getEntity() instanceof Player)) {
             float level = context.getSkill(skill);
-            AbilityProjectileEntity proj = makeProjectile(castingEntity, casterData, context);
-            proj.setOwner(castingEntity);
+            AbilityProjectileEntity proj = makeProjectile(casterData, context);
+            proj.setOwner(casterData.getEntity());
             proj.setSkillLevel(level);
-            LocationProvider.WorldLocationResult location = locationProvider.getPosition(castingEntity, castingEntity.getRotationVector(), 0);
+            LocationProvider.WorldLocationResult location = locationProvider.getPosition(casterData.getEntity(), casterData.getEntity().getRotationVector(), 0);
             if (location.isValid()) {
                 proj.moveTo(location.worldPosition().x, location.worldPosition().y, location.worldPosition().z,
                         location.rotation().y, location.rotation().x);
                 context.setMemory(MKAbilityMemories.CURRENT_PROJECTILE.get(), Optional.of(proj));
-                castingEntity.level.addFreshEntity(proj);
+                casterData.getEntity().level.addFreshEntity(proj);
             }
         }
     }
 
     @Override
-    public void interruptCast(CastInterruptReason reason, LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
-        super.interruptCast(reason, castingEntity, casterData, context);
+    public void interruptCast(CastInterruptReason reason, IMKEntityData casterData, AbilityContext context) {
+        super.interruptCast(reason, casterData, context);
         context.getMemory(MKAbilityMemories.CURRENT_PROJECTILE).ifPresent(proj -> {
             proj.remove(Entity.RemovalReason.KILLED);
         });
@@ -115,7 +114,7 @@ public abstract class ProjectileAbility extends MKAbility {
         super.endCast(castingEntity, casterData, context);
         if (castingEntity instanceof Player) {
             float level = context.getSkill(skill);
-            AbilityProjectileEntity proj = makeProjectile(castingEntity, casterData, context);
+            AbilityProjectileEntity proj = makeProjectile(casterData, context);
             proj.setOwner(castingEntity);
             proj.setSkillLevel(level);
             LocationProvider.WorldLocationResult location = locationProvider.getPosition(castingEntity, castingEntity.getRotationVector(), 0);
