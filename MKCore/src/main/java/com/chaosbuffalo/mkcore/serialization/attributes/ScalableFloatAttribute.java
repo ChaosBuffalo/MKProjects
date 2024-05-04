@@ -6,6 +6,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 
 public class ScalableFloatAttribute extends FloatAttribute implements IScalableAttribute {
+
     protected float min;
     protected float max;
 
@@ -13,6 +14,27 @@ public class ScalableFloatAttribute extends FloatAttribute implements IScalableA
         super(name, min);
         this.min = min;
         this.max = max;
+    }
+
+    public float getMin() {
+        return min;
+    }
+
+    public void setMin(float min) {
+        this.min = min;
+    }
+
+    public float getMax() {
+        return max;
+    }
+
+    public void setMax(float max) {
+        this.max = max;
+    }
+
+    @Override
+    public void scale(double value) {
+        setValue(MathUtils.exLerp(min, max, (float) value));
     }
 
     @Override
@@ -29,18 +51,5 @@ public class ScalableFloatAttribute extends FloatAttribute implements IScalableA
         dynamic.get("value").get().result().ifPresent(super::deserialize);
         this.min = dynamic.get("min").asFloat(0.0f);
         this.max = dynamic.get("max").asFloat(0.0f);
-    }
-
-    @Override
-    public void scale(double value) {
-        setValue(MathUtils.exLerp(min, max, (float) value));
-    }
-
-    public void setMax(float max) {
-        this.max = max;
-    }
-
-    public void setMin(float min) {
-        this.min = min;
     }
 }

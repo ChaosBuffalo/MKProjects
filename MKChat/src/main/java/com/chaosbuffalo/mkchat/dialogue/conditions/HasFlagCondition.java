@@ -33,9 +33,6 @@ public class HasFlagCondition extends DialogueCondition {
 
     @Override
     public boolean meetsCondition(ServerPlayer player, LivingEntity source) {
-        if (flagName.equals(AddFlagEffect.INVALID_FLAG)) {
-            return false;
-        }
         return IPlayerDialogue.get(player)
                 .map(cap -> cap.getConversationMemory(source).getBoolFlag(flagName))
                 .orElse(false);

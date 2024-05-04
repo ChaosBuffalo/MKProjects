@@ -6,6 +6,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 
 public class ScalableDoubleAttribute extends DoubleAttribute implements IScalableAttribute {
+
     protected double min;
     protected double max;
 
@@ -13,6 +14,27 @@ public class ScalableDoubleAttribute extends DoubleAttribute implements IScalabl
         super(name, min);
         this.min = min;
         this.max = max;
+    }
+
+    public double getMin() {
+        return min;
+    }
+
+    public void setMin(double min) {
+        this.min = min;
+    }
+
+    public double getMax() {
+        return max;
+    }
+
+    public void setMax(double max) {
+        this.max = max;
+    }
+
+    @Override
+    public void scale(double value) {
+        setValue(MathUtils.exLerpDouble(min, max, value));
     }
 
     @Override
@@ -24,23 +46,10 @@ public class ScalableDoubleAttribute extends DoubleAttribute implements IScalabl
         ));
     }
 
-    public void setMin(double min) {
-        this.min = min;
-    }
-
-    public void setMax(double max) {
-        this.max = max;
-    }
-
     @Override
     public <D> void deserialize(Dynamic<D> dynamic) {
         dynamic.get("value").get().result().ifPresent(super::deserialize);
         this.min = dynamic.get("min").asDouble(0.0);
         this.max = dynamic.get("max").asDouble(0.0);
-    }
-
-    @Override
-    public void scale(double value) {
-        setValue(MathUtils.exLerpDouble(min, max, value));
     }
 }

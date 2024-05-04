@@ -1,10 +1,7 @@
 package com.chaosbuffalo.mkweapons.capabilities;
 
-import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.armor.IMKArmor;
 import com.chaosbuffalo.mkweapons.items.armor.MKArmorItem;
-import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
-import com.chaosbuffalo.mkweapons.items.effects.ItemEffects;
 import com.chaosbuffalo.mkweapons.items.effects.ItemModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.armor.IArmorEffect;
 import com.google.common.collect.HashMultimap;
@@ -125,12 +122,9 @@ public class ArmorDataHandler implements IArmorData {
         if (nbt.contains("armor_effects")) {
             ListTag effectList = nbt.getList("armor_effects", Tag.TAG_COMPOUND);
             for (Tag effectNBT : effectList) {
-                IItemEffect effect = ItemEffects.deserializeEffect(new Dynamic<>(NbtOps.INSTANCE, effectNBT));
-                if (effect instanceof IArmorEffect armorEffect) {
-                    addArmorEffect(armorEffect);
-                } else {
-                    MKWeapons.LOGGER.error("Failed to deserialize armor effect of type {} for item {}", effect.getTypeName(),
-                            getItemStack());
+                IArmorEffect effect = IArmorEffect.deserialize(new Dynamic<>(NbtOps.INSTANCE, effectNBT));
+                if (effect != null) {
+                    addArmorEffect(effect);
                 }
             }
         }

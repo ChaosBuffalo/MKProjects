@@ -2,107 +2,162 @@
   "entityType": "mkultra:hyborean_skeleton",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "honor_guard"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 65.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 65.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 1.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "Undying Honor Guard"
     },
     {
-      "optionType": "mknpc:equipment",
-      "slotOptions": {
+      "type": "mknpc:equipment",
+      "value": {
         "feet": [
           {
             "dropChance": 0.0,
-            "item": "{id: \"minecraft:air\", Count: 1b}",
+            "item": {
+              "Count": 1,
+              "id": "minecraft:air"
+            },
             "weight": 2.0
           },
           {
             "dropChance": 1.1,
-            "item": "{id: \"mkultra:ancient_bronze_boots\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:ancient_bronze_boots",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ],
         "head": [
           {
             "dropChance": 0.0,
-            "item": "{id: \"minecraft:air\", Count: 1b}",
+            "item": {
+              "Count": 1,
+              "id": "minecraft:air"
+            },
             "weight": 2.0
           },
           {
             "dropChance": 1.1,
-            "item": "{id: \"mkultra:ancient_bronze_helmet\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:ancient_bronze_helmet",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ],
         "mainhand": [
           {
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:battleaxe_iron\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:battleaxe_iron",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 10.0
           },
           {
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:greatsword_iron\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:greatsword_iron",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 10.0
           },
           {
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:warhammer_iron\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:warhammer_iron",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 10.0
           },
           {
             "dropChance": 1.1,
-            "item": "{id: \"mkultra:battleaxe_bronze\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:battleaxe_bronze",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           },
           {
             "dropChance": 1.1,
-            "item": "{id: \"mkultra:greatsword_bronze\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:greatsword_bronze",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           },
           {
             "dropChance": 1.1,
-            "item": "{id: \"mkultra:warhammer_bronze\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:warhammer_bronze",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ]
       }
     },
     {
-      "optionType": "mknpc:abilities",
-      "options": [
+      "type": "mknpc:abilities",
+      "value": [
         {
-          "abilityName": "mkultra:ability.natures_remedy",
+          "abilityId": "mkultra:ability.natures_remedy",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.sever_tendon",
+          "abilityId": "mkultra:ability.sever_tendon",
           "chance": 1.0,
           "priority": 3
         }
       ]
     },
     {
+      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:one_hand_blunt",
         "mkcore:one_hand_pierce",
@@ -114,10 +169,10 @@
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",
+        "mkcore:hand_to_hand",
         "mkcore:pankration",
         "mkcore:restoration"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:arete",
         "mkcore:evocation",
@@ -125,17 +180,17 @@
       ]
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 1.0
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkfaction:undead"
     },
     {
+      "type": "mknpc:mk_combo",
       "cooldown": 30,
-      "count": 4,
-      "optionType": "mknpc:mk_combo"
+      "count": 4
     }
   ]
 }

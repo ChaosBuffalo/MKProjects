@@ -1,4 +1,5 @@
 {
+  "name": "mkultra:trooper_knight_armor",
   "slotItems": {
     "mkweapons:chest": [
       {
@@ -6,134 +7,139 @@
           "lootSlot": "mkweapons:chest",
           "options": [
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "minecraft:generic.max_health",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.max_health",
                   "maxValue": 10.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "mkcore:max_mana",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "mkcore:max_mana",
                   "maxValue": 10.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.25,
-                  "AttributeName": "mkcore:mana_regen",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "mkcore:mana_regen",
                   "maxValue": 2.0,
-                  "minValue": 0.25
+                  "minValue": 0.25,
+                  "modifier": {
+                    "amount": 0.25,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.05,
-                  "AttributeName": "minecraft:generic.movement_speed",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 2,
+                  "attribute": "minecraft:generic.movement_speed",
                   "maxValue": 0.15,
-                  "minValue": 0.05
+                  "minValue": 0.05,
+                  "modifier": {
+                    "amount": 0.05,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 2
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "minecraft:generic.attack_damage",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.attack_damage",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "minecraft:generic.armor",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.armor",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "mkcore:nature_damage",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "mkcore:nature_damage",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             }
           ],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkultra:trooper_knight_chestplate\", Count: 1b, tag: {Damage: 0}}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkultra:trooper_knight_chestplate",
+                "tag": {
+                  "Damage": 0
+                }
+              }
             }
           ],
           "templates": [
             {
               "template": {
+                "name": "mkultra:one_effect",
                 "slots": [
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:one_effect"
+                ]
               },
               "weight": 90.0
             },
             {
               "template": {
+                "name": "mkultra:two_effect",
                 "slots": [
                   "mkweapons:randomization.attributes",
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:two_effect"
+                ]
               },
               "weight": 10.0
             }
@@ -148,134 +154,139 @@
           "lootSlot": "mkweapons:feet",
           "options": [
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "minecraft:generic.max_health",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.max_health",
                   "maxValue": 10.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "mkcore:max_mana",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "mkcore:max_mana",
                   "maxValue": 10.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.25,
-                  "AttributeName": "mkcore:mana_regen",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "mkcore:mana_regen",
                   "maxValue": 2.0,
-                  "minValue": 0.25
+                  "minValue": 0.25,
+                  "modifier": {
+                    "amount": 0.25,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.05,
-                  "AttributeName": "minecraft:generic.movement_speed",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 2,
+                  "attribute": "minecraft:generic.movement_speed",
                   "maxValue": 0.15,
-                  "minValue": 0.05
+                  "minValue": 0.05,
+                  "modifier": {
+                    "amount": 0.05,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 2
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "minecraft:generic.attack_damage",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.attack_damage",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "minecraft:generic.armor",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.armor",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "mkcore:nature_damage",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "mkcore:nature_damage",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             }
           ],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkultra:trooper_knight_boots\", Count: 1b, tag: {Damage: 0}}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkultra:trooper_knight_boots",
+                "tag": {
+                  "Damage": 0
+                }
+              }
             }
           ],
           "templates": [
             {
               "template": {
+                "name": "mkultra:one_effect",
                 "slots": [
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:one_effect"
+                ]
               },
               "weight": 90.0
             },
             {
               "template": {
+                "name": "mkultra:two_effect",
                 "slots": [
                   "mkweapons:randomization.attributes",
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:two_effect"
+                ]
               },
               "weight": 10.0
             }
@@ -290,134 +301,139 @@
           "lootSlot": "mkweapons:head",
           "options": [
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "minecraft:generic.max_health",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.max_health",
                   "maxValue": 10.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "mkcore:max_mana",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "mkcore:max_mana",
                   "maxValue": 10.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.25,
-                  "AttributeName": "mkcore:mana_regen",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "mkcore:mana_regen",
                   "maxValue": 2.0,
-                  "minValue": 0.25
+                  "minValue": 0.25,
+                  "modifier": {
+                    "amount": 0.25,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.05,
-                  "AttributeName": "minecraft:generic.movement_speed",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 2,
+                  "attribute": "minecraft:generic.movement_speed",
                   "maxValue": 0.15,
-                  "minValue": 0.05
+                  "minValue": 0.05,
+                  "modifier": {
+                    "amount": 0.05,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 2
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "minecraft:generic.attack_damage",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.attack_damage",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "minecraft:generic.armor",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.armor",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "mkcore:nature_damage",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "mkcore:nature_damage",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             }
           ],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkultra:trooper_knight_helmet\", Count: 1b, tag: {Damage: 0}}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkultra:trooper_knight_helmet",
+                "tag": {
+                  "Damage": 0
+                }
+              }
             }
           ],
           "templates": [
             {
               "template": {
+                "name": "mkultra:one_effect",
                 "slots": [
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:one_effect"
+                ]
               },
               "weight": 90.0
             },
             {
               "template": {
+                "name": "mkultra:two_effect",
                 "slots": [
                   "mkweapons:randomization.attributes",
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:two_effect"
+                ]
               },
               "weight": 10.0
             }
@@ -432,134 +448,139 @@
           "lootSlot": "mkweapons:legs",
           "options": [
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "minecraft:generic.max_health",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.max_health",
                   "maxValue": 10.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 2.0,
-                  "AttributeName": "mkcore:max_mana",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "mkcore:max_mana",
                   "maxValue": 10.0,
-                  "minValue": 2.0
+                  "minValue": 2.0,
+                  "modifier": {
+                    "amount": 2.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.25,
-                  "AttributeName": "mkcore:mana_regen",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "mkcore:mana_regen",
                   "maxValue": 2.0,
-                  "minValue": 0.25
+                  "minValue": 0.25,
+                  "modifier": {
+                    "amount": 0.25,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 0.05,
-                  "AttributeName": "minecraft:generic.movement_speed",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 2,
+                  "attribute": "minecraft:generic.movement_speed",
                   "maxValue": 0.15,
-                  "minValue": 0.05
+                  "minValue": 0.05,
+                  "modifier": {
+                    "amount": 0.05,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 2
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "minecraft:generic.attack_damage",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.attack_damage",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "minecraft:generic.armor",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "minecraft:generic.armor",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             },
             {
+              "type": "mkweapons:attributes",
               "modifiers": [
                 {
-                  "Amount": 1.0,
-                  "AttributeName": "mkcore:nature_damage",
-                  "Name": "mkultra:trooper_knight_armor",
-                  "Operation": 0,
+                  "attribute": "mkcore:nature_damage",
                   "maxValue": 4.0,
-                  "minValue": 1.0
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "name": "mkultra:trooper_knight_armor",
+                    "operation": 0
+                  }
                 }
-              ],
-              "randomizationType": "mkweapons:attributes",
-              "slotName": "mkweapons:randomization.attributes",
-              "weight": 1.0
+              ]
             }
           ],
           "potentialItems": [
             {
-              "itemStack": "{id: \"mkultra:trooper_knight_leggings\", Count: 1b, tag: {Damage: 0}}",
-              "weight": 1.0
+              "item": {
+                "Count": 1,
+                "id": "mkultra:trooper_knight_leggings",
+                "tag": {
+                  "Damage": 0
+                }
+              }
             }
           ],
           "templates": [
             {
               "template": {
+                "name": "mkultra:one_effect",
                 "slots": [
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:one_effect"
+                ]
               },
               "weight": 90.0
             },
             {
               "template": {
+                "name": "mkultra:two_effect",
                 "slots": [
                   "mkweapons:randomization.attributes",
                   "mkweapons:randomization.attributes"
-                ],
-                "templateType": "mkultra:two_effect"
+                ]
               },
               "weight": 10.0
             }

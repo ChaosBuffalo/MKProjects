@@ -4,9 +4,8 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingRequirement;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -17,17 +16,20 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class HeldItemRequirement extends AbilityTrainingRequirement {
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKCore.MOD_ID, "training_req.held_item");
-    private Item item;
-    private InteractionHand hand;
+    public static final Codec<HeldItemRequirement> CODEC = RecordCodecBuilder.<HeldItemRequirement>mapCodec(builder -> {
+        return builder.group(
+                ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(i -> i.item),
+                Codec.STRING.xmap(InteractionHand::valueOf, InteractionHand::name).fieldOf("hand").forGetter(i -> i.hand)
+        ).apply(builder, HeldItemRequirement::new);
+    }).codec();
+
+    private final Item item;
+    private final InteractionHand hand;
 
     public HeldItemRequirement(Item item, InteractionHand hand) {
         super(TYPE_NAME);
         this.item = item;
         this.hand = hand;
-    }
-
-    public <D> HeldItemRequirement(Dynamic<D> dynamic) {
-        super(TYPE_NAME, dynamic);
     }
 
     @Override
@@ -36,28 +38,11 @@ public class HeldItemRequirement extends AbilityTrainingRequirement {
         if (stack.isEmpty())
             return false;
 
-        return stack.getItem() == item;
+        return stack.is(item);
     }
 
     @Override
     public void onLearned(MKPlayerData playerData, MKAbility ability) {
-
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("item"), ops.createString(ForgeRegistries.ITEMS.getKey(item).toString()));
-        builder.put(ops.createString("hand"), ops.createInt(hand.ordinal()));
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        dynamic.get("item").asString().result().ifPresent(x -> {
-            this.item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(x));
-        });
-        this.hand = InteractionHand.values()[dynamic.get("hand").asInt(0)];
 
     }
 

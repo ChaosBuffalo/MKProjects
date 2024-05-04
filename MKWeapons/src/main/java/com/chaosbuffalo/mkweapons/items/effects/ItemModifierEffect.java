@@ -1,9 +1,6 @@
 package com.chaosbuffalo.mkweapons.items.effects;
 
 import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -25,13 +22,6 @@ public class ItemModifierEffect extends BaseItemEffect {
     }
 
 
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("modifiers"),
-                ops.createList(modifiers.stream().map(mod -> mod.serialize(ops))));
-    }
-
     public void addAttributeModifier(Attribute attribute, AttributeModifier attributeModifier) {
         modifiers.add(new AttributeOptionEntry(attribute, attributeModifier, attributeModifier.getAmount(), attributeModifier.getAmount()));
     }
@@ -43,21 +33,5 @@ public class ItemModifierEffect extends BaseItemEffect {
     @Override
     public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
 
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        List<AttributeOptionEntry> deserialized = dynamic.get("modifiers").asList(dyn -> {
-            AttributeOptionEntry entry = new AttributeOptionEntry();
-            entry.deserialize(dyn);
-            return entry;
-        });
-        modifiers.clear();
-        for (AttributeOptionEntry mod : deserialized) {
-            if (mod != null) {
-                modifiers.add(mod);
-            }
-        }
     }
 }

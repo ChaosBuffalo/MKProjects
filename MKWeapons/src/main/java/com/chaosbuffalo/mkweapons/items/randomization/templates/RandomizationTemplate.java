@@ -2,29 +2,37 @@ package com.chaosbuffalo.mkweapons.items.randomization.templates;
 
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.IRandomizationSlot;
-import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotManager;
-import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class RandomizationTemplate {
-    public static final ResourceLocation INVALID_TEMPLATE = new ResourceLocation(MKWeapons.MODID, "ranomization_template.error");
+    public static final Codec<RandomizationTemplate> CODEC = RecordCodecBuilder.<RandomizationTemplate>mapCodec(builder -> {
+        return builder.group(
+                ResourceLocation.CODEC.fieldOf("name").forGetter(RandomizationTemplate::getName),
+                IRandomizationSlot.CODEC.listOf().fieldOf("slots").forGetter(RandomizationTemplate::getRandomizationSlots)
+        ).apply(builder, RandomizationTemplate::new);
+    }).codec();
+
     private final ResourceLocation name;
     private final List<IRandomizationSlot> slots;
 
     public RandomizationTemplate(ResourceLocation name) {
+        this(name, List.of());
+    }
+
+    public RandomizationTemplate(ResourceLocation name, List<IRandomizationSlot> slots) {
         this.name = name;
-        this.slots = new ArrayList<>();
+        this.slots = slots;
     }
 
     public RandomizationTemplate(ResourceLocation name, IRandomizationSlot... slots) {
-        this(name);
-        this.slots.addAll(Arrays.asList(slots));
+        this(name, Arrays.asList(slots));
     }
 
     public ResourceLocation getName() {
@@ -36,36 +44,10 @@ public class RandomizationTemplate {
     }
 
     public <D> D serialize(DynamicOps<D> ops) {
-        return ops.createMap(ImmutableMap.of(
-                ops.createString("templateType"), ops.createString(getName().toString()),
-                ops.createString("slots"), ops.createList(slots.stream()
-                        .map(entry -> ops.createString(entry.getName().toString())
-                        ))));
+        return CODEC.encodeStart(ops, this).getOrThrow(false, MKWeapons.LOGGER::error);
     }
 
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        List<IRandomizationSlot> entries = dynamic.get("slots").asList(d -> {
-            ResourceLocation slotName = new ResourceLocation(d.asString("mkweapons:randomization_slot.error"));
-            return RandomizationSlotManager.getSlotFromName(slotName);
-        });
-        slots.clear();
-        for (IRandomizationSlot entry : entries) {
-            if (entry != null) {
-                slots.add(entry);
-            } else {
-                MKWeapons.LOGGER.error("Failed to decode slot for randomization template of type {}", getName());
-            }
-        }
-    }
-
-    public static <D> ResourceLocation readType(Dynamic<D> dynamic) {
-        return new ResourceLocation(dynamic.get("templateType").asString(INVALID_TEMPLATE.toString()));
-    }
-
-    public static <D> RandomizationTemplate deserializeTemplate(Dynamic<D> dynamic) {
-        ResourceLocation type = readType(dynamic);
-        RandomizationTemplate template = new RandomizationTemplate(type);
-        template.deserialize(dynamic);
-        return template;
+    public static <D> RandomizationTemplate deserialize(Dynamic<D> dynamic) {
+        return CODEC.parse(dynamic).getOrThrow(false, MKWeapons.LOGGER::error);
     }
 }

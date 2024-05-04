@@ -6,8 +6,11 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
+import com.chaosbuffalo.mknpc.npc.options.AbilitiesOption;
+import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -17,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AbilitiesOptionEntry implements INpcOptionEntry {
+    public static final Codec<AbilitiesOptionEntry> CODEC = Codec.list(NpcAbilityEntry.CODEC).xmap(AbilitiesOptionEntry::new, i -> i.abilities);
 
     private final List<NpcAbilityEntry> abilities;
 
@@ -24,8 +28,9 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
         this.abilities = entries;
     }
 
-    public AbilitiesOptionEntry() {
-        this(new ArrayList<>());
+    @Override
+    public ResourceLocation getOptionId() {
+        return AbilitiesOption.NAME;
     }
 
     @Override
@@ -40,7 +45,7 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
                     cap.getAbilities().unlearnAbility(loc, AbilitySource.TRAINED);
                 }
                 for (NpcAbilityEntry entry : abilities) {
-                    MKAbility ability = MKCoreRegistry.getAbility(entry.getAbilityName());
+                    MKAbility ability = MKCoreRegistry.getAbility(entry.getAbilityId());
                     if (ability != null) {
                         cap.getAbilities().learnAbility(ability, entry.getPriority());
                     }
@@ -54,7 +59,7 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
         CompoundTag tag = new CompoundTag();
         ListTag abilitiesList = new ListTag();
         for (NpcAbilityEntry entry : abilities) {
-            abilitiesList.add(entry.serializeNBT());
+            abilitiesList.add(entry.serialize(NbtOps.INSTANCE));
         }
         tag.put("abilities", abilitiesList);
         return tag;
@@ -65,8 +70,7 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
         ListTag abilitiesList = nbt.getList("abilities", Tag.TAG_COMPOUND);
         abilities.clear();
         for (Tag tag : abilitiesList) {
-            NpcAbilityEntry entry = new NpcAbilityEntry();
-            entry.deserializeNBT((CompoundTag) tag);
+            NpcAbilityEntry entry = NpcAbilityEntry.deserialize(NbtOps.INSTANCE, tag);
             abilities.add(entry);
         }
     }

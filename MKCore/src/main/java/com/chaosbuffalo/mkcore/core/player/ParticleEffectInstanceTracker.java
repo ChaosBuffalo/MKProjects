@@ -69,11 +69,8 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
             instanceMap.clear();
             ListTag effectsNbt = tag.getList("effectInstances", Tag.TAG_COMPOUND);
             for (Tag effNbt : effectsNbt) {
-                Dynamic<?> dyn = new Dynamic<>(NbtOps.INSTANCE, effNbt);
-                ResourceLocation type = ParticleEffectInstance.getType(dyn);
-                ParticleEffectInstance inst = ParticleAnimationManager.getEffectInstance(type);
+                ParticleEffectInstance inst = ParticleEffectInstance.CODEC.parse(NbtOps.INSTANCE, effNbt).getOrThrow(false, MKCore.LOGGER::error);
                 if (inst != null) {
-                    inst.deserialize(dyn);
                     addParticleInstance(inst);
                 }
             }
@@ -81,11 +78,8 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         if (tag.contains("effectInstancesAdd")) {
             ListTag effectsNbt = tag.getList("effectInstancesAdd", Tag.TAG_COMPOUND);
             for (Tag effNbt : effectsNbt) {
-                Dynamic<?> dyn = new Dynamic<>(NbtOps.INSTANCE, effNbt);
-                ResourceLocation type = ParticleEffectInstance.getType(dyn);
-                ParticleEffectInstance inst = ParticleAnimationManager.getEffectInstance(type);
+                ParticleEffectInstance inst = ParticleEffectInstance.CODEC.parse(NbtOps.INSTANCE, effNbt).getOrThrow(false, MKCore.LOGGER::error);
                 if (inst != null) {
-                    inst.deserialize(dyn);
                     addParticleInstance(inst);
                 }
             }
@@ -148,7 +142,8 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         public void serializeFull(CompoundTag tag) {
             ListTag effectsNbt = new ListTag();
             for (ParticleEffectInstance instance : instanceMap.values()) {
-                effectsNbt.add(instance.serialize(NbtOps.INSTANCE));
+                Tag etag = ParticleEffectInstance.CODEC.encodeStart(NbtOps.INSTANCE, instance).getOrThrow(false, MKCore.LOGGER::error);
+                effectsNbt.add(etag);
             }
             tag.put("effectInstances", effectsNbt);
             toRemoveDirty.clear();
@@ -165,7 +160,8 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
             toRemoveDirty.clear();
             ListTag toAdd = new ListTag();
             for (ParticleEffectInstance instance : toAddDirty) {
-                toAdd.add(instance.serialize(NbtOps.INSTANCE));
+                Tag etag = ParticleEffectInstance.CODEC.encodeStart(NbtOps.INSTANCE, instance).getOrThrow(false, MKCore.LOGGER::error);
+                toAdd.add(etag);
             }
             tag.put("effectInstancesAdd", toAdd);
             toAddDirty.clear();

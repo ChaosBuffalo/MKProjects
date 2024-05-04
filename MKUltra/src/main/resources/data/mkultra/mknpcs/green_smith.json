@@ -2,62 +2,69 @@
   "entityType": "mkultra:orc",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "green_smith"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 400.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 400.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 4.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "Green Smith"
     },
     {
-      "optionType": "mknpc:equipment",
-      "slotOptions": {
+      "type": "mknpc:equipment",
+      "value": {
         "mainhand": [
           {
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:warhammer_iron\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:warhammer_iron",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ]
       }
     },
     {
-      "optionType": "mknpc:abilities",
-      "options": [
+      "type": "mknpc:abilities",
+      "value": [
         {
-          "abilityName": "mkultra:ability.skin_like_wood",
+          "abilityId": "mkultra:ability.skin_like_wood",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.natures_remedy",
+          "abilityId": "mkultra:ability.natures_remedy",
           "chance": 1.0,
           "priority": 2
         }
       ]
     },
     {
-      "optionType": "mknpc:notable",
+      "type": "mknpc:notable",
       "value": true
     },
     {
+      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:one_hand_blunt",
         "mkcore:one_hand_pierce",
@@ -69,10 +76,10 @@
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",
+        "mkcore:hand_to_hand",
         "mkcore:pankration",
         "mkcore:restoration"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:arete",
         "mkcore:evocation",
@@ -80,18 +87,18 @@
       ]
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 1.5
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkultra:green_knights"
     },
     {
-      "offerings": [
+      "type": "mknpc:offer_quests",
+      "value": [
         "mkultra:trooper_armor"
-      ],
-      "optionType": "mknpc:offer_quests"
+      ]
     }
   ]
 }

@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkweapons.items.effects.melee;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
+import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -16,19 +17,16 @@ import java.util.List;
 
 public class UndeadDamageMeleeWeaponEffect extends DamageMultiplierMeleeWeaponEffect {
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.undead_damage");
+    public static final Codec<UndeadDamageMeleeWeaponEffect> CODEC =
+            Codec.FLOAT.xmap(UndeadDamageMeleeWeaponEffect::new, DamageMultiplierMeleeWeaponEffect::getDamageMultiplier);
 
     public UndeadDamageMeleeWeaponEffect(float multiplier) {
-        this();
-        this.damageMultiplier = multiplier;
+        super(NAME, ChatFormatting.GOLD, multiplier);
     }
 
     @Override
     public boolean isTargetSuitable(LivingEntity attacker, LivingEntity target, IMKMeleeWeapon weapon, ItemStack stack) {
         return target.isInvertedHealAndHarm();
-    }
-
-    public UndeadDamageMeleeWeaponEffect() {
-        super(NAME, ChatFormatting.GOLD);
     }
 
     @Override

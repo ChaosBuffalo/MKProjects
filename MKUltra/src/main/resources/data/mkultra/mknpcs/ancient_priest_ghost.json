@@ -2,66 +2,91 @@
   "entityType": "mkultra:human",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "ghost_clean"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 100.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 100.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 3.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "An Ancient Priest"
     },
     {
-      "optionType": "mknpc:equipment",
-      "slotOptions": {
+      "type": "mknpc:equipment",
+      "value": {
         "chest": [
           {
             "dropChance": 0.05,
-            "item": "{id: \"mkultra:ancient_priest_chestplate\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:ancient_priest_chestplate",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ],
         "feet": [
           {
             "dropChance": 0.05,
-            "item": "{id: \"mkultra:ancient_priest_boots\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:ancient_priest_boots",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ],
         "head": [
           {
             "dropChance": 0.05,
-            "item": "{id: \"mkultra:ancient_priest_helmet\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:ancient_priest_helmet",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ],
         "legs": [
           {
             "dropChance": 0.05,
-            "item": "{id: \"mkultra:ancient_priest_leggings\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:ancient_priest_leggings",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ]
       }
     },
     {
-      "major_skills": [],
+      "type": "mknpc:skills",
       "minor_skills": [
+        "mkcore:hand_to_hand",
         "mkcore:one_hand_blunt",
         "mkcore:one_hand_pierce",
         "mkcore:one_hand_slash",
@@ -69,7 +94,6 @@
         "mkcore:two_hand_pierce",
         "mkcore:two_hand_slash"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:arete",
         "mkcore:pankration",
@@ -77,17 +101,17 @@
       ]
     },
     {
+      "type": "mknpc:ghost",
       "armor_translucency": 0.7,
       "ghost_armor": true,
-      "optionType": "mknpc:ghost",
-      "value": 0.7
+      "ghost_translucency": 0.7
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 1.0
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkfaction:undead"
     }
   ]

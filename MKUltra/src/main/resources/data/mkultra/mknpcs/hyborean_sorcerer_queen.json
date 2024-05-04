@@ -2,37 +2,37 @@
   "entityType": "mkultra:hyborean_skeleton",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "sorcerer_queen"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 110.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 110.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 3.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "Hyborean Sorcerer Queen"
     },
     {
+      "type": "mknpc:extra_loot",
       "dropChances": 2,
       "lootOptions": [
         {
           "lootSlotName": "mkweapons:main_hand",
-          "lootSlotTier": "mkultra:hyborean_sorcerer_queen",
-          "weight": 1.0
+          "lootSlotTier": "mkultra:hyborean_sorcerer_queen"
         },
         {
           "lootSlotName": "mkweapons:earrings",
@@ -41,86 +41,96 @@
         }
       ],
       "noLootChance": 0.2,
-      "noLootIncrease": 0.25,
-      "optionType": "mknpc:extra_loot"
+      "noLootIncrease": 0.25
     },
     {
-      "optionType": "mknpc:equipment",
-      "slotOptions": {
+      "type": "mknpc:equipment",
+      "value": {
         "mainhand": [
           {
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:katana_iron\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:katana_iron",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           },
           {
             "dropChance": 1.1,
-            "item": "{id: \"mkultra:katana_bronze\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:katana_bronze",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ]
       }
     },
     {
-      "optionType": "mknpc:abilities",
-      "options": [
+      "type": "mknpc:abilities",
+      "value": [
         {
-          "abilityName": "mkultra:ability.fire_armor",
+          "abilityId": "mkultra:ability.fire_armor",
           "chance": 1.0,
           "priority": 5
         },
         {
-          "abilityName": "mkultra:ability.fireball",
+          "abilityId": "mkultra:ability.fireball",
           "chance": 1.0,
           "priority": 6
         },
         {
-          "abilityName": "mkultra:ability.ember",
+          "abilityId": "mkultra:ability.ember",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.ignite",
+          "abilityId": "mkultra:ability.ignite",
           "chance": 0.5,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.flame_wave",
+          "abilityId": "mkultra:ability.flame_wave",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.warp_curse",
+          "abilityId": "mkultra:ability.warp_curse",
           "chance": 0.5,
           "priority": 4
         }
       ]
     },
     {
-      "major_skills": [],
+      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",
         "mkcore:conjuration",
         "mkcore:evocation"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 1.1
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkfaction:undead"
     },
     {
+      "type": "mknpc:mk_combo",
       "cooldown": 60,
-      "count": 5,
-      "optionType": "mknpc:mk_combo"
+      "count": 5
     }
   ]
 }

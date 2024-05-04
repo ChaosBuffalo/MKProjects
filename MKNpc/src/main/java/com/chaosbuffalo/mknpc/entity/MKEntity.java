@@ -38,6 +38,7 @@ import com.chaosbuffalo.mknpc.utils.NpcConstants;
 import com.chaosbuffalo.targeting_api.ITargetingOwner;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -50,6 +51,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -128,9 +130,16 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         STATIONARY
     }
 
-    public enum NonCombatMoveType {
+    public enum NonCombatMoveType implements StringRepresentable {
         STATIONARY,
-        RANDOM_WANDER
+        RANDOM_WANDER;
+
+        public static final Codec<NonCombatMoveType> CODEC = StringRepresentable.fromEnum(NonCombatMoveType::values);
+
+        @Override
+        public String getSerializedName() {
+            return name();
+        }
     }
 
     public enum VisualCastState {

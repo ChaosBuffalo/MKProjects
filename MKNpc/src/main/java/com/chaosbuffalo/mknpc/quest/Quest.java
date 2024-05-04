@@ -11,7 +11,6 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestReward;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
-import com.chaosbuffalo.mknpc.quest.objectives.StructureInstanceObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
@@ -20,12 +19,9 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class Quest {
 
@@ -35,24 +31,16 @@ public class Quest {
     private final List<QuestReward> rewards;
     private final List<QuestRequirement> requirements;
     private String questName;
-    private MutableComponent description;
-    public static final MutableComponent defaultDescription = Component.literal("Placeholder Quest Description");
+    private Component description;
+    public static final Component defaultDescription = Component.literal("Placeholder Quest Description");
 
-    public Quest(String questName, MutableComponent description) {
+    public Quest(String questName, Component description) {
         this.questName = questName;
+        this.description = description;
         this.objectives = new ArrayList<>();
         this.objectiveIndex = new HashMap<>();
         this.rewards = new ArrayList<>();
         this.requirements = new ArrayList<>();
-        this.description = description;
-    }
-
-    public void setAutoComplete(boolean autoComplete) {
-        this.autoComplete = autoComplete;
-    }
-
-    public boolean shouldAutoComplete() {
-        return autoComplete;
     }
 
     public Quest() {
@@ -63,6 +51,18 @@ public class Quest {
         return questName;
     }
 
+    public Component getDescription() {
+        return description;
+    }
+
+    public void setAutoComplete(boolean autoComplete) {
+        this.autoComplete = autoComplete;
+    }
+
+    public boolean shouldAutoComplete() {
+        return autoComplete;
+    }
+
     public DialogueTree generateDialogueForNpc(QuestChainInstance questChain, ResourceLocation npcDefinitionName,
                                                UUID npcId, DialogueTree tree,
                                                Map<ResourceLocation, List<MKStructureEntry>> questStructures,
@@ -71,7 +71,7 @@ public class Quest {
         for (QuestObjective<?> obj : getObjectives()) {
             if (obj instanceof TalkToNpcObjective talkObj) {
                 UUIDInstanceData instanceData = talkObj.getInstanceData(questData);
-                if (instanceData.getUuid().equals(npcId)) {
+                if (instanceData.getUUID().equals(npcId)) {
                     tree = talkObj.generateDialogueForNpc(this, questChain, npcDefinitionName, npcId, tree, questStructures, definition);
                 }
             }
@@ -96,53 +96,15 @@ public class Quest {
         return objectiveIndex.get(name);
     }
 
-    public MutableComponent getDescription() {
-        return description;
-    }
-
-    public <D> D serialize(DynamicOps<D> ops) {
-        ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
-        builder.put(ops.createString("questName"), ops.createString(questName));
-        builder.put(ops.createString("objectives"), ops.createList(objectives.stream().map(x -> x.serialize(ops))));
-        builder.put(ops.createString("description"), ops.createString(Component.Serializer.toJson(description)));
-        builder.put(ops.createString("autoComplete"), ops.createBoolean(autoComplete));
-        builder.put(ops.createString("rewards"), ops.createList(rewards.stream().flatMap(x -> QuestReward.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
-        return ops.createMap(builder.build());
-    }
-
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        questName = dynamic.get("questName").asString("default");
-        autoComplete = dynamic.get("autoComplete").asBoolean(false);
-        description = Component.Serializer.fromJson(
-                dynamic.get("description").asString(Component.Serializer.toJson(defaultDescription)));
-        List<Optional<QuestObjective<?>>> objectives = dynamic.get("objectives").asList(x -> {
-            ResourceLocation type = QuestObjective.getType(x);
-            Supplier<QuestObjective<?>> sup = QuestDefinitionManager.getObjectiveDeserializer(type);
-            if (sup != null) {
-                QuestObjective<?> obj = sup.get();
-                obj.deserialize(x);
-                return Optional.of(obj);
-            }
-            return Optional.empty();
-        });
-        for (Optional<QuestObjective<?>> objOpt : objectives) {
-            objOpt.ifPresent(this::addObjective);
-        }
-
-        dynamic.get("rewards").asStream().forEach(x -> {
-            QuestReward.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addReward);
-        });
-    }
-
     public List<QuestObjective<?>> getObjectives() {
         return objectives;
     }
 
     public List<Pair<ResourceLocation, Integer>> getStructuresNeeded() {
-        return objectives.stream().filter(x -> x instanceof StructureInstanceObjective)
-                .map(x -> (StructureInstanceObjective<?>) x)
-                .map(x -> new Pair<>(x.getStructureName(), x.getStructureIndex() + 1))
-                .collect(Collectors.toList());
+        return objectives.stream()
+                .flatMap(x -> x.getStructure().stream())
+                .map(l -> new Pair<>(l.getStructureId(), l.getIndex() + 1))
+                .toList();
     }
 
 
@@ -154,7 +116,7 @@ public class Quest {
         PlayerQuestData data = new PlayerQuestData(getQuestName(), getDescription());
         objectives.forEach(x -> {
             PlayerQuestObjectiveData obj = x.generatePlayerData(worldData, instanceData);
-            obj.putBool("isComplete", false);
+            obj.setComplete(false);
             data.putObjective(x.getObjectiveName(), obj);
         });
         rewards.forEach(x -> {
@@ -172,5 +134,30 @@ public class Quest {
         for (QuestReward reward : rewards) {
             reward.grantReward(playerData.getPlayer());
         }
+    }
+
+    public <D> D serialize(DynamicOps<D> ops) {
+        ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
+        builder.put(ops.createString("questName"), ops.createString(questName));
+        builder.put(ops.createString("objectives"), ops.createList(objectives.stream().flatMap(x -> QuestObjective.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
+        builder.put(ops.createString("description"), ops.createString(Component.Serializer.toJson(description)));
+        builder.put(ops.createString("autoComplete"), ops.createBoolean(autoComplete));
+        builder.put(ops.createString("rewards"), ops.createList(rewards.stream().flatMap(x -> QuestReward.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
+        return ops.createMap(builder.build());
+    }
+
+    public <D> void deserialize(Dynamic<D> dynamic) {
+        questName = dynamic.get("questName").asString("default");
+        autoComplete = dynamic.get("autoComplete").asBoolean(false);
+        description = Component.Serializer.fromJson(
+                dynamic.get("description").asString(Component.Serializer.toJson(defaultDescription)));
+
+        dynamic.get("objectives").asStream().forEach(x -> {
+            QuestObjective.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addObjective);
+        });
+
+        dynamic.get("rewards").asStream().forEach(x -> {
+            QuestReward.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addReward);
+        });
     }
 }

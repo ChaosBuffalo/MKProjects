@@ -72,6 +72,8 @@ public class MKNpc {
         NpcDialogueEffectTypes.REGISTRY.register(modBus);
         NpcDialogueConditionTypes.REGISTRY.register(modBus);
         QuestRegistries.register(modBus);
+        NpcDefinitionManager.setupDeserializers();
+        StructureEventManager.setupDeserializers();
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
@@ -81,7 +83,6 @@ public class MKNpc {
 
     private void processIMC(final InterModProcessEvent event) {
         LOGGER.info("MKNpc.processIMC");
-        internalIMCSetup();
         event.getIMCStream().forEach(m -> {
             if (m.method().equals(REGISTER_NPC_OPTIONS_EXTENSION)) {
                 LOGGER.info("IMC register npc option extension from mod {} {}", m.senderModId(),
@@ -90,12 +91,6 @@ public class MKNpc {
                 ext.registerNpcExtension();
             }
         });
-    }
-
-    private void internalIMCSetup() {
-        NpcDefinitionManager.setupDeserializers();
-        QuestDefinitionManager.setupDeserializers();
-        StructureEventManager.setupDeserializers();
     }
 
     @SubscribeEvent

@@ -2,105 +2,136 @@
   "entityType": "mkultra:orc",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "green_lady_guard_1"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 150.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 150.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 4.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "Green Knight"
     },
     {
-      "optionType": "mknpc:equipment",
-      "slotOptions": {
+      "type": "mknpc:equipment",
+      "value": {
         "chest": [
           {
             "dropChance": 0.05,
-            "item": "{id: \"mkultra:green_knight_chestplate\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:green_knight_chestplate",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ],
         "feet": [
           {
             "dropChance": 0.05,
-            "item": "{id: \"mkultra:green_knight_boots\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:green_knight_boots",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ],
         "head": [
           {
             "dropChance": 0.05,
-            "item": "{id: \"mkultra:green_knight_helmet\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:green_knight_helmet",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ],
         "legs": [
           {
             "dropChance": 0.05,
-            "item": "{id: \"mkultra:green_knight_leggings\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkultra:green_knight_leggings",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ],
         "mainhand": [
           {
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:battleaxe_stone\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:battleaxe_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ]
       }
     },
     {
-      "optionType": "mknpc:abilities",
-      "options": [
+      "type": "mknpc:abilities",
+      "value": [
         {
-          "abilityName": "mkultra:ability.skin_like_wood",
+          "abilityId": "mkultra:ability.skin_like_wood",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.natures_remedy",
+          "abilityId": "mkultra:ability.natures_remedy",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.spirit_bomb",
+          "abilityId": "mkultra:ability.spirit_bomb",
           "chance": 1.0,
           "priority": 4
         },
         {
-          "abilityName": "mkultra:ability.explosive_growth",
+          "abilityId": "mkultra:ability.explosive_growth",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.cleansing_seed",
+          "abilityId": "mkultra:ability.cleansing_seed",
           "chance": 1.0,
           "priority": 5
         }
       ]
     },
     {
-      "optionType": "mknpc:notable",
+      "type": "mknpc:notable",
       "value": true
     },
     {
+      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:one_hand_blunt",
         "mkcore:one_hand_pierce",
@@ -112,10 +143,10 @@
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",
+        "mkcore:hand_to_hand",
         "mkcore:pankration",
         "mkcore:restoration"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:arete",
         "mkcore:evocation",
@@ -123,11 +154,11 @@
       ]
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 1.1
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkultra:green_knights"
     }
   ]

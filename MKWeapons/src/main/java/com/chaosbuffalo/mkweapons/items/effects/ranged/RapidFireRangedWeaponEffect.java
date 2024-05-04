@@ -2,9 +2,8 @@ package com.chaosbuffalo.mkweapons.items.effects.ranged;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -17,32 +16,21 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class RapidFireRangedWeaponEffect extends BaseRangedWeaponEffect {
-    private int maxHits;
-    private float perHitReduction;
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.rapid_fire");
+    public static final Codec<RapidFireRangedWeaponEffect> CODEC = RecordCodecBuilder.<RapidFireRangedWeaponEffect>mapCodec(builder -> {
+        return builder.group(
+                Codec.INT.fieldOf("maxHits").forGetter(i -> i.maxHits),
+                Codec.FLOAT.fieldOf("perHit").forGetter(i -> i.perHitReduction)
+        ).apply(builder, RapidFireRangedWeaponEffect::new);
+    }).codec();
+
+    private final int maxHits;
+    private final float perHitReduction;
 
     public RapidFireRangedWeaponEffect(int maxHits, float perHitReduction) {
-        this();
+        super(NAME, ChatFormatting.DARK_RED);
         this.maxHits = maxHits;
         this.perHitReduction = perHitReduction;
-    }
-
-    public RapidFireRangedWeaponEffect() {
-        super(NAME, ChatFormatting.DARK_RED);
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        maxHits = dynamic.get("maxHits").asInt(5);
-        perHitReduction = dynamic.get("perHit").asFloat(.10f);
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("maxHits"), ops.createInt(maxHits));
-        builder.put(ops.createString("perHit"), ops.createFloat(perHitReduction));
     }
 
     @Override

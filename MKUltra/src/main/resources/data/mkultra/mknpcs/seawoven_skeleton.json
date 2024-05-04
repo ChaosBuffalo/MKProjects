@@ -2,54 +2,53 @@
   "entityType": "mkultra:hyborean_skeleton",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "seawoven"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 45.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 45.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 2.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
-      "optionType": "mknpc:name",
+      "type": "mknpc:name",
       "value": "A Seawoven Skeleton"
     },
     {
-      "dropChances": 1,
+      "type": "mknpc:extra_loot",
       "lootOptions": [
         {
           "lootSlotName": "mkweapons:items",
-          "lootSlotTier": "mkultra:seawoven_skeleton",
-          "weight": 1.0
+          "lootSlotTier": "mkultra:seawoven_skeleton"
         }
       ],
       "noLootChance": 0.25,
-      "noLootIncrease": 0.25,
-      "optionType": "mknpc:extra_loot"
+      "noLootIncrease": 0.25
     },
     {
-      "optionType": "mknpc:abilities",
-      "options": [
+      "type": "mknpc:abilities",
+      "value": [
         {
-          "abilityName": "mkultra:ability.seafury",
+          "abilityId": "mkultra:ability.seafury",
           "chance": 1.0,
           "priority": 1
         }
       ]
     },
     {
+      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:conjuration",
         "mkcore:necromancy"
@@ -59,17 +58,16 @@
         "mkcore:alteration",
         "mkcore:evocation"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 0.98
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkfaction:undead"
     }
   ]

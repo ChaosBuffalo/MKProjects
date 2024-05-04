@@ -9,18 +9,19 @@ import com.chaosbuffalo.mknpc.quest.dialogue.conditions.ObjectivesCompleteCondit
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.objectives.*;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class QuestBuilder {
     private Quest quest;
 
-    public QuestBuilder(String questName, MutableComponent description) {
+    public QuestBuilder(String questName, Component description) {
         this.quest = new Quest(questName, description);
     }
 
@@ -40,8 +41,7 @@ public class QuestBuilder {
     }
 
     public QuestBuilder killNotable(String objectiveName, QuestNpc npc) {
-        KillNotableNpcObjective kill = new KillNotableNpcObjective(objectiveName, npc.location.structureName,
-                npc.location.structureIndex, npc.npcDef);
+        KillNotableNpcObjective kill = new KillNotableNpcObjective(objectiveName, npc.location, npc.npcDef);
         objective(kill);
         return this;
     }
@@ -58,19 +58,18 @@ public class QuestBuilder {
         return this;
     }
 
-    public QuestBuilder questLootFromNotable(String objectiveName, QuestNpc npc, double chance, int count, MutableComponent itemDescription) {
-        QuestLootNotableObjective obj = new QuestLootNotableObjective(objectiveName, npc.location.structureName,
-                npc.location.structureIndex, npc.npcDef, chance, count, itemDescription);
+    public QuestBuilder questLootFromNotable(String objectiveName, QuestNpc npc, double chance, int count, Component itemDescription) {
+        QuestLootNotableObjective obj = new QuestLootNotableObjective(objectiveName, npc.location, npc.npcDef, chance, count, itemDescription);
         objective(obj);
         return this;
     }
 
-    public QuestBuilder hailWithObjectives(String objectiveName, MutableComponent description,
+    public QuestBuilder hailWithObjectives(String objectiveName, Component description,
                                            QuestNpc talkTo, String withComplete,
                                            String withoutComplete, List<String> objectives,
                                            @Nullable Consumer<TalkToNpcObjective> additionalLogic) {
         TalkToNpcObjective talkObj = new TalkToNpcObjective(objectiveName,
-                talkTo.location.structureName, talkTo.location.structureIndex, talkTo.npcDef, description);
+                talkTo.location, talkTo.npcDef, description);
         DialogueNode completeNode = new DialogueNode(String.format("%s_complete", objectiveName), withComplete);
         DialogueResponse completeResponse = new DialogueResponse(completeNode.getId());
         completeResponse.addCondition(new ObjectivesCompleteCondition(quest.getQuestName(), objectives));
@@ -86,12 +85,12 @@ public class QuestBuilder {
         return this;
     }
 
-    public QuestBuilder hailWithCondition(String objectiveName, MutableComponent description,
+    public QuestBuilder hailWithCondition(String objectiveName, Component description,
                                           QuestNpc talkTo, String withCondition, String withoutCondition,
                                           DialogueCondition withCond,
                                           @Nullable Consumer<TalkToNpcObjective> additionalLogic) {
         TalkToNpcObjective talkObj = new TalkToNpcObjective(objectiveName,
-                talkTo.location.structureName, talkTo.location.structureIndex, talkTo.npcDef, description);
+                talkTo.location, talkTo.npcDef, description);
         DialogueNode conditionNode = new DialogueNode(String.format("%s_w_cond", objectiveName), withCondition);
         DialogueResponse conditionResponse = new DialogueResponse(conditionNode.getId());
         conditionResponse.addCondition(withCond);
@@ -107,13 +106,10 @@ public class QuestBuilder {
         return this;
     }
 
-    public QuestBuilder simpleHail(String objectiveName, MutableComponent description,
+    public QuestBuilder simpleHail(String objectiveName, Component description,
                                    QuestNpc talkTo, String hailMessage,
                                    boolean immediateComplete, @Nullable Consumer<TalkToNpcObjective> additionalLogic) {
-        TalkToNpcObjective talkObj = new TalkToNpcObjective(
-                objectiveName,
-                talkTo.location.structureName, talkTo.location.structureIndex, talkTo.npcDef,
-                description);
+        TalkToNpcObjective talkObj = new TalkToNpcObjective(objectiveName, talkTo.location, talkTo.npcDef, description);
         DialogueNode hailNode = new DialogueNode(String.format("%s_hail", objectiveName), hailMessage);
         if (immediateComplete) {
             hailNode.addEffect(new ObjectiveCompleteEffect(talkObj.getObjectiveName(), quest.getQuestName()));
@@ -126,13 +122,9 @@ public class QuestBuilder {
         return this;
     }
 
-    public QuestBuilder lootChest(String objectiveName, MutableComponent description, QuestLocation location,
+    public QuestBuilder lootChest(String objectiveName, Component description, QuestStructureLocation location,
                                   String chestTag, ItemStack... items) {
-        LootChestObjective chestObj = new LootChestObjective(objectiveName, location.structureName,
-                location.structureIndex, chestTag, description);
-        for (ItemStack item : items) {
-            chestObj.addItemStack(item);
-        }
+        LootChestObjective chestObj = new LootChestObjective(objectiveName, location, chestTag, Arrays.asList(items), List.of(description));
         objective(chestObj);
         return this;
     }
@@ -141,27 +133,17 @@ public class QuestBuilder {
         return quest;
     }
 
-    public static class QuestLocation {
-        ResourceLocation structureName;
-        int structureIndex;
-
-        public QuestLocation(ResourceLocation structureName, int structureIndex) {
-            this.structureIndex = structureIndex;
-            this.structureName = structureName;
-        }
-    }
-
     public static class QuestNpc {
-        QuestLocation location;
-        ResourceLocation npcDef;
+        public final QuestStructureLocation location;
+        public final ResourceLocation npcDef;
 
-        public QuestNpc(QuestLocation location, ResourceLocation npcDef) {
+        public QuestNpc(QuestStructureLocation location, ResourceLocation npcDef) {
             this.location = location;
             this.npcDef = npcDef;
         }
 
         public String getDialogueLink() {
-            return NpcDialogueUtils.getNotableNpcRaw(location.structureName, location.structureIndex, npcDef);
+            return NpcDialogueUtils.getNotableNpcRaw(location.getStructureId(), location.getIndex(), npcDef);
         }
     }
 }

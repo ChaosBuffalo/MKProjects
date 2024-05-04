@@ -1,9 +1,6 @@
 package com.chaosbuffalo.mkweapons.capabilities;
 
-import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
-import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
-import com.chaosbuffalo.mkweapons.items.effects.ItemEffects;
 import com.chaosbuffalo.mkweapons.items.effects.ItemModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
 import com.google.common.collect.HashMultimap;
@@ -49,14 +46,14 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
     @Override
     public void onEquip(SlotContext slotContext, ItemStack prevStack) {
         for (IAccessoryEffect effect : getEffects()) {
-            effect.onEntityEquip(slotContext.getWearer());
+            effect.onEntityEquip(slotContext.entity());
         }
     }
 
     @Override
     public void onUnequip(SlotContext slotContext, ItemStack newStack) {
         for (IAccessoryEffect effect : getEffects()) {
-            effect.onEntityUnequip(slotContext.getWearer());
+            effect.onEntityUnequip(slotContext.entity());
         }
     }
 
@@ -82,8 +79,8 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
     public List<IAccessoryEffect> getEffects() {
         if (isCacheDirty) {
             cachedEffects.clear();
-            if (getStack().getItem() instanceof MKAccessory) {
-                cachedEffects.addAll(((MKAccessory) getStack().getItem()).getAccessoryEffects());
+            if (getStack().getItem() instanceof MKAccessory accessory) {
+                cachedEffects.addAll(accessory.getAccessoryEffects());
             }
             cachedEffects.addAll(getStackEffects());
             isCacheDirty = false;
@@ -107,10 +104,10 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
 
     @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(SlotContext slotContext, UUID uuid) {
-        if (!modifiers.containsKey(slotContext.getIdentifier())) {
-            loadSlotModifiers(slotContext.getIdentifier());
+        if (!modifiers.containsKey(slotContext.identifier())) {
+            loadSlotModifiers(slotContext.identifier());
         }
-        return modifiers.get(slotContext.getIdentifier());
+        return modifiers.get(slotContext.identifier());
     }
 
     @Override
@@ -130,12 +127,9 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
             ListTag effectList = nbt.getList("accessory_effects", Tag.TAG_COMPOUND);
             effects.clear();
             for (Tag effectNBT : effectList) {
-                IItemEffect effect = ItemEffects.deserializeEffect(new Dynamic<>(NbtOps.INSTANCE, effectNBT));
-                if (effect instanceof IAccessoryEffect) {
-                    addEffect((IAccessoryEffect) effect);
-                } else {
-                    MKWeapons.LOGGER.error("Failed to deserialize accessory effect of type {} for item {}", effect.getTypeName(),
-                            getStack());
+                IAccessoryEffect effect = IAccessoryEffect.deserialize(new Dynamic<>(NbtOps.INSTANCE, effectNBT));
+                if (effect != null) {
+                    addEffect(effect);
                 }
             }
         }

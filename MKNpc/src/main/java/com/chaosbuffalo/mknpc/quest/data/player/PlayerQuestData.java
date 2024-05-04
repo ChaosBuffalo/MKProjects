@@ -4,7 +4,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.*;
@@ -13,10 +12,10 @@ public class PlayerQuestData implements INBTSerializable<CompoundTag> {
 
     private final LinkedHashMap<String, PlayerQuestObjectiveData> objectives = new LinkedHashMap<>();
     private String questName;
-    private MutableComponent description;
+    private Component description;
     private final List<PlayerQuestReward> playerQuestRewards = new ArrayList<>();
 
-    public PlayerQuestData(String questName, MutableComponent description) {
+    public PlayerQuestData(String questName, Component description) {
         this.questName = questName;
         this.description = description;
     }
@@ -41,7 +40,7 @@ public class PlayerQuestData implements INBTSerializable<CompoundTag> {
         return objectives.values().stream().allMatch(PlayerQuestObjectiveData::isComplete);
     }
 
-    public MutableComponent getDescription() {
+    public Component getDescription() {
         return description;
     }
 
@@ -52,7 +51,6 @@ public class PlayerQuestData implements INBTSerializable<CompoundTag> {
     public PlayerQuestObjectiveData getObjective(String objectiveName) {
         return objectives.get(objectiveName);
     }
-
 
     public String getQuestName() {
         return questName;

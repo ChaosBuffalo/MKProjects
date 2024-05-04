@@ -2,33 +2,33 @@
   "entityType": "mkultra:zombified_piglin",
   "options": [
     {
-      "optionType": "mknpc:render_group",
+      "type": "mknpc:render_group",
       "value": "skeletal_mage"
     },
     {
-      "attributes": [
+      "type": "mknpc:attributes",
+      "value": [
         {
-          "attributeName": "minecraft:generic.max_health",
+          "attribute": "minecraft:generic.max_health",
           "value": 150.0
         },
         {
-          "attributeName": "mkcore:max_mana",
+          "attribute": "mkcore:max_mana",
           "value": 150.0
         },
         {
-          "attributeName": "mkcore:mana_regen",
+          "attribute": "mkcore:mana_regen",
           "value": 3.0
         }
-      ],
-      "optionType": "mknpc:attributes"
+      ]
     },
     {
+      "type": "mknpc:extra_loot",
       "dropChances": 2,
       "lootOptions": [
         {
           "lootSlotName": "mkweapons:main_hand",
-          "lootSlotTier": "mkultra:trooper_magus",
-          "weight": 1.0
+          "lootSlotTier": "mkultra:trooper_magus"
         },
         {
           "lootSlotName": "mkweapons:rings",
@@ -37,102 +37,105 @@
         },
         {
           "lootSlotName": "mkweapons:earrings",
-          "lootSlotTier": "mkultra:trooper_magus",
-          "weight": 1.0
+          "lootSlotTier": "mkultra:trooper_magus"
         }
       ],
       "noLootChance": 0.2,
-      "noLootIncrease": 0.25,
-      "optionType": "mknpc:extra_loot"
+      "noLootIncrease": 0.25
     },
     {
-      "optionType": "mknpc:equipment",
-      "slotOptions": {
+      "type": "mknpc:equipment",
+      "value": {
         "mainhand": [
           {
             "dropChance": 0.0,
-            "item": "{id: \"mkweapons:mace_stone\", Count: 1b, tag: {Damage: 0}}",
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:mace_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
             "weight": 1.0
           }
         ]
       }
     },
     {
-      "optionType": "mknpc:notable",
+      "type": "mknpc:notable",
       "value": true
     },
     {
-      "optionType": "mknpc:abilities",
-      "options": [
+      "type": "mknpc:abilities",
+      "value": [
         {
-          "abilityName": "mkultra:ability.fireball",
+          "abilityId": "mkultra:ability.fireball",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityName": "mkultra:ability.flame_wave",
+          "abilityId": "mkultra:ability.flame_wave",
           "chance": 1.0,
           "priority": 6
         },
         {
-          "abilityName": "mkultra:ability.smite",
+          "abilityId": "mkultra:ability.smite",
           "chance": 1.0,
           "priority": 4
         },
         {
-          "abilityName": "mkultra:ability.fire_armor",
+          "abilityId": "mkultra:ability.fire_armor",
           "chance": 1.0,
           "priority": 5
         },
         {
-          "abilityName": "mkultra:ability.heal",
+          "abilityId": "mkultra:ability.heal",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityName": "mkultra:ability.natures_remedy",
+          "abilityId": "mkultra:ability.natures_remedy",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityName": "mkultra:ability.power_word_summon",
+          "abilityId": "mkultra:ability.power_word_summon",
           "chance": 1.0,
           "priority": 7
         }
       ]
     },
     {
-      "major_skills": [],
+      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",
         "mkcore:conjuration",
         "mkcore:evocation"
       ],
-      "optionType": "mknpc:skills",
       "remedial_skills": [
         "mkcore:one_hand_pierce"
       ]
     },
     {
-      "optionType": "mknpc:lunge_speed",
+      "type": "mknpc:lunge_speed",
       "value": 0.5
     },
     {
-      "optionType": "mknpc:mk_size",
+      "type": "mknpc:mk_size",
       "value": 1.0
     },
     {
+      "type": "mknpc:faction_name",
       "hasLastName": true,
-      "optionType": "mknpc:faction_name",
       "title": "Imperial Magus"
     },
     {
-      "optionType": "mknpc:experience",
+      "type": "mknpc:experience",
       "value": 25
     },
     {
-      "optionType": "mknpc:faction",
+      "type": "mknpc:faction",
       "value": "mkultra:imperial_dead"
     }
   ]

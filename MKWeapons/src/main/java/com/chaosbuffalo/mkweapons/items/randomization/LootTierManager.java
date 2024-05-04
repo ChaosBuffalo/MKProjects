@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.ResourceLocation;
@@ -19,15 +18,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LootTierManager extends SimpleJsonResourceReloadListener {
-    public static final ResourceLocation INVALID_LOOT_TIER = new ResourceLocation(MKWeapons.MODID,
-            "loot_tier.invalid");
-    public static final ResourceLocation INVALID_RANDOMIZATION_TEMPLATE = new ResourceLocation(MKWeapons.MODID,
-            "randomization_template.invalid");
+    public static final String DEFINITION_FOLDER = "loot_tiers";
     private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
     public static final Map<ResourceLocation, LootTier> LOOT_TIERS = new HashMap<>();
 
     public LootTierManager() {
-        super(GSON, "loot_tiers");
+        super(GSON, DEFINITION_FOLDER);
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -38,9 +34,8 @@ public class LootTierManager extends SimpleJsonResourceReloadListener {
         for (Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
             ResourceLocation resourcelocation = entry.getKey();
             MKWeapons.LOGGER.debug("Found loot tier file: {}", resourcelocation);
-            if (resourcelocation.getPath().startsWith("_"))
-                continue; //Forge: filter anything beginning with "_" as it's used for metadata.
-            LootTier tier = parse(resourcelocation, entry.getValue().getAsJsonObject());
+
+            LootTier tier = LootTier.deserialize(new Dynamic<>(JsonOps.INSTANCE, entry.getValue()));
             LOOT_TIERS.put(tier.getName(), tier);
         }
     }
@@ -52,13 +47,6 @@ public class LootTierManager extends SimpleJsonResourceReloadListener {
     @SubscribeEvent
     public void subscribeEvent(AddReloadListenerEvent event) {
         event.addListener(this);
-    }
-
-    private LootTier parse(ResourceLocation loc, JsonObject json) {
-        MKWeapons.LOGGER.debug("Parsing loot tier Json for {}", loc);
-        LootTier tier = new LootTier(loc);
-        tier.deserialize(new Dynamic<>(JsonOps.INSTANCE, json));
-        return tier;
     }
 
 }

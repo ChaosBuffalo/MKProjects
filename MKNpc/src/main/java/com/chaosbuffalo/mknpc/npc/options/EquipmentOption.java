@@ -1,23 +1,33 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mkcore.utils.RandomCollection;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
 import com.chaosbuffalo.mknpc.npc.option_entries.EquipmentOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 public class EquipmentOption extends WorldPermanentOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "equipment");
+    public static final Codec<EquipmentOption> CODEC = Codec.unboundedMap(CommonCodecs.EQUIPMENT_SLOT_CODEC, NpcItemChoice.CODEC.listOf())
+            .xmap(EquipmentOption::new, i -> i.itemChoices);
+
     private final Map<EquipmentSlot, List<NpcItemChoice>> itemChoices;
+
+    private EquipmentOption(Map<EquipmentSlot, List<NpcItemChoice>> itemChoices) {
+        this();
+        this.itemChoices.putAll(itemChoices);
+    }
 
     public EquipmentOption() {
         super(NAME);
@@ -40,33 +50,5 @@ public class EquipmentOption extends WorldPermanentOption {
     public EquipmentOption addItemChoice(EquipmentSlot slot, NpcItemChoice choice) {
         itemChoices.computeIfAbsent(slot, s -> new ArrayList<>()).add(choice);
         return this;
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        Map<EquipmentSlot, List<NpcItemChoice>> newSlots = dynamic.get("slotOptions")
-                .asMap(keyD -> EquipmentSlot.byName(keyD.asString("error")),
-                        valueD -> valueD.asList(valD -> {
-                            NpcItemChoice newChoice = new NpcItemChoice();
-                            newChoice.deserialize(valD);
-                            return newChoice;
-                        }));
-        itemChoices.clear();
-        itemChoices.putAll(newSlots);
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-
-        ImmutableMap.Builder<D, D> mapBuilder = ImmutableMap.builder();
-        itemChoices.entrySet().stream()
-                .sorted(Comparator.comparing(e -> e.getKey().getName()))
-                .forEach(e -> mapBuilder.put(
-                        ops.createString(e.getKey().getName()),
-                        ops.createList(e.getValue().stream().map(itemChoice -> itemChoice.serialize(ops)))
-                ));
-
-        builder.put(ops.createString("slotOptions"), ops.createMap(mapBuilder.build()));
     }
 }

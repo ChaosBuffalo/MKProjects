@@ -8,9 +8,8 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.effects.BleedEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -25,55 +24,27 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class BleedMeleeWeaponEffect extends BaseMeleeWeaponEffect {
-
-    private float damageMultiplier;
-    private int maxStacks;
-    private int durationSeconds;
-    private Attribute skill;
     public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.bleed");
+    public static final Codec<BleedMeleeWeaponEffect> CODEC = RecordCodecBuilder.<BleedMeleeWeaponEffect>mapCodec(builder -> {
+        return builder.group(
+                Codec.FLOAT.fieldOf("damageMultiplier").forGetter(i -> i.damageMultiplier),
+                Codec.INT.fieldOf("maxStacks").forGetter(i -> i.maxStacks),
+                Codec.INT.fieldOf("durationSeconds").forGetter(i -> i.durationSeconds),
+                ForgeRegistries.ATTRIBUTES.getCodec().fieldOf("skill").forGetter(i -> i.skill)
+        ).apply(builder, BleedMeleeWeaponEffect::new);
+    }).codec();
+
+    private final float damageMultiplier;
+    private final int maxStacks;
+    private final int durationSeconds;
+    private final Attribute skill;
 
     public BleedMeleeWeaponEffect(float damageMultiplier, int maxStacks, int durationSeconds, Attribute skill) {
-        this();
+        super(NAME, ChatFormatting.DARK_RED);
         this.damageMultiplier = damageMultiplier;
         this.maxStacks = maxStacks;
         this.durationSeconds = durationSeconds;
         this.skill = skill;
-    }
-
-    public BleedMeleeWeaponEffect() {
-        super(NAME, ChatFormatting.DARK_RED);
-    }
-
-    public void setDamageMultiplier(float damageMultiplier) {
-        this.damageMultiplier = damageMultiplier;
-    }
-
-    public void setDurationSeconds(int durationSeconds) {
-        this.durationSeconds = durationSeconds;
-    }
-
-    public void setMaxStacks(int maxStacks) {
-        this.maxStacks = maxStacks;
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        setMaxStacks(dynamic.get("maxStacks").asInt(5));
-        setDurationSeconds(dynamic.get("durationSeconds").asInt(5));
-        setDamageMultiplier(dynamic.get("damageMultiplier").asFloat(2.0f));
-        dynamic.get("skill").asString().result().ifPresent(x -> {
-            skill = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(x));
-        });
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("damageMultiplier"), ops.createFloat(damageMultiplier));
-        builder.put(ops.createString("maxStacks"), ops.createInt(maxStacks));
-        builder.put(ops.createString("durationSeconds"), ops.createInt(durationSeconds));
-        builder.put(ops.createString("skill"), ops.createString(ForgeRegistries.ATTRIBUTES.getKey(skill).toString()));
     }
 
     @Override
@@ -99,5 +70,4 @@ public class BleedMeleeWeaponEffect extends BaseMeleeWeaponEffect {
                     damageMultiplier, durationSeconds, maxStacks, Component.translatable(skill.getDescriptionId())));
         }
     }
-
 }

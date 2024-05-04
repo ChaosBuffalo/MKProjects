@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure.events.event;
 
-import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.StringAttribute;
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mkcore.utils.WorldUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
@@ -12,11 +11,12 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.NotableDeadCondition;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.StructureEventCondition;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureEventRequirement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureHasNotableRequirement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureHasPoiRequirement;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -26,35 +26,44 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.ForgeEventFactory;
 
-import java.util.UUID;
+import java.util.*;
 
 public class SpawnNpcDefinitionEvent extends StructureEvent {
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID,
             "struct_event.spawn_npc");
-    protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute(
-            "npcDefinition", NpcDefinitionManager.INVALID_NPC_DEF);
-    protected StringAttribute poiTag = new StringAttribute("poiTag", "invalid");
-    protected StringAttribute faceTag = new StringAttribute("faceTag", "invalid");
-    protected MKEntity.NonCombatMoveType moveType;
+    public static final Codec<SpawnNpcDefinitionEvent> CODEC = RecordCodecBuilder.<SpawnNpcDefinitionEvent>mapCodec(builder -> {
+        return CommonCodecs.and(commonCodec(builder), builder.group(
+                ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
+                Codec.STRING.fieldOf("poiTag").forGetter(i -> i.poiTag),
+                Codec.STRING.fieldOf("faceTag").forGetter(i -> i.faceTag),
+                MKEntity.NonCombatMoveType.CODEC.fieldOf("moveType").forGetter(i -> i.moveType)
+        )).apply(builder, SpawnNpcDefinitionEvent::new);
+    }).codec();
 
+    protected final ResourceLocation npcDefinition;
+    protected final String poiTag;
+    protected final String faceTag;
+    protected final MKEntity.NonCombatMoveType moveType;
 
-    public SpawnNpcDefinitionEvent() {
-        super(TYPE_NAME);
-        addAttributes(npcDefinition, poiTag, faceTag);
-        startsCooldown = false;
+    private SpawnNpcDefinitionEvent(String eventName, int cooldown, Set<EventTrigger> triggers,
+                                    List<StructureEventRequirement> requirementList, List<StructureEventCondition> conditions,
+                                    ResourceLocation npcDef, String poiTag, String faceTag, MKEntity.NonCombatMoveType moveType) {
+        super(TYPE_NAME, eventName, cooldown, triggers, requirementList, conditions);
+        this.npcDefinition = npcDef;
+        this.poiTag = poiTag;
+        this.faceTag = faceTag;
+        this.moveType = moveType;
+        startsCooldownImmediately = false;
+        addRequirement(new StructureHasPoiRequirement(poiTag));
+        addRequirement(new StructureHasPoiRequirement(faceTag));
     }
 
-    public SpawnNpcDefinitionEvent(ResourceLocation npcDef, String spawnLocation, String faceTagIn,
+    public SpawnNpcDefinitionEvent(String eventName, ResourceLocation npcDef, String spawnLocation, String faceTagIn,
                                    MKEntity.NonCombatMoveType moveType) {
-        this();
-        npcDefinition.setValue(npcDef);
-        poiTag.setValue(spawnLocation);
-        faceTag.setValue(faceTagIn);
-        this.moveType = moveType;
-        addRequirement(new StructureHasPoiRequirement(spawnLocation));
-        addRequirement(new StructureHasPoiRequirement(faceTagIn));
+        this(eventName, DEFAULT_COOLDOWN, new HashSet<>(), List.of(), List.of(), npcDef, spawnLocation, faceTagIn, moveType);
     }
 
     public SpawnNpcDefinitionEvent addNotableDeadCondition(ResourceLocation notable, boolean killAll) {
@@ -70,40 +79,29 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
     }
 
     @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        super.readAdditionalData(dynamic);
-        moveType = MKEntity.NonCombatMoveType.values()[dynamic.get("moveType").asInt(0)];
-    }
-
-    @Override
-    public boolean meetsConditions(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
+    public boolean meetsConditions(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level level) {
         return !activeStructure.hasActiveEntity(entry.getCustomData().computeUUID(getEventName())) &&
-                super.meetsConditions(entry, activeStructure, world);
+                super.meetsConditions(entry, activeStructure, level);
     }
 
     @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("moveType"), ops.createInt(moveType.ordinal()));
-    }
-
-    @Override
-    public void execute(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
-        NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefinition.getValue());
+    public void execute(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level level) {
+        NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefinition);
         if (def == null) {
             return;
         }
-        entry.getFirstPoiWithTag(poiTag.getValue()).ifPresent(x -> {
+        entry.getFirstPoiWithTag(poiTag).ifPresent(x -> {
             UUID npcId = entry.getCustomData().computeUUID(getEventName());
             Vec3 pos = Vec3.atBottomCenterOf(x.getLocation().pos());
             double difficultyValue = WorldUtils.getDifficultyForGlobalPos(x.getLocation());
-            Entity entity = def.createEntity(world, pos, npcId, difficultyValue);
+            Entity entity = def.createEntity(level, pos, npcId, difficultyValue);
             if (entity != null) {
-                entry.getFirstPoiWithTag(faceTag.getValue()).ifPresent(face -> {
+                entry.getFirstPoiWithTag(faceTag).ifPresent(face -> {
                     entity.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(face.getLocation().pos()));
                 });
                 final double finDiff = difficultyValue;
-                MKNpc.getNpcData(entity).ifPresent((cap) -> {
+                LazyOptional<IEntityNpcData> npcCap = MKNpc.getNpcData(entity);
+                npcCap.ifPresent(cap -> {
 //                    cap.setMKSpawned(true);
                     cap.setSpawnPos(BlockPos.containing(pos).above());
                     cap.setNotableUUID(npcId);
@@ -113,13 +111,13 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
                 if (entity instanceof MKEntity mkEntity) {
                     mkEntity.setNonCombatMoveType(moveType);
                 }
-                if (entity instanceof Mob mobEnt && world instanceof ServerLevelAccessor serverLevel) {
+                if (entity instanceof Mob mobEnt && level instanceof ServerLevelAccessor serverLevel) {
                     ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
                             serverLevel.getCurrentDifficultyAt(x.getLocation().pos()),
                             MobSpawnType.SPAWNER, null, null);
                 }
-                world.addFreshEntity(entity);
-                MKNpc.getNpcData(entity).ifPresent(cap -> cap.setMKSpawned(true));
+                level.addFreshEntity(entity);
+                npcCap.ifPresent(cap -> cap.setMKSpawned(true));
                 activeStructure.addEntity(npcId, entity, getEventName());
             }
         });

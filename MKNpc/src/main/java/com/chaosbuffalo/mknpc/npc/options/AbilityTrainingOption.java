@@ -8,63 +8,53 @@ import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainer;
 import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainingEntity;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.google.common.collect.ImmutableList;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.NoSuchElementException;
 
-public class AbilityTrainingOption extends SimpleOption<List<AbilityTrainingOption.AbilityTrainingOptionEntry>> {
+public class AbilityTrainingOption extends NpcDefinitionOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "ability_trainings");
+    public static final Codec<AbilityTrainingOption> CODEC = AbilityTrainingOptionEntry.CODEC.listOf().xmap(AbilityTrainingOption::new, AbilityTrainingOption::getValue);
 
     public static class AbilityTrainingOptionEntry {
-        private MKAbility ability;
-        protected final List<AbilityTrainingRequirement> requirements = new ArrayList<>();
+        public static final Codec<AbilityTrainingOptionEntry> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
+                RecordCodecBuilder.<AbilityTrainingOptionEntry>mapCodec(builder -> {
+                    return builder.group(
+                            MKCoreRegistry.ABILITIES.getCodec().fieldOf("ability").forGetter(i -> i.ability),
+                            AbilityTrainingRequirement.CODEC.listOf().fieldOf("requirements").forGetter(i -> i.requirements)
+                    ).apply(builder, AbilityTrainingOptionEntry::new);
+                }).codec());
+
+        private final MKAbility ability;
+        private final List<AbilityTrainingRequirement> requirements = new ArrayList<>();
 
         public AbilityTrainingOptionEntry(MKAbility ability, List<AbilityTrainingRequirement> requirements) {
             this.ability = ability;
             this.requirements.addAll(requirements);
         }
+    }
 
-        public <D> AbilityTrainingOptionEntry(Dynamic<D> dynamic) {
-            deserialize(dynamic);
-        }
+    private final List<AbilityTrainingOptionEntry> options;
 
-        public <D> D serialize(DynamicOps<D> ops) {
-            ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
-            builder.put(ops.createString("ability"), ops.createString(ability.getAbilityId().toString()));
-            builder.put(ops.createString("reqs"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
-            return ops.createMap(builder.build());
-        }
-
-        public <D> void deserialize(Dynamic<D> dynamic) {
-            ResourceLocation abilityId = dynamic.get("ability").asString()
-                    .resultOrPartial(MKNpc.LOGGER::error)
-                    .map(ResourceLocation::new)
-                    .orElseThrow(() -> new IllegalArgumentException("Failed to parse field 'ability' from " + dynamic));
-
-            ability = MKCoreRegistry.getAbility(abilityId);
-            if (ability == null) {
-                throw new NoSuchElementException(String.format("Ability '%s' does not exist", abilityId));
-            }
-
-            requirements.clear();
-            requirements.addAll(dynamic.get("reqs").asList(x -> AbilityTrainingRequirement.fromDynamic(x)
-                    .resultOrPartial(error -> {
-                        throw new IllegalArgumentException(String.format("Failed to parse training requirement for " +
-                                "ability '%s': %s", ability.getAbilityId(), error));
-                    }).orElseThrow(IllegalStateException::new)));
-        }
+    public AbilityTrainingOption(List<AbilityTrainingOptionEntry> options) {
+        super(NAME, ApplyOrder.MIDDLE);
+        this.options = ImmutableList.copyOf(options);
     }
 
     public AbilityTrainingOption() {
-        super(NAME);
-        setValue(new ArrayList<>());
+        super(NAME, ApplyOrder.MIDDLE);
+        this.options = new ArrayList<>();
+    }
+
+    public List<AbilityTrainingOptionEntry> getValue() {
+        return options;
     }
 
     public AbilityTrainingOption withTrainingOption(MKAbility ability, AbilityTrainingRequirement... reqs) {
@@ -73,22 +63,10 @@ public class AbilityTrainingOption extends SimpleOption<List<AbilityTrainingOpti
     }
 
     @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        List<AbilityTrainingOptionEntry> entries = dynamic.get("value").asList(AbilityTrainingOptionEntry::new);
-        setValue(entries);
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("value"), ops.createList(getValue().stream().map(x -> x.serialize(ops))));
-    }
-
-    @Override
-    public void applyToEntity(NpcDefinition definition, Entity entity, List<AbilityTrainingOptionEntry> value) {
-        if (entity instanceof IAbilityTrainingEntity) {
-            IAbilityTrainer trainer = ((IAbilityTrainingEntity) entity).getAbilityTrainer();
-            for (AbilityTrainingOptionEntry entry : value) {
+    public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
+        if (entity instanceof IAbilityTrainingEntity trainingEntity) {
+            IAbilityTrainer trainer = trainingEntity.getAbilityTrainer();
+            for (AbilityTrainingOptionEntry entry : options) {
                 if (entry.ability != null) {
                     AbilityTrainingEntry trainingEntry = trainer.addTrainedAbility(entry.ability);
                     for (AbilityTrainingRequirement req : entry.requirements) {

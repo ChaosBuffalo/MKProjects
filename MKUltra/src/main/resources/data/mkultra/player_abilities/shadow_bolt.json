@@ -2,10 +2,12 @@
   "attributes": {
     "baseDamage": 8.0,
     "casting_particles": "mkultra:shadow_bolt_casting",
+    "detonate_particles": "mkultra:shadow_bolt_detonate",
     "modifierScaling": 1.0,
     "projectileInaccuracy": 0.2,
     "projectileSpeed": 1.25,
-    "scaleDamage": 4.0
+    "scaleDamage": 4.0,
+    "trail_particles": "mkultra:shadow_bolt_trail"
   },
   "castTime": 20,
   "cooldown": 160,

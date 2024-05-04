@@ -3,16 +3,29 @@ package com.chaosbuffalo.mknpc.npc.options;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 public class MKComboSettingsOption extends NpcDefinitionOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "mk_combo");
+    public static final Codec<MKComboSettingsOption> CODEC = RecordCodecBuilder.<MKComboSettingsOption>mapCodec(builder -> {
+        return builder.group(
+                Codec.INT.optionalFieldOf("cooldown", 20).forGetter(i -> i.ticks),
+                Codec.INT.optionalFieldOf("count", 1).forGetter(i -> i.comboCount)
+        ).apply(builder, MKComboSettingsOption::new);
+    }).codec();
+
+
     private int comboCount;
     private int ticks;
+
+    public MKComboSettingsOption(int ticks, int comboCount) {
+        super(NAME, ApplyOrder.MIDDLE);
+        this.ticks = ticks;
+        this.comboCount = comboCount;
+    }
 
     public MKComboSettingsOption() {
         super(NAME, ApplyOrder.MIDDLE);
@@ -32,21 +45,8 @@ public class MKComboSettingsOption extends NpcDefinitionOption {
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
-        if (entity instanceof MKEntity) {
-            ((MKEntity) entity).setAttackComboStatsAndDefault(comboCount, ticks);
+        if (entity instanceof MKEntity mkEntity) {
+            mkEntity.setAttackComboStatsAndDefault(comboCount, ticks);
         }
-    }
-
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("count"), ops.createInt(comboCount));
-        builder.put(ops.createString("cooldown"), ops.createInt(ticks));
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        setComboCount(dynamic.get("count").asInt(1));
-        setComboDelay(dynamic.get("cooldown").asInt(20));
     }
 }

@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkchat.dialogue.effects;
 
-import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.capabilities.IPlayerDialogue;
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.mojang.serialization.Codec;
@@ -10,8 +9,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 public class AddFlagEffect extends DialogueEffect {
-    public static ResourceLocation INVALID_FLAG = new ResourceLocation(MKChat.MODID, "invalid_flag");
-
     public static final Codec<AddFlagEffect> CODEC = RecordCodecBuilder.<AddFlagEffect>mapCodec(builder ->
             builder.group(
                     ResourceLocation.CODEC.fieldOf("flag").forGetter(i -> i.flagName)
@@ -37,9 +34,6 @@ public class AddFlagEffect extends DialogueEffect {
 
     @Override
     public void applyEffect(ServerPlayer player, LivingEntity source, DialogueNode node) {
-        if (flagName.equals(INVALID_FLAG)) {
-            return;
-        }
         IPlayerDialogue.get(player).ifPresent(cap -> cap.getConversationMemory(source).setBoolFlag(flagName, true));
     }
 }

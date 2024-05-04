@@ -65,14 +65,11 @@
       "description": "{\"text\":\"The Green Lady wants you to go talk to the smith and equip yourself for an unknown task.\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:green_smith",
-            "objectiveName": "talk_to_smith",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Talk to the smith\"}"
+            {
+              "text": "Talk to the smith"
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.talk_to_smith",
@@ -104,7 +101,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:green_smith",
+          "objectiveName": "talk_to_smith",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "talk_to_smith",
@@ -120,25 +122,48 @@
       "description": "{\"text\":\"The Green Smith points you towards a chest in his workshop.\"}",
       "objectives": [
         {
-          "attributes": {
-            "chestTag": "intro_chest",
-            "objectiveName": "loot_chest",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:loot_chest",
+          "chestTag": "intro_chest",
           "description": [
-            "{\"text\":\"Loot the smith's chest\"}"
+            {
+              "text": "Loot the smith's chest"
+            }
           ],
           "items": [
-            "{id: \"minecraft:cobblestone\", Count: 20b}",
-            "{id: \"minecraft:oak_planks\", Count: 20b}",
-            "{id: \"minecraft:string\", Count: 10b}",
-            "{id: \"minecraft:leather\", Count: 40b}",
-            "{id: \"minecraft:coal\", Count: 10b}",
-            "{id: \"minecraft:flint\", Count: 10b}",
-            "{id: \"minecraft:porkchop\", Count: 10b}"
+            {
+              "Count": 20,
+              "id": "minecraft:cobblestone"
+            },
+            {
+              "Count": 20,
+              "id": "minecraft:oak_planks"
+            },
+            {
+              "Count": 10,
+              "id": "minecraft:string"
+            },
+            {
+              "Count": 40,
+              "id": "minecraft:leather"
+            },
+            {
+              "Count": 10,
+              "id": "minecraft:coal"
+            },
+            {
+              "Count": 10,
+              "id": "minecraft:flint"
+            },
+            {
+              "Count": 10,
+              "id": "minecraft:porkchop"
+            }
           ],
-          "objectiveType": "mknpc:objective.loot_chest"
+          "objectiveName": "loot_chest",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "equip_yourself",
@@ -154,14 +179,11 @@
       "description": "{\"text\":\"Use the Green Smith's supplies to craft your desired weapon and perhaps some armor for the battle ahead.\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:green_smith",
-            "objectiveName": "return_to_smith",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Talk to the Green Smith with a weapon in your hand.\"}"
+            {
+              "text": "Talk to the Green Smith with a weapon in your hand."
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.return_to_smith",
@@ -205,7 +227,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:green_smith",
+          "objectiveName": "return_to_smith",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "return_to_smith",
@@ -221,14 +248,11 @@
       "description": "{\"text\":\"Talk to the Green Lady to learn more about developing your magical abilities\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:green_lady",
-            "objectiveName": "green_lady_talent",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Talk to the Green Lady about the talent system.\"}"
+            {
+              "text": "Talk to the Green Lady about the talent system."
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.green_lady_talent",
@@ -260,7 +284,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:green_lady",
+          "objectiveName": "green_lady_talent",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "green_lady_talent",
@@ -276,14 +305,11 @@
       "description": "{\"text\":\"The Green Lady wants you to learn about spending talent points.\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:green_lady",
-            "objectiveName": "return_to_green_lady",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Talk to the Green Lady after training a talent.\"}"
+            {
+              "text": "Talk to the Green Lady after training a talent."
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.return_to_green_lady",
@@ -348,7 +374,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:green_lady",
+          "objectiveName": "return_to_green_lady",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "return_to_green_lady",
@@ -370,14 +401,11 @@
       "description": "{\"text\":\"Talk to the Green Lady and learn your first ability, then speak to her again.\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:green_lady",
-            "objectiveName": "after_green_lady",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Talk to the Green Lady after learning your first ability.\"}"
+            {
+              "text": "Talk to the Green Lady after learning your first ability."
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.after_green_lady",
@@ -446,7 +474,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:green_lady",
+          "objectiveName": "after_green_lady",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "after_ability",
@@ -462,36 +495,23 @@
       "description": "{\"text\":\"The Green Lady wants you to clear out some of the zombies on the first floor of the castle\"}",
       "objectives": [
         {
-          "attributes": {
-            "count": 4,
-            "npcDefinition": "mkultra:decaying_piglin",
-            "objectiveName": "kill_zombies"
-          },
-          "description": [
-            "{\"text\":\"Placeholder\"}"
-          ],
-          "objectiveType": "mknpc:objective.kill_npc_def"
+          "type": "mknpc:kill_npc_def",
+          "count": 4,
+          "npcDefinition": "mkultra:decaying_piglin",
+          "objectiveName": "kill_zombies"
         },
         {
-          "attributes": {
-            "count": 4,
-            "npcDefinition": "mkultra:decaying_piglin_archer",
-            "objectiveName": "kill_archers"
-          },
-          "description": [
-            "{\"text\":\"Placeholder\"}"
-          ],
-          "objectiveType": "mknpc:objective.kill_npc_def"
+          "type": "mknpc:kill_npc_def",
+          "count": 4,
+          "npcDefinition": "mkultra:decaying_piglin_archer",
+          "objectiveName": "kill_archers"
         },
         {
-          "attributes": {
-            "npcDefinition": "mkultra:green_lady",
-            "objectiveName": "after_kill",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Talk to the Green Lady after completing the other objectives.\"}"
+            {
+              "text": "Talk to the Green Lady after completing the other objectives."
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.after_kill",
@@ -540,7 +560,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:green_lady",
+          "objectiveName": "after_kill",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "first_kill",
@@ -556,24 +581,20 @@
       "description": "{\"text\":\"The Green Lady wants you to find and kill the Piglin Captain\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:trooper_captain",
-            "objectiveName": "kill_captain",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
-          "description": [],
-          "objectiveType": "mknpc:objective.kill_notable"
+          "type": "mknpc:kill_notable_npc",
+          "npcDefinition": "mkultra:trooper_captain",
+          "objectiveName": "kill_captain",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         },
         {
-          "attributes": {
-            "npcDefinition": "mkultra:green_lady",
-            "objectiveName": "after_kill_captain",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Talk to the Green Lady after completing the other objectives.\"}"
+            {
+              "text": "Talk to the Green Lady after completing the other objectives."
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.after_kill_captain",
@@ -621,7 +642,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:green_lady",
+          "objectiveName": "after_kill_captain",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "kill_captain",
@@ -643,14 +669,11 @@
       "description": "{\"text\":\"The Green Lady wants you to seek out a spirit in the depths.\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:forlorn_ghost",
-            "objectiveName": "talk_to_ghost",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Find the spirit in the castle.\"}"
+            {
+              "text": "Find the spirit in the castle."
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.talk_to_ghost",
@@ -787,7 +810,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:forlorn_ghost",
+          "objectiveName": "talk_to_ghost",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "talk_to_ghost",
@@ -803,24 +831,20 @@
       "description": "{\"text\":\"The Forlorn Ghost has asked you you to kill the Burning Revenant\"}",
       "objectives": [
         {
-          "attributes": {
-            "npcDefinition": "mkultra:burning_skeleton",
-            "objectiveName": "kill_burning",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
-          "description": [],
-          "objectiveType": "mknpc:objective.kill_notable"
+          "type": "mknpc:kill_notable_npc",
+          "npcDefinition": "mkultra:burning_skeleton",
+          "objectiveName": "kill_burning",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         },
         {
-          "attributes": {
-            "npcDefinition": "mkultra:green_lady",
-            "objectiveName": "after_kill_burning",
-            "structure": "mkultra:intro_castle",
-            "structureIndex": 0
-          },
+          "type": "mknpc:talk_to_npc",
           "description": [
-            "{\"text\":\"Return to the Green Lady after completing the other objectives.\"}"
+            {
+              "text": "Return to the Green Lady after completing the other objectives."
+            }
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.after_kill_burning",
@@ -868,7 +892,12 @@
               }
             ]
           },
-          "objectiveType": "mknpc:objective.talk_to_npc"
+          "npcDefinition": "mkultra:green_lady",
+          "objectiveName": "after_kill_burning",
+          "structure": {
+            "index": 0,
+            "structureId": "mkultra:intro_castle"
+          }
         }
       ],
       "questName": "kill_burning",

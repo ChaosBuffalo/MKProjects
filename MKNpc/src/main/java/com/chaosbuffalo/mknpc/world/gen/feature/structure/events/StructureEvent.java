@@ -1,63 +1,115 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure.events;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.serialization.IDynamicMapTypedSerializer;
-import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
-import com.chaosbuffalo.mkcore.serialization.attributes.ISerializableAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.StructureEventCondition;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureEventRequirement;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
+import com.mojang.datafixers.Products;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;
 
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
-public abstract class StructureEvent implements ISerializableAttributeContainer, IDynamicMapTypedSerializer {
-    private static final String TYPE_ENTRY_NAME = "structEventType";
-    public final static ResourceLocation INVALID_OPTION = new ResourceLocation(MKNpc.MODID, "struct_event.invalid");
-    private final List<ISerializableAttribute<?>> attributes = new ArrayList<>();
-    private final ResourceLocation typeName;
-    private String eventName;
-    protected final List<StructureEventRequirement> requirements = new ArrayList<>();
-    protected final List<StructureEventCondition> conditions = new ArrayList<>();
-    protected ResourceLocation timerName;
-    protected final IntAttribute eventTimer = new IntAttribute("cooldown", 10 * GameConstants.TICKS_PER_SECOND * 60);
+public abstract class StructureEvent {
+    public static final Codec<StructureEvent> CODEC = StructureEventManager.EVENT_CODEC;
 
-    protected boolean startsCooldown;
-
-    public boolean startsCooldownImmediately() {
-        return startsCooldown;
+    protected static <T extends StructureEvent> Products.P5<RecordCodecBuilder.Mu<T>, String, Integer,
+            Set<EventTrigger>, List<StructureEventRequirement>,
+            List<StructureEventCondition>> commonCodec(RecordCodecBuilder.Instance<T> instance) {
+        return instance.group(
+                Codec.STRING.fieldOf("event_name").forGetter(StructureEvent::getEventName),
+                Codec.INT.fieldOf("cooldown").forGetter(StructureEvent::getCooldown),
+                CommonCodecs.sortedSet(EventTrigger.CODEC, EventTrigger.COMPARATOR).fieldOf("triggers").forGetter(i -> i.triggers),
+                StructureEventRequirement.CODEC.listOf().fieldOf("requirements").forGetter(StructureEvent::getRequirements),
+                StructureEventCondition.CODEC.listOf().fieldOf("conditions").forGetter(StructureEvent::getConditions)
+        );
     }
 
-    public enum EventTrigger {
+    public static final int DEFAULT_COOLDOWN = 10 * GameConstants.TICKS_PER_SECOND * 60;
+
+    private final ResourceLocation typeName;
+    private final String eventName;
+    protected final int eventTimer;
+    protected final Set<EventTrigger> triggers;
+    protected final List<StructureEventRequirement> requirements = new ArrayList<>();
+    protected final List<StructureEventCondition> conditions = new ArrayList<>();
+    protected final ResourceLocation timerName;
+
+    protected boolean startsCooldownImmediately;
+
+    public enum EventTrigger implements StringRepresentable {
         ON_TICK,
         ON_DEATH,
         ON_ACTIVATE,
-        ON_DEACTIVATE
+        ON_DEACTIVATE;
+
+        public static final Codec<EventTrigger> CODEC = StringRepresentable.fromEnum(EventTrigger::values);
+        public static final Comparator<EventTrigger> COMPARATOR = Comparator.comparing(EventTrigger::getSerializedName);
+
+        @Override
+        public String getSerializedName() {
+            return name();
+        }
     }
 
-    protected final Set<EventTrigger> triggers = new HashSet<>();
-
-    public StructureEvent(ResourceLocation typeName) {
+    protected StructureEvent(ResourceLocation typeName, String eventName, int cooldown,
+                             Set<EventTrigger> triggers,
+                             List<StructureEventRequirement> requirements, List<StructureEventCondition> conditions) {
         this.typeName = typeName;
-        setEventName("name_not_found");
-        addAttribute(eventTimer);
-        startsCooldown = true;
-    }
-
-    public StructureEvent setEventName(String eventName) {
         this.eventName = eventName;
         timerName = new ResourceLocation("event_timer", eventName);
-        return this;
+        eventTimer = cooldown;
+        this.triggers = triggers;
+        this.requirements.addAll(requirements);
+        this.conditions.addAll(conditions);
+        startsCooldownImmediately = true;
+    }
+
+    public ResourceLocation getTypeName() {
+        return typeName;
+    }
+
+    public String getEventName() {
+        return eventName;
+    }
+
+    public int getCooldown() {
+        return eventTimer;
+    }
+
+    public boolean startsCooldownImmediately() {
+        return startsCooldownImmediately;
+    }
+
+    public ResourceLocation getTimerName() {
+        return timerName;
+    }
+
+    public List<StructureEventRequirement> getRequirements() {
+        return requirements;
+    }
+
+    public void addRequirement(StructureEventRequirement requirement) {
+        this.requirements.add(requirement);
+    }
+
+    public List<StructureEventCondition> getConditions() {
+        return conditions;
+    }
+
+    public void addCondition(StructureEventCondition condition) {
+        this.conditions.add(condition);
     }
 
     public boolean canTrigger(EventTrigger trigger) {
@@ -69,119 +121,24 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
         return this;
     }
 
-    public int getCooldown() {
-        return eventTimer.value();
-    }
-
-    public StructureEvent setCooldown(int ticks) {
-        eventTimer.setValue(ticks);
-        return this;
-    }
-
-    public ResourceLocation getTimerName() {
-        return timerName;
-    }
-
-    @Override
-    public ResourceLocation getTypeName() {
-        return typeName;
-    }
-
-    @Override
-    public String getTypeEntryName() {
-        return TYPE_ENTRY_NAME;
-    }
-
-    public String getEventName() {
-        return eventName;
-    }
-
-    @Override
-    public List<ISerializableAttribute<?>> getAttributes() {
-        return attributes;
-    }
-
-    @Override
-    public void addAttribute(ISerializableAttribute<?> iSerializableAttribute) {
-        attributes.add(iSerializableAttribute);
-    }
-
-    @Override
-    public void addAttributes(ISerializableAttribute<?>... iSerializableAttributes) {
-        attributes.addAll(Arrays.asList(iSerializableAttributes));
-    }
-
     public void onTrackedEntityDeath(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure,
                                      IEntityNpcData npcData) {
 
     }
 
-    @Override
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        builder.put(ops.createString("attributes"), serializeAttributeMap(ops));
-        builder.put(ops.createString("requirements"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
-        builder.put(ops.createString("conditions"), ops.createList(conditions.stream().map(x -> x.serialize(ops))));
-        builder.put(ops.createString("event_name"), ops.createString(getEventName()));
-        builder.put(ops.createString("triggers"), ops.createList(triggers.stream().sorted().map(x -> ops.createInt(x.ordinal()))));
-    }
-
-    public List<StructureEventRequirement> getRequirements() {
-        return requirements;
-    }
-
-    public void addRequirement(StructureEventRequirement requirement) {
-        this.requirements.add(requirement);
-    }
-
-    public void addCondition(StructureEventCondition condition) {
-        this.conditions.add(condition);
-    }
-
-    @Override
-    public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        deserializeAttributeMap(dynamic, "attributes");
-        List<Optional<StructureEventRequirement>> reqs = dynamic.get("requirements").asList(x -> {
-            ResourceLocation type = StructureEventRequirement.getType(x);
-            Supplier<StructureEventRequirement> deserializer = StructureEventManager.getRequirementDeserializer(type);
-            if (deserializer == null) {
-                return Optional.empty();
-            } else {
-                StructureEventRequirement req = deserializer.get();
-                req.deserialize(x);
-                return Optional.of(req);
-            }
-        });
-        reqs.forEach(x -> x.ifPresent(this::addRequirement));
-        List<Optional<StructureEventCondition>> conds = dynamic.get("conditions").asList(x -> {
-            ResourceLocation type = StructureEventCondition.getType(x);
-            Supplier<StructureEventCondition> deserializer = StructureEventManager.getConditionDeserializer(type);
-            if (deserializer == null) {
-                return Optional.empty();
-            } else {
-                StructureEventCondition cond = deserializer.get();
-                cond.deserialize(x);
-                return Optional.of(cond);
-            }
-        });
-        conds.forEach(x -> x.ifPresent(this::addCondition));
-        setEventName(dynamic.get("event_name").asString("name_not_found"));
-        triggers.clear();
-        triggers.addAll(dynamic.get("triggers").asIntStream().mapToObj(x -> EventTrigger.values()[x]).collect(Collectors.toSet()));
-    }
-
     public boolean meetsRequirements(MKStructureEntry entry,
-                                     WorldStructureManager.ActiveStructure activeStructure, Level world) {
-        return requirements.stream().allMatch(x -> x.meetsRequirements(entry, activeStructure, world));
+                                     WorldStructureManager.ActiveStructure activeStructure, Level level) {
+        return requirements.stream().allMatch(x -> x.meetsRequirements(entry, activeStructure, level));
     }
 
-    public boolean meetsConditions(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
-        return conditions.stream().allMatch(x -> x.meetsCondition(entry, activeStructure, world));
+    public boolean meetsConditions(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level level) {
+        return conditions.stream().allMatch(x -> x.meetsCondition(entry, activeStructure, level));
     }
 
-    public static <D> ResourceLocation getType(Dynamic<D> dynamic) {
-        return IDynamicMapTypedSerializer.getType(dynamic, TYPE_ENTRY_NAME).orElse(INVALID_OPTION);
+    public abstract void execute(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level level);
+
+
+    public <D> D serialize(DynamicOps<D> ops) {
+        return CODEC.encodeStart(ops, this).getOrThrow(false, MKNpc.LOGGER::error);
     }
-
-    public abstract void execute(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world);
-
 }
