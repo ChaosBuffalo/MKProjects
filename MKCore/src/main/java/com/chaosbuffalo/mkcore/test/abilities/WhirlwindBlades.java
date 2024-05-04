@@ -84,8 +84,7 @@ public class WhirlwindBlades extends MKAbility {
         int tickSpeed = 6;
         if (castTimeLeft % tickSpeed == 0) {
             int level = 1;
-            int totalDuration = getCastTime(casterData);
-            int count = (totalDuration - castTimeLeft) / tickSpeed;
+            int count = (maxTicks - castTimeLeft) / tickSpeed;
             float baseAmount = 0.15f;
             float scaling = count * baseAmount;
             // What to do for each target hit
