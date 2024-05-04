@@ -59,8 +59,8 @@ public class HealingRain extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, context);
+    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int maxTicks, AbilityContext context) {
+        super.continueCast(castingEntity, casterData, castTimeLeft, maxTicks, context);
         int tickSpeed = 5;
         if (castTimeLeft % tickSpeed == 0) {
             int level = 0;

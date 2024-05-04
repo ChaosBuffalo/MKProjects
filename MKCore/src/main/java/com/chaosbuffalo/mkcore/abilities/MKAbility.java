@@ -343,11 +343,11 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     }
 
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context) {
+    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int maxTicks, AbilityContext context) {
 
     }
 
-    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft) {
+    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks) {
     }
 
     public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {

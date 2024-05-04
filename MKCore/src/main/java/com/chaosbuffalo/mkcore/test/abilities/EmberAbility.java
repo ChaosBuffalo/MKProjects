@@ -54,8 +54,8 @@ public class EmberAbility extends MKAbility {
 
 
     @Override
-    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft) {
-        super.continueCastClient(castingEntity, casterData, castTimeLeft);
+    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks) {
+        super.continueCastClient(castingEntity, casterData, castTimeLeft, totalTicks);
         RandomSource rand = castingEntity.getRandom();
         castingEntity.getCommandSenderWorld().addParticle(ParticleTypes.LAVA,
                 castingEntity.getX(), castingEntity.getY() + 0.5F, castingEntity.getZ(),

@@ -239,11 +239,13 @@ public class AbilityExecutor {
         protected final MKAbility ability;
         protected final AbilityExecutor executor;
         protected int castTicks;
+        protected int totalTicks;
 
         public EntityCastingState(AbilityExecutor executor, MKAbility ability, int castTicks) {
             this.executor = executor;
             this.ability = ability;
             this.castTicks = castTicks;
+            this.totalTicks = castTicks;
         }
 
         public int getCastTicks() {
@@ -307,7 +309,7 @@ public class AbilityExecutor {
 
         @Override
         void activeTick() {
-            ability.continueCast(executor.entityData.getEntity(), executor.entityData, castTicks, abilityContext);
+            ability.continueCast(executor.entityData.getEntity(), executor.entityData, castTicks, totalTicks, abilityContext);
         }
 
         @Override
@@ -351,7 +353,7 @@ public class AbilityExecutor {
 
         @Override
         void activeTick() {
-            ability.continueCastClient(executor.entityData.getEntity(), executor.entityData, castTicks);
+            ability.continueCastClient(executor.entityData.getEntity(), executor.entityData, castTicks, totalTicks);
         }
 
         @Override
