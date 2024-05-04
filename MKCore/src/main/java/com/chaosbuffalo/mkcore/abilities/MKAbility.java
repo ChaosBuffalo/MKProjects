@@ -402,4 +402,8 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         int duration = Math.round((base + scale * level) * GameConstants.TICKS_PER_SECOND);
         return MKCombatFormulas.applyBuffDurationModifier(casterData, duration);
     }
+
+    public void interruptCast(CastInterruptReason reason, LivingEntity castingEntity, IMKEntityData casterData,
+                              AbilityContext context) {
+    }
 }

@@ -312,6 +312,7 @@ public class AbilityExecutor {
         @Override
         void interrupt(CastInterruptReason reason) {
             super.interrupt(reason);
+            ability.interruptCast(reason, executor.entityData.getEntity(), executor.entityData, abilityContext);
             PacketHandler.sendToTrackingAndSelf(EntityCastPacket.interrupt(executor.entityData, reason), executor.entityData.getEntity());
         }
     }

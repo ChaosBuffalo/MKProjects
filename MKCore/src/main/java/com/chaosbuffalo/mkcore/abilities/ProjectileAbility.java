@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.abilities;
 
 
+import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
@@ -100,7 +101,15 @@ public abstract class ProjectileAbility extends MKAbility {
             }
         }
     }
-    
+
+    @Override
+    public void interruptCast(CastInterruptReason reason, LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
+        super.interruptCast(reason, castingEntity, casterData, context);
+        context.getMemory(MKAbilityMemories.CURRENT_PROJECTILE).ifPresent(proj -> {
+            proj.remove(Entity.RemovalReason.KILLED);
+        });
+    }
+
     @Override
     public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
         super.endCast(castingEntity, casterData, context);
