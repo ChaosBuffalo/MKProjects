@@ -96,14 +96,13 @@ public abstract class ProjectileAbility extends MKAbility {
         proj.setSkillLevel(level);
         LocationProvider.WorldLocationResult location = locationProvider.getValue().getPosition(casterData.getEntity(), 0);
         proj.setPos(location.worldPosition());
-        Vec3 offset = location.worldPosition().subtract(casterData.getEntity().position());
+        Vec3 offset = location.worldPosition().subtract(casterData.getEntity().position()).yRot(casterData.getEntity().getYRot() * ((float)Math.PI / 180F));
+
         proj.setXRot(location.rotation().x);
         proj.setYRot(location.rotation().y);
         context.setMemory(MKAbilityMemories.CURRENT_PROJECTILES.get(), Optional.of(Lists.newArrayList(proj)));
         casterData.getRiders().addRider(proj, offset);
         casterData.getEntity().level.addFreshEntity(proj);
-        MKCore.LOGGER.info("Added proj at: {}, offset: {}", location.worldPosition().toString(), offset.toString());
-
 
 
     }
@@ -126,7 +125,6 @@ public abstract class ProjectileAbility extends MKAbility {
         context.getMemory(MKAbilityMemories.CURRENT_PROJECTILES).ifPresent(current -> {
             for (BaseProjectileEntity proj : current) {
                 casterData.getRiders().removeRider(proj);
-                MKCore.LOGGER.info("Shot at: {}, caster at {}", proj.position().toString(), castingEntity.position().toString());
                 shoot(proj, projectileSpeed.value(), projectileInaccuracy.value(), castingEntity, context);
             }
         });

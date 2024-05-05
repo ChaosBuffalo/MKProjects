@@ -53,10 +53,8 @@ public abstract class EntityMixins {
             if (entityData.getRiders().hasRider(pPassenger)) {
                 EntityRiderModule.EntityRider rider = entityData.getRiders().getRider(pPassenger);
                 Vec2 rot = entityData.getEntity().getRotationVector();
-                Vec3 newOffset = rider.getOffset().yRot(rot.x);
-
+                Vec3 newOffset = rider.getOffset().yRot(-rot.y * ((float)Math.PI / 180F));
                 pPassenger.setPos(entityData.getEntity().position().add(newOffset));
-                MKCore.LOGGER.info("Setting rider offset {}, ridePos: {}, finalPos: {}", newOffset.toString(), entityData.getEntity().position().toString(), pPassenger.position().toString());
                 pPassenger.setXRot(rot.x);
                 pPassenger.setYRot(rot.y);
             }

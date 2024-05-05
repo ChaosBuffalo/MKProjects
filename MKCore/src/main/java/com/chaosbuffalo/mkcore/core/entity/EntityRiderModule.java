@@ -22,6 +22,7 @@ public class EntityRiderModule implements IPlayerSyncComponentProvider {
 
     public EntityRiderModule(IMKEntityData entityData) {
         this.entityData = entityData;
+        riderSync.setOnRemoveCallback(this::onClientRemove);
         addSyncPublic(riderSync);
     }
 
@@ -31,10 +32,17 @@ public class EntityRiderModule implements IPlayerSyncComponentProvider {
         rider.startRiding(entityData.getEntity(), true);
     }
 
+    public void onClientRemove(int entityId) {
+        EntityRider rider = riders.get(entityId);
+        if (rider != null && rider.entity != null) {
+            rider.entity.stopRiding();
+        }
+    }
+
     public void removeRider(Entity rider) {
+        rider.stopRiding();
         riders.remove(rider.getId());
         riderSync.markDirty(rider.getId());
-        rider.stopRiding();
     }
 
     public boolean hasRider(Entity rider) {
