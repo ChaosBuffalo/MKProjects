@@ -71,14 +71,14 @@ public class AbilityExecutor {
             } else {
                 boolean validContext = ability.getTargetSelector().validateContext(entityData, context);
                 if (!validContext) {
-                    MKCore.LOGGER.warn("Entity {} tried to execute ability {} with a context that failed validation!", entityData.getEntity(), info.getAbility().getAbilityId());
+                    MKCore.LOGGER.warn("Entity {} tried to execute ability {} with a context that failed validation!", entityData.getEntity(), info.getId());
                     return;
                 }
             }
             if (context != null) {
                 ability.executeWithContext(entityData, context, info);
             } else {
-                MKCore.LOGGER.warn("Entity {} tried to execute ability {} with a null context!", entityData.getEntity(), info.getAbility().getAbilityId());
+                MKCore.LOGGER.warn("Entity {} tried to execute ability {} with a null context!", entityData.getEntity(), info.getId());
             }
         }
     }

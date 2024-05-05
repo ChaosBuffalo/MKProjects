@@ -37,7 +37,7 @@ public class ForgetAbilityModal extends MKModal {
 
         Component promptText;
         if (isLearning) {
-            promptText = Component.translatable("mkcore.gui.character.forget_ability", count, tryingToLearn.getAbility().getAbilityName());
+            promptText = Component.translatable("mkcore.gui.character.forget_ability", count, tryingToLearn.getAbilityName());
         } else {
             promptText = Component.translatable("mkcore.gui.character.forget");
         }

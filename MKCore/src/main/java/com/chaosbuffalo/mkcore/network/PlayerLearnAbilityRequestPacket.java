@@ -1,9 +1,7 @@
 package com.chaosbuffalo.mkcore.network;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEntry;
 import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainer;
 import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainingEntity;
@@ -58,20 +56,6 @@ public class PlayerLearnAbilityRequestPacket {
             if (player == null)
                 return;
 
-
-            for (ResourceLocation loc : forgetting) {
-                MKAbility ability = MKCoreRegistry.getAbility(loc);
-                if (ability == null) {
-                    MKCore.LOGGER.error("Forget ability failed because ability with id {} is null for player: {}.", loc.toString(), player);
-                    return;
-                }
-            }
-            MKAbility toLearn = MKCoreRegistry.getAbility(learning);
-            if (toLearn == null) {
-                MKCore.LOGGER.error("Learn ability failed because ability with id {} is null for player: {}.", learning.toString(), player);
-            }
-
-
             Entity teacher = player.getLevel().getEntity(entityId);
             if (teacher instanceof IAbilityTrainingEntity trainingEntity) {
                 IAbilityTrainer abilityTrainer = trainingEntity.getAbilityTrainer();
@@ -99,7 +83,7 @@ public class PlayerLearnAbilityRequestPacket {
                         }
                     }
 
-                    if (playerData.getAbilities().learnAbility(toLearn, AbilitySource.TRAINED)) {
+                    if (playerData.getAbilities().learnAbility(entry.getAbilityInfo(), AbilitySource.TRAINED)) {
                         entry.onAbilityLearned(playerData);
                     }
                 });

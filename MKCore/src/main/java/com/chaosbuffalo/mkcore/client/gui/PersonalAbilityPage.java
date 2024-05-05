@@ -143,7 +143,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     @Override
     protected Collection<MKAbilityInfo> getSortedAbilityList() {
         return currentAbilityList().stream()
-                .sorted(Comparator.comparing(abilityInfo -> abilityInfo.getAbility().getAbilityName().getString()))
+                .sorted(Comparator.comparing(abilityInfo -> abilityInfo.getAbilityName().getString()))
                 .collect(Collectors.toList());
     }
 
@@ -154,12 +154,12 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
         Set<AbilityType> knownTypes = new HashSet<>();
         List<MKAbilityInfo> knownAbilities = playerData.getAbilities()
                 .getKnownStream()
-                .peek(info -> knownTypes.add(info.getAbility().getType()))
+                .peek(info -> knownTypes.add(info.getAbilityType()))
                 .collect(Collectors.toList());
         MKAbilityInfo itemAbility = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).getAbilityInfo(0);
         if (itemAbility != null) {
             knownAbilities.add(itemAbility);
-            knownTypes.add(itemAbility.getAbility().getType());
+            knownTypes.add(itemAbility.getAbilityType());
         }
         if (knownTypes.contains(AbilityType.Basic))
             availableFilters.add(AbilityFilter.Basic);
@@ -173,7 +173,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
         }
 
         return knownAbilities.stream()
-                .filter(ability -> currentFilter.accepts(ability.getAbility().getType()))
+                .filter(ability -> currentFilter.accepts(ability.getAbilityType()))
                 .collect(Collectors.toList());
     }
 
@@ -183,7 +183,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
                 f -> Component.literal("Filter: ").append(f.getName()),
                 f -> {
                     currentFilter = f;
-                    if (getSelectedAbility() != null && !currentFilter.accepts(getSelectedAbility().getAbility().getType())) {
+                    if (getSelectedAbility() != null && !currentFilter.accepts(getSelectedAbility().getAbilityType())) {
                         setSelectedAbility(null);
                     }
                     abilitiesScrollPanel.getListScrollView().resetView();
@@ -256,7 +256,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     public void startDraggingAbility(MKAbilityInfo ability, MKImage icon, IMKWidget source) {
         super.startDraggingAbility(ability, icon, source);
         abilitySlots.forEach((key, widget) -> {
-            if (!key.group.fitsAbilityType(ability.getAbility().getType())) {
+            if (!key.group.fitsAbilityType(ability.getAbilityType())) {
                 widget.setBackgroundColor(0xff555555);
                 widget.setIconColor(0xff555555);
             }

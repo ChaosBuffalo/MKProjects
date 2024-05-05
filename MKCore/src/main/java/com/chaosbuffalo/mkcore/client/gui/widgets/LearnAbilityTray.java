@@ -54,8 +54,8 @@ public class LearnAbilityTray extends MKStackLayoutVertical {
             MKStackLayoutHorizontal nameTray = new MKStackLayoutHorizontal(0, 0, 20);
             nameTray.setPaddingRight(4);
             nameTray.setPaddingLeft(4);
-            IconText abilityName = new IconText(0, 0, 16, abilityInfo.getAbility().getAbilityName(),
-                    abilityInfo.getAbility().getAbilityIcon(), font, 16, 1);
+            IconText abilityName = new IconText(0, 0, 16, abilityInfo.getAbilityName(),
+                    abilityInfo.getAbilityIcon(), font, 16, 1);
             nameTray.addWidget(abilityName);
             addWidget(nameTray);
 

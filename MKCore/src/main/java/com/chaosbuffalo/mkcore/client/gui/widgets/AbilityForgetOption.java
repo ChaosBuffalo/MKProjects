@@ -18,7 +18,7 @@ public class AbilityForgetOption extends MKLayout {
         super(0, 0, 200, 16);
         this.popup = popup;
         this.abilityId = abilityInfo.getId();
-        IconText iconText = new IconText(0, 0, 16, abilityInfo.getAbility().getAbilityName(), abilityInfo.getAbility().getAbilityIcon(), font, 16, 1);
+        IconText iconText = new IconText(0, 0, 16, abilityInfo.getAbilityName(), abilityInfo.getAbilityIcon(), font, 16, 1);
         this.addWidget(iconText);
         addConstraintToWidget(MarginConstraint.TOP, iconText);
         addConstraintToWidget(MarginConstraint.LEFT, iconText);

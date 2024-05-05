@@ -84,7 +84,7 @@ public class AbilitySlotWidget extends MKLayout {
         }
 
         if (abilityInfo != null) {
-            icon = new MKImage(0, 0, 16, 16, abilityInfo.getAbility().getAbilityIcon());
+            icon = new MKImage(0, 0, 16, 16, abilityInfo.getAbilityIcon());
             addWidget(icon);
             addConstraintToWidget(MarginConstraint.TOP, icon);
             addConstraintToWidget(MarginConstraint.LEFT, icon);
@@ -135,7 +135,7 @@ public class AbilitySlotWidget extends MKLayout {
     public boolean onMouseRelease(double mouseX, double mouseY, int mouseButton) {
         if (screen.isDraggingAbility()) {
             MKAbilityInfo dragging = screen.getDraggingAbility();
-            if (unlocked && slotGroup.fitsAbilityType(dragging.getAbility().getType())) {
+            if (unlocked && slotGroup.fitsAbilityType(dragging.getAbilityType())) {
                 setSlotToAbility(dragging.getId());
             }
             screen.stopDraggingAbility();
@@ -150,7 +150,7 @@ public class AbilitySlotWidget extends MKLayout {
             if (getScreen() != null) {
                 if (abilityInfo != null) {
                     getScreen().addPostRenderInstruction(new HoveringTextInstruction(
-                            abilityInfo.getAbility().getAbilityName(),
+                            abilityInfo.getAbilityName(),
                             getParentCoords(new Vec2i(mouseX, mouseY))));
                 }
             }

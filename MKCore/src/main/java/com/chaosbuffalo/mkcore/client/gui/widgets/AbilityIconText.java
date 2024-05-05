@@ -10,7 +10,7 @@ public class AbilityIconText extends IconText {
     private final MKAbilityInfo abilityInfo;
 
     public AbilityIconText(int x, int y, int height, Font font, int iconWidth, IAbilityScreen screen, MKAbilityInfo abilityInfo) {
-        super(x, y, height, abilityInfo.getAbility().getAbilityName(), abilityInfo.getAbility().getAbilityIcon(), font, iconWidth, 1);
+        super(x, y, height, abilityInfo.getAbilityName(), abilityInfo.getAbilityIcon(), font, iconWidth, 1);
         this.screen = screen;
         this.abilityInfo = abilityInfo;
     }

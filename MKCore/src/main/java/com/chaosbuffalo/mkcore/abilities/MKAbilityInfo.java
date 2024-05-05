@@ -8,6 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
@@ -38,6 +39,14 @@ public class MKAbilityInfo implements IMKSerializable<CompoundTag> {
 
     public ResourceLocation getId() {
         return ability.getAbilityId();
+    }
+
+    public MutableComponent getAbilityName() {
+        return ability.getAbilityName();
+    }
+
+    public ResourceLocation getAbilityIcon() {
+        return ability.getAbilityIcon();
     }
 
     public boolean isCurrentlyKnown() {

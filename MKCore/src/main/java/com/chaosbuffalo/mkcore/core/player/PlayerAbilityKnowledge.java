@@ -94,6 +94,10 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         return abilityInfoMap.values().stream().filter(MKAbilityInfo::isCurrentlyKnown);
     }
 
+    public boolean learnAbility(MKAbilityInfo abilityInfo, AbilitySource source) {
+        return learnAbility(abilityInfo.getAbility(), source);
+    }
+
     @Override
     public boolean learnAbility(MKAbility ability, AbilitySource source) {
         MKCore.LOGGER.debug("learnAbility {} {}", ability, source);

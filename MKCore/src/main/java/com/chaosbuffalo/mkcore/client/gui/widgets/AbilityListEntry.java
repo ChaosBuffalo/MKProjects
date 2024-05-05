@@ -11,29 +11,29 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 
 public class AbilityListEntry extends MKStackLayoutHorizontal {
-    private final MKAbilityInfo ability;
+    private final MKAbilityInfo abilityInfo;
     private final IAbilityScreen screen;
     private final MKImage icon;
 
-    public AbilityListEntry(int x, int y, int height, Font font, IAbilityScreen screen, MKAbilityInfo ability) {
+    public AbilityListEntry(int x, int y, int height, Font font, IAbilityScreen screen, MKAbilityInfo abilityInfo) {
         super(x, y, height);
-        this.ability = ability;
+        this.abilityInfo = abilityInfo;
         this.screen = screen;
         setPaddingRight(2);
         setPaddingLeft(2);
-        icon = new MKImage(0, 0, 16, 16, ability.getAbility().getAbilityIcon()) {
+        icon = new MKImage(0, 0, 16, 16, abilityInfo.getAbilityIcon()) {
             @Override
             public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
                 if (screen.allowsDraggingAbilities()) {
-                    screen.startDraggingAbility(ability, icon, this);
-                    screen.setSelectedAbility(ability);
+                    screen.startDraggingAbility(abilityInfo, icon, this);
+                    screen.setSelectedAbility(abilityInfo);
                     return true;
                 }
                 return false;
             }
         };
         addWidget(icon);
-        MKText name = new MKText(font, ability.getAbility().getAbilityName());
+        MKText name = new MKText(font, abilityInfo.getAbilityName());
         name.setWidth(100);
         name.setColor(0xffffffff);
         addWidget(name);
@@ -46,14 +46,14 @@ public class AbilityListEntry extends MKStackLayoutHorizontal {
             mkFill(matrixStack, x, y, x + width, y + height, 0x55ffffff);
         }
         MKAbilityInfo selected = screen.getSelectedAbility();
-        if (selected != null && ability.getId().equals(selected.getId())) {
+        if (selected != null && abilityInfo.getId().equals(selected.getId())) {
             mkFill(matrixStack, x, y, x + width, y + height, 0x99ffffff);
         }
     }
 
     @Override
     public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
-        screen.setSelectedAbility(ability);
+        screen.setSelectedAbility(abilityInfo);
         return true;
     }
 }
