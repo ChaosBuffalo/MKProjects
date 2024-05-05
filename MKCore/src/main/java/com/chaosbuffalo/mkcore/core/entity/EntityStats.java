@@ -206,7 +206,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
 
         // if getPoiseRegenRate == 1, this is 1 poise per 1 seconds
         float newPoise = Math.min(getPoise() + (getPoiseRegenRate() / GameConstants.TICKS_PER_SECOND), max);
-        setPoise(newPoise, newPoise == max);
+        setPoise(newPoise, newPoise >= max);
     }
 
     protected void updateMana() {
@@ -229,7 +229,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
             float current = getMana();
             if (current < max) {
                 float newValue = current + 1;
-                setMana(newValue, newValue == max);
+                setMana(newValue, newValue >= max);
             }
             manaRegenTimer -= i_regen;
         }

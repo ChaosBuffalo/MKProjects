@@ -67,7 +67,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         ItemStack mainHand = playerData.getEntity().getItemBySlot(EquipmentSlot.MAINHAND);
         if (mainHand.getItem() instanceof IReceivesSkillChange receiver) {
             receiver.onSkillChange(mainHand, playerData.getEntity());
-        } else if (mainHand == ItemStack.EMPTY) {
+        } else if (mainHand.isEmpty()) {
             playerData.getEquipment().removeUnarmedModifier();
             playerData.getEquipment().addUnarmedModifier();
         }
