@@ -186,41 +186,42 @@ public class AbilityExecutor {
     public boolean startAbility(AbilityContext context, MKAbilityInfo info) {
         MKAbility ability = info.getAbility();
         if (isCasting()) {
-            MKCore.LOGGER.warn("startAbility({}) failed - {} currently casting", ability.getAbilityId(), entityData.getEntity());
+            MKCore.LOGGER.warn("startAbility({}) failed - {} currently casting", info.getId(), entityData.getEntity());
             return false;
         }
 
         if (!ability.isExecutableContext(context)) {
-            MKCore.LOGGER.error("Entity {} tried to execute ability {} with missing memories!", entityData.getEntity(), ability.getAbilityId());
+            MKCore.LOGGER.error("Entity {} tried to execute ability {} with missing memories!", entityData.getEntity(), info.getId());
             return false;
         }
 
         startGlobalCooldown();
-        int castTime = entityData.getStats().getAbilityCastTime(ability);
+        int castTime = entityData.getStats().getAbilityCastTime(info);
         startCast(context, info, castTime);
         if (castTime > 0) {
             return true;
         } else {
-            completeAbility(ability, info, context);
+            completeAbility(info, context);
         }
         return true;
     }
 
-    protected void completeAbility(MKAbility ability, MKAbilityInfo info, AbilityContext context) {
-        // Finish the cast
-        consumeResource(ability);
+    protected void completeAbility(MKAbilityInfo info, AbilityContext context) {
+        MKAbility ability = info.getAbility();
+
+        consumeResource(info);
         ability.endCast(entityData.getEntity(), entityData, context);
         if (completeAbilityCallback != null) {
             completeAbilityCallback.accept(ability);
         }
-        int cooldown = entityData.getStats().getAbilityCooldown(ability);
-        setCooldown(ability.getAbilityId(), cooldown);
+        int cooldown = entityData.getStats().getAbilityCooldown(info);
+        setCooldown(info.getId(), cooldown);
         SoundEvent sound = ability.getSpellCompleteSoundEvent();
         if (sound != null) {
             SoundUtils.serverPlaySoundAtEntity(entityData.getEntity(), sound, entityData.getEntity().getSoundSource());
         }
         clearCastingAbility();
-        MinecraftForge.EVENT_BUS.post(new EntityAbilityEvent.EntityCompleteAbilityEvent(ability, entityData));
+        MinecraftForge.EVENT_BUS.post(new EntityAbilityEvent.EntityCompleteAbilityEvent(info, entityData));
     }
 
     protected EntityCastingState createServerCastingState(AbilityContext context, MKAbilityInfo abilityInfo, int castTime) {
@@ -231,7 +232,7 @@ public class AbilityExecutor {
         return new ClientCastingState(this, ability, castTicks);
     }
 
-    protected void consumeResource(MKAbility ability) {
+    protected void consumeResource(MKAbilityInfo abilityInfo) {
 
     }
 
@@ -306,7 +307,7 @@ public class AbilityExecutor {
 
         @Override
         public void finish() {
-            executor.completeAbility(ability, info, abilityContext);
+            executor.completeAbility(info, abilityContext);
         }
 
         @Override

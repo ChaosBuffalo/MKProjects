@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKCombatFormulas;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -54,10 +55,10 @@ public class PlayerStats extends EntityStats {
     }
 
     @Override
-    public float getAbilityManaCost(MKAbility ability) {
+    public float getAbilityManaCost(MKAbilityInfo abilityInfo) {
         if (getPlayerData().getEntity().isCreative())
             return 0f;
-        float manaCost = ability.getManaCost(entityData);
+        float manaCost = abilityInfo.getAbility().getManaCost(entityData);
         return MKCombatFormulas.applyManaCostReduction(entityData, manaCost);
     }
 

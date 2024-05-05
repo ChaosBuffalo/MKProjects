@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.core.entity;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
@@ -268,8 +269,8 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
     }
 
     @Override
-    public float getAbilityManaCost(MKAbility ability) {
-        float manaCost = ability.getManaCost(entityData);
+    public float getAbilityManaCost(MKAbilityInfo abilityInfo) {
+        float manaCost = abilityInfo.getAbility().getManaCost(entityData);
         return MKCombatFormulas.applyManaCostReduction(entityData, manaCost);
     }
 
@@ -288,8 +289,8 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
     }
 
     @Override
-    public boolean canActivateAbility(MKAbility ability) {
-        return getMana() >= getAbilityManaCost(ability);
+    public boolean canActivateAbility(MKAbilityInfo abilityInfo) {
+        return getMana() >= getAbilityManaCost(abilityInfo);
     }
 
     @Override

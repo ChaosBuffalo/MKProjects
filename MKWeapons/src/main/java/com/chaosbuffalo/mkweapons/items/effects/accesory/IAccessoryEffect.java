@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkweapons.items.effects.accesory;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
@@ -25,7 +25,7 @@ public interface IAccessoryEffect extends IItemEffect {
     }
 
     default void livingCompleteAbility(IMKEntityData entityData, MKAccessory accessory,
-                                       ItemStack stack, MKAbility ability) {
+                                       ItemStack stack, MKAbilityInfo abilityInfo) {
 
     }
 

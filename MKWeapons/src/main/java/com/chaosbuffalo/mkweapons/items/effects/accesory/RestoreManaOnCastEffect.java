@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkweapons.items.effects.accesory;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.serialization.attributes.ScalableDouble;
@@ -54,11 +55,11 @@ public class RestoreManaOnCastEffect extends BaseAccessoryEffect implements IDif
 
     @Override
     public void livingCompleteAbility(IMKEntityData entityData, MKAccessory accessory,
-                                      ItemStack stack, MKAbility ability) {
+                                      ItemStack stack, MKAbilityInfo abilityInfo) {
         if (entityData.isServerSide() && entityData instanceof MKPlayerData playerData) {
             double roll = entityData.getEntity().getRandom().nextDouble();
             if (roll >= (1.0 - getChance())) {
-                float mana = ability.getManaCost(entityData) * getPercentage();
+                float mana = abilityInfo.getAbility().getManaCost(entityData) * getPercentage();
                 playerData.getStats().addMana(mana);
                 playerData.getEntity().sendSystemMessage(Component.translatable(
                         "mkweapons.accessory_effect.restore_mana.message",

@@ -282,7 +282,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     public boolean meetsCastingRequirements(IMKEntityData casterData, MKAbilityInfo info) {
         return casterData.getAbilityExecutor().canActivateAbility(this) &&
-                casterData.getStats().canActivateAbility(this);
+                casterData.getStats().canActivateAbility(info);
     }
 
     public <T> T serializeDynamic(DynamicOps<T> ops) {

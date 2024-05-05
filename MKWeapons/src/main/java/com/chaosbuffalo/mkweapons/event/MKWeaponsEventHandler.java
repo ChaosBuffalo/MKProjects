@@ -89,7 +89,7 @@ public class MKWeaponsEventHandler {
         for (MKCurioItemHandler handler : curios) {
             for (IAccessoryEffect effect : handler.getEffects()) {
                 effect.livingCompleteAbility(event.getEntityData(), handler.getAccessory(),
-                        handler.getStack(), event.getAbility());
+                        handler.getStack(), event.getAbilityInfo());
             }
         }
     }
