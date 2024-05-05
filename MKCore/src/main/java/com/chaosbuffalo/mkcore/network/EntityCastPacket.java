@@ -1,11 +1,11 @@
 package com.chaosbuffalo.mkcore.network;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
@@ -15,19 +15,19 @@ import java.util.function.Supplier;
 public class EntityCastPacket {
 
     private final int entityId;
-    private ResourceLocation abilityId;
+    private MKAbilityInfo abilityInfo;
     private int castTicks;
     private final CastAction action;
     private CastInterruptReason interruptReason;
 
-    enum CastAction {
+    public enum CastAction {
         START,
         INTERRUPT
     }
 
-    public EntityCastPacket(IMKEntityData entityData, ResourceLocation abilityId, int castTicks) {
+    public EntityCastPacket(IMKEntityData entityData, MKAbilityInfo abilityInfo, int castTicks) {
         entityId = entityData.getEntity().getId();
-        this.abilityId = abilityId;
+        this.abilityInfo = abilityInfo;
         this.castTicks = castTicks;
         action = CastAction.START;
     }
@@ -38,7 +38,7 @@ public class EntityCastPacket {
         interruptReason = reason;
     }
 
-    public static EntityCastPacket start(IMKEntityData entityData, ResourceLocation abilityId, int castTicks) {
+    public static EntityCastPacket start(IMKEntityData entityData, MKAbilityInfo abilityId, int castTicks) {
         return new EntityCastPacket(entityData, abilityId, castTicks);
     }
 
@@ -50,7 +50,7 @@ public class EntityCastPacket {
         entityId = buffer.readInt();
         action = buffer.readEnum(CastAction.class);
         if (action == CastAction.START) {
-            abilityId = buffer.readResourceLocation();
+            abilityInfo = MKAbilityInfo.read(buffer);
             castTicks = buffer.readInt();
         } else if (action == CastAction.INTERRUPT) {
             interruptReason = buffer.readEnum(CastInterruptReason.class);
@@ -61,7 +61,7 @@ public class EntityCastPacket {
         buffer.writeInt(entityId);
         buffer.writeEnum(action);
         if (action == CastAction.START) {
-            buffer.writeResourceLocation(abilityId);
+            abilityInfo.write(buffer);
             buffer.writeInt(castTicks);
         } else if (action == CastAction.INTERRUPT) {
             buffer.writeEnum(interruptReason);
@@ -86,7 +86,7 @@ public class EntityCastPacket {
 
             MKCore.getEntityData(entity).ifPresent(entityData -> {
                 if (packet.action == CastAction.START) {
-                    entityData.getAbilityExecutor().startCastClient(packet.abilityId, packet.castTicks);
+                    entityData.getAbilityExecutor().startCastClient(packet.abilityInfo, packet.castTicks);
                 } else if (packet.action == CastAction.INTERRUPT) {
                     entityData.getAbilityExecutor().interruptCast(packet.interruptReason);
                 }

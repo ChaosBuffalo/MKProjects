@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueUtils;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
 import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
@@ -96,7 +97,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private final PlayerSyncComponent animSync = new PlayerSyncComponent("anim");
     private int castAnimTimer;
     private VisualCastState visualCastState;
-    private MKAbility castingAbility;
+    private MKAbilityInfo castingAbility;
     private double lungeSpeed;
     private NonCombatMoveType nonCombatMoveType;
     private CombatMoveType combatMoveType;
@@ -672,11 +673,11 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return castAnimTimer;
     }
 
-    public MKAbility getCastingAbility() {
+    public MKAbilityInfo getCastingAbility() {
         return castingAbility;
     }
 
-    public void startCast(MKAbility ability) {
+    public void startCast(MKAbilityInfo ability) {
         visualCastState = VisualCastState.CASTING;
         castingAbility = ability;
     }
@@ -690,7 +691,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
-    public void endCast(MKAbility ability) {
+    public void endCast(MKAbilityInfo ability) {
         castingAbility = ability;
         visualCastState = VisualCastState.RELEASE;
         castAnimTimer = 15;

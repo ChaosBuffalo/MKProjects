@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkcore.client.gui;
 
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.client.gui.widgets.OnScreenXpBarWidget;
@@ -263,12 +262,12 @@ public class MKOverlay implements IGuiOverlay {
             return;
         }
 
-        MKAbility ability = executor.getCastingAbility();
-        if (ability == null) {
+        MKAbilityInfo abilityInfo = executor.getCastingAbilityInfo();
+        if (abilityInfo == null) {
             return;
         }
 
-        int castTime = data.getStats().getAbilityCastTime(ability);
+        int castTime = data.getStats().getAbilityCastTime(abilityInfo);
         if (castTime == 0) {
             return;
         }

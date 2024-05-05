@@ -17,7 +17,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraftforge.common.MinecraftForge;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -28,9 +27,9 @@ public class AbilityExecutor {
     protected final IMKEntityData entityData;
     private EntityCastingState currentCast;
     private final Map<ResourceLocation, MKToggleAbility> activeToggleMap = new HashMap<>();
-    private Consumer<MKAbility> startCastCallback;
-    private Consumer<MKAbility> completeAbilityCallback;
-    private BiConsumer<MKAbility, CastInterruptReason> interruptCastCallback;
+    private Consumer<MKAbilityInfo> startCastCallback;
+    private Consumer<MKAbilityInfo> completeAbilityCallback;
+    private BiConsumer<MKAbilityInfo, CastInterruptReason> interruptCastCallback;
 
     public AbilityExecutor(IMKEntityData entityData) {
         this.entityData = entityData;
@@ -39,15 +38,15 @@ public class AbilityExecutor {
         interruptCastCallback = null;
     }
 
-    public void setCompleteAbilityCallback(Consumer<MKAbility> completeAbilityCallback) {
+    public void setCompleteAbilityCallback(Consumer<MKAbilityInfo> completeAbilityCallback) {
         this.completeAbilityCallback = completeAbilityCallback;
     }
 
-    public void setInterruptCastCallback(BiConsumer<MKAbility, CastInterruptReason> interruptCastCallback) {
+    public void setInterruptCastCallback(BiConsumer<MKAbilityInfo, CastInterruptReason> interruptCastCallback) {
         this.interruptCastCallback = interruptCastCallback;
     }
 
-    public void setStartCastCallback(Consumer<MKAbility> startCastCallback) {
+    public void setStartCastCallback(Consumer<MKAbilityInfo> startCastCallback) {
         this.startCastCallback = startCastCallback;
     }
 
@@ -117,9 +116,8 @@ public class AbilityExecutor {
         return currentCast != null ? currentCast.getCastTicks() : 0;
     }
 
-    @Nullable
-    public MKAbility getCastingAbility() {
-        return currentCast != null ? currentCast.getAbility() : null;
+    public MKAbilityInfo getCastingAbilityInfo() {
+        return currentCast != null ? currentCast.getAbilityInfo() : null;
     }
 
     private void clearCastingAbility() {
@@ -130,14 +128,13 @@ public class AbilityExecutor {
 //        MKCore.LOGGER.debug("startCast {} {}", abilityInfo.getId(), castTime);
         currentCast = createServerCastingState(context, abilityInfo, castTime);
         currentCast.begin();
-        PacketHandler.sendToTrackingAndSelf(EntityCastPacket.start(entityData, abilityInfo.getId(), castTime), entityData.getEntity());
+        PacketHandler.sendToTrackingAndSelf(EntityCastPacket.start(entityData, abilityInfo, castTime), entityData.getEntity());
     }
 
-    public void startCastClient(ResourceLocation abilityId, int castTicks) {
+    public void startCastClient(MKAbilityInfo abilityInfo, int castTicks) {
 //        MKCore.LOGGER.debug("startCastClient {} {}", abilityId, castTicks);
-        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-        if (ability != null) {
-            currentCast = createClientCastingState(ability, castTicks);
+        if (abilityInfo != null) {
+            currentCast = createClientCastingState(abilityInfo, castTicks);
             currentCast.begin();
             if (castTicks <= 0) {
                 currentCast.finish();
@@ -151,12 +148,12 @@ public class AbilityExecutor {
         if (!isCasting())
             return;
 
-        MKCore.LOGGER.debug("{} interrupted by {} for {}", currentCast.getAbility(), reason, entityData.getEntity());
+        MKCore.LOGGER.debug("{} interrupted by {} for {}", currentCast.getAbilityId(), reason, entityData.getEntity());
 
-        if (reason.cannotBeBypassed() || currentCast.getAbility().isInterruptedBy(entityData, reason)) {
+        if (reason.cannotBeBypassed() || currentCast.getAbilityInfo().getAbility().isInterruptedBy(entityData, reason)) {
             currentCast.interrupt(reason);
             if (interruptCastCallback != null) {
-                interruptCastCallback.accept(currentCast.getAbility(), reason);
+                interruptCastCallback.accept(currentCast.getAbilityInfo(), reason);
             }
             clearCastingAbility();
         }
@@ -212,7 +209,7 @@ public class AbilityExecutor {
         consumeResource(info);
         ability.endCast(entityData.getEntity(), entityData, context);
         if (completeAbilityCallback != null) {
-            completeAbilityCallback.accept(ability);
+            completeAbilityCallback.accept(info);
         }
         int cooldown = entityData.getStats().getAbilityCooldown(info);
         setCooldown(info.getId(), cooldown);
@@ -228,7 +225,7 @@ public class AbilityExecutor {
         return new ServerCastingState(context, this, abilityInfo, castTime);
     }
 
-    protected EntityCastingState createClientCastingState(MKAbility ability, int castTicks) {
+    protected EntityCastingState createClientCastingState(MKAbilityInfo ability, int castTicks) {
         return new ClientCastingState(this, ability, castTicks);
     }
 
@@ -237,13 +234,13 @@ public class AbilityExecutor {
     }
 
     protected static abstract class EntityCastingState {
-        protected final MKAbility ability;
+        protected final MKAbilityInfo abilityInfo;
         protected final AbilityExecutor executor;
         protected int castTicks;
 
-        public EntityCastingState(AbilityExecutor executor, MKAbility ability, int castTicks) {
+        public EntityCastingState(AbilityExecutor executor, MKAbilityInfo abilityInfo, int castTicks) {
             this.executor = executor;
-            this.ability = ability;
+            this.abilityInfo = abilityInfo;
             this.castTicks = castTicks;
         }
 
@@ -251,12 +248,12 @@ public class AbilityExecutor {
             return castTicks;
         }
 
-        public MKAbility getAbility() {
-            return ability;
+        public MKAbilityInfo getAbilityInfo() {
+            return abilityInfo;
         }
 
         public ResourceLocation getAbilityId() {
-            return ability.getAbilityId();
+            return abilityInfo.getId();
         }
 
         public boolean tick() {
@@ -274,7 +271,7 @@ public class AbilityExecutor {
 
         void begin() {
             if (executor.startCastCallback != null) {
-                executor.startCastCallback.accept(ability);
+                executor.startCastCallback.accept(abilityInfo);
             }
         }
 
@@ -291,7 +288,7 @@ public class AbilityExecutor {
         protected final AbilityContext abilityContext;
 
         public ServerCastingState(AbilityContext context, AbilityExecutor executor, MKAbilityInfo abilityInfo, int castTicks) {
-            super(executor, abilityInfo.getAbility(), castTicks);
+            super(executor, abilityInfo, castTicks);
             this.info = abilityInfo;
             abilityContext = context;
         }
@@ -302,7 +299,7 @@ public class AbilityExecutor {
 
         @Override
         void activeTick() {
-            ability.continueCast(executor.entityData.getEntity(), executor.entityData, castTicks, abilityContext);
+            abilityInfo.getAbility().continueCast(executor.entityData.getEntity(), executor.entityData, castTicks, abilityContext);
         }
 
         @Override
@@ -321,7 +318,7 @@ public class AbilityExecutor {
         protected MovingSoundCasting sound;
         protected boolean playing = false;
 
-        public ClientCastingState(AbilityExecutor executor, MKAbility ability, int castTicks) {
+        public ClientCastingState(AbilityExecutor executor, MKAbilityInfo ability, int castTicks) {
             super(executor, ability, castTicks);
         }
 
@@ -335,7 +332,7 @@ public class AbilityExecutor {
         @Override
         void begin() {
             super.begin();
-            SoundEvent event = ability.getCastingSoundEvent();
+            SoundEvent event = abilityInfo.getAbility().getCastingSoundEvent();
             if (event != null) {
                 sound = new MovingSoundCasting(executor.entityData.getEntity(), event, castTicks);
                 Minecraft.getInstance().getSoundManager().play(sound);
@@ -345,14 +342,14 @@ public class AbilityExecutor {
 
         @Override
         void activeTick() {
-            ability.continueCastClient(executor.entityData.getEntity(), executor.entityData, castTicks);
+            abilityInfo.getAbility().continueCastClient(executor.entityData.getEntity(), executor.entityData, castTicks);
         }
 
         @Override
         public void finish() {
             stopSound();
             if (executor.completeAbilityCallback != null) {
-                executor.completeAbilityCallback.accept(ability);
+                executor.completeAbilityCallback.accept(abilityInfo);
             }
         }
 

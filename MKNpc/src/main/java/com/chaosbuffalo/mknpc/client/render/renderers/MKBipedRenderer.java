@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.client.render.renderers;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
@@ -159,16 +159,14 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
         super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
         MKEntity.VisualCastState castState = entityIn.getVisualCastState();
         if (castState == MKEntity.VisualCastState.CASTING || castState == MKEntity.VisualCastState.RELEASE) {
-            MKAbility ability = entityIn.getCastingAbility();
-            if (ability != null) {
-                if (ability.hasCastingParticles()) {
-                    ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
-                    if (anim != null) {
-                        Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
-                        leftPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, null));
-                        Optional<Vec3> rightPos = getHandPosition(partialTicks, entityIn, HumanoidArm.RIGHT);
-                        rightPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, null));
-                    }
+            MKAbilityInfo abilityInfo = entityIn.getCastingAbility();
+            if (abilityInfo != null && abilityInfo.getAbility().hasCastingParticles()) {
+                ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(abilityInfo.getAbility().getCastingParticles());
+                if (anim != null) {
+                    Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
+                    leftPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, null));
+                    Optional<Vec3> rightPos = getHandPosition(partialTicks, entityIn, HumanoidArm.RIGHT);
+                    rightPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, null));
                 }
             }
         }
