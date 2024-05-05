@@ -300,7 +300,7 @@ public class AbilityExecutor {
         @Override
         void begin() {
             super.begin();
-            ability.startCast(executor.entityData, abilityContext);
+            ability.startCast(executor.entityData, totalTicks, abilityContext);
         }
 
         public AbilityContext getAbilityContext() {

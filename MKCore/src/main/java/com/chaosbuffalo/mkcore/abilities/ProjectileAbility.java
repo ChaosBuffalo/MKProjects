@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore.abilities;
 
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
@@ -88,16 +87,16 @@ public abstract class ProjectileAbility extends MKAbility {
 
 
     @Override
-    public void startCast(IMKEntityData casterData, AbilityContext context) {
-        super.startCast(casterData, context);
+    public void startCast(IMKEntityData casterData, int castTime, AbilityContext context) {
+        super.startCast(casterData, castTime, context);
         float level = context.getSkill(skill);
         AbilityProjectileEntity proj = makeProjectile(casterData, context);
         proj.setOwner(casterData.getEntity());
         proj.setSkillLevel(level);
+        proj.setCastTime(castTime);
         LocationProvider.WorldLocationResult location = locationProvider.getValue().getPosition(casterData.getEntity(), 0);
         proj.setPos(location.worldPosition());
         Vec3 offset = location.worldPosition().subtract(casterData.getEntity().position()).yRot(casterData.getEntity().getYRot() * ((float)Math.PI / 180F));
-
         proj.setXRot(location.rotation().x);
         proj.setYRot(location.rotation().y);
         context.setMemory(MKAbilityMemories.CURRENT_PROJECTILES.get(), Optional.of(Lists.newArrayList(proj)));

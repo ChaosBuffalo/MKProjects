@@ -339,7 +339,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return getRequiredMemories().stream().allMatch(context::hasMemory);
     }
 
-    public void startCast(IMKEntityData casterData, AbilityContext context) {
+    public void startCast(IMKEntityData casterData, int castTime, AbilityContext context) {
 
     }
 
