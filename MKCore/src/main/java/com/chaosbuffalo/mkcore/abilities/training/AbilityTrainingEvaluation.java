@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.abilities.training;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -20,8 +19,8 @@ public class AbilityTrainingEvaluation {
         this.usesAbilityPool = usesAbilityPool;
     }
 
-    public MKAbility getAbility() {
-        return abilityInfo.getAbility();
+    public MKAbilityInfo getAbilityInfo() {
+        return abilityInfo;
     }
 
     public boolean usesAbilityPool() {

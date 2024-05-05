@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEvaluation;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.LayoutRelativeWidthConstraint;
@@ -17,23 +17,27 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class LearnAbilityTray extends MKStackLayoutVertical {
-    private MKAbility ability;
-    private AbilityTrainingEvaluation evaluation;
     private final MKPlayerData playerData;
     private final Font font;
     private final int trainerEntityId;
+    private MKAbilityInfo abilityInfo;
+    private AbilityTrainingEvaluation evaluation;
 
     public LearnAbilityTray(int x, int y, int width, MKPlayerData playerData, Font font, int trainerEntityId) {
         super(x, y, width);
         this.playerData = playerData;
         this.trainerEntityId = trainerEntityId;
         this.font = font;
-        this.ability = null;
+        this.abilityInfo = null;
         setMarginTop(2);
         setMarginBot(2);
         setPaddingTop(2);
         setPaddingBot(2);
         setup();
+    }
+
+    public MKAbilityInfo getAbilityInfo() {
+        return abilityInfo;
     }
 
     public AbilityTrainingEvaluation getEvaluation() {
@@ -46,16 +50,16 @@ public class LearnAbilityTray extends MKStackLayoutVertical {
 
     public void setup() {
         clearWidgets();
-        if (getAbility() != null) {
+        if (abilityInfo != null) {
             MKStackLayoutHorizontal nameTray = new MKStackLayoutHorizontal(0, 0, 20);
             nameTray.setPaddingRight(4);
             nameTray.setPaddingLeft(4);
-            IconText abilityName = new IconText(0, 0, 16, getAbility().getAbilityName(),
-                    getAbility().getAbilityIcon(), font, 16, 1);
+            IconText abilityName = new IconText(0, 0, 16, abilityInfo.getAbility().getAbilityName(),
+                    abilityInfo.getAbility().getAbilityIcon(), font, 16, 1);
             nameTray.addWidget(abilityName);
             addWidget(nameTray);
 
-            boolean isKnown = playerData.getAbilities().knowsAbility(getAbility().getAbilityId());
+            boolean isKnown = playerData.getAbilities().knowsAbility(abilityInfo.getId());
             boolean canLearn = evaluation.canLearn();
             String knowText;
             if (isKnown) {
@@ -94,14 +98,9 @@ public class LearnAbilityTray extends MKStackLayoutVertical {
         }
     }
 
-    public void setAbility(MKAbility ability, AbilityTrainingEvaluation requirements) {
-        this.ability = ability;
+    public void setAbility(MKAbilityInfo ability, AbilityTrainingEvaluation requirements) {
+        this.abilityInfo = ability;
         this.evaluation = requirements;
         setup();
     }
-
-    public MKAbility getAbility() {
-        return ability;
-    }
-
 }

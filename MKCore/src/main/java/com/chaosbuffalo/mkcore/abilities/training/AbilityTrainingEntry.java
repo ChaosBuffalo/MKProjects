@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore.abilities.training;
 
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 
@@ -23,10 +22,6 @@ public class AbilityTrainingEntry {
 
     public MKAbilityInfo getAbilityInfo() {
         return abilityInfo;
-    }
-
-    public MKAbility getAbility() {
-        return abilityInfo.getAbility();
     }
 
     public List<AbilityTrainingRequirement> getRequirements() {

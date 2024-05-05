@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.client.gui;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.client.gui.widgets.*;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkwidgets.client.gui.actions.WidgetHoldingDragState;
@@ -16,10 +17,10 @@ import net.minecraft.network.chat.MutableComponent;
 import javax.annotation.Nonnull;
 
 public abstract class AbilityPageBase extends PlayerPageBase implements IAbilityScreen {
-    protected MKAbility draggingAbility;
+    protected MKAbilityInfo draggingAbility;
     protected AbilityInfoWidget infoWidget;
     protected ScrollingListPanelLayout abilitiesScrollPanel;
-    private MKAbility selectedAbility;
+    protected MKAbilityInfo selectedAbility;
 
 
     public AbilityPageBase(MKPlayerData playerData, Component title) {
@@ -30,7 +31,7 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         return GuiTextures.DATA_BOX_SHORT;
     }
 
-    protected abstract Iterable<MKAbility> getSortedAbilityList();
+    protected abstract Iterable<MKAbilityInfo> getSortedAbilityList();
 
     public ScrollingListPanelLayout getAbilityScrollPanel(int xPos, int yPos, int width, int height) {
         ScrollingListPanelLayout panel = new ScrollingListPanelLayout(xPos, yPos, width, height);
@@ -42,8 +43,8 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         stackLayout.setPaddings(0, 2, 2, 2);
         stackLayout.doSetChildWidth(true);
         getSortedAbilityList()
-                .forEach(ability -> {
-                    MKLayout abilityEntry = new AbilityListEntry(0, 0, 16, font, this, ability);
+                .forEach(abilityInfo -> {
+                    MKLayout abilityEntry = new AbilityListEntry(0, 0, 16, font, this, abilityInfo);
                     stackLayout.addWidget(abilityEntry);
                     MKRectangle div = new MKRectangle(0, 0, panel.getListScrollView().getWidth() - 8, 1, 0x99ffffff);
                     stackLayout.addWidget(div);
@@ -52,7 +53,7 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         return panel;
     }
 
-    protected ForgetAbilityModal getChoosePoolSlotWidget(MKAbility tryingToLearn, int trainingId) {
+    protected ForgetAbilityModal getChoosePoolSlotWidget(MKAbilityInfo tryingToLearn, int trainingId) {
         int screenWidth = getWidth();
         int screenHeight = getHeight();
         int xPos = (screenWidth - POPUP_WIDTH) / 2;
@@ -94,9 +95,27 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
     @Override
     protected void persistState(boolean wasResized) {
         super.persistState(wasResized);
-        final MKAbility selected = getSelectedAbility();
+        final MKAbilityInfo selected = getSelectedAbility();
         addPostSetupCallback(() -> restoreSelectedAbility(selected));
         persistScrollingListPanelState(() -> abilitiesScrollPanel, wasResized);
+    }
+
+    protected void restoreSelectedAbility(MKAbilityInfo abilityInfo) {
+        selectedAbility = abilityInfo;
+        if (infoWidget != null) {
+            infoWidget.refresh();
+        }
+    }
+
+    @Override
+    public void setSelectedAbility(MKAbilityInfo abilityInfo) {
+        restoreSelectedAbility(abilityInfo);
+        abilitiesScrollPanel.getContentScrollView().resetView();
+    }
+
+    @Override
+    public MKAbilityInfo getSelectedAbility() {
+        return selectedAbility;
     }
 
     @Override
@@ -104,38 +123,20 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         return false;
     }
 
-    public MKAbility getDraggingAbility() {
+    @Override
+    public MKAbilityInfo getDraggingAbility() {
         return draggingAbility;
     }
 
     @Override
-    public void startDraggingAbility(MKAbility ability, MKImage icon, IMKWidget source) {
+    public void startDraggingAbility(MKAbilityInfo ability, MKImage icon, IMKWidget source) {
         draggingAbility = ability;
         setDragState(new WidgetHoldingDragState(new MKImage(0, 0, icon.getWidth(), icon.getHeight(), icon.getImageLoc())), source);
     }
 
-    protected void restoreSelectedAbility(MKAbility ability) {
-        selectedAbility = ability;
-        if (infoWidget != null) {
-            infoWidget.refresh();
-        }
-    }
-
-    public void setSelectedAbility(MKAbility ability) {
-        restoreSelectedAbility(ability);
-        abilitiesScrollPanel.getContentScrollView().resetView();
-    }
-
-    public MKAbility getSelectedAbility() {
-        return selectedAbility;
-    }
-
+    @Override
     public void stopDraggingAbility() {
         draggingAbility = null;
         clearDragState();
-    }
-
-    public boolean isDraggingAbility() {
-        return draggingAbility != null;
     }
 }

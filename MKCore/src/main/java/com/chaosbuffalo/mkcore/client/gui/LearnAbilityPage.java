@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.client.gui;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEvaluation;
 import com.chaosbuffalo.mkcore.client.gui.widgets.IconText;
 import com.chaosbuffalo.mkcore.client.gui.widgets.LearnAbilityTray;
@@ -53,20 +53,20 @@ public class LearnAbilityPage extends AbilityPageBase {
     }
 
     @Override
-    protected Collection<MKAbility> getSortedAbilityList() {
-        return offeredAbilities.stream().map(AbilityTrainingEvaluation::getAbility).collect(Collectors.toList());
+    protected Collection<MKAbilityInfo> getSortedAbilityList() {
+        return offeredAbilities.stream().map(AbilityTrainingEvaluation::getAbilityInfo).collect(Collectors.toList());
     }
 
-    private Optional<AbilityTrainingEvaluation> findEvaluation(MKAbility ability) {
-        return offeredAbilities.stream().filter(evaluation -> evaluation.getAbility() == ability).findFirst();
+    private Optional<AbilityTrainingEvaluation> findEvaluation(MKAbilityInfo ability) {
+        return offeredAbilities.stream().filter(evaluation -> evaluation.getAbilityInfo().getId().equals(ability.getId())).findFirst();
     }
 
     @Override
-    protected void restoreSelectedAbility(MKAbility ability) {
-        super.restoreSelectedAbility(ability);
-        if (requirementsTray != null) {
-            findEvaluation(ability).ifPresent(eval -> {
-                requirementsTray.setAbility(ability, eval);
+    protected void restoreSelectedAbility(MKAbilityInfo abilityInfo) {
+        super.restoreSelectedAbility(abilityInfo);
+        if (requirementsTray != null && abilityInfo != null) {
+            findEvaluation(abilityInfo).ifPresent(eval -> {
+                requirementsTray.setAbility(abilityInfo, eval);
                 resetFooter();
             });
         }
@@ -120,10 +120,10 @@ public class LearnAbilityPage extends AbilityPageBase {
         learnButton.setEnabled(canLearnCurrentAbility());
         learnButton.setPressedCallback((button, buttonType) -> {
             if (requirementsTray.getEvaluation().usesAbilityPool() && playerData.getAbilities().isAbilityPoolFull()) {
-                addModal(getChoosePoolSlotWidget(requirementsTray.getAbility(), requirementsTray.getTrainerEntityId()));
+                addModal(getChoosePoolSlotWidget(requirementsTray.getAbilityInfo(), requirementsTray.getTrainerEntityId()));
             } else {
                 PacketHandler.sendMessageToServer(new PlayerLearnAbilityRequestPacket(
-                        requirementsTray.getAbility().getAbilityId(), requirementsTray.getTrainerEntityId()));
+                        requirementsTray.getAbilityInfo().getId(), requirementsTray.getTrainerEntityId()));
             }
             return true;
         });
@@ -131,8 +131,8 @@ public class LearnAbilityPage extends AbilityPageBase {
     }
 
     private boolean canLearnCurrentAbility() {
-        if (requirementsTray.getAbility() != null && requirementsTray.getEvaluation() != null) {
-            boolean isKnown = playerData.getAbilities().knowsAbility(requirementsTray.getAbility().getAbilityId());
+        if (requirementsTray.getAbilityInfo() != null && requirementsTray.getEvaluation() != null) {
+            boolean isKnown = playerData.getAbilities().knowsAbility(requirementsTray.getAbilityInfo().getId());
             boolean canLearn = requirementsTray.getEvaluation().canLearn();
             return !isKnown && canLearn;
         } else {

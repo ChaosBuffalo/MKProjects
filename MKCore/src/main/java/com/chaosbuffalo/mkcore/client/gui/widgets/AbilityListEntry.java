@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.client.gui.IAbilityScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterYWithOffsetConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
@@ -11,17 +11,17 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 
 public class AbilityListEntry extends MKStackLayoutHorizontal {
-    private final MKAbility ability;
+    private final MKAbilityInfo ability;
     private final IAbilityScreen screen;
     private final MKImage icon;
 
-    public AbilityListEntry(int x, int y, int height, Font font, IAbilityScreen screen, MKAbility ability) {
+    public AbilityListEntry(int x, int y, int height, Font font, IAbilityScreen screen, MKAbilityInfo ability) {
         super(x, y, height);
         this.ability = ability;
         this.screen = screen;
         setPaddingRight(2);
         setPaddingLeft(2);
-        icon = new MKImage(0, 0, 16, 16, ability.getAbilityIcon()) {
+        icon = new MKImage(0, 0, 16, 16, ability.getAbility().getAbilityIcon()) {
             @Override
             public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
                 if (screen.allowsDraggingAbilities()) {
@@ -33,7 +33,7 @@ public class AbilityListEntry extends MKStackLayoutHorizontal {
             }
         };
         addWidget(icon);
-        MKText name = new MKText(font, ability.getAbilityName());
+        MKText name = new MKText(font, ability.getAbility().getAbilityName());
         name.setWidth(100);
         name.setColor(0xffffffff);
         addWidget(name);
@@ -45,7 +45,8 @@ public class AbilityListEntry extends MKStackLayoutHorizontal {
         if (isHovered()) {
             mkFill(matrixStack, x, y, x + width, y + height, 0x55ffffff);
         }
-        if (ability.equals(screen.getSelectedAbility())) {
+        MKAbilityInfo selected = screen.getSelectedAbility();
+        if (selected != null && ability.getId().equals(selected.getId())) {
             mkFill(matrixStack, x, y, x + width, y + height, 0x99ffffff);
         }
     }

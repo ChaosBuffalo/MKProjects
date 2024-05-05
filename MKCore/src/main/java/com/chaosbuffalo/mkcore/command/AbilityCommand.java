@@ -159,7 +159,7 @@ public class AbilityCommand {
             int maxSize = abilityKnowledge.getAbilityPoolSize();
             ChatUtils.sendMessageWithBrackets(player, "Ability Pool: %d/%d", currentSize, maxSize);
             abilityKnowledge.getPoolAbilities().forEach(abilityId -> {
-                ChatUtils.sendMessageWithBrackets(player, "Pool Ability: %s", abilityId);
+                ChatUtils.sendMessageWithBrackets(player, "Pool Ability: %s", abilityId.getId());
             });
         });
         return Command.SINGLE_SUCCESS;

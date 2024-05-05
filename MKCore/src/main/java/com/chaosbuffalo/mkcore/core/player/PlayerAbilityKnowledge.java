@@ -16,7 +16,6 @@ import net.minecraft.util.Mth;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -63,15 +62,14 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         poolSize.set(Mth.clamp(count, GameConstants.DEFAULT_ABILITY_POOL_SIZE, GameConstants.MAX_ABILITY_POOL_SIZE));
     }
 
-    private Stream<ResourceLocation> getPoolAbilityStream() {
+    private Stream<MKAbilityInfo> getPoolAbilityStream() {
         // This can be cached easily if it ever becomes a problem
         return getKnownStream()
-                .filter(MKAbilityInfo::usesAbilityPool)
-                .map(MKAbilityInfo::getId);
+                .filter(MKAbilityInfo::usesAbilityPool);
     }
 
-    public List<ResourceLocation> getPoolAbilities() {
-        return getPoolAbilityStream().collect(Collectors.toList());
+    public List<MKAbilityInfo> getPoolAbilities() {
+        return getPoolAbilityStream().toList();
     }
 
     public int getCurrentPoolCount() {
