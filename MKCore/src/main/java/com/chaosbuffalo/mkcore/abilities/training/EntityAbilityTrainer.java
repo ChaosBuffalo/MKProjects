@@ -1,8 +1,9 @@
 package com.chaosbuffalo.mkcore.abilities.training;
 
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
@@ -29,13 +30,13 @@ public class EntityAbilityTrainer implements IAbilityTrainer {
     }
 
     @Override
-    public AbilityTrainingEntry getTrainingEntry(MKAbility ability) {
-        return entries.stream().filter(entry -> entry.getAbility() == ability).findFirst().orElse(null);
+    public AbilityTrainingEntry getTrainingEntry(ResourceLocation abilityId) {
+        return entries.stream().filter(entry -> entry.getAbilityInfo().getId().equals(abilityId)).findFirst().orElse(null);
     }
 
     @Override
-    public AbilityTrainingEntry addTrainedAbility(MKAbility ability) {
-        AbilityTrainingEntry entry = new AbilityTrainingEntry(ability, AbilitySource.TRAINED);
+    public AbilityTrainingEntry addTrainedAbility(MKAbilityInfo abilityInfo) {
+        AbilityTrainingEntry entry = new AbilityTrainingEntry(abilityInfo, AbilitySource.TRAINED);
         entries.add(entry);
         return entry;
     }

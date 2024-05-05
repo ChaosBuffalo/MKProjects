@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mkcore.abilities.training;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
@@ -11,7 +13,11 @@ public interface IAbilityTrainer {
 
     List<AbilityTrainingEntry> getTrainableAbilities(IMKEntityData entityData);
 
-    AbilityTrainingEntry getTrainingEntry(MKAbility ability);
+    AbilityTrainingEntry getTrainingEntry(ResourceLocation ability);
 
-    AbilityTrainingEntry addTrainedAbility(MKAbility ability);
+    AbilityTrainingEntry addTrainedAbility(MKAbilityInfo ability);
+
+    default AbilityTrainingEntry addTrainedAbility(MKAbility ability) {
+        return addTrainedAbility(ability.getPortingInstance());
+    }
 }

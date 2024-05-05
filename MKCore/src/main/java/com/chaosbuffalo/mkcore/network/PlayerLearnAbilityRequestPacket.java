@@ -73,11 +73,11 @@ public class PlayerLearnAbilityRequestPacket {
 
 
             Entity teacher = player.getLevel().getEntity(entityId);
-            if (teacher instanceof IAbilityTrainingEntity) {
-                IAbilityTrainer abilityTrainer = ((IAbilityTrainingEntity) teacher).getAbilityTrainer();
+            if (teacher instanceof IAbilityTrainingEntity trainingEntity) {
+                IAbilityTrainer abilityTrainer = trainingEntity.getAbilityTrainer();
 
                 MKCore.getPlayer(player).ifPresent(playerData -> {
-                    AbilityTrainingEntry entry = abilityTrainer.getTrainingEntry(toLearn);
+                    AbilityTrainingEntry entry = abilityTrainer.getTrainingEntry(learning);
                     if (entry == null) {
                         MKCore.LOGGER.error("Trainer {} does not have requested ability {}. Requested by {}", teacher, learning, player);
                         return;

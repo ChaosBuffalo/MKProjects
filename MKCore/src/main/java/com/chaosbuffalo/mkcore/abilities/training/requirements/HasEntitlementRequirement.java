@@ -2,20 +2,15 @@ package com.chaosbuffalo.mkcore.abilities.training.requirements;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingRequirement;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
-import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
-
-import java.util.NoSuchElementException;
 
 public class HasEntitlementRequirement extends AbilityTrainingRequirement {
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKCore.MOD_ID, "training_req.has_entitlement");
@@ -29,12 +24,12 @@ public class HasEntitlementRequirement extends AbilityTrainingRequirement {
     }
 
     @Override
-    public boolean check(MKPlayerData playerData, MKAbility ability) {
+    public boolean check(MKPlayerData playerData, MKAbilityInfo abilityInfo) {
         return playerData.getEntitlements().hasEntitlement(entitlement);
     }
 
     @Override
-    public void onLearned(MKPlayerData playerData, MKAbility ability) {
+    public void onLearned(MKPlayerData playerData, MKAbilityInfo abilityInfo) {
 
     }
 

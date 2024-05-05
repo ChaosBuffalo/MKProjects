@@ -187,6 +187,10 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return new MKAbilityInfo(this);
     }
 
+    public MKAbilityInfo getPortingInstance() {
+        return createAbilityInfo();
+    }
+
     public MutableComponent getAbilityName() {
         return Component.translatable(getTranslationKey());
     }
