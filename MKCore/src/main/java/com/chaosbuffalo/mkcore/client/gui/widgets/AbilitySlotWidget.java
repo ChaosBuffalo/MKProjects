@@ -12,7 +12,6 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.PlayerSlotAbilityPacket;
 import com.chaosbuffalo.mkwidgets.client.gui.UIConstants;
 import com.chaosbuffalo.mkwidgets.client.gui.actions.IDragState;
-import com.chaosbuffalo.mkwidgets.client.gui.actions.WidgetHoldingDragState;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.FillConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.instructions.HoveringTextInstruction;
@@ -132,14 +131,12 @@ public class AbilitySlotWidget extends MKLayout {
     @Override
     public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
         if (mouseButton == UIConstants.MOUSE_BUTTON_LEFT) {
-            if (!(abilityId.equals(MKCoreRegistry.INVALID_ABILITY))) {
+            if (!abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
                 MKAbility ability = MKCoreRegistry.getAbility(getAbilityId());
                 if (ability == null) {
                     return false;
                 }
-                screen.setDragState(new WidgetHoldingDragState(new MKImage(0, 0, icon.getWidth(),
-                        icon.getHeight(), icon.getImageLoc())), this);
-                screen.startDraggingAbility(ability);
+                screen.startDraggingAbility(ability, icon, this);
                 icon.setColor(new IntColor(0xff555555));
                 return true;
             }
@@ -153,12 +150,11 @@ public class AbilitySlotWidget extends MKLayout {
     @Override
     public boolean onMouseRelease(double mouseX, double mouseY, int mouseButton) {
         if (screen.isDraggingAbility()) {
-            if (unlocked && slotGroup.fitsAbilityType(screen.getDraggingAbility().getType())) {
-                ResourceLocation ability = screen.getDraggingAbility().getAbilityId();
-                setSlotToAbility(ability);
+            MKAbility dragging = screen.getDraggingAbility();
+            if (unlocked && slotGroup.fitsAbilityType(dragging.getType())) {
+                setSlotToAbility(dragging.getAbilityId());
             }
             screen.stopDraggingAbility();
-            screen.clearDragState();
             return true;
         }
         return false;

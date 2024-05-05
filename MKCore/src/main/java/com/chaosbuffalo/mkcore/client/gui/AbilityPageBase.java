@@ -3,9 +3,12 @@ package com.chaosbuffalo.mkcore.client.gui;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.client.gui.widgets.*;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkwidgets.client.gui.actions.WidgetHoldingDragState;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKImage;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -105,8 +108,10 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         return draggingAbility;
     }
 
-    public void startDraggingAbility(MKAbility dragging) {
-        this.draggingAbility = dragging;
+    @Override
+    public void startDraggingAbility(MKAbility ability, MKImage icon, IMKWidget source) {
+        draggingAbility = ability;
+        setDragState(new WidgetHoldingDragState(new MKImage(0, 0, icon.getWidth(), icon.getHeight(), icon.getImageLoc())), source);
     }
 
     protected void restoreSelectedAbility(MKAbility ability) {
@@ -127,6 +132,7 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
 
     public void stopDraggingAbility() {
         draggingAbility = null;
+        clearDragState();
     }
 
     public boolean isDraggingAbility() {
