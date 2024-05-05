@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.editor.PlayerEditorModule;
+import com.chaosbuffalo.mkcore.core.entity.EntityRiderModule;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtension;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
@@ -36,6 +37,7 @@ public class MKPlayerData implements IMKEntityData {
     private final EntityPetModule pets;
     private final PlayerAttributeMonitor attributes;
     private final PlayerEventDispatcher events;
+    private final EntityRiderModule riders;
     private final Set<BooleanSupplier> tickCallbacks = new ObjectArraySet<>(4);
 
     public MKPlayerData(Player playerEntity) {
@@ -57,6 +59,7 @@ public class MKPlayerData implements IMKEntityData {
         editorModule = new PlayerEditorModule(this);
         effectHandler = new PlayerEffectHandler(this);
         pets = new EntityPetModule(this);
+        riders = new EntityRiderModule(this);
         attachUpdateEngine(syncController);
     }
 
@@ -132,6 +135,11 @@ public class MKPlayerData implements IMKEntityData {
         return pets;
     }
 
+    @Override
+    public EntityRiderModule getRiders() {
+        return riders;
+    }
+
     public PlayerEditorModule getEditor() {
         return editorModule;
     }
@@ -205,6 +213,7 @@ public class MKPlayerData implements IMKEntityData {
         stats.getSyncComponent().attach(engine);
         editorModule.getSyncComponent().attach(engine);
         pets.getSyncComponent().attach(engine);
+        riders.getSyncComponent().attach(engine);
     }
 
     public <T extends IPersonaExtension> T getPersonaExtension(Class<T> clazz) {
