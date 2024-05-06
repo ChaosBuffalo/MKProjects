@@ -56,7 +56,7 @@ public class LineEffectEntity extends BaseEffectEntity {
     protected void spawnClientParticles(ParticleDisplay display) {
         ParticleAnimation anim = ParticleAnimationManager.getAnimation(display.getParticles());
         if (anim != null) {
-            anim.spawn(getCommandSenderWorld(), startPoint, Collections.singletonList(endPoint));
+            anim.spawn(getCommandSenderWorld(), startPoint, new Vec3(1., 1., 1.), Collections.singletonList(endPoint));
         }
     }
 

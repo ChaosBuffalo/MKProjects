@@ -86,13 +86,13 @@ public class LineSpawnPattern extends ParticleSpawnPattern {
 
     @Override
     public void spawn(ParticleType<MKParticleData> particleType,
-                      Vec3 position, Level world, ParticleAnimation anim, @Nullable List<Vec3> additionalLocs) {
+                      Vec3 position, Vec3 scale, Level world, ParticleAnimation anim, @Nullable List<Vec3> additionalLocs) {
         List<ParticleSpawnEntry> finalParticles = new ArrayList<>();
         Tuple<List<Vec3>, Double> spawnData = getSpawnData(position, additionalLocs);
         long particleCount = Math.round(spawnData.getB() * count.value());
         for (int i = 0; i < particleCount; i++) {
             produceParticlesForIndex(position, i, spawnData.getA(), world,
-                    (pos) -> new MKParticleData(particleType, pos, anim),
+                    (pos) -> new MKParticleData(particleType, pos, scale, anim),
                     finalParticles);
         }
         for (ParticleSpawnEntry entry : finalParticles) {
@@ -102,7 +102,7 @@ public class LineSpawnPattern extends ParticleSpawnPattern {
 
     @Override
     public void spawnOffsetFromEntity(ParticleType<MKParticleData> particleType,
-                                      Vec3 offset, Level world,
+                                      Vec3 offset, Vec3 scale, Level world,
                                       ParticleAnimation anim, Entity entity, List<Vec3> additionalLocs) {
         Vec3 position = offset.add(entity.position());
         List<Vec3> finalLocs = additionalLocs.stream().map(
@@ -112,7 +112,7 @@ public class LineSpawnPattern extends ParticleSpawnPattern {
         List<ParticleSpawnEntry> finalParticles = new ArrayList<>();
         for (int i = 0; i < particleCount; i++) {
             produceParticlesForIndex(position, i, spawnData.getA(), world,
-                    (pos) -> new MKParticleData(particleType, offset, anim, entity.getId()),
+                    (pos) -> new MKParticleData(particleType, offset, anim, entity.getId(), scale),
                     finalParticles);
         }
         for (ParticleSpawnEntry entry : finalParticles) {

@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
 import com.chaosbuffalo.mkcore.core.player.PlayerAnimationModule;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
+import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -44,10 +45,12 @@ public class MKPlayerRenderer extends PlayerRenderer {
                     if (ability.hasCastingParticles()) {
                         ParticleAnimation anim = ParticleAnimationManager.getAnimation(ability.getCastingParticles());
                         if (anim != null) {
+                            float scale = MathUtils.lerp(.6f, 1.f, data.getAnimationModule().getCastRatio());
+                            Vec3 scaleVec = new Vec3(scale, scale, scale);
                             Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
-                            leftPos.ifPresent(x -> anim.spawn(entityIn.getCommandSenderWorld(), x, null));
+                            leftPos.ifPresent(x -> anim.spawn(entityIn.getCommandSenderWorld(), x, scaleVec, null));
                             Optional<Vec3> rightPos = getHandPosition(partialTicks, entityIn, HumanoidArm.RIGHT);
-                            rightPos.ifPresent(x -> anim.spawn(entityIn.getCommandSenderWorld(), x, null));
+                            rightPos.ifPresent(x -> anim.spawn(entityIn.getCommandSenderWorld(), x, scaleVec, null));
                         }
                     }
                 }
@@ -66,14 +69,17 @@ public class MKPlayerRenderer extends PlayerRenderer {
                 if (ability != null) {
                     // do spell casting
                     if (ability.hasCastingParticles()) {
+
                         ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
                         if (anim != null) {
+                            float scale = MathUtils.lerp(.25f, .8f, data.getAnimationModule().getCastRatio());
+                            Vec3 scaleVec = new Vec3(scale, scale, scale);
                             Vec3 leftPos = getFirstPersonHandPosition(HumanoidArm.LEFT,
                                     (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));
-                            anim.spawn(playerIn.getCommandSenderWorld(), leftPos, null);
+                            anim.spawn(playerIn.getCommandSenderWorld(), leftPos, scaleVec, null);
                             Vec3 rightPos = getFirstPersonHandPosition(HumanoidArm.RIGHT,
                                     (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));
-                            anim.spawn(playerIn.getCommandSenderWorld(), rightPos, null);
+                            anim.spawn(playerIn.getCommandSenderWorld(), rightPos, scaleVec, null );
                         }
                     }
                 }

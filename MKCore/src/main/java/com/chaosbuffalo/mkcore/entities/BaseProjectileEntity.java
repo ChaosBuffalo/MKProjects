@@ -45,7 +45,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
     private float skillLevel;
     private boolean doGroundProc;
     private boolean isShot;
-    private int preFireTicks;
+    protected int preFireTicks;
 
     public BaseProjectileEntity(EntityType<? extends Projectile> entityTypeIn, Level worldIn) {
         super(entityTypeIn, worldIn);

@@ -195,8 +195,8 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     protected void spawnClientParticles(ParticleDisplay display) {
         ParticleAnimation anim = ParticleAnimationManager.getAnimation(display.getParticles());
         if (anim != null) {
-            anim.spawn(getCommandSenderWorld(), startPoint.get(),
-                    Collections.singletonList(prevEndPoint.lerp(endPoint.get(), Math.min((tickCount - lastTickReceive) / 10.0f, 1.0f))));
+            anim.spawn(getCommandSenderWorld(), startPoint.get(), new Vec3(1., 1., 1.)
+                    , Collections.singletonList(prevEndPoint.lerp(endPoint.get(), Math.min((tickCount - lastTickReceive) / 10.0f, 1.0f))));
         }
     }
 

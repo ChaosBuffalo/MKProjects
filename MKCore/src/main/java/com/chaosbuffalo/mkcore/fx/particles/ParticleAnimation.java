@@ -153,15 +153,19 @@ public class ParticleAnimation {
         return anim;
     }
 
-    public void spawn(Level world, Vec3 location, @Nullable List<Vec3> additionalLocs) {
+    public void spawn(Level world, Vec3 location, Vec3 scale, @Nullable List<Vec3> additionalLocs) {
         if (hasSpawnPattern() && hasParticleType()) {
-            spawnPattern.spawn(getParticleType(), location, world, this, additionalLocs);
+            spawnPattern.spawn(getParticleType(), location, scale, world, this, additionalLocs);
         }
     }
 
-    public void spawnOffsetFromEntity(Level world, Vec3 offset, Entity entity, @Nullable List<Vec3> additionalLocs) {
+    public void spawn(Level world, Vec3 location,  @Nullable List<Vec3> additionalLocs) {
+        spawn(world, location, new Vec3(1., 1., 1.), additionalLocs);
+    }
+
+    public void spawnOffsetFromEntity(Level world, Vec3 offset, Vec3 scale, Entity entity, @Nullable List<Vec3> additionalLocs) {
         if (hasSpawnPattern() && hasParticleType()) {
-            spawnPattern.spawnOffsetFromEntity(getParticleType(), offset, world, this, entity, additionalLocs);
+            spawnPattern.spawnOffsetFromEntity(getParticleType(), offset, scale, world, this, entity, additionalLocs);
         }
     }
 

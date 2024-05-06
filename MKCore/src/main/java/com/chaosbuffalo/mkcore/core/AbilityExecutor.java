@@ -28,7 +28,7 @@ public class AbilityExecutor {
     protected final IMKEntityData entityData;
     private EntityCastingState currentCast;
     private final Map<ResourceLocation, MKToggleAbility> activeToggleMap = new HashMap<>();
-    private Consumer<MKAbility> startCastCallback;
+    private BiConsumer<MKAbility, Integer> startCastCallback;
     private Consumer<MKAbility> completeAbilityCallback;
     private BiConsumer<MKAbility, CastInterruptReason> interruptCastCallback;
 
@@ -47,7 +47,7 @@ public class AbilityExecutor {
         this.interruptCastCallback = interruptCastCallback;
     }
 
-    public void setStartCastCallback(Consumer<MKAbility> startCastCallback) {
+    public void setStartCastCallback(BiConsumer<MKAbility, Integer> startCastCallback) {
         this.startCastCallback = startCastCallback;
     }
 
@@ -275,7 +275,7 @@ public class AbilityExecutor {
 
         void begin() {
             if (executor.startCastCallback != null) {
-                executor.startCastCallback.accept(ability);
+                executor.startCastCallback.accept(ability, totalTicks);
             }
         }
 

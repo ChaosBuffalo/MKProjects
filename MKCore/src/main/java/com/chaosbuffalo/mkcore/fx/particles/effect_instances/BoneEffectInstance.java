@@ -36,7 +36,7 @@ public class BoneEffectInstance extends ParticleEffectInstance {
     public void update(Entity entity, MCSkeleton skeleton, float partialTicks, Vec3 offset) {
         if (entity instanceof LivingEntity living) {
             MCBone.getPositionOfBoneInWorld(living, skeleton, partialTicks, offset, boneName).ifPresent(x ->
-                    getAnimation().ifPresent(anim -> anim.spawn(entity.getCommandSenderWorld(), x, null)));
+                    getAnimation().ifPresent(anim -> anim.spawn(entity.getCommandSenderWorld(), x, new Vec3(1., 1., 1.), null)));
         }
     }
 }
