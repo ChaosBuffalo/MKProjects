@@ -15,7 +15,7 @@ public interface IAbilityTrainer {
 
     AbilityTrainingEntry getTrainingEntry(ResourceLocation ability);
 
-    AbilityTrainingEntry addTrainedAbility(MKAbilityInfo ability);
+    AbilityTrainingEntry addTrainedAbility(MKAbilityInfo abilityInfo);
 
     default AbilityTrainingEntry addTrainedAbility(MKAbility ability) {
         return addTrainedAbility(ability.getPortingInstance());

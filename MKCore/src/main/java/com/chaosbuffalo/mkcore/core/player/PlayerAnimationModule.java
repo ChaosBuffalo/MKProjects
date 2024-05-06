@@ -73,18 +73,18 @@ public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
         updateEntityCastState();
     }
 
-    public void startCast(MKAbilityInfo ability) {
+    public void startCast(MKAbilityInfo abilityInfo) {
         playerVisualCastState = PlayerVisualCastState.CASTING;
-        castingAbility = ability;
+        castingAbility = abilityInfo;
     }
 
-    public void endCast(MKAbilityInfo ability) {
-        castingAbility = ability;
+    public void endCast(MKAbilityInfo abilityInfo) {
+        castingAbility = abilityInfo;
         playerVisualCastState = PlayerVisualCastState.RELEASE;
         castAnimTimer = 15;
     }
 
-    public void interruptCast(MKAbilityInfo ability, CastInterruptReason reason) {
+    public void interruptCast(MKAbilityInfo abilityInfo, CastInterruptReason reason) {
         castingAbility = null;
         castAnimTimer = 0;
         playerVisualCastState = PlayerVisualCastState.NONE;

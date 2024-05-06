@@ -10,9 +10,6 @@ import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-
-import java.util.function.Function;
 
 public class LifeSiphonAbility extends MKPassiveAbility {
     protected final FloatAttribute base = new FloatAttribute("base", 4.0f);

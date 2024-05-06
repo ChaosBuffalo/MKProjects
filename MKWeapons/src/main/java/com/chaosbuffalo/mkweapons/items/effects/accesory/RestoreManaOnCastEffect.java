@@ -59,7 +59,7 @@ public class RestoreManaOnCastEffect extends BaseAccessoryEffect implements IDif
         if (entityData.isServerSide() && entityData instanceof MKPlayerData playerData) {
             double roll = entityData.getEntity().getRandom().nextDouble();
             if (roll >= (1.0 - getChance())) {
-                float mana = abilityInfo.getAbility().getManaCost(entityData) * getPercentage();
+                float mana = abilityInfo.getAbility().getManaCost(entityData, abilityInfo) * getPercentage();
                 playerData.getStats().addMana(mana);
                 playerData.getEntity().sendSystemMessage(Component.translatable(
                         "mkweapons.accessory_effect.restore_mana.message",

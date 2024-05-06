@@ -150,10 +150,10 @@ public class MKPlayerData implements IMKEntityData {
         return attributes;
     }
 
-    private void completeAbility(MKAbilityInfo ability) {
-        animationModule.endCast(ability);
+    private void completeAbility(MKAbilityInfo abilityInfo) {
+        animationModule.endCast(abilityInfo);
         if (isServerSide()) {
-            getSkills().onCastAbility(ability);
+            getSkills().onCastAbility(abilityInfo);
         }
     }
 

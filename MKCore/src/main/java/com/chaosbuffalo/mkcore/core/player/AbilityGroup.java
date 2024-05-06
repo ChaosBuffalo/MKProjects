@@ -272,7 +272,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
             MKAbilityInfo abilityInfo = getAbilityInfo(i);
             if (abilityInfo != null && abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
                 if (toggle.isEffectActive(playerData)) {
-                    playerData.getAbilityExecutor().setToggleGroupAbility(toggle.getToggleGroupId(), toggle);
+                    playerData.getAbilityExecutor().setToggleGroupAbility(toggle.getToggleGroupId(), toggle, abilityInfo);
                 }
             }
         }

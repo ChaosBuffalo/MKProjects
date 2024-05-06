@@ -129,8 +129,8 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
     }
 
     @Override
-    public void startDraggingAbility(MKAbilityInfo ability, MKImage icon, IMKWidget source) {
-        draggingAbility = ability;
+    public void startDraggingAbility(MKAbilityInfo abilityInfo, MKImage icon, IMKWidget source) {
+        draggingAbility = abilityInfo;
         setDragState(new WidgetHoldingDragState(new MKImage(0, 0, icon.getWidth(), icon.getHeight(), icon.getImageLoc())), source);
     }
 

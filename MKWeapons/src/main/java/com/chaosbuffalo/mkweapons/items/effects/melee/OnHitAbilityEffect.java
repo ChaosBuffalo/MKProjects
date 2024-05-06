@@ -60,7 +60,7 @@ public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
     }
 
     protected AbilityContext createAbilityContext(IMKEntityData casterData) {
-        AbilityContext context = AbilityContext.forCaster(casterData, abilitySupplier.get());
+        AbilityContext context = AbilityContext.forCaster(casterData, abilitySupplier.get().getPortingInstance());
         context.setSkillResolver((e, attr) -> skillLevel);
         return context;
     }

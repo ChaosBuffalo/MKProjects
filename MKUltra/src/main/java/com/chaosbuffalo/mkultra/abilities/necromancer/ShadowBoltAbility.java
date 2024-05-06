@@ -50,8 +50,8 @@ public class ShadowBoltAbility extends ProjectileAbility {
     }
 
     @Override
-    public float getManaCost(IMKEntityData casterData) {
-        float cost = super.getManaCost(casterData);
+    public float getManaCost(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        float cost = super.getManaCost(casterData, abilityInfo);
         return casterData.getEffects().isEffectActive(MKUEffects.SHADOWBRINGER.get()) ? cost / 2.0f : cost;
     }
 

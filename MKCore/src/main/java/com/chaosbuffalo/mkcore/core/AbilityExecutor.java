@@ -26,7 +26,7 @@ public class AbilityExecutor {
     public static final ResourceLocation GCD_TIMER = MKCore.makeRL("timer.gcd");
     protected final IMKEntityData entityData;
     private EntityCastingState currentCast;
-    private final Map<ResourceLocation, MKToggleAbility> activeToggleMap = new HashMap<>();
+    private final Map<ResourceLocation, MKAbilityInfo> activeToggleMap = new HashMap<>();
     private Consumer<MKAbilityInfo> startCastCallback;
     private Consumer<MKAbilityInfo> completeAbilityCallback;
     private BiConsumer<MKAbilityInfo, CastInterruptReason> interruptCastCallback;
@@ -82,14 +82,18 @@ public class AbilityExecutor {
         }
     }
 
-    public boolean canActivateAbility(MKAbility ability) {
+    public boolean canActivateAbility(MKAbilityInfo abilityInfo) {
         if (isCasting() || entityData.getEntity().isBlocking())
             return false;
 
         if (isOnGlobalCooldown())
             return false;
 
-        return getCurrentAbilityCooldown(ability.getAbilityId()) <= 0;
+        return getCurrentAbilityCooldown(abilityInfo.getId()) <= 0;
+    }
+
+    public boolean canActivateAbility(MKAbility ability) {
+        return canActivateAbility(ability.getPortingInstance());
     }
 
     public void tick() {
@@ -225,8 +229,8 @@ public class AbilityExecutor {
         return new ServerCastingState(context, this, abilityInfo, castTime);
     }
 
-    protected EntityCastingState createClientCastingState(MKAbilityInfo ability, int castTicks) {
-        return new ClientCastingState(this, ability, castTicks);
+    protected EntityCastingState createClientCastingState(MKAbilityInfo abilityInfo, int castTicks) {
+        return new ClientCastingState(this, abilityInfo, castTicks);
     }
 
     protected void consumeResource(MKAbilityInfo abilityInfo) {
@@ -318,8 +322,8 @@ public class AbilityExecutor {
         protected MovingSoundCasting sound;
         protected boolean playing = false;
 
-        public ClientCastingState(AbilityExecutor executor, MKAbilityInfo ability, int castTicks) {
-            super(executor, ability, castTicks);
+        public ClientCastingState(AbilityExecutor executor, MKAbilityInfo abilityInfo, int castTicks) {
+            super(executor, abilityInfo, castTicks);
         }
 
         private void stopSound() {
@@ -364,14 +368,16 @@ public class AbilityExecutor {
         activeToggleMap.remove(groupId);
     }
 
-    public void setToggleGroupAbility(ResourceLocation groupId, MKToggleAbility ability) {
-        MKToggleAbility current = activeToggleMap.get(ability.getToggleGroupId());
+    public void setToggleGroupAbility(ResourceLocation groupId, MKToggleAbility ability, MKAbilityInfo abilityInfo) {
+        MKAbilityInfo current = activeToggleMap.get(ability.getToggleGroupId());
         // This can also be called when rebuilding the activeToggleMap after transferring dimensions and in that case
         // ability will be the same as current
-        if (current != null && current != ability) {
-            current.removeEffect(entityData);
-            setCooldown(current.getAbilityId(), entityData.getStats().getAbilityCooldown(current));
+        if (current != null && current.getAbility() != ability) {
+            if (current.getAbility() instanceof MKToggleAbility toggleAbility) {
+                toggleAbility.removeEffect(entityData);
+            }
+            setCooldown(current.getId(), entityData.getStats().getAbilityCooldown(current));
         }
-        activeToggleMap.put(groupId, ability);
+        activeToggleMap.put(groupId, abilityInfo);
     }
 }

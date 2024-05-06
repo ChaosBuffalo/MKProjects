@@ -16,26 +16,28 @@ import java.util.function.Supplier;
 public class AbilityContext {
     private final Map<MemoryModuleType<?>, Optional<?>> memories;
     private final IMKEntityData casterData;
+    private final MKAbilityInfo abilityInfo;
     @Nullable
     private BiFunction<IMKEntityData, Attribute, Float> skillValueOverrideProvider;
-
-    public AbilityContext(IMKEntityData entityData) {
-        memories = new HashMap<>();
-        this.casterData = entityData;
-    }
 
     public AbilityContext(IMKEntityData entityData, MKAbility ability) {
         memories = new HashMap<>();
         this.casterData = entityData;
+        this.abilityInfo = ability.getPortingInstance();
     }
 
-    public AbilityContext(IMKEntityData entityData, MKAbilityInfo ability) {
+    public AbilityContext(IMKEntityData entityData, MKAbilityInfo abilityInfo) {
         memories = new HashMap<>();
         this.casterData = entityData;
+        this.abilityInfo = abilityInfo;
     }
 
     public IMKEntityData getCasterData() {
         return casterData;
+    }
+
+    public MKAbilityInfo getAbilityInfo() {
+        return abilityInfo;
     }
 
     public <U> void setMemory(MemoryModuleType<U> memoryType,
@@ -84,10 +86,6 @@ public class AbilityContext {
 
     public void setSkillResolver(BiFunction<IMKEntityData, Attribute, Float> supplier) {
         this.skillValueOverrideProvider = supplier;
-    }
-
-    public static AbilityContext forCaster(IMKEntityData casterData, MKAbility ability) {
-        return new AbilityContext(casterData, ability);
     }
 
     public static AbilityContext forCaster(IMKEntityData casterData, MKAbilityInfo abilityInfo) {

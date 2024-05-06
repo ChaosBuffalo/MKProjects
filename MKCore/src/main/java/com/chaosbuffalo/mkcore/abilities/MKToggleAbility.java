@@ -49,11 +49,11 @@ public abstract class MKToggleAbility extends MKAbility {
     }
 
     @Override
-    public float getManaCost(IMKEntityData casterData) {
+    public float getManaCost(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
         if (isEffectActive(casterData)) {
             return 0f;
         }
-        return super.getManaCost(casterData);
+        return super.getManaCost(casterData, abilityInfo);
     }
 
     @Override
@@ -79,7 +79,7 @@ public abstract class MKToggleAbility extends MKAbility {
     }
 
     public void applyEffect(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
-        casterData.getAbilityExecutor().setToggleGroupAbility(getToggleGroupId(), this);
+        casterData.getAbilityExecutor().setToggleGroupAbility(getToggleGroupId(), this, context.getAbilityInfo());
     }
 
     public void removeEffect(IMKEntityData casterData) {

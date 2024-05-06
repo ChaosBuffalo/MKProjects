@@ -67,7 +67,7 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect implements IDifficult
     }
 
     protected AbilityContext createAbilityContext(IMKEntityData casterData) {
-        AbilityContext context = AbilityContext.forCaster(casterData, abilitySupplier.get());
+        AbilityContext context = AbilityContext.forCaster(casterData, abilitySupplier.get().getPortingInstance());
         context.setSkillResolver((e, attr) -> skillLevel.value());
         return context;
     }

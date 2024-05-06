@@ -253,10 +253,10 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     }
 
     @Override
-    public void startDraggingAbility(MKAbilityInfo ability, MKImage icon, IMKWidget source) {
-        super.startDraggingAbility(ability, icon, source);
+    public void startDraggingAbility(MKAbilityInfo abilityInfo, MKImage icon, IMKWidget source) {
+        super.startDraggingAbility(abilityInfo, icon, source);
         abilitySlots.forEach((key, widget) -> {
-            if (!key.group.fitsAbilityType(ability.getAbilityType())) {
+            if (!key.group.fitsAbilityType(abilityInfo.getAbilityType())) {
                 widget.setBackgroundColor(0xff555555);
                 widget.setIconColor(0xff555555);
             }

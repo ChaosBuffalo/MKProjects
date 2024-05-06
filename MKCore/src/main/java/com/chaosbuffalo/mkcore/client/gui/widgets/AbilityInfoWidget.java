@@ -49,7 +49,7 @@ public class AbilityInfoWidget extends MKStackLayoutVertical {
         } else {
             IconText abilityIcon = new AbilityIconText(0, 0, 16, font, 16, screen, selected);
             addWidget(abilityIcon);
-            selected.getAbility().buildDescription(playerData, AbilityContext.forCaster(playerData, selected) , this::addDescriptionLine);
+            selected.getAbility().buildDescription(playerData, AbilityContext.forCaster(playerData, selected), this::addDescriptionLine);
         }
     }
 

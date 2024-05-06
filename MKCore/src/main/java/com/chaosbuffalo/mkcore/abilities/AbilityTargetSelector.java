@@ -17,7 +17,7 @@ public class AbilityTargetSelector {
     private final BiFunction<IMKEntityData, MKAbilityInfo, AbilityContext> selector;
     private Set<MemoryModuleType<?>> requiredMemories;
     private String descriptionKey;
-    private final List<BiFunction<MKAbility, IMKEntityData, Component>> additionalDescriptors;
+    private final List<BiFunction<MKAbilityInfo, IMKEntityData, Component>> additionalDescriptors;
     private boolean showTargetType;
 
     public AbilityTargetSelector(BiFunction<IMKEntityData, MKAbilityInfo, AbilityContext> selector) {
@@ -37,7 +37,7 @@ public class AbilityTargetSelector {
         return this;
     }
 
-    public AbilityTargetSelector addDynamicDescription(BiFunction<MKAbility, IMKEntityData, Component> description) {
+    public AbilityTargetSelector addDynamicDescription(BiFunction<MKAbilityInfo, IMKEntityData, Component> description) {
         additionalDescriptors.add(description);
         return this;
     }
@@ -46,14 +46,14 @@ public class AbilityTargetSelector {
         return showTargetType;
     }
 
-    public void buildDescription(MKAbility ability, IMKEntityData casterData, Consumer<Component> consumer) {
-        consumer.accept(getDescriptionWithHeading(ability));
-        additionalDescriptors.forEach(func -> consumer.accept(func.apply(ability, casterData)));
+    public void buildDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo, Consumer<Component> consumer) {
+        consumer.accept(getDescriptionWithHeading(abilityInfo));
+        additionalDescriptors.forEach(func -> consumer.accept(func.apply(abilityInfo, casterData)));
     }
 
-    private MutableComponent getDescriptionWithHeading(MKAbility ability) {
+    private MutableComponent getDescriptionWithHeading(MKAbilityInfo abilityInfo) {
         if (showTargetType) {
-            Component type = ability.getTargetContext().getLocalizedDescription();
+            Component type = abilityInfo.getAbility().getTargetContext().getLocalizedDescription();
             return Component.translatable("mkcore.ability_description.target_with_type", getDescription(), type);
         } else {
             return Component.translatable("mkcore.ability_description.target", getDescription());

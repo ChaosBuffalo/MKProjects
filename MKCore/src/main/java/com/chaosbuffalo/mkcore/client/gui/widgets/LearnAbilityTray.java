@@ -98,8 +98,8 @@ public class LearnAbilityTray extends MKStackLayoutVertical {
         }
     }
 
-    public void setAbility(MKAbilityInfo ability, AbilityTrainingEvaluation requirements) {
-        this.abilityInfo = ability;
+    public void setAbility(MKAbilityInfo abilityInfo, AbilityTrainingEvaluation requirements) {
+        this.abilityInfo = abilityInfo;
         this.evaluation = requirements;
         setup();
     }

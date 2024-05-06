@@ -57,8 +57,8 @@ public class LearnAbilityPage extends AbilityPageBase {
         return offeredAbilities.stream().map(AbilityTrainingEvaluation::getAbilityInfo).collect(Collectors.toList());
     }
 
-    private Optional<AbilityTrainingEvaluation> findEvaluation(MKAbilityInfo ability) {
-        return offeredAbilities.stream().filter(evaluation -> evaluation.getAbilityInfo().getId().equals(ability.getId())).findFirst();
+    private Optional<AbilityTrainingEvaluation> findEvaluation(MKAbilityInfo abilityInfo) {
+        return offeredAbilities.stream().filter(evaluation -> evaluation.getAbilityInfo().getId().equals(abilityInfo.getId())).findFirst();
     }
 
     @Override

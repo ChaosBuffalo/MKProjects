@@ -117,29 +117,30 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
+        MKAbilityInfo abilityInfo = context.getAbilityInfo();
         if (casterData instanceof MKPlayerData playerData) {
-            MKAbilityInfo info = playerData.getAbilities().getKnownAbility(getAbilityId());
-            if (info != null && info.usesAbilityPool()) {
+            MKAbilityInfo knownAbility = playerData.getAbilities().getKnownAbility(getAbilityId());
+            if (knownAbility != null && knownAbility.usesAbilityPool()) {
                 consumer.accept(new IconTextComponent(POOL_SLOT_ICON, "mkcore.ability.description.uses_pool").withStyle(ChatFormatting.ITALIC));
             }
         }
         if (!skillAttributes.isEmpty()) {
             consumer.accept(getSkillDescription(casterData, context));
         }
-        consumer.accept(getManaCostDescription(casterData));
-        consumer.accept(getCooldownDescription(casterData));
-        consumer.accept(getCastTimeDescription(casterData));
-        getTargetSelector().buildDescription(this, casterData, consumer);
+        consumer.accept(getManaCostDescription(casterData, abilityInfo));
+        consumer.accept(getCooldownDescription(casterData, abilityInfo));
+        consumer.accept(getCastTimeDescription(casterData, abilityInfo));
+        getTargetSelector().buildDescription(casterData, abilityInfo, consumer);
         consumer.accept(getAbilityDescription(casterData, context));
     }
 
-    protected Component getCooldownDescription(IMKEntityData casterData) {
-        float seconds = (float) casterData.getStats().getAbilityCooldown(this) / GameConstants.TICKS_PER_SECOND;
+    protected Component getCooldownDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        float seconds = (float) casterData.getStats().getAbilityCooldown(abilityInfo) / GameConstants.TICKS_PER_SECOND;
         return Component.translatable("mkcore.ability.description.cooldown", seconds);
     }
 
-    protected Component getCastTimeDescription(IMKEntityData casterData) {
-        int castTicks = casterData.getStats().getAbilityCastTime(this);
+    protected Component getCastTimeDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        int castTicks = casterData.getStats().getAbilityCastTime(abilityInfo);
         float seconds = (float) castTicks / GameConstants.TICKS_PER_SECOND;
         Component time = castTicks > 0 ?
                 Component.translatable("mkcore.ability.description.seconds", seconds) :
@@ -147,8 +148,8 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return Component.translatable("mkcore.ability.description.cast_time", time);
     }
 
-    protected Component getManaCostDescription(IMKEntityData casterData) {
-        return Component.translatable("mkcore.ability.description.mana_cost", getManaCost(casterData));
+    protected Component getManaCostDescription(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        return Component.translatable("mkcore.ability.description.mana_cost", getManaCost(casterData, abilityInfo));
     }
 
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
@@ -268,7 +269,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return manaCost;
     }
 
-    public float getManaCost(IMKEntityData casterData) {
+    public float getManaCost(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
         return getBaseManaCost() + getManaCostModifierForSkills(casterData);
     }
 
@@ -285,7 +286,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     public boolean meetsCastingRequirements(IMKEntityData casterData, MKAbilityInfo info) {
-        return casterData.getAbilityExecutor().canActivateAbility(this) &&
+        return casterData.getAbilityExecutor().canActivateAbility(info) &&
                 casterData.getStats().canActivateAbility(info);
     }
 

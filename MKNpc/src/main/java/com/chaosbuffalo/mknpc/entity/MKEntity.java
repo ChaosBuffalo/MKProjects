@@ -677,9 +677,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return castingAbility;
     }
 
-    public void startCast(MKAbilityInfo ability) {
+    public void startCast(MKAbilityInfo abilityInfo) {
         visualCastState = VisualCastState.CASTING;
-        castingAbility = ability;
+        castingAbility = abilityInfo;
     }
 
     public void returnToDefaultMovementState() {
@@ -691,8 +691,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
-    public void endCast(MKAbilityInfo ability) {
-        castingAbility = ability;
+    public void endCast(MKAbilityInfo abilityInfo) {
+        castingAbility = abilityInfo;
         visualCastState = VisualCastState.RELEASE;
         castAnimTimer = 15;
     }

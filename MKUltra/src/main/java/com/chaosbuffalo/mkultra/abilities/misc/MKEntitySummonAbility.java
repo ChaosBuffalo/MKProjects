@@ -31,7 +31,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
-import java.util.function.Function;
 
 public class MKEntitySummonAbility extends MKAbility {
     protected final ResourceLocationAttribute npcDefintion = new ResourceLocationAttribute("npc", NpcDefinitionManager.INVALID_NPC_DEF);
@@ -64,8 +63,8 @@ public class MKEntitySummonAbility extends MKAbility {
     }
 
     @Override
-    public float getManaCost(IMKEntityData casterData) {
-        return casterData.getPets().isPetActive(getAbilityId()) ? 0f : super.getManaCost(casterData);
+    public float getManaCost(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        return casterData.getPets().isPetActive(getAbilityId()) ? 0f : super.getManaCost(casterData, abilityInfo);
     }
 
     @Override
