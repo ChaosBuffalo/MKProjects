@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkultra.abilities.misc;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
+import com.chaosbuffalo.mkcore.abilities.projectiles.ProjectileAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
@@ -52,7 +52,7 @@ public class HolyWordAbility extends ProjectileAbility {
         projectileSpeed.setDefaultValue(0.8f);
         baseDamage.setDefaultValue(5.0f);
         scaleDamage.setDefaultValue(3.0f);
-        setCastTime(GameConstants.TICKS_PER_SECOND * 2);
+        setCastTime(GameConstants.TICKS_PER_SECOND + GameConstants.TICKS_PER_SECOND / 4);
         setCooldownTicks(GameConstants.TICKS_PER_SECOND * 5);
     }
 

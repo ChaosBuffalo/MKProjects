@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.entities;
 
-import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
+import com.chaosbuffalo.mkcore.abilities.projectiles.ProjectileAbility;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.FriendlyByteBuf;

@@ -1,40 +1,41 @@
 package com.chaosbuffalo.mkcore.serialization.attributes;
 
-
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.utils.location.LocationProvider;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 
-public class LocationProviderAttribute implements ISerializableAttribute<LocationProvider>{
+public class CodecAttribute<T> implements ISerializableAttribute<T> {
     private final String name;
-    protected LocationProvider currentValue;
-    protected LocationProvider defaultValue;
+    protected T currentValue;
+    protected T defaultValue;
+    protected final Codec<T> codec;
 
-    public LocationProviderAttribute(String name, LocationProvider defaultProvider) {
+    public CodecAttribute(String name, T defaultValue, Codec<T> codec) {
         this.name = name;
-        this.defaultValue = defaultProvider;
+        this.defaultValue = defaultValue;
+        this.codec = codec;
         reset();
     }
 
     @Override
-    public LocationProvider getValue() {
+    public T getValue() {
         return currentValue;
     }
 
     @Override
-    public void setValue(LocationProvider newValue) {
+    public void setValue(T newValue) {
         currentValue = newValue;
     }
 
     @Override
-    public LocationProvider getDefaultValue() {
+    public T getDefaultValue() {
         return defaultValue;
     }
 
     @Override
-    public void setDefaultValue(LocationProvider newValue) {
-        defaultValue = newValue;
+    public void setDefaultValue(T defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     @Override
@@ -50,12 +51,12 @@ public class LocationProviderAttribute implements ISerializableAttribute<Locatio
 
     @Override
     public <D> D serialize(DynamicOps<D> ops) {
-        return LocationProvider.CODEC.encodeStart(ops, currentValue).getOrThrow(false, MKCore.LOGGER::error);
+        return codec.encodeStart(ops, currentValue).getOrThrow(false, MKCore.LOGGER::error);
     }
 
     @Override
     public <D> void deserialize(Dynamic<D> dynamic) {
-        setValue(LocationProvider.CODEC.parse(dynamic).getOrThrow(false, MKCore.LOGGER::error));
+        setValue(codec.parse(dynamic).getOrThrow(false, MKCore.LOGGER::error));
     }
 
     @Override

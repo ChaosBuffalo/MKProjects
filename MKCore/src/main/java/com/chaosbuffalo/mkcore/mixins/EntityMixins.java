@@ -56,7 +56,7 @@ public abstract class EntityMixins {
                 Vec3 newOffset = rider.getOffset().yRot(-rot.y * ((float)Math.PI / 180F));
                 pPassenger.setPos(entityData.getEntity().position().add(newOffset));
                 pPassenger.setXRot(rot.x);
-                pPassenger.setYRot(rot.y);
+                pPassenger.setYRot(rot.y + rider.getYawOffset());
             }
         });
 

@@ -15,6 +15,7 @@ public abstract class LocationProvider {
     public LocationProvider(int max) {
         this.max = max;
     }
+
     public record WorldLocationResult(Vec3 worldPosition, Vec2 rotation) {
         public WorldLocationResult(Vec3 worldPosition, Vec2 rotation) {
             this.worldPosition = worldPosition;

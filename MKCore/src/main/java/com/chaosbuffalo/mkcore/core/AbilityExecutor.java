@@ -359,6 +359,7 @@ public class AbilityExecutor {
         @Override
         public void finish() {
             stopSound();
+            ability.endCastClient(executor.entityData);
             if (executor.completeAbilityCallback != null) {
                 executor.completeAbilityCallback.accept(ability);
             }
