@@ -134,7 +134,7 @@ public class AbilityExecutor {
         PacketHandler.sendToTrackingAndSelf(EntityCastPacket.start(entityData, abilityInfo.getId(), castTime, context), entityData.getEntity());
     }
 
-    public void startCastClient(ResourceLocation abilityId, int castTicks, AbilityClientState clientState) {
+    public void startCastClient(ResourceLocation abilityId, int castTicks, @Nullable AbilityClientState clientState) {
 //        MKCore.LOGGER.debug("startCastClient {} {}", abilityId, castTicks);
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
         if (ability != null) {
@@ -228,7 +228,7 @@ public class AbilityExecutor {
         return new ServerCastingState(context, this, abilityInfo, castTime);
     }
 
-    protected EntityCastingState createClientCastingState(MKAbility ability, int castTicks, AbilityClientState state) {
+    protected EntityCastingState createClientCastingState(MKAbility ability, int castTicks, @Nullable AbilityClientState state) {
         return new ClientCastingState(this, ability, castTicks, state);
     }
 

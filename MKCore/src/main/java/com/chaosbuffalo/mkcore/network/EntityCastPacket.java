@@ -14,6 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 
+import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 public class EntityCastPacket {
@@ -23,6 +24,7 @@ public class EntityCastPacket {
     private int castTicks;
     private final CastAction action;
     private CastInterruptReason interruptReason;
+    @Nullable
     private AbilityClientState clientState;
 
     enum CastAction {
@@ -30,7 +32,7 @@ public class EntityCastPacket {
         INTERRUPT
     }
 
-    public EntityCastPacket(IMKEntityData entityData, ResourceLocation abilityId, int castTicks, AbilityClientState clientState) {
+    public EntityCastPacket(IMKEntityData entityData, ResourceLocation abilityId, int castTicks, @Nullable AbilityClientState clientState) {
         entityId = entityData.getEntity().getId();
         this.abilityId = abilityId;
         this.castTicks = castTicks;
@@ -63,8 +65,8 @@ public class EntityCastPacket {
             if (hasClient) {
                 CompoundTag tag = buffer.readNbt();
                 if (tag != null) {
-                    clientState = AbilityClientState.CODEC.decode(NbtOps.INSTANCE, tag.get("client_state"))
-                            .getOrThrow(false, MKCore.LOGGER::error).getFirst();
+                    clientState = AbilityClientState.CODEC.parse(NbtOps.INSTANCE, tag.get("client_state"))
+                            .getOrThrow(false, MKCore.LOGGER::error);
                 } else {
                     clientState = null;
                 }

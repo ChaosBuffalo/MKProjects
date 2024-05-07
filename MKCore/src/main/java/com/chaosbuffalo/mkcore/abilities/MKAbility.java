@@ -359,6 +359,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     }
 
+
     public boolean isInterruptedBy(IMKEntityData targetData, CastInterruptReason reason) {
         return true;
     }
