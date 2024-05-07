@@ -57,7 +57,7 @@ public class AbilityExecutor {
     }
 
     public void executeAbilityWithContext(ResourceLocation abilityId, AbilityContext context) {
-        MKAbilityInfo info = entityData.getAbilities().getKnownAbility(abilityId);
+        MKAbilityInfo info = entityData.getAbilities().getAbilityInfo(abilityId);
         if (info == null)
             return;
 

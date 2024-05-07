@@ -156,15 +156,15 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
 
         Set<AbilityType> knownTypes = new HashSet<>();
         List<MKAbility> knownAbilities = playerData.getAbilities()
-                .getKnownStream()
+                .getAbilityInfoStream()
                 .map(info -> {
-                    knownTypes.add(info.getAbility().getType());
+                    knownTypes.add(info.getAbilityType());
                     return info.getAbility();
                 }).collect(Collectors.toList());
         MKAbilityInfo itemAbility = playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).getAbilityInfo(0);
         if (itemAbility != null) {
             knownAbilities.add(itemAbility.getAbility());
-            knownTypes.add(itemAbility.getAbility().getType());
+            knownTypes.add(itemAbility.getAbilityType());
         }
         if (knownTypes.contains(AbilityType.Basic))
             availableFilters.add(AbilityFilter.Basic);

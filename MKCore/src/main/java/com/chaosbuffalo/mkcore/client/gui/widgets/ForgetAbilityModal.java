@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.client.gui.GuiTextures;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -63,15 +62,9 @@ public class ForgetAbilityModal extends MKModal {
         abilities.setPaddingTop(2);
         abilities.setMargins(2, 2, 0, 0);
         abilities.doSetChildWidth(true);
-        playerData.getAbilities().getPoolAbilities().forEach(abilityId -> {
-            if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
-                return;
-            }
-            MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-            if (ability != null) {
-                AbilityForgetOption abilityIcon = new AbilityForgetOption(ability, this, font);
-                abilities.addWidget(abilityIcon);
-            }
+        playerData.getAbilities().getPoolAbilities().forEach(abilityInfo -> {
+            AbilityForgetOption abilityIcon = new AbilityForgetOption(abilityInfo.getAbility(), this, font);
+            abilities.addWidget(abilityIcon);
         });
         scrollview.addWidget(abilities);
         abilities.manualRecompute();

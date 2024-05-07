@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.command.arguments.AbilityIdArgument;
 import com.chaosbuffalo.mkcore.command.arguments.AbilitySourceTypeArgument;
 import com.chaosbuffalo.mkcore.core.player.PlayerAbilityKnowledge;
+import com.chaosbuffalo.mkcore.core.player.PlayerKnownAbility;
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -66,7 +67,7 @@ public class AbilityCommand {
                         .map(playerData -> playerData.getAbilities()
                                 .getKnownStream()
                                 .filter(info -> info.getSources().stream().anyMatch(s -> s.getSourceType().isSimple()))
-                                .map(MKAbilityInfo::getId)
+                                .map(PlayerKnownAbility::getId)
                                 .map(ResourceLocation::toString))
                         .orElse(Stream.empty()),
                 builder);
@@ -158,8 +159,8 @@ public class AbilityCommand {
             int currentSize = abilityKnowledge.getCurrentPoolCount();
             int maxSize = abilityKnowledge.getAbilityPoolSize();
             ChatUtils.sendMessageWithBrackets(player, "Ability Pool: %d/%d", currentSize, maxSize);
-            abilityKnowledge.getPoolAbilities().forEach(abilityId -> {
-                ChatUtils.sendMessageWithBrackets(player, "Pool Ability: %s", abilityId);
+            abilityKnowledge.getPoolAbilities().forEach(abilityInfo -> {
+                ChatUtils.sendMessageWithBrackets(player, "Pool Ability: %s", abilityInfo.getId());
             });
         });
         return Command.SINGLE_SUCCESS;
@@ -170,7 +171,7 @@ public class AbilityCommand {
         ResourceLocation abilityId = ctx.getArgument("ability", ResourceLocation.class);
 
         MKCore.getPlayer(player).ifPresent(playerData -> {
-            MKAbilityInfo info = playerData.getAbilities().getKnownAbility(abilityId);
+            PlayerKnownAbility info = playerData.getAbilities().getKnownAbility(abilityId);
             if (info == null)
                 return;
             List<AbilitySource> sources = new ArrayList<>(info.getSources());
@@ -189,14 +190,12 @@ public class AbilityCommand {
 
         MKCore.getPlayer(player).ifPresent(cap -> {
             PlayerAbilityKnowledge abilityKnowledge = cap.getAbilities();
-            Collection<MKAbilityInfo> abilities = abilityKnowledge.getAllAbilities();
+            Collection<PlayerKnownAbility> abilities = abilityKnowledge.getKnownAbilities();
             if (!abilities.isEmpty()) {
                 ChatUtils.sendMessageWithBrackets(player, "Known Abilities");
                 abilities.forEach(info -> {
-                    ChatUtils.sendMessageWithBrackets(player, "%s: %b", info.getId(), info.isCurrentlyKnown());
-                    if (info.isCurrentlyKnown()) {
-                        info.getSources().forEach(s -> ChatUtils.sendMessage(player, "- %s", s.encode()));
-                    }
+                    ChatUtils.sendMessageWithBrackets(player, "%s", info.getId());
+                    info.getSources().forEach(s -> ChatUtils.sendMessage(player, "- %s", s.encode()));
                 });
             } else {
                 ChatUtils.sendMessageWithBrackets(player, "No known abilities");
