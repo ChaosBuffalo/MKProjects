@@ -34,15 +34,10 @@ public class ItemAbilityGroup extends AbilityGroup {
         if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY))
             return null;
 
-        // If the ability is already known by another method, lookup that info
-        MKAbilityInfo info = playerData.getAbilities().getAbilityInfo(abilityId);
-        if (info == null) {
-            // If not, create a temporary info struct
-            MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-            if (ability != null) {
-                info = ability.createAbilityInfo();
-            }
+        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
+        if (ability != null) {
+            return ability.createAbilityInfo();
         }
-        return info;
+        return null;
     }
 }
