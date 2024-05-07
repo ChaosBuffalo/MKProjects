@@ -3,8 +3,11 @@ package com.chaosbuffalo.mkcore.abilities.projectiles;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.mojang.serialization.Codec;
 import net.minecraft.util.ExtraCodecs;
+
+import javax.annotation.Nullable;
 
 public abstract class ProjectileCastBehavior {
 
@@ -22,7 +25,11 @@ public abstract class ProjectileCastBehavior {
     public void continueCast(ProjectileAbility ability, IMKEntityData casterData, AbilityContext context, int castTimeLeft, int totalTicks) {
     }
 
-    public void endCastClient(ProjectileAbility ability, IMKEntityData casterData) {
+    public void endCastClient(ProjectileAbility ability, IMKEntityData casterData, @Nullable AbilityClientState clientState) {
+
+    }
+
+    public void continueCastClient(ProjectileAbility ability, IMKEntityData casterData, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
 
     }
 

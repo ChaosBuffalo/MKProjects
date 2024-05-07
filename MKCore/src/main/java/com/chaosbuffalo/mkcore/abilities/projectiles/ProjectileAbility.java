@@ -4,6 +4,7 @@ package com.chaosbuffalo.mkcore.abilities.projectiles;
 import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.serialization.attributes.CodecAttribute;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 public abstract class ProjectileAbility extends MKAbility {
@@ -103,13 +105,18 @@ public abstract class ProjectileAbility extends MKAbility {
     public void startCast(IMKEntityData casterData, int castTime, AbilityContext context) {
         super.startCast(casterData, castTime, context);
         castBehavior.getValue().startCast(this, casterData, castTime, context);
-
     }
 
     @Override
     public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
         super.continueCast(castingEntity, casterData, castTimeLeft, totalTicks, context);
         castBehavior.getValue().continueCast(this, casterData, context, castTimeLeft, totalTicks);
+    }
+
+    @Override
+    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
+        super.continueCastClient(castingEntity, casterData, castTimeLeft, totalTicks, clientState);
+        castBehavior.getValue().continueCastClient(this, casterData, castTimeLeft, totalTicks, clientState);
     }
 
     @Override
@@ -131,9 +138,9 @@ public abstract class ProjectileAbility extends MKAbility {
     }
 
     @Override
-    public void endCastClient(IMKEntityData casterData) {
-        super.endCastClient(casterData);
-        castBehavior.getValue().endCastClient(this, casterData);
+    public void endCastClient(IMKEntityData casterData, @Nullable AbilityClientState clientState) {
+        super.endCastClient(casterData, clientState);
+        castBehavior.getValue().endCastClient(this, casterData, clientState);
     }
 
     public void fireCurrentProjectiles(IMKEntityData casterData, AbilityContext context) {

@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKToggleAbility;
 import com.chaosbuffalo.mkcore.client.sound.MovingSoundCasting;
+import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.events.EntityAbilityEvent;
 import com.chaosbuffalo.mkcore.network.EntityCastPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
@@ -130,14 +131,14 @@ public class AbilityExecutor {
 //        MKCore.LOGGER.debug("startCast {} {}", abilityInfo.getId(), castTime);
         currentCast = createServerCastingState(context, abilityInfo, castTime);
         currentCast.begin();
-        PacketHandler.sendToTrackingAndSelf(EntityCastPacket.start(entityData, abilityInfo.getId(), castTime), entityData.getEntity());
+        PacketHandler.sendToTrackingAndSelf(EntityCastPacket.start(entityData, abilityInfo.getId(), castTime, context), entityData.getEntity());
     }
 
-    public void startCastClient(ResourceLocation abilityId, int castTicks) {
+    public void startCastClient(ResourceLocation abilityId, int castTicks, AbilityClientState clientState) {
 //        MKCore.LOGGER.debug("startCastClient {} {}", abilityId, castTicks);
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
         if (ability != null) {
-            currentCast = createClientCastingState(ability, castTicks);
+            currentCast = createClientCastingState(ability, castTicks, clientState);
             currentCast.begin();
             if (castTicks <= 0) {
                 currentCast.finish();
@@ -227,8 +228,8 @@ public class AbilityExecutor {
         return new ServerCastingState(context, this, abilityInfo, castTime);
     }
 
-    protected EntityCastingState createClientCastingState(MKAbility ability, int castTicks) {
-        return new ClientCastingState(this, ability, castTicks);
+    protected EntityCastingState createClientCastingState(MKAbility ability, int castTicks, AbilityClientState state) {
+        return new ClientCastingState(this, ability, castTicks, state);
     }
 
     protected void consumeResource(MKAbility ability) {
@@ -328,9 +329,12 @@ public class AbilityExecutor {
     static class ClientCastingState extends EntityCastingState {
         protected MovingSoundCasting sound;
         protected boolean playing = false;
+        @Nullable
+        protected final AbilityClientState clientState;
 
-        public ClientCastingState(AbilityExecutor executor, MKAbility ability, int castTicks) {
+        public ClientCastingState(AbilityExecutor executor, MKAbility ability, int castTicks, @Nullable AbilityClientState clientState) {
             super(executor, ability, castTicks);
+            this.clientState = clientState;
         }
 
         private void stopSound() {
@@ -353,13 +357,13 @@ public class AbilityExecutor {
 
         @Override
         void activeTick() {
-            ability.continueCastClient(executor.entityData.getEntity(), executor.entityData, castTicks, totalTicks);
+            ability.continueCastClient(executor.entityData.getEntity(), executor.entityData, castTicks, totalTicks, clientState);
         }
 
         @Override
         public void finish() {
             stopSound();
-            ability.endCastClient(executor.entityData);
+            ability.endCastClient(executor.entityData, clientState);
             if (executor.completeAbilityCallback != null) {
                 executor.completeAbilityCallback.accept(ability);
             }
