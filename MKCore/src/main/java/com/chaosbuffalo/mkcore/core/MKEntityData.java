@@ -20,7 +20,7 @@ public class MKEntityData implements IMKEntityData {
     private final AbilityExecutor abilityExecutor;
     private final EntityStats stats;
     private final Lazy<EntityEquipment> equipment;
-    private final EntityAbilityKnowledge abilities;
+    private final MobAbilityKnowledge abilities;
     private final CombatExtensionModule combatExtensionModule;
     private final EntityEffectHandler effectHandler;
     private final EntityPetModule pets;
@@ -30,7 +30,7 @@ public class MKEntityData implements IMKEntityData {
 
     public MKEntityData(LivingEntity livingEntity) {
         entity = Objects.requireNonNull(livingEntity);
-        abilities = new EntityAbilityKnowledge(this);
+        abilities = new MobAbilityKnowledge(this);
         abilityExecutor = new AbilityExecutor(this);
         stats = new EntityStats(this);
         equipment = Lazy.of(() -> new EntityEquipment(this));
@@ -52,7 +52,7 @@ public class MKEntityData implements IMKEntityData {
     }
 
     @Override
-    public EntityAbilityKnowledge getAbilities() {
+    public MobAbilityKnowledge getAbilities() {
         return abilities;
     }
 

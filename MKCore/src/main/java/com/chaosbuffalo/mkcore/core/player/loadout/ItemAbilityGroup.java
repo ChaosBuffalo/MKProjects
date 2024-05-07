@@ -1,14 +1,12 @@
 package com.chaosbuffalo.mkcore.core.player.loadout;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
 
 import javax.annotation.Nullable;
 
@@ -37,13 +35,12 @@ public class ItemAbilityGroup extends AbilityGroup {
             return null;
 
         // If the ability is already known by another method, lookup that info
-        MKAbilityInfo info = playerData.getAbilities().getKnownAbility(abilityId);
+        MKAbilityInfo info = playerData.getAbilities().getAbilityInfo(abilityId);
         if (info == null) {
             // If not, create a temporary info struct
             MKAbility ability = MKCoreRegistry.getAbility(abilityId);
             if (ability != null) {
                 info = ability.createAbilityInfo();
-                info.addSource(AbilitySource.forEquipmentSlot(EquipmentSlot.MAINHAND));
             }
         }
         return info;

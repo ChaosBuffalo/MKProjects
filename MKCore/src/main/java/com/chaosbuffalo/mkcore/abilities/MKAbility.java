@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.abilities.ai.conditions.StandardUseCondition;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
+import com.chaosbuffalo.mkcore.core.player.PlayerKnownAbility;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
@@ -119,7 +120,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
         if (casterData instanceof MKPlayerData playerData) {
-            MKAbilityInfo info = playerData.getAbilities().getKnownAbility(getAbilityId());
+            PlayerKnownAbility info = playerData.getAbilities().getKnownAbility(getAbilityId());
             if (info != null && info.usesAbilityPool()) {
                 consumer.accept(new IconTextComponent(POOL_SLOT_ICON, "mkcore.ability.description.uses_pool").withStyle(ChatFormatting.ITALIC));
             }

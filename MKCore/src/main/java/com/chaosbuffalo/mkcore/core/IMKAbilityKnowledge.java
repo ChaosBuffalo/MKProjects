@@ -18,5 +18,5 @@ public interface IMKAbilityKnowledge {
     boolean knowsAbility(ResourceLocation abilityId);
 
     @Nullable
-    MKAbilityInfo getKnownAbility(ResourceLocation abilityId);
+    MKAbilityInfo getAbilityInfo(ResourceLocation abilityId);
 }

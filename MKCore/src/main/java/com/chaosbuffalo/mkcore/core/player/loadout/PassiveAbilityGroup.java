@@ -58,7 +58,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
 
     public void onSkillUpdate(Attribute skill) {
         getAbilities().forEach(id -> {
-            MKAbilityInfo info = playerData.getAbilities().getKnownAbility(id);
+            MKAbilityInfo info = playerData.getAbilities().getAbilityInfo(id);
             if (info != null && info.getAbility().getSkillAttributes().contains(skill)) {
                 removePassive(id);
                 activatePassive(id);
@@ -67,7 +67,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
     }
 
     private void activatePassive(ResourceLocation abilityId) {
-        MKAbilityInfo info = playerData.getAbilities().getKnownAbility(abilityId);
+        MKAbilityInfo info = playerData.getAbilities().getAbilityInfo(abilityId);
         if (info != null && info.getAbility() instanceof MKPassiveAbility) {
             info.getAbility().executeWithContext(playerData, AbilityContext.selfTarget(playerData, info), info);
         }
