@@ -2,8 +2,10 @@ package com.chaosbuffalo.mkcore;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
+import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientStateTypes;
 import com.chaosbuffalo.mkcore.abilities.projectiles.ProjectileCastBehaviorType;
 import com.chaosbuffalo.mkcore.abilities.projectiles.ProjectileCastBehaviorTypes;
+import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientStateType;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.talents.MKTalent;
@@ -47,6 +49,8 @@ public class MKCoreRegistry {
     public static IForgeRegistry<LocationProviderType<?>> LOC_PROVIDER_TYPES = null;
     public static final ResourceLocation CAST_BEHAVIOR_TYPES_NAME = new ResourceLocation(MKCore.MOD_ID, "projectile_cast_behavior_types");
     public static IForgeRegistry<ProjectileCastBehaviorType<?>> PROJECTILE_CAST_BEHAVIOR_TYPES = null;
+    public static final ResourceLocation CLIENT_STATE_TYPES_NAME = new ResourceLocation(MKCore.MOD_ID, "ability_client_state_types");
+    public static IForgeRegistry<AbilityClientStateType<?>> CLIENT_STATE_TYPES = null;
 
     @Nullable
     public static MKAbility getAbility(ResourceLocation abilityId) {
@@ -79,6 +83,8 @@ public class MKCoreRegistry {
                 .setName(LOC_PROVIDER_TYPES_NAME), r -> LOC_PROVIDER_TYPES = r);
         event.create(new RegistryBuilder<ProjectileCastBehaviorType<?>>()
                 .setName(CAST_BEHAVIOR_TYPES_NAME), r -> PROJECTILE_CAST_BEHAVIOR_TYPES = r);
+        event.create(new RegistryBuilder<AbilityClientStateType<?>>()
+                .setName(CLIENT_STATE_TYPES_NAME), r -> CLIENT_STATE_TYPES = r);
     }
 
     public static void register(IEventBus modBus) {
@@ -97,6 +103,7 @@ public class MKCoreRegistry {
         MKCoreTestTalents.register(modBus);
         LocationProviderTypes.register(modBus);
         ProjectileCastBehaviorTypes.register(modBus);
+        AbilityClientStateTypes.register(modBus);
 
     }
 }

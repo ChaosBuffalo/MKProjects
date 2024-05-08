@@ -35,7 +35,14 @@ public class SoundUtils {
         if (event == null) {
             return;
         }
-        entity.level.playSound(Minecraft.getInstance().player, entity.getX(), entity.getY(), entity.getZ(), event, cat, volume, pitch);
+        ClientHandler.playSoundAtEntity(entity, event, cat, volume, pitch);
+
+    }
+
+    public static class ClientHandler {
+        public static void playSoundAtEntity(Entity entity, SoundEvent event, SoundSource cat, float volume, float pitch) {
+            entity.level.playSound(Minecraft.getInstance().player, entity.getX(), entity.getY(), entity.getZ(), event, cat, volume, pitch);
+        }
     }
 
     public static void serverPlaySoundFromEntity(double x, double y, double z,
