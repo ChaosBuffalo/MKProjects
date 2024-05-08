@@ -3,36 +3,55 @@ package com.chaosbuffalo.mkcore.core;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
 
 public interface IMKEntityStats {
 
-    float getDamageTypeBonus(MKDamageType damageType);
+    LivingEntity getEntity();
+
+    default float getDamageTypeBonus(MKDamageType damageType) {
+        return (float) getEntity().getAttributeValue(damageType.getDamageAttribute());
+    }
+
+    default float getHealth() {
+        return getEntity().getHealth();
+    }
+
+    default void setHealth(float value) {
+        getEntity().setHealth(value);
+    };
+
+    default float getMaxHealth() {
+        return getEntity().getMaxHealth();
+    }
+
+    float getMana();
 
     void setMana(float value);
 
-    float getPoise();
+    default float getMaxMana() {
+        return (float) getEntity().getAttributeValue(MKAttributes.MAX_MANA);
+    }
 
-    float getMaxPoise();
+    default float getManaRegenRate() {
+        return (float) getEntity().getAttributeValue(MKAttributes.MANA_REGEN);
+    }
+
+    void addMana(float value);
+
+    boolean consumeMana(float amount);
+
+    float getPoise();
 
     void setPoise(float value);
 
-    float getMaxMana();
+    default float getMaxPoise() {
+        return (float) getEntity().getAttributeValue(MKAttributes.MAX_POISE);
+    }
 
-    float getPoiseRegenRate();
-
-    float getManaRegenRate();
-
-    float getHealBonus();
-
-    float getHealEfficiency();
-
-    float getBuffDurationModifier();
-
-    float getHealth();
-
-    void setHealth(float value);
-
-    float getMaxHealth();
+    default float getPoiseRegenRate() {
+        return (float) getEntity().getAttributeValue(MKAttributes.POISE_REGEN);
+    }
 
     int getPoiseBreakRemainingTicks();
 
@@ -44,14 +63,22 @@ public interface IMKEntityStats {
 
     boolean isPoiseBroke();
 
-    void addMana(float value);
-
-    boolean consumeMana(float amount);
-
     record BlockResult(float damageLeft, boolean poiseBroke) {
     }
 
     BlockResult tryPoiseBlock(float damageIn);
+
+    default float getHealBonus() {
+        return (float) getEntity().getAttributeValue(MKAttributes.HEAL_BONUS);
+    }
+
+    default float getHealEfficiency() {
+        return (float) getEntity().getAttributeValue(MKAttributes.HEAL_EFFICIENCY);
+    }
+
+    default float getBuffDurationModifier() {
+        return (float) getEntity().getAttributeValue(MKAttributes.BUFF_DURATION);
+    }
 
     float getAbilityManaCost(MKAbility ability);
 

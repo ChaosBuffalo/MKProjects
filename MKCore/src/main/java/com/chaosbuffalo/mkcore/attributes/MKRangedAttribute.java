@@ -44,4 +44,12 @@ public class MKRangedAttribute extends RangedAttribute {
     public AttributeSyncType getSyncType() {
         return syncType;
     }
+
+    @Override
+    public String toString() {
+        return "MKRangedAttribute{" +
+                "name=" + name +
+                ", syncType=" + syncType +
+                '}';
+    }
 }

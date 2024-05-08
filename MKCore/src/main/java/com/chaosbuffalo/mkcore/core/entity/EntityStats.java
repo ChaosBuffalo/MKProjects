@@ -4,20 +4,14 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.*;
-import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
 import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.sync.types.SyncFloat;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 
-import javax.annotation.Nonnull;
-import java.util.Objects;
-
-public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider {
+public abstract class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider {
 
     public static final ResourceLocation POISE_BREAK_TIMER = new ResourceLocation(MKCore.MOD_ID, "timer.poise_break");
     protected final IMKEntityData entityData;
@@ -25,29 +19,27 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
     protected final SyncFloat mana = new SyncFloat("mana", 0f);
     protected final SyncFloat poise = new SyncFloat("poise", 0f);
     private final PlayerSyncComponent sync = new PlayerSyncComponent("stats");
-    protected float manaRegenTimer;
-
 
     public EntityStats(IMKEntityData data) {
         entityData = data;
         abilityTracker = AbilityTracker.getTracker(data.getEntity());
-        manaRegenTimer = 0f;
         addSyncPublic(mana);
         addSyncPrivate(poise);
         addSyncPrivate(abilityTracker);
     }
 
     @Override
-    public float getDamageTypeBonus(MKDamageType damageType) {
-        return (float) getEntity().getAttributeValue(damageType.getDamageAttribute());
+    public PlayerSyncComponent getSyncComponent() {
+        return sync;
     }
 
-    // Mostly to shut up warning about null returns from getAttribute. Only use this for attrs you know will be present
-    @Nonnull
-    protected AttributeInstance requiredAttribute(Attribute attribute) {
-        return Objects.requireNonNull(getEntity().getAttribute(attribute));
+    public void tick() {
+        abilityTracker.tick();
+        updateMana();
+        updatePoise();
     }
 
+    @Override
     public float getMana() {
         return mana.get();
     }
@@ -66,18 +58,24 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
     }
 
     @Override
-    public float getPoise() {
-        return poise.get();
+    public void addMana(float value) {
+        setMana(getMana() + value);
     }
 
     @Override
-    public float getMaxPoise() {
-        return (float) getEntity().getAttributeValue(MKAttributes.MAX_POISE);
+    public boolean consumeMana(float amount) {
+        final float current = getMana();
+        if (current < amount) {
+            return false;
+        }
+
+        setMana(current - amount);
+        return true;
     }
 
-    public void setMaxPoise(float max) {
-        requiredAttribute(MKAttributes.MAX_POISE).setBaseValue(max);
-        setPoise(getPoise()); // Refresh the poise to account for the updated maximum
+    @Override
+    public float getPoise() {
+        return poise.get();
     }
 
     @Override
@@ -90,67 +88,6 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
             value = Mth.clamp(value, 0, getMaxPoise());
         }
         poise.set(value, sendUpdate);
-    }
-
-    @Override
-    public float getMaxMana() {
-        return (float) getEntity().getAttributeValue(MKAttributes.MAX_MANA);
-    }
-
-    public void setMaxMana(float max) {
-        requiredAttribute(MKAttributes.MAX_MANA).setBaseValue(max);
-        setMana(getMana()); // Refresh the mana to account for the updated maximum
-    }
-
-    @Override
-    public float getPoiseRegenRate() {
-        return (float) getEntity().getAttributeValue(MKAttributes.POISE_REGEN);
-    }
-
-    @Override
-    public float getManaRegenRate() {
-        return (float) getEntity().getAttributeValue(MKAttributes.MANA_REGEN);
-    }
-
-    @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
-    }
-
-    public void tick() {
-        abilityTracker.tick();
-        updateMana();
-        updatePoise();
-    }
-
-    @Override
-    public float getHealBonus() {
-        return (float) getEntity().getAttributeValue(MKAttributes.HEAL_BONUS);
-    }
-
-    @Override
-    public float getHealEfficiency() {
-        return (float) getEntity().getAttributeValue(MKAttributes.HEAL_EFFICIENCY);
-    }
-
-    @Override
-    public float getBuffDurationModifier() {
-        return (float) getEntity().getAttributeValue(MKAttributes.BUFF_DURATION);
-    }
-
-    @Override
-    public float getHealth() {
-        return getEntity().getHealth();
-    }
-
-    @Override
-    public void setHealth(float value) {
-        getEntity().setHealth(value);
-    }
-
-    @Override
-    public float getMaxHealth() {
-        return getEntity().getMaxHealth();
     }
 
     @Override
@@ -191,64 +128,48 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
             }
             return;
         }
-        if (isBroken || getPoiseRegenRate() <= 0f) {
+        if (isBroken) {
             return;
         }
 
-        float max = getMaxPoise();
-        if (getPoise() > max) {
+        final float regenRate = getPoiseRegenRate();
+        if (regenRate <= 0.0f) {
+            return;
+        }
+
+        final float max = getMaxPoise();
+        float current = getPoise();
+        if (current > max) {
             setPoise(max);
-        }
-
-        if (getPoise() == max) {
+            return;
+        } else if (current == max) {
             return;
         }
 
-        // if getPoiseRegenRate == 1, this is 1 poise per 1 seconds
-        float newPoise = Math.min(getPoise() + (getPoiseRegenRate() / GameConstants.TICKS_PER_SECOND), max);
-        setPoise(newPoise, newPoise == max);
+        doPoiseRegen(current, max, regenRate);
     }
+
+    protected abstract void doPoiseRegen(float current, float max, float regenRate);
 
     protected void updateMana() {
-        if (getManaRegenRate() <= 0.0f) {
+        final float regenRate = getManaRegenRate();
+        if (regenRate <= 0.0f) {
             return;
         }
 
-        float max = getMaxMana();
-        if (getMana() > max)
+        final float max = getMaxMana();
+        float current = getMana();
+        if (current > max) {
             setMana(max);
-
-        if (getMana() == max)
             return;
-
-        manaRegenTimer += 1f / GameConstants.TICKS_PER_SECOND;
-
-        // if getManaRegenRate == 1, this is 1 mana per 3 seconds
-        float i_regen = 3.0f / getManaRegenRate();
-        while (manaRegenTimer >= i_regen) {
-            float current = getMana();
-            if (current < max) {
-                float newValue = current + 1;
-                setMana(newValue, newValue == max);
-            }
-            manaRegenTimer -= i_regen;
-        }
-    }
-
-    @Override
-    public void addMana(float value) {
-        setMana(getMana() + value);
-    }
-
-    @Override
-    public boolean consumeMana(float amount) {
-        if (getMana() < amount) {
-            return false;
+        } else if (current == max) {
+            return;
         }
 
-        setMana(getMana() - amount);
-        return true;
+        doManaRegen(current, max, regenRate);
     }
+
+    protected abstract void doManaRegen(float current, float max, float regenRate);
 
     @Override
     public BlockResult tryPoiseBlock(float damageIn) {
@@ -316,6 +237,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
         abilityTracker.removeAll();
     }
 
+    @Override
     public LivingEntity getEntity() {
         return entityData.getEntity();
     }

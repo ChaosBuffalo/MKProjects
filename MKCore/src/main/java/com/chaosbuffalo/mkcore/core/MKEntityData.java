@@ -18,7 +18,7 @@ public class MKEntityData implements IMKEntityData {
 
     private final LivingEntity entity;
     private final AbilityExecutor abilityExecutor;
-    private final EntityStats stats;
+    private final MobStats stats;
     private final Lazy<EntityEquipment> equipment;
     private final MobAbilityKnowledge abilities;
     private final CombatExtensionModule combatExtensionModule;
@@ -32,7 +32,7 @@ public class MKEntityData implements IMKEntityData {
         entity = Objects.requireNonNull(livingEntity);
         abilities = new MobAbilityKnowledge(this);
         abilityExecutor = new AbilityExecutor(this);
-        stats = new EntityStats(this);
+        stats = new MobStats(this);
         equipment = Lazy.of(() -> new EntityEquipment(this));
         combatExtensionModule = new CombatExtensionModule(this);
         effectHandler = new EntityEffectHandler(this);
@@ -57,7 +57,7 @@ public class MKEntityData implements IMKEntityData {
     }
 
     @Override
-    public EntityStats getStats() {
+    public MobStats getStats() {
         return stats;
     }
 
@@ -87,7 +87,9 @@ public class MKEntityData implements IMKEntityData {
 
     @Override
     public void onJoinWorld() {
-        getEffects().onJoinWorld();
+        if (isServerSide()) {
+            getEffects().onJoinWorld();
+        }
     }
 
     public void update() {
