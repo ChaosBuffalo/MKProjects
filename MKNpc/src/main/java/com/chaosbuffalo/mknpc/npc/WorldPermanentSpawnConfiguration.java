@@ -20,7 +20,10 @@ public class WorldPermanentSpawnConfiguration {
     private final Map<ResourceLocation, Map<ResourceLocation, INpcOptionEntry>> definitionMap;
 
     private WorldPermanentSpawnConfiguration(Map<ResourceLocation, Map<ResourceLocation, INpcOptionEntry>> map) {
-        definitionMap = new HashMap<>(map);
+        definitionMap = new HashMap<>();
+        for (Map.Entry<ResourceLocation, Map<ResourceLocation, INpcOptionEntry>> entry : map.entrySet()) {
+            definitionMap.put(entry.getKey(), new HashMap<>(entry.getValue()));
+        }
     }
 
     public WorldPermanentSpawnConfiguration() {
