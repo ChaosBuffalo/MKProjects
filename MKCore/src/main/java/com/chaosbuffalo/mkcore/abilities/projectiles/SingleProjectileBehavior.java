@@ -11,6 +11,8 @@ import com.chaosbuffalo.mkcore.utils.location.LocationProvider;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 
 import javax.annotation.Nullable;
@@ -53,14 +55,13 @@ public class SingleProjectileBehavior extends ProjectileCastBehavior {
     @Override
     public void endCastClient(ProjectileAbility ability, IMKEntityData casterData, @Nullable AbilityClientState clientState) {
         super.endCastClient(ability, casterData, clientState);
-        ClientHandler.handleClient(ability, casterData, clientState);
-
+        ClientHandler.handle(ability, casterData, clientState);
     }
 
     static class ClientHandler {
 
-        public static void handleClient(ProjectileAbility ability, IMKEntityData casterData, @Nullable AbilityClientState clientState) {
-            if (casterData.getEntity() instanceof net.minecraft.client.player.LocalPlayer) {
+        public static void handle(ProjectileAbility ability, IMKEntityData casterData, @Nullable AbilityClientState clientState) {
+            if (casterData.getEntity() instanceof LocalPlayer) {
                 if (clientState instanceof ProjectileAbilityClientState projectileState) {
                     for (ProjectileAbilityClientState.TrackedProjectile tracked : projectileState.getTrackedProjectiles()) {
                         if (!tracked.getFired()) {
@@ -77,4 +78,5 @@ public class SingleProjectileBehavior extends ProjectileCastBehavior {
             }
         }
     }
+
 }
