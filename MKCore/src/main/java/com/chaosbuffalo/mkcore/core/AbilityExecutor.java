@@ -84,14 +84,14 @@ public class AbilityExecutor {
         }
     }
 
-    public boolean canActivateAbility(MKAbility ability) {
+    public boolean canActivateAbility(MKAbilityInfo ability) {
         if (isCasting() || entityData.getEntity().isBlocking())
             return false;
 
         if (isOnGlobalCooldown())
             return false;
 
-        return getCurrentAbilityCooldown(ability.getAbilityId()) <= 0;
+        return getCurrentAbilityCooldown(ability.getId()) <= 0;
     }
 
     public void tick() {

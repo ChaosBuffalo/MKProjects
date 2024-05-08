@@ -28,7 +28,7 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
 
     @Override
     protected void doTick(@Nonnull ServerLevel worldIn, MKEntity entityIn) {
-        Optional<MKAbility> abilityOptional = entityIn.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get());
+        Optional<MKAbilityInfo> abilityOptional = entityIn.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get());
         int timeOut = entityIn.getBrain().getMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT.get()).orElse(0);
         boolean isCasting = entityIn.getEntityDataCap().getAbilityExecutor().isCasting();
         if (abilityOptional.isPresent() && !isCasting && timeOut <= 20) {
@@ -38,9 +38,9 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
 
         MKEntityData mkEntityData = entityIn.getEntityDataCap();
         AbilityDecisionContext context = createAbilityDecisionContext(entityIn);
-        for (MKAbilityInfo ability : mkEntityData.getAbilities().getAbilitiesPriorityOrder()) {
-            MKAbility mkAbility = ability.getAbility();
-            if (!mkEntityData.getAbilityExecutor().canActivateAbility(mkAbility))
+        for (MKAbilityInfo abilityInfo : mkEntityData.getAbilities().getAbilitiesPriorityOrder()) {
+            MKAbility mkAbility = abilityInfo.getAbility();
+            if (!mkEntityData.getAbilityExecutor().canActivateAbility(abilityInfo))
                 continue;
 
             AbilityTargetingDecision targetSelection = mkAbility.getUseCondition().getDecision(context);
@@ -50,7 +50,7 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
             if (mkAbility.isValidTarget(entityIn, targetSelection.getTargetEntity())) {
                 entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_TARGET.get(), targetSelection.getTargetEntity());
                 entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_POSITION_TARGET.get(), new TargetUtil.LivingOrPosition(targetSelection.getTargetEntity()));
-                entityIn.getBrain().setMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get(), mkAbility);
+                entityIn.getBrain().setMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get(), abilityInfo);
                 entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
                         entityIn.getMovementStrategy(targetSelection));
                 entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get(), targetSelection.getTargetEntity());
