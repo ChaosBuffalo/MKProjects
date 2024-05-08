@@ -168,8 +168,11 @@ public class MKPlayerData implements IMKEntityData {
 
     @Override
     public void onJoinWorld() {
-        getPersonaManager().onJoinWorld();
-        getEffects().onJoinWorld();
+        getStats().onJoinLevel();
+        if (isServerSide()) {
+            getPersonaManager().onJoinWorld();
+            getEffects().onJoinWorld();
+        }
     }
 
     private void onDeath() {
