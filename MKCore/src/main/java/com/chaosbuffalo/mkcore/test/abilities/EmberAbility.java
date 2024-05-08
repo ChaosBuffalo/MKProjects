@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mkcore.fx.ParticleEffects;
@@ -21,6 +22,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
+
+import javax.annotation.Nullable;
 
 public class EmberAbility extends MKAbility {
     private static final ResourceLocation TEST_PARTICLES = new ResourceLocation(MKCore.MOD_ID, "beam_effect");
@@ -54,8 +57,8 @@ public class EmberAbility extends MKAbility {
 
 
     @Override
-    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft) {
-        super.continueCastClient(castingEntity, casterData, castTimeLeft);
+    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
+        super.continueCastClient(castingEntity, casterData, castTimeLeft, totalTicks, clientState);
         RandomSource rand = castingEntity.getRandom();
         castingEntity.getCommandSenderWorld().addParticle(ParticleTypes.LAVA,
                 castingEntity.getX(), castingEntity.getY() + 0.5F, castingEntity.getZ(),

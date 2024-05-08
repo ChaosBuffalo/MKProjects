@@ -1,9 +1,6 @@
 package com.chaosbuffalo.mkcore.core;
 
-import com.chaosbuffalo.mkcore.core.entity.EntityAbilityKnowledge;
-import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
-import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
-import com.chaosbuffalo.mkcore.core.entity.EntityStats;
+import com.chaosbuffalo.mkcore.core.entity.*;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
 import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
@@ -27,6 +24,7 @@ public class MKEntityData implements IMKEntityData {
     private final CombatExtensionModule combatExtensionModule;
     private final EntityEffectHandler effectHandler;
     private final EntityPetModule pets;
+    private final EntityRiderModule riders;
     @Nullable
     private ParticleEffectInstanceTracker instanceTracker = null;
 
@@ -39,6 +37,7 @@ public class MKEntityData implements IMKEntityData {
         combatExtensionModule = new CombatExtensionModule(this);
         effectHandler = new EntityEffectHandler(this);
         pets = new EntityPetModule(this);
+        riders = new EntityRiderModule(this);
     }
 
     @Nonnull
@@ -104,6 +103,11 @@ public class MKEntityData implements IMKEntityData {
     }
 
     @Override
+    public EntityRiderModule getRiders() {
+        return riders;
+    }
+
+    @Override
     public void onPlayerStartTracking(ServerPlayer playerEntity) {
         getEffects().sendAllEffectsToPlayer(playerEntity);
     }
@@ -112,6 +116,7 @@ public class MKEntityData implements IMKEntityData {
     public void attachUpdateEngine(SyncController engine) {
         pets.getSyncComponent().attach(engine);
         stats.getSyncComponent().attach(engine);
+        riders.getSyncComponent().attach(engine);
     }
 
     @Override

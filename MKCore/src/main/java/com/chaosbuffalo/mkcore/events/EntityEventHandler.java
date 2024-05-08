@@ -76,6 +76,12 @@ public class EntityEventHandler {
     }
 
     @SubscribeEvent
+    public static void onPlayerLogOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        MKCore.getEntityData(event.getEntity()).ifPresent(
+                entityData -> entityData.getAbilityExecutor().interruptCast(CastInterruptReason.Logout));
+    }
+
+    @SubscribeEvent
     public static void onPlayerGainXP(PlayerXpEvent.XpChange event) {
         if (event.getAmount() == 0) {
             return;

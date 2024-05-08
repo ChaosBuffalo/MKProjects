@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.AbilityUseCondition;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.StandardUseCondition;
 import com.chaosbuffalo.mkcore.core.*;
+import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
@@ -339,16 +340,25 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return getRequiredMemories().stream().allMatch(context::hasMemory);
     }
 
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context) {
+    public void startCast(IMKEntityData casterData, int castTime, AbilityContext context) {
 
     }
 
-    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft) {
+    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
+
+    }
+
+    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
     }
 
     public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
 
     }
+
+    public void endCastClient(IMKEntityData casterData, @Nullable AbilityClientState clientState) {
+
+    }
+
 
     public boolean isInterruptedBy(IMKEntityData targetData, CastInterruptReason reason) {
         return true;
@@ -362,7 +372,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     protected void shootProjectile(BaseProjectileEntity projectileEntity, float velocity, float accuracy,
                                    LivingEntity entity, AbilityContext context) {
         Vec3 startPos = entity.position().add(new Vec3(0, entity.getEyeHeight(), 0));
-        startPos.add(Vec3.directionFromRotation(entity.getRotationVector()).multiply(.5, 0.0, .5));
+        startPos = startPos.add(Vec3.directionFromRotation(entity.getRotationVector()).multiply(.5, 0.0, .5));
         projectileEntity.setPos(startPos.x, startPos.y, startPos.z);
         if (entity instanceof Player) {
             projectileEntity.shoot(entity, entity.getXRot(), entity.getYRot(), 0, velocity, accuracy);
@@ -396,5 +406,9 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     protected int getBuffDuration(IMKEntityData casterData, float level, int base, int scale) {
         int duration = Math.round((base + scale * level) * GameConstants.TICKS_PER_SECOND);
         return MKCombatFormulas.applyBuffDurationModifier(casterData, duration);
+    }
+
+    public void interruptCast(CastInterruptReason reason, IMKEntityData casterData,
+                              AbilityContext context) {
     }
 }

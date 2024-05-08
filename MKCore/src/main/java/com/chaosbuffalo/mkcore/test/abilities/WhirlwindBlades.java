@@ -79,13 +79,12 @@ public class WhirlwindBlades extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, context);
+    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
+        super.continueCast(castingEntity, casterData, castTimeLeft, totalTicks, context);
         int tickSpeed = 6;
         if (castTimeLeft % tickSpeed == 0) {
             int level = 1;
-            int totalDuration = getCastTime(casterData);
-            int count = (totalDuration - castTimeLeft) / tickSpeed;
+            int count = (totalTicks - castTimeLeft) / tickSpeed;
             float baseAmount = 0.15f;
             float scaling = count * baseAmount;
             // What to do for each target hit

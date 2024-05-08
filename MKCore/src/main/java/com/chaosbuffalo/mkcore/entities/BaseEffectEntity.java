@@ -212,7 +212,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
     protected void spawnClientParticles(ParticleDisplay display) {
         ParticleAnimation anim = ParticleAnimationManager.getAnimation(display.getParticles());
         if (anim != null) {
-            anim.spawn(getCommandSenderWorld(), position(), null);
+            anim.spawn(getCommandSenderWorld(), position(), new Vec3(1., 1. ,1.), null);
         }
     }
 

@@ -8,11 +8,13 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
 import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
+import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.pets.IMKPet;
 import com.chaosbuffalo.mkcore.core.pets.PetNonCombatBehavior;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
+import com.chaosbuffalo.mkcore.core.player.PlayerAnimationModule;
 import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.entities.ISyncControllerProvider;
 import com.chaosbuffalo.mkcore.sync.controllers.EntitySyncController;
@@ -84,6 +86,7 @@ import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, ISyncControllerProvider, IMKPet, ITargetingOwner {
@@ -115,6 +118,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private int blockDelay;
     private int blockHold;
     private int blockCooldown;
+
+    private int castTicks;
+    private int currentCastTicks;
 
     @Nullable
     protected Component battlecry;
@@ -195,6 +201,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         entityTradeContainer = new EntityTradeContainer(this);
         castAnimTimer = 0;
         currentStage = 0;
+        castTicks = 0;
+        currentCastTicks = 0;
         visualCastState = VisualCastState.NONE;
         castingAbility = null;
         battlecry = null;
@@ -213,6 +221,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         entityDataCap.attachUpdateEngine(syncController);
         entityDataCap.getAbilityExecutor().setStartCastCallback(this::startCast);
         entityDataCap.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
+        entityDataCap.getAbilityExecutor().setInterruptCastCallback(this::interruptCast);
         entityDataCap.setInstanceTracker(particleEffectTracker);
     }
 
@@ -262,6 +271,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     public void tick() {
         super.tick();
+        updateEntityCastState();
         if (!this.level.isClientSide()) {
             syncController.syncUpdates();
         }
@@ -295,6 +305,21 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             default:
                 return 0.25;
         }
+    }
+
+    public int getCastTicks() {
+        return castTicks;
+    }
+
+    public int getCurrentCastTicks() {
+        return currentCastTicks;
+    }
+
+    public float getCastRatio(){
+        if (castTicks == 0) {
+            return 0.f;
+        }
+        return Math.min((float) (currentCastTicks) / castTicks, 1.0f);
     }
 
     protected void setupDifficulty(Difficulty difficulty) {
@@ -631,6 +656,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     protected void updateEntityCastState() {
+        if (visualCastState == VisualCastState.CASTING) {
+            currentCastTicks++;
+        }
         if (castAnimTimer > 0) {
             castAnimTimer--;
             if (castAnimTimer == 0) {
@@ -644,7 +672,6 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     public void aiStep() {
         updateSwingTime();
-        updateEntityCastState();
         attackStrengthTicker++;
         super.aiStep();
         if (nonCombatBehavior != null && !hasThreatTarget()) {
@@ -676,9 +703,19 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return castingAbility;
     }
 
-    public void startCast(MKAbility ability) {
+    public void startCast(MKAbility ability, int totalTicks) {
         visualCastState = VisualCastState.CASTING;
         castingAbility = ability;
+        castTicks = totalTicks;
+        currentCastTicks = 0;
+    }
+
+    public void interruptCast(MKAbility ability, CastInterruptReason reason) {
+        castingAbility = null;
+        castAnimTimer = 0;
+        visualCastState = VisualCastState.NONE;
+        currentCastTicks = 0;
+        castTicks = 0;
     }
 
     public void returnToDefaultMovementState() {
@@ -694,6 +731,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         castingAbility = ability;
         visualCastState = VisualCastState.RELEASE;
         castAnimTimer = 15;
+        currentCastTicks = 0;
+        castTicks = 0;
     }
 
     public void setCombatMoveType(CombatMoveType combatMoveType) {
@@ -898,7 +937,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
                         MKMemoryModuleTypes.SPAWN_POINT.get(),
                         MKMemoryModuleTypes.IS_RETURNING.get(),
                         MKMemoryModuleTypes.ABILITY_TIMEOUT.get(),
-                        MKAbilityMemories.ABILITY_POSITION_TARGET.get()
+                        MKAbilityMemories.ABILITY_POSITION_TARGET.get(),
+                        MKAbilityMemories.CURRENT_PROJECTILES.get()
                 ),
                 ImmutableList.of(
                         MKSensorTypes.ENTITIES_SENSOR.get(),

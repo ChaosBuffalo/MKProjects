@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkultra.abilities.green_knight;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.*;
+import com.chaosbuffalo.mkcore.abilities.projectiles.ProjectileAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
@@ -47,8 +48,8 @@ public class CleansingSeedAbility extends ProjectileAbility {
         casting_particles.setDefaultValue(CASTING_PARTICLES);
         baseDamage.setDefaultValue(4.0f);
         scaleDamage.setDefaultValue(4.0f);
-        trail_particles.setDefaultValue(TRAIL_PARTICLES);
-        detonate_particles.setDefaultValue(DETONATE_PARTICLES);
+        trailParticles.setDefaultValue(TRAIL_PARTICLES);
+        detonateParticles.setDefaultValue(DETONATE_PARTICLES);
     }
 
     protected float getDamageForLevel(float level) {
@@ -106,15 +107,15 @@ public class CleansingSeedAbility extends ProjectileAbility {
                 }
             }
         }
-        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonate_particles.getValue());
+        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
         return true;
     }
 
     @Override
-    public AbilityProjectileEntity makeProjectile(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), entity.level);
+    public AbilityProjectileEntity makeProjectile(IMKEntityData data, AbilityContext context) {
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level);
         projectile.setAbility(() -> this);
-        projectile.setTrailAnimation(trail_particles.getValue());
+        projectile.setTrailAnimation(trailParticles.getValue());
         projectile.setItem(new ItemStack(MKUItems.cleansingSeedProjectileItem.get()));
         projectile.setDeathTime(GameConstants.TICKS_PER_SECOND * 2);
         projectile.setGravityVelocity(BaseProjectileEntity.DEFAULT_MC_GRAVITY);

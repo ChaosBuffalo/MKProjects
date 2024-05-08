@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
+import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.models.layers.MKAdditionalBipedLayer;
 import com.chaosbuffalo.mknpc.client.render.models.styling.LayerStyle;
@@ -164,10 +165,12 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
                 if (ability.hasCastingParticles()) {
                     ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
                     if (anim != null) {
+                        float scale = MathUtils.lerp(.6f, 1.f, entityIn.getCastRatio());
+                        Vec3 scaleVec = new Vec3(scale, scale, scale);
                         Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
-                        leftPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, null));
+                        leftPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, scaleVec, null));
                         Optional<Vec3> rightPos = getHandPosition(partialTicks, entityIn, HumanoidArm.RIGHT);
-                        rightPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, null));
+                        rightPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, scaleVec, null));
                     }
                 }
             }

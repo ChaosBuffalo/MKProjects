@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.abilities;
 
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -18,6 +19,7 @@ public class AbilityContext {
     private final IMKEntityData casterData;
     @Nullable
     private BiFunction<IMKEntityData, Attribute, Float> skillValueOverrideProvider;
+    private AbilityClientState clientState;
 
     public AbilityContext(IMKEntityData entityData) {
         memories = new HashMap<>();
@@ -32,6 +34,14 @@ public class AbilityContext {
     public AbilityContext(IMKEntityData entityData, MKAbilityInfo ability) {
         memories = new HashMap<>();
         this.casterData = entityData;
+    }
+
+    public AbilityClientState getClientState() {
+        return clientState;
+    }
+
+    public void setClientState(AbilityClientState clientState) {
+        this.clientState = clientState;
     }
 
     public IMKEntityData getCasterData() {

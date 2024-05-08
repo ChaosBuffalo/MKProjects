@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
 import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
+import com.chaosbuffalo.mkcore.core.entity.EntityRiderModule;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
 import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
@@ -41,6 +42,8 @@ public interface IMKEntityData extends INBTSerializable<CompoundTag> {
     EntityEquipment getEquipment();
 
     EntityPetModule getPets();
+
+    EntityRiderModule getRiders();
 
     void onJoinWorld();
 

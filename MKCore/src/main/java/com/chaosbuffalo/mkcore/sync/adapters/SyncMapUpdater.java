@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 
@@ -26,6 +27,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     private final Set<K> dirty = new HashSet<>();
     private final Function<K, V> valueFactory;
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
+    private Consumer<K> OnRemoveCallback;
 
     public SyncMapUpdater(String rootName,
                           Map<K, V> mapSupplier,
@@ -37,6 +39,11 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
         this.keyEncoder = keyEncoder;
         this.keyDecoder = keyDecoder;
         this.valueFactory = valueFactory;
+        OnRemoveCallback = null;
+    }
+
+    public void setOnRemoveCallback(Consumer<K> onRemoveCallback) {
+        OnRemoveCallback = onRemoveCallback;
     }
 
     public void markDirty(K key) {
@@ -78,6 +85,9 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
                 continue;
 
             K key = keyDecoder.apply(encodedKey);
+            if (OnRemoveCallback != null) {
+                OnRemoveCallback.accept(key);
+            }
             backingMap.remove(key);
 //            MKCore.LOGGER.info("removing {} {} {} {}", encodedKey, key, old != null, backingMap.size());
         }

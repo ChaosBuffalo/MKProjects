@@ -26,11 +26,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
 
 public class WhirlwindBladesAbility extends MKAbility {
@@ -108,13 +106,12 @@ public class WhirlwindBladesAbility extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, AbilityContext context) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, context);
+    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
+        super.continueCast(castingEntity, casterData, castTimeLeft, totalTicks, context);
         int tickSpeed = 6;
         if (castTimeLeft % tickSpeed == 0) {
             float level = context.getSkill(MKAttributes.PANKRATION);
-            int totalDuration = getCastTime(casterData);
-            int count = (totalDuration - castTimeLeft) / tickSpeed;
+            int count = (totalTicks - castTimeLeft) / tickSpeed;
             float baseAmount = perTick.value();
             float scaling = count * baseAmount;
 

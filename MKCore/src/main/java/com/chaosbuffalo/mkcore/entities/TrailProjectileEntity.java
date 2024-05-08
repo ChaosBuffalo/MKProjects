@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.entities;
 
-import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import net.minecraft.network.FriendlyByteBuf;
@@ -27,7 +26,8 @@ public abstract class TrailProjectileEntity extends BaseProjectileEntity {
             double x = Mth.lerp(partialTicks, this.xo, this.getX());
             double y = Mth.lerp(partialTicks, this.yo, this.getY());
             double z = Mth.lerp(partialTicks, this.zo, this.getZ());
-            trailAnimation.spawn(getCommandSenderWorld(), new Vec3(x, y, z), null);
+            double scale = Math.min((float) (tickCount) / preFireTicks, 1.0);
+            trailAnimation.spawn(getCommandSenderWorld(), new Vec3(x, y, z), new Vec3(scale, scale, scale), null);
         }
     }
 

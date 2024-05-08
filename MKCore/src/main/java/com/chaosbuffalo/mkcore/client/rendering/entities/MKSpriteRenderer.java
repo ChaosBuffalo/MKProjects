@@ -28,6 +28,7 @@ public class MKSpriteRenderer<T extends Entity & IMKRenderAsItem> extends Entity
         this.doBlockLight = doBlockLightIn;
     }
 
+
     public MKSpriteRenderer(EntityRendererProvider.Context context) {
         this(context, 1.0F, false);
     }
@@ -39,7 +40,7 @@ public class MKSpriteRenderer<T extends Entity & IMKRenderAsItem> extends Entity
     public void render(T entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
 
         matrixStackIn.pushPose();
-        matrixStackIn.scale(this.scale, this.scale, this.scale);
+        matrixStackIn.scale(this.scale * entityIn.getScale(), this.scale * entityIn.getScale(), this.scale * entityIn.getScale());
         matrixStackIn.mulPose(this.entityRenderDispatcher.cameraOrientation());
         matrixStackIn.mulPose(Axis.YP.rotationDegrees(180.0F));
         this.itemRenderer.renderStatic(entityIn.getItem(), ItemDisplayContext.GROUND, packedLightIn, OverlayTexture.NO_OVERLAY,

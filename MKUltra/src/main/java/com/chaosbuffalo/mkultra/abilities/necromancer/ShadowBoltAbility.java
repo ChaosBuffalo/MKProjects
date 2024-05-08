@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkultra.abilities.necromancer;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.*;
+import com.chaosbuffalo.mkcore.abilities.projectiles.ProjectileAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
@@ -40,8 +41,8 @@ public class ShadowBoltAbility extends ProjectileAbility {
         baseDamage.setDefaultValue(8.0f);
         scaleDamage.setDefaultValue(4.0f);
         casting_particles.setDefaultValue(CASTING_PARTICLES);
-        trail_particles.setDefaultValue(TRAIL_PARTICLES);
-        detonate_particles.setDefaultValue(DETONATE_PARTICLES);
+        trailParticles.setDefaultValue(TRAIL_PARTICLES);
+        detonateParticles.setDefaultValue(DETONATE_PARTICLES);
     }
 
     @Override
@@ -74,7 +75,7 @@ public class ShadowBoltAbility extends ProjectileAbility {
     public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
         SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_dark_8.get(), cat);
-        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonate_particles.getValue());
+        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
 
         if (result.getType().equals(HitResult.Type.ENTITY)) {
             EntityHitResult entityTrace = (EntityHitResult) result;
@@ -94,10 +95,10 @@ public class ShadowBoltAbility extends ProjectileAbility {
     }
 
     @Override
-    public AbilityProjectileEntity makeProjectile(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), entity.level);
+    public AbilityProjectileEntity makeProjectile(IMKEntityData data, AbilityContext context) {
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level);
         projectile.setAbility(() -> this);
-        projectile.setTrailAnimation(trail_particles.getValue());
+        projectile.setTrailAnimation(trailParticles.getValue());
         projectile.setItem(new ItemStack(MKUItems.shadowBoltProjectileItem.get()));
         projectile.setDeathTime(GameConstants.TICKS_PER_SECOND * 6);
         return projectile;
@@ -108,10 +109,10 @@ public class ShadowBoltAbility extends ProjectileAbility {
     }
 
     @Override
-    public void endCast(LivingEntity entity, IMKEntityData data, AbilityContext context) {
-        if (data.getEffects().isEffectActive(MKUEffects.SHADOWBRINGER.get())) {
-            data.getEffects().removeEffect(MKUEffects.SHADOWBRINGER.get());
+    public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
+        if (casterData.getEffects().isEffectActive(MKUEffects.SHADOWBRINGER.get())) {
+            casterData.getEffects().removeEffect(MKUEffects.SHADOWBRINGER.get());
         }
-        super.endCast(entity, data, context);
+        super.endCast(castingEntity, casterData, context);
     }
 }
