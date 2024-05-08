@@ -10,7 +10,7 @@ import java.util.function.BiPredicate;
 
 public enum SyncVisibility {
     Private((e, p) -> e == p, SyncVisibility::sendToPlayer),
-    Public((e, p) -> true, PacketHandler::sendToTracking);
+    Public((e, p) -> true, PacketHandler::sendToTrackingAndSelf);
 
     private final BiPredicate<Entity, ServerPlayer> trackingPlayerTest;
     private final BiConsumer<EntityDataUpdatePacket, Entity> sender;

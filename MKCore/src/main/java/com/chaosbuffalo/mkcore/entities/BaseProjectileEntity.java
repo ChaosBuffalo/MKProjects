@@ -45,7 +45,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
     private float skillLevel;
     private boolean doGroundProc;
     private boolean isShot;
-    private int preFireTicks;
+    protected int preFireTicks;
 
     public BaseProjectileEntity(EntityType<? extends Projectile> entityTypeIn, Level worldIn) {
         super(entityTypeIn, worldIn);
@@ -364,6 +364,11 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
 //        this.setAmplifier(compound.getInt("amplifier"));
 //    }
 
+
+    public void setPreFireTicks(int preFireTicks) {
+        this.preFireTicks = preFireTicks;
+    }
+
     @Override
     public boolean save(CompoundTag compound) {
         return false;
@@ -376,15 +381,14 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         this.zOld = this.getZ();
 
         super.tick();
-        if (!level.isClientSide && !isShot) {
-            preFireTicks++;
+        if (!level.isClientSide && tickCount < preFireTicks) {
             return;
         }
         if (!isAlive()) {
             return;
         }
 
-        if (this.tickCount - preFireTicks == this.getDeathTime()) {
+        if ((this.tickCount - preFireTicks) == this.getDeathTime()) {
             this.remove(RemovalReason.KILLED);
         }
 

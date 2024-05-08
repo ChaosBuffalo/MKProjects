@@ -148,11 +148,11 @@ public class MKParticleEffectSpawnPacket {
             if (packet.entityId != -1) {
                 Entity source = player.getCommandSenderWorld().getEntity(packet.entityId);
                 if (source != null) {
-                    packet.anim.spawnOffsetFromEntity(player.getCommandSenderWorld(), new Vec3(packet.xPos, packet.yPos, packet.zPos),
+                    packet.anim.spawnOffsetFromEntity(player.getCommandSenderWorld(), new Vec3(packet.xPos, packet.yPos, packet.zPos), new Vec3(1., 1., 1.),
                             source, packet.additionalLocs);
                 }
             } else {
-                packet.anim.spawn(player.getCommandSenderWorld(), new Vec3(packet.xPos, packet.yPos, packet.zPos), packet.additionalLocs);
+                packet.anim.spawn(player.getCommandSenderWorld(), new Vec3(packet.xPos, packet.yPos, packet.zPos), new Vec3(1., 1., 1.), packet.additionalLocs);
             }
         }
     }

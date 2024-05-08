@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.AbilityUseCondition;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.StandardUseCondition;
 import com.chaosbuffalo.mkcore.core.*;
+import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
@@ -339,7 +340,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return getRequiredMemories().stream().allMatch(context::hasMemory);
     }
 
-    public void startCast(IMKEntityData casterData, AbilityContext context) {
+    public void startCast(IMKEntityData casterData, int castTime, AbilityContext context) {
 
     }
 
@@ -347,12 +348,17 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     }
 
-    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks) {
+    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
     }
 
     public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
 
     }
+
+    public void endCastClient(IMKEntityData casterData, @Nullable AbilityClientState clientState) {
+
+    }
+
 
     public boolean isInterruptedBy(IMKEntityData targetData, CastInterruptReason reason) {
         return true;

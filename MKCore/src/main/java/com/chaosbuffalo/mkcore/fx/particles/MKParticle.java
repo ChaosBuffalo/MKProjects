@@ -29,6 +29,7 @@ public class MKParticle extends TextureSheetParticle {
     private final Map<ParticleDataKey, Vec3> vector3dData;
     private final Map<ParticleDataKey, Vector3f> vector3fData;
     private final ParticleRenderType renderType;
+    private final Vec3 renderScale;
     private float mkMinU;
     private float mkMinV;
     private float mkMaxU;
@@ -64,7 +65,7 @@ public class MKParticle extends TextureSheetParticle {
 
 
     private MKParticle(ClientLevel world, double posX, double posY, double posZ,
-                       float gravity,
+                       Vec3 scale, float gravity,
                        float particleWidth, float particleHeight,
                        int maxAge, boolean expireOnGround, ParticleAnimation animation,
                        Vec3 origin, Entity source, ParticleRenderType renderType) {
@@ -86,6 +87,7 @@ public class MKParticle extends TextureSheetParticle {
         this.vector3fData = new HashMap<>();
         this.lifetime = animation.getTickLength();
         this.renderType = renderType;
+        this.renderScale = scale;
         animation.tick(this);
         animation.tickAnimation(this, 0.0f);
     }
@@ -197,7 +199,7 @@ public class MKParticle extends TextureSheetParticle {
     }
 
     public void setScale(float scale) {
-        this.quadSize = scale;
+        this.quadSize = (float) (scale * renderScale.x);
     }
 
     public int getAge() {
@@ -307,7 +309,7 @@ public class MKParticle extends TextureSheetParticle {
         @Nullable
         @Override
         public Particle createParticle(MKParticleData typeIn, ClientLevel worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-            MKParticle particle = new MKParticle(worldIn, x, y, z,
+            MKParticle particle = new MKParticle(worldIn, x, y, z, typeIn.scale,
                     gravity, particleWidth, particleHeight, maxAge, expireOnGround, typeIn.animation, typeIn.origin,
                     typeIn.hasSource() ? worldIn.getEntity(typeIn.getEntityId()) : null, renderType);
             particle.setMotion(xSpeed, ySpeed, zSpeed);

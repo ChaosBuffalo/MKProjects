@@ -10,6 +10,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.List;
 import java.util.Optional;
 
 public class MKAbilityMemories {
@@ -23,7 +24,7 @@ public class MKAbilityMemories {
     public static RegistryObject<MemoryModuleType<TargetUtil.LivingOrPosition>> ABILITY_POSITION_TARGET = REGISTRY.register("ability_position_target",
             () -> new MemoryModuleType<>(Optional.empty()));
 
-    public static RegistryObject<MemoryModuleType<BaseProjectileEntity>> CURRENT_PROJECTILE = REGISTRY.register("current_projectile",
+    public static RegistryObject<MemoryModuleType<List<BaseProjectileEntity>>> CURRENT_PROJECTILES = REGISTRY.register("current_projectiles",
             () -> new MemoryModuleType<>(Optional.empty()));
 
     public static void register(IEventBus modBus) {

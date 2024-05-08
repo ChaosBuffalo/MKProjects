@@ -46,7 +46,7 @@ public class ParticleEffects {
         for (int i = 0; i < count; i++) {
             posAndMotion = getPositionAndMotion(motionType, data, position,
                     speed, i, count, radii, heading);
-            theWorld.addAlwaysVisibleParticle(new MKParticleData(particleID, position, anim),
+            theWorld.addAlwaysVisibleParticle(new MKParticleData(particleID, position, new Vec3(1., 1., 1.), anim),
                     posAndMotion[0], posAndMotion[1], posAndMotion[2],
                     posAndMotion[3], posAndMotion[4], posAndMotion[5]);
         }

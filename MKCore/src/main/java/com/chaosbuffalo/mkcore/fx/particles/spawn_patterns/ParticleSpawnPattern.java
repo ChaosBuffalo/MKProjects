@@ -135,11 +135,11 @@ public abstract class ParticleSpawnPattern implements ISerializableAttributeCont
 //    }
 
     public void spawn(ParticleType<MKParticleData> particleType,
-                      Vec3 position, Level world, ParticleAnimation anim, @Nullable List<Vec3> additionalLocs) {
+                      Vec3 position, Vec3 scale, Level world, ParticleAnimation anim, @Nullable List<Vec3> additionalLocs) {
         List<ParticleSpawnEntry> finalParticles = new ArrayList<>();
         for (int i = 0; i < count.value(); i++) {
             produceParticlesForIndex(position, i, additionalLocs, world,
-                    (pos) -> new MKParticleData(particleType, pos, anim),
+                    (pos) -> new MKParticleData(particleType, pos, scale, anim),
                     finalParticles);
         }
         for (ParticleSpawnEntry entry : finalParticles) {
@@ -160,7 +160,7 @@ public abstract class ParticleSpawnPattern implements ISerializableAttributeCont
 
 
     public void spawnOffsetFromEntity(ParticleType<MKParticleData> particleType,
-                                      Vec3 offset, Level world,
+                                      Vec3 offset, Vec3 scale, Level world,
                                       ParticleAnimation anim, Entity entity, List<Vec3> additionalLocs) {
         Vec3 position = offset.add(entity.position());
         List<Vec3> finalLocs = additionalLocs.stream().map(
@@ -168,7 +168,7 @@ public abstract class ParticleSpawnPattern implements ISerializableAttributeCont
         List<ParticleSpawnEntry> finalParticles = new ArrayList<>();
         for (int i = 0; i < count.value(); i++) {
             produceParticlesForIndex(position, i, finalLocs, world,
-                    (pos) -> new MKParticleData(particleType, offset, anim, entity.getId()),
+                    (pos) -> new MKParticleData(particleType, offset, anim, entity.getId(), scale),
                     finalParticles);
         }
         for (ParticleSpawnEntry entry : finalParticles) {

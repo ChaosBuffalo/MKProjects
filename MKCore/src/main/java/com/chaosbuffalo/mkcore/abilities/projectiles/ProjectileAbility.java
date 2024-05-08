@@ -1,15 +1,17 @@
-package com.chaosbuffalo.mkcore.abilities;
+package com.chaosbuffalo.mkcore.abilities.projectiles;
 
 
+import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
+import com.chaosbuffalo.mkcore.serialization.attributes.CodecAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.BooleanAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
-import com.chaosbuffalo.mkcore.utils.location.LocationProvider;
 import com.chaosbuffalo.mkcore.utils.location.SingleLocationProvider;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
@@ -20,6 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 public abstract class ProjectileAbility extends MKAbility {
@@ -30,9 +33,12 @@ public abstract class ProjectileAbility extends MKAbility {
     protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
     protected final ResourceLocationAttribute trailParticles = new ResourceLocationAttribute("trail_particles", EMPTY_PARTICLES);
     protected final ResourceLocationAttribute detonateParticles = new ResourceLocationAttribute("detonate_particles", EMPTY_PARTICLES);
+    protected final CodecAttribute<ProjectileCastBehavior> castBehavior = new CodecAttribute<>("castBehavior",
+            new SingleProjectileBehavior(new SingleLocationProvider(new Vec3(0.5f, 0.0f, 0.5f), 0.75f)),
+            ProjectileCastBehavior.CODEC);
 
     protected final BooleanAttribute solveBallisticsForNpc = new BooleanAttribute("npc_solve_ballistics", true);
-    protected LocationProvider locationProvider = new SingleLocationProvider(new Vec3(0.5f, 0.0, 0.5f), .9f);
+
     protected final Attribute skill;
 
     public ProjectileAbility(Attribute skillAttribute) {
@@ -40,7 +46,7 @@ public abstract class ProjectileAbility extends MKAbility {
         addSkillAttribute(skillAttribute);
         skill = skillAttribute;
         addAttributes(baseDamage, scaleDamage, projectileSpeed, projectileInaccuracy, modifierScaling, trailParticles,
-                detonateParticles, solveBallisticsForNpc);
+                detonateParticles, solveBallisticsForNpc, castBehavior);
     }
 
     public float getBaseDamage() {
@@ -55,9 +61,21 @@ public abstract class ProjectileAbility extends MKAbility {
         return modifierScaling.value();
     }
 
+    public float getProjectileSpeed() {
+        return projectileSpeed.value();
+    }
+
+    public float getProjectileInaccuracy() {
+        return projectileInaccuracy.value();
+    }
+
     @Override
     public float getDistance(LivingEntity entity) {
         return 50.0f;
+    }
+
+    public Attribute getSkill() {
+        return skill;
     }
 
     @Override
@@ -84,56 +102,59 @@ public abstract class ProjectileAbility extends MKAbility {
 
 
     @Override
-    public void startCast(IMKEntityData casterData, AbilityContext context) {
-        super.startCast(casterData, context);
-        if (!(casterData.getEntity() instanceof Player)) {
-            float level = context.getSkill(skill);
-            AbilityProjectileEntity proj = makeProjectile(casterData, context);
-            proj.setOwner(casterData.getEntity());
-            proj.setSkillLevel(level);
-            LocationProvider.WorldLocationResult location = locationProvider.getPosition(casterData.getEntity(), casterData.getEntity().getRotationVector(), 0);
-            if (location.isValid()) {
-                proj.moveTo(location.worldPosition().x, location.worldPosition().y, location.worldPosition().z,
-                        location.rotation().y, location.rotation().x);
-                context.setMemory(MKAbilityMemories.CURRENT_PROJECTILE.get(), Optional.of(proj));
-                casterData.getEntity().level.addFreshEntity(proj);
-            }
-        }
+    public void startCast(IMKEntityData casterData, int castTime, AbilityContext context) {
+        super.startCast(casterData, castTime, context);
+        castBehavior.getValue().startCast(this, casterData, castTime, context);
+    }
+
+    @Override
+    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
+        super.continueCast(castingEntity, casterData, castTimeLeft, totalTicks, context);
+        castBehavior.getValue().continueCast(this, casterData, context, castTimeLeft, totalTicks);
+    }
+
+    @Override
+    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
+        super.continueCastClient(castingEntity, casterData, castTimeLeft, totalTicks, clientState);
+        castBehavior.getValue().continueCastClient(this, casterData, castTimeLeft, totalTicks, clientState);
     }
 
     @Override
     public void interruptCast(CastInterruptReason reason, IMKEntityData casterData, AbilityContext context) {
         super.interruptCast(reason, casterData, context);
-        context.getMemory(MKAbilityMemories.CURRENT_PROJECTILE).ifPresent(proj -> {
-            proj.remove(Entity.RemovalReason.KILLED);
+        context.getMemory(MKAbilityMemories.CURRENT_PROJECTILES).ifPresent(current -> {
+            for (BaseProjectileEntity proj : current) {
+                casterData.getRiders().removeRider(proj);
+                proj.remove(Entity.RemovalReason.KILLED);
+            }
         });
+        context.setMemory(MKAbilityMemories.CURRENT_PROJECTILES.get(), Optional.empty());
     }
 
     @Override
     public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
         super.endCast(castingEntity, casterData, context);
-        if (castingEntity instanceof Player) {
-            float level = context.getSkill(skill);
-            AbilityProjectileEntity proj = makeProjectile(casterData, context);
-            proj.setOwner(castingEntity);
-            proj.setSkillLevel(level);
-            LocationProvider.WorldLocationResult location = locationProvider.getPosition(castingEntity, castingEntity.getRotationVector(), 0);
-            if (location.isValid()) {
-                proj.setPos(location.worldPosition());
-                proj.setXRot(location.rotation().x);
-                proj.setYRot(location.rotation().y);
-                shoot(proj, projectileSpeed.value(), projectileInaccuracy.value(), castingEntity, context);
-                castingEntity.level.addFreshEntity(proj);
-            }
-        } else {
-            context.getMemory(MKAbilityMemories.CURRENT_PROJECTILE).ifPresent(proj -> {
-                shoot(proj, projectileSpeed.value(), projectileInaccuracy.value(), castingEntity, context);
-            });
-        }
+        castBehavior.getValue().endCast(this, casterData, context);
     }
 
-    protected void shoot(BaseProjectileEntity projectileEntity, float velocity, float accuracy,
-                         LivingEntity entity, AbilityContext context) {
+    @Override
+    public void endCastClient(IMKEntityData casterData, @Nullable AbilityClientState clientState) {
+        super.endCastClient(casterData, clientState);
+        castBehavior.getValue().endCastClient(this, casterData, clientState);
+    }
+
+    public void fireCurrentProjectiles(IMKEntityData casterData, AbilityContext context) {
+        context.getMemory(MKAbilityMemories.CURRENT_PROJECTILES).ifPresent(current -> {
+            for (BaseProjectileEntity proj : current) {
+                casterData.getRiders().removeRider(proj);
+                fireProjectile(proj, projectileSpeed.value(), projectileInaccuracy.value(), casterData.getEntity(), context);
+            }
+        });
+        context.setMemory(MKAbilityMemories.CURRENT_PROJECTILES.get(), Optional.empty());
+    }
+
+    protected void fireProjectile(BaseProjectileEntity projectileEntity, float velocity, float accuracy,
+                               LivingEntity entity, AbilityContext context) {
         if (!solveBallisticsForNpc.value() || entity instanceof Player) {
             projectileEntity.shoot(projectileEntity, projectileEntity.getXRot(), projectileEntity.getYRot(),
                     0, velocity, accuracy);

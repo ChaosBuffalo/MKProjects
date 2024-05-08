@@ -7,6 +7,7 @@
     "AttributeInstanceMixins",
     "AttributeMapMixins",
     "DamageSourceMixins",
+    "EntityMixins",
     "LivingEntityMixins",
     "MobEntityMixins",
     "PlayerMixins",
