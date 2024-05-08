@@ -1,10 +1,9 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.BrainAbilityContext;
-import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,7 +15,7 @@ import java.util.Optional;
 public class UseAbilityGoal extends Goal {
     public static final int CAN_SEE_TIMEOUT = 30;
     private final MKEntity entity;
-    private MKAbility currentAbility;
+    private MKAbilityInfo currentAbility;
     private LivingEntity target;
     private int ticksSinceSeenTarget;
 
@@ -33,7 +32,7 @@ public class UseAbilityGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        Optional<MKAbility> abilityOptional = entity.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get());
+        Optional<MKAbilityInfo> abilityOptional = entity.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get());
         Optional<LivingEntity> target = entity.getBrain().getMemory(MKAbilityMemories.ABILITY_TARGET.get());
         if (abilityOptional.isPresent() && target.isPresent()) {
             currentAbility = abilityOptional.get();
@@ -57,8 +56,8 @@ public class UseAbilityGoal extends Goal {
         }
     }
 
-    protected boolean isInRange(MKAbility ability, LivingEntity target) {
-        float range = ability.getDistance(entity);
+    protected boolean isInRange(MKAbilityInfo abilityInfo, LivingEntity target) {
+        float range = abilityInfo.getAbility().getDistance(entity);
         return target.distanceToSqr(entity) <= range * range;
     }
 
@@ -85,7 +84,7 @@ public class UseAbilityGoal extends Goal {
         }
         AbilityContext context = new BrainAbilityContext(entity.getEntityDataCap(), currentAbility);
 //        MKNpc.LOGGER.debug("ai {} casting {} on {}", entity, currentAbility.getAbilityId(), target);
-        entity.getEntityDataCap().getAbilityExecutor().executeAbilityWithContext(currentAbility.getAbilityId(), context);
+        entity.getEntityDataCap().getAbilityExecutor().executeAbilityInfoWithContext(currentAbility, context);
     }
 
     @Override

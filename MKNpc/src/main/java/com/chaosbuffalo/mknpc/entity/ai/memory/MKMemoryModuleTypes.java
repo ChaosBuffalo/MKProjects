@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.entity.ai.memory;
 
-
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.MovementStrategy;
 import net.minecraft.core.BlockPos;
@@ -45,7 +44,7 @@ public class MKMemoryModuleTypes {
     public static final RegistryObject<MemoryModuleType<LivingEntity>> MOVEMENT_TARGET = REGISTRY.register("movement_target",
             () -> new MemoryModuleType<>(Optional.empty()));
 
-    public static final RegistryObject<MemoryModuleType<MKAbility>> CURRENT_ABILITY = REGISTRY.register("current_ability",
+    public static final RegistryObject<MemoryModuleType<MKAbilityInfo>> CURRENT_ABILITY = REGISTRY.register("current_ability",
             () -> new MemoryModuleType<>(Optional.empty()));
 
     public static final RegistryObject<MemoryModuleType<BlockPos>> SPAWN_POINT = REGISTRY.register("spawn_point",
