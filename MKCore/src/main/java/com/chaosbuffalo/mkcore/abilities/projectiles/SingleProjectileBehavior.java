@@ -5,14 +5,12 @@ import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.client_state.ProjectileAbilityClientState;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
-import com.chaosbuffalo.mkcore.core.entity.EntityRiderModule;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.utils.location.LocationProvider;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 
 import javax.annotation.Nullable;
@@ -55,16 +53,24 @@ public class SingleProjectileBehavior extends ProjectileCastBehavior {
     @Override
     public void endCastClient(ProjectileAbility ability, IMKEntityData casterData, @Nullable AbilityClientState clientState) {
         super.endCastClient(ability, casterData, clientState);
-        if (casterData.getEntity() instanceof LocalPlayer) {
-            if (clientState instanceof ProjectileAbilityClientState projectileState) {
-                for (ProjectileAbilityClientState.TrackedProjectile tracked : projectileState.getTrackedProjectiles()) {
-                    if (!tracked.getFired()) {
-                        tracked.setFired(true);
-                        Entity entity = casterData.getEntity().getLevel().getEntity(tracked.getEntityId());
-                        if (entity instanceof BaseProjectileEntity proj) {
-                            casterData.getRiders().removeRider(proj);
-                            proj.shoot(proj, proj.getXRot(), proj.getYRot(),
-                                    0, ability.getProjectileSpeed(), ability.getProjectileInaccuracy());
+        ClientHandler.handleClient(ability, casterData, clientState);
+
+    }
+
+    static class ClientHandler {
+
+        public static void handleClient(ProjectileAbility ability, IMKEntityData casterData, @Nullable AbilityClientState clientState) {
+            if (casterData.getEntity() instanceof net.minecraft.client.player.LocalPlayer) {
+                if (clientState instanceof ProjectileAbilityClientState projectileState) {
+                    for (ProjectileAbilityClientState.TrackedProjectile tracked : projectileState.getTrackedProjectiles()) {
+                        if (!tracked.getFired()) {
+                            tracked.setFired(true);
+                            Entity entity = casterData.getEntity().getLevel().getEntity(tracked.getEntityId());
+                            if (entity instanceof BaseProjectileEntity proj) {
+                                casterData.getRiders().removeRider(proj);
+                                proj.shoot(proj, proj.getXRot(), proj.getYRot(),
+                                        0, ability.getProjectileSpeed(), ability.getProjectileInaccuracy());
+                            }
                         }
                     }
                 }

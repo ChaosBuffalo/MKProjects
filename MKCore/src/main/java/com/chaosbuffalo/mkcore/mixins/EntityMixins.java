@@ -33,6 +33,7 @@ public abstract class EntityMixins {
         return ((Entity)(Object)this);
     }
 
+    //copy of the original vanilla logic
     @Unique
     private void mkPositionRider(Entity pPassenger, Entity.MoveFunction pCallback) {
         if (hasPassenger(pPassenger)) {
