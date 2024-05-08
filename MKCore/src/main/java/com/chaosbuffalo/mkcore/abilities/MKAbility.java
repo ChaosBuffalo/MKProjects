@@ -345,11 +345,11 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     }
 
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
+    public void continueCast(IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
 
     }
 
-    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
+    public void continueCastClient(IMKEntityData casterData, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
     }
 
     public void endCast(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
@@ -360,14 +360,12 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     }
 
+    public void interruptCast(IMKEntityData casterData, CastInterruptReason reason, AbilityContext context) {
+
+    }
 
     public boolean isInterruptedBy(IMKEntityData targetData, CastInterruptReason reason) {
         return true;
-    }
-
-    @Deprecated
-    public List<LivingEntity> getTargetsInLine(LivingEntity caster, Vec3 from, Vec3 to, boolean checkValid, float growth) {
-        return TargetUtil.getTargetsInLine(caster, from, to, growth, checkValid ? this::isValidTarget : null);
     }
 
     protected void shootProjectile(BaseProjectileEntity projectileEntity, float velocity, float accuracy,
@@ -407,9 +405,5 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     protected int getBuffDuration(IMKEntityData casterData, float level, int base, int scale) {
         int duration = Math.round((base + scale * level) * GameConstants.TICKS_PER_SECOND);
         return MKCombatFormulas.applyBuffDurationModifier(casterData, duration);
-    }
-
-    public void interruptCast(CastInterruptReason reason, IMKEntityData casterData,
-                              AbilityContext context) {
     }
 }

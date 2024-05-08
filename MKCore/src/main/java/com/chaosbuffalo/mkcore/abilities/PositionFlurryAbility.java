@@ -65,8 +65,9 @@ public abstract class PositionFlurryAbility extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, totalTicks, context);
+    public void continueCast(IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
+        super.continueCast(casterData, castTimeLeft, totalTicks, context);
+        LivingEntity castingEntity = casterData.getEntity();
         if (castTimeLeft % tickRate.value() == 0) {
             float dist = getDistance(castingEntity);
             Vec3 minBound = castingEntity.position().subtract(dist, 1.0, dist);

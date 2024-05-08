@@ -25,12 +25,12 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
-public class EmberAbility extends MKAbility {
+public class EmberTestAbility extends MKAbility {
     private static final ResourceLocation TEST_PARTICLES = new ResourceLocation(MKCore.MOD_ID, "beam_effect");
     protected final FloatAttribute damage = new FloatAttribute("damage", 6.0f);
     protected final IntAttribute burnTime = new IntAttribute("burnTime", 5);
 
-    public EmberAbility() {
+    public EmberTestAbility() {
         super();
         setCastTime(GameConstants.TICKS_PER_SECOND / 2);
         setCooldownSeconds(4);
@@ -57,8 +57,9 @@ public class EmberAbility extends MKAbility {
 
 
     @Override
-    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
-        super.continueCastClient(castingEntity, casterData, castTimeLeft, totalTicks, clientState);
+    public void continueCastClient(IMKEntityData casterData, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
+        super.continueCastClient(casterData, castTimeLeft, totalTicks, clientState);
+        LivingEntity castingEntity = casterData.getEntity();
         RandomSource rand = castingEntity.getRandom();
         castingEntity.getCommandSenderWorld().addParticle(ParticleTypes.LAVA,
                 castingEntity.getX(), castingEntity.getY() + 0.5F, castingEntity.getZ(),

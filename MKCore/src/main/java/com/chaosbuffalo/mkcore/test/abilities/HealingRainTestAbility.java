@@ -21,11 +21,11 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
-public class HealingRain extends MKAbility {
+public class HealingRainTestAbility extends MKAbility {
     public static float BASE_AMOUNT = 2.0f;
     public static float AMOUNT_SCALE = 1.0f;
 
-    public HealingRain() {
+    public HealingRainTestAbility() {
         super();
         setCastTime(2 * GameConstants.TICKS_PER_SECOND);
         setManaCost(10);
@@ -59,8 +59,9 @@ public class HealingRain extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, totalTicks, context);
+    public void continueCast(IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
+        super.continueCast(casterData, castTimeLeft, totalTicks, context);
+        LivingEntity castingEntity = casterData.getEntity();
         int tickSpeed = 5;
         if (castTimeLeft % tickSpeed == 0) {
             int level = 0;

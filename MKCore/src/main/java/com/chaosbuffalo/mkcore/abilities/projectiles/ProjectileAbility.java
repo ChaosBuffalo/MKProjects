@@ -108,20 +108,20 @@ public abstract class ProjectileAbility extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, totalTicks, context);
+    public void continueCast(IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
+        super.continueCast(casterData, castTimeLeft, totalTicks, context);
         castBehavior.getValue().continueCast(this, casterData, context, castTimeLeft, totalTicks);
     }
 
     @Override
-    public void continueCastClient(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
-        super.continueCastClient(castingEntity, casterData, castTimeLeft, totalTicks, clientState);
+    public void continueCastClient(IMKEntityData casterData, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
+        super.continueCastClient(casterData, castTimeLeft, totalTicks, clientState);
         castBehavior.getValue().continueCastClient(this, casterData, castTimeLeft, totalTicks, clientState);
     }
 
     @Override
-    public void interruptCast(CastInterruptReason reason, IMKEntityData casterData, AbilityContext context) {
-        super.interruptCast(reason, casterData, context);
+    public void interruptCast(IMKEntityData casterData, CastInterruptReason reason, AbilityContext context) {
+        super.interruptCast(casterData, reason, context);
         context.getMemory(MKAbilityMemories.CURRENT_PROJECTILES).ifPresent(current -> {
             for (BaseProjectileEntity proj : current) {
                 casterData.getRiders().removeRider(proj);

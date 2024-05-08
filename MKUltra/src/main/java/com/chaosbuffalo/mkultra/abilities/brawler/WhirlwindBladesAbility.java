@@ -106,8 +106,9 @@ public class WhirlwindBladesAbility extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, totalTicks, context);
+    public void continueCast(IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
+        super.continueCast(casterData, castTimeLeft, totalTicks, context);
+        LivingEntity castingEntity = casterData.getEntity();
         int tickSpeed = 6;
         if (castTimeLeft % tickSpeed == 0) {
             float level = context.getSkill(MKAttributes.PANKRATION);

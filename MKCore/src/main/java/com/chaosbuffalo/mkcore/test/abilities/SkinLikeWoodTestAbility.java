@@ -10,8 +10,8 @@ import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.world.entity.LivingEntity;
 
-public class SkinLikeWoodAbility extends MKToggleAbility {
-    public SkinLikeWoodAbility() {
+public class SkinLikeWoodTestAbility extends MKToggleAbility {
+    public SkinLikeWoodTestAbility() {
         super();
         setCooldownSeconds(6);
         setManaCost(4);

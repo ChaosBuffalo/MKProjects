@@ -310,7 +310,7 @@ public class AbilityExecutor {
 
         @Override
         void activeTick() {
-            ability.continueCast(executor.entityData.getEntity(), executor.entityData, castTicks, totalTicks, abilityContext);
+            ability.continueCast(executor.entityData, castTicks, totalTicks, abilityContext);
         }
 
         @Override
@@ -321,7 +321,7 @@ public class AbilityExecutor {
         @Override
         void interrupt(CastInterruptReason reason) {
             super.interrupt(reason);
-            ability.interruptCast(reason, executor.entityData, abilityContext);
+            ability.interruptCast(executor.entityData, reason, abilityContext);
             PacketHandler.sendToTrackingAndSelf(EntityCastPacket.interrupt(executor.entityData, reason), executor.entityData.getEntity());
         }
     }
@@ -357,7 +357,7 @@ public class AbilityExecutor {
 
         @Override
         void activeTick() {
-            ability.continueCastClient(executor.entityData.getEntity(), executor.entityData, castTicks, totalTicks, clientState);
+            ability.continueCastClient(executor.entityData, castTicks, totalTicks, clientState);
         }
 
         @Override

@@ -25,11 +25,11 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
-public class WhirlwindBlades extends MKAbility {
+public class WhirlwindBladesTestAbility extends MKAbility {
     public static float BASE_DAMAGE = 2.0f;
     public static float DAMAGE_SCALE = 1.0f;
 
-    public WhirlwindBlades() {
+    public WhirlwindBladesTestAbility() {
         super();
         setCastTime(GameConstants.TICKS_PER_SECOND * 3);
         setCooldownSeconds(20);
@@ -79,8 +79,9 @@ public class WhirlwindBlades extends MKAbility {
     }
 
     @Override
-    public void continueCast(LivingEntity castingEntity, IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
-        super.continueCast(castingEntity, casterData, castTimeLeft, totalTicks, context);
+    public void continueCast(IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context) {
+        super.continueCast(casterData, castTimeLeft, totalTicks, context);
+        LivingEntity castingEntity = casterData.getEntity();
         int tickSpeed = 6;
         if (castTimeLeft % tickSpeed == 0) {
             int level = 1;
