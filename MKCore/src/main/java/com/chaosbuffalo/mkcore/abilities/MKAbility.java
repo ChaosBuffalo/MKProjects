@@ -15,7 +15,6 @@ import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
 import com.chaosbuffalo.mkcore.serialization.attributes.ISerializableAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
-import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mkcore.utils.text.IconTextComponent;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
@@ -41,7 +40,6 @@ import javax.annotation.Nullable;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 public abstract class MKAbility implements ISerializableAttributeContainer {
 

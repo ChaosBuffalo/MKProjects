@@ -6,27 +6,27 @@
       "talents": [
         {
           "max_points": 3,
-          "name": "mkcore:talent.max_health",
+          "name": "mkcore:max_health",
           "value": 4.0
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.max_poise",
+          "name": "mkcore:max_poise",
           "value": 2.0
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.poise_regen",
+          "name": "mkcore:poise_regen",
           "value": 0.25
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.poise_break_cd",
+          "name": "mkcore:poise_break_cd",
           "value": -0.5
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.poise_regen",
+          "name": "mkcore:poise_regen",
           "value": 0.25
         }
       ]
@@ -36,37 +36,37 @@
       "talents": [
         {
           "max_points": 3,
-          "name": "mkcore:talent.max_health",
+          "name": "mkcore:max_health",
           "value": 4.0
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.pool_count",
+          "name": "mkcore:pool_count",
           "nodeId": "40525592-c013-46f7-84da-1543d5a28cfc"
         },
         {
           "max_points": 3,
-          "name": "mkcore:talent.max_poise",
+          "name": "mkcore:max_poise",
           "value": 2.0
         },
         {
           "max_points": 5,
-          "name": "mkcore:talent.nature_damage",
+          "name": "mkcore:nature_damage",
           "value": 1.0
         },
         {
           "max_points": 5,
-          "name": "mkcore:talent.heal_efficiency",
+          "name": "mkcore:heal_efficiency",
           "value": 0.02
         },
         {
           "max_points": 5,
-          "name": "mkcore:talent.armor",
+          "name": "mkcore:armor",
           "value": 1.0
         },
         {
           "max_points": 1,
-          "name": "mkultra:talent.green_soul"
+          "name": "mkultra:green_soul"
         }
       ]
     },
@@ -75,27 +75,27 @@
       "talents": [
         {
           "max_points": 3,
-          "name": "mkcore:talent.max_health",
+          "name": "mkcore:max_health",
           "value": 4.0
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.heal_bonus",
+          "name": "mkcore:heal_bonus",
           "value": 1.0
         },
         {
           "max_points": 3,
-          "name": "mkcore:talent.max_mana",
+          "name": "mkcore:max_mana",
           "value": 2.0
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.max_poise",
+          "name": "mkcore:max_poise",
           "value": 2.0
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.mana_regen",
+          "name": "mkcore:mana_regen",
           "value": 0.5
         }
       ]
