@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkfaction.data;
 
-import com.chaosbuffalo.mkcore.data.MKDataProvider;
+import com.chaosbuffalo.mkcore.data.providers.MKDataProvider;
 import com.chaosbuffalo.mkfaction.faction.FactionManager;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.google.gson.JsonElement;

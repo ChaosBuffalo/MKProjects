@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkcore.data;
+package com.chaosbuffalo.mkcore.data.providers;
 
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
