@@ -195,17 +195,17 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     protected String getTranslationKey() {
         ResourceLocation abilityId = getAbilityId();
-        return String.format("%s.%s.name", abilityId.getNamespace(), abilityId.getPath());
+        return AbilityTranslations.nameKey(abilityId);
     }
 
     protected String getDescriptionTranslationKey() {
         ResourceLocation abilityId = getAbilityId();
-        return String.format("%s.%s.description", abilityId.getNamespace(), abilityId.getPath());
+        return AbilityTranslations.descriptionKey(abilityId);
     }
 
     public ResourceLocation getAbilityIcon() {
         ResourceLocation abilityId = getAbilityId();
-        return new ResourceLocation(abilityId.getNamespace(), String.format("textures/abilities/%s.png", abilityId.getPath().split(Pattern.quote("."))[1]));
+        return abilityId.withPath(path -> "textures/abilities/" + path + ".png");
     }
 
     public AbilityRenderer getRenderer() {
@@ -299,7 +299,6 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     public <T> void deserializeDynamic(Dynamic<T> dynamic) {
-        MKCore.LOGGER.debug("ability deserialize {}", dynamic.getValue());
         setCooldownTicks(dynamic.get("cooldown").asInt(getBaseCooldown()));
         setManaCost(dynamic.get("manaCost").asFloat(getBaseManaCost()));
         setCastTime(dynamic.get("castTime").asInt(getBaseCastTime()));

@@ -60,12 +60,12 @@
       "type": "mknpc:abilities",
       "value": [
         {
-          "abilityId": "mkultra:ability.fireball",
+          "abilityId": "mkultra:fireball",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:ability.ember",
+          "abilityId": "mkultra:ember",
           "chance": 0.5,
           "priority": 2
         }

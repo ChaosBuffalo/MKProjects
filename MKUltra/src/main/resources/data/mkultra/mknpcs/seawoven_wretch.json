@@ -30,7 +30,7 @@
       "type": "mknpc:abilities",
       "value": [
         {
-          "abilityId": "mkultra:ability.frozen_grasp",
+          "abilityId": "mkultra:frozen_grasp",
           "chance": 1.0,
           "priority": 1
         }

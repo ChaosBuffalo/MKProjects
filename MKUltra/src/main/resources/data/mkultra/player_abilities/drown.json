@@ -2,9 +2,22 @@
   "attributes": {
     "baseDamage": 4.0,
     "baseDuration": 10,
+    "castBehavior": {
+      "type": "mkcore:single",
+      "location": {
+        "type": "mkcore:single_location",
+        "offset": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "percentEyeHeight": 0.75
+      }
+    },
     "casting_particles": "mkultra:drown_casting",
     "detonate_particles": "mkultra:drown_detonate",
     "modifierScaling": 0.2,
+    "npc_solve_ballistics": true,
     "projectileInaccuracy": 0.2,
     "projectileSpeed": 0.9,
     "scaleDamage": 2.0,

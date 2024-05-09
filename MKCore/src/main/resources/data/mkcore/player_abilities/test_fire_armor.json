@@ -1,6 +1,8 @@
 {
-  "cooldown": 2700,
-  "manaCost": 12.0,
+  "attributes": {
+    "casting_particles": "mkcore:fx.casting.empty"
+  },
   "castTime": 20,
-  "attributes": {}
+  "cooldown": 2700,
+  "manaCost": 12.0
 }

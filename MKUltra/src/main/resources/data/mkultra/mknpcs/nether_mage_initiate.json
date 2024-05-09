@@ -30,7 +30,7 @@
       "type": "mknpc:ability_trainings",
       "value": [
         {
-          "ability": "mkultra:ability.ember",
+          "ability": "mkultra:ember",
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
@@ -39,7 +39,7 @@
           ]
         },
         {
-          "ability": "mkultra:ability.fire_armor",
+          "ability": "mkultra:fire_armor",
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
@@ -75,17 +75,17 @@
       "type": "mknpc:abilities",
       "value": [
         {
-          "abilityId": "mkultra:ability.ember",
+          "abilityId": "mkultra:ember",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:ability.fireball",
+          "abilityId": "mkultra:fireball",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:ability.flame_wave",
+          "abilityId": "mkultra:flame_wave",
           "chance": 1.0,
           "priority": 3
         }

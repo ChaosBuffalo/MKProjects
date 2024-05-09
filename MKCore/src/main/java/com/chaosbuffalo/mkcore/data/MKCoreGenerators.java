@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkcore.fx.particles.animation_tracks.motions.BrownianMot
 import com.chaosbuffalo.mkcore.fx.particles.animation_tracks.motions.OrbitingInPlaneMotionTrack;
 import com.chaosbuffalo.mkcore.init.CoreTags;
 import com.chaosbuffalo.mkcore.init.CoreTalents;
+import com.chaosbuffalo.mkcore.test.MKTestAbilities;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
@@ -18,6 +19,7 @@ import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.common.data.BlockTagsProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -33,6 +35,8 @@ public class MKCoreGenerators {
     public static void gatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
 
+        CoreLanguageProvider languageProvider = new CoreLanguageProvider(generator.getPackOutput(), "en_us");
+
         if (event.includeServer()) {
             MKBlockTagsProvider blockTagsProvider = new MKBlockTagsProvider(generator.getPackOutput(),
                     event.getLookupProvider(), MKCore.MOD_ID, event.getExistingFileHelper());
@@ -42,6 +46,35 @@ public class MKCoreGenerators {
                     event.getLookupProvider(), blockTagsProvider, event.getExistingFileHelper()));
             generator.addProvider(true, new CoreTalentTreeProvider(generator));
             generator.addProvider(true, new CoreParticleProvider(generator));
+            new CoreAbilityLanguageProvider(languageProvider).run();
+        }
+
+        generator.addProvider(true, languageProvider);
+    }
+
+    static class CoreLanguageProvider extends LanguageProvider {
+
+        public CoreLanguageProvider(PackOutput output, String locale) {
+            super(output, MKCore.MOD_ID, locale);
+        }
+
+        @Override
+        protected void addTranslations() {
+
+        }
+    }
+
+    public static class CoreAbilityLanguageProvider extends MKAbilityProvider.AbilityLanguageProvider {
+
+        public CoreAbilityLanguageProvider(LanguageProvider languageProvider) {
+            super(languageProvider);
+        }
+
+        public void run() {
+            ability(MKTestAbilities.TEST_EMBER)
+                    .name("Test Ember")
+                    .description("Deals %s to your target and sets them ablaze for %s seconds.")
+                    .build();
         }
     }
 

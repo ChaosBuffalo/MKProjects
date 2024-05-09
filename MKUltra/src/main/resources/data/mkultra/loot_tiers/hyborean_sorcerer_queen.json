@@ -60,7 +60,7 @@
             {
               "type": "mkweapons:option.ability",
               "value": {
-                "ability": "mkultra:ability.flame_wave"
+                "ability": "mkultra:flame_wave"
               }
             },
             {

@@ -48,27 +48,27 @@
       "type": "mknpc:abilities",
       "value": [
         {
-          "abilityId": "mkultra:ability.fireball",
+          "abilityId": "mkultra:fireball",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:ability.ember",
+          "abilityId": "mkultra:ember",
           "chance": 0.75,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:ability.flame_wave",
+          "abilityId": "mkultra:flame_wave",
           "chance": 0.5,
           "priority": 3
         },
         {
-          "abilityId": "mkultra:ability.smite",
+          "abilityId": "mkultra:smite",
           "chance": 0.25,
           "priority": 4
         },
         {
-          "abilityId": "mkultra:ability.fire_armor",
+          "abilityId": "mkultra:fire_armor",
           "chance": 0.75,
           "priority": 5
         }
