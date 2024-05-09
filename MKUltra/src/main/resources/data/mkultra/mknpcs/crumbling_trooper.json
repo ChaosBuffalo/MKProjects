@@ -82,12 +82,12 @@
       "type": "mknpc:abilities",
       "value": [
         {
-          "abilityId": "mkultra:ability.sever_tendon",
+          "abilityId": "mkultra:sever_tendon",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityId": "mkultra:ability.ember",
+          "abilityId": "mkultra:ember",
           "chance": 0.5,
           "priority": 2
         }

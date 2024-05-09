@@ -44,8 +44,6 @@ public class AbilityManager extends SimpleJsonResourceReloadListener {
                          @Nonnull ProfilerFiller profilerIn) {
         MKCore.LOGGER.debug("Loading ability definitions from Json");
         for (Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
-            ResourceLocation resourcelocation = entry.getKey();
-            MKCore.LOGGER.debug("Found file: {}", resourcelocation);
             parse(entry.getKey(), entry.getValue().getAsJsonObject());
         }
     }
@@ -79,13 +77,11 @@ public class AbilityManager extends SimpleJsonResourceReloadListener {
         setTrainingRequirementDeserializer(HeldItemRequirement.TYPE_NAME, HasEntitlementRequirement.CODEC);
     }
 
-    private boolean parse(ResourceLocation loc, JsonObject json) {
-        MKCore.LOGGER.debug("Parsing Ability Json for {}", loc);
-        ResourceLocation abilityLoc = new ResourceLocation(loc.getNamespace(),
-                "ability." + loc.getPath());
-        MKAbility ability = MKCoreRegistry.getAbility(abilityLoc);
+    private boolean parse(ResourceLocation abilityId, JsonObject json) {
+        MKCore.LOGGER.debug("Parsing Ability Json for {}", abilityId);
+        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
         if (ability == null) {
-            MKCore.LOGGER.warn("Failed to parse ability data for : {}", abilityLoc);
+            MKCore.LOGGER.warn("Failed to parse ability data for : {}", abilityId);
             return false;
         }
         ability.deserializeDynamic(new Dynamic<>(JsonOps.INSTANCE, json));

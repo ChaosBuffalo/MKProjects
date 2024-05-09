@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.data;
 
-import com.chaosbuffalo.mkcore.data.MKDataProvider;
+import com.chaosbuffalo.mkcore.data.providers.MKDataProvider;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.google.gson.JsonElement;

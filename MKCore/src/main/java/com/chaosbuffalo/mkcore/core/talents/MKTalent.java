@@ -11,7 +11,6 @@ import net.minecraft.resources.ResourceLocation;
 import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 public abstract class MKTalent {
 
@@ -26,9 +25,12 @@ public abstract class MKTalent {
         return Objects.requireNonNull(MKCoreRegistry.TALENTS.getKey(this));
     }
 
+    protected String getTalentNameKey(ResourceLocation talentId) {
+        return talentId.toLanguageKey("talent", "name");
+    }
+
     public Component getTalentName() {
-        ResourceLocation talentId = getTalentId();
-        return Component.translatable(String.format("%s.%s.name", talentId.getNamespace(), talentId.getPath()));
+        return Component.translatable(getTalentNameKey(getTalentId()));
     }
 
     public MutableComponent getTypeDescription() {
@@ -39,22 +41,21 @@ public abstract class MKTalent {
         consumer.accept(getTalentDescription(record).withStyle(ChatFormatting.GRAY));
     }
 
+    protected String getTalentDescriptionKey(ResourceLocation talentId) {
+        return talentId.toLanguageKey("talent", "description");
+    }
+
     public MutableComponent getTalentDescription(TalentRecord record) {
-        ResourceLocation talentId = getTalentId();
-        return Component.translatable(String.format("%s.%s.description", talentId.getNamespace(), talentId.getPath()));
+        return Component.translatable(getTalentDescriptionKey(getTalentId()));
     }
 
     public ResourceLocation getIcon() {
         ResourceLocation talentId = getTalentId();
-        return new ResourceLocation(talentId.getNamespace(),
-                String.format("textures/talents/%s_icon.png",
-                        talentId.getPath().split(Pattern.quote("."))[1]));
+        return talentId.withPath(path -> "textures/talents/" + path + "_icon.png");
     }
 
     public ResourceLocation getFilledIcon() {
         ResourceLocation talentId = getTalentId();
-        return new ResourceLocation(talentId.getNamespace(),
-                String.format("textures/talents/%s_icon_filled.png",
-                        talentId.getPath().split(Pattern.quote("."))[1]));
+        return talentId.withPath(path -> "textures/talents/" + path + "_icon_filled.png");
     }
 }

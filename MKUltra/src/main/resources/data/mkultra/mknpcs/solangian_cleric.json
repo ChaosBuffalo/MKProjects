@@ -26,7 +26,7 @@
       "type": "mknpc:ability_trainings",
       "value": [
         {
-          "ability": "mkultra:ability.heal",
+          "ability": "mkultra:heal",
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
@@ -35,7 +35,7 @@
           ]
         },
         {
-          "ability": "mkultra:ability.smite",
+          "ability": "mkultra:smite",
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
@@ -44,7 +44,7 @@
           ]
         },
         {
-          "ability": "mkultra:ability.galvanize",
+          "ability": "mkultra:galvanize",
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
@@ -53,7 +53,7 @@
           ]
         },
         {
-          "ability": "mkultra:ability.power_word_summon",
+          "ability": "mkultra:power_word_summon",
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
@@ -62,7 +62,7 @@
           ]
         },
         {
-          "ability": "mkultra:ability.inspire",
+          "ability": "mkultra:inspire",
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
@@ -98,27 +98,27 @@
       "type": "mknpc:abilities",
       "value": [
         {
-          "abilityId": "mkultra:ability.heal",
+          "abilityId": "mkultra:heal",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:ability.smite",
+          "abilityId": "mkultra:smite",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:ability.galvanize",
+          "abilityId": "mkultra:galvanize",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityId": "mkultra:ability.power_word_summon",
+          "abilityId": "mkultra:power_word_summon",
           "chance": 1.0,
           "priority": 4
         },
         {
-          "abilityId": "mkultra:ability.inspire",
+          "abilityId": "mkultra:inspire",
           "chance": 1.0,
           "priority": 5
         }

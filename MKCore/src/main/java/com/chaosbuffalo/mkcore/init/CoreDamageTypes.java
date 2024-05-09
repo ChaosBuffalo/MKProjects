@@ -24,48 +24,48 @@ public class CoreDamageTypes {
     public static final ResourceKey<DamageType> MK_DAMAGE = ResourceKey.create(Registries.DAMAGE_TYPE,
             new ResourceLocation(MKCore.MOD_ID, "mk_damage"));
 
-    public static final RegistryObject<MKDamageType> FireDamage = REGISTRY.register("damage.fire",
+    public static final RegistryObject<MKDamageType> FireDamage = REGISTRY.register("fire",
             () -> new MKDamageType(MKAttributes.FIRE_DAMAGE, MKAttributes.FIRE_RESISTANCE,
                     MKAttributes.SPELL_CRIT, MKAttributes.SPELL_CRIT_MULTIPLIER,
                     ChatFormatting.RED));
 
-    public static final RegistryObject<MKDamageType> FrostDamage = REGISTRY.register("damage.frost",
+    public static final RegistryObject<MKDamageType> FrostDamage = REGISTRY.register("frost",
             () -> new MKDamageType(MKAttributes.FROST_DAMAGE, MKAttributes.FROST_RESISTANCE,
                     MKAttributes.SPELL_CRIT, MKAttributes.SPELL_CRIT_MULTIPLIER,
                     ChatFormatting.AQUA));
 
-    public static final RegistryObject<MKDamageType> HolyDamage = REGISTRY.register("damage.holy",
+    public static final RegistryObject<MKDamageType> HolyDamage = REGISTRY.register("holy",
             () -> new MKDamageType(MKAttributes.HOLY_DAMAGE, MKAttributes.HOLY_RESISTANCE,
                     MKAttributes.SPELL_CRIT, MKAttributes.SPELL_CRIT_MULTIPLIER,
                     ChatFormatting.GOLD).setCritMultiplier(2.0f));
 
-    public static final RegistryObject<MKDamageType> PoisonDamage = REGISTRY.register("damage.poison",
+    public static final RegistryObject<MKDamageType> PoisonDamage = REGISTRY.register("poison",
             () -> new MKDamageType(MKAttributes.POISON_DAMAGE, MKAttributes.POISON_RESISTANCE,
                     MKAttributes.SPELL_CRIT, MKAttributes.SPELL_CRIT_MULTIPLIER,
                     ChatFormatting.GREEN));
 
-    public static final RegistryObject<MKDamageType> ShadowDamage = REGISTRY.register("damage.shadow",
+    public static final RegistryObject<MKDamageType> ShadowDamage = REGISTRY.register("shadow",
             () -> new MKDamageType(MKAttributes.SHADOW_DAMAGE, MKAttributes.SHADOW_RESISTANCE,
                     MKAttributes.SPELL_CRIT, MKAttributes.SPELL_CRIT_MULTIPLIER,
                     ChatFormatting.DARK_PURPLE));
 
-    public static final RegistryObject<MKDamageType> ArcaneDamage = REGISTRY.register("damage.arcane",
+    public static final RegistryObject<MKDamageType> ArcaneDamage = REGISTRY.register("arcane",
             () -> new MKDamageType(MKAttributes.ARCANE_DAMAGE, MKAttributes.ARCANE_RESISTANCE,
                     MKAttributes.SPELL_CRIT, MKAttributes.SPELL_CRIT_MULTIPLIER,
                     ChatFormatting.LIGHT_PURPLE));
 
-    public static final RegistryObject<MKDamageType> NatureDamage = REGISTRY.register("damage.nature",
+    public static final RegistryObject<MKDamageType> NatureDamage = REGISTRY.register("nature",
             () -> new MKDamageType(MKAttributes.NATURE_DAMAGE, MKAttributes.NATURE_RESISTANCE,
                     MKAttributes.SPELL_CRIT, MKAttributes.SPELL_CRIT_MULTIPLIER,
                     ChatFormatting.DARK_GREEN));
 
-    public static final RegistryObject<MKDamageType> MeleeDamage = REGISTRY.register("damage.melee",
+    public static final RegistryObject<MKDamageType> MeleeDamage = REGISTRY.register("melee",
             MeleeDamageType::new);
 
-    public static final RegistryObject<RangedDamageType> RangedDamage = REGISTRY.register("damage.ranged",
+    public static final RegistryObject<RangedDamageType> RangedDamage = REGISTRY.register("ranged",
             RangedDamageType::new);
 
-    public static final RegistryObject<MKDamageType> BleedDamage = REGISTRY.register("damage.bleed",
+    public static final RegistryObject<MKDamageType> BleedDamage = REGISTRY.register("bleed",
             () -> new MKDamageType(MKAttributes.BLEED_DAMAGE, MKAttributes.BLEED_RESISTANCE,
                     MKAttributes.MELEE_CRIT, MKAttributes.MELEE_CRIT_MULTIPLIER,
                     ChatFormatting.DARK_RED));

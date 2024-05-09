@@ -59,17 +59,17 @@
       "type": "mknpc:abilities",
       "value": [
         {
-          "abilityId": "mkultra:ability.fire_armor",
+          "abilityId": "mkultra:fire_armor",
           "chance": 0.5,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:ability.fireball",
+          "abilityId": "mkultra:fireball",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:ability.ember",
+          "abilityId": "mkultra:ember",
           "chance": 1.0,
           "priority": 3
         }

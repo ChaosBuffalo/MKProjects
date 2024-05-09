@@ -446,8 +446,8 @@
                       {
                         "type": "mknpc:has_trained_abilities",
                         "abilities": [
-                          "mkultra:ability.skin_like_wood",
-                          "mkultra:ability.natures_remedy"
+                          "mkultra:skin_like_wood",
+                          "mkultra:natures_remedy"
                         ],
                         "allMatch": false
                       }

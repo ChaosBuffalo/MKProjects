@@ -145,12 +145,12 @@
       "type": "mknpc:abilities",
       "value": [
         {
-          "abilityId": "mkultra:ability.natures_remedy",
+          "abilityId": "mkultra:natures_remedy",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:ability.sever_tendon",
+          "abilityId": "mkultra:sever_tendon",
           "chance": 1.0,
           "priority": 3
         }

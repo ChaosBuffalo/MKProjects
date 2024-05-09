@@ -6,47 +6,47 @@
       "talents": [
         {
           "max_points": 1,
-          "name": "mkcore:talent.ability_slot",
+          "name": "mkcore:ability_slot",
           "nodeId": "119917ea-b852-4cb5-8bfe-2cdad488f279"
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.max_health",
+          "name": "mkcore:max_health",
           "value": 5.0
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.armor",
+          "name": "mkcore:armor",
           "value": 1.0
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.ability_slot",
+          "name": "mkcore:ability_slot",
           "nodeId": "121817fa-1cfc-4334-aa77-13c02ede83ff"
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.pool_count",
+          "name": "mkcore:pool_count",
           "nodeId": "108549d0-7935-4386-bf38-2ca48329305e"
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.mana_regen",
+          "name": "mkcore:mana_regen",
           "value": 0.25
         },
         {
           "max_points": 3,
-          "name": "mkcore:talent.max_health",
+          "name": "mkcore:max_health",
           "value": 1.0
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.passive_ability_slot",
+          "name": "mkcore:passive_ability_slot",
           "nodeId": "95725b31-da3a-4a3e-b6cc-e5036a6e9a87"
         },
         {
           "max_points": 1,
-          "name": "mkultra:talent.life_siphon"
+          "name": "mkultra:life_siphon"
         }
       ]
     },
@@ -55,77 +55,77 @@
       "talents": [
         {
           "max_points": 1,
-          "name": "mkcore:talent.ability_slot",
+          "name": "mkcore:ability_slot",
           "nodeId": "2e1ff629-b139-4303-831d-1c1bc5ebc21e"
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.max_mana",
+          "name": "mkcore:max_mana",
           "value": 5.0
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.mana_regen",
+          "name": "mkcore:mana_regen",
           "value": 0.25
         },
         {
           "max_points": 3,
-          "name": "mkcore:talent.max_mana",
+          "name": "mkcore:max_mana",
           "value": 1.0
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.mana_regen",
+          "name": "mkcore:mana_regen",
           "value": 0.25
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.ultimate_ability_slot",
+          "name": "mkcore:ultimate_ability_slot",
           "nodeId": "0c751a99-a186-439c-83f1-abb55f67b17e"
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.pool_count",
+          "name": "mkcore:pool_count",
           "nodeId": "9b23bee2-d159-4d32-aca8-1d726de0f875"
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.mana_regen",
+          "name": "mkcore:mana_regen",
           "value": 0.25
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.mana_regen",
+          "name": "mkcore:mana_regen",
           "value": 0.25
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.passive_ability_slot",
+          "name": "mkcore:passive_ability_slot",
           "nodeId": "4818f37e-16c4-4010-ab7a-a664cab4ab97"
         },
         {
           "max_points": 3,
-          "name": "mkcore:talent.max_health",
+          "name": "mkcore:max_health",
           "value": 1.0
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.max_health",
+          "name": "mkcore:max_health",
           "value": 1.0
         },
         {
           "max_points": 5,
-          "name": "mkcore:talent.cooldown_reduction",
+          "name": "mkcore:cooldown_reduction",
           "value": 0.01
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.pool_count",
+          "name": "mkcore:pool_count",
           "nodeId": "93de6f66-4d6d-4721-b774-b12ee92be288"
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.ultimate_ability_slot",
+          "name": "mkcore:ultimate_ability_slot",
           "nodeId": "ecfaa441-35c7-46ce-aa67-f8372bc4fd7d"
         }
       ]
@@ -135,47 +135,47 @@
       "talents": [
         {
           "max_points": 1,
-          "name": "mkcore:talent.ability_slot",
+          "name": "mkcore:ability_slot",
           "nodeId": "3a31b74d-cf08-451f-a483-8eb9e47ce89b"
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.mana_regen",
+          "name": "mkcore:mana_regen",
           "value": 0.5
         },
         {
           "max_points": 2,
-          "name": "mkcore:talent.heal_bonus",
+          "name": "mkcore:heal_bonus",
           "value": 2.0
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.ability_slot",
+          "name": "mkcore:ability_slot",
           "nodeId": "de5a37a4-b7e5-4565-9217-2d5d8de5d448"
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.pool_count",
+          "name": "mkcore:pool_count",
           "nodeId": "fbbab80a-c3f8-460f-81cf-5184a7c7f39a"
         },
         {
           "max_points": 3,
-          "name": "mkcore:talent.max_mana",
+          "name": "mkcore:max_mana",
           "value": 1.0
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.heal_bonus",
+          "name": "mkcore:heal_bonus",
           "value": 1.0
         },
         {
           "max_points": 1,
-          "name": "mkcore:talent.passive_ability_slot",
+          "name": "mkcore:passive_ability_slot",
           "nodeId": "05865420-0069-45e1-856e-331c9900f99c"
         },
         {
           "max_points": 1,
-          "name": "mkultra:talent.soul_drain"
+          "name": "mkultra:soul_drain"
         }
       ]
     }

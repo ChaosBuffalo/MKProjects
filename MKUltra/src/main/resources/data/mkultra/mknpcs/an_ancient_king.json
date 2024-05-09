@@ -182,32 +182,32 @@
       "type": "mknpc:abilities",
       "value": [
         {
-          "abilityId": "mkultra:ability.natures_remedy",
+          "abilityId": "mkultra:natures_remedy",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:ability.sever_tendon",
+          "abilityId": "mkultra:sever_tendon",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityId": "mkultra:ability.heal",
+          "abilityId": "mkultra:heal",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:ability.power_word_summon",
+          "abilityId": "mkultra:power_word_summon",
           "chance": 0.5,
           "priority": 4
         },
         {
-          "abilityId": "mkultra:ability.explosive_growth",
+          "abilityId": "mkultra:explosive_growth",
           "chance": 0.5,
           "priority": 5
         },
         {
-          "abilityId": "mkultra:ability.fireball",
+          "abilityId": "mkultra:fireball",
           "chance": 0.5,
           "priority": 6
         }

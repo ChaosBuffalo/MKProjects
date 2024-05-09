@@ -12,7 +12,7 @@
                 {
                   "type": "mkweapons:weapon_effect.on_hit_ability",
                   "value": {
-                    "ability": "mkultra:ability.seafury",
+                    "ability": "mkultra:seafury",
                     "chance": 0.5,
                     "skill_level": 10.0
                   }
