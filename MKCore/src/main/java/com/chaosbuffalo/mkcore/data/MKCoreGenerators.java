@@ -49,7 +49,8 @@ public class MKCoreGenerators {
             new CoreAbilityLanguageProvider(languageProvider).run();
         }
 
-        generator.addProvider(true, languageProvider);
+        // Need to convert more providers to use the lang provider before enabling
+//        generator.addProvider(true, languageProvider);
     }
 
     static class CoreLanguageProvider extends LanguageProvider {
