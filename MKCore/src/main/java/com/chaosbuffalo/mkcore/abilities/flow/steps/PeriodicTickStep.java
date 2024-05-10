@@ -7,7 +7,6 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 public class PeriodicTickStep extends AbilityFlowStep {
     private int period;
     private ContinueCastServerFn serverCallback;
-    private String clientTag;
 
     public interface ContinueCastServerFn {
         void onContinue(IMKEntityData casterData, int castTimeLeft, int totalTicks, AbilityContext context);
@@ -24,7 +23,7 @@ public class PeriodicTickStep extends AbilityFlowStep {
 
     @Override
     public PeriodicTickStep onClient(String tag) {
-        this.clientTag = tag;
+        super.onClient(tag);
         return this;
     }
 }

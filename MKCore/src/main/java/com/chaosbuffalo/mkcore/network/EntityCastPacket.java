@@ -113,7 +113,7 @@ public class EntityCastPacket {
 
             MKCore.getEntityData(entity).ifPresent(entityData -> {
                 if (packet.action == CastAction.START) {
-                    entityData.getAbilityExecutor().startCastClient(packet.abilityId, packet.castTicks, packet.clientState);
+                    entityData.getAbilityExecutor().startAbilityClient(packet.abilityId, packet.castTicks, packet.clientState);
                 } else if (packet.action == CastAction.INTERRUPT) {
                     entityData.getAbilityExecutor().interruptCast(packet.interruptReason);
                 }
