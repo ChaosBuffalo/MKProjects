@@ -16,6 +16,8 @@ public interface IMKEntityStats {
 
     void setPoise(float value);
 
+    float getMana();
+
     float getMaxMana();
 
     float getPoiseRegenRate();

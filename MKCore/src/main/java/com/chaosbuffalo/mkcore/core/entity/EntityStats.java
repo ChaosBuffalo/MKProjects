@@ -48,6 +48,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
         return Objects.requireNonNull(getEntity().getAttribute(attribute));
     }
 
+    @Override
     public float getMana() {
         return mana.get();
     }
