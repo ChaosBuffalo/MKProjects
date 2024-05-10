@@ -64,7 +64,7 @@ public class AbilityExecutor {
         executeAbilityInfoWithContext(info, context);
     }
 
-    public void executeAbilityInfoWithContext(MKAbilityInfo info, AbilityContext context) {
+    public void executeAbilityInfoWithContext(MKAbilityInfo info, @Nullable AbilityContext context) {
         MKAbility ability = info.getAbility();
         if (ability.meetsCastingRequirements(entityData, info)) {
             if (context == null) {
@@ -72,14 +72,14 @@ public class AbilityExecutor {
             } else {
                 boolean validContext = ability.getTargetSelector().validateContext(entityData, context);
                 if (!validContext) {
-                    MKCore.LOGGER.warn("Entity {} tried to execute ability {} with a context that failed validation!", entityData.getEntity(), info.getAbility().getAbilityId());
+                    MKCore.LOGGER.warn("Entity {} tried to execute ability {} with a context that failed validation!", entityData.getEntity(), info.getId());
                     return;
                 }
             }
             if (context != null) {
-                ability.executeWithContext(entityData, context, info);
+                startAbility(context, info);
             } else {
-                MKCore.LOGGER.warn("Entity {} tried to execute ability {} with a null context!", entityData.getEntity(), info.getAbility().getAbilityId());
+                MKCore.LOGGER.warn("Entity {} tried to execute ability {} with a null context!", entityData.getEntity(), info.getId());
             }
         }
     }
@@ -187,12 +187,12 @@ public class AbilityExecutor {
     public boolean startAbility(AbilityContext context, MKAbilityInfo info) {
         MKAbility ability = info.getAbility();
         if (isCasting()) {
-            MKCore.LOGGER.warn("startAbility({}) failed - {} currently casting", ability.getAbilityId(), entityData.getEntity());
+            MKCore.LOGGER.warn("startAbility({}) failed - {} currently casting", info.getId(), entityData.getEntity());
             return false;
         }
 
         if (!ability.isExecutableContext(context)) {
-            MKCore.LOGGER.error("Entity {} tried to execute ability {} with missing memories!", entityData.getEntity(), ability.getAbilityId());
+            MKCore.LOGGER.error("Entity {} tried to execute ability {} with missing memories!", entityData.getEntity(), info.getId());
             return false;
         }
 
@@ -209,13 +209,13 @@ public class AbilityExecutor {
 
     protected void completeAbility(MKAbility ability, MKAbilityInfo info, AbilityContext context) {
         // Finish the cast
-        consumeResource(ability);
+        consumeResource(info);
         ability.endCast(entityData.getEntity(), entityData, context);
         if (completeAbilityCallback != null) {
             completeAbilityCallback.accept(ability);
         }
         int cooldown = entityData.getStats().getAbilityCooldown(ability);
-        setCooldown(ability.getAbilityId(), cooldown);
+        setCooldown(info.getId(), cooldown);
         SoundEvent sound = ability.getSpellCompleteSoundEvent();
         if (sound != null) {
             SoundUtils.serverPlaySoundAtEntity(entityData.getEntity(), sound, entityData.getEntity().getSoundSource());
@@ -232,7 +232,7 @@ public class AbilityExecutor {
         return new ClientCastingState(this, ability, castTicks, state);
     }
 
-    protected void consumeResource(MKAbility ability) {
+    protected void consumeResource(MKAbilityInfo abilityInfo) {
 
     }
 

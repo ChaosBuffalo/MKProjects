@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore.core.player.loadout;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKPassiveAbility;
@@ -9,7 +8,6 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
-import com.chaosbuffalo.mkcore.effects.MKEffect;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 
@@ -68,8 +66,8 @@ public class PassiveAbilityGroup extends AbilityGroup {
 
     private void activatePassive(ResourceLocation abilityId) {
         MKAbilityInfo info = playerData.getAbilities().getAbilityInfo(abilityId);
-        if (info != null && info.getAbility() instanceof MKPassiveAbility) {
-            info.getAbility().executeWithContext(playerData, AbilityContext.selfTarget(playerData, info), info);
+        if (info != null && info.getAbility() instanceof MKPassiveAbility passive) {
+            passive.activate(playerData);
         }
     }
 
@@ -87,11 +85,8 @@ public class PassiveAbilityGroup extends AbilityGroup {
 
     private void removePassive(ResourceLocation abilityId) {
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-        if (ability instanceof MKPassiveAbility passiveAbility) {
-            MKEffect passiveEffect = passiveAbility.getPassiveEffect();
-            if (playerData.getEffects().isEffectActive(passiveEffect)) {
-                playerData.getEffects().removeEffect(passiveEffect);
-            }
+        if (ability instanceof MKPassiveAbility passive) {
+            passive.deactivate(playerData);
         }
     }
 

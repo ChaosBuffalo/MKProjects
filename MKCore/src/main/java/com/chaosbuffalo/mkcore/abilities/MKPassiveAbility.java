@@ -36,8 +36,7 @@ public abstract class MKPassiveAbility extends MKAbility {
         AbilityDescriptions.getEffectModifiers(getPassiveEffect(), context, false, consumer);
     }
 
-    @Override
-    public void executeWithContext(IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
+    public void activate(IMKEntityData casterData) {
         // TODO: see if this isEffectActive is needed in practice
         if (!casterData.getEffects().isEffectActive(getPassiveEffect())) {
             MKEffectBuilder<?> effect = getPassiveEffect().builder(casterData.getEntity())
@@ -45,6 +44,13 @@ public abstract class MKPassiveAbility extends MKAbility {
                     .temporary() // Abilities slotted to the passive group are re-executed when joining the world
                     .infinite();
             casterData.getEffects().addEffect(effect);
+        }
+    }
+
+    public void deactivate(IMKEntityData casterData) {
+        MKEffect passiveEffect = getPassiveEffect();
+        if (casterData.getEffects().isEffectActive(passiveEffect)) {
+            casterData.getEffects().removeEffect(passiveEffect);
         }
     }
 }

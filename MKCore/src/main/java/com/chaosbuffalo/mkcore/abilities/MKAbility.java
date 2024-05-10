@@ -317,10 +317,6 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return CoreSounds.spell_cast_default.get();
     }
 
-    public void executeWithContext(IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
-        casterData.getAbilityExecutor().startAbility(context, abilityInfo);
-    }
-
     public Component getTargetContextLocalization() {
         return Component.translatable("mkcore.ability_description.target_type",
                 getTargetContext().getLocalizedDescription());
