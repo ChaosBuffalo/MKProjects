@@ -5,6 +5,9 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.AbilityUseCondition;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.StandardUseCondition;
+import com.chaosbuffalo.mkcore.abilities.client_state.ProjectileAbilityClientState;
+import com.chaosbuffalo.mkcore.abilities.flow.AbilityFlow;
+import com.chaosbuffalo.mkcore.abilities.flow.FlowSteps;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
@@ -328,6 +331,71 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     public Set<MemoryModuleType<?>> getRequiredMemories() {
         return getTargetSelector().getRequiredMemories();
+    }
+
+    public boolean usesFlow() {
+        return false;
+    }
+
+    public AbilityFlow createDefaultFlow(IMKEntityData casterData, MKAbilityInfo abilityInfo, AbilityContext context) {
+        int castTime = casterData.getStats().getAbilityCastTime(abilityInfo.getAbility());
+
+        return AbilityFlow.of(
+                FlowSteps.startTimedCast(castTime).onServer(this::startCast).onClient("client_begin"),
+                FlowSteps.every(1).onServer(this::continueCast).onClient("client_continue_tick"),
+                FlowSteps.finish().onServer(this::endCast).onClient("client_end"),
+                FlowSteps.startGCD()
+        );
+    }
+
+    public void clientDefaultFlowHandler(IMKEntityData casterData, String tag, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
+        switch (tag) {
+            case "client_begin" -> {
+            }
+            case "client_tick" -> {
+                continueCastClient(casterData, castTimeLeft, totalTicks, clientState);
+            }
+            case "client_end" -> {
+                endCastClient(casterData, clientState);
+            }
+        }
+    }
+
+    public AbilityFlow createFlow(IMKEntityData casterData, MKAbilityInfo abilityInfo, AbilityContext context) {
+        int castTime = casterData.getStats().getAbilityCastTime(abilityInfo.getAbility());
+
+        var builder = AbilityFlow.builder(new ProjectileAbilityClientState());
+        builder.add(
+                FlowSteps.startTimedCast(castTime).onServer(this::startCast).onClient("client_begin"),
+                FlowSteps.every(1).onServer(this::continueCast).onClient("client_every_tick"),
+                FlowSteps.every(10).onClient("client_every_half_second")
+        );
+        if (casterData.getStats().getMana() > 100) {
+//            builder.add(AbilityFlow.applyEffect(() -> makeCustomEffect()).onClient("client_lots_of_mana"));
+        }
+        builder.add(
+                FlowSteps.finish().onServer(this::endCast).onClient("client_end"),
+                FlowSteps.startGCD()
+        );
+        return builder.build();
+//        return AbilityFlow.of(AbilityFlow.applyEffect(getPassiveEffect()));
+    }
+
+    public void clientFlowHandler(IMKEntityData casterData, String tag, int castTimeLeft, int totalTicks, @Nullable AbilityClientState clientState) {
+        switch (tag) {
+            case "client_begin" -> {
+            }
+            case "client_every_tick" -> {
+                // default
+                continueCastClient(casterData, castTimeLeft, totalTicks, clientState);
+            }
+            case "client_every_half_second" -> {
+                MKCore.LOGGER.info("this occurs on the client every 10 ticks");
+            }
+            case "client_end" -> {
+                endCastClient(casterData, clientState);
+            }
+        }
     }
 
     public boolean isExecutableContext(AbilityContext context) {

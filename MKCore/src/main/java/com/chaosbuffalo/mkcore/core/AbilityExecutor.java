@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKToggleAbility;
+import com.chaosbuffalo.mkcore.abilities.flow.AbilityFlow;
 import com.chaosbuffalo.mkcore.client.sound.MovingSoundCasting;
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.events.EntityAbilityEvent;
@@ -196,6 +197,18 @@ public class AbilityExecutor {
             return false;
         }
 
+        if (ability.usesFlow()) {
+            AbilityFlow flow = ability.createFlow(entityData, info, context);
+
+
+            return true;
+        } else {
+            return legacyStart(info, context);
+        }
+    }
+
+    protected boolean legacyStart(MKAbilityInfo info, AbilityContext context) {
+        MKAbility ability = info.getAbility();
         startGlobalCooldown();
         int castTime = entityData.getStats().getAbilityCastTime(ability);
         startCast(context, info, castTime);
