@@ -27,6 +27,10 @@ public abstract class LocationProvider {
         }
     }
 
+    public int getMax() {
+        return max;
+    }
+
     public abstract LocationProviderType<? extends LocationProvider> getType();
 
     public abstract WorldLocationResult getPosition(Entity entity, int index);
