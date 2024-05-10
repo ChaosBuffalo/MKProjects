@@ -8,12 +8,12 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class LocationProvider {
-    protected final int max;
+    protected final int count;
     public static final Codec<LocationProvider> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
             MKCoreRegistry.LOC_PROVIDER_TYPES.getCodec().dispatch(LocationProvider::getType, LocationProviderType::codec));
 
-    public LocationProvider(int max) {
-        this.max = max;
+    public LocationProvider(int count) {
+        this.count = count;
     }
 
     public record WorldLocationResult(Vec3 worldPosition, Vec2 rotation) {
@@ -27,8 +27,8 @@ public abstract class LocationProvider {
         }
     }
 
-    public int getMax() {
-        return max;
+    public int getCount() {
+        return count;
     }
 
     public abstract LocationProviderType<? extends LocationProvider> getType();

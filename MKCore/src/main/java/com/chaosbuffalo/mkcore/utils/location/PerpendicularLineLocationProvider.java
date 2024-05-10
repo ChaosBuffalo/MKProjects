@@ -14,7 +14,7 @@ public class PerpendicularLineLocationProvider extends LocationProvider{
     public static final Codec<PerpendicularLineLocationProvider> CODEC = RecordCodecBuilder.<PerpendicularLineLocationProvider>mapCodec(builder -> builder.group(
             Vec3.CODEC.fieldOf("offset").forGetter(i -> i.offset),
             Codec.FLOAT.fieldOf("percentEyeHeight").forGetter(i -> i.percentEyeHeight),
-            Codec.INT.fieldOf("count").forGetter(i -> i.max),
+            Codec.INT.fieldOf("count").forGetter(i -> i.count),
             Codec.FLOAT.fieldOf("distance").forGetter(i -> i.distance)
     ).apply(builder, PerpendicularLineLocationProvider::new)).codec();
 
@@ -38,7 +38,7 @@ public class PerpendicularLineLocationProvider extends LocationProvider{
         Vec3 normal = offsetPos.subtract(entityCenter).normalize();
         Vec3 up = new Vec3(0.0, 1.0, 0.0);
         Vec3 cross = normal.cross(up).normalize();
-        float lerpV = ((float)index) / (max - 1);
+        float lerpV = ((float)index) / (count - 1);
         float distValue = MathUtils.lerp(-distance / 2.0f, distance / 2.0f, lerpV);
         return new WorldLocationResult(offsetPos.add(cross.scale(distValue)), entity.getRotationVector());
     }

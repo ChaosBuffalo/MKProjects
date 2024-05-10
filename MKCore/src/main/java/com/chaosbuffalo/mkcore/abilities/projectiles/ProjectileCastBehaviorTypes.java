@@ -10,8 +10,7 @@ import java.util.function.Supplier;
 public class ProjectileCastBehaviorTypes {
 
     public static final DeferredRegister<ProjectileCastBehaviorType<?>> REGISTRY = DeferredRegister.create(MKCoreRegistry.CAST_BEHAVIOR_TYPES_NAME, MKCore.MOD_ID);
-    public static final Supplier<ProjectileCastBehaviorType<SingleProjectileBehavior>> SINGLE = REGISTRY.register("single", () -> () -> SingleProjectileBehavior.CODEC);
-    public static final Supplier<ProjectileCastBehaviorType<ShotgunProjectileBehavior>> LINE = REGISTRY.register("line", () -> () -> ShotgunProjectileBehavior.CODEC);
+    public static final Supplier<ProjectileCastBehaviorType<SimpleProjectileBehavior>> SIMPLE = REGISTRY.register("simple", () -> () -> SimpleProjectileBehavior.CODEC);
 
     public static void register(IEventBus modBus) {
         REGISTRY.register(modBus);
