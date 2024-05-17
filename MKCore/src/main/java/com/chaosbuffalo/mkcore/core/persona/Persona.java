@@ -36,7 +36,6 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         addSyncChild(talents);
         addSyncChild(loadout);
         skills = new PlayerSkills(playerData);
-        skills.addCallback(loadout.getPassiveAbilityGroup()::onSkillUpdate);
     }
 
     public String getName() {

@@ -22,7 +22,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class AbilityGroup implements IPlayerSyncComponentProvider {
     protected final MKPlayerData playerData;
@@ -52,6 +55,10 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
 
     public List<ResourceLocation> getAbilities() {
         return Collections.unmodifiableList(activeAbilities);
+    }
+
+    protected Stream<MKAbilityInfo> getAbilityInfoStream() {
+        return IntStream.range(0, getCurrentSlotCount()).mapToObj(this::getAbilityInfo).filter(Objects::nonNull);
     }
 
     public int getCurrentSlotCount() {
@@ -137,14 +144,13 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         return MKCoreRegistry.INVALID_ABILITY;
     }
 
-    protected void onAbilityAdded(ResourceLocation abilityId) {
-        MKCore.LOGGER.debug("onAbilityAdded({})", abilityId);
+    protected void onAbilityAdded(MKAbilityInfo abilityInfo) {
+        MKCore.LOGGER.debug("onAbilityAdded({})", abilityInfo);
     }
 
-    protected void onAbilityRemoved(ResourceLocation abilityId) {
-        MKCore.LOGGER.debug("onAbilityRemoved({})", abilityId);
-        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-        if (ability instanceof MKToggleAbility toggleAbility) {
+    protected void onAbilityRemoved(MKAbilityInfo abilityInfo) {
+        MKCore.LOGGER.debug("onAbilityRemoved({})", abilityInfo);
+        if (abilityInfo.getAbility() instanceof MKToggleAbility toggleAbility) {
             toggleAbility.removeEffect(playerData);
         }
     }
@@ -165,8 +171,9 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         // Clearing slot - no validity checks required
         if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
 //            MKCore.LOGGER.info("setSlot - clearing {} from {}", index, currentAbilityId);
+            MKAbilityInfo oldInfo = getAbilityInfo(index);
             setIndex(index, abilityId);
-            onAbilityRemoved(currentAbilityId);
+            onAbilityRemoved(oldInfo);
             return;
         }
 
@@ -187,14 +194,17 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         // abilityId was not slotted and is being inserted into an empty slot
         if (currentAbilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
             setIndex(index, abilityId);
-            onAbilityAdded(abilityId);
+            MKAbilityInfo newInfo = getAbilityInfo(index);
+            onAbilityAdded(newInfo);
             return;
         }
 
         // New ability is not current slotted and is replacing an existing ability
+        MKAbilityInfo oldInfo = getAbilityInfo(index);
         setIndex(index, abilityId);
-        onAbilityRemoved(currentAbilityId);
-        onAbilityAdded(abilityId);
+        onAbilityRemoved(oldInfo);
+        MKAbilityInfo newInfo = getAbilityInfo(index);
+        onAbilityAdded(newInfo);
     }
 
     private boolean validateAbilityForSlot(int index, ResourceLocation abilityId) {

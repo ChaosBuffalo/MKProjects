@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.core.MKServerPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.events.EventType;
 import com.chaosbuffalo.mkcore.core.player.events.PlayerEvent;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 
 public class PlayerEvents {
 
@@ -15,6 +16,7 @@ public class PlayerEvents {
     public static final EventType<JoinWorldServerEvent> SERVER_JOIN_WORLD = EventType.serverSide();
     public static final EventType<AbilityLearnEvent> ABILITY_LEARNED = EventType.serverSide();
     public static final EventType<AbilityUnlearnEvent> ABILITY_UNLEARNED = EventType.serverSide();
+    public static final EventType<SkillEvent> SKILL_LEVEL_CHANGE = EventType.serverSide();
 
     public static class PersonaEvent extends PlayerEvent<MKPlayerData> {
 
@@ -34,6 +36,19 @@ public class PlayerEvents {
 
         public JoinWorldServerEvent(MKServerPlayerData playerData) {
             super(playerData);
+        }
+    }
+
+    public static class SkillEvent extends PlayerEvent<MKPlayerData> {
+        private final AttributeInstance attributeInstance;
+
+        public SkillEvent(MKPlayerData playerData, AttributeInstance attributeInstance) {
+            super(playerData);
+            this.attributeInstance = attributeInstance;
+        }
+
+        public AttributeInstance getSkillAttributeInstance() {
+            return attributeInstance;
         }
     }
 

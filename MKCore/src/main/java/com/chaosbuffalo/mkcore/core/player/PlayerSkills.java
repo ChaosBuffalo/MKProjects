@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.events.ItemEventHandler;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
@@ -34,7 +33,6 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
     private final MKPlayerData playerData;
     private final Object2DoubleMap<Attribute> skillValues = new Object2DoubleOpenCustomHashMap<>(Util.identityStrategy());
 
-    private final List<Consumer<Attribute>> skillChangeCallbacks = new ArrayList<>();
     private static final Map<Attribute, SkillChangeHandler> skillChangeHandlers = Util.make(() -> {
         Map<Attribute, SkillChangeHandler> map = new HashMap<>(8);
         map.put(MKAttributes.ONE_HAND_BLUNT, PlayerSkills::onWeaponSkillChange);
@@ -52,10 +50,6 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         this.playerData = playerData;
     }
 
-    public void addCallback(Consumer<Attribute> cb) {
-        skillChangeCallbacks.add(cb);
-    }
-
     private static void onWeaponSkillChange(MKPlayerData playerData, double value) {
         ItemStack mainHand = playerData.getEntity().getItemBySlot(EquipmentSlot.MAINHAND);
         if (mainHand.getItem() instanceof IReceivesSkillChange receiver) {
@@ -67,7 +61,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         ItemStack mainHand = playerData.getEntity().getItemBySlot(EquipmentSlot.MAINHAND);
         if (mainHand.getItem() instanceof IReceivesSkillChange receiver) {
             receiver.onSkillChange(mainHand, playerData.getEntity());
-        } else if (mainHand == ItemStack.EMPTY) {
+        } else if (mainHand.isEmpty()) {
             playerData.getEquipment().removeUnarmedModifier();
             playerData.getEquipment().addUnarmedModifier();
         }
@@ -110,7 +104,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         if (handler != null) {
             handler.onSkillChange(playerData, skillLevel);
         }
-        skillChangeCallbacks.forEach(x -> x.accept(attribute));
+        playerData.events().tryTrigger(PlayerEvents.SKILL_LEVEL_CHANGE, () -> new PlayerEvents.SkillEvent(playerData, attrInst));
     }
 
     private double getSkillValue(Attribute attribute) {

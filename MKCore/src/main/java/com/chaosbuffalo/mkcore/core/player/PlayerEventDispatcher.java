@@ -9,6 +9,7 @@ import com.google.common.collect.MultimapBuilder;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 // Inspired by epicfightmod
 public class PlayerEventDispatcher {
@@ -52,6 +53,27 @@ public class PlayerEventDispatcher {
                 }
             }
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends PlayerEvent<?>> void tryTrigger(EventType<T> eventType, Supplier<T> eventSupplier) {
+        if (eventType.canFire(playerData.isClientSide())) {
+            var typeList = eventMap.get(eventType);
+            if (!typeList.isEmpty()) {
+                T event = eventSupplier.get();
+                for (EventRecord<?> eventRecord : typeList) {
+                    ((EventRecord<T>) eventRecord).trigger(event);
+                }
+            }
+        }
+    }
+
+    public <T extends PlayerEvent<?>> boolean hasSubscribers(EventType<T> eventType) {
+        if (eventType.canFire(playerData.isClientSide())) {
+            var typeList = eventMap.get(eventType);
+            return !typeList.isEmpty();
+        }
+        return false;
     }
 
     public record EventRecord<T extends PlayerEvent<?>>(UUID id, Consumer<T> callback, int priority)

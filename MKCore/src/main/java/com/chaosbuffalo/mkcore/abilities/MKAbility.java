@@ -77,24 +77,19 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType, float damage,
                                           float scale, float level, float modifierScaling) {
-        float bonus = casterData.getStats().getDamageTypeBonus(damageType) * modifierScaling;
-        float abilityDamage = damage + (scale * level) + bonus;
-        MutableComponent damageStr = Component.literal("");
-        damageStr.append(Component.literal(NUMBER_FORMATTER.format(abilityDamage)).withStyle(ChatFormatting.BOLD));
-        if (bonus != 0) {
-            damageStr.append(Component.literal(String.format(" (+%s)", NUMBER_FORMATTER.format(bonus))).withStyle(ChatFormatting.BOLD));
-        }
-        damageStr.append(" ").append(damageType.getFormattedDisplayName());
-        return damageStr;
+        float rawBonus = casterData.getStats().getDamageTypeBonus(damageType);
+        MutableComponent desc = formatEffectValue(damage, scale, level, rawBonus, modifierScaling);
+        desc.append(" ").append(damageType.getFormattedDisplayName());
+        return desc;
     }
 
-
     protected MutableComponent formatEffectValue(float damage, float levelScale, float level, float bonus, float scaleMod) {
-        float value = damage + (levelScale * level) + (bonus * scaleMod);
-        MutableComponent damageStr = Component.literal("");
+        float effectiveBonus = bonus * scaleMod;
+        float value = damage + (levelScale * level) + effectiveBonus;
+        MutableComponent damageStr = Component.empty();
         damageStr.append(Component.literal(NUMBER_FORMATTER.format(value)).withStyle(ChatFormatting.BOLD));
-        if (bonus != 0) {
-            damageStr.append(Component.literal(String.format(" (+%s)", NUMBER_FORMATTER.format(bonus))).withStyle(ChatFormatting.BOLD));
+        if (effectiveBonus != 0) {
+            damageStr.append(Component.literal(String.format(" (+%s)", NUMBER_FORMATTER.format(effectiveBonus))).withStyle(ChatFormatting.BOLD));
         }
         return damageStr;
     }
