@@ -1,14 +1,14 @@
 package com.chaosbuffalo.mkcore.core.entitlements;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 
 public class AbilityPoolEntitlement extends MKEntitlement {
 
     public static final EntitlementType ABILITY_POOL_SLOT = new EntitlementType() {
         @Override
-        public EntitlementTypeHandler createTypeHandler(MKPlayerData playerData) {
-            return new AbilityPoolEntitlement.AbilityPoolEntitlementHandler(playerData);
+        public EntitlementTypeHandler createTypeHandler(Persona persona) {
+            return new AbilityPoolEntitlement.AbilityPoolEntitlementHandler(persona);
         }
     };
 
@@ -22,16 +22,16 @@ public class AbilityPoolEntitlement extends MKEntitlement {
     }
 
     public static class AbilityPoolEntitlementHandler extends EntitlementTypeHandler {
-        private final MKPlayerData playerData;
+        private final Persona persona;
 
-        public AbilityPoolEntitlementHandler(MKPlayerData playerData) {
-            this.playerData = playerData;
+        public AbilityPoolEntitlementHandler(Persona persona) {
+            this.persona = persona;
         }
 
         @Override
         public void onRecordUpdated(EntitlementInstance record) {
-            int count = playerData.getEntitlements().getEntitlementLevel(record.getEntitlement());
-            playerData.getAbilities().setAbilityPoolSize(count + GameConstants.DEFAULT_ABILITY_POOL_SIZE);
+            int count = persona.getEntitlements().getEntitlementLevel(record.getEntitlement());
+            persona.getAbilities().setAbilityPoolSize(count + GameConstants.DEFAULT_ABILITY_POOL_SIZE);
         }
 
         @Override

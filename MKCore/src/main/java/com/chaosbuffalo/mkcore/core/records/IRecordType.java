@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.core.records;
 
-import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 
 public interface IRecordType<T extends IRecordInstance<T>> {
-    IRecordTypeHandler<T> createTypeHandler(MKPlayerData playerData);
+    IRecordTypeHandler<T> createTypeHandler(Persona persona);
 }

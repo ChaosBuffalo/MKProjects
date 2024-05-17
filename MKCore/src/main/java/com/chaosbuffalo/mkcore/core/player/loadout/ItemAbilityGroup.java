@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkcore.core.player.loadout;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
-import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import net.minecraft.resources.ResourceLocation;
@@ -12,8 +12,8 @@ import javax.annotation.Nullable;
 
 public class ItemAbilityGroup extends AbilityGroup {
 
-    public ItemAbilityGroup(MKPlayerData playerData) {
-        super(playerData, "item", AbilityGroupId.Item);
+    public ItemAbilityGroup(Persona persona) {
+        super(persona, "item", AbilityGroupId.Item);
     }
 
     @Override

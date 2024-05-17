@@ -23,7 +23,7 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
     public PlayerCombatExtensionModule(MKPlayerData playerData) {
         super(playerData);
         addSyncPrivate(currentProjectileHitCount);
-        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_WORLD, EV_ID, PlayerCombatExtensionModule::onJoinWorldServer);
+        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_LEVEL, EV_ID, PlayerCombatExtensionModule::onJoinLevelServer);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         }
     }
 
-    private static void onJoinWorldServer(PlayerEvents.JoinWorldServerEvent event) {
+    private static void onJoinLevelServer(PlayerEvents.JoinLevelServerEvent event) {
         updatePoiseBonus(event.getPlayerData());
         event.getPlayerData().getAttributes().monitor(MKAttributes.BLOCK, PlayerCombatExtensionModule::onBlockChange);
     }
