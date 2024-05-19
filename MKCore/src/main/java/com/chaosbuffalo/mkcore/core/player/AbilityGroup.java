@@ -70,6 +70,10 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         return true;
     }
 
+    public boolean setBonusSlots(int slots) {
+        return setSlots(groupId.getDefaultSlots() + slots);
+    }
+
     public boolean setSlots(int newSlotCount) {
         if (newSlotCount < 0 || newSlotCount > getMaximumSlotCount()) {
             MKCore.LOGGER.error("setSlots({}, {}) - bad count", newSlotCount, getMaximumSlotCount());
