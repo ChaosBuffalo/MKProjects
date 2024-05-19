@@ -55,7 +55,7 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
     }
 
     private static void onBlockChange(MKPlayerData playerData, AttributeInstance attributeInstance) {
-        MKCore.LOGGER.info("recomputing max_poise value due to block attribute update");
+//        MKCore.LOGGER.info("recomputing max_poise value due to block attribute update");
 
         updatePoiseBonus(playerData);
     }

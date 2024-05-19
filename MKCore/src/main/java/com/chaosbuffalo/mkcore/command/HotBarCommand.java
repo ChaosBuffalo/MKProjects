@@ -67,7 +67,7 @@ public class HotBarCommand {
 
         MKCore.getPlayer(player).ifPresent(playerData -> {
             AbilityGroup abilityGroup = playerData.getLoadout().getAbilityGroup(group);
-            if (abilityGroup.setSlots(count)) {
+            if (abilityGroup.setBonusSlots(count)) {
                 MKCore.LOGGER.info("Updated slot count for {}", group);
             } else {
                 MKCore.LOGGER.error("Failed to update slot count for {}", group);
