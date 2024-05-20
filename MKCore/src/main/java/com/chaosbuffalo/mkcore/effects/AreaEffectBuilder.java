@@ -14,7 +14,7 @@ public class AreaEffectBuilder {
     private final MKAreaEffectEntity areaEffectCloud;
 
     private AreaEffectBuilder(LivingEntity caster, Entity center) {
-        areaEffectCloud = new MKAreaEffectEntity(center.getCommandSenderWorld(), center.getX(), center.getY(), center.getZ());
+        areaEffectCloud = new MKAreaEffectEntity(center.getLevel(), center.getX(), center.getY(), center.getZ());
         areaEffectCloud.setOwner(caster);
     }
 

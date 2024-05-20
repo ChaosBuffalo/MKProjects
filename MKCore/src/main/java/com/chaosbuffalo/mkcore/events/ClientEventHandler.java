@@ -177,7 +177,7 @@ public class ClientEventHandler {
 
     @SubscribeEvent
     public static void onPlayerDataUpdated(PlayerDataEvent.Updated event) {
-        if (event.getPlayer().getCommandSenderWorld().isClientSide) {
+        if (event.getPlayer().getLevel().isClientSide()) {
             Player local = Minecraft.getInstance().player;
             if (local == null || !event.getPlayer().is(local))
                 return;

@@ -164,7 +164,7 @@ public abstract class MKStructure extends Structure {
         for (String key : entry.getActiveEvents()) {
             StructureEvent ev = events.get(key);
             if (ev != null && ev.canTrigger(StructureEvent.EventTrigger.ON_DEATH)) {
-                checkAndExecuteEvent(ev, entry, activeStructure, npcData.getEntity().getCommandSenderWorld());
+                checkAndExecuteEvent(ev, entry, activeStructure, npcData.getEntity().getLevel());
             }
         }
     }

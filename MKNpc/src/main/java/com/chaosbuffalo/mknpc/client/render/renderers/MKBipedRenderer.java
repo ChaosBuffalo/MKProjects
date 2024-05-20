@@ -168,9 +168,9 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
                         float scale = MathUtils.lerp(.6f, 1.f, entityIn.getCastRatio());
                         Vec3 scaleVec = new Vec3(scale, scale, scale);
                         Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
-                        leftPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, scaleVec, null));
+                        leftPos.ifPresent(pos -> anim.spawn(entityIn.getLevel(), pos, scaleVec, null));
                         Optional<Vec3> rightPos = getHandPosition(partialTicks, entityIn, HumanoidArm.RIGHT);
-                        rightPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, scaleVec, null));
+                        rightPos.ifPresent(pos -> anim.spawn(entityIn.getLevel(), pos, scaleVec, null));
                     }
                 }
             }

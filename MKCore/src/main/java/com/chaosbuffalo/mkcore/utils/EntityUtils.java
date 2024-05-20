@@ -82,7 +82,7 @@ public class EntityUtils {
 //        double d2 = target.getPosZ() - source.getPosZ();
 //        double d3 = MathHelper.sqrt(d0 * d0 + d2 * d2);
         arrowEntity.shoot(targetPos.x(), targetPos.y(), targetPos.z(), launchVelocity, (float) (
-                14 - source.getCommandSenderWorld().getDifficulty().getId() * 4));
+                14 - source.getLevel().getDifficulty().getId() * 4));
     }
 
     public static boolean shootProjectileAtTarget(BaseProjectileEntity projectile, LivingEntity target,

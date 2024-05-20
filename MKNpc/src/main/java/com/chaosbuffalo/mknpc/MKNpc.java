@@ -109,7 +109,7 @@ public class MKNpc {
     }
 
     public static double getDifficultyScale(LivingEntity entity) {
-        switch (entity.getCommandSenderWorld().getDifficulty()) {
+        switch (entity.getLevel().getDifficulty()) {
             case EASY:
                 return 0.5;
             case NORMAL:

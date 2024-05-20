@@ -173,7 +173,7 @@ public class MKActiveEffect {
     protected Entity findEntity(Entity entity, UUID entityId, IMKEntityData targetData) {
         if (entity != null)
             return entity;
-        Level world = targetData.getEntity().getCommandSenderWorld();
+        Level world = targetData.getEntity().getLevel();
         if (!world.isClientSide()) {
             return ((ServerLevel) world).getEntity(entityId);
         }

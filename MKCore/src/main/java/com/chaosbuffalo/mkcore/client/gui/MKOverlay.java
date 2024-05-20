@@ -54,7 +54,7 @@ public class MKOverlay implements IGuiOverlay {
         int perMember = 18;
         int perPet = 14;
 
-        List<Player> players = data.getEntity().getCommandSenderWorld().players().stream()
+        List<Player> players = data.getEntity().getLevel().players().stream()
                 .filter(otherPlayer ->
                         !data.getEntity().is(otherPlayer) &&
                                 data.getEntity().isAlliedTo(otherPlayer))

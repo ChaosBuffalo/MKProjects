@@ -30,8 +30,8 @@ public class OpenMKSpawnerPacket extends SetSpawnListPacket {
     static class ClientHandler {
         private static void handleInternal(OpenMKSpawnerPacket packet) {
             if (Minecraft.getInstance().player != null) {
-                Level world = Minecraft.getInstance().player.getCommandSenderWorld();
-                BlockEntity tileEntity = world.getBlockEntity(packet.tileEntityLoc);
+                Level level = Minecraft.getInstance().player.getLevel();
+                BlockEntity tileEntity = level.getBlockEntity(packet.tileEntityLoc);
                 if (tileEntity instanceof MKSpawnerTileEntity spawner) {
                     packet.setSpawnerFromPacket(spawner);
                     Minecraft.getInstance().setScreen(new MKSpawnerScreen(spawner));

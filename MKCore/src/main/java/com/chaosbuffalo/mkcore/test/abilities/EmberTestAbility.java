@@ -61,7 +61,7 @@ public class EmberTestAbility extends MKAbility {
         super.continueCastClient(casterData, castTimeLeft, totalTicks, clientState);
         LivingEntity castingEntity = casterData.getEntity();
         RandomSource rand = castingEntity.getRandom();
-        castingEntity.getCommandSenderWorld().addParticle(ParticleTypes.LAVA,
+        castingEntity.getLevel().addParticle(ParticleTypes.LAVA,
                 castingEntity.getX(), castingEntity.getY() + 0.5F, castingEntity.getZ(),
                 rand.nextFloat() / 2.0F, 5.0E-5D, rand.nextFloat() / 2.0F);
     }

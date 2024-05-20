@@ -26,7 +26,7 @@ public class TargetUtil {
         AABB bb = new AABB(from, to)
                 .expandTowards(expansion.x, expansion.y, expansion.z)
                 .inflate(growth);
-        return mainEntity.getCommandSenderWorld().getEntitiesOfClass(clazz, bb, predicate);
+        return mainEntity.getLevel().getEntitiesOfClass(clazz, bb, predicate);
     }
 
     public static LivingEntity getSingleLivingTarget(LivingEntity caster, float distance,

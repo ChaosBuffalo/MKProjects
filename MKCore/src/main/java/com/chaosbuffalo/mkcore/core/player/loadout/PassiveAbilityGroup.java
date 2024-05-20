@@ -1,8 +1,6 @@
 package com.chaosbuffalo.mkcore.core.player.loadout;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKPassiveAbility;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -10,7 +8,6 @@ import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 
 import java.util.UUID;
@@ -20,7 +17,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
 
     public PassiveAbilityGroup(MKPlayerData playerData) {
         super(playerData, "passive", AbilityGroupId.Passive);
-        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_WORLD, EV_ID, this::onJoinWorld);
+        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_LEVEL, EV_ID, this::onJoinWorld);
         playerData.events().subscribe(PlayerEvents.SKILL_LEVEL_CHANGE, EV_ID, this::onSkillChange);
     }
 
@@ -41,7 +38,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
         removePassive(abilityInfo);
     }
 
-    private void onJoinWorld(PlayerEvents.JoinWorldServerEvent event) {
+    private void onJoinWorld(PlayerEvents.JoinLevelServerEvent event) {
         activateAllPassives(true);
     }
 

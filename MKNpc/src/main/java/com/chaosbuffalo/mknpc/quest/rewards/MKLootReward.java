@@ -56,7 +56,7 @@ public class MKLootReward extends QuestReward {
             LootConstructor constructor = tier.generateConstructorForSlot(player.getRandom(), slot);
             if (constructor != null) {
                 ItemStack loot = constructor.constructItem(player.getRandom(), WorldUtils.getDifficultyForGlobalPos(
-                        GlobalPos.of(player.getCommandSenderWorld().dimension(), player.blockPosition())));
+                        GlobalPos.of(player.getLevel().dimension(), player.blockPosition())));
                 player.getInventory().placeItemBackInInventory(loot, true);
             }
         }

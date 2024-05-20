@@ -44,7 +44,7 @@ public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
 
     @Override
     protected boolean onImpact(Entity caster, HitResult result, int amplifier) {
-        if (abilitySupplier != null && !this.level.isClientSide && caster instanceof LivingEntity casterLiving) {
+        if (abilitySupplier != null && !this.level.isClientSide() && caster instanceof LivingEntity casterLiving) {
             ProjectileAbility ability = abilitySupplier.get();
             if (ability != null) {
                 return ability.onImpact(this, casterLiving, result, amplifier);
@@ -55,7 +55,7 @@ public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
 
     @Override
     protected boolean onAirProc(Entity caster, int amplifier) {
-        if (abilitySupplier != null && !this.level.isClientSide && caster instanceof LivingEntity casterLiving)
+        if (abilitySupplier != null && !this.level.isClientSide() && caster instanceof LivingEntity casterLiving)
         {
             ProjectileAbility ability = abilitySupplier.get();
             if (ability != null) {
@@ -68,7 +68,7 @@ public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
 
     @Override
     protected boolean onGroundProc(Entity caster, int amplifier) {
-        if (abilitySupplier != null && !this.level.isClientSide && caster instanceof LivingEntity casterLiving)
+        if (abilitySupplier != null && !this.level.isClientSide() && caster instanceof LivingEntity casterLiving)
         {
             ProjectileAbility ability = abilitySupplier.get();
             if (ability != null) {

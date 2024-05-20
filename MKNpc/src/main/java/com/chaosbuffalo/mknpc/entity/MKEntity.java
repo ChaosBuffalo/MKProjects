@@ -887,7 +887,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     public InteractionResult interactAt(Player player, Vec3 vec, InteractionHand hand) {
         if (hand.equals(InteractionHand.MAIN_HAND) && getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
                 .map((cap) -> cap.getRelationToEntity(player) != Targeting.TargetRelation.ENEMY).orElse(false)) {
-            if (!player.level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
+            if (!player.getLevel().isClientSide() && player instanceof ServerPlayer serverPlayer) {
                 if (player.isShiftKeyDown()) {
                     player.openMenu(entityTradeContainer);
                 } else {

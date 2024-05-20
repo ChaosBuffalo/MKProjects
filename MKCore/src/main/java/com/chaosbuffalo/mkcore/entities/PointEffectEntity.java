@@ -49,7 +49,7 @@ public class PointEffectEntity extends BaseEffectEntity {
     }
 
     public void setRadius(float radiusIn) {
-        if (!this.level.isClientSide) {
+        if (!this.level.isClientSide()) {
             this.getEntityData().set(RADIUS, radiusIn);
         }
     }

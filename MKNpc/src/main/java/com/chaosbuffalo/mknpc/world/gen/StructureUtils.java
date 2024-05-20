@@ -78,7 +78,7 @@ public class StructureUtils {
     }
 
     public static List<StructureStart> getStructuresOverlaps(Entity entity) {
-        if (entity.getCommandSenderWorld() instanceof ServerLevel serverLevel) {
+        if (entity.getLevel() instanceof ServerLevel serverLevel) {
             var manager = serverLevel.structureManager();
             return WorldStructureHandler.MK_STRUCTURE_INDEX.values().stream()
                     .map(x -> manager.getStructureAt(entity.blockPosition(), x))

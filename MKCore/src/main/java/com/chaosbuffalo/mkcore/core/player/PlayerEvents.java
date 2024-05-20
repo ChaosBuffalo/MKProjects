@@ -13,7 +13,7 @@ public class PlayerEvents {
 
     public static final EventType<PersonaEvent> PERSONA_ACTIVATE = EventType.serverSide();
     public static final EventType<PersonaEvent> PERSONA_DEACTIVATE = EventType.serverSide();
-    public static final EventType<JoinWorldServerEvent> SERVER_JOIN_WORLD = EventType.serverSide();
+    public static final EventType<JoinLevelServerEvent> SERVER_JOIN_LEVEL = EventType.serverSide();
     public static final EventType<AbilityLearnEvent> ABILITY_LEARNED = EventType.serverSide();
     public static final EventType<AbilityUnlearnEvent> ABILITY_UNLEARNED = EventType.serverSide();
     public static final EventType<SkillEvent> SKILL_LEVEL_CHANGE = EventType.serverSide();
@@ -32,9 +32,9 @@ public class PlayerEvents {
         }
     }
 
-    public static final class JoinWorldServerEvent extends PlayerEvent<MKServerPlayerData> {
+    public static final class JoinLevelServerEvent extends PlayerEvent<MKServerPlayerData> {
 
-        public JoinWorldServerEvent(MKServerPlayerData playerData) {
+        public JoinLevelServerEvent(MKServerPlayerData playerData) {
             super(playerData);
         }
     }

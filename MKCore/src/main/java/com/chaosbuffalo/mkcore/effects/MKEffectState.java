@@ -61,7 +61,7 @@ public abstract class MKEffectState {
     @Deprecated
     @Nullable
     protected Entity findEntity(Entity entity, UUID entityId, IMKEntityData targetData) {
-        return findEntity(entity, entityId, targetData.getEntity().getCommandSenderWorld());
+        return findEntity(entity, entityId, targetData.getEntity().getLevel());
     }
 
     public boolean validateOnApply(IMKEntityData targetData, MKActiveEffect activeEffect) {

@@ -35,7 +35,7 @@ public class CombatEventHandler {
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
         LivingEntity livingTarget = event.getEntity();
-        if (livingTarget.level.isClientSide)
+        if (livingTarget.getLevel().isClientSide())
             return;
 
         DamageSource source = event.getSource();
@@ -76,7 +76,7 @@ public class CombatEventHandler {
     @SubscribeEvent
     public static void onLivingAttackEvent(LivingAttackEvent event) {
         LivingEntity target = event.getEntity();
-        if (target.level.isClientSide)
+        if (target.getLevel().isClientSide())
             return;
 
         IMKEntityData targetData = MKCore.getEntityDataOrNull(target);
@@ -161,7 +161,7 @@ public class CombatEventHandler {
 
         DamageSource source = event.getSource();
         if (source.getEntity() instanceof LivingEntity killer) {
-            if (killer.level.isClientSide) {
+            if (killer.getLevel().isClientSide()) {
                 return;
             }
             MKCore.getEntityData(killer).ifPresent(killerData -> {

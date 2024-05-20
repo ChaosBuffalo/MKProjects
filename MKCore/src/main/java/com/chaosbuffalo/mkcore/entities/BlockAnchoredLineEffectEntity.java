@@ -169,7 +169,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
 
     @Override
     protected Collection<LivingEntity> getEntitiesInBounds() {
-        return RayTraceUtils.rayTraceAllEntities(LivingEntity.class, getCommandSenderWorld(),
+        return RayTraceUtils.rayTraceAllEntities(LivingEntity.class, getLevel(),
                         startPoint.get(), endPoint.get(), Vec3.ZERO,
                         1.5f, 0.0f, this::entityCheck).getEntities().stream().map(x -> x.entity)
                 .collect(Collectors.toList());
@@ -195,7 +195,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     protected void spawnClientParticles(ParticleDisplay display) {
         ParticleAnimation anim = ParticleAnimationManager.getAnimation(display.getParticles());
         if (anim != null) {
-            anim.spawn(getCommandSenderWorld(), startPoint.get(), new Vec3(1., 1., 1.)
+            anim.spawn(getLevel(), startPoint.get(), new Vec3(1., 1., 1.)
                     , Collections.singletonList(prevEndPoint.lerp(endPoint.get(), Math.min((tickCount - lastTickReceive) / 10.0f, 1.0f))));
         }
     }
@@ -205,7 +205,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     }
 
     public BlockAnchoredLineEffectEntity setRange(float newValue) {
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             getEntityData().set(RANGE, newValue);
         }
         return this;

@@ -117,8 +117,8 @@ public class CritMessagePacket {
             if (player == null) {
                 return;
             }
-            Entity source = player.getCommandSenderWorld().getEntity(packet.sourceId);
-            Entity target = player.getCommandSenderWorld().getEntity(packet.targetId);
+            Entity source = player.getLevel().getEntity(packet.sourceId);
+            Entity target = player.getLevel().getEntity(packet.targetId);
             if (target == null || source == null) {
                 return;
             }
@@ -163,7 +163,7 @@ public class CritMessagePacket {
                     player.sendSystemMessage(mkDamageType.getAbilityCritMessage(livingSource, (LivingEntity) target, packet.critDamage, ability, isSelf));
                     break;
                 case PROJECTILE_CRIT:
-                    Entity projectile = player.getCommandSenderWorld().getEntity(packet.projectileId);
+                    Entity projectile = player.getLevel().getEntity(packet.projectileId);
                     if (projectile != null) {
                         if (isSelf) {
                             player.sendSystemMessage(Component.translatable("mkcore.crit.projectile.self",

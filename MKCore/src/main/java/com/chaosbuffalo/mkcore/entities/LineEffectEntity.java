@@ -46,7 +46,7 @@ public class LineEffectEntity extends BaseEffectEntity {
 
     @Override
     protected Collection<LivingEntity> getEntitiesInBounds() {
-        return RayTraceUtils.rayTraceAllEntities(LivingEntity.class, getCommandSenderWorld(),
+        return RayTraceUtils.rayTraceAllEntities(LivingEntity.class, getLevel(),
                         startPoint, endPoint, Vec3.ZERO,
                         1.5f, 0.0f, this::entityCheck).getEntities().stream().map(x -> x.entity)
                 .collect(Collectors.toList());
@@ -56,7 +56,7 @@ public class LineEffectEntity extends BaseEffectEntity {
     protected void spawnClientParticles(ParticleDisplay display) {
         ParticleAnimation anim = ParticleAnimationManager.getAnimation(display.getParticles());
         if (anim != null) {
-            anim.spawn(getCommandSenderWorld(), startPoint, new Vec3(1., 1., 1.), Collections.singletonList(endPoint));
+            anim.spawn(getLevel(), startPoint, new Vec3(1., 1., 1.), Collections.singletonList(endPoint));
         }
     }
 

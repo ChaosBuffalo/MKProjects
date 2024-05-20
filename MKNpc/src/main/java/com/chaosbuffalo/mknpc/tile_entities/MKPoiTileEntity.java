@@ -89,7 +89,7 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
     }
 
     public void tick(Level level) {
-        if (level != null && !level.isClientSide) {
+        if (level != null && !level.isClientSide()) {
             if (needsUploadToWorld) {
                 ContentDB.getPrimaryData().addPointOfInterest(this);
 

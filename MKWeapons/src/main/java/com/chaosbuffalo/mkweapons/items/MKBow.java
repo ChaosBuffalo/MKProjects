@@ -133,7 +133,7 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
                 float powerFactor = getPowerFactor(useTicks, stack, entityLiving);
                 if (!((double) powerFactor < 0.1D)) {
                     boolean hasAmmo = player.getAbilities().instabuild || (ammoStack.getItem() instanceof ArrowItem && ((ArrowItem) ammoStack.getItem()).isInfinite(ammoStack, stack, player));
-                    if (!worldIn.isClientSide) {
+                    if (!worldIn.isClientSide()) {
                         ArrowItem arrowItem = (ArrowItem) (ammoStack.getItem() instanceof ArrowItem ? ammoStack.getItem() : Items.ARROW);
                         AbstractArrow arrowEntity = arrowItem.createArrow(worldIn, ammoStack, player);
                         arrowEntity = customArrow(arrowEntity, stack);

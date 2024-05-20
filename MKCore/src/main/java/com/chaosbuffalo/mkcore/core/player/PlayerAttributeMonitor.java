@@ -13,7 +13,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
@@ -37,14 +36,14 @@ public class PlayerAttributeMonitor {
     public PlayerAttributeMonitor(MKPlayerData playerData, Consumer<BooleanSupplier> tickRequest) {
         this.playerData = playerData;
         this.tickRequest = tickRequest;
-        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_WORLD, EV_ID, this::onJoinWorld);
+        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_LEVEL, EV_ID, this::onJoinLevelServer);
     }
 
     public void monitor(Attribute attribute, AttributeChangeHandler handler) {
         handlerMap.put(attribute, handler);
     }
 
-    private void onJoinWorld(PlayerEvents.JoinWorldServerEvent event) {
+    private void onJoinLevelServer(PlayerEvents.JoinLevelServerEvent event) {
         ServerPlayer serverPlayer = event.getPlayerData().getEntity();
 
         // This setup is deferred until now because the entity is not fully constructed during the ctor.

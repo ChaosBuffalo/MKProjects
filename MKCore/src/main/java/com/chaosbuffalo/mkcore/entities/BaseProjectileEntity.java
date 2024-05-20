@@ -381,7 +381,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         this.zOld = this.getZ();
 
         super.tick();
-        if (!level.isClientSide && tickCount < preFireTicks) {
+        if (!level.isClientSide() && tickCount < preFireTicks) {
             return;
         }
         if (!isAlive()) {

@@ -49,7 +49,7 @@ public class ItemEventHandler {
 
     @SubscribeEvent
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
-        if (event.getEntity().getCommandSenderWorld().isClientSide()) {
+        if (event.getEntity().getLevel().isClientSide()) {
             return;
         }
         MKCore.getEntityData(event.getEntity()).ifPresent(entityData -> {

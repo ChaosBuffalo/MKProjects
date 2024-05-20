@@ -72,7 +72,7 @@ public abstract class PositionFlurryAbility extends MKAbility {
             float dist = getDistance(castingEntity);
             Vec3 minBound = castingEntity.position().subtract(dist, 1.0, dist);
             Vec3 maxBound = castingEntity.position().add(dist, 4.0, dist);
-            List<LivingEntity> entities = castingEntity.getCommandSenderWorld().getEntitiesOfClass(LivingEntity.class,
+            List<LivingEntity> entities = castingEntity.getLevel().getEntitiesOfClass(LivingEntity.class,
                     new AABB(minBound, maxBound));
             abilityToCast.ifPresent(ab -> {
                 for (LivingEntity ent : entities) {

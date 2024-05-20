@@ -37,7 +37,7 @@ public class TestChatReceiverEntity extends Pig {
 
     @Override
     public InteractionResult interactAt(Player player, Vec3 vec, InteractionHand hand) {
-        if (!player.level.isClientSide()) {
+        if (!player.getLevel().isClientSide()) {
             INpcDialogue.get(this).ifPresent(cap -> cap.hail((ServerPlayer) player));
 
         }

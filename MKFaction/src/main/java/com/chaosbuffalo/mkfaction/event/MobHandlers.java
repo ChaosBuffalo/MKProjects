@@ -28,7 +28,7 @@ public class MobHandlers {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
-        if (event.getLevel().isClientSide)
+        if (event.getLevel().isClientSide())
             return;
 
         if (event.getEntity() instanceof LivingEntity && !(event.getEntity() instanceof ServerPlayer)) {

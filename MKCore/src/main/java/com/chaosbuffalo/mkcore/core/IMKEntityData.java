@@ -20,11 +20,11 @@ public interface IMKEntityData extends INBTSerializable<CompoundTag> {
     LivingEntity getEntity();
 
     default boolean isServerSide() {
-        return !getEntity().getCommandSenderWorld().isClientSide();
+        return !getEntity().getLevel().isClientSide();
     }
 
     default boolean isClientSide() {
-        return getEntity().getCommandSenderWorld().isClientSide();
+        return getEntity().getLevel().isClientSide();
     }
 
     AbilityExecutor getAbilityExecutor();

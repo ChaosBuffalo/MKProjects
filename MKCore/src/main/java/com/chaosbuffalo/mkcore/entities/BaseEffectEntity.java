@@ -200,7 +200,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
     @Override
     public void tick() {
         super.tick();
-        if (this.level.isClientSide) {
+        if (this.level.isClientSide()) {
             clientUpdate();
         } else {
             if (serverUpdate()) {
@@ -212,7 +212,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
     protected void spawnClientParticles(ParticleDisplay display) {
         ParticleAnimation anim = ParticleAnimationManager.getAnimation(display.getParticles());
         if (anim != null) {
-            anim.spawn(getCommandSenderWorld(), position(), new Vec3(1., 1. ,1.), null);
+            anim.spawn(getLevel(), position(), new Vec3(1., 1. ,1.), null);
         }
     }
 
@@ -250,7 +250,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
 
     @Override
     public void readSpawnData(FriendlyByteBuf additionalData) {
-        Entity ent = getCommandSenderWorld().getEntity(additionalData.readInt());
+        Entity ent = getLevel().getEntity(additionalData.readInt());
         if (ent instanceof LivingEntity) {
             owner = (LivingEntity) ent;
         }

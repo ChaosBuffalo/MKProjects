@@ -48,9 +48,9 @@ public class MKPlayerRenderer extends PlayerRenderer {
                             float scale = MathUtils.lerp(.6f, 1.f, data.getAnimationModule().getCastRatio());
                             Vec3 scaleVec = new Vec3(scale, scale, scale);
                             Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
-                            leftPos.ifPresent(x -> anim.spawn(entityIn.getCommandSenderWorld(), x, scaleVec, null));
+                            leftPos.ifPresent(x -> anim.spawn(entityIn.getLevel(), x, scaleVec, null));
                             Optional<Vec3> rightPos = getHandPosition(partialTicks, entityIn, HumanoidArm.RIGHT);
-                            rightPos.ifPresent(x -> anim.spawn(entityIn.getCommandSenderWorld(), x, scaleVec, null));
+                            rightPos.ifPresent(x -> anim.spawn(entityIn.getLevel(), x, scaleVec, null));
                         }
                     }
                 }
@@ -76,10 +76,10 @@ public class MKPlayerRenderer extends PlayerRenderer {
                             Vec3 scaleVec = new Vec3(scale, scale, scale);
                             Vec3 leftPos = getFirstPersonHandPosition(HumanoidArm.LEFT,
                                     (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));
-                            anim.spawn(playerIn.getCommandSenderWorld(), leftPos, scaleVec, null);
+                            anim.spawn(playerIn.getLevel(), leftPos, scaleVec, null);
                             Vec3 rightPos = getFirstPersonHandPosition(HumanoidArm.RIGHT,
                                     (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));
-                            anim.spawn(playerIn.getCommandSenderWorld(), rightPos, scaleVec, null );
+                            anim.spawn(playerIn.getLevel(), rightPos, scaleVec, null );
                         }
                     }
                 }

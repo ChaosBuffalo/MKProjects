@@ -61,7 +61,7 @@ public class MobFactionHandler implements IMobFaction {
 
     public void setFactionName(ResourceLocation factionName) {
         setFactionNameInternal(factionName);
-        if (!getEntity().getCommandSenderWorld().isClientSide) {
+        if (!getEntity().getLevel().isClientSide()) {
             syncToAllTracking();
         }
     }

@@ -86,11 +86,11 @@ public class MKEntitySummonAbility extends MKAbility {
                 UUID id = casterData instanceof MKPlayerData playerData ?
                         playerData.getPersonaManager().getActivePersona().getPersonaId() :
                         MKNpc.getNpcData(castingEntity).map(IEntityNpcData::getSpawnID).orElse(castingEntity.getUUID());
-                Entity entity = def.createEntity(castingEntity.getCommandSenderWorld(), target.getPosition().get(), id, context.getSkill(summoningSkill));
+                Entity entity = def.createEntity(castingEntity.getLevel(), target.getPosition().get(), id, context.getSkill(summoningSkill));
                 MKPet<MKEntity> pet = MKPet.makePetFromEntity(MKEntity.class, getAbilityId(), entity);
                 if (pet.getEntity() != null) {
                     casterData.getPets().addPet(pet);
-                    castingEntity.getCommandSenderWorld().addFreshEntity(pet.getEntity());
+                    castingEntity.getLevel().addFreshEntity(pet.getEntity());
                     pet.getEntity().setNoncombatBehavior(new PetNonCombatBehavior(castingEntity));
                     pet.getEntity().setNonCombatMoveType(MKEntity.NonCombatMoveType.STATIONARY);
                     MKNpc.getNpcData(pet.getEntity()).ifPresent(x -> x.setMKSpawned(true));

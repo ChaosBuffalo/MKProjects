@@ -174,7 +174,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
     }
 
     public static ParticleEffectInstanceTracker getTracker(Entity entity) {
-        if (!entity.getCommandSenderWorld().isClientSide()) {
+        if (!entity.getLevel().isClientSide()) {
             return new ParticleEffectInstanceTrackerServer(entity);
         } else {
             return new ParticleEffectInstanceTracker(entity);

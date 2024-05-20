@@ -97,7 +97,7 @@ public class MKWeaponsEventHandler {
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
         LivingEntity livingTarget = event.getEntity();
-        if (livingTarget.level.isClientSide)
+        if (livingTarget.getLevel().isClientSide())
             return;
         DamageSource source = event.getSource();
         Entity trueSource = source.getEntity();

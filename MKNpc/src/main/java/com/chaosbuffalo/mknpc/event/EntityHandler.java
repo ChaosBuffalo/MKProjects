@@ -88,7 +88,7 @@ public class EntityHandler {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onEntityInteract(PlayerInteractEvent.RightClickBlock event) {
         Level level = event.getLevel();
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return;
         }
 
@@ -143,7 +143,7 @@ public class EntityHandler {
 
     @SubscribeEvent
     public static void onSetupDialogue(PlayerNpcDialogueTreeGatherEvent event) {
-        if (event.getEntity().level.isClientSide) {
+        if (event.getEntity().getLevel().isClientSide()) {
             return;
         }
         MKNpc.LOGGER.debug("Setting up dialogue between {} and {}", event.getSpeaker(), event.getEntity());
@@ -194,7 +194,7 @@ public class EntityHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDeathEvent(LivingDeathEvent event) {
-        if (event.getEntity().level.isClientSide) {
+        if (event.getEntity().getLevel().isClientSide()) {
             return;
         }
 

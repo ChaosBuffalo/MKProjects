@@ -55,7 +55,7 @@ public class QuestGiverInventoryContainer extends ChestMenu {
             return;
         }
         Optional<? extends IPlayerQuestingData> playerQuestOpt = MKNpc.getPlayerQuestData(playerIn).resolve();
-        if (!playerIn.getLevel().isClientSide && playerQuestOpt.isPresent()) {
+        if (!playerIn.getLevel().isClientSide() && playerQuestOpt.isPresent()) {
             IPlayerQuestingData playerQuest = playerQuestOpt.get();
             Collection<PlayerQuestChainInstance> chains = playerQuest.getQuestChains();
             for (PlayerQuestChainInstance chain : chains) {

@@ -27,7 +27,7 @@ public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
     }
 
     private EntityEffectBuilder(LivingEntity caster, Vec3 position) {
-        effect = createEntity(caster.getCommandSenderWorld(), position);
+        effect = createEntity(caster.getLevel(), position);
         effect.setOwner(caster);
     }
 

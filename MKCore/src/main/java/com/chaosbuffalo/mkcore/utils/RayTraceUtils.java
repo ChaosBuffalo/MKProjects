@@ -46,7 +46,7 @@ public class RayTraceUtils {
     public static BlockHitResult rayTraceBlocks(Entity entity, Vec3 from, Vec3 to, boolean stopOnLiquid) {
         ClipContext.Fluid mode = stopOnLiquid ? ClipContext.Fluid.SOURCE_ONLY : ClipContext.Fluid.NONE;
         ClipContext context = new ClipContext(from, to, ClipContext.Block.COLLIDER, mode, entity);
-        return entity.getCommandSenderWorld().clip(context);
+        return entity.getLevel().clip(context);
     }
 
     public static HitResult rayTraceEntities(Level world, Vec3 from, Vec3 to, Vec3 aaExpansion, float aaGrowth,
@@ -118,7 +118,7 @@ public class RayTraceUtils {
         if (block.getType() == HitResult.Type.BLOCK)
             to = block.getLocation();
 
-        EntityHitResult entity = rayTraceEntities(clazz, mainEntity.getCommandSenderWorld(), from, to, Vec3.ZERO, 0.5f, 0.5f, entityFilter);
+        EntityHitResult entity = rayTraceEntities(clazz, mainEntity.getLevel(), from, to, Vec3.ZERO, 0.5f, 0.5f, entityFilter);
 
         if (block.getType() == HitResult.Type.MISS) {
             return entity;

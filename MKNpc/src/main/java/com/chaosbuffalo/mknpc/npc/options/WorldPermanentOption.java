@@ -22,7 +22,7 @@ public abstract class WorldPermanentOption extends NpcDefinitionOption {
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
-        ContentDB.tryGetLevelData(entity.getCommandSenderWorld()).ifPresent(worldCap -> {
+        ContentDB.tryGetLevelData(entity.getLevel()).ifPresent(worldCap -> {
             ensureGenerated(definition, WorldNpcDataHandler.getSpawnIdForEntity(entity), worldCap);
             applyFromWorld(definition, entity, worldCap);
         });

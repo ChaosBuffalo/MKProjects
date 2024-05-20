@@ -51,7 +51,7 @@ public class PacketHandler {
     }
 
     public static <T> void sendToTrackingMaybeSelf(T msg, Entity entity) {
-        if (entity.level.isClientSide)
+        if (entity.getLevel().isClientSide())
             return;
 
         if (entity instanceof ServerPlayer serverPlayer) {

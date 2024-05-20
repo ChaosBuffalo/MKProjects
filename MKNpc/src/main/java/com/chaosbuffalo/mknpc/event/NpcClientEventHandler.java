@@ -76,7 +76,7 @@ public class NpcClientEventHandler {
                                 if (!objectiveData.isComplete()) {
                                     Map<String, GlobalPos> posMap = objectiveData.getBlockPosData();
                                     for (GlobalPos pos : posMap.values()) {
-                                        if (pos.dimension().equals(player.getCommandSenderWorld().dimension()) && !alreadySeen.contains(pos)) {
+                                        if (pos.dimension().equals(player.getLevel().dimension()) && !alreadySeen.contains(pos)) {
                                             event.getLevelRenderer().addParticle(CoreParticles.INDICATOR_PARTICLE.get(), true,
                                                     pos.pos().getX() + 0.5, pos.pos().getY() + 1.0,
                                                     pos.pos().getZ() + 0.5, 0.0, 0.0, 0.0);

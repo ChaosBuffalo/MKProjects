@@ -27,7 +27,7 @@ public abstract class TrailProjectileEntity extends BaseProjectileEntity {
             double y = Mth.lerp(partialTicks, this.yo, this.getY());
             double z = Mth.lerp(partialTicks, this.zo, this.getZ());
             double scale = Math.min((float) (tickCount) / preFireTicks, 1.0);
-            trailAnimation.spawn(getCommandSenderWorld(), new Vec3(x, y, z), new Vec3(scale, scale, scale), null);
+            trailAnimation.spawn(getLevel(), new Vec3(x, y, z), new Vec3(scale, scale, scale), null);
         }
     }
 
