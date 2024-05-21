@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 public abstract class AbilityPageBase extends PlayerPageBase implements IAbilityScreen {
     protected MKAbility draggingAbility;
@@ -27,7 +28,7 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         return GuiTextures.DATA_BOX_SHORT;
     }
 
-    protected abstract Iterable<MKAbility> getSortedAbilityList();
+    protected abstract List<MKAbility> getSortedAbilityList();
 
     public ScrollingListPanelLayout getAbilityScrollPanel(int xPos, int yPos, int width, int height) {
         ScrollingListPanelLayout panel = new ScrollingListPanelLayout(xPos, yPos, width, height);
@@ -38,13 +39,16 @@ public abstract class AbilityPageBase extends PlayerPageBase implements IAbility
         stackLayout.setMargins(4, 4, 4, 4);
         stackLayout.setPaddings(0, 2, 2, 2);
         stackLayout.doSetChildWidth(true);
-        getSortedAbilityList()
-                .forEach(ability -> {
-                    MKLayout abilityEntry = new AbilityListEntry(0, 0, 16, font, this, ability);
-                    stackLayout.addWidget(abilityEntry);
-                    MKRectangle div = new MKRectangle(0, 0, panel.getListScrollView().getWidth() - 8, 1, 0x99ffffff);
-                    stackLayout.addWidget(div);
-                });
+        List<MKAbility> abilities = getSortedAbilityList();
+        int count = abilities.size();
+        for (int i = 0; i < count; i++) {
+            MKLayout abilityEntry = new AbilityListEntry(0, 0, 16, font, this, abilities.get(i));
+            stackLayout.addWidget(abilityEntry);
+            if (i != count - 1) {
+                MKRectangle div = new MKRectangle(0, 0, panel.getListScrollView().getWidth() - 8, 1, 0x99ffffff);
+                stackLayout.addWidget(div);
+            }
+        }
         panel.setList(stackLayout);
         return panel;
     }
