@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
@@ -80,13 +81,13 @@ public interface IMKEntityStats {
         return (float) getEntity().getAttributeValue(MKAttributes.BUFF_DURATION);
     }
 
-    float getAbilityManaCost(MKAbility ability);
+    float getAbilityManaCost(MKAbilityInfo abilityInfo);
 
     int getAbilityCooldown(MKAbility ability);
 
     int getAbilityCastTime(MKAbility ability);
 
-    boolean canActivateAbility(MKAbility ability);
+    boolean canActivateAbility(MKAbilityInfo abilityInfo);
 
     void setTimer(ResourceLocation id, int cooldown);
 

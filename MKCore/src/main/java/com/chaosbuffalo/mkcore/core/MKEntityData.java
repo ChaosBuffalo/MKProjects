@@ -19,7 +19,7 @@ public class MKEntityData implements IMKEntityData {
     private final LivingEntity entity;
     private final AbilityExecutor abilityExecutor;
     private final MobStats stats;
-    private final Lazy<EntityEquipment> equipment;
+    private final EntityEquipment equipment;
     private final MobAbilityKnowledge abilities;
     private final CombatExtensionModule combatExtensionModule;
     private final EntityEffectHandler effectHandler;
@@ -33,7 +33,7 @@ public class MKEntityData implements IMKEntityData {
         abilities = new MobAbilityKnowledge(this);
         abilityExecutor = new AbilityExecutor(this);
         stats = new MobStats(this);
-        equipment = Lazy.of(() -> new EntityEquipment(this));
+        equipment = new EntityEquipment(this);
         combatExtensionModule = new CombatExtensionModule(this);
         effectHandler = new EntityEffectHandler(this);
         pets = new EntityPetModule(this);
@@ -73,7 +73,7 @@ public class MKEntityData implements IMKEntityData {
 
     @Override
     public EntityEquipment getEquipment() {
-        return equipment.get();
+        return equipment;
     }
 
     public void setInstanceTracker(@Nullable ParticleEffectInstanceTracker instanceTracker) {
