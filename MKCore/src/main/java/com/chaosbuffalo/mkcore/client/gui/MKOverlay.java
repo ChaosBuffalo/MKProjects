@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkcore.client.gui;
 
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.client.gui.widgets.OnScreenXpBarWidget;
@@ -337,7 +336,7 @@ public class MKOverlay implements LayeredDraw.Layer {
 
             MKAbility ability = abilityInfo.getAbility();
 
-            float manaCost = data.getStats().getAbilityManaCost(ability);
+            float manaCost = data.getStats().getAbilityManaCost(abilityInfo);
             if (!executor.isCasting() && data.getStats().getMana() >= manaCost) {
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             } else {
@@ -355,7 +354,6 @@ public class MKOverlay implements LayeredDraw.Layer {
                 cooldownFactor = globalCooldown / ClientEventHandler.getTotalGlobalCooldown();
             }
 
-            // TODO: introduce min cooldown time so there is always a visual indicator that it's on cooldown
             if (cooldownFactor > 0) {
                 int coolDownHeight = (int) (cooldownFactor * ABILITY_ICON_SIZE);
                 if (coolDownHeight < 1) {
