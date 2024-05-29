@@ -106,6 +106,10 @@ public class MKActiveEffect {
         return behaviour;
     }
 
+    public MKEffectTickAction tick(IMKEntityData entityData) {
+        return behaviour.behaviourTick(entityData, this);
+    }
+
     public int getDuration() {
         return behaviour.getDuration();
     }

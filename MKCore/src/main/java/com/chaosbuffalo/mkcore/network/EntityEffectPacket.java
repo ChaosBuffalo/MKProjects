@@ -77,10 +77,8 @@ public class EntityEffectPacket {
         }
     }
 
-    public static void handle(EntityEffectPacket packet, Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> ClientHandler.handleClient(packet));
-        ctx.setPacketHandled(true);
+    public static void handleMainThread(EntityEffectPacket packet, Supplier<NetworkEvent.Context> supplier) {
+        ClientHandler.handleClient(packet);
     }
 
     static class ClientHandler {

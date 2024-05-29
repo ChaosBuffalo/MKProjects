@@ -170,7 +170,7 @@ public class MKPlayerData implements IMKEntityData {
         getStats().onJoinLevel();
         if (isServerSide()) {
             getPersonaManager().onJoinWorld();
-            getEffects().onJoinWorld();
+            getEffects().onJoinLevel();
         }
     }
 

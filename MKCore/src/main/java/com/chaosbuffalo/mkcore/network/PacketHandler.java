@@ -62,8 +62,11 @@ public class PacketHandler {
                 WriteAnimationPacket::new, WriteAnimationPacket::handle);
         networkChannel.registerMessage(id++, ForgetAbilitiesRequestPacket.class, ForgetAbilitiesRequestPacket::toBytes,
                 ForgetAbilitiesRequestPacket::new, ForgetAbilitiesRequestPacket::handle);
-        networkChannel.registerMessage(id++, EntityEffectPacket.class, EntityEffectPacket::toBytes,
-                EntityEffectPacket::new, EntityEffectPacket::handle);
+        networkChannel.messageBuilder(EntityEffectPacket.class, id++)
+                .consumerMainThread(EntityEffectPacket::handleMainThread)
+                .encoder(EntityEffectPacket::toBytes)
+                .decoder(EntityEffectPacket::new)
+                .add();
         networkChannel.messageBuilder(EntityDataUpdatePacket.class, id++)
                 .consumerMainThread(EntityDataUpdatePacket::handleMainThread)
                 .encoder(EntityDataUpdatePacket::toBytes)

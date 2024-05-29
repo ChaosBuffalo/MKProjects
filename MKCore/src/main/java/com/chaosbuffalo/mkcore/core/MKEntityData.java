@@ -88,7 +88,7 @@ public class MKEntityData implements IMKEntityData {
     @Override
     public void onJoinWorld() {
         if (isServerSide()) {
-            getEffects().onJoinWorld();
+            getEffects().onJoinLevel();
         }
     }
 

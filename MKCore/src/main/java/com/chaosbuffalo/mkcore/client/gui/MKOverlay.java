@@ -4,6 +4,7 @@ package com.chaosbuffalo.mkcore.client.gui;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.client.gui.widgets.OnScreenXpBarWidget;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -331,13 +332,11 @@ public class MKOverlay implements IGuiOverlay {
         float globalCooldown = executor.getGlobalCooldownPercent(partialTicks);
 
         for (int i = 0; i < slotCount; i++) {
-            ResourceLocation abilityId = abilityGroup.getSlot(i);
-            if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY))
+            MKAbilityInfo abilityInfo = abilityGroup.getAbilityInfo(i);
+            if (abilityInfo == null)
                 continue;
 
-            MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-            if (ability == null)
-                continue;
+            MKAbility ability = abilityInfo.getAbility();
 
             float manaCost = data.getStats().getAbilityManaCost(ability);
             if (!executor.isCasting() && data.getStats().getMana() >= manaCost) {
@@ -353,7 +352,7 @@ public class MKOverlay implements IGuiOverlay {
             GuiComponent.blit(matrixStack, slotX, slotY, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
 
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            float cooldownFactor = executor.getCurrentAbilityCooldownPercent(abilityId, partialTicks);
+            float cooldownFactor = executor.getCurrentAbilityCooldownPercent(abilityInfo.getId(), partialTicks);
             if (globalCooldown > 0.0f && cooldownFactor == 0) {
                 cooldownFactor = globalCooldown / ClientEventHandler.getTotalGlobalCooldown();
             }

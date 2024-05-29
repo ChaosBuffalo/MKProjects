@@ -13,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,12 +36,12 @@ public class EntityEffectHandler {
         }
 
         public void tick() {
-            if (isEmpty() || !entityData.getEntity().isAlive())
+            if (isEmpty())
                 return;
 
             List<MKActiveEffect> activeEffects = ImmutableList.copyOf(activeEffectMap.values());
             activeEffects.forEach(active -> {
-                MKEffectTickAction action = active.getBehaviour().behaviourTick(entityData, active);
+                MKEffectTickAction action = active.tick(entityData);
                 if (action == MKEffectTickAction.Update) {
                     onEffectUpdated(active);
                 } else if (action == MKEffectTickAction.Remove) {
@@ -95,12 +96,12 @@ public class EntityEffectHandler {
         }
 
         // Server-side only
-        private void onWorldReady(MKActiveEffect activeEffect) {
-//            MKCore.LOGGER.debug("EntityEffectHandler.onWorldReady {}", activeEffect);
+        private void onLevelReady(MKActiveEffect activeEffect) {
+//            MKCore.LOGGER.debug("EntityEffectHandler.onLevelReady {}", activeEffect);
             activeEffect.getEffect().onInstanceReady(entityData, activeEffect);
         }
 
-        // Called on both sides
+        // Server-side only
         protected void onNewEffect(MKActiveEffect activeEffect) {
 //            MKCore.LOGGER.debug("EntityEffectHandler.onNewEffect {}", activeEffect);
             if (entityData.isServerSide()) {
@@ -133,21 +134,6 @@ public class EntityEffectHandler {
             }
         }
 
-        protected void sendEffectSet(MKActiveEffect activeEffect) {
-            sendEffectPacket(activeEffect, EntityEffectPacket.Action.SET);
-        }
-
-        protected void sendEffectRemove(MKActiveEffect activeEffect) {
-            sendEffectPacket(activeEffect, EntityEffectPacket.Action.REMOVE);
-        }
-
-        private void sendEffectPacket(MKActiveEffect activeEffect, EntityEffectPacket.Action action) {
-            if (entityData.isServerSide()) {
-                EntityEffectPacket packet = new EntityEffectPacket(entityData, activeEffect, action);
-                PacketHandler.sendToTrackingAndSelf(packet, entityData.getEntity());
-            }
-        }
-
         public boolean isEffectActive(MKEffect effect) {
             return activeEffectMap.containsKey(effect);
         }
@@ -170,9 +156,9 @@ public class EntityEffectHandler {
             return activeEffectMap.values().stream();
         }
 
-        public void onWorldReady() {
+        public void onLevelReady() {
             if (hasEffects()) {
-                effects().forEach(this::onWorldReady);
+                activeEffectMap.values().forEach(this::onLevelReady);
             }
         }
 
@@ -212,13 +198,7 @@ public class EntityEffectHandler {
         }
 
         public void clientSetEffect(MKActiveEffect activeEffect) {
-            MKActiveEffect existing = activeEffectMap.get(activeEffect.getEffect());
             activeEffectMap.put(activeEffect.getEffect(), activeEffect);
-            if (existing == null) {
-                onNewEffect(activeEffect);
-            } else {
-                onEffectUpdated(activeEffect);
-            }
         }
 
         public void clientRemoveEffect(MKActiveEffect activeEffect) {
@@ -227,7 +207,28 @@ public class EntityEffectHandler {
 
         public void clientSetAllEffects(List<MKActiveEffect> activeEffects) {
             activeEffectMap.clear();
-            activeEffects.forEach(instance -> activeEffectMap.put(instance.getEffect(), instance));
+            for (MKActiveEffect instance : activeEffects) {
+                activeEffectMap.put(instance.getEffect(), instance);
+            }
+        }
+    }
+
+    protected void sendEffectSet(MKActiveEffect activeEffect) {
+        sendEffectPacket(activeEffect, EntityEffectPacket.Action.SET);
+    }
+
+    protected void sendEffectRemove(MKActiveEffect activeEffect) {
+        sendEffectPacket(activeEffect, EntityEffectPacket.Action.REMOVE);
+    }
+
+    private void sendEffectPacket(MKActiveEffect activeEffect, EntityEffectPacket.Action action) {
+        if (entityData.isServerSide()) {
+            EntityEffectPacket packet = new EntityEffectPacket(entityData, activeEffect, action);
+            if (entityData.getEntity().isAddedToWorld()) {
+                PacketHandler.sendToTrackingAndSelf(packet, entityData.getEntity());
+            } else if (entityData.getEntity().getType() != EntityType.PLAYER) {
+                MKCore.LOGGER.warn("Tried to send effect {} ({}) to {} but not in world", activeEffect, action, entityData.getEntity());
+            }
         }
     }
 
@@ -235,19 +236,22 @@ public class EntityEffectHandler {
         return sources.computeIfAbsent(sourceId, EffectSource::new);
     }
 
+    protected boolean canTick() {
+        return entityData.getEntity().isAlive();
+    }
+
     public void tick() {
-        if (!hasEffects())
+        if (!hasEffects() || !canTick())
             return;
 
-        sources.values().stream()
-                .filter(EffectSource::hasEffects)
-                .forEach(EffectSource::tick);
+        sources.values().forEach(EffectSource::tick);
+
         checkEmpty();
     }
 
-    public void onJoinWorld() {
+    public void onJoinLevel() {
         if (entityData.isServerSide() && hasEffects()) {
-            sources.values().forEach(EffectSource::onWorldReady);
+            sources.values().forEach(EffectSource::onLevelReady);
         }
     }
 
