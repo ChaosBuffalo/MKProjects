@@ -64,7 +64,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
     }
 
     public boolean isPersonaActive(String name) {
-        return getActivePersona().getName().equalsIgnoreCase(name);
+        return getActivePersona().getName().equals(name);
     }
 
     public boolean hasPersona(String name) {
@@ -117,7 +117,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
         setActivePersona(persona);
         persona.activate();
 
-        var event = new PlayerEvents.PersonaEvent(playerData, persona);
+        var event = new PlayerEvents.PersonaEvent(persona);
         playerData.events().trigger(PlayerEvents.PERSONA_ACTIVATE, event);
         MinecraftForge.EVENT_BUS.post(new PersonaEvent.PersonaActivated(persona));
     }
@@ -125,7 +125,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
     private void dispatchDeactivation(Persona current) {
         current.deactivate();
 
-        var event = new PlayerEvents.PersonaEvent(playerData, current);
+        var event = new PlayerEvents.PersonaEvent(current);
         playerData.events().trigger(PlayerEvents.PERSONA_DEACTIVATE, event);
         MinecraftForge.EVENT_BUS.post(new PersonaEvent.PersonaDeactivated(current));
     }

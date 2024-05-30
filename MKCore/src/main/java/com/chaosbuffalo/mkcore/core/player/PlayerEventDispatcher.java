@@ -1,9 +1,7 @@
 package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
-import com.chaosbuffalo.mkcore.core.player.events.EventType;
-import com.chaosbuffalo.mkcore.core.player.events.PlayerEvent;
+import com.chaosbuffalo.mkcore.core.player.events.*;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
@@ -14,8 +12,7 @@ import java.util.function.Supplier;
 // Inspired by epicfightmod
 public class PlayerEventDispatcher {
     private final MKPlayerData playerData;
-    private final Multimap<EventType<?>, EventRecord<?>> eventMap;
-
+    private final Multimap<EventType<?>, EventRegistration<?>> eventMap;
 
     public PlayerEventDispatcher(MKPlayerData playerData) {
         this.playerData = playerData;
@@ -27,19 +24,23 @@ public class PlayerEventDispatcher {
     }
 
     public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, UUID uuid, Consumer<T> function, int priority) {
+        subscribe(eventType, () -> new EventRegistration<>(uuid, function, priority));
+    }
+
+    public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, Supplier<EventRegistration<T>> recordSupplier) {
         if (!eventType.canFire(playerData.isClientSide())) {
             return;
         }
 
-        unsubscribe(eventType, uuid);
-        var triggerRecord = new EventRecord<>(uuid, function, priority);
+        var triggerRecord = recordSupplier.get();
+        unsubscribe(eventType, triggerRecord);
         eventMap.put(eventType, triggerRecord);
     }
 
-    public <T extends PlayerEvent<?>> void unsubscribe(EventType<T> eventType, UUID ownerId) {
+    private  <T extends PlayerEvent<?>> void unsubscribe(EventType<T> eventType, EventRegistration<T> record) {
         var typeList = eventMap.get(eventType);
         if (!typeList.isEmpty()) {
-            typeList.removeIf(t -> t.matches(ownerId));
+            typeList.removeIf(t -> t.matches(record));
         }
     }
 
@@ -48,8 +49,8 @@ public class PlayerEventDispatcher {
         if (eventType.canFire(playerData.isClientSide())) {
             var typeList = eventMap.get(eventType);
             if (!typeList.isEmpty()) {
-                for (EventRecord<?> eventRecord : typeList) {
-                    ((EventRecord<T>) eventRecord).trigger(event);
+                for (EventRegistration<?> eventRegistration : typeList) {
+                    ((EventRegistration<T>) eventRegistration).trigger(event);
                 }
             }
         }
@@ -61,8 +62,8 @@ public class PlayerEventDispatcher {
             var typeList = eventMap.get(eventType);
             if (!typeList.isEmpty()) {
                 T event = eventSupplier.get();
-                for (EventRecord<?> eventRecord : typeList) {
-                    ((EventRecord<T>) eventRecord).trigger(event);
+                for (EventRegistration<?> eventRegistration : typeList) {
+                    ((EventRegistration<T>) eventRegistration).trigger(event);
                 }
             }
         }
@@ -76,24 +77,4 @@ public class PlayerEventDispatcher {
         return false;
     }
 
-    public record EventRecord<T extends PlayerEvent<?>>(UUID id, Consumer<T> callback, int priority)
-            implements Comparable<EventRecord<?>> {
-
-        public boolean matches(UUID uuid) {
-            return id.equals(uuid);
-        }
-
-        public void trigger(T args) {
-            callback.accept(args);
-        }
-
-        @Override
-        public int compareTo(EventRecord<?> o) {
-            if (matches(o.id)) {
-                return 0;
-            } else {
-                return priority > o.priority ? 1 : -1;
-            }
-        }
-    }
 }

@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKToggleAbility;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.sync.adapters.ResourceListUpdater;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncListUpdater;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
@@ -28,6 +29,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class AbilityGroup implements IPlayerSyncComponentProvider {
+    protected final Persona persona;
     protected final MKPlayerData playerData;
     protected final PlayerSyncComponent sync;
     protected final String name;
@@ -36,9 +38,10 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     private final SyncInt slots;
     protected final AbilityGroupId groupId;
 
-    public AbilityGroup(MKPlayerData playerData, String name, AbilityGroupId groupId) {
+    public AbilityGroup(Persona persona, String name, AbilityGroupId groupId) {
         sync = new PlayerSyncComponent(name);
-        this.playerData = playerData;
+        this.persona = persona;
+        this.playerData = persona.getPlayerData();
         this.name = name;
         this.groupId = groupId;
         activeAbilities = NonNullList.withSize(groupId.getMaxSlots(), MKCoreRegistry.INVALID_ABILITY);
@@ -214,7 +217,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
             return false;
         }
 
-        if (requiresAbilityKnown() && !playerData.getAbilities().knowsAbility(abilityId)) {
+        if (requiresAbilityKnown() && !persona.getAbilities().knowsAbility(abilityId)) {
             MKCore.LOGGER.error("setSlot({}, {}, {}) - player does not know ability!", groupId, index, abilityId);
             return false;
         }
@@ -249,7 +252,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY))
             return null;
 
-        return playerData.getAbilities().getAbilityInfo(abilityId);
+        return persona.getAbilities().getAbilityInfo(abilityId);
     }
 
     public void executeSlot(int index) {
@@ -272,7 +275,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY))
             return;
 
-        if (!requiresAbilityKnown() || playerData.getAbilities().knowsAbility(abilityId))
+        if (!requiresAbilityKnown() || persona.getAbilities().knowsAbility(abilityId))
             return;
 
         MKCore.LOGGER.debug("ensureValidAbility({}, {}) - bad", groupId, abilityId);

@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKAbilityKnowledge;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
 import net.minecraft.nbt.CompoundTag;
@@ -32,8 +33,8 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
                     PlayerAbilityKnowledge::createKnownAbility
             );
 
-    public PlayerAbilityKnowledge(MKPlayerData playerData) {
-        this.playerData = playerData;
+    public PlayerAbilityKnowledge(Persona persona) {
+        this.playerData = persona.getPlayerData();
         addSyncPrivate(knownAbilityUpdater);
         addSyncPrivate(poolSize);
     }

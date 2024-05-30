@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
-import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.loadout.ItemAbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.loadout.PassiveAbilityGroup;
 import net.minecraft.nbt.CompoundTag;
@@ -23,18 +23,18 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
     private final AbilityGroup basicAbilityGroup;
     private final ItemAbilityGroup itemAbilityGroup;
 
-    public PlayerAbilityLoadout(MKPlayerData playerData) {
-        basicAbilityGroup = new AbilityGroup(playerData, "basic", AbilityGroupId.Basic);
-        passiveAbilityGroup = new PassiveAbilityGroup(playerData);
-        ultimateAbilityGroup = new AbilityGroup(playerData, "ultimate", AbilityGroupId.Ultimate);
-        itemAbilityGroup = new ItemAbilityGroup(playerData);
+    public PlayerAbilityLoadout(Persona persona) {
+        basicAbilityGroup = new AbilityGroup(persona, "basic", AbilityGroupId.Basic);
+        passiveAbilityGroup = new PassiveAbilityGroup(persona);
+        ultimateAbilityGroup = new AbilityGroup(persona, "ultimate", AbilityGroupId.Ultimate);
+        itemAbilityGroup = new ItemAbilityGroup(persona);
         registerAbilityGroup(AbilityGroupId.Basic, basicAbilityGroup);
         registerAbilityGroup(AbilityGroupId.Item, itemAbilityGroup);
         registerAbilityGroup(AbilityGroupId.Passive, passiveAbilityGroup);
         registerAbilityGroup(AbilityGroupId.Ultimate, ultimateAbilityGroup);
 
-        playerData.events().subscribe(PlayerEvents.ABILITY_LEARNED, EV_ID, this::onAbilityLearn);
-        playerData.events().subscribe(PlayerEvents.ABILITY_UNLEARNED, EV_ID, this::onAbilityUnlearn);
+        persona.subscribe(PlayerEvents.ABILITY_LEARNED, EV_ID, this::onAbilityLearn);
+        persona.subscribe(PlayerEvents.ABILITY_UNLEARNED, EV_ID, this::onAbilityUnlearn);
     }
 
     @Override

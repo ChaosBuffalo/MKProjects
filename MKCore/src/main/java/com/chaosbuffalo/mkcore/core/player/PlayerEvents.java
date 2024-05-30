@@ -22,8 +22,8 @@ public class PlayerEvents {
 
         private final Persona persona;
 
-        public PersonaEvent(MKPlayerData playerData, Persona persona) {
-            super(playerData);
+        public PersonaEvent(Persona persona) {
+            super(persona.getPlayerData());
             this.persona = persona;
         }
 

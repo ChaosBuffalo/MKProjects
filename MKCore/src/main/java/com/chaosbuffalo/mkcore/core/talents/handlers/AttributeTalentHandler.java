@@ -2,8 +2,8 @@ package com.chaosbuffalo.mkcore.core.talents.handlers;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
-import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
 import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import com.chaosbuffalo.mkcore.core.talents.TalentTypeHandler;
 import com.chaosbuffalo.mkcore.core.talents.nodes.AttributeTalentNode;
@@ -18,12 +18,14 @@ import java.util.*;
 public class AttributeTalentHandler extends TalentTypeHandler {
     private static final UUID EV_ID = UUID.fromString("e542745d-aa57-4093-b734-3df4deb101ff");
 
+    protected final MKPlayerData playerData;
     private final Map<AttributeTalent, AttributeEntry> attributeEntryMap = new HashMap<>();
 
-    public AttributeTalentHandler(MKPlayerData playerData) {
-        super(playerData);
-        playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated, EventPriorities.CONSUMER);
-        playerData.events().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated, EventPriorities.CONSUMER);
+    public AttributeTalentHandler(Persona persona) {
+        super(persona);
+        playerData = persona.getPlayerData();
+        persona.subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
+        persona.subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated);
     }
 
     private void onPersonaActivated(PlayerEvents.PersonaEvent event) {

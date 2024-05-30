@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkcore.core.player.loadout;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKPassiveAbility;
-import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
@@ -15,10 +15,10 @@ import java.util.UUID;
 public class PassiveAbilityGroup extends AbilityGroup {
     private static final UUID EV_ID = UUID.fromString("137dc36b-c68b-4ace-8627-78c4dc1b6b85");
 
-    public PassiveAbilityGroup(MKPlayerData playerData) {
-        super(playerData, "passive", AbilityGroupId.Passive);
-        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_LEVEL, EV_ID, this::onJoinWorld);
-        playerData.events().subscribe(PlayerEvents.SKILL_LEVEL_CHANGE, EV_ID, this::onSkillChange);
+    public PassiveAbilityGroup(Persona persona) {
+        super(persona, "passive", AbilityGroupId.Passive);
+        persona.subscribe(PlayerEvents.SERVER_JOIN_LEVEL, EV_ID, this::onJoinLevel);
+        persona.subscribe(PlayerEvents.SKILL_LEVEL_CHANGE, EV_ID, this::onSkillChange);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
         removePassive(abilityInfo);
     }
 
-    private void onJoinWorld(PlayerEvents.JoinLevelServerEvent event) {
+    private void onJoinLevel(PlayerEvents.JoinLevelServerEvent event) {
         activateAllPassives(true);
     }
 

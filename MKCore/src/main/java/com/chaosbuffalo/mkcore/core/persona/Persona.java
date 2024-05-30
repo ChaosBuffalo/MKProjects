@@ -3,6 +3,10 @@ package com.chaosbuffalo.mkcore.core.persona;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.*;
+import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
+import com.chaosbuffalo.mkcore.core.player.events.EventType;
+import com.chaosbuffalo.mkcore.core.player.events.PersonaEventRegistration;
+import com.chaosbuffalo.mkcore.core.player.events.PlayerEvent;
 import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import net.minecraft.nbt.CompoundTag;
@@ -11,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncComponentProvider {
     private final String name;
@@ -28,14 +33,14 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         this.name = name;
         data = playerData;
         personaId = UUID.randomUUID();
-        abilities = new PlayerAbilityKnowledge(playerData);
-        talents = new PlayerTalentKnowledge(playerData);
-        loadout = new PlayerAbilityLoadout(playerData);
-        entitlements = new PlayerEntitlementKnowledge(playerData);
+        abilities = new PlayerAbilityKnowledge(this);
+        talents = new PlayerTalentKnowledge(this);
+        loadout = new PlayerAbilityLoadout(this);
+        entitlements = new PlayerEntitlementKnowledge(this);
         addSyncChild(abilities);
         addSyncChild(talents);
         addSyncChild(loadout);
-        skills = new PlayerSkills(playerData);
+        skills = new PlayerSkills(this);
     }
 
     public String getName() {
@@ -112,6 +117,18 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         onPersonaDeactivated();
     }
 
+    public boolean isActive() {
+        return getPlayerData().getPersonaManager().getActivePersona() == this;
+    }
+
+    public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, UUID uuid, Consumer<T> function) {
+        subscribe(eventType, uuid, function, EventPriorities.CONSUMER);
+    }
+
+    public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, UUID uuid, Consumer<T> function, int priority) {
+        getPlayerData().events().subscribe(eventType, () -> new PersonaEventRegistration<>(this, uuid, function, priority));
+    }
+
     private CompoundTag serializeExtensions() {
         CompoundTag root = new CompoundTag();
         extensions.values().forEach(extension -> {
@@ -158,5 +175,13 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         loadout.deserializeNBT(tag.getCompound("loadout"));
         deserializeExtensions(tag.getCompound("extensions"));
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Persona{" +
+                "name='" + name + '\'' +
+                ", personaId=" + personaId +
+                '}';
     }
 }
