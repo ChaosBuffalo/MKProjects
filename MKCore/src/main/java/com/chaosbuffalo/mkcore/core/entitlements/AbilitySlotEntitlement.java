@@ -48,7 +48,7 @@ public class AbilitySlotEntitlement extends MKEntitlement {
 
         @Override
         public void onRecordUpdated(EntitlementInstance record) {
-            if (record.getEntitlement() instanceof AbilitySlotEntitlement slotEntitlement) {
+            if (record.entitlement() instanceof AbilitySlotEntitlement slotEntitlement) {
                 recalculateSlots(slotEntitlement);
             }
         }
