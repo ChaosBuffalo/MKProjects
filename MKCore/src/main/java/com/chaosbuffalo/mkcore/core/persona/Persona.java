@@ -22,7 +22,7 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     private final PlayerSyncComponent sync = new PlayerSyncComponent("knowledge");
     private final PlayerAbilityKnowledge abilities;
     private final PlayerTalentKnowledge talents;
-    private final PlayerEntitlementKnowledge entitlements;
+    private final PlayerEntitlements entitlements;
     private final PlayerAbilityLoadout loadout;
     private final PlayerSkills skills;
     private final MKPlayerData data;
@@ -36,7 +36,7 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         abilities = new PlayerAbilityKnowledge(this);
         talents = new PlayerTalentKnowledge(this);
         loadout = new PlayerAbilityLoadout(this);
-        entitlements = new PlayerEntitlementKnowledge(this);
+        entitlements = new PlayerEntitlements(this);
         addSyncChild(abilities);
         addSyncChild(talents);
         addSyncChild(loadout);
@@ -80,7 +80,7 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         return talents;
     }
 
-    public PlayerEntitlementKnowledge getEntitlements() {
+    public PlayerEntitlements getEntitlements() {
         return entitlements;
     }
 
@@ -93,7 +93,8 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         return extension == null ? null : clazz.cast(extension);
     }
 
-    public void onPersonaActivated() {
+    public void activate() {
+        sync.attach(data.getSyncController());
         MKCore.LOGGER.debug("PlayerKnowledge.onPersonaActivated");
         entitlements.onPersonaActivated();
         talents.onPersonaActivated();
@@ -101,20 +102,11 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         loadout.onPersonaActivated();
     }
 
-    public void onPersonaDeactivated() {
+    public void deactivate() {
+        sync.detach(data.getSyncController());
         MKCore.LOGGER.debug("PlayerKnowledge.onPersonaDeactivated");
         skills.onPersonaDeactivated();
         loadout.onPersonaDeactivated();
-    }
-
-    public void activate() {
-        sync.attach(data.getSyncController());
-        onPersonaActivated();
-    }
-
-    public void deactivate() {
-        sync.detach(data.getSyncController());
-        onPersonaDeactivated();
     }
 
     public boolean isActive() {

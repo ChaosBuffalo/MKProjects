@@ -8,42 +8,18 @@ import net.minecraft.core.UUIDUtil;
 
 import java.util.UUID;
 
-public class EntitlementInstance implements IRecordInstance<EntitlementInstance> {
+public record EntitlementInstance(MKEntitlement entitlement, UUID instanceId)
+        implements IRecordInstance<EntitlementInstance> {
 
     public static final Codec<EntitlementInstance> CODEC = RecordCodecBuilder.<EntitlementInstance>mapCodec(builder ->
                     builder.group(
-                            MKCoreRegistry.ENTITLEMENTS.getCodec().fieldOf("entitlement").forGetter(EntitlementInstance::getEntitlement),
-                            UUIDUtil.STRING_CODEC.fieldOf("instanceId").forGetter(EntitlementInstance::getUUID)
+                            MKCoreRegistry.ENTITLEMENTS.getCodec().fieldOf("entitlement").forGetter(EntitlementInstance::entitlement),
+                            UUIDUtil.STRING_CODEC.fieldOf("instanceId").forGetter(EntitlementInstance::instanceId)
                     ).apply(builder, EntitlementInstance::new))
             .codec();
-
-
-    protected final MKEntitlement entitlement;
-    protected final UUID uuid;
-
-    public EntitlementInstance(MKEntitlement entitlement, UUID uuid) {
-        this.entitlement = entitlement;
-        this.uuid = uuid;
-    }
-
-    public UUID getUUID() {
-        return uuid;
-    }
-
-    public MKEntitlement getEntitlement() {
-        return entitlement;
-    }
 
     @Override
     public EntitlementType getRecordType() {
         return entitlement.getEntitlementType();
-    }
-
-    @Override
-    public String toString() {
-        return "EntitlementInstance{" +
-                "entitlement=" + entitlement +
-                ", uuid=" + uuid +
-                '}';
     }
 }

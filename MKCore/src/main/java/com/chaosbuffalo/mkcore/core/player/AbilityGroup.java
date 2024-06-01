@@ -69,7 +69,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     }
 
     public int getMaximumSlotCount() {
-        return activeAbilities.size();
+        return groupId.getMaxSlots();
     }
 
     protected boolean requiresAbilityKnown() {
@@ -271,46 +271,48 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         clearAbility(info.getId());
     }
 
-    private void ensureValidAbility(ResourceLocation abilityId) {
-        if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY))
-            return;
-
-        if (!requiresAbilityKnown() || persona.getAbilities().knowsAbility(abilityId))
-            return;
-
-        MKCore.LOGGER.debug("ensureValidAbility({}, {}) - bad", groupId, abilityId);
-        clearAbility(abilityId);
-    }
-
-    private void rebuildActiveToggleMap() {
-        // Inspect the player's action bar and see if there are any toggle abilities slotted.
-        // If there are, and the corresponding toggle effect is active on the player, set the toggle exclusive group
-        for (int i = 0; i < getMaximumSlotCount(); i++) {
-            MKAbilityInfo abilityInfo = getAbilityInfo(i);
-            if (abilityInfo != null && abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
-                if (toggle.isEffectActive(playerData)) {
-                    playerData.getAbilityExecutor().setToggleGroupAbility(toggle.getToggleGroupId(), toggle);
-                }
+    protected void onPersonaActivatedAbility(@Nonnull MKAbilityInfo abilityInfo) {
+        if (abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
+            if (toggle.isEffectActive(playerData)) {
+                playerData.getAbilityExecutor().setToggleGroupAbility(toggle.getToggleGroupId(), toggle);
             }
         }
     }
 
-    private void deactivateCurrentToggleAbilities() {
+    protected void onPersonaDeactivatedAbility(@Nonnull MKAbilityInfo abilityInfo) {
+        if (abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
+            toggle.removeEffect(playerData);
+        }
+    }
+
+    private void validateActiveAbilities() {
+        int current = getCurrentSlotCount();
         for (int i = 0; i < getMaximumSlotCount(); i++) {
+            if (i >= current) {
+                clearSlot(i);
+                continue;
+            }
+
             MKAbilityInfo abilityInfo = getAbilityInfo(i);
-            if (abilityInfo != null && abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
-                toggle.removeEffect(playerData);
+            if (abilityInfo == null) {
+                clearSlot(i);
+            } else {
+                onPersonaActivatedAbility(abilityInfo);
             }
         }
     }
 
     public void onPersonaActivated() {
-        activeAbilities.forEach(this::ensureValidAbility);
-        rebuildActiveToggleMap();
+        validateActiveAbilities();
     }
 
     public void onPersonaDeactivated() {
-        deactivateCurrentToggleAbilities();
+        for (int i = 0; i < getMaximumSlotCount(); i++) {
+            MKAbilityInfo abilityInfo = getAbilityInfo(i);
+            if (abilityInfo != null) {
+                onPersonaDeactivatedAbility(abilityInfo);
+            }
+        }
     }
 
     protected <T> T serialize(DynamicOps<T> ops) {
@@ -338,10 +340,10 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     }
 
     private <T> void deserializeAbilityList(Dynamic<T> dynamic, BiConsumer<Integer, ResourceLocation> consumer) {
-        List<DataResult<String>> passives = dynamic.asList(Dynamic::asString);
-        for (int i = 0; i < passives.size(); i++) {
+        List<DataResult<String>> abilities = dynamic.asList(Dynamic::asString);
+        for (int i = 0; i < abilities.size(); i++) {
             int index = i;
-            passives.get(i).resultOrPartial(MKCore.LOGGER::error).ifPresent(idString -> {
+            abilities.get(i).resultOrPartial(MKCore.LOGGER::error).ifPresent(idString -> {
                 ResourceLocation abilityId = new ResourceLocation(idString);
                 MKAbility ability = MKCoreRegistry.getAbility(abilityId);
                 if (ability != null) {

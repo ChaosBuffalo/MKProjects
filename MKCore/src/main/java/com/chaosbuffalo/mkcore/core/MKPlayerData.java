@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.editor.PlayerEditorModule;
+import com.chaosbuffalo.mkcore.core.player.PlayerEntitlements;
 import com.chaosbuffalo.mkcore.core.entity.EntityRiderModule;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtension;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
@@ -111,7 +112,7 @@ public class MKPlayerData implements IMKEntityData {
         return getPersona().getTalents();
     }
 
-    public PlayerEntitlementKnowledge getEntitlements() {
+    public PlayerEntitlements getEntitlements() {
         return getPersona().getEntitlements();
     }
 

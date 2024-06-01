@@ -30,7 +30,7 @@ public class AbilityPoolEntitlement extends MKEntitlement {
 
         @Override
         public void onRecordUpdated(EntitlementInstance record) {
-            int count = persona.getEntitlements().getEntitlementLevel(record.getEntitlement());
+            int count = persona.getEntitlements().getEntitlementLevel(record.entitlement());
             persona.getAbilities().setAbilityPoolSize(count + GameConstants.DEFAULT_ABILITY_POOL_SIZE);
         }
 
