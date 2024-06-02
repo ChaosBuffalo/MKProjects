@@ -276,6 +276,17 @@ public class EntityEffectHandler {
         return sources.values().stream().anyMatch(s -> s.isEffectActive(effect));
     }
 
+    public boolean isEffectActive(MKEffect effect, UUID sourceId) {
+        if (!hasEffects())
+            return false;
+        EffectSource source = sources.get(sourceId);
+        return source != null && source.isEffectActive(effect);
+    }
+
+    public boolean isEffectActive(MKEffect effect, IMKEntityData casterData) {
+        return isEffectActive(effect, casterData.getEntity().getUUID());
+    }
+
     private void checkEmpty() {
         sources.values().removeIf(EffectSource::isEmpty);
     }
@@ -286,11 +297,15 @@ public class EntityEffectHandler {
         }
     }
 
-    public void removeEffect(UUID sourceId, MKEffect effect) {
+    public void removeEffect(MKEffect effect, UUID sourceId) {
         EffectSource source = sources.get(sourceId);
         if (source != null) {
             source.removeEffect(effect);
         }
+    }
+
+    public void removeEffect(MKEffect effect, IMKEntityData casterData) {
+        removeEffect(effect, casterData.getEntity().getUUID());
     }
 
     public void clearEffects() {
@@ -300,14 +315,14 @@ public class EntityEffectHandler {
     }
 
     public void addEffect(MKEffectBuilder<?> builder) {
-        addEffect(builder.getSourceId(), builder.createApplication());
+        addEffect(builder.createApplication(), builder.getSourceId());
     }
 
     public void addEffect(MKActiveEffect activeEffect) {
-        addEffect(activeEffect.getSourceId(), activeEffect);
+        addEffect(activeEffect, activeEffect.getSourceId());
     }
 
-    public void addEffect(UUID sourceId, MKActiveEffect effectInstance) {
+    private void addEffect(MKActiveEffect effectInstance, UUID sourceId) {
         getOrCreateSource(sourceId).addEffect(effectInstance);
     }
 
