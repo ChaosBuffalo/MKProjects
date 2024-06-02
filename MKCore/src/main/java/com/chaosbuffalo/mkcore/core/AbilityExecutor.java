@@ -77,7 +77,7 @@ public class AbilityExecutor {
                 }
             }
             if (context != null) {
-                ability.executeWithContext(entityData, context, abilityInfo);
+                startAbility(context, abilityInfo);
             } else {
                 MKCore.LOGGER.warn("Entity {} tried to execute ability {} with a null context!", entityData.getEntity(), abilityInfo.getId());
             }
