@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.abilities.projectiles;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
+import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.mojang.serialization.Codec;

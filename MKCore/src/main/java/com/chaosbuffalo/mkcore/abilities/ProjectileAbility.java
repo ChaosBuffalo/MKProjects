@@ -1,7 +1,8 @@
-package com.chaosbuffalo.mkcore.abilities.projectiles;
+package com.chaosbuffalo.mkcore.abilities;
 
 
-import com.chaosbuffalo.mkcore.abilities.*;
+import com.chaosbuffalo.mkcore.abilities.projectiles.SimpleProjectileBehavior;
+import com.chaosbuffalo.mkcore.abilities.projectiles.ProjectileCastBehavior;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
@@ -12,6 +13,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.BooleanAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
+import com.chaosbuffalo.mkcore.utils.location.PerpendicularLineLocationProvider;
 import com.chaosbuffalo.mkcore.utils.location.SingleLocationProvider;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
@@ -34,8 +36,8 @@ public abstract class ProjectileAbility extends MKAbility {
     protected final ResourceLocationAttribute trailParticles = new ResourceLocationAttribute("trail_particles", EMPTY_PARTICLES);
     protected final ResourceLocationAttribute detonateParticles = new ResourceLocationAttribute("detonate_particles", EMPTY_PARTICLES);
     protected final CodecAttribute<ProjectileCastBehavior> castBehavior = new CodecAttribute<>("castBehavior",
-            new SingleProjectileBehavior(new SingleLocationProvider(new Vec3(0.5f, 0.0f, 0.5f), 0.75f)),
-            ProjectileCastBehavior.CODEC);
+            new SimpleProjectileBehavior(new SingleLocationProvider(
+                    new Vec3(0.5f, 0.0f, 0.5f), 0.75f)), ProjectileCastBehavior.CODEC);
 
     protected final BooleanAttribute solveBallisticsForNpc = new BooleanAttribute("npc_solve_ballistics", true);
 
