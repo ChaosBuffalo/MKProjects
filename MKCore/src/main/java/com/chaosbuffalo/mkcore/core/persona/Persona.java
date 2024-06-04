@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.*;
 import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
 import com.chaosbuffalo.mkcore.core.player.events.EventType;
-import com.chaosbuffalo.mkcore.core.player.events.PersonaEventRegistration;
+import com.chaosbuffalo.mkcore.core.player.events.PersonaEventSubscription;
 import com.chaosbuffalo.mkcore.core.player.events.PlayerEvent;
 import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
@@ -118,7 +118,7 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     }
 
     public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, UUID uuid, Consumer<T> function, int priority) {
-        playerData.events().subscribe(eventType, () -> new PersonaEventRegistration<>(this, uuid, function, priority));
+        playerData.events().subscribe(eventType, () -> new PersonaEventSubscription<>(this, uuid, function, priority));
     }
 
     private CompoundTag serializeExtensions() {

@@ -4,18 +4,18 @@ import javax.annotation.Nonnull;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public class EventRegistration<T extends PlayerEvent<?>> implements Comparable<EventRegistration<?>> {
+public class EventSubscription<T extends PlayerEvent<?>> implements Comparable<EventSubscription<?>> {
     protected final UUID id;
     protected final Consumer<T> callback;
     protected final int priority;
 
-    public EventRegistration(UUID id, Consumer<T> callback, int priority) {
+    public EventSubscription(UUID id, Consumer<T> callback, int priority) {
         this.id = id;
         this.callback = callback;
         this.priority = priority;
     }
 
-    public boolean matches(EventRegistration<?> other) {
+    public boolean matches(EventSubscription<?> other) {
         return id.equals(other.id);
     }
 
@@ -24,7 +24,7 @@ public class EventRegistration<T extends PlayerEvent<?>> implements Comparable<E
     }
 
     @Override
-    public int compareTo(@Nonnull EventRegistration<?> o) {
+    public int compareTo(@Nonnull EventSubscription<?> o) {
         if (matches(o)) {
             return 0;
         } else {
