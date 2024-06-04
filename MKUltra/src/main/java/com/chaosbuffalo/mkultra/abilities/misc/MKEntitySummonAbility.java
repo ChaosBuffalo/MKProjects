@@ -31,7 +31,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
-import java.util.function.Function;
 
 public class MKEntitySummonAbility extends MKAbility {
     protected final ResourceLocationAttribute npcDefintion = new ResourceLocationAttribute("npc", NpcDefinitionManager.INVALID_NPC_DEF);
@@ -81,69 +80,81 @@ public class MKEntitySummonAbility extends MKAbility {
             return;
         }
         if (!casterData.getPets().isPetActive(getAbilityId())) {
-            NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefintion.getValue());
-            if (def != null && target.getPosition().isPresent()) {
-                UUID id = casterData instanceof MKPlayerData playerData ?
-                        playerData.getPersonaManager().getActivePersona().getPersonaId() :
-                        MKNpc.getNpcData(castingEntity).map(IEntityNpcData::getSpawnID).orElse(castingEntity.getUUID());
-                Entity entity = def.createEntity(castingEntity.getLevel(), target.getPosition().get(), id, context.getSkill(summoningSkill));
-                MKPet<MKEntity> pet = MKPet.makePetFromEntity(MKEntity.class, getAbilityId(), entity);
-                if (pet.getEntity() != null) {
-                    casterData.getPets().addPet(pet);
-                    castingEntity.getLevel().addFreshEntity(pet.getEntity());
-                    pet.getEntity().setNoncombatBehavior(new PetNonCombatBehavior(castingEntity));
-                    pet.getEntity().setNonCombatMoveType(MKEntity.NonCombatMoveType.STATIONARY);
-                    MKNpc.getNpcData(pet.getEntity()).ifPresent(x -> x.setMKSpawned(true));
-                    pet.getEntity().getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY).ifPresent(x -> x.setFactionName(MKFaction.INVALID_FACTION));
-                    Component newName = Component.translatable("mkultra.pet_name_format", castingEntity.getName(), pet.getEntity().getName());
-                    pet.getEntity().setCustomName(newName);
-                } else {
-                    if (entity != null) {
-                        EntityUtils.mkDiscard(entity);
-                    }
-                    MKUltra.LOGGER.error("Summon Ability {} failed to cast npc: {} to a MKEntity", getAbilityId(), npcDefintion.getValue());
-                }
-            } else {
-                MKUltra.LOGGER.error("Summon Ability {} Failed to summon npc: {}, definition invalid.", getAbilityId(), npcDefintion.getValue());
-            }
+            summonPet(casterData, context, target);
         } else {
-            if (target.getEntity().isPresent()) {
-                LivingEntity tar = target.getEntity().get();
-                casterData.getPets().getPet(getAbilityId()).ifPresent(x -> {
-                    if (tar.equals(x.getEntity())) {
-                        if (castingEntity.isShiftKeyDown()) {
-                            EntityUtils.mkDiscard(x.getEntity());
-                            casterData.getPets().removePet(x);
-                        } else {
-                            x.getEntity().setNoncombatBehavior(new PetNonCombatBehavior(castingEntity));
-                        }
-                    } else {
-                        if (x.getEntity() != null) {
-                            if (Targeting.isValidEnemy(castingEntity, tar)) {
-                                float newThreat = x.getEntity().getHighestThreat() + 500.0f;
-                                x.getEntity().addThreat(tar, newThreat, true);
-                                x.getEntity().getBrain().eraseMemory(MKMemoryModuleTypes.SPAWN_POINT.get());
-                                if (x.getEntity() instanceof Mob) {
-                                    ((Mob) x.getEntity()).getNavigation().stop();
-                                }
-                                x.getEntity().enterCombatMovementState(tar);
+            commandActivePet(casterData, target);
+        }
+    }
 
-                            } else if (Targeting.isValidFriendly(castingEntity, tar)) {
-                                x.getEntity().setNoncombatBehavior(new PetNonCombatBehavior(tar));
+    private void summonPet(IMKEntityData casterData, AbilityContext context, TargetUtil.LivingOrPosition target) {
+        NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefintion.getValue());
+        if (def == null || target.getPosition().isEmpty()) {
+            MKUltra.LOGGER.error("Summon Ability {} Failed to summon npc: {}, definition invalid.", getAbilityId(), npcDefintion.getValue());
+            return;
+        }
+        LivingEntity castingEntity = casterData.getEntity();
+        UUID id = casterData instanceof MKPlayerData playerData ?
+                playerData.getPersonaManager().getActivePersona().getPersonaId() :
+                MKNpc.getNpcData(castingEntity).map(IEntityNpcData::getSpawnID).orElse(castingEntity.getUUID());
+        Entity entity = def.createEntity(castingEntity.getLevel(), target.getPosition().get(), id, context.getSkill(summoningSkill));
+        MKPet<MKEntity> pet = MKPet.makePetFromEntity(MKEntity.class, getAbilityId(), entity);
+        if (pet.getEntity() != null) {
+            casterData.getPets().addPet(pet);
+            castingEntity.getLevel().addFreshEntity(pet.getEntity());
+            pet.getEntity().setNoncombatBehavior(new PetNonCombatBehavior(castingEntity));
+            pet.getEntity().setNonCombatMoveType(MKEntity.NonCombatMoveType.STATIONARY);
+            MKNpc.getNpcData(pet.getEntity()).ifPresent(x -> x.setMKSpawned(true));
+            pet.getEntity().getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY).ifPresent(x -> x.setFactionName(MKFaction.INVALID_FACTION));
+            Component newName = Component.translatable("mkultra.pet_name_format", castingEntity.getName(), pet.getEntity().getName());
+            pet.getEntity().setCustomName(newName);
+        } else {
+            if (entity != null) {
+                EntityUtils.mkDiscard(entity);
+            }
+            MKUltra.LOGGER.error("Summon Ability {} failed to cast npc: {} to a MKEntity", getAbilityId(), npcDefintion.getValue());
+        }
+    }
+
+    private void commandActivePet(IMKEntityData casterData, TargetUtil.LivingOrPosition castTarget) {
+        if (castTarget.getEntity().isPresent()) {
+            LivingEntity targetEntity = castTarget.getEntity().get();
+            casterData.getPets().getPet(getAbilityId()).ifPresent(pet -> {
+                LivingEntity castingEntity = casterData.getEntity();
+                var petEntity = pet.getEntity();
+                if (targetEntity.equals(petEntity)) {
+                    if (castingEntity.isShiftKeyDown()) {
+                        EntityUtils.mkDiscard(petEntity);
+                        casterData.getPets().removePet(pet);
+                    } else {
+                        petEntity.setNoncombatBehavior(new PetNonCombatBehavior(castingEntity));
+                    }
+                } else {
+                    if (petEntity != null) {
+                        Targeting.TargetRelation relation = Targeting.getTargetRelation(castingEntity, targetEntity);
+                        if (relation == Targeting.TargetRelation.ENEMY) {
+                            float newThreat = petEntity.getHighestThreat() + 500.0f;
+                            petEntity.addThreat(targetEntity, newThreat, true);
+                            petEntity.getBrain().eraseMemory(MKMemoryModuleTypes.SPAWN_POINT.get());
+                            if (petEntity instanceof Mob mob) {
+                                mob.getNavigation().stop();
                             }
+                            petEntity.enterCombatMovementState(targetEntity);
+
+                        } else if (relation == Targeting.TargetRelation.FRIEND) {
+                            petEntity.setNoncombatBehavior(new PetNonCombatBehavior(targetEntity));
                         }
                     }
-                });
-            } else if (target.getPosition().isPresent()) {
-                Vec3 pos = target.getPosition().get();
-                casterData.getPets().getPet(getAbilityId()).ifPresent(
-                        x -> {
-                            if (x.getEntity() != null) {
-                                x.getEntity().setNoncombatBehavior(new PetNonCombatBehavior(pos));
-                                x.getEntity().clearThreat();
-                            }
-                        });
-            }
+                }
+            });
+        } else if (castTarget.getPosition().isPresent()) {
+            Vec3 pos = castTarget.getPosition().get();
+            casterData.getPets().getPet(getAbilityId()).ifPresent(pet -> {
+                var petEntity = pet.getEntity();
+                if (petEntity != null) {
+                    petEntity.setNoncombatBehavior(new PetNonCombatBehavior(pos));
+                    petEntity.clearThreat();
+                }
+            });
         }
     }
 }
