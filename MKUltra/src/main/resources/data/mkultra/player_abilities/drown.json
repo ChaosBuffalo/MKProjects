@@ -3,7 +3,7 @@
     "baseDamage": 4.0,
     "baseDuration": 10,
     "castBehavior": {
-      "type": "mkcore:single",
+      "type": "mkcore:simple",
       "location": {
         "type": "mkcore:single_location",
         "offset": [

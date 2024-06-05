@@ -4,7 +4,7 @@
     "baseDuration": 30,
     "baseStunDuration": 3,
     "castBehavior": {
-      "type": "mkcore:single",
+      "type": "mkcore:simple",
       "location": {
         "type": "mkcore:single_location",
         "offset": [
