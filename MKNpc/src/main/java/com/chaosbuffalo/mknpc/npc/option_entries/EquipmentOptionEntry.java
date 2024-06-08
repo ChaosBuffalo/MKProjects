@@ -1,12 +1,9 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
 import com.chaosbuffalo.mkcore.utils.CommonCodecs;
-import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
 import com.chaosbuffalo.mknpc.npc.options.EquipmentOption;
 import com.mojang.serialization.Codec;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -49,24 +46,6 @@ public class EquipmentOptionEntry implements INpcOptionEntry {
     public void applyItemChoices(LivingEntity entity) {
         for (Map.Entry<EquipmentSlot, NpcItemChoice> entry : itemChoices.entrySet()) {
             entry.getValue().equip(entity, entry.getKey());
-        }
-    }
-
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag tag = new CompoundTag();
-        for (Map.Entry<EquipmentSlot, NpcItemChoice> entry : itemChoices.entrySet()) {
-            tag.put(entry.getKey().getName(), entry.getValue().serialize(NbtOps.INSTANCE));
-        }
-        return tag;
-    }
-
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        for (String key : nbt.getAllKeys()) {
-            EquipmentSlot type = EquipmentSlot.byName(key);
-            NpcItemChoice newChoice = NpcItemChoice.CODEC.parse(NbtOps.INSTANCE, nbt.get(key)).getOrThrow(false, MKNpc.LOGGER::error);
-            setSlotChoice(type, newChoice);
         }
     }
 }

@@ -8,10 +8,6 @@ import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
 import com.chaosbuffalo.mknpc.npc.options.AbilitiesOption;
 import com.mojang.serialization.Codec;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,7 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AbilitiesOptionEntry implements INpcOptionEntry {
-    public static final Codec<AbilitiesOptionEntry> CODEC = Codec.list(NpcAbilityEntry.CODEC).xmap(AbilitiesOptionEntry::new, i -> i.abilities);
+    public static final Codec<AbilitiesOptionEntry> CODEC = Codec.list(NpcAbilityEntry.CODEC)
+            .xmap(AbilitiesOptionEntry::new, i -> i.abilities);
 
     private final List<NpcAbilityEntry> abilities;
 
@@ -51,27 +48,6 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
                     }
                 }
             });
-        }
-    }
-
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag tag = new CompoundTag();
-        ListTag abilitiesList = new ListTag();
-        for (NpcAbilityEntry entry : abilities) {
-            abilitiesList.add(entry.serialize(NbtOps.INSTANCE));
-        }
-        tag.put("abilities", abilitiesList);
-        return tag;
-    }
-
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        ListTag abilitiesList = nbt.getList("abilities", Tag.TAG_COMPOUND);
-        abilities.clear();
-        for (Tag tag : abilitiesList) {
-            NpcAbilityEntry entry = NpcAbilityEntry.deserialize(NbtOps.INSTANCE, tag);
-            abilities.add(entry);
         }
     }
 }
