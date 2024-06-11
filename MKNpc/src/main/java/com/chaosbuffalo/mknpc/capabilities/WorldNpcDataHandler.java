@@ -6,8 +6,9 @@ import com.chaosbuffalo.mknpc.capabilities.structure_tracking.StructureData;
 import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.npc.*;
-import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
-import com.chaosbuffalo.mknpc.npc.options.WorldPermanentOption;
+import com.chaosbuffalo.mknpc.npc.options.binding.BoundSpawnConfiguration;
+import com.chaosbuffalo.mknpc.npc.options.binding.IBoundNpcOptionValue;
+import com.chaosbuffalo.mknpc.npc.options.BindingNpcOption;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
@@ -41,20 +42,20 @@ import java.util.stream.Collectors;
 
 public class WorldNpcDataHandler implements IWorldNpcData {
 
-    private final HashMap<UUID, WorldPermanentSpawnConfiguration> worldPermanentSpawnConfigurations;
-    private final HashMap<UUID, MKStructureEntry> structureIndex;
-    private final HashMap<ResourceLocation, List<UUID>> structureToInstanceIndex;
-    private final HashMap<UUID, QuestChainInstance> quests;
-    private final HashMap<UUID, NotableChestEntry> notableChests;
-    private final HashMap<UUID, NotableNpcEntry> notableNpcs;
-    private final HashMap<UUID, PointOfInterestEntry> pointOfInterests;
+    private final Map<UUID, BoundSpawnConfiguration> boundSpawnConfigurations;
+    private final Map<UUID, MKStructureEntry> structureIndex;
+    private final Map<ResourceLocation, List<UUID>> structureToInstanceIndex;
+    private final Map<UUID, QuestChainInstance> quests;
+    private final Map<UUID, NotableChestEntry> notableChests;
+    private final Map<UUID, NotableNpcEntry> notableNpcs;
+    private final Map<UUID, PointOfInterestEntry> pointOfInterests;
     private final WorldStructureManager structureManager;
     private final List<GlobalPos> chestsToProcess;
     private final Level world;
 
     public WorldNpcDataHandler(Level world) {
         this.world = world;
-        worldPermanentSpawnConfigurations = new HashMap<>();
+        boundSpawnConfigurations = new HashMap<>();
         structureIndex = new HashMap<>();
         structureToInstanceIndex = new HashMap<>();
         notableChests = new HashMap<>();
@@ -69,12 +70,6 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     @Override
     public QuestChainInstance getQuest(UUID questId) {
         return quests.get(questId);
-    }
-
-    @Override
-    public boolean hasEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute, Entity entity) {
-        UUID spawnId = getSpawnIdForEntity(entity);
-        return hasEntityOptionEntry(definition, attribute, spawnId);
     }
 
     public void putNotableChest(NotableChestEntry notableChestEntry) {
@@ -119,10 +114,9 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     }
 
     @Override
-    public boolean hasEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute, UUID spawnId) {
-        return worldPermanentSpawnConfigurations.containsKey(spawnId) &&
-                worldPermanentSpawnConfigurations.get(spawnId).hasAttributeEntry(
-                        definition.getDefinitionName(), attribute.getName());
+    public boolean hasBoundOptionValue(NpcDefinition definition, BindingNpcOption option, UUID spawnId) {
+        var bindOpts = boundSpawnConfigurations.get(spawnId);
+        return bindOpts != null && bindOpts.hasBoundValue(definition.getDefinitionName(), option.getName());
     }
 
     public static UUID getSpawnIdForEntity(Entity entity) {
@@ -130,23 +124,16 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     }
 
     @Override
-    public INpcOptionEntry getEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute, Entity entity) {
-        UUID spawnId = getSpawnIdForEntity(entity);
-        return getEntityOptionEntry(definition, attribute, spawnId);
+    public IBoundNpcOptionValue getBoundOptionValue(NpcDefinition definition, BindingNpcOption option, UUID spawnId) {
+        var bindOpts = boundSpawnConfigurations.get(spawnId);
+        return bindOpts == null ? null : bindOpts.getBoundValue(definition.getDefinitionName(), option.getName());
     }
 
     @Override
-    public INpcOptionEntry getEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute, UUID spawnId) {
-        return worldPermanentSpawnConfigurations.get(spawnId).getOptionEntry(definition, attribute);
-    }
-
-    @Override
-    public void addEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute,
-                                     UUID spawnId, INpcOptionEntry entry) {
-        if (!worldPermanentSpawnConfigurations.containsKey(spawnId)) {
-            worldPermanentSpawnConfigurations.put(spawnId, new WorldPermanentSpawnConfiguration());
-        }
-        worldPermanentSpawnConfigurations.get(spawnId).addAttributeEntry(definition, attribute, entry);
+    public void addBoundOptionValue(NpcDefinition definition, BindingNpcOption option,
+                                    UUID spawnId, IBoundNpcOptionValue entry) {
+        boundSpawnConfigurations.computeIfAbsent(spawnId, id -> new BoundSpawnConfiguration())
+                .addBoundValue(definition.getDefinitionName(), option, entry);
     }
 
     @Override
@@ -297,8 +284,8 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         CompoundTag spawnConfig = new CompoundTag();
-        for (UUID entityId : worldPermanentSpawnConfigurations.keySet()) {
-            WorldPermanentSpawnConfiguration config = worldPermanentSpawnConfigurations.get(entityId);
+        for (UUID entityId : boundSpawnConfigurations.keySet()) {
+            BoundSpawnConfiguration config = boundSpawnConfigurations.get(entityId);
             spawnConfig.put(entityId.toString(), config.serialize(NbtOps.INSTANCE));
         }
         tag.put("spawnConfigs", spawnConfig);
@@ -320,8 +307,8 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         CompoundTag spawnConfigNbt = nbt.getCompound("spawnConfigs");
         for (String idKey : spawnConfigNbt.getAllKeys()) {
             UUID entityId = UUID.fromString(idKey);
-            WorldPermanentSpawnConfiguration config = WorldPermanentSpawnConfiguration.deserialize(NbtOps.INSTANCE, spawnConfigNbt.get(idKey));
-            worldPermanentSpawnConfigurations.put(entityId, config);
+            BoundSpawnConfiguration config = BoundSpawnConfiguration.deserialize(NbtOps.INSTANCE, spawnConfigNbt.get(idKey));
+            boundSpawnConfigurations.put(entityId, config);
         }
         ListTag structuresNbt = nbt.getList("structures", Tag.TAG_COMPOUND);
         for (Tag structureNbt : structuresNbt) {

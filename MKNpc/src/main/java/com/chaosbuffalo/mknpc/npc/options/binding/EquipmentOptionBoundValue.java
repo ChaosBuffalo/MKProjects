@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.npc.option_entries;
+package com.chaosbuffalo.mknpc.npc.options.binding;
 
 import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
@@ -12,18 +12,18 @@ import net.minecraft.world.entity.LivingEntity;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class EquipmentOptionEntry implements INpcOptionEntry {
-    public static final Codec<EquipmentOptionEntry> CODEC = Codec.unboundedMap(CommonCodecs.EQUIPMENT_SLOT_CODEC, NpcItemChoice.CODEC)
-            .xmap(EquipmentOptionEntry::new, i -> i.itemChoices);
+public class EquipmentOptionBoundValue implements IBoundNpcOptionValue {
+    public static final Codec<EquipmentOptionBoundValue> CODEC = Codec.unboundedMap(CommonCodecs.EQUIPMENT_SLOT_CODEC, NpcItemChoice.CODEC)
+            .xmap(EquipmentOptionBoundValue::new, i -> i.itemChoices);
 
     private final Map<EquipmentSlot, NpcItemChoice> itemChoices;
 
-    private EquipmentOptionEntry(Map<EquipmentSlot, NpcItemChoice> map) {
+    private EquipmentOptionBoundValue(Map<EquipmentSlot, NpcItemChoice> map) {
         itemChoices = new EnumMap<>(EquipmentSlot.class);
         itemChoices.putAll(map);
     }
 
-    public EquipmentOptionEntry() {
+    public EquipmentOptionBoundValue() {
         itemChoices = new EnumMap<>(EquipmentSlot.class);
     }
 

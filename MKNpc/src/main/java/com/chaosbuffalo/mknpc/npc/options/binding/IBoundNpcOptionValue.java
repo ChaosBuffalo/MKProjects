@@ -1,15 +1,11 @@
-package com.chaosbuffalo.mknpc.npc.option_entries;
+package com.chaosbuffalo.mknpc.npc.options.binding;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
-public interface INpcOptionEntry {
+public interface IBoundNpcOptionValue {
 
     ResourceLocation getOptionId();
 
     void applyToEntity(Entity entity);
-
-    default boolean isValid() {
-        return true;
-    }
 }

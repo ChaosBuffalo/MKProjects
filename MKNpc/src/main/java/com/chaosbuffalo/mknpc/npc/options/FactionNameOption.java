@@ -5,9 +5,8 @@ import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.option_entries.FactionNameOptionEntry;
-import com.chaosbuffalo.mknpc.npc.option_entries.INameEntry;
-import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
+import com.chaosbuffalo.mknpc.npc.options.binding.FactionNameBoundValue;
+import com.chaosbuffalo.mknpc.npc.options.binding.IBoundNpcOptionValue;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
@@ -19,7 +18,7 @@ import net.minecraft.world.level.Level;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class FactionNameOption extends WorldPermanentOption implements INameProvider {
+public class FactionNameOption extends BindingNpcOption implements INameProvider {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "faction_name");
     public static final Codec<FactionNameOption> CODEC = RecordCodecBuilder.<FactionNameOption>mapCodec(builder -> {
         return builder.group(
@@ -56,13 +55,10 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
 
     @Override
     @Nullable
-    public MutableComponent getEntityName(NpcDefinition definition, Level world, UUID spawnId) {
-        return ContentDB.tryGetLevelData(world).map(cap -> {
-            if (!cap.hasEntityOptionEntry(definition, this, spawnId)) {
-                cap.addEntityOptionEntry(definition, this, spawnId, makeOptionEntry(definition, world.getRandom()));
-            }
-            INpcOptionEntry entry = cap.getEntityOptionEntry(definition, this, spawnId);
-            if (entry instanceof INameEntry nameEntry) {
+    public MutableComponent getEntityName(NpcDefinition definition, Level level, UUID spawnId) {
+        return ContentDB.tryGetLevelData(level).map(cap -> {
+            IBoundNpcOptionValue entry = getOrCreateBoundValue(definition, spawnId, cap);
+            if (entry instanceof FactionNameBoundValue nameEntry) {
                 return nameEntry.getName();
             } else {
                 return Component.literal("Name Error");
@@ -96,7 +92,7 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
+    protected IBoundNpcOptionValue generateBoundValue(NpcDefinition definition, RandomSource random) {
         String name = "";
         if (title != null) {
             name += title;
@@ -118,6 +114,6 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
                 name += lastName;
             }
         }
-        return new FactionNameOptionEntry(name);
+        return new FactionNameBoundValue(name);
     }
 }

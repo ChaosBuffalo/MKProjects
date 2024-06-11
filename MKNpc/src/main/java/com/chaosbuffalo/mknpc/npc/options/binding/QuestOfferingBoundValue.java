@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.npc.option_entries;
+package com.chaosbuffalo.mknpc.npc.options.binding;
 
 
 import com.chaosbuffalo.mknpc.MKNpc;
@@ -12,17 +12,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class QuestOptionsEntry implements INpcOptionEntry {
-    public static final Codec<QuestOptionsEntry> CODEC = Codec.unboundedMap(ResourceLocation.CODEC, QuestOfferingEntry.CODEC)
-            .xmap(QuestOptionsEntry::new, i -> i.questOfferings);
+public class QuestOfferingBoundValue implements IBoundNpcOptionValue {
+    public static final Codec<QuestOfferingBoundValue> CODEC = Codec.unboundedMap(ResourceLocation.CODEC, QuestOfferingEntry.CODEC)
+            .xmap(QuestOfferingBoundValue::new, i -> i.questOfferings);
 
     private final Map<ResourceLocation, QuestOfferingEntry> questOfferings = new HashMap<>();
 
-    private QuestOptionsEntry(Map<ResourceLocation, QuestOfferingEntry> map) {
+    private QuestOfferingBoundValue(Map<ResourceLocation, QuestOfferingEntry> map) {
         questOfferings.putAll(map);
     }
 
-    public QuestOptionsEntry(List<ResourceLocation> locs) {
+    public QuestOfferingBoundValue(List<ResourceLocation> locs) {
         for (ResourceLocation loc : locs) {
             questOfferings.put(loc, new QuestOfferingEntry(loc));
         }

@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface INameProvider {
 
-    MutableComponent getEntityName(NpcDefinition definition, Level world, UUID spawnId);
+    MutableComponent getEntityName(NpcDefinition definition, Level level, UUID spawnId);
 
     @Nullable
     String getDisplayName();

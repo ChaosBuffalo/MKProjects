@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.npc.option_entries;
+package com.chaosbuffalo.mknpc.npc.options.binding;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
@@ -15,13 +15,13 @@ import net.minecraft.world.entity.LivingEntity;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AbilitiesOptionEntry implements INpcOptionEntry {
-    public static final Codec<AbilitiesOptionEntry> CODEC = Codec.list(NpcAbilityEntry.CODEC)
-            .xmap(AbilitiesOptionEntry::new, i -> i.abilities);
+public class AbilitiesOptionBoundValue implements IBoundNpcOptionValue {
+    public static final Codec<AbilitiesOptionBoundValue> CODEC = Codec.list(NpcAbilityEntry.CODEC)
+            .xmap(AbilitiesOptionBoundValue::new, i -> i.abilities);
 
     private final List<NpcAbilityEntry> abilities;
 
-    public AbilitiesOptionEntry(List<NpcAbilityEntry> entries) {
+    public AbilitiesOptionBoundValue(List<NpcAbilityEntry> entries) {
         this.abilities = entries;
     }
 

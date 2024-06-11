@@ -22,7 +22,6 @@ public class LootTier {
         ).apply(builder, LootTier::new);
     }).codec();
 
-    private static final List<LootItemTemplateEntry> EMPTY_CHOICES = new ArrayList<>();
     private final ResourceLocation name;
     private final Map<LootSlot, List<LootItemTemplateEntry>> potentialItemsForSlot;
 
@@ -45,7 +44,7 @@ public class LootTier {
 
     @Nullable
     public LootItemTemplate chooseItemTemplate(RandomSource random, LootSlot slot) {
-        List<LootItemTemplateEntry> slotOptions = potentialItemsForSlot.getOrDefault(slot, EMPTY_CHOICES);
+        List<LootItemTemplateEntry> slotOptions = potentialItemsForSlot.getOrDefault(slot, Collections.emptyList());
         if (slotOptions.isEmpty()) {
             return null;
         } else {

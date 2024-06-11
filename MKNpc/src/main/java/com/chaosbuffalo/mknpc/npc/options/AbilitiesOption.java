@@ -4,8 +4,8 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.option_entries.AbilitiesOptionEntry;
-import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
+import com.chaosbuffalo.mknpc.npc.options.binding.AbilitiesOptionBoundValue;
+import com.chaosbuffalo.mknpc.npc.options.binding.IBoundNpcOptionValue;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +14,7 @@ import net.minecraft.util.RandomSource;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AbilitiesOption extends WorldPermanentOption {
+public class AbilitiesOption extends BindingNpcOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "abilities");
     public static final Codec<AbilitiesOption> CODEC = Codec.list(NpcAbilityEntry.CODEC).xmap(AbilitiesOption::new, i -> i.abilities);
 
@@ -36,13 +36,13 @@ public class AbilitiesOption extends WorldPermanentOption {
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
+    protected IBoundNpcOptionValue generateBoundValue(NpcDefinition definition, RandomSource random) {
         List<NpcAbilityEntry> finalChoices = new ArrayList<>();
         for (NpcAbilityEntry entry : abilities) {
             if (random.nextDouble() <= entry.getChance()) {
                 finalChoices.add(entry);
             }
         }
-        return new AbilitiesOptionEntry(finalChoices);
+        return new AbilitiesOptionBoundValue(finalChoices);
     }
 }

@@ -28,7 +28,7 @@ public class NameOption extends NpcDefinitionOption implements INameProvider {
     }
 
     @Override
-    public MutableComponent getEntityName(NpcDefinition definition, Level world, UUID spawnId) {
+    public MutableComponent getEntityName(NpcDefinition definition, Level level, UUID spawnId) {
         return Component.literal(getValue());
     }
 

@@ -5,8 +5,8 @@ import com.chaosbuffalo.mkfaction.faction.FactionGreetings;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.option_entries.FactionBattlecryOptionEntry;
-import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
+import com.chaosbuffalo.mknpc.npc.options.binding.FactionBattlecryBoundValue;
+import com.chaosbuffalo.mknpc.npc.options.binding.IBoundNpcOptionValue;
 import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -14,7 +14,7 @@ import net.minecraft.util.RandomSource;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class FactionBattlecryOption extends WorldPermanentOption {
+public class FactionBattlecryOption extends BindingNpcOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "faction_battlecry");
     public static final FactionBattlecryOption INSTANCE = new FactionBattlecryOption();
     public static final Codec<FactionBattlecryOption> CODEC = Codec.unit(INSTANCE);
@@ -31,14 +31,16 @@ public class FactionBattlecryOption extends WorldPermanentOption {
         return list.get(random.nextInt(list.size()));
     }
 
+    @Nullable
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
+    protected IBoundNpcOptionValue generateBoundValue(NpcDefinition definition, RandomSource random) {
         MKFaction faction = MKFactionRegistry.getFaction(definition.getFactionName());
         if (faction != null) {
             return faction.getGreetings().getGreetingsWithMembers(FactionGreetings.GreetingType.BATTLECRY)
-                    .map(x -> new FactionBattlecryOptionEntry(getRandomEntry(random, x)))
-                    .orElse(new FactionBattlecryOptionEntry());
+                    .map(x -> getRandomEntry(random, x))
+                    .map(FactionBattlecryBoundValue::new)
+                    .orElse(null);
         }
-        return new FactionBattlecryOptionEntry();
+        return null;
     }
 }

@@ -4,8 +4,8 @@ import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableChestEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
-import com.chaosbuffalo.mknpc.npc.options.WorldPermanentOption;
+import com.chaosbuffalo.mknpc.npc.options.binding.IBoundNpcOptionValue;
+import com.chaosbuffalo.mknpc.npc.options.BindingNpcOption;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
@@ -14,7 +14,6 @@ import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -25,18 +24,14 @@ import java.util.UUID;
 
 public interface IWorldNpcData extends INBTSerializable<CompoundTag> {
 
-    boolean hasEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute, Entity entity);
+    boolean hasBoundOptionValue(NpcDefinition definition, BindingNpcOption option, UUID spawnId);
 
-    boolean hasEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute, UUID spawnId);
+    @Nullable
+    IBoundNpcOptionValue getBoundOptionValue(NpcDefinition definition, BindingNpcOption option,
+                                             UUID spawnId);
 
-    INpcOptionEntry getEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute,
-                                         Entity entity);
-
-    INpcOptionEntry getEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute,
-                                         UUID entityId);
-
-    void addEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute,
-                              UUID entityId, INpcOptionEntry entry);
+    void addBoundOptionValue(NpcDefinition definition, BindingNpcOption option,
+                             UUID spawnId, IBoundNpcOptionValue entry);
 
     void addSpawner(MKSpawnerTileEntity spawner);
 

@@ -4,8 +4,8 @@ import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.network.NpcDefinitionClientUpdatePacket;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
-import com.chaosbuffalo.mknpc.npc.option_entries.*;
 import com.chaosbuffalo.mknpc.npc.options.*;
+import com.chaosbuffalo.mknpc.npc.options.binding.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -36,7 +36,7 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
     public static final Map<ResourceLocation, NpcDefinition> DEFINITIONS = new HashMap<>();
     public static final Map<ResourceLocation, NpcDefinitionClient> CLIENT_DEFINITIONS = new HashMap<>();
     private static final Map<ResourceLocation, Codec<? extends NpcDefinitionOption>> OPTION_CODEC_MAP = new HashMap<>();
-    private static final Map<ResourceLocation, Codec<? extends INpcOptionEntry>> ENTRY_CODEC_MAP = new HashMap<>();
+    private static final Map<ResourceLocation, Codec<? extends IBoundNpcOptionValue>> ENTRY_CODEC_MAP = new HashMap<>();
 
     public NpcDefinitionManager() {
         super(GSON, DEFINITION_FOLDER);
@@ -49,8 +49,8 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
     }
 
     public static void setupDeserializers() {
-        putOptionEntryDeserializer(AbilitiesOption.NAME, AbilitiesOptionEntry.CODEC);
-        putOptionEntryDeserializer(EquipmentOption.NAME, EquipmentOptionEntry.CODEC);
+        putOptionEntryDeserializer(AbilitiesOption.NAME, AbilitiesOptionBoundValue.CODEC);
+        putOptionEntryDeserializer(EquipmentOption.NAME, EquipmentOptionBoundValue.CODEC);
         putOptionDeserializer(EquipmentOption.NAME, EquipmentOption.CODEC);
         putOptionDeserializer(AbilitiesOption.NAME, AbilitiesOption.CODEC);
         putOptionDeserializer(AttributesOption.NAME, AttributesOption.CODEC);
@@ -59,7 +59,7 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
         putOptionDeserializer(FactionOption.NAME, FactionOption.CODEC);
         putOptionDeserializer(DialogueOption.NAME, DialogueOption.CODEC);
         putOptionDeserializer(FactionNameOption.NAME, FactionNameOption.CODEC);
-        putOptionEntryDeserializer(FactionNameOption.NAME, FactionNameOptionEntry.CODEC);
+        putOptionEntryDeserializer(FactionNameOption.NAME, FactionNameBoundValue.CODEC);
         putOptionDeserializer(NotableOption.NAME, NotableOption.CODEC);
         putOptionDeserializer(RenderGroupOption.NAME, RenderGroupOption.CODEC);
         putOptionDeserializer(MKSizeOption.NAME, MKSizeOption.CODEC);
@@ -69,19 +69,19 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
         putOptionDeserializer(ParticleEffectsOption.NAME, ParticleEffectsOption.CODEC);
         putOptionDeserializer(ExtraLootOption.NAME, ExtraLootOption.CODEC);
         putOptionDeserializer(QuestOfferingOption.NAME, QuestOfferingOption.CODEC);
-        putOptionEntryDeserializer(QuestOfferingOption.NAME, QuestOptionsEntry.CODEC);
+        putOptionEntryDeserializer(QuestOfferingOption.NAME, QuestOfferingBoundValue.CODEC);
         putOptionDeserializer(BossStageOption.NAME, BossStageOption.CODEC);
         putOptionDeserializer(TempAbilitiesOption.NAME, TempAbilitiesOption.CODEC);
         putOptionDeserializer(GhostOption.NAME, GhostOption.CODEC);
         putOptionDeserializer(SkillOption.NAME, SkillOption.CODEC);
         putOptionDeserializer(FactionBattlecryOption.NAME, FactionBattlecryOption.CODEC);
-        putOptionEntryDeserializer(FactionBattlecryOption.NAME, FactionBattlecryOptionEntry.CODEC);
+        putOptionEntryDeserializer(FactionBattlecryOption.NAME, FactionBattlecryBoundValue.CODEC);
     }
 
     public static final Codec<NpcDefinitionOption> NPC_OPTION_CODEC = CommonCodecs.createMapBackedDispatch(
             ResourceLocation.CODEC, OPTION_CODEC_MAP, NpcDefinitionOption::getName);
-    public static final Codec<INpcOptionEntry> ENTRY_CODEC = CommonCodecs.createMapBackedDispatch(
-            ResourceLocation.CODEC, ENTRY_CODEC_MAP, INpcOptionEntry::getOptionId);
+    public static final Codec<IBoundNpcOptionValue> ENTRY_CODEC = CommonCodecs.createMapBackedDispatch(
+            ResourceLocation.CODEC, ENTRY_CODEC_MAP, IBoundNpcOptionValue::getOptionId);
 
     public static void putOptionDeserializer(ResourceLocation optionName,
                                              Codec<? extends NpcDefinitionOption> optionCodec) {
@@ -89,7 +89,7 @@ public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
     }
 
     public static void putOptionEntryDeserializer(ResourceLocation entryName,
-                                                  Codec<? extends INpcOptionEntry> codec) {
+                                                  Codec<? extends IBoundNpcOptionValue> codec) {
         ENTRY_CODEC_MAP.put(entryName, codec);
     }
 
