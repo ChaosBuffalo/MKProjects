@@ -11,10 +11,7 @@ import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.utils.NBTSerializableMappedData;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructure;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -86,35 +83,36 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
     }
 
     public List<PointOfInterestEntry> getPoisWithTag(String tag) {
-        return pois.get(tag);
+        return pois.getOrDefault(tag, Collections.emptyList());
     }
 
     public Optional<PointOfInterestEntry> getFirstPoiWithTag(String tag) {
-        return pois.containsKey(tag) ? pois.get(tag).stream().findFirst() : Optional.empty();
+        var tagList = pois.get(tag);
+        return tagList.isEmpty() ? Optional.empty() : Optional.of(tagList.get(0));
     }
 
     public boolean hasChestWithTag(String tag) {
-        return notableChests.stream().anyMatch(x -> x.getLabel() != null && x.getLabel().equals(tag));
+        return notableChests.stream().anyMatch(x -> x.hasTag(tag));
     }
 
     public boolean hasNotableOfType(ResourceLocation npcDef) {
-        return notables.stream().anyMatch(x -> x.getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef));
+        return notables.stream().anyMatch(x -> x.getDefinition() != null && x.getDefinitionName().equals(npcDef));
     }
 
     public Optional<NotableNpcEntry> getFirstNotableOfType(ResourceLocation npcDef) {
-        return notables.stream().filter(x -> x.getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef)).findFirst();
+        return notables.stream().filter(x -> x.getDefinition() != null && x.getDefinitionName().equals(npcDef)).findFirst();
     }
 
     public List<NotableNpcEntry> getAllNotablesOfType(ResourceLocation npcDef) {
-        return notables.stream().filter(x -> x.getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef)).collect(Collectors.toList());
+        return notables.stream().filter(x -> x.getDefinition() != null && x.getDefinitionName().equals(npcDef)).collect(Collectors.toList());
     }
 
     public Optional<NotableChestEntry> getFirstChestWithTag(String tag) {
-        return notableChests.stream().filter(x -> x.getLabel() != null && x.getLabel().equals(tag)).findFirst();
+        return notableChests.stream().filter(x -> x.hasTag(tag)).findFirst();
     }
 
     public List<NotableChestEntry> getChestsWithTag(String tag) {
-        return notableChests.stream().filter(x -> x.getLabel() != null && x.getLabel().equals(tag)).collect(Collectors.toList());
+        return notableChests.stream().filter(x -> x.hasTag(tag)).collect(Collectors.toList());
     }
 
     public boolean hasStructureData() {
@@ -145,12 +143,12 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
     }
 
     public boolean hasPoi(String name) {
-        return pois.containsKey(name) && !pois.get(name).isEmpty();
+        List<PointOfInterestEntry> poiList = pois.get(name);
+        return poiList != null && !poiList.isEmpty();
     }
 
     private void putPoi(PointOfInterestEntry entry) {
-        List<PointOfInterestEntry> entries = pois.computeIfAbsent(entry.getLabel(), (key) -> new ArrayList<>());
-        entries.add(entry);
+        pois.computeIfAbsent(entry.getLabel(), key -> new ArrayList<>()).add(entry);
         worldData.putNotablePOI(entry);
     }
 
@@ -176,7 +174,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         tag.putUUID("structureId", structureId);
         ListTag notablesNbt = new ListTag();
         for (NotableNpcEntry notableEntry : notables) {
-            notablesNbt.add(notableEntry.serializeNBT());
+            notablesNbt.add(notableEntry.serialize(NbtOps.INSTANCE));
         }
         tag.put("notables", notablesNbt);
         ListTag mobNbt = new ListTag();
@@ -194,14 +192,14 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         }
         ListTag chestNbt = new ListTag();
         for (NotableChestEntry chest : notableChests) {
-            chestNbt.add(chest.serializeNBT());
+            chestNbt.add(chest.serialize(NbtOps.INSTANCE));
         }
         tag.put("chests", chestNbt);
         CompoundTag poiTag = new CompoundTag();
         for (String key : pois.keySet()) {
             ListTag poiList = new ListTag();
-            for (PointOfInterestEntry entry : pois.getOrDefault(key, new ArrayList<>())) {
-                poiList.add(entry.serializeNBT());
+            for (PointOfInterestEntry entry : pois.get(key)) {
+                poiList.add(entry.serialize(NbtOps.INSTANCE));
             }
             poiTag.put(key, poiList);
         }
@@ -219,8 +217,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         structureId = nbt.getUUID("structureId");
         ListTag notablesNbt = nbt.getList("notables", Tag.TAG_COMPOUND);
         for (Tag notTag : notablesNbt) {
-            NotableNpcEntry newEntry = new NotableNpcEntry();
-            newEntry.deserializeNBT((CompoundTag) notTag);
+            NotableNpcEntry newEntry = NotableNpcEntry.deserialize(notTag);
             worldData.putNotableNpc(newEntry);
             notables.add(newEntry);
         }
@@ -240,8 +237,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         }
         ListTag chestNbt = nbt.getList("chests", Tag.TAG_COMPOUND);
         for (Tag chest : chestNbt) {
-            NotableChestEntry chestEntry = new NotableChestEntry();
-            chestEntry.deserializeNBT((CompoundTag) chest);
+            NotableChestEntry chestEntry = NotableChestEntry.deserialize(chest);
             worldData.putNotableChest(chestEntry);
             notableChests.add(chestEntry);
         }
@@ -250,8 +246,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         for (String key : poiNbt.getAllKeys()) {
             ListTag poiLNbt = poiNbt.getList(key, Tag.TAG_COMPOUND);
             for (Tag poi : poiLNbt) {
-                PointOfInterestEntry entry = new PointOfInterestEntry();
-                entry.deserializeNBT((CompoundTag) poi);
+                PointOfInterestEntry entry = PointOfInterestEntry.deserialize(poi);
                 putPoi(entry);
             }
         }

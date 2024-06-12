@@ -24,7 +24,7 @@ public class NpcItemChoice {
     public final float dropChance;
 
     public NpcItemChoice(ItemStack item, double weight, float dropChance) {
-        this.item = item.isEmpty() ? item : item.copy();
+        this.item = item.copy();
         this.weight = weight;
         this.dropChance = dropChance;
     }

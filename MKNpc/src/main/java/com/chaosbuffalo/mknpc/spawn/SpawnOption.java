@@ -1,26 +1,29 @@
 package com.chaosbuffalo.mknpc.spawn;
 
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionClient;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.util.INBTSerializable;
 
-public class SpawnOption implements INBTSerializable<CompoundTag> {
+public class SpawnOption {
+    public static final Codec<SpawnOption> CODEC = RecordCodecBuilder.<SpawnOption>mapCodec(builder -> {
+        return builder.group(
+                Codec.DOUBLE.fieldOf("weight").forGetter(SpawnOption::getWeight),
+                ResourceLocation.CODEC.fieldOf("definition").forGetter(SpawnOption::getDefinitionName)
+        ).apply(builder, SpawnOption::new);
+    }).codec();
+
     private double weight;
     private ResourceLocation definitionName;
 
-    public SpawnOption() {
-        this.weight = 1.0;
-    }
-
     public SpawnOption(double weight, ResourceLocation definition) {
         this.weight = weight;
-        this.definitionName = definition;
-    }
-
-    public void setDefinition(ResourceLocation definition) {
         this.definitionName = definition;
     }
 
@@ -32,26 +35,27 @@ public class SpawnOption implements INBTSerializable<CompoundTag> {
         this.weight = weight;
     }
 
+    public void setDefinition(ResourceLocation definition) {
+        this.definitionName = definition;
+    }
+
     public NpcDefinition getDefinition() {
         return NpcDefinitionManager.getDefinition(definitionName);
+    }
+
+    public ResourceLocation getDefinitionName() {
+        return definitionName;
     }
 
     public NpcDefinitionClient getDefinitionClient() {
         return NpcDefinitionManager.CLIENT_DEFINITIONS.get(definitionName);
     }
 
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag tag = new CompoundTag();
-        tag.putString("definition", getDefinition().getDefinitionName().toString());
-        tag.putDouble("weight", getWeight());
-        return tag;
+    public <D> D serialize(DynamicOps<D> ops) {
+        return CODEC.encodeStart(ops, this).getOrThrow(false, MKNpc.LOGGER::error);
     }
 
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        ResourceLocation definitionName = new ResourceLocation(nbt.getString("definition"));
-        setDefinition(definitionName);
-        setWeight(nbt.getDouble("weight"));
+    public static SpawnOption deserialize(Tag tag) {
+        return CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow(false, MKNpc.LOGGER::error);
     }
 }
