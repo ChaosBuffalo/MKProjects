@@ -11,7 +11,6 @@ import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.utils.location.LocationProvider;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 
 import javax.annotation.Nullable;
@@ -114,17 +113,15 @@ public class BurstProjectileBehavior extends ProjectileCastBehavior{
         }
 
         public static void handleEnd(ProjectileAbility ability, IMKEntityData casterData, @Nullable AbilityClientState clientState) {
-            if (casterData.getEntity() instanceof LocalPlayer) {
-                if (clientState instanceof ProjectileAbilityClientState projectileState) {
-                    for (ProjectileAbilityClientState.TrackedProjectile tracked : projectileState.getTrackedProjectiles()) {
-                        if (!tracked.getFired()) {
-                            tracked.setFired(true);
-                            Entity entity = casterData.getEntity().getLevel().getEntity(tracked.getEntityId());
-                            if (entity instanceof BaseProjectileEntity proj) {
-                                casterData.getRiders().removeRider(proj);
-                                ability.fireProjectile(proj, ability.getProjectileSpeed(), ability.getProjectileInaccuracy(),
-                                        casterData.getEntity(), casterData.getEntity().getLevel().getEntity(tracked.getTargetEntityId()));
-                            }
+            if (clientState instanceof ProjectileAbilityClientState projectileState) {
+                for (ProjectileAbilityClientState.TrackedProjectile tracked : projectileState.getTrackedProjectiles()) {
+                    if (!tracked.getFired()) {
+                        tracked.setFired(true);
+                        Entity entity = casterData.getEntity().getLevel().getEntity(tracked.getEntityId());
+                        if (entity instanceof BaseProjectileEntity proj) {
+                            casterData.getRiders().removeRider(proj);
+                            ability.fireProjectile(proj, ability.getProjectileSpeed(), ability.getProjectileInaccuracy(),
+                                    casterData.getEntity(), casterData.getEntity().getLevel().getEntity(tracked.getTargetEntityId()));
                         }
                     }
                 }

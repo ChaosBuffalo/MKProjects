@@ -49,7 +49,7 @@ public class HolyWordEffect extends OnStackEffect {
         float duration = state.getScaledValue(1, instance.getSkillLevel());
         int stunDur = MKCombatFormulas.secondsToTicks(duration);
 
-        MKEffectBuilder<?> stun = StunEffect.from(instance.getSourceEntity())
+        MKEffectBuilder<?> stun = StunEffect.from(instance.getSourceId())
                 .ability(instance.getAbilityId())
                 .skillLevel(instance.getSkillLevel()).timed(
                         stunDur);
