@@ -43,6 +43,7 @@ public class HolyWordAbility extends ProjectileAbility {
     protected final IntAttribute scaleStunDuration = new IntAttribute("scaleStunDuration", 1);
     protected final FloatAttribute stunModiferScaling = new FloatAttribute("stunModifier", 1.0f);
     protected final IntAttribute stacks = new IntAttribute("stacks", 5);
+
     public HolyWordAbility() {
         super(MKAttributes.EVOCATION);
         casting_particles.setDefaultValue(CASTING_PARTICLES);

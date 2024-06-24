@@ -16,6 +16,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -279,6 +280,11 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         Entity shooter = getOwner();
         if (entity instanceof LivingEntity && shooter != null) {
             return Targeting.isValidTarget(getTargetContext(), shooter, entity);
+        }
+        if (entity instanceof BaseProjectileEntity proj && shooter != null) {
+            if (proj.getOwner() == shooter) {
+                return false;
+            }
         }
         return isValidEntityTargetGeneric(entity);
     }

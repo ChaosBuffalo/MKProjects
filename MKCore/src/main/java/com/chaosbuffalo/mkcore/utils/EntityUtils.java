@@ -85,7 +85,7 @@ public class EntityUtils {
                 14 - source.getCommandSenderWorld().getDifficulty().getId() * 4));
     }
 
-    public static boolean shootProjectileAtTarget(BaseProjectileEntity projectile, LivingEntity target,
+    public static boolean shootProjectileAtTarget(BaseProjectileEntity projectile, Entity target,
                                                   float velocity, float accuracy) {
 
         ProjectileUtils.BallisticResult result = ProjectileUtils.solveBallisticArcStationaryTarget(

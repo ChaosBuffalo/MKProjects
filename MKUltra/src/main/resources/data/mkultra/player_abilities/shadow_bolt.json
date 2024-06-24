@@ -9,7 +9,7 @@
     "scaleDamage": 4.0,
     "trail_particles": "mkultra:shadow_bolt_trail"
   },
-  "castTime": 20,
+  "castTime": 80,
   "cooldown": 160,
   "manaCost": 7.0
 }

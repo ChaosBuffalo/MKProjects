@@ -73,6 +73,9 @@ public class AbilityContext {
 
     @SuppressWarnings("unchecked")
     public <T> Optional<T> getMemory(MemoryModuleType<T> memory) {
+        if (!memories.containsKey(memory)) {
+            return Optional.empty();
+        }
         return (Optional<T>) memories.get(memory);
     }
 
