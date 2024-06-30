@@ -67,13 +67,11 @@ public class ExtraLootOption extends NpcDefinitionOption {
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
-        MKNpc.getNpcData(entity).ifPresent(x -> {
-            x.setChanceNoLoot(noLootChance);
-            x.setDropChances(dropChances);
-            for (LootOptionEntry entry : lootOptions) {
-                x.addLootOption(entry);
-                x.setNoLootChanceIncrease(noLootChance);
-            }
+        MKNpc.getNpcData(entity).ifPresent(npcLoot -> {
+            npcLoot.setNoLootChance(noLootChance);
+            npcLoot.setNoLootChanceIncrease(noLootIncrease);
+            npcLoot.setDropChances(dropChances);
+            lootOptions.forEach(npcLoot::addLootOption);
         });
     }
 }

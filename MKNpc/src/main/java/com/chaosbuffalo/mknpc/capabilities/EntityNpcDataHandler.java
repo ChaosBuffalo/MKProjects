@@ -24,6 +24,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -47,7 +48,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     private double noLootChanceIncrease;
     private boolean shouldHaveQuest;
     private double difficultyValue;
-    private final List<LootOptionEntry> options;
+    private final List<LootOptionEntry> lootOptions;
     private final Map<ResourceLocation, UUID> questOfferings = new HashMap<>();
     private final Queue<QuestOfferingEntry> questRequests = new ArrayDeque<>();
     private int questGenCd;
@@ -71,7 +72,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         dropChances = 0;
         noLootChanceIncrease = 0;
         shouldHaveQuest = false;
-        options = new ArrayList<>();
+        lootOptions = new ArrayList<>();
         questGenCd = 0;
         difficultyValue = 0.0;
     }
@@ -89,23 +90,22 @@ public class EntityNpcDataHandler implements IEntityNpcData {
 
     @Override
     public void addLootOption(LootOptionEntry option) {
-        options.add(option);
+        lootOptions.add(option);
     }
 
-
     @Override
-    public void setChanceNoLoot(double chance) {
+    public void setNoLootChance(double chance) {
         noLootChance = chance;
-    }
-
-    @Override
-    public void setDropChances(int count) {
-        dropChances = count;
     }
 
     @Override
     public void setNoLootChanceIncrease(double chance) {
         noLootChanceIncrease = chance;
+    }
+
+    @Override
+    public void setDropChances(int count) {
+        dropChances = count;
     }
 
     public double getNoLootChance() {
@@ -114,24 +114,32 @@ public class EntityNpcDataHandler implements IEntityNpcData {
 
     @Override
     public void handleExtraLoot(int lootingLevel, Collection<ItemEntity> drops, DamageSource source) {
+        int rollCount = dropChances + lootingLevel;
+        if (lootOptions.isEmpty() || rollCount <= 0) {
+            return;
+        }
+
+        RandomCollection<LootOptionEntry> weightedLoot = new RandomCollection<>();
+        for (LootOptionEntry option : lootOptions) {
+            weightedLoot.add(option.weight, option);
+        }
+
         LivingEntity entity = getEntity();
+        RandomSource random = entity.getRandom();
         double noLoot = getNoLootChance();
-        for (int i = 0; i < dropChances + lootingLevel; i++) {
-            if (entity.getRandom().nextDouble() >= noLoot) {
-                RandomCollection<LootOptionEntry> rolls = new RandomCollection<>();
-                for (LootOptionEntry option : options) {
-                    rolls.add(option.weight, option);
-                }
-                if (rolls.size() > 0) {
-                    LootOptionEntry selected = rolls.next(entity.getRandom());
-                    LootSlot lootSlot = LootSlotManager.getSlotFromName(selected.lootSlotName);
-                    LootTier lootTier = LootTierManager.getTierFromName(selected.lootTierName);
-                    if (lootSlot != null && lootTier != null) {
-                        LootConstructor constructor = lootTier.generateConstructorForSlot(entity.getRandom(), lootSlot);
-                        if (constructor != null) {
-                            ItemStack item = constructor.constructItem(entity.getRandom(), getDifficultyValue());
-                            if (!item.isEmpty()) {
-                                drops.add(entity.spawnAtLocation(item));
+        for (int i = 0; i < rollCount; i++) {
+            if (random.nextDouble() >= noLoot) {
+                LootOptionEntry selected = weightedLoot.next(random);
+                LootSlot lootSlot = LootSlotManager.getSlotFromName(selected.lootSlotName);
+                LootTier lootTier = LootTierManager.getTierFromName(selected.lootTierName);
+                if (lootSlot != null && lootTier != null) {
+                    LootConstructor constructor = lootTier.generateConstructorForSlot(random, lootSlot);
+                    if (constructor != null) {
+                        ItemStack item = constructor.constructItem(random, getDifficultyValue());
+                        if (!item.isEmpty()) {
+                            ItemEntity spawned = entity.spawnAtLocation(item);
+                            if (spawned != null) {
+                                drops.add(spawned);
                             }
                         }
                     }

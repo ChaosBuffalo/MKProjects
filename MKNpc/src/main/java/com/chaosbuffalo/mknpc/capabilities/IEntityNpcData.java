@@ -42,6 +42,8 @@ public interface IEntityNpcData extends INBTSerializable<CompoundTag> {
 
     void addQuestOffering(ResourceLocation questName, UUID questId);
 
+    void requestQuest(QuestOfferingEntry entry);
+
     boolean hasGeneratedQuest();
 
     boolean shouldHaveQuest();
@@ -79,15 +81,13 @@ public interface IEntityNpcData extends INBTSerializable<CompoundTag> {
 
     void addLootOption(LootOptionEntry option);
 
-    void setChanceNoLoot(double chance);
-
-    void setDropChances(int count);
+    void setNoLootChance(double chance);
 
     void setNoLootChanceIncrease(double chance);
 
-    void handleExtraLoot(int lootingLevel, Collection<ItemEntity> drops, DamageSource source);
+    void setDropChances(int count);
 
-    void requestQuest(QuestOfferingEntry entry);
+    void handleExtraLoot(int lootingLevel, Collection<ItemEntity> drops, DamageSource source);
 
     Optional<INotifyOnEntityDeath> getDeathReceiver();
 
