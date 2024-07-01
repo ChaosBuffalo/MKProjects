@@ -36,7 +36,7 @@ public abstract class ProjectileAbility extends MKAbility {
     protected final ResourceLocationAttribute detonateParticles = new ResourceLocationAttribute("detonate_particles", EMPTY_PARTICLES);
     protected final CodecAttribute<ProjectileCastBehavior> castBehavior = new CodecAttribute<>("castBehavior",
             new SimpleProjectileBehavior(new SingleLocationProvider(
-                    new Vec3(0.5f, 0.0f, 0.5f), 1.25f)), ProjectileCastBehavior.CODEC);
+                    new Vec3(2.0f, 0.0f, 2.0f), 0.6f), true), ProjectileCastBehavior.CODEC);
 
     protected final BooleanAttribute solveBallisticsForNpc = new BooleanAttribute("npc_solve_ballistics", true);
 
@@ -144,22 +144,10 @@ public abstract class ProjectileAbility extends MKAbility {
         castBehavior.getValue().endCastClient(this, casterData, clientState);
     }
 
-    public void fireCurrentProjectiles(IMKEntityData casterData, AbilityContext context) {
-        context.getMemory(MKAbilityMemories.CURRENT_PROJECTILES).ifPresent(current -> {
-            for (BaseProjectileEntity proj : current) {
-                casterData.getRiders().removeRider(proj);
-                fireProjectile(proj, projectileSpeed.value(), projectileInaccuracy.value(), casterData.getEntity(),
-                        context.getMemory(MKAbilityMemories.ABILITY_TARGET).orElse(null));
-            }
-        });
-        context.setMemory(MKAbilityMemories.CURRENT_PROJECTILES.get(), Optional.empty());
-    }
-
     public void fireProjectile(BaseProjectileEntity projectileEntity, float velocity, float accuracy,
-                               LivingEntity entity, Entity target) {
-        if (!solveBallisticsForNpc.value() || entity instanceof Player || target == null) {
-            projectileEntity.shoot(projectileEntity, projectileEntity.getXRot(), projectileEntity.getYRot(),
-                    0, velocity, accuracy);
+                               LivingEntity shooter, Entity target, float xRot, float yRot) {
+        if (!solveBallisticsForNpc.value() || shooter instanceof Player || target == null) {
+            projectileEntity.shoot(projectileEntity, xRot, yRot, 0, velocity, accuracy);
         } else {
             EntityUtils.shootProjectileAtTarget(projectileEntity, target, velocity, accuracy);
         }

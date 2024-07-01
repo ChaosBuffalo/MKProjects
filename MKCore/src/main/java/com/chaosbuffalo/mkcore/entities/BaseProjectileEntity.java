@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.entities;
 
+import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import net.minecraft.core.BlockPos;
@@ -460,14 +461,16 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
             }
             motion = getDeltaMovement();
             double xyMag = Math.sqrt(horizontalMag(motion));
-            setYRot((float) (Mth.atan2(motion.x, motion.z) * (double) (180F / (float) Math.PI)));
-            setXRot((float) (Mth.atan2(motion.y, xyMag) * (double) (180F / (float) Math.PI)));
+            if (!MathUtils.isNearlyZero(xyMag)) {
+                setYRot((float) (Mth.atan2(motion.x, motion.z) * (double) (180F / (float) Math.PI)));
+                setXRot((float) (Mth.atan2(motion.y, xyMag) * (double) (180F / (float) Math.PI)));
+            }
 
             while (this.getXRot() - this.xRotO < -180.0F) {
                 this.xRotO -= 360.0F;
             }
 
-            while (this.getYRot() - this.xRotO >= 180.0F) {
+            while (this.getXRot() - this.xRotO >= 180.0F) {
                 this.xRotO += 360.0F;
             }
 

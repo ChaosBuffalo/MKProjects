@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkultra.abilities.misc;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
+import com.chaosbuffalo.mkcore.abilities.projectiles.SimpleProjectileBehavior;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
@@ -13,6 +14,8 @@ import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
+import com.chaosbuffalo.mkcore.utils.location.CircularLocationProvider;
+import com.chaosbuffalo.mkcore.utils.location.PerpendicularLineLocationProvider;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
@@ -45,6 +48,8 @@ public class FireballAbility extends ProjectileAbility {
         casting_particles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
+        castBehavior.setDefaultValue(new SimpleProjectileBehavior(new PerpendicularLineLocationProvider(new Vec3(1.0, 0.0, 1.0), 1.0f, 4, 2.0f), true));
+        castBehavior.setValue(new SimpleProjectileBehavior(new PerpendicularLineLocationProvider(new Vec3(1.0, 0.0, 1.0), 1.0f, 4, 2.0f), true));
     }
 
     public float getExplosionRadius() {

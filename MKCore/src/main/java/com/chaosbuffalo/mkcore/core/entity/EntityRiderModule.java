@@ -13,7 +13,6 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class EntityRiderModule implements IPlayerSyncComponentProvider {
@@ -29,16 +28,20 @@ public class EntityRiderModule implements IPlayerSyncComponentProvider {
     }
 
     public void addRider(Entity rider) {
+        addRider(rider, true);
+    }
+
+    public void addRider(Entity rider, boolean doPitch) {
         Vec3 offset = rider.position().subtract(entityData.getEntity().position()).yRot(entityData.getEntity().getYRot() * ((float)Math.PI / 180F));
-        addRider(rider, offset);
+        addRider(rider, offset, doPitch);
     }
 
     public Collection<EntityRider> getRiders() {
         return riders.values();
     }
 
-    public void addRider(Entity rider, Vec3 offset) {
-        riders.put(rider.getId(), new EntityRider(rider, offset, rider.getXRot() - entityData.getEntity().getXRot()));
+    public void addRider(Entity rider, Vec3 offset, boolean doPitch) {
+        riders.put(rider.getId(), new EntityRider(rider, offset, entityData.getEntity().getYRot() - rider.getYRot(), doPitch));
         riderSync.markDirty(rider.getId());
         rider.startRiding(entityData.getEntity(), true);
     }
@@ -75,11 +78,13 @@ public class EntityRiderModule implements IPlayerSyncComponentProvider {
         protected Entity entity;
         protected Vec3 offset;
         protected float yawOffset;
+        protected boolean doPitch;
 
-        public EntityRider(Entity entity, Vec3 offset, float yawOffset) {
+        public EntityRider(Entity entity, Vec3 offset, float yawOffset, boolean doPitch) {
             this.entity = entity;
             this.offset = offset;
             this.yawOffset = yawOffset;
+            this.doPitch = doPitch;
         }
 
         public Vec3 getOffset() {
@@ -94,6 +99,10 @@ public class EntityRiderModule implements IPlayerSyncComponentProvider {
             return entity;
         }
 
+        public boolean shouldDoPitch() {
+            return doPitch;
+        }
+
         @Override
         public CompoundTag serialize() {
             CompoundTag tag = new CompoundTag();
@@ -101,6 +110,7 @@ public class EntityRiderModule implements IPlayerSyncComponentProvider {
             tag.putDouble("offsetY", offset.y);
             tag.putDouble("offsetZ", offset.z);
             tag.putFloat("yawOffset", yawOffset);
+            tag.putBoolean("doPitch", doPitch);
             return tag;
         }
 
@@ -111,12 +121,13 @@ public class EntityRiderModule implements IPlayerSyncComponentProvider {
             double z = tag.getDouble("offsetZ");
             offset = new Vec3(x, y, z);
             yawOffset = tag.getFloat("yawOffset");
+            doPitch = tag.getBoolean("doPitch");
             return true;
         }
 
         public static EntityRider createRider(int id) {
             Entity entity = ClientHandler.handleClient(id);
-            return new EntityRider(entity, Vec3.ZERO, 0.0f);
+            return new EntityRider(entity, Vec3.ZERO, 0.0f, true);
         }
     }
 

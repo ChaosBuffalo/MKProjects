@@ -56,7 +56,9 @@ public abstract class EntityMixins {
                 Vec2 rot = entityData.getEntity().getRotationVector();
                 Vec3 newOffset = rider.getOffset().yRot(-rot.y * ((float)Math.PI / 180F));
                 pPassenger.setPos(entityData.getEntity().position().add(newOffset));
-                pPassenger.setXRot(rot.x);
+                if (rider.shouldDoPitch()) {
+                    pPassenger.setXRot(rot.x);
+                }
                 pPassenger.setYRot(rot.y + rider.getYawOffset());
             }
         });

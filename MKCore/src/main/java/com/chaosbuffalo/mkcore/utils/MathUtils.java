@@ -30,6 +30,14 @@ public class MathUtils {
         return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
     }
 
+    public static boolean isNearlyZero(double value){
+        return isZero(value, 0.0001);
+    }
+
+    public static boolean isZero(double value, double threshold){
+        return value >= -threshold && value <= threshold;
+    }
+
     public static boolean isInteger(String str) {
         return str.matches("^([+-]?[1-9]\\d*|0)$");
     }

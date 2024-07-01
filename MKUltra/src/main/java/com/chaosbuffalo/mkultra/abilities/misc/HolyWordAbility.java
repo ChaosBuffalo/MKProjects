@@ -4,6 +4,8 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
+import com.chaosbuffalo.mkcore.abilities.projectiles.BurstProjectileBehavior;
+import com.chaosbuffalo.mkcore.abilities.projectiles.SimpleProjectileBehavior;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
@@ -15,6 +17,7 @@ import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
+import com.chaosbuffalo.mkcore.utils.location.CircularLocationProvider;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.effects.HolyWordEffect;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
@@ -55,6 +58,7 @@ public class HolyWordAbility extends ProjectileAbility {
         scaleDamage.setDefaultValue(3.0f);
         setCastTime(GameConstants.TICKS_PER_SECOND + GameConstants.TICKS_PER_SECOND / 4);
         setCooldownTicks(GameConstants.TICKS_PER_SECOND * 5);
+        projectileInaccuracy.setDefaultValue(0.0f);
     }
 
     @Override
