@@ -43,6 +43,8 @@ public class MKUAbilities {
 
     public static final RegistryObject<HolyWordAbility> HOLY_WORD = REGISTRY.register("ability.holy_word",
             HolyWordAbility::new);
+    public static final RegistryObject<HolyWordShotgunAbility> HOLY_WORD_SHOTGUN = REGISTRY.register("ability.holy_word_shotgun",
+            HolyWordShotgunAbility::new);
 
     //necromancer
     public static final RegistryObject<MKEntitySummonAbility> TEST_SUMMON = REGISTRY.register("ability.test_summon",

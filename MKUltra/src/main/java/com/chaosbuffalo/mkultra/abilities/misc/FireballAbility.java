@@ -48,8 +48,6 @@ public class FireballAbility extends ProjectileAbility {
         casting_particles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
-        castBehavior.setDefaultValue(new SimpleProjectileBehavior(new PerpendicularLineLocationProvider(new Vec3(1.0, 0.0, 1.0), 1.0f, 4, 2.0f), true));
-        castBehavior.setValue(new SimpleProjectileBehavior(new PerpendicularLineLocationProvider(new Vec3(1.0, 0.0, 1.0), 1.0f, 4, 2.0f), true));
     }
 
     public float getExplosionRadius() {

@@ -8,10 +8,7 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
-import com.chaosbuffalo.mkcore.serialization.attributes.CodecAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.BooleanAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.*;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.location.SingleLocationProvider;
 import com.chaosbuffalo.targeting_api.TargetingContext;
@@ -36,9 +33,16 @@ public abstract class ProjectileAbility extends MKAbility {
     protected final ResourceLocationAttribute detonateParticles = new ResourceLocationAttribute("detonate_particles", EMPTY_PARTICLES);
     protected final CodecAttribute<ProjectileCastBehavior> castBehavior = new CodecAttribute<>("castBehavior",
             new SimpleProjectileBehavior(new SingleLocationProvider(
-                    new Vec3(2.0f, 0.0f, 2.0f), 0.6f), true), ProjectileCastBehavior.CODEC);
+                    new Vec3(0.5f, 0.0f, 0.5f), 0.6f), true), ProjectileCastBehavior.CODEC);
 
-    protected final BooleanAttribute solveBallisticsForNpc = new BooleanAttribute("npc_solve_ballistics", true);
+    protected final BallisticsSolveModeAttribute solveBallisticsForNpc = new BallisticsSolveModeAttribute("npc_solve_ballistics",
+            BallisticsSolveMode.YAW_AND_PITCH);
+
+    public enum BallisticsSolveMode{
+        NO_SOLVE,
+        PITCH,
+        YAW_AND_PITCH
+    }
 
     protected final Attribute skill;
 
@@ -146,10 +150,15 @@ public abstract class ProjectileAbility extends MKAbility {
 
     public void fireProjectile(BaseProjectileEntity projectileEntity, float velocity, float accuracy,
                                LivingEntity shooter, Entity target, float xRot, float yRot) {
-        if (!solveBallisticsForNpc.value() || shooter instanceof Player || target == null) {
+        if (solveBallisticsForNpc.getValue() == BallisticsSolveMode.NO_SOLVE || shooter instanceof Player || target == null) {
             projectileEntity.shoot(projectileEntity, xRot, yRot, 0, velocity, accuracy);
         } else {
-            EntityUtils.shootProjectileAtTarget(projectileEntity, target, velocity, accuracy);
+            switch (solveBallisticsForNpc.getValue()) {
+                case YAW_AND_PITCH -> EntityUtils.shootProjectileAtTarget(projectileEntity, target, velocity, accuracy);
+                case PITCH -> projectileEntity.shoot(projectileEntity,
+                        EntityUtils.solvePitch(projectileEntity, target, velocity), yRot, 0, velocity, accuracy);
+            }
+
         }
     }
 }

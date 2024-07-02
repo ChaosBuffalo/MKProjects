@@ -36,6 +36,7 @@ public class CodecAttribute<T> implements ISerializableAttribute<T> {
     @Override
     public void setDefaultValue(T defaultValue) {
         this.defaultValue = defaultValue;
+        reset();
     }
 
     @Override

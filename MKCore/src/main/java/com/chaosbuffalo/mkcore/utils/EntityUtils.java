@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.math.AxisAngle;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -99,6 +100,26 @@ public class EntityUtils {
         } else {
             projectile.shoot(result.lowArc.x, result.lowArc.y, result.lowArc.z, velocity, accuracy);
             return true;
+        }
+    }
+
+
+    public static double horizontalMag(Vec3 vec) {
+        return vec.x * vec.x + vec.z * vec.z;
+    }
+
+    public static float solvePitch(BaseProjectileEntity projectile, Entity target, float velocity) {
+        ProjectileUtils.BallisticResult result = ProjectileUtils.solveBallisticArcStationaryTarget(
+                projectile.position(),
+                new Vec3(target.getX(), target.getY(0.9D), target.getZ()),
+                velocity, projectile.getGravityVelocity());
+
+        if (!result.foundSolution) {
+            MKCore.LOGGER.info("No solution found for {}", projectile.toString());
+            return 0.0f;
+        } else {
+            double xyMag = Math.sqrt(horizontalMag(result.lowArc));
+            return (float) (-Mth.atan2(result.lowArc.y, xyMag) * (double) (180F / (float) Math.PI));
         }
     }
 
