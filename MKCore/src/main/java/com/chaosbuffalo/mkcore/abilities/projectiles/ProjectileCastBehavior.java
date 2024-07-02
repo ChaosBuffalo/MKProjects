@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.utils.location.LocationProvider;
 import com.mojang.serialization.Codec;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 
@@ -33,6 +34,8 @@ public abstract class ProjectileCastBehavior {
     public LocationProvider getLocationProvider() {
         return locationProvider;
     }
+
+    public abstract Component describe(IMKEntityData casterData, ProjectileAbility projectileAbility);
 
     public void endCast(ProjectileAbility ability, IMKEntityData casterData, AbilityContext context) {
         if (context.getClientState() instanceof ProjectileAbilityClientState projectileState) {

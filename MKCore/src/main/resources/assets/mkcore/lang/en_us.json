@@ -234,5 +234,11 @@
   "mkcore.talent.heal_efficiency.name": "Heal Efficiency",
   "mkcore.talent.heal_efficiency.description": "Increases your healing efficiency by %s",
   "mkcore.talent.nature_damage.name": "Nature Damage",
-  "mkcore.talent.nature_damage.description": "Increases your nature damage by %s"
+  "mkcore.talent.nature_damage.description": "Increases your nature damage by %s",
+  "mkcore.ability.projectile.desc": "Behavior: %s",
+  "location_provider.single.desc": "a single projectile",
+  "projectile_behavior.simple": "Fires %s at end of cast.",
+  "location_provider.perpendicular_line": "%d projectiles in a perpendicular line",
+  "location_provider.circular": "%d projectiles in an arc from %s° to %s°",
+  "projectile_behavior.burst": "Fires %s, one after another over %s seconds."
 }

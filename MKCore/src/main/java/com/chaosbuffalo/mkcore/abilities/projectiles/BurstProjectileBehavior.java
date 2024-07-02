@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mkcore.abilities.projectiles;
 
+import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
+import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
@@ -11,6 +13,7 @@ import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.utils.location.LocationProvider;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 
 import javax.annotation.Nullable;
@@ -28,6 +31,11 @@ public class BurstProjectileBehavior extends ProjectileCastBehavior{
     public BurstProjectileBehavior(LocationProvider provider, boolean doPitch) {
         super(provider);
         this.doPitch = doPitch;
+    }
+
+    @Override
+    public Component describe(IMKEntityData casterData, ProjectileAbility projectileAbility) {
+        return Component.translatable("projectile_behavior.burst", getLocationProvider().describe(), MKAbility.NUMBER_FORMATTER.format(projectileAbility.getCastTime(casterData) / GameConstants.FTICKS_PER_SECOND));
     }
 
     @Override

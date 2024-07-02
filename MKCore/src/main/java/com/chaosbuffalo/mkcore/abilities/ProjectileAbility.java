@@ -13,6 +13,7 @@ import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.location.SingleLocationProvider;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -22,27 +23,30 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public abstract class ProjectileAbility extends MKAbility {
-    protected final FloatAttribute baseDamage = new FloatAttribute("baseDamage", 6.0f);
-    protected final FloatAttribute scaleDamage = new FloatAttribute("scaleDamage", 2.0f);
-    protected final FloatAttribute projectileSpeed = new FloatAttribute("projectileSpeed", 1.25f);
-    protected final FloatAttribute projectileInaccuracy = new FloatAttribute("projectileInaccuracy", 0.2f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    public enum BallisticsSolveMode{
+        NO_SOLVE,
+        PITCH,
+        YAW_AND_PITCH
+    }
+
+    protected final FloatAttribute baseDamage = new FloatAttribute("base_damage", 6.0f);
+    protected final FloatAttribute scaleDamage = new FloatAttribute("scale_damage", 2.0f);
+    protected final FloatAttribute projectileSpeed = new FloatAttribute("projectile_speed", 1.25f);
+    protected final FloatAttribute projectileInaccuracy = new FloatAttribute("projectile_inaccuracy", 0.2f);
+    protected final FloatAttribute modifierScaling = new FloatAttribute("modifier_scaling", 1.0f);
     protected final ResourceLocationAttribute trailParticles = new ResourceLocationAttribute("trail_particles", EMPTY_PARTICLES);
     protected final ResourceLocationAttribute detonateParticles = new ResourceLocationAttribute("detonate_particles", EMPTY_PARTICLES);
-    protected final CodecAttribute<ProjectileCastBehavior> castBehavior = new CodecAttribute<>("castBehavior",
+    protected final CodecAttribute<ProjectileCastBehavior> castBehavior = new CodecAttribute<>("cast_behavior",
             new SimpleProjectileBehavior(new SingleLocationProvider(
                     new Vec3(0.5f, 0.0f, 0.5f), 0.6f), true), ProjectileCastBehavior.CODEC);
 
     protected final BallisticsSolveModeAttribute solveBallisticsForNpc = new BallisticsSolveModeAttribute("npc_solve_ballistics",
             BallisticsSolveMode.YAW_AND_PITCH);
 
-    public enum BallisticsSolveMode{
-        NO_SOLVE,
-        PITCH,
-        YAW_AND_PITCH
-    }
+
 
     protected final Attribute skill;
 
@@ -72,6 +76,13 @@ public abstract class ProjectileAbility extends MKAbility {
 
     public float getProjectileInaccuracy() {
         return projectileInaccuracy.value();
+    }
+
+    @Override
+    public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
+        super.buildDescription(casterData, context, consumer);
+        consumer.accept(Component.literal(""));
+        consumer.accept(Component.translatable("mkcore.ability.projectile.desc", castBehavior.getValue().describe(casterData, this)));
     }
 
     @Override

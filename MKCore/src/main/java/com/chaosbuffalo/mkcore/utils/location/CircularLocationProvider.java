@@ -1,8 +1,10 @@
 package com.chaosbuffalo.mkcore.utils.location;
 
+import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
@@ -16,6 +18,7 @@ public class CircularLocationProvider extends LocationProvider{
     protected final float maxDegrees;
     protected final boolean inheritPitch;
 
+
     public static final Codec<CircularLocationProvider> CODEC = RecordCodecBuilder.<CircularLocationProvider>mapCodec(builder -> builder.group(
             Vec3.CODEC.fieldOf("offset").forGetter(i -> i.offset),
             Codec.FLOAT.fieldOf("percentEyeHeight").forGetter(i -> i.percentEyeHeight),
@@ -28,6 +31,11 @@ public class CircularLocationProvider extends LocationProvider{
 
     public CircularLocationProvider(Vec3 offset, float percentEyeHeight, int count, float distance, boolean inheritPitch) {
         this(offset, percentEyeHeight, count, distance, 0f, -360f, inheritPitch);
+    }
+
+    @Override
+    public Component describe() {
+        return Component.translatable("location_provider.circular", getCount(), MKAbility.NUMBER_FORMATTER.format(-1.f*minDegrees), MKAbility.NUMBER_FORMATTER.format(-1.f*maxDegrees));
     }
 
     public CircularLocationProvider(Vec3 offset, float percentEyeHeight, int count, float distance, float minDegrees, float maxDegrees,

@@ -11,6 +11,7 @@ import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.utils.location.LocationProvider;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 
 import javax.annotation.Nullable;
@@ -28,6 +29,11 @@ public class SimpleProjectileBehavior extends ProjectileCastBehavior{
     public SimpleProjectileBehavior(LocationProvider provider, boolean doPitch) {
         super(provider);
         this.doPitch = doPitch;
+    }
+
+    @Override
+    public Component describe(IMKEntityData casterData, ProjectileAbility projectileAbility) {
+        return Component.translatable("projectile_behavior.simple", getLocationProvider().describe());
     }
 
     @Override

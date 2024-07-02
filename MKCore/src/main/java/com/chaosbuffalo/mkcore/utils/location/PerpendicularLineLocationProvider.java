@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.utils.location;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -24,6 +25,11 @@ public class PerpendicularLineLocationProvider extends LocationProvider{
         this.offset = offset;
         this.percentEyeHeight = percentEyeHeight;
         this.distance = distance;
+    }
+
+    @Override
+    public Component describe() {
+        return Component.translatable("location_provider.perpendicular_line", getCount());
     }
 
     @Override
