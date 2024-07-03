@@ -22,7 +22,6 @@ public class ShadowPulseFlurryAbility extends PositionFlurryAbility {
         super(MKUAbilities.SHADOW_PULSE);
         setCastTime(GameConstants.TICKS_PER_SECOND * 3);
         //FIXME: this should be simplified in attribute rework
-        tickRate.setValue(GameConstants.TICKS_PER_SECOND);
         tickRate.setDefaultValue(GameConstants.TICKS_PER_SECOND);
         setCooldownSeconds(5);
         setManaCost(10);

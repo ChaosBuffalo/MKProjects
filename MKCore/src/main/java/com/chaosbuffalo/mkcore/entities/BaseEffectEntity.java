@@ -26,6 +26,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -70,11 +71,19 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         protected ResourceLocation particles;
         protected int tickRate;
         protected DisplayType type;
+        protected boolean setEndpoint;
+        protected Vec3 endpoint;
 
-        public ParticleDisplay(ResourceLocation particleName, int tickRate, DisplayType type) {
+        public ParticleDisplay(ResourceLocation particleName, int tickRate, DisplayType type, boolean setEndpoint, Vec3 endpoint) {
             particles = particleName;
             this.tickRate = tickRate;
             this.type = type;
+            this.setEndpoint = setEndpoint;
+            this.endpoint = endpoint;
+        }
+
+        public ParticleDisplay(ResourceLocation particleName, int tickRate, DisplayType type) {
+            this(particleName, tickRate, type, false, Vec3.ZERO);
         }
 
         public ResourceLocation getParticles() {
@@ -104,13 +113,18 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
             buffer.writeResourceLocation(particles);
             buffer.writeInt(tickRate);
             buffer.writeEnum(type);
+            buffer.writeBoolean(setEndpoint);
+            buffer.writeVector3f(endpoint.toVector3f());
+
         }
 
         public static ParticleDisplay read(FriendlyByteBuf buffer) {
             ResourceLocation loc = buffer.readResourceLocation();
             int tickRate = buffer.readInt();
             DisplayType type = buffer.readEnum(DisplayType.class);
-            return new ParticleDisplay(loc, tickRate, type);
+            boolean setEndpoint = buffer.readBoolean();
+            Vector3f vec = buffer.readVector3f();
+            return new ParticleDisplay(loc, tickRate, type, setEndpoint, new Vec3(vec));
         }
     }
 
@@ -209,10 +223,20 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         }
     }
 
+    protected float getPercentWaiting() {
+        return Math.max(Math.min((float) (tickCount - preDelay) / (waitTime), 1.0f), 0.0f);
+    }
+
     protected void spawnClientParticles(ParticleDisplay display) {
         ParticleAnimation anim = ParticleAnimationManager.getAnimation(display.getParticles());
         if (anim != null) {
-            anim.spawn(getCommandSenderWorld(), position(), new Vec3(1., 1. ,1.), null);
+            if (display.setEndpoint) {
+                float scale = getPercentWaiting();
+                anim.spawn(getCommandSenderWorld(), position().add(display.endpoint.scale(1.0f - scale)), new Vec3(1., 1. ,1.),
+                        Collections.singletonList(position().add(display.endpoint)));
+            } else {
+                anim.spawn(getCommandSenderWorld(), position(), new Vec3(1., 1. ,1.), null);
+            }
         }
     }
 
@@ -285,7 +309,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
     }
 
     public boolean isWaiting() {
-        return tickCount > preDelay && tickCount < preDelay + waitTime;
+        return tickCount > preDelay && tickCount < (preDelay + waitTime);
     }
 
     @Nullable
@@ -299,7 +323,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
     protected abstract Collection<LivingEntity> getEntitiesInBounds();
 
     protected boolean serverUpdate() {
-        if (tickCount > preDelay + waitTime + duration + WAIT_LAG + 1) {
+        if (tickCount > (preDelay + waitTime + duration + WAIT_LAG + 1)) {
             onDeath(DeathReason.DURATION_RAN_OUT);
             return true;
         }
@@ -311,7 +335,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
 
 
         // lets recalc waiting to include a wait lag so that the server isnt damaging before the client responds
-        boolean stillWaiting = tickCount <= preDelay + waitTime + WAIT_LAG;
+        boolean stillWaiting = tickCount <= (preDelay + waitTime + WAIT_LAG);
 
         if (stillWaiting) {
             return false;
@@ -338,7 +362,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
             reapplicationDelayMap.put(target, tickCount + tickRate);
             MKCore.getEntityData(target).ifPresent(targetData ->
                     effects.forEach(entry -> {
-                        if (entry.getTickStart() <= tickCount - preDelay - waitTime - WAIT_LAG) {
+                        if (entry.getTickStart() <= (tickCount - preDelay - waitTime - WAIT_LAG)) {
                             entry.apply(entityData, targetData);
                         }
                     }));

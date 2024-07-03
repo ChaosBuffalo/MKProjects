@@ -267,15 +267,20 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     public float getManaCost(IMKEntityData casterData) {
-        return getBaseManaCost() + getManaCostModifierForSkills(casterData);
+        return getBaseManaCost() * getManaCostModifierForSkills(casterData);
     }
 
     protected float getManaCostModifierForSkills(IMKEntityData casterData) {
         float total = 0.0f;
+        int attrCount = 0;
         for (Attribute attribute : getSkillAttributes()) {
             total += getSkillLevel(casterData.getEntity(), attribute);
+            attrCount++;
         }
-        return total;
+        if (attrCount > 1) {
+            total /= attrCount;
+        }
+        return total + 1.f;
     }
 
     protected void setManaCost(float cost) {

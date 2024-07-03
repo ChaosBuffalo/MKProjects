@@ -144,5 +144,7 @@
   "mkultra.ability.drown.description": "Fills the targets lungs with water dealing %s every %s seconds for %s seconds.",
   "mkultra.ability.holy_word.name": "Holy Word",
   "mkultra.ability.holy_word.description": "Strikes the target with the word of God, dealing %s and applying a stack of %s lasting %s seconds, when %s stacks are reached, stuns the target for %s seconds.",
-  "mk_effect.mkultra.effect.holy_word": "Holy Judgement"
+  "mk_effect.mkultra.effect.holy_word": "Holy Judgement",
+  "mkultra.ability.holy_fire.name": "Holy Fire",
+  "mkultra.ability.holy_fire.description": "Summons a ring of fire with radius %s at the location, after %s seconds it starts dealing %s every %s seconds for %s seconds."
 }
