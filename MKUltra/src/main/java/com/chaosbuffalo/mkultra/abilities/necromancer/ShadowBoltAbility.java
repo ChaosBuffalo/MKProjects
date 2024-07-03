@@ -40,7 +40,7 @@ public class ShadowBoltAbility extends ProjectileAbility {
         setCastTime(GameConstants.TICKS_PER_SECOND);
         baseDamage.setDefaultValue(8.0f);
         scaleDamage.setDefaultValue(4.0f);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
     }

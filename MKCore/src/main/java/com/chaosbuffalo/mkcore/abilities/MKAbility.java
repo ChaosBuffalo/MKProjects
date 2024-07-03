@@ -9,13 +9,10 @@ import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.player.PlayerKnownAbility;
-import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
 import com.chaosbuffalo.mkcore.serialization.attributes.ISerializableAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
-import com.chaosbuffalo.mkcore.utils.EntityUtils;
-import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mkcore.utils.text.IconTextComponent;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
@@ -32,8 +29,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeMod;
 
 import javax.annotation.Nonnull;
@@ -52,7 +47,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     private AbilityUseCondition useCondition;
     private final Set<Attribute> skillAttributes;
     protected static final ResourceLocation EMPTY_PARTICLES = new ResourceLocation(MKCore.MOD_ID, "fx.casting.empty");
-    protected final ResourceLocationAttribute casting_particles = new ResourceLocationAttribute("casting_particles", EMPTY_PARTICLES);
+    protected final ResourceLocationAttribute castingParticles = new ResourceLocationAttribute("casting_particles", EMPTY_PARTICLES);
     public static final ResourceLocation POOL_SLOT_ICON = new ResourceLocation(MKCore.MOD_ID, "textures/talents/pool_count_icon_filled.png");
     public static final NumberFormat PERCENT_FORMATTER = NumberFormat.getPercentInstance();
     public static final NumberFormat INTEGER_FORMATTER = NumberFormat.getIntegerInstance();
@@ -66,15 +61,15 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         this.attributes = new ArrayList<>();
         this.skillAttributes = new HashSet<>();
         setUseCondition(new StandardUseCondition(this));
-        addAttribute(casting_particles);
+        addAttribute(castingParticles);
     }
 
     public boolean hasCastingParticles() {
-        return casting_particles.getValue().compareTo(EMPTY_PARTICLES) != 0;
+        return castingParticles.getValue().compareTo(EMPTY_PARTICLES) != 0;
     }
 
     public ResourceLocation getCastingParticles() {
-        return casting_particles.getValue();
+        return castingParticles.getValue();
     }
 
     public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType, float damage,

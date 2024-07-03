@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkultra.abilities.misc;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
-import com.chaosbuffalo.mkcore.abilities.projectiles.SimpleProjectileBehavior;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.AreaEffectBuilder;
@@ -14,8 +13,6 @@ import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
-import com.chaosbuffalo.mkcore.utils.location.CircularLocationProvider;
-import com.chaosbuffalo.mkcore.utils.location.PerpendicularLineLocationProvider;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkultra.init.MKUEffects;
@@ -45,7 +42,7 @@ public class FireballAbility extends ProjectileAbility {
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND);
         addAttributes(radius);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
     }

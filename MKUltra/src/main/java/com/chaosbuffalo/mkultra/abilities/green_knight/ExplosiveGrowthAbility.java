@@ -55,7 +55,7 @@ public class ExplosiveGrowthAbility extends MKAbility {
         addAttributes(baseDamage, scaleDamage, cast_particles, detonate_particles);
         addSkillAttribute(MKAttributes.RESTORATION);
         addSkillAttribute(MKAttributes.PANKRATION);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
 
     @Override

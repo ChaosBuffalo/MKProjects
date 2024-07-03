@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 public class HolyFireAbility extends WindUpPulseAbility {
     private static final ResourceLocation PULSE_PARTICLES = new ResourceLocation(MKUltra.MODID, "holy_fire_detonate");
     private static final ResourceLocation WAIT_PARTICLES = new ResourceLocation(MKUltra.MODID, "holy_fire_wait");
+    private static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "holy_fire_casting");
     protected final FloatAttribute base = new FloatAttribute("base", 4.0f);
     protected final FloatAttribute scale = new FloatAttribute("scale", 1.0f);
     protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
@@ -40,6 +41,7 @@ public class HolyFireAbility extends WindUpPulseAbility {
         addSkillAttribute(MKAttributes.EVOCATION);
         waitTime.setDefaultValue(GameConstants.TICKS_PER_SECOND * 2);
         waitTickRate.setDefaultValue(GameConstants.TICKS_PER_SECOND / 4);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
         radius.setDefaultValue(1.6f);
         setCooldownSeconds(10);
         setManaCost(6);

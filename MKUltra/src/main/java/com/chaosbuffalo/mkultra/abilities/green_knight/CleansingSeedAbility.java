@@ -45,7 +45,7 @@ public class CleansingSeedAbility extends ProjectileAbility {
         setCooldownSeconds(8);
         setManaCost(4);
         setCastTime(GameConstants.TICKS_PER_SECOND - 5);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
         baseDamage.setDefaultValue(4.0f);
         scaleDamage.setDefaultValue(4.0f);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);

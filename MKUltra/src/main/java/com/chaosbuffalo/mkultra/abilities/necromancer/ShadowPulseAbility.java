@@ -46,7 +46,7 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
         addSkillAttribute(MKAttributes.CONJURATION);
         pulseParticles.setDefaultValue(PULSE_PARTICLES);
         waitParticles.setDefaultValue(WAIT_PARTICLES);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
         addAttributes(base, scale, modifierScaling, baseGravity, scaleGravity, detonateBase, detonateScale);
     }
 

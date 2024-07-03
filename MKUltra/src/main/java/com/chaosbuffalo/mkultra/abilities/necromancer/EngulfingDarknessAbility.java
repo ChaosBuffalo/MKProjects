@@ -51,7 +51,7 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
         addAttributes(baseDuration, scaleDuration, baseDot, scaleDot, dotModifierScaling,
                 castParticles, dotCastParticles, shadowbringerChance, shadowbringerDuration);
         addSkillAttribute(MKAttributes.CONJURATION);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
 
     protected float getShadowbringerChance(IMKEntityData entityData) {

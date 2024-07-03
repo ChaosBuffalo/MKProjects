@@ -47,7 +47,7 @@ public class SeafuryAbility extends PositionTargetingAbility {
     public SeafuryAbility() {
         super();
         setCastTime(GameConstants.TICKS_PER_SECOND * 2);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
         setCooldownSeconds(15);
         setManaCost(6);
         addAttributes(pulse_particles, wait_particles, wait_time, step, step_delay, iterations, radius,
