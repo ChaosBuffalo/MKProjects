@@ -6,7 +6,6 @@ import net.minecraft.nbt.CompoundTag;
 import java.util.*;
 
 public class SyncGroup implements ISyncObject {
-    protected static final String FULL_FLAG = "#f";
     protected final List<ISyncObject> components = new ArrayList<>();
     protected final Set<ISyncObject> dirty = new HashSet<>();
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
@@ -53,43 +52,55 @@ public class SyncGroup implements ISyncObject {
 
     }
 
-    protected void beforeClientUpdate(CompoundTag groupTag, boolean fullSync) {
-
-    }
-
     @Override
     public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         CompoundTag groupTag = extractGroupTag(tag);
-        if (!groupTag.isEmpty()) {
-            boolean fullSync = groupTag.contains(FULL_FLAG);
-            beforeClientUpdate(groupTag, fullSync);
+        readComponentUpdates(provider, groupTag);
+    }
+
+    protected void readComponentUpdates(HolderLookup.Provider provider, CompoundTag groupTag) {
+        if (groupTag.isEmpty() || components.isEmpty()) {
+            return;
         }
         components.forEach(c -> c.deserializeUpdate(provider, groupTag));
     }
 
     @Override
     public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        if (dirty.isEmpty())
+        if (dirty.isEmpty()) {
             return;
+        }
 
         CompoundTag groupTag = extractGroupTag(tag);
-        dirty.forEach(c -> c.serializeUpdate(provider, groupTag));
+        writeComponentUpdates(provider, groupTag, dirty);
         if (!groupTag.isEmpty()) {
             insertGroupTag(tag, groupTag);
         }
         dirty.clear();
     }
 
+    protected void writeComponentUpdates(HolderLookup.Provider provider, CompoundTag groupTag, Collection<ISyncObject> objects) {
+        for (ISyncObject object : objects) {
+            object.serializeUpdate(provider, groupTag);
+        }
+    }
+
     @Override
     public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
-        if (components.isEmpty())
+        if (components.isEmpty()) {
             return;
+        }
 
         CompoundTag groupTag = extractGroupTag(tag);
-        groupTag.putBoolean(FULL_FLAG, true);
-        components.forEach(c -> c.serializeFull(provider, groupTag));
+        writeFullComponents(provider, groupTag, components);
         if (!groupTag.isEmpty()) {
             insertGroupTag(tag, groupTag);
+        }
+    }
+
+    protected void writeFullComponents(HolderLookup.Provider provider, CompoundTag groupTag, Collection<ISyncObject> objects) {
+        for (ISyncObject object : objects) {
+            object.serializeFull(provider, groupTag);
         }
     }
 
