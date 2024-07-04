@@ -57,7 +57,7 @@ public class HolyFireAbility extends WindUpPulseAbility {
 
     @Override
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
-        float level = context.getSkill(MKAttributes.CONJURATION);
+        float level = context.getSkill(MKAttributes.EVOCATION);
         Component damageStr = getDamageDescription(casterData, CoreDamageTypes.FireDamage.get(), base.value(), scale.value(), level, modifierScaling.value());
         return Component.translatable(getDescriptionTranslationKey(),
                 NUMBER_FORMATTER.format(radius.value()),

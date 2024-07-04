@@ -146,5 +146,10 @@
   "mkultra.ability.holy_word.description": "Strikes the target with the word of God, dealing %s and applying a stack of %s lasting %s seconds, when %s stacks are reached, stuns the target for %s seconds.",
   "mk_effect.mkultra.effect.holy_word": "Holy Judgement",
   "mkultra.ability.holy_fire.name": "Holy Fire",
-  "mkultra.ability.holy_fire.description": "Summons a ring of fire with radius %s at the location, after %s seconds it starts dealing %s every %s seconds for %s seconds."
+  "mkultra.ability.holy_fire.description": "Summons a ring of fire with radius %s at the location, after %s seconds it starts dealing %s every %s seconds for %s seconds.",
+  "mkultra.ability.holy_word_shotgun.name": "Holy Word (Shotgun)",
+  "item.mkultra.ancient_cardinal_chestplate": "Ancient Cardinal Robes",
+  "item.mkultra.ancient_cardinal_boots": "Ancient Cardinal Boots",
+  "item.mkultra.ancient_cardinal_helmet": "Ancient Cardinal Hood",
+  "item.mkultra.ancient_cardinal_leggings": "Ancient Cardinal Pants"
 }

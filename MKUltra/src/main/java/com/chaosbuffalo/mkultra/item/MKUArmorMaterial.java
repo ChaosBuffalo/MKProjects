@@ -35,8 +35,15 @@ public enum MKUArmorMaterial implements ArmorMaterial {
     ANCIENT_PRIEST_ROBES("mkultra:ancient_priest_robes", 15, new int[]{1, 3, 4, 1}, 20,
             SoundEvents.ARMOR_EQUIP_LEATHER,
             0.0f, 0.0f,
-            () -> Ingredient.of(Items.STRING)
+            () -> Ingredient.of(Items.STRING)),
+
+    ANCIENT_CARDINAL_ROBES("mkultra:ancient_cardinal_robes", 25, new int[]{2, 4, 5, 2}, 30,
+            SoundEvents.ARMOR_EQUIP_LEATHER,
+            0.0f, 0.0f,
+            () -> Ingredient.of(Items.GOLD_INGOT)
     );
+
+
 
 
     private static final int[] MAX_DAMAGE_ARRAY = new int[]{13, 15, 16, 11};

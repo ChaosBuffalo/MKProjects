@@ -34,7 +34,8 @@ public class UltraItemTagsProvider extends ItemTagsProvider {
     protected void addTags(HolderLookup.Provider pProvider) {
         tag(CoreTags.Items.ROBES_ARMOR)
                 .add(MKUItems.seawovenBoots.get(), MKUItems.seawovenHelmet.get(), MKUItems.seawovenChestplate.get(), MKUItems.seawovenLeggings.get())
-                .add(MKUItems.ancientPriestChestplate.get(), MKUItems.ancientPriestLeggings.get(), MKUItems.ancientPriestBoots.get(), MKUItems.ancientPriestHelmet.get());
+                .add(MKUItems.ancientPriestChestplate.get(), MKUItems.ancientPriestLeggings.get(), MKUItems.ancientPriestBoots.get(), MKUItems.ancientPriestHelmet.get())
+                .add(MKUItems.ancientCardinalChestplate.get(), MKUItems.ancientCardinalLeggings.get(), MKUItems.ancientCardinalBoots.get(), MKUItems.ancientCardinalHelmet.get());
         tag(CoreTags.Items.MEDIUM_ARMOR)
                 .add(MKUItems.trooperKnightLeggings.get(), MKUItems.trooperKnightBoots.get(), MKUItems.trooperKnightHelmet.get(), MKUItems.trooperKnightChestplate.get())
                 .add(MKUItems.ancientBronzeBoots.get(), MKUItems.ancientBronzeChestplate.get(), MKUItems.ancientBronzeLeggings.get(), MKUItems.ancientBronzeHelmet.get());
