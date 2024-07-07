@@ -73,7 +73,8 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 writeDefinition(generateNecrotideSkeletalWarrior(), cache),
                 writeDefinition(generateSeawovenSkeleton(), cache),
                 writeDefinition(generateSeawovenWretch(), cache),
-                writeDefinition(generateAncientPriestGhost(), cache)
+                writeDefinition(generateAncientPriestGhost(), cache),
+                writeDefinition(generateAncientCardinal(), cache)
         );
     }
 
@@ -400,6 +401,78 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         def.addOption(equipOption);
         return def;
     }
+
+    private NpcDefinition generateAncientCardinal() {
+        NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "ancient_cardinal"),
+                MKUEntities.HUMAN_TYPE.getId(), null);
+        def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new MKSizeOption(1.2f));
+        def.addOption(new RenderGroupOption(MKUHumans.GHOST_LOOK_CLEAN_NAME));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 350.0))
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.ARMOR, 20.0))
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.ATTACK_DAMAGE, 6.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.HOLY_RESISTANCE, 1.25))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 350.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 6.0))
+        );
+        def.addOption(new NameOption("Ancient Cardinal"));
+        EquipmentOption equipOption = new EquipmentOption();
+        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
+                new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                        new ResourceLocation("mkweapons:warhammer_gold"))), 1.0, 0.0f));
+        equipOption.addItemChoice(EquipmentSlot.HEAD,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientCardinalHelmet.get()), 1.0, 0.05f));
+        equipOption.addItemChoice(EquipmentSlot.CHEST,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientCardinalChestplate.get()), 1.0, 0.05f));
+        equipOption.addItemChoice(EquipmentSlot.LEGS,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientCardinalLeggings.get()), 1.0, 0.05f));
+        equipOption.addItemChoice(EquipmentSlot.FEET,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientCardinalBoots.get()), 1.0, 0.05f));
+        def.addOption(equipOption);
+        def.addOption(new NotableOption());
+        def.addOption(new BossStageOption()
+                        .withStage(new BossStage()
+                                        .withOption(new TempAbilitiesOption()
+                                                .withAbilityOption(MKUAbilities.HOLY_FIRE.get(), 1, 1.0)
+                                                .withAbilityOption(MKUAbilities.HOLY_WORD_SHOTGUN.get(), 2, 1.0)
+                                                .withAbilityOption(MKUAbilities.HOLY_WORD.get(), 3, 1.0))
+//                        .withOption(new ParticleEffectsOption().withEffects(Collections.singletonList(
+//                                new BoneEffectInstance(UUID.fromString("3e7496f1-f5bf-45e6-b8e5-64192633ae9f"),
+//                                        BipedSkeleton.HEAD_BONE_NAME, new ResourceLocation(MKUltra.MODID, "flame_wave_casting")))))
+                        )
+                        .withStage(new BossStage()
+                                        .withOption(new TempAbilitiesOption()
+                                                .withAbilityOption(MKUAbilities.HOLY_FIRE_FLURRY.get(), 1, 1.0)
+                                                .withAbilityOption(MKUAbilities.HOLY_FIRE.get(), 2, 1.0)
+                                                .withAbilityOption(MKUAbilities.HOLY_WORD_BURST.get(), 3, 1.0)
+                                                .withAbilityOption(MKUAbilities.HOLY_WORD_SHOTGUN.get(), 4, 1.0)
+                                                .withAbilityOption(MKUAbilities.HOLY_WORD.get(), 5, 1.0))
+//                        .withOption(new ParticleEffectsOption().withEffects(Collections.singletonList(
+//                                new BoneEffectInstance(UUID.fromString("e45696e1-ddb1-4709-bc29-1733ee1bced9"),
+//                                BipedSkeleton.HEAD_BONE_NAME, new ResourceLocation(MKUltra.MODID, "flame_wave_casting")))))
+                                        .withParticleMode(BossStage.ParticleMode.LINE_HEIGHT)
+                                        .withTransitionParticles(new ResourceLocation(MKUltra.MODID, "wrath_skeleton_transition"))
+                                        .withTransitionSound(MKUSounds.spell_holy_9.getId())
+                        )
+        );
+        def.addOption(new ExperienceOption(75));
+//        def.addOption(new ParticleEffectsOption(List.of(
+//                new BoneEffectInstance(UUID.fromString("3e7496f1-f5bf-45e6-b8e5-64192633ae9f"),
+//                        new ResourceLocation(MKUltra.MODID, "burning_skeleton_head"), BipedSkeleton.HEAD_BONE_NAME)
+//        )));
+//        ResourceLocation lootTierName = new ResourceLocation(MKUltra.MODID, "burning_skeleton");
+//        def.addOption(new ExtraLootOption().withLootOptions(new LootOptionEntry(LootSlotManager.MAIN_HAND.getName(), lootTierName, 1.0))
+//                .withLootOptions(new LootOptionEntry(LootSlotManager.RINGS.getName(), lootTierName, 3.0))
+//                .withLootOptions(new LootOptionEntry(LootSlotManager.EARRINGS.getName(), lootTierName, 2.0))
+//                .withDropChances(1)
+//                .withNoLootChance(0.1)
+//                .withNoLootIncrease(0.0));
+
+        def.addOption(MKUNpcGenUtils.getSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.MAGE));
+        return def;
+    }
+
 
     private NpcDefinition generateTempleGuard2() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "solangian_temple_guard_2"),

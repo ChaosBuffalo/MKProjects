@@ -12,6 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 
 import java.util.EnumSet;
@@ -57,11 +58,20 @@ public class MKMeleeAttackGoal extends Goal {
 
     @Override
     public void tick() {
-        entity.getNavigation().moveTo(target, entity.getLungeSpeed());
-        entity.getLookControl().setLookAt(target, 30.0f, 30.0f);
+
+        boolean strafingForwards = false;
+        if (entity.distanceTo(target) >= (getAttackReach(target) / 2.0)) {
+            entity.getNavigation().moveTo(target, entity.getLungeSpeed());
+            strafingForwards = true;
+        }
+
+        entity.getMoveControl().strafe(strafingForwards ? 1.0F : -1.0F, 0);
+
+        entity.lookAt(target, 30.0f, 30.0f);
+//        entity.getLookControl().setLookAt(target, 30.0f, 30.0f);
         double cooldownPeriod = EntityUtils.getCooldownPeriod(entity);
         int ticksSinceSwing = entity.getTicksSinceLastSwing();
-        if (ticksSinceSwing >= cooldownPeriod && isInReach(target) && entity.getSensing().hasLineOfSight(target)) {
+        if (ticksSinceSwing >= cooldownPeriod && isInReach(target) && entity.getSensing().hasLineOfSight(target) && EntityUtils.isInFrontOf(entity, target)) {
             performAttack(target);
         }
 
@@ -97,6 +107,11 @@ public class MKMeleeAttackGoal extends Goal {
     public void stop() {
         this.entity.setAggressive(false);
         this.target = null;
+    }
+
+    protected double getAttackReach(LivingEntity target) {
+        double range = entity.getEntityReach();
+        return range * entity.getScale();
     }
 
     protected double getAttackReachSqr(LivingEntity attackTarget) {

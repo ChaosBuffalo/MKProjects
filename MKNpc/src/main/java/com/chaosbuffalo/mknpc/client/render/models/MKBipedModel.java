@@ -1,7 +1,11 @@
 package com.chaosbuffalo.mknpc.client.render.models;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.client.rendering.animations.AdditionalBipedAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedCastAnimation;
+import com.chaosbuffalo.mkcore.client.rendering.animations.BipedStunAnimation;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mknpc.client.render.animations.MKEntityCompleteCastAnimation;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelArgs;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
@@ -14,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
 
@@ -22,6 +27,7 @@ import java.util.function.Function;
 public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
     private final BipedCastAnimation<MKEntity> castAnimation = new BipedCastAnimation<>(this);
     private final MKEntityCompleteCastAnimation completeCastAnimation = new MKEntityCompleteCastAnimation(this);
+    private final BipedStunAnimation<MKEntity> stunAnimation = new BipedStunAnimation<>(this);
 
 
     public MKBipedModel(ModelPart modelPart) {
@@ -73,6 +79,7 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
             this.leftArm.xRot -= f * 1.2F - f1 * 0.4F;
             AnimationUtils.bobArms(this.rightArm, this.leftArm, ageInTicks);
         }
+        this.head.zRot = 0.0f;
         AdditionalBipedAnimation<MKEntity> animation = getAdditionalAnimation(entityIn);
         if (animation != null) {
             animation.apply(entityIn);
@@ -81,6 +88,10 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
     }
 
     public AdditionalBipedAnimation<MKEntity> getAdditionalAnimation(T entityIn) {
+        IMKEntityData entityData = MKCore.getEntityData(entityIn).orElseThrow(NullPointerException::new);
+        if (entityData.getEffects().isEffectActive(CoreEffects.STUN.get())) {
+            return stunAnimation;
+        }
         switch (entityIn.getVisualCastState()) {
             case CASTING:
                 return castAnimation;
