@@ -22,7 +22,7 @@ public class AbilitySource {
     }
 
     public static AbilitySource forTalent(TalentNode node) {
-        String uniqueId = node.getTree().getTreeId().toString() + "#" + node.getPositionString();
+        String uniqueId = node.getPositionString();
         return new AbilitySource(AbilitySourceType.TALENT, uniqueId);
     }
 

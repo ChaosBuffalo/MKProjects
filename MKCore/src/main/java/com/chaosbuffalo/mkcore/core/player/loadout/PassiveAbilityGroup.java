@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 public class PassiveAbilityGroup extends AbilityGroup {
@@ -48,9 +49,9 @@ public class PassiveAbilityGroup extends AbilityGroup {
     }
 
     @Override
-    public void onPersonaDeactivated() {
-        super.onPersonaDeactivated();
-        removeAllPassiveTalents();
+    protected void onPersonaDeactivatedAbility(@Nonnull MKAbilityInfo abilityInfo) {
+        super.onPersonaDeactivatedAbility(abilityInfo);
+        removePassive(abilityInfo);
     }
 
     private void onSkillChange(PlayerEvents.SkillEvent event) {
@@ -86,9 +87,4 @@ public class PassiveAbilityGroup extends AbilityGroup {
             passive.deactivate(playerData, abilityInfo);
         }
     }
-
-    private void removeAllPassiveTalents() {
-        getAbilityInfoStream().forEach(this::removePassive);
-    }
-
 }
