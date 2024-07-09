@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 
 
 public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncComponentProvider {
+    private final Persona persona;
     private final MKPlayerData playerData;
     private final PlayerSyncComponent sync = new PlayerSyncComponent("abilities");
     private final Map<ResourceLocation, PlayerKnownAbility> knownAbilities = new HashMap<>();
@@ -35,6 +36,7 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
             );
 
     public PlayerAbilityKnowledge(Persona persona) {
+        this.persona = persona;
         this.playerData = persona.getPlayerData();
         addSyncPrivate(knownAbilityUpdater);
         addSyncPrivate(poolSize);
@@ -127,6 +129,7 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         knownAbility.addSource(source);
         markDirty(knownAbility);
 
+        persona.getLoadout().onAbilityLearned(knownAbility.getAbilityInfo(), source);
         playerData.events().trigger(PlayerEvents.ABILITY_LEARNED, new PlayerEvents.AbilityLearnEvent(playerData, knownAbility.getAbilityInfo(), source));
         return true;
     }
@@ -143,6 +146,7 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         markDirty(knownAbility);
 
         if (!knownAbility.isCurrentlyKnown()) {
+            persona.getLoadout().onAbilityUnlearned(knownAbility.getAbilityInfo());
             playerData.events().trigger(PlayerEvents.ABILITY_UNLEARNED, new PlayerEvents.AbilityUnlearnEvent(playerData, knownAbility.getAbilityInfo()));
             knownAbilities.remove(abilityId);
         }

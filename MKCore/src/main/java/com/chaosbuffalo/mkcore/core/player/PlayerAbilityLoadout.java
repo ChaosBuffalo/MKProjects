@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.core.player;
 
+import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.loadout.ItemAbilityGroup;
@@ -10,11 +11,8 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
-    public static final UUID EV_ID = UUID.fromString("a44c1f13-50d8-427f-865e-00bb4daf6931");
-
     private final PlayerSyncComponent sync = new PlayerSyncComponent("loadout");
 
     private final Map<AbilityGroupId, AbilityGroup> abilityGroups = new EnumMap<>(AbilityGroupId.class);
@@ -32,9 +30,6 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
         registerAbilityGroup(AbilityGroupId.Item, itemAbilityGroup);
         registerAbilityGroup(AbilityGroupId.Passive, passiveAbilityGroup);
         registerAbilityGroup(AbilityGroupId.Ultimate, ultimateAbilityGroup);
-
-        persona.subscribe(PlayerEvents.ABILITY_LEARNED, EV_ID, this::onAbilityLearn);
-        persona.subscribe(PlayerEvents.ABILITY_UNLEARNED, EV_ID, this::onAbilityUnlearn);
     }
 
     @Override
@@ -64,9 +59,8 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
         return itemAbilityGroup;
     }
 
-    private void onAbilityLearn(PlayerEvents.AbilityLearnEvent event) {
-        MKAbilityInfo abilityInfo = event.getAbilityInfo();
-        if (event.getSource().placeOnBarWhenLearned()) {
+    void onAbilityLearned(MKAbilityInfo abilityInfo, AbilitySource source) {
+        if (source.placeOnBarWhenLearned()) {
             for (Map.Entry<AbilityGroupId, AbilityGroup> entry : abilityGroups.entrySet()) {
                 if (entry.getKey().fitsAbilityType(abilityInfo.getAbilityType()) &&
                         entry.getValue().tryEquip(abilityInfo.getId())) {
@@ -76,8 +70,7 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
         }
     }
 
-    private void onAbilityUnlearn(PlayerEvents.AbilityUnlearnEvent event) {
-        MKAbilityInfo abilityInfo = event.getAbilityInfo();
+    void onAbilityUnlearned(MKAbilityInfo abilityInfo) {
         for (AbilityGroup group : abilityGroups.values()) {
             if (group.isEquipped(abilityInfo)) {
                 group.onAbilityUnlearned(abilityInfo);
