@@ -61,8 +61,12 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         return 0;
     }
 
-    public void setAbilityPoolSize(int count) {
+    private void setAbilityPoolSize(int count) {
         poolSize.set(Mth.clamp(count, GameConstants.DEFAULT_ABILITY_POOL_SIZE, GameConstants.MAX_ABILITY_POOL_SIZE));
+    }
+
+    public void setAbilityPoolAddedSlots(int count) {
+        setAbilityPoolSize(GameConstants.DEFAULT_ABILITY_POOL_SIZE + count);
     }
 
     private Stream<PlayerKnownAbility> getPoolAbilityStream() {

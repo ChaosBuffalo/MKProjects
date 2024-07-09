@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.core.entitlements;
 
-import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 
 public class AbilityPoolEntitlement extends MKEntitlement {
@@ -31,7 +30,7 @@ public class AbilityPoolEntitlement extends MKEntitlement {
         @Override
         public void onRecordUpdated(EntitlementInstance record) {
             int count = persona.getEntitlements().getEntitlementLevel(record.entitlement());
-            persona.getAbilities().setAbilityPoolSize(count + GameConstants.DEFAULT_ABILITY_POOL_SIZE);
+            persona.getAbilities().setAbilityPoolAddedSlots(count);
         }
 
         @Override

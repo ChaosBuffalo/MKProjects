@@ -137,7 +137,7 @@ public class AbilityCommand {
     static int setSlotCount(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         int size = IntegerArgumentType.getInteger(ctx, "size");
-        MKCore.getPlayer(player).ifPresent(cap -> cap.getAbilities().setAbilityPoolSize(size));
+        MKCore.getPlayer(player).ifPresent(cap -> cap.getAbilities().setAbilityPoolAddedSlots(size));
         return Command.SINGLE_SUCCESS;
     }
 
