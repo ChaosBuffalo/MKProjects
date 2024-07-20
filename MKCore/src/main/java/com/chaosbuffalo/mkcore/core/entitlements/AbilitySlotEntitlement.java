@@ -8,7 +8,7 @@ public class AbilitySlotEntitlement extends MKEntitlement {
     public static final EntitlementType ABILITY_SLOT = new EntitlementType() {
         @Override
         public EntitlementTypeHandler createTypeHandler(Persona persona) {
-            return new AbilitySlotEntitlement.AbilitySlotEntitlementHandler(persona);
+            return new AbilitySlotEntitlementHandler(persona);
         }
     };
 

@@ -7,7 +7,7 @@ public class AbilityPoolEntitlement extends MKEntitlement {
     public static final EntitlementType ABILITY_POOL_SLOT = new EntitlementType() {
         @Override
         public EntitlementTypeHandler createTypeHandler(Persona persona) {
-            return new AbilityPoolEntitlement.AbilityPoolEntitlementHandler(persona);
+            return new AbilityPoolEntitlementHandler(persona);
         }
     };
 

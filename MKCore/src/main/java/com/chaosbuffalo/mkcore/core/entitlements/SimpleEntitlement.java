@@ -7,7 +7,7 @@ public class SimpleEntitlement extends MKEntitlement {
     public static final EntitlementType SIMPLE = new EntitlementType() {
         @Override
         public EntitlementTypeHandler createTypeHandler(Persona persona) {
-            return new SimpleEntitlement.SimpleEntitlementHandler();
+            return new SimpleEntitlementHandler();
         }
     };
 
