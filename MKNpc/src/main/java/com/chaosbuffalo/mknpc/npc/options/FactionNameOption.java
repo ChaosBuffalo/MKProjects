@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.chaosbuffalo.mknpc.npc.option_entries.FactionNameOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INameEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
@@ -119,5 +120,10 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
             }
         }
         return new FactionNameOptionEntry(name);
+    }
+
+    @Override
+    public NpcOptionType<? extends NpcDefinitionOption> getType() {
+        return NpcOptionTypes.FACTION_NAME.get();
     }
 }

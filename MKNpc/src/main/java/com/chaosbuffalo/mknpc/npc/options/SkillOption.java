@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
@@ -67,6 +68,11 @@ public class SkillOption extends NpcDefinitionOption {
                 }
             }
         }
+    }
+
+    @Override
+    public NpcOptionType<? extends NpcDefinitionOption> getType() {
+        return NpcOptionTypes.SKILL.get();
     }
 
     public SkillOption addMajorSkill(Attribute skill) {

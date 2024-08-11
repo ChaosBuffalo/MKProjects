@@ -19,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.RecipeMatcher;
 
 import javax.annotation.Nullable;
@@ -53,16 +54,16 @@ public class TradeItemsObjective extends QuestObjective<UUIDInstanceData> implem
     }
 
     @Override
-    public List<Component> getDescription() {
+    public List<Component> getDescription(IWorldNpcData worldData) {
         return neededItems.stream()
                 .map(x -> Component.translatable("mknpc.trade.item_needed", x.getCount(), x.getHoverName()))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
+    public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {
         MKStructureEntry entry = questStructures.get(location.getStructureId()).get(location.getIndex());
-        Optional<NotableNpcEntry> npcOpt = entry.getFirstNotableOfType(npcDefinition);
+        Optional<NotableNpcEntry> npcOpt = entry.getFirstNotableOfType(npcDefinition, level.getServer());
         return npcOpt.map(x -> new UUIDInstanceData(x.getNotableId())).orElse(new UUIDInstanceData());
     }
 
@@ -74,7 +75,7 @@ public class TradeItemsObjective extends QuestObjective<UUIDInstanceData> implem
     @Override
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
-        PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription());
+        PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription(worldData));
         NotableNpcEntry entry = worldData.getNotableNpc(objData.getUUID());
         if (entry != null) {
             newObj.putBlockPos("npcPos", entry.getLocation());

@@ -5,11 +5,10 @@ import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
@@ -58,8 +57,8 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
     }
 
     @Nullable
-    public NpcDefinition getDefinition() {
-        return NpcDefinitionManager.getDefinition(definition);
+    public NpcDefinition getDefinition(MinecraftServer server) {
+        return server.registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(definition);
     }
 
     @Override

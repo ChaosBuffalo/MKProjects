@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
@@ -75,5 +76,10 @@ public class ExtraLootOption extends NpcDefinitionOption {
                 x.setNoLootChanceIncrease(noLootChance);
             }
         });
+    }
+
+    @Override
+    public NpcOptionType<? extends NpcDefinitionOption> getType() {
+        return NpcOptionTypes.EXTRA_LOOT.get();
     }
 }

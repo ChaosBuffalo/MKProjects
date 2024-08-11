@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
+import com.chaosbuffalo.mknpc.npc.NpcOptionEntryTypes;
 import com.chaosbuffalo.mknpc.npc.options.FactionNameOption;
 import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
@@ -29,6 +30,11 @@ public class FactionNameOptionEntry implements INpcOptionEntry, INameEntry {
         if (!name.isEmpty() && entity instanceof LivingEntity) {
             entity.setCustomName(getName());
         }
+    }
+
+    @Override
+    public NpcOptionEntryType<? extends INpcOptionEntry> getType() {
+        return NpcOptionEntryTypes.FACTION_NAME.get();
     }
 
     @Override

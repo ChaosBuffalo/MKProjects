@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mknpc.quest.QuestStructureLocation;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
@@ -18,9 +19,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.ArrayList;
@@ -65,12 +68,12 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
     }
 
     @Override
-    public List<Component> getDescription() {
+    public List<Component> getDescription(IWorldNpcData worldData) {
         return description;
     }
 
-    private MutableComponent getDescriptionWithCount(int count) {
-        NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefinition);
+    private MutableComponent getDescriptionWithCount(int count, MinecraftServer server) {
+        NpcDefinition def = server.registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(npcDefinition);
         return Component.translatable("mknpc.objective.quest_loot_npc.desc", itemDescription, def.getDisplayName(),
                 MKAbility.INTEGER_FORMATTER.format(count), MKAbility.INTEGER_FORMATTER.format(requiredCount));
     }
@@ -92,7 +95,7 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
                 int currentCount = objectiveData.getInt("lootCount");
                 currentCount++;
                 objectiveData.putInt("lootCount", currentCount);
-                objectiveData.setDescription(getDescriptionWithCount(currentCount));
+                objectiveData.setDescription(getDescriptionWithCount(currentCount, player.getServer()));
                 player.sendSystemMessage(getProgressMessage(event.getEntity(), currentCount)
                         .withStyle(ChatFormatting.GOLD));
                 if (currentCount == requiredCount) {
@@ -106,7 +109,7 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
     }
 
     @Override
-    public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
+    public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {
         MKStructureEntry entry = questStructures.get(location.getStructureId()).get(location.getIndex());
         return new UUIDInstanceData(entry.getStructureId());
     }
@@ -119,12 +122,12 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
 
     @Override
     public boolean isStructureRelevant(MKStructureEntry entry) {
-        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNotableOfType(npcDefinition);
+        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNotableOfType(npcDefinition, entry.getWorldData().getWorld().getServer());
     }
 
     @Override
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
-        PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription());
+        PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription(worldData));
         newObj.putInt("lootCount", 0);
         return newObj;
     }

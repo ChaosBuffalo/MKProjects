@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.npc.options;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -23,5 +24,10 @@ public class LungeSpeedOption extends NpcDefinitionOption {
         if (entity instanceof MKEntity mkEntity) {
             mkEntity.setLungeSpeed(value);
         }
+    }
+
+    @Override
+    public NpcOptionType<? extends NpcDefinitionOption> getType() {
+        return NpcOptionTypes.LUNGE_SPEED.get();
     }
 }

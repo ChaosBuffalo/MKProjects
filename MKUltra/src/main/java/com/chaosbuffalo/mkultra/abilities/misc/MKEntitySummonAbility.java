@@ -18,6 +18,7 @@ import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
@@ -80,8 +81,8 @@ public class MKEntitySummonAbility extends MKAbility {
         if (target == null) {
             return;
         }
-        if (!casterData.getPets().isPetActive(getAbilityId())) {
-            NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefintion.getValue());
+        if (!casterData.getPets().isPetActive(getAbilityId()) && casterData.getEntity().getServer() != null) {
+            NpcDefinition def = casterData.getEntity().getServer().registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(npcDefintion.getValue());
             if (def != null && target.getPosition().isPresent()) {
                 UUID id = casterData instanceof MKPlayerData playerData ?
                         playerData.getPersonaManager().getActivePersona().getPersonaId() :

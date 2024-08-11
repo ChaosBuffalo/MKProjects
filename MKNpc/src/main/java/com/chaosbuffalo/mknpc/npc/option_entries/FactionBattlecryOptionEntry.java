@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
 import com.chaosbuffalo.mknpc.entity.MKEntity;
+import com.chaosbuffalo.mknpc.npc.NpcOptionEntryTypes;
 import com.chaosbuffalo.mknpc.npc.options.FactionBattlecryOption;
 import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
@@ -29,6 +30,11 @@ public class FactionBattlecryOptionEntry implements INpcOptionEntry {
     @Override
     public boolean isValid() {
         return battlecry != null;
+    }
+
+    @Override
+    public NpcOptionEntryType<? extends INpcOptionEntry> getType() {
+        return NpcOptionEntryTypes.FACTION_BATTLECRY.get();
     }
 
     public FactionBattlecryOptionEntry(Component text) {

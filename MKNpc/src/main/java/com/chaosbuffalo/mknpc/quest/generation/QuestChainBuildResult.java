@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.quest.generation;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 import java.util.Map;

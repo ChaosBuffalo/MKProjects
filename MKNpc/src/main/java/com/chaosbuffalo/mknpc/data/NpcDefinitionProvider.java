@@ -1,8 +1,10 @@
 package com.chaosbuffalo.mknpc.data;
 
 import com.chaosbuffalo.mkcore.data.MKDataProvider;
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.npc.options.NpcDefinitionOption;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.data.CachedOutput;
@@ -23,9 +25,9 @@ public abstract class NpcDefinitionProvider extends MKDataProvider {
     public CompletableFuture<?> writeDefinition(NpcDefinition definition, CachedOutput pOutput) {
         Path outputFolder = this.generator.getPackOutput().getOutputFolder();
         ResourceLocation key = definition.getDefinitionName();
-        Path local = Paths.get("data", key.getNamespace(), NpcDefinitionManager.DEFINITION_FOLDER, key.getPath() + ".json");
+        Path local = Paths.get("data", key.getNamespace(), "mknpc", "mknpcs", key.getPath() + ".json");
         Path path = outputFolder.resolve(local);
-        JsonElement element = definition.serialize(JsonOps.INSTANCE);
-        return DataProvider.saveStable(pOutput, element, path);
+        JsonElement out = NpcDefinition.CODEC.encodeStart(JsonOps.INSTANCE, definition).getOrThrow(false, MKNpc.LOGGER::error);
+        return DataProvider.saveStable(pOutput, out, path);
     }
 }

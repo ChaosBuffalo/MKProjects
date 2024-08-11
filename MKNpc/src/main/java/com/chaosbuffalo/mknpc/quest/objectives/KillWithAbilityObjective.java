@@ -18,6 +18,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.List;
@@ -48,7 +49,7 @@ public class KillWithAbilityObjective extends QuestObjective<EmptyInstanceData> 
     }
 
     @Override
-    public EmptyInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
+    public EmptyInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {
         return new EmptyInstanceData();
     }
 
@@ -58,7 +59,7 @@ public class KillWithAbilityObjective extends QuestObjective<EmptyInstanceData> 
     }
 
     @Override
-    public List<Component> getDescription() {
+    public List<Component> getDescription(IWorldNpcData worldData) {
         return List.of(getDescriptionWithKillCount(0));
     }
 
@@ -68,7 +69,7 @@ public class KillWithAbilityObjective extends QuestObjective<EmptyInstanceData> 
 
     @Override
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
-        PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription());
+        PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription(worldData));
         newObj.putInt("killCount", 0);
         return newObj;
     }

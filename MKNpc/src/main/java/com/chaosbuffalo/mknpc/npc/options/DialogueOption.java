@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.npc.options;
 import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -25,5 +26,10 @@ public class DialogueOption extends NpcDefinitionOption {
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
         entity.getCapability(ChatCapabilities.NPC_DIALOGUE_CAPABILITY).ifPresent(cap -> cap.setDialogueTree(dialogueId));
+    }
+
+    @Override
+    public NpcOptionType<? extends NpcDefinitionOption> getType() {
+        return NpcOptionTypes.DIALOGUE.get();
     }
 }

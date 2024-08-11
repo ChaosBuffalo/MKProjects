@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.utils.RandomCollection;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.chaosbuffalo.mknpc.npc.option_entries.EquipmentOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.mojang.serialization.Codec;
@@ -50,5 +51,10 @@ public class EquipmentOption extends WorldPermanentOption {
     public EquipmentOption addItemChoice(EquipmentSlot slot, NpcItemChoice choice) {
         itemChoices.computeIfAbsent(slot, s -> new ArrayList<>()).add(choice);
         return this;
+    }
+
+    @Override
+    public NpcOptionType<? extends NpcDefinitionOption> getType() {
+        return NpcOptionTypes.EQUIPMENT.get();
     }
 }

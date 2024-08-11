@@ -153,5 +153,7 @@
   "item.mkultra.ancient_cardinal_helmet": "Ancient Cardinal Hood",
   "item.mkultra.ancient_cardinal_leggings": "Ancient Cardinal Pants",
   "mkultra.ability.holy_fire_flurry.name": "Holy Fire Flurry",
-  "mkultra.ability.holy_word_burst.name": "Holy Word (Burst)"
+  "mkultra.ability.holy_word_burst.name": "Holy Word (Burst)",
+  "mkultra.ability.healing_circle.name": "Healing Circle",
+  "mkultra.ability.healing_circle.description": "Summons a ring of divine energy with radius %s at the location, after %s seconds it starts healing %s every %s seconds for %s seconds."
 }

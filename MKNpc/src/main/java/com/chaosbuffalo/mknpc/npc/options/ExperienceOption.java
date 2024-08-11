@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -24,5 +25,10 @@ public class ExperienceOption extends NpcDefinitionOption {
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
         MKNpc.getNpcData(entity).ifPresent(cap -> cap.setBonusXp(bonusXp));
+    }
+
+    @Override
+    public NpcOptionType<? extends NpcDefinitionOption> getType() {
+        return NpcOptionTypes.EXPERIENCE.get();
     }
 }

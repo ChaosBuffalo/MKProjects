@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.command;
 
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -25,7 +25,10 @@ public class NpcDefinitionIdArgument implements ArgumentType<ResourceLocation> {
     }
 
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        return SharedSuggestionProvider.suggest(NpcDefinitionManager.DEFINITIONS.keySet().stream()
-                .map(ResourceLocation::toString), builder);
+        if (context.getSource() instanceof SharedSuggestionProvider sharedsuggestionprovider) {
+            return sharedsuggestionprovider.suggestRegistryElements(NpcRegistries.NPC_DEFINITIONS,
+                    SharedSuggestionProvider.ElementSuggestionType.ELEMENTS, builder, context);
+        }
+        return Suggestions.empty();
     }
 }

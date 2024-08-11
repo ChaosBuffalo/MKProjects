@@ -368,7 +368,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
 
     private NpcDefinition generateAncientPriestGhost() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "ancient_priest_ghost"),
-                MKUEntities.HUMAN_TYPE.getId(), null);
+                MKUEntities.HUMAN_GHOST_TYPE.getId(), null);
         def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new RenderGroupOption(MKUHumans.GHOST_LOOK_CLEAN_NAME));
         def.addOption(new MKSizeOption(1.0f));
@@ -404,7 +404,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
 
     private NpcDefinition generateAncientCardinal() {
         NpcDefinition def = new NpcDefinition(new ResourceLocation(MKUltra.MODID, "ancient_cardinal"),
-                MKUEntities.HUMAN_TYPE.getId(), null);
+                MKUEntities.HUMAN_GHOST_TYPE.getId(), null);
         def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
         def.addOption(new MKSizeOption(1.2f));
         def.addOption(new RenderGroupOption(MKUHumans.GHOST_LOOK_CLEAN_NAME));

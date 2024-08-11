@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.npc.option_entries;
 
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.npc.NpcOptionEntryTypes;
 import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
 import com.chaosbuffalo.mknpc.npc.options.QuestOfferingOption;
 import com.mojang.serialization.Codec;
@@ -16,17 +17,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class QuestOptionsEntry implements INpcOptionEntry {
-    public static final Codec<QuestOptionsEntry> CODEC = Codec.unboundedMap(ResourceLocation.CODEC, QuestOfferingEntry.CODEC)
-            .xmap(QuestOptionsEntry::new, i -> i.questOfferings);
+public class QuestOptionEntry implements INpcOptionEntry {
+    public static final Codec<QuestOptionEntry> CODEC = Codec.unboundedMap(ResourceLocation.CODEC, QuestOfferingEntry.CODEC)
+            .xmap(QuestOptionEntry::new, i -> i.questOfferings);
 
     private final Map<ResourceLocation, QuestOfferingEntry> questOfferings = new HashMap<>();
 
-    private QuestOptionsEntry(Map<ResourceLocation, QuestOfferingEntry> map) {
+    private QuestOptionEntry(Map<ResourceLocation, QuestOfferingEntry> map) {
         questOfferings.putAll(map);
     }
 
-    public QuestOptionsEntry(List<ResourceLocation> locs) {
+    public QuestOptionEntry(List<ResourceLocation> locs) {
         for (ResourceLocation loc : locs) {
             questOfferings.put(loc, new QuestOfferingEntry(loc));
         }
@@ -66,6 +67,11 @@ public class QuestOptionsEntry implements INpcOptionEntry {
                 x.requestQuest(entry);
             }
         });
+    }
+
+    @Override
+    public NpcOptionEntryType<? extends INpcOptionEntry> getType() {
+        return NpcOptionEntryTypes.QUEST.get();
     }
 
     @Override

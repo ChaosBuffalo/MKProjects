@@ -31,6 +31,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -77,7 +78,7 @@ public class MKNpcGenerator {
 
         private NpcDefinition generateTestSkeleton() {
             NpcDefinition def = new NpcDefinition(new ResourceLocation(MKNpc.MODID, "test_skeleton"),
-                    new ResourceLocation(MKNpc.MODID, "skeleton"), null);
+                    new ResourceLocation(MKNpc.MODID, "skeleton"));
             def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
             def.addOption(new MKSizeOption(0.25f));
             def.addOption(new RenderGroupOption("wither_king"));
@@ -86,7 +87,7 @@ public class MKNpcGenerator {
 
         private NpcDefinition generateTestLady() {
             NpcDefinition def = new NpcDefinition(new ResourceLocation(MKNpc.MODID, "test"),
-                    new ResourceLocation(MKNpc.MODID, "green_lady"), null);
+                    new ResourceLocation(MKNpc.MODID, "green_lady"));
             def.addOption(new NameOption("Test Lady"));
             def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 100)));
             def.addOption(new FactionOption(MKFactions.VILLAGER_FACTION_NAME));
@@ -101,8 +102,7 @@ public class MKNpcGenerator {
         }
 
         private NpcDefinition generateTestLady2() {
-            NpcDefinition def = new NpcDefinition(new ResourceLocation(MKNpc.MODID, "test2"), null,
-                    new ResourceLocation(MKNpc.MODID, "test"));
+            NpcDefinition def = new NpcDefinition(new ResourceLocation(MKNpc.MODID, "test2"), Optional.of(new ResourceLocation(MKNpc.MODID, "test")));
             def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
             def.addOption(new NotableOption());
             def.addOption(new FactionNameOption().setHasLastName(true).setTitle("Chief"));

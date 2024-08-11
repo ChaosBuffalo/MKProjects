@@ -21,6 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.List;
@@ -61,7 +62,7 @@ public class QuestLootNotableObjective extends QuestObjective<UUIDInstanceData> 
     }
 
     @Override
-    public List<Component> getDescription() {
+    public List<Component> getDescription(IWorldNpcData worldData) {
         return List.of();
     }
 
@@ -102,9 +103,9 @@ public class QuestLootNotableObjective extends QuestObjective<UUIDInstanceData> 
     }
 
     @Override
-    public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
+    public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {
         MKStructureEntry entry = questStructures.get(location.getStructureId()).get(location.getIndex());
-        Optional<NotableNpcEntry> npcOpt = entry.getFirstNotableOfType(npcDefinition);
+        Optional<NotableNpcEntry> npcOpt = entry.getFirstNotableOfType(npcDefinition, level.getServer());
         return npcOpt.map(x -> new UUIDInstanceData(x.getNotableId())).orElse(new UUIDInstanceData());
     }
 
@@ -116,13 +117,13 @@ public class QuestLootNotableObjective extends QuestObjective<UUIDInstanceData> 
 
     @Override
     public boolean isStructureRelevant(MKStructureEntry entry) {
-        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNotableOfType(npcDefinition);
+        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNotableOfType(npcDefinition, entry.getWorldData().getWorld().getServer());
     }
 
     @Override
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
-        PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription());
+        PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription(worldData));
         NotableNpcEntry notable = worldData.getNotableNpc(objData.getUUID());
         if (notable != null) {
             newObj.setDescription(getDescriptionWithCount(notable.getName(), 0));

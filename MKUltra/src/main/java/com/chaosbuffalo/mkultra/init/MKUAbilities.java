@@ -51,6 +51,7 @@ public class MKUAbilities {
             HolyFireFlurryAbility::new);
     public static final RegistryObject<HolyWordBurstAbility> HOLY_WORD_BURST = REGISTRY.register("ability.holy_word_burst",
             HolyWordBurstAbility::new);
+    public static final RegistryObject<HealingCircleAbility> HOLY_CIRCLE_ABILITY = REGISTRY.register("ability.healing_circle", HealingCircleAbility::new);
 
     //necromancer
     public static final RegistryObject<MKEntitySummonAbility> TEST_SUMMON = REGISTRY.register("ability.test_summon",

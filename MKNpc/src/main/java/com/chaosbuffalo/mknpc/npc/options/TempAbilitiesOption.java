@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
@@ -45,6 +46,11 @@ public class TempAbilitiesOption extends NpcDefinitionOption {
     @Override
     public boolean canBeBossStage() {
         return true;
+    }
+
+    @Override
+    public NpcOptionType<? extends NpcDefinitionOption> getType() {
+        return NpcOptionTypes.TEMP_ABILITIES.get();
     }
 
     @Override

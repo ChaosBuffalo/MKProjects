@@ -153,8 +153,10 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
 
     public void populateRandomSpawns() {
         randomSpawns.clear();
-        for (SpawnOption option : spawnList.getOptions()) {
-            randomSpawns.add(option.getWeight(), option.getDefinition());
+        if (getLevel().getServer() != null) {
+            for (SpawnOption option : spawnList.getOptions()) {
+                randomSpawns.add(option.getWeight(), option.getDefinition(getLevel().getServer()));
+            }
         }
     }
 

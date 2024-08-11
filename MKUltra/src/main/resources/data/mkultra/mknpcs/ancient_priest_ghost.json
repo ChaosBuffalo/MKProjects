@@ -1,5 +1,5 @@
 {
-  "entityType": "mkultra:human",
+  "entityType": "mkultra:human_ghost",
   "options": [
     {
       "type": "mknpc:render_group",
