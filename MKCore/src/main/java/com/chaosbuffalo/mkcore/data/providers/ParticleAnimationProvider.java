@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkcore.data;
+package com.chaosbuffalo.mkcore.data.providers;
 
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;

@@ -61,7 +61,7 @@ public class MKDamageType {
 
     public MutableComponent getDisplayName() {
         ResourceLocation name = getId();
-        return Component.translatable(String.format("%s.%s.name", name.getNamespace(), name.getPath()));
+        return Component.translatable(nameKey(name));
     }
 
     public MutableComponent getFormattedDisplayName() {
@@ -70,8 +70,7 @@ public class MKDamageType {
 
     public ResourceLocation getIcon() {
         ResourceLocation name = getId();
-        return new ResourceLocation(name.getNamespace(),
-                String.format("textures/damage_types/%s.png", name.getPath().substring(7)));
+        return name.withPath(path -> "textures/damage_types/" + path + ".png");
     }
 
     public Attribute getDamageAttribute() {
@@ -177,5 +176,13 @@ public class MKDamageType {
 
     public float getCritChance(LivingEntity source, LivingEntity target, Entity immediate) {
         return (float) source.getAttributeValue(getCritChanceAttribute()) * critMultiplier;
+    }
+
+    public static String nameKey(ResourceLocation abilityId) {
+        return abilityId.toLanguageKey("damage_type", "name");
+    }
+
+    public static String periodicNameKey(ResourceLocation abilityId) {
+        return abilityId.toLanguageKey("damage_type.periodic", "name");
     }
 }

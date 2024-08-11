@@ -13,13 +13,13 @@ public class MKUTalents {
     public static DeferredRegister<MKTalent> TALENTS =
             DeferredRegister.create(MKCoreRegistry.TALENT_REGISTRY_NAME, MKUltra.MODID);
 
-    public static RegistryObject<PassiveTalent> SOUL_DRAIN_TALENT = TALENTS.register("talent.soul_drain",
+    public static RegistryObject<PassiveTalent> SOUL_DRAIN_TALENT = TALENTS.register("soul_drain",
             () -> new PassiveTalent(MKUAbilities.SOUL_DRAIN));
 
-    public static RegistryObject<PassiveTalent> LIFE_SIPHON_TALENT = TALENTS.register("talent.life_siphon",
+    public static RegistryObject<PassiveTalent> LIFE_SIPHON_TALENT = TALENTS.register("life_siphon",
             () -> new PassiveTalent(MKUAbilities.LIFE_SIPHON));
 
-    public static RegistryObject<PassiveTalent> GREEN_SOUL_TALENT = TALENTS.register("talent.green_soul",
+    public static RegistryObject<PassiveTalent> GREEN_SOUL_TALENT = TALENTS.register("green_soul",
             () -> new PassiveTalent(MKUAbilities.GREEN_SOUL));
 
 

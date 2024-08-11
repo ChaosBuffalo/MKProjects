@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkweapons.data;
 
-import com.chaosbuffalo.mkcore.data.MKDataProvider;
+import com.chaosbuffalo.mkcore.data.providers.MKDataProvider;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.google.gson.JsonElement;

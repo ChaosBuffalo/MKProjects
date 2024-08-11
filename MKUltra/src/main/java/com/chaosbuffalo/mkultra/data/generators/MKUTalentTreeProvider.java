@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkcore.core.talents.TalentNode;
 import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;
 import com.chaosbuffalo.mkcore.core.talents.nodes.AttributeTalentNode;
 import com.chaosbuffalo.mkcore.core.talents.nodes.EntitlementGrantTalentNode;
-import com.chaosbuffalo.mkcore.data.TalentTreeProvider;
+import com.chaosbuffalo.mkcore.data.providers.TalentTreeProvider;
 import com.chaosbuffalo.mkcore.init.CoreTalents;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUTalents;

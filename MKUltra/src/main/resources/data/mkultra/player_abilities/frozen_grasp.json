@@ -1,0 +1,12 @@
+{
+  "attributes": {
+    "baseDuration": 10,
+    "casting_particles": "mkultra:frozen_grasp_cast",
+    "hit_particles": "mkultra:frozen_grasp_hit",
+    "scaleDuration": 2,
+    "selfDuration": 20
+  },
+  "castTime": 20,
+  "cooldown": 600,
+  "manaCost": 4.0
+}

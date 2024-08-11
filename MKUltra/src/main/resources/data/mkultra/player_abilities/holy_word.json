@@ -1,0 +1,34 @@
+{
+  "attributes": {
+    "baseDamage": 5.0,
+    "baseDuration": 30,
+    "baseStunDuration": 3,
+    "castBehavior": {
+      "type": "mkcore:single",
+      "location": {
+        "type": "mkcore:single_location",
+        "offset": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "percentEyeHeight": 0.75
+      }
+    },
+    "casting_particles": "mkultra:holy_word_casting",
+    "detonate_particles": "mkultra:holy_word_detonate",
+    "modifierScaling": 1.0,
+    "npc_solve_ballistics": true,
+    "projectileInaccuracy": 0.2,
+    "projectileSpeed": 0.8,
+    "scaleDamage": 3.0,
+    "scaleDuration": 10,
+    "scaleStunDuration": 1,
+    "stacks": 5,
+    "stunModifier": 1.0,
+    "trail_particles": "mkultra:holy_word_trail"
+  },
+  "castTime": 25,
+  "cooldown": 100,
+  "manaCost": 1.0
+}

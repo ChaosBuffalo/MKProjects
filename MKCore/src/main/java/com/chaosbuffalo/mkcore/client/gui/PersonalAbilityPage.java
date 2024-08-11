@@ -75,7 +75,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     private AbilityFilter currentFilter = AbilityFilter.All;
 
     public PersonalAbilityPage(MKPlayerData playerData) {
-        super(playerData, Component.translatable("mk_character_screen.title"));
+        super(playerData, Component.translatable("mkcore.gui.character.abilities.title"));
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkweapons.data;
 
-import com.chaosbuffalo.mkcore.data.MKDataProvider;
+import com.chaosbuffalo.mkcore.data.providers.MKDataProvider;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import com.google.gson.JsonElement;

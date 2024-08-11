@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.data;
 
-import com.chaosbuffalo.mkcore.data.MKDataProvider;
+import com.chaosbuffalo.mkcore.data.providers.MKDataProvider;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;

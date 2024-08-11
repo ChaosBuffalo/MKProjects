@@ -1,9 +1,22 @@
 {
   "attributes": {
     "baseDamage": 8.0,
+    "castBehavior": {
+      "type": "mkcore:single",
+      "location": {
+        "type": "mkcore:single_location",
+        "offset": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "percentEyeHeight": 0.75
+      }
+    },
     "casting_particles": "mkultra:shadow_bolt_casting",
     "detonate_particles": "mkultra:shadow_bolt_detonate",
     "modifierScaling": 1.0,
+    "npc_solve_ballistics": true,
     "projectileInaccuracy": 0.2,
     "projectileSpeed": 1.25,
     "scaleDamage": 4.0,

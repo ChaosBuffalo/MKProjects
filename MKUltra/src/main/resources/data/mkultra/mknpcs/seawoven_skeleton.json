@@ -41,7 +41,7 @@
       "type": "mknpc:abilities",
       "value": [
         {
-          "abilityId": "mkultra:ability.seafury",
+          "abilityId": "mkultra:seafury",
           "chance": 1.0,
           "priority": 1
         }

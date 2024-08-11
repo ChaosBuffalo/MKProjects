@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkweapons.data;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
-import com.chaosbuffalo.mkcore.data.MKCoreGenerators;
+import com.chaosbuffalo.mkcore.data.content.MKCoreGenerators;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;

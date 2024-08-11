@@ -100,27 +100,27 @@
       "type": "mknpc:abilities",
       "value": [
         {
-          "abilityId": "mkultra:ability.skin_like_wood",
+          "abilityId": "mkultra:skin_like_wood",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:ability.natures_remedy",
+          "abilityId": "mkultra:natures_remedy",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:ability.spirit_bomb",
+          "abilityId": "mkultra:spirit_bomb",
           "chance": 1.0,
           "priority": 4
         },
         {
-          "abilityId": "mkultra:ability.explosive_growth",
+          "abilityId": "mkultra:explosive_growth",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityId": "mkultra:ability.cleansing_seed",
+          "abilityId": "mkultra:cleansing_seed",
           "chance": 1.0,
           "priority": 5
         }

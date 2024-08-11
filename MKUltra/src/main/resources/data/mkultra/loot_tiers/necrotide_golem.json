@@ -12,7 +12,7 @@
                 {
                   "type": "mkweapons:accessory_effect.on_hit_ability",
                   "value": {
-                    "ability": "mkultra:ability.engulfing_darkness",
+                    "ability": "mkultra:engulfing_darkness",
                     "proc_chance": {
                       "max": 0.15,
                       "min": 0.05

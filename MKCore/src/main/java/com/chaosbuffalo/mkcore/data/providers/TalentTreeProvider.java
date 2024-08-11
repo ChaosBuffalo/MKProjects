@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkcore.data;
+package com.chaosbuffalo.mkcore.data.providers;
 
 import com.chaosbuffalo.mkcore.core.talents.TalentManager;
 import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;

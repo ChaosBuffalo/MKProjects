@@ -92,17 +92,17 @@
       "type": "mknpc:abilities",
       "value": [
         {
-          "abilityId": "mkultra:ability.heal",
+          "abilityId": "mkultra:heal",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:ability.furious_brooding",
+          "abilityId": "mkultra:furious_brooding",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityId": "mkultra:ability.smite",
+          "abilityId": "mkultra:smite",
           "chance": 1.0,
           "priority": 1
         }

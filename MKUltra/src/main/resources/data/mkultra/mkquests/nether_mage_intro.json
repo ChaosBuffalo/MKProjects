@@ -202,7 +202,7 @@
         {
           "type": "mknpc:kill_with_ability",
           "value": {
-            "ability": "mkultra:ability.fireball",
+            "ability": "mkultra:fireball",
             "count": 10,
             "objectiveName": "test_staff"
           }

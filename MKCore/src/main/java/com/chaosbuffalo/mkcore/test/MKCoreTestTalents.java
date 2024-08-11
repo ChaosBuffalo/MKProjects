@@ -14,10 +14,10 @@ public class MKCoreTestTalents {
     public static final DeferredRegister<MKTalent> TALENTS =
             DeferredRegister.create(MKCoreRegistry.TALENT_REGISTRY_NAME, MKCore.MOD_ID);
 
-    public static final RegistryObject<PassiveTalent> BURNING_SOUL_PASSIVE = TALENTS.register("talent.burning_soul",
+    public static final RegistryObject<PassiveTalent> BURNING_SOUL_PASSIVE = TALENTS.register("burning_soul",
             () -> new PassiveTalent(MKTestAbilities.TEST_NEW_BURNING_SOUL));
 
-    public static final RegistryObject<UltimateTalent> HEALING_RAIN_ULTIMATE = TALENTS.register("talent.healing_rain",
+    public static final RegistryObject<UltimateTalent> HEALING_RAIN_ULTIMATE = TALENTS.register("healing_rain",
             () -> new UltimateTalent(MKTestAbilities.TEST_HEALING_RAN));
 
 

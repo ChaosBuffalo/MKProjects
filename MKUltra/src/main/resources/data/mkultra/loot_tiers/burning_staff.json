@@ -9,7 +9,7 @@
             {
               "type": "mkweapons:option.ability",
               "value": {
-                "ability": "mkultra:ability.fireball"
+                "ability": "mkultra:fireball"
               }
             },
             {

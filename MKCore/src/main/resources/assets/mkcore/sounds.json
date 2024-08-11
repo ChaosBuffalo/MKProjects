@@ -1,102 +1,98 @@
 {
-  "casting_general": {
-    "category": "player",
-    "subtitle": "mkcore.subtitle.casting_default",
+  "arrow_block": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "mkcore:other/arrow_block"
+      }
+    ],
+    "subtitle": "mkcore.subtitle.arrow_block"
+  },
+  "attack_cd_reset": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "mkcore:other/attack_cd_reset"
+      }
+    ],
+    "subtitle": "mkcore.subtitle.attack_cd_reset"
+  },
+  "block_break": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "mkcore:other/block_break"
+      }
+    ],
+    "subtitle": "mkcore.subtitle.block_break"
+  },
+  "casting_default": {
     "sounds": [
       {
         "name": "mkcore:casting/general_loop",
         "stream": true
       }
-    ]
-  },
-  "spell_cast_default": {
-    "category": "player",
-    "subtitle": "mkcore.subtitle.spell_cast",
-    "sounds": [
-      {
-        "name": "mkcore:spells/default_cast"
-      }
-    ]
-  },
-  "level_up": {
-    "subtitle": "mkcore.subtitle.level_up",
-    "sounds": [
-      {
-        "name": "mkcore:other/level_up",
-        "attenuation_distance": 32
-      }
-    ]
-  },
-  "weapon_block": {
-    "subtitle": "mkcore.subtitle.weapon_block",
-    "sounds": [
-      {
-        "name": "mkcore:other/weapon_block",
-        "attenuation_distance": 20
-      }
-    ]
-  },
-  "block_break": {
-    "subtitle": "mkcore.subtitle.block_break",
-    "sounds": [
-      {
-        "name": "mkcore:other/block_break",
-        "attenuation_distance": 20
-      }
-    ]
+    ],
+    "subtitle": "mkcore.subtitle.casting_default"
   },
   "fist_block": {
-    "subtitle": "mkcore.subtitle.fist_block",
     "sounds": [
       {
-        "name": "mkcore:other/fist_block",
-        "attenuation_distance": 20
+        "attenuation_distance": 20,
+        "name": "mkcore:other/fist_block"
       }
-    ]
+    ],
+    "subtitle": "mkcore.subtitle.fist_block"
   },
-  "arrow_block": {
-    "subtitle": "mkcore.subtitle.arrow_block",
+  "level_up": {
     "sounds": [
       {
-        "name": "mkcore:other/arrow_block",
-        "attenuation_distance": 20
+        "attenuation_distance": 32,
+        "name": "mkcore:other/level_up"
       }
-    ]
+    ],
+    "subtitle": "mkcore.subtitle.level_up"
   },
   "parry": {
-    "subtitle": "mkcore.subtitle.parry",
     "sounds": [
       {
-        "name": "mkcore:other/parry",
-        "attenuation_distance": 20
+        "attenuation_distance": 20,
+        "name": "mkcore:other/parry"
       }
-    ]
-  },
-  "attack_cd_reset": {
-    "subtitle": "mkcore.subtitle.attack_cd_reset",
-    "sounds": [
-      {
-        "name": "mkcore:other/attack_cd_reset",
-        "attenuation_distance": 20
-      }
-    ]
-  },
-  "stun": {
-    "subtitle": "mkcore.subtitle.stun",
-    "sounds": [
-      {
-        "name": "mkcore:other/stun",
-        "attenuation_distance": 20
-      }
-    ]
+    ],
+    "subtitle": "mkcore.subtitle.parry"
   },
   "quest_complete": {
-    "subtitle": "mkcore.subtitle.stun",
     "sounds": [
       {
-        "name": "mkcore:other/quest_complete",
-        "attenuation_distance": 10
+        "attenuation_distance": 20,
+        "name": "mkcore:other/quest_complete"
       }
-    ]
+    ],
+    "subtitle": "mkcore.subtitle.quest_complete"
+  },
+  "spell_cast_default": {
+    "sounds": [
+      "mkcore:spells/default_cast"
+    ],
+    "subtitle": "mkcore.subtitle.spell_cast"
+  },
+  "stun": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "mkcore:other/stun"
+      }
+    ],
+    "subtitle": "mkcore.subtitle.stun"
+  },
+  "weapon_block": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "mkcore:other/weapon_block"
+      }
+    ],
+    "subtitle": "mkcore.subtitle.weapon_block"
   }
 }
