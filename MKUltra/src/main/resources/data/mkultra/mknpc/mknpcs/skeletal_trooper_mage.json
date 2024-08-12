@@ -1,0 +1,103 @@
+{
+  "entityType": "mkultra:zombified_piglin",
+  "name": "mkultra:skeletal_trooper_mage",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "value": [
+        {
+          "abilityId": "mkultra:fireball",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:ember",
+          "chance": 0.75,
+          "priority": 2
+        },
+        {
+          "abilityId": "mkultra:flame_wave",
+          "chance": 0.5,
+          "priority": 3
+        },
+        {
+          "abilityId": "mkultra:smite",
+          "chance": 0.25,
+          "priority": 4
+        },
+        {
+          "abilityId": "mkultra:fire_armor",
+          "chance": 0.75,
+          "priority": 5
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 50.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 50.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 2.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "value": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:dagger_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "value": 15
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkultra:imperial_dead"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 1.0
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "value": "Skeletal Magus"
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "destroyed_skeletal_mage"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:conjuration",
+        "mkcore:evocation"
+      ],
+      "remedial_skills": [
+        "mkcore:one_hand_pierce"
+      ]
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "entityType": "mkultra:human",
+  "name": "mkultra:forlorn_ghost",
+  "options": {
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 100.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 100.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 3.0
+        }
+      ]
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkultra:see_of_solang"
+    },
+    "mknpc:ghost": {
+      "type": "mknpc:ghost",
+      "armor_translucency": 0.7,
+      "ghost_armor": true,
+      "ghost_translucency": 0.7
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 1.0
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "value": "Forlorn Ghost"
+    },
+    "mknpc:notable": {
+      "type": "mknpc:notable",
+      "value": true
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "ghost_1"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "minor_skills": [
+        "mkcore:hand_to_hand",
+        "mkcore:one_hand_blunt",
+        "mkcore:one_hand_pierce",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:two_hand_slash"
+      ],
+      "remedial_skills": [
+        "mkcore:arete",
+        "mkcore:pankration",
+        "mkcore:pneuma"
+      ]
+    }
+  }
+}

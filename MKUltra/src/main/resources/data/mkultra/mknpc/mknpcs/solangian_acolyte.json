@@ -1,0 +1,130 @@
+{
+  "entityType": "mkultra:human",
+  "name": "mkultra:solangian_acolyte",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "value": [
+        {
+          "abilityId": "mkultra:heal",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:smite",
+          "chance": 1.0,
+          "priority": 2
+        },
+        {
+          "abilityId": "mkultra:galvanize",
+          "chance": 1.0,
+          "priority": 3
+        }
+      ]
+    },
+    "mknpc:ability_trainings": {
+      "type": "mknpc:ability_trainings",
+      "value": [
+        {
+          "ability": "mkultra:heal",
+          "requirements": [
+            {
+              "type": "mkcore:training_req.has_entitlement",
+              "value": "mkultra:cleric.intro.tier_1"
+            }
+          ]
+        },
+        {
+          "ability": "mkultra:smite",
+          "requirements": [
+            {
+              "type": "mkcore:training_req.has_entitlement",
+              "value": "mkultra:cleric.intro.tier_1"
+            }
+          ]
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 150.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 150.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 3.5
+        }
+      ]
+    },
+    "mknpc:dialogue": {
+      "type": "mknpc:dialogue",
+      "value": "mkultra:intro_cleric_acolyte"
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "value": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:mace_iron",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkultra:see_of_solang"
+    },
+    "mknpc:faction_name": {
+      "type": "mknpc:faction_name",
+      "title": "Acolyte"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 1.05
+    },
+    "mknpc:notable": {
+      "type": "mknpc:notable",
+      "value": true
+    },
+    "mknpc:offer_quests": {
+      "type": "mknpc:offer_quests",
+      "value": [
+        "mkultra:cleric_intro"
+      ]
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "cleric_1"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "major_skills": [
+        "mkcore:alteration",
+        "mkcore:restoration"
+      ],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:evocation",
+        "mkcore:necromancy"
+      ],
+      "remedial_skills": [
+        "mkcore:one_hand_blunt",
+        "mkcore:two_hand_blunt"
+      ]
+    }
+  }
+}

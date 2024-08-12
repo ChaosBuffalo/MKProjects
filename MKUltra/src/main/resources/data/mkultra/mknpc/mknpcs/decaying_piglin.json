@@ -1,0 +1,86 @@
+{
+  "entityType": "mkultra:zombified_piglin",
+  "name": "mkultra:decaying_piglin",
+  "options": {
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 20.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 20.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 1.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "value": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:dagger_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "minecraft:air"
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "value": 5
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkultra:imperial_dead"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 0.9
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "value": "Decaying Zombie"
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "zombie_pig"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "minor_skills": [
+        "mkcore:hand_to_hand",
+        "mkcore:one_hand_blunt",
+        "mkcore:one_hand_pierce",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:two_hand_slash"
+      ],
+      "remedial_skills": [
+        "mkcore:arete",
+        "mkcore:pankration",
+        "mkcore:pneuma"
+      ]
+    }
+  }
+}

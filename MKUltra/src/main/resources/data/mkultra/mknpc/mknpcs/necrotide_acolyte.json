@@ -1,0 +1,74 @@
+{
+  "entityType": "mkultra:human",
+  "name": "mkultra:necrotide_acolyte",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "value": [
+        {
+          "abilityId": "mkultra:shadow_bolt",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:drown",
+          "chance": 0.5,
+          "priority": 2
+        },
+        {
+          "abilityId": "mkultra:shadow_pulse",
+          "chance": 0.5,
+          "priority": 3
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 50.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 50.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 2.0
+        }
+      ]
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkultra:necrotide_cultists"
+    },
+    "mknpc:faction_battlecry": {
+      "type": "mknpc:faction_battlecry"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 0.95
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "value": "A Necrotide Acolyte"
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "necrotide_cultist_1"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:conjuration",
+        "mkcore:evocation"
+      ],
+      "remedial_skills": [
+        "mkcore:one_hand_pierce"
+      ]
+    }
+  }
+}

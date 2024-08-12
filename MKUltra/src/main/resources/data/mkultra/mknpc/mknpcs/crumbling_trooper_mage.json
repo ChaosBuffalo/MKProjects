@@ -1,0 +1,100 @@
+{
+  "entityType": "mkultra:zombified_piglin",
+  "name": "mkultra:crumbling_trooper_mage",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "value": [
+        {
+          "abilityId": "mkultra:fireball",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:ember",
+          "chance": 0.5,
+          "priority": 2
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 30.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 30.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 1.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "value": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:dagger_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "value": 10
+    },
+    "mknpc:extra_loot": {
+      "type": "mknpc:extra_loot",
+      "dropChances": 2,
+      "lootOptions": [
+        {
+          "lootSlotName": "mkweapons:items",
+          "lootSlotTier": "mkultra:zombie_trooper"
+        }
+      ],
+      "noLootChance": 0.1,
+      "noLootIncrease": 0.25
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkultra:imperial_dead"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 0.95
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "value": "Crumbling Trooper Mage"
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "zombie_pig_magus"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:conjuration",
+        "mkcore:evocation"
+      ],
+      "remedial_skills": [
+        "mkcore:one_hand_pierce"
+      ]
+    }
+  }
+}

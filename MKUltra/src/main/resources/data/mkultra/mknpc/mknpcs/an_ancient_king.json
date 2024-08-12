@@ -1,0 +1,254 @@
+{
+  "entityType": "mkultra:hyborean_skeleton",
+  "name": "mkultra:an_ancient_king",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "value": [
+        {
+          "abilityId": "mkultra:natures_remedy",
+          "chance": 1.0,
+          "priority": 2
+        },
+        {
+          "abilityId": "mkultra:sever_tendon",
+          "chance": 1.0,
+          "priority": 3
+        },
+        {
+          "abilityId": "mkultra:heal",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:power_word_summon",
+          "chance": 0.5,
+          "priority": 4
+        },
+        {
+          "abilityId": "mkultra:explosive_growth",
+          "chance": 0.5,
+          "priority": 5
+        },
+        {
+          "abilityId": "mkultra:fireball",
+          "chance": 0.5,
+          "priority": 6
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 165.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 165.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 3.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "value": {
+        "chest": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "minecraft:air"
+            },
+            "weight": 2.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": {
+              "Count": 1,
+              "id": "mkultra:ancient_bronze_chestplate",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ],
+        "feet": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "minecraft:air"
+            },
+            "weight": 2.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": {
+              "Count": 1,
+              "id": "mkultra:ancient_bronze_boots",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ],
+        "head": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "minecraft:air"
+            },
+            "weight": 2.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": {
+              "Count": 1,
+              "id": "mkultra:ancient_bronze_helmet",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ],
+        "legs": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "minecraft:air"
+            },
+            "weight": 2.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": {
+              "Count": 1,
+              "id": "mkultra:ancient_bronze_leggings",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ],
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:battleaxe_iron",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:greatsword_iron",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": {
+              "Count": 1,
+              "id": "mkultra:battleaxe_bronze",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": {
+              "Count": 1,
+              "id": "mkultra:greatsword_bronze",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:extra_loot": {
+      "type": "mknpc:extra_loot",
+      "dropChances": 2,
+      "lootOptions": [
+        {
+          "lootSlotName": "mkweapons:rings",
+          "lootSlotTier": "mkultra:ancient_king"
+        },
+        {
+          "lootSlotName": "mkweapons:earrings",
+          "lootSlotTier": "mkultra:ancient_king",
+          "weight": 3.0
+        }
+      ],
+      "noLootChance": 0.2,
+      "noLootIncrease": 0.25
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkfaction:undead"
+    },
+    "mknpc:mk_combo": {
+      "type": "mknpc:mk_combo",
+      "cooldown": 10,
+      "count": 2
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 1.15
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "value": "An Ancient King"
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "ancient_king"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "major_skills": [
+        "mkcore:one_hand_blunt",
+        "mkcore:one_hand_pierce",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:two_hand_slash"
+      ],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:hand_to_hand",
+        "mkcore:pankration",
+        "mkcore:restoration"
+      ],
+      "remedial_skills": [
+        "mkcore:arete",
+        "mkcore:evocation",
+        "mkcore:pneuma"
+      ]
+    }
+  }
+}

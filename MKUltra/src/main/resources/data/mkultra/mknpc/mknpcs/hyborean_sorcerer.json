@@ -1,0 +1,100 @@
+{
+  "entityType": "mkultra:hyborean_skeleton",
+  "name": "mkultra:hyborean_sorcerer",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "value": [
+        {
+          "abilityId": "mkultra:fire_armor",
+          "chance": 0.5,
+          "priority": 2
+        },
+        {
+          "abilityId": "mkultra:fireball",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:ember",
+          "chance": 1.0,
+          "priority": 3
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 40.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 40.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 2.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "value": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:dagger_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 5.0
+          },
+          {
+            "dropChance": 1.1,
+            "item": {
+              "Count": 1,
+              "id": "mkultra:dagger_bronze",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 3.0
+          }
+        ]
+      }
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkfaction:undead"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 0.9
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "value": "Hyborean Sorcerer"
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "sorcerer"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:conjuration",
+        "mkcore:evocation"
+      ],
+      "remedial_skills": [
+        "mkcore:one_hand_pierce"
+      ]
+    }
+  }
+}

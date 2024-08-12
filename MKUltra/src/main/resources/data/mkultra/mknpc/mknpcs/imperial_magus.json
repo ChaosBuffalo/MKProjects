@@ -1,0 +1,143 @@
+{
+  "entityType": "mkultra:zombified_piglin",
+  "name": "mkultra:imperial_magus",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "value": [
+        {
+          "abilityId": "mkultra:fireball",
+          "chance": 1.0,
+          "priority": 3
+        },
+        {
+          "abilityId": "mkultra:flame_wave",
+          "chance": 1.0,
+          "priority": 6
+        },
+        {
+          "abilityId": "mkultra:smite",
+          "chance": 1.0,
+          "priority": 4
+        },
+        {
+          "abilityId": "mkultra:fire_armor",
+          "chance": 1.0,
+          "priority": 5
+        },
+        {
+          "abilityId": "mkultra:heal",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:natures_remedy",
+          "chance": 1.0,
+          "priority": 2
+        },
+        {
+          "abilityId": "mkultra:power_word_summon",
+          "chance": 1.0,
+          "priority": 7
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 150.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 150.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 3.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "value": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:mace_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "value": 25
+    },
+    "mknpc:extra_loot": {
+      "type": "mknpc:extra_loot",
+      "dropChances": 2,
+      "lootOptions": [
+        {
+          "lootSlotName": "mkweapons:main_hand",
+          "lootSlotTier": "mkultra:trooper_magus"
+        },
+        {
+          "lootSlotName": "mkweapons:rings",
+          "lootSlotTier": "mkultra:trooper_magus",
+          "weight": 2.0
+        },
+        {
+          "lootSlotName": "mkweapons:earrings",
+          "lootSlotTier": "mkultra:trooper_magus"
+        }
+      ],
+      "noLootChance": 0.2,
+      "noLootIncrease": 0.25
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkultra:imperial_dead"
+    },
+    "mknpc:faction_name": {
+      "type": "mknpc:faction_name",
+      "hasLastName": true,
+      "title": "Imperial Magus"
+    },
+    "mknpc:lunge_speed": {
+      "type": "mknpc:lunge_speed",
+      "value": 0.5
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 1.0
+    },
+    "mknpc:notable": {
+      "type": "mknpc:notable",
+      "value": true
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "skeletal_mage"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:conjuration",
+        "mkcore:evocation"
+      ],
+      "remedial_skills": [
+        "mkcore:one_hand_pierce"
+      ]
+    }
+  }
+}

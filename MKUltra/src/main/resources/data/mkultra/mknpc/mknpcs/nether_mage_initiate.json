@@ -1,0 +1,126 @@
+{
+  "entityType": "mkultra:human",
+  "name": "mkultra:nether_mage_initiate",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "value": [
+        {
+          "abilityId": "mkultra:ember",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:fireball",
+          "chance": 1.0,
+          "priority": 2
+        },
+        {
+          "abilityId": "mkultra:flame_wave",
+          "chance": 1.0,
+          "priority": 3
+        }
+      ]
+    },
+    "mknpc:ability_trainings": {
+      "type": "mknpc:ability_trainings",
+      "value": [
+        {
+          "ability": "mkultra:ember",
+          "requirements": [
+            {
+              "type": "mkcore:training_req.has_entitlement",
+              "value": "mkultra:nether_mage.intro.tier_1"
+            }
+          ]
+        },
+        {
+          "ability": "mkultra:fire_armor",
+          "requirements": [
+            {
+              "type": "mkcore:training_req.has_entitlement",
+              "value": "mkultra:nether_mage.intro.tier_1"
+            }
+          ]
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 150.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 150.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 3.0
+        }
+      ]
+    },
+    "mknpc:dialogue": {
+      "type": "mknpc:dialogue",
+      "value": "mkultra:intro_nether_mage_initiate"
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "value": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:staff_wood",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkultra:nether_mages"
+    },
+    "mknpc:faction_name": {
+      "type": "mknpc:faction_name",
+      "title": "Initiate"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 0.9
+    },
+    "mknpc:notable": {
+      "type": "mknpc:notable",
+      "value": true
+    },
+    "mknpc:offer_quests": {
+      "type": "mknpc:offer_quests",
+      "value": [
+        "mkultra:nether_mage_intro"
+      ]
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "nether_mage_1"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:conjuration",
+        "mkcore:evocation"
+      ],
+      "remedial_skills": [
+        "mkcore:one_hand_pierce"
+      ]
+    }
+  }
+}
