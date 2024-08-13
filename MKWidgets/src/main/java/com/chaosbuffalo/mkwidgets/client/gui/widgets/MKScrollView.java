@@ -3,8 +3,8 @@ package com.chaosbuffalo.mkwidgets.client.gui.widgets;
 import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.IMKScreen;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -72,8 +72,8 @@ public class MKScrollView extends MKWidget {
     }
 
     @Override
-    public boolean onMouseScrollWheel(Minecraft minecraft, double mouseX, double mouseY, double amount) {
-        double dY = amount * scrollVelocity;
+    public boolean onMouseScrollWheel(Minecraft minecraft, double mouseX, double mouseY, double pScrollX, double pScrollY) {
+        double dY = pScrollY * scrollVelocity;
         if (isScrollLockOn()) {
             IMKWidget child = getChild();
             if (child != null) {
@@ -192,14 +192,14 @@ public class MKScrollView extends MKWidget {
     }
 
     @Override
-    public void preDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
-        matrixStack.pushPose();
-        matrixStack.translate(getIntOffsetX(), getIntOffsetY(), 0);
+    public void preDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(getIntOffsetX(), getIntOffsetY(), 0);
     }
 
 
     @Override
-    public void draw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    public void draw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         if (isClipBoundsEnabled()) {
             int y1 = screenHeight - y - height - 1;
             double scaleFactor = Minecraft.getInstance().getWindow().getGuiScale();
@@ -225,11 +225,11 @@ public class MKScrollView extends MKWidget {
     }
 
     @Override
-    public void postDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    public void postDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         if (isClipBoundsEnabled()) {
             RenderSystem.disableScissor();
         }
-        matrixStack.popPose();
+        graphics.pose().popPose();
         if (shouldDrawScrollbars()) {
             IMKWidget child = getChild();
             if (child == null) {
@@ -242,7 +242,7 @@ public class MKScrollView extends MKWidget {
                 int pos = (int) (posRatio * getHeight());
                 int barX = getX() + getWidth() - SCROLL_BAR_WIDTH;
                 int barY = getY() + pos;
-                mkFill(matrixStack, barX, barY, barX + SCROLL_BAR_WIDTH,
+                graphics.fill(barX, barY, barX + SCROLL_BAR_WIDTH,
                         barY + heightForScrollbar, 0x7DFFFFFF);
             }
             if (isContentWider()) {
@@ -252,7 +252,7 @@ public class MKScrollView extends MKWidget {
                 int pos = Math.round(posRatio * getWidth());
                 int barX = getX() + pos;
                 int barY = getY() + getHeight() - SCROLL_BAR_WIDTH;
-                mkFill(matrixStack, barX, barY, barX + widthForScrollbar,
+                graphics.fill(barX, barY, barX + widthForScrollbar,
                         barY + SCROLL_BAR_WIDTH, 0x7DFFFFFF);
             }
         }
@@ -282,10 +282,10 @@ public class MKScrollView extends MKWidget {
     }
 
     @Override
-    public void drawChildren(PoseStack matrixStack, Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+    public void drawChildren(GuiGraphics graphics, Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         for (IMKWidget child : getChildren()) {
             if (child.isVisible()) {
-                child.drawWidget(matrixStack, mc, mouseX - getIntOffsetX(), mouseY - getIntOffsetY(), partialTicks);
+                child.drawWidget(graphics, mc, mouseX - getIntOffsetX(), mouseY - getIntOffsetY(), partialTicks);
             }
         }
     }

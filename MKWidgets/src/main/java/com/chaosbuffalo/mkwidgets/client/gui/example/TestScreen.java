@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -16,9 +17,9 @@ import net.minecraft.resources.ResourceLocation;
 public class TestScreen extends MKScreen {
     private final int PANEL_WIDTH = 320;
     private final int PANEL_HEIGHT = 240;
-    private static final ResourceLocation BG_LOC = new ResourceLocation(MKWidgets.MODID,
+    private static final ResourceLocation BG_LOC = ResourceLocation.fromNamespaceAndPath(MKWidgets.MODID,
             "textures/gui/background_320.png");
-    private static final ResourceLocation CB_LOGO = new ResourceLocation(MKWidgets.MODID,
+    private static final ResourceLocation CB_LOGO = ResourceLocation.fromNamespaceAndPath(MKWidgets.MODID,
             "textures/gui/chaosbuffalologo.png");
     private MKModal testPopup;
 
@@ -235,13 +236,13 @@ public class TestScreen extends MKScreen {
     }
 
     @Override
-    public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         int xPos = width / 2 - PANEL_WIDTH / 2;
         int yPos = height / 2 - PANEL_HEIGHT / 2;
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.setShaderTexture(0, BG_LOC);
-        MKAbstractGui.mkBlitUVSizeSame(matrixStack, xPos, yPos, 0, 0, PANEL_WIDTH, PANEL_HEIGHT, 512, 512);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+//        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+//        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+//        RenderSystem.setShaderTexture(0, BG_LOC);
+        graphics.blit(BG_LOC, xPos, yPos, 0, 0, PANEL_WIDTH, PANEL_HEIGHT, 512, 512);
+        super.render(graphics, mouseX, mouseY, partialTicks);
     }
 }

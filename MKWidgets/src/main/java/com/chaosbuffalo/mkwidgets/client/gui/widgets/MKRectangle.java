@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkwidgets.client.gui.widgets;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class MKRectangle extends MKWidget {
     private int color;
@@ -36,7 +36,7 @@ public class MKRectangle extends MKWidget {
     }
 
     @Override
-    public void draw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
-        mkFill(matrixStack, getX(), getY(), getX() + getWidth(), getY() + getHeight(), getColor());
+    public void draw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+        graphics.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), getColor());
     }
 }

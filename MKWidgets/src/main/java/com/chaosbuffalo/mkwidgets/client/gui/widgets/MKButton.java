@@ -1,12 +1,12 @@
 package com.chaosbuffalo.mkwidgets.client.gui.widgets;
 
+import com.chaosbuffalo.mkwidgets.MKWidgets;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
@@ -16,8 +16,15 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.function.BiFunction;
 
+
 public class MKButton extends MKWidget {
-    protected static final ResourceLocation BUTTON_TEXTURES = new ResourceLocation("textures/gui/widgets.png");
+    protected static final ResourceLocation BUTTON_TEXTURES = ResourceLocation.fromNamespaceAndPath(MKWidgets.MODID, "textures/gui/widgets.png");
+    protected static final WidgetSprites SPRITES = new WidgetSprites(
+            ResourceLocation.withDefaultNamespace("widget/button"),
+            ResourceLocation.withDefaultNamespace("widget/button_disabled"),
+            ResourceLocation.withDefaultNamespace("widget/button_highlighted")
+    );
+
     public Component buttonText;
     public BiFunction<MKButton, Integer, Boolean> pressedCallback;
     public static final int DEFAULT_HEIGHT = 20;
@@ -113,41 +120,50 @@ public class MKButton extends MKWidget {
     }
 
     @Override
-    public void draw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+    public void draw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+//        RenderSystem.setShader(GameRenderer::getPositionTexShader);
         Font fontrenderer = mc.font;
-        RenderSystem.setShaderTexture(0, BUTTON_TEXTURES);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+//        RenderSystem.setShaderTexture(0, BUTTON_TEXTURES);
+//        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         int i = getHoverState(isHovered());
+//        RenderSystem.enableBlend();
+//        RenderSystem.blendFuncSeparate(
+//                GlStateManager.SourceFactor.SRC_ALPHA,
+//                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+//                GlStateManager.SourceFactor.ONE,
+//                GlStateManager.DestFactor.ZERO);
+//        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA,
+//                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+//        graphics.blit(
+//                BUTTON_TEXTURES,
+//                this.getX(),
+//                this.getY(),
+//                0,
+//                46 + i * 20,
+//                this.getWidth() / 2, this.getHeight());
+//        graphics.blit(
+//                BUTTON_TEXTURES,
+//                this.getX() + this.getWidth() / 2,
+//                this.getY(),
+//                200 - this.getWidth() / 2,
+//                46 + i * 20,
+//                this.getWidth() / 2, this.getHeight());
+
+        graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableBlend();
-        RenderSystem.blendFuncSeparate(
-                GlStateManager.SourceFactor.SRC_ALPHA,
-                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO);
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA,
-                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        blit(
-                matrixStack,
-                this.getX(),
-                this.getY(),
-                0,
-                46 + i * 20,
-                this.getWidth() / 2, this.getHeight());
-        blit(
-                matrixStack,
-                this.getX() + this.getWidth() / 2,
-                this.getY(),
-                200 - this.getWidth() / 2,
-                46 + i * 20,
-                this.getWidth() / 2, this.getHeight());
+        RenderSystem.enableDepthTest();
+        graphics.blitSprite(SPRITES.get(isEnabled(), isHovered()), this.getX(), this.getY(), this.getWidth(), this.getHeight());
+        graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+
         int j = 14737632;
         if (!this.isEnabled()) {
             j = 10526880;
         } else if (isHovered()) {
             j = 16777120;
         }
-        drawCenteredString(matrixStack, fontrenderer, this.buttonText,
+
+
+        graphics.drawCenteredString(fontrenderer, this.buttonText,
                 this.getX() + this.getWidth() / 2,
                 this.getY() + (this.getHeight() - 8) / 2, j);
     }

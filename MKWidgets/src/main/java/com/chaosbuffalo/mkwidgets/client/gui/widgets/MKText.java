@@ -1,9 +1,8 @@
 package com.chaosbuffalo.mkwidgets.client.gui.widgets;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -70,51 +69,51 @@ public class MKText extends MKWidget {
         return this;
     }
 
-    public void draw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    public void draw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         Component formattedText = getText();
         if (isCentered()) {
-            this.drawCenteredStringNoDropShadow(matrixStack, this.fontRenderer,
+            this.drawCenteredStringNoDropShadow(graphics, this.fontRenderer,
                     formattedText,
                     this.getX() + this.getWidth() / 2, this.getY() + (this.getHeight() - this.fontRenderer.lineHeight) / 2, color);
         } else if (isMultiline()) {
-            drawStringMultiline(fontRenderer, matrixStack, formattedText, getX(), getY(), getWidth(), color);
+            drawStringMultiline(fontRenderer, graphics, formattedText, getX(), getY(), getWidth(), color);
         } else {
-            drawString(fontRenderer, matrixStack, formattedText, getX(), getY(), color);
+            drawString(fontRenderer, graphics, formattedText, getX(), getY(), color);
         }
     }
 
-    protected void drawString(Font font, PoseStack matrixStack, Component text, float x, float y, int color) {
-        font.draw(matrixStack, text, x, y, color);
+    protected void drawString(Font font, GuiGraphics graphics, Component text, int x, int y, int color) {
+        graphics.drawString(font, text, x, y, color, false);
     }
 
-    protected void drawStringShadow(Font font, PoseStack matrixStack, Component text, float x, float y, int color) {
-        font.draw(matrixStack, text, x, y, color);
+    protected void drawStringShadow(Font font, GuiGraphics graphics, Component text, int x, int y, int color) {
+        graphics.drawString(font, text, x, y, color, true);
     }
 
-    private int drawInternalDuplicate(Font font, FormattedCharSequence seq, float x, float y, int color, Matrix4f mat, boolean shadow) {
-        MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+    private int drawInternalDuplicate(GuiGraphics graphics, Font font, FormattedCharSequence seq, float x, float y, int color, Matrix4f mat, boolean shadow) {
+        MultiBufferSource.BufferSource buffer = graphics.bufferSource();
         int i = font.drawInBatch(seq, x, y, color, shadow, mat, buffer, Font.DisplayMode.NORMAL, 0, 15728880);
         buffer.endBatch();
         return i;
     }
 
-    private void drawWordWrap(Font font, PoseStack matrixStack, FormattedText text, int x, int y, int width, int color) {
+    private void drawWordWrap(GuiGraphics graphics, Font font, FormattedText text, int x, int y, int width, int color) {
         for (FormattedCharSequence formattedcharsequence : font.split(text, width)) {
-            drawInternalDuplicate(font, formattedcharsequence, (float) x, (float) y, color, matrixStack.last().pose(), false);
+            drawInternalDuplicate(graphics, font, formattedcharsequence, (float) x, (float) y, color, graphics.pose().last().pose(), false);
             y += 9;
         }
     }
 
-    protected void drawStringMultiline(Font font, PoseStack poseStack, Component text, int x, int y, int width, int color) {
-        drawWordWrap(font, poseStack, text, x, y, width, color);
+    protected void drawStringMultiline(Font font, GuiGraphics graphics, Component text, int x, int y, int width, int color) {
+        drawWordWrap(graphics, font, text, x, y, width, color);
     }
 
-    public void drawCenteredStringNoDropShadow(PoseStack matrixStack, Font fontRenderer, String string, int x, int y, int color) {
-        fontRenderer.draw(matrixStack, string, (float) (x - fontRenderer.width(string) / 2), (float) y, color);
+    public void drawCenteredStringNoDropShadow(GuiGraphics graphics, Font fontRenderer, String string, int x, int y, int color) {
+        graphics.drawString(fontRenderer, string, (x - fontRenderer.width(string) / 2), y, color, false);
     }
 
-    public void drawCenteredStringNoDropShadow(PoseStack matrixStack, Font fontRenderer, Component string, int x, int y, int color) {
-        drawString(fontRenderer, matrixStack, string, (float) (x - fontRenderer.width(string) / 2), (float) y, color);
+    public void drawCenteredStringNoDropShadow(GuiGraphics graphics, Font fontRenderer, Component string, int x, int y, int color) {
+        drawString(fontRenderer, graphics, string, (x - fontRenderer.width(string) / 2), y, color);
     }
 
     public MKText setIsCentered(boolean isCentered) {

@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKModal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
@@ -57,14 +58,14 @@ public class MKScreen extends Screen implements IMKScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollAmount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double pScrollX, double pScrollY) {
         Iterator<IMKModal> modalIt = modals.descendingIterator();
         while (modalIt.hasNext()) {
             IMKModal child = modalIt.next();
             if (!child.isVisible()) {
                 continue;
             }
-            if (child.mouseScrollWheel(this.minecraft, mouseX, mouseY, scrollAmount)) {
+            if (child.mouseScrollWheel(this.minecraft, mouseX, mouseY, pScrollX, pScrollY)) {
                 return true;
             }
         }
@@ -74,13 +75,12 @@ public class MKScreen extends Screen implements IMKScreen {
             if (!child.isVisible()) {
                 continue;
             }
-            if (child.mouseScrollWheel(this.minecraft, mouseX, mouseY, scrollAmount)) {
+            if (child.mouseScrollWheel(this.minecraft, mouseX, mouseY, pScrollX, pScrollY)) {
                 return true;
             }
         }
         return false;
     }
-
 
     @Override
     public void addPostRenderInstruction(IInstruction instruction) {
@@ -352,7 +352,7 @@ public class MKScreen extends Screen implements IMKScreen {
     }
 
     @Override
-    public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         if (firstRender) {
             if (!getState().equals(NO_STATE)) {
                 addRestoreStateCallbacks();
@@ -377,19 +377,19 @@ public class MKScreen extends Screen implements IMKScreen {
         }
         for (IMKWidget child : children) {
             if (child.isVisible()) {
-                child.drawWidget(matrixStack, this.minecraft, mouseX, mouseY, partialTicks);
+                child.drawWidget(graphics, this.minecraft, mouseX, mouseY, partialTicks);
             }
         }
         for (IMKModal modal : modals) {
             if (modal.isVisible()) {
-                modal.drawWidget(matrixStack, this.minecraft, mouseX, mouseY, partialTicks);
+                modal.drawWidget(graphics, this.minecraft, mouseX, mouseY, partialTicks);
             }
         }
         if (dragState != null) {
             dragState.updateDragState(minecraft, mouseX, mouseY, this);
         }
         for (IInstruction instruction : postRenderInstructions) {
-            instruction.draw(matrixStack, getMinecraft().font, this.width, this.height, partialTicks, this);
+            instruction.draw(graphics, getMinecraft().font, this.width, this.height, partialTicks, this);
         }
         postRenderInstructions.clear();
     }

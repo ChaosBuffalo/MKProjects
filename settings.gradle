@@ -29,15 +29,15 @@ include 'TargetingAPI'
 project(":TargetingAPI").buildFileName = "mono.gradle"
 include 'MKWidgets'
 project(":MKWidgets").buildFileName = "mono.gradle"
-include 'MKCore'
-project(":MKCore").buildFileName = "mono.gradle"
-include 'MKChat'
-project(":MKChat").buildFileName = "mono.gradle"
-include 'MKFaction'
-project(":MKFaction").buildFileName = "mono.gradle"
-include 'MKWeapons'
-project(":MKWeapons").buildFileName = "mono.gradle"
-include 'MKNpc'
-project(":MKNpc").buildFileName = 'mono.gradle'
-include 'MKUltra'
-project(":MKUltra").buildFileName = 'mono.gradle'
+//include 'MKCore'
+//project(":MKCore").buildFileName = "mono.gradle"
+//include 'MKChat'
+//project(":MKChat").buildFileName = "mono.gradle"
+//include 'MKFaction'
+//project(":MKFaction").buildFileName = "mono.gradle"
+//include 'MKWeapons'
+//project(":MKWeapons").buildFileName = "mono.gradle"
+//include 'MKNpc'
+//project(":MKNpc").buildFileName = 'mono.gradle'
+//include 'MKUltra'
+//project(":MKUltra").buildFileName = 'mono.gradle'

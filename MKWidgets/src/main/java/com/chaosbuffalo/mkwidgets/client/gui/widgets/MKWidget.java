@@ -4,15 +4,15 @@ import com.chaosbuffalo.mkwidgets.client.gui.UIConstants;
 import com.chaosbuffalo.mkwidgets.client.gui.instructions.HoveringTextInstruction;
 import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.IMKScreen;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.UUID;
 
-public class MKWidget extends MKAbstractGui implements IMKWidget {
+public class MKWidget implements IMKWidget {
     private final UUID id;
     private final LinkedList<IMKWidget> children;
     private IMKWidget parent;
@@ -83,7 +83,7 @@ public class MKWidget extends MKAbstractGui implements IMKWidget {
     }
 
     @Override
-    public void longHoverDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    public void longHoverDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         IMKScreen screen = getScreen();
         if (tooltip != null && screen != null) {
             // tooltips are added in screen space so we need to climb the widget tree to the top.
@@ -127,8 +127,8 @@ public class MKWidget extends MKAbstractGui implements IMKWidget {
     }
 
     @Override
-    public void drawDebugBounds(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
-        mkFill(matrixStack, getX(), getY(), getX() + getWidth(), getY() + getHeight(), getDebugColor());
+    public void drawDebugBounds(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+        graphics.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), getDebugColor());
     }
 
     @Override

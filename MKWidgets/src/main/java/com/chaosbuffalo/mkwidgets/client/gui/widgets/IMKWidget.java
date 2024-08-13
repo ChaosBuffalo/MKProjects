@@ -3,8 +3,8 @@ package com.chaosbuffalo.mkwidgets.client.gui.widgets;
 import com.chaosbuffalo.mkwidgets.client.gui.actions.IDragState;
 import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.IMKScreen;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
@@ -137,19 +137,19 @@ public interface IMKWidget {
         return x >= getX() && y >= getY() && x < getRight() && y < getBottom();
     }
 
-    default void preDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    default void preDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
 
     }
 
-    default void draw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    default void draw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
 
     }
 
-    default void postDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    default void postDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
 
     }
 
-    default void longHoverDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height,
+    default void longHoverDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height,
                                int mouseX, int mouseY, float partialTicks) {
 
     }
@@ -162,10 +162,10 @@ public interface IMKWidget {
         return isVisible() && isEnabled() && isInBounds(mouseX, mouseY);
     }
 
-    default void handleLongHoverDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height,
+    default void handleLongHoverDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height,
                                      int mouseX, int mouseY, float partialTicks) {
         if (isHovered() && getHoveredTicks() > getLongHoverTicks()) {
-            longHoverDraw(matrixStack, mc, x, y, width, height, mouseX, mouseY, partialTicks);
+            longHoverDraw(graphics, mc, x, y, width, height, mouseX, mouseY, partialTicks);
         }
     }
 
@@ -198,7 +198,7 @@ public interface IMKWidget {
 
     boolean doDrawDebugBounds();
 
-    default void drawDebugBounds(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX,
+    default void drawDebugBounds(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX,
                                  int mouseY, float partialTicks) {
 
     }
@@ -224,27 +224,27 @@ public interface IMKWidget {
         onMouseHover(mc, mouseX, mouseY, partialTicks);
     }
 
-    default void drawChildren(PoseStack matrixStack, Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+    default void drawChildren(GuiGraphics graphics, Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         for (IMKWidget child : getChildren()) {
             if (child.isVisible()) {
-                child.drawWidget(matrixStack, mc, mouseX, mouseY, partialTicks);
+                child.drawWidget(graphics, mc, mouseX, mouseY, partialTicks);
             }
         }
     }
 
-    default void drawWidget(PoseStack matrixStack, Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+    default void drawWidget(GuiGraphics graphics, Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         int x = getX();
         int y = getY();
         int width = getWidth();
         int height = getHeight();
         if (doDrawDebugBounds()) {
-            drawDebugBounds(matrixStack, mc, x, y, width, height, mouseX, mouseY, partialTicks);
+            drawDebugBounds(graphics, mc, x, y, width, height, mouseX, mouseY, partialTicks);
         }
-        preDraw(matrixStack, mc, x, y, width, height, mouseX, mouseY, partialTicks);
-        draw(matrixStack, mc, x, y, width, height, mouseX, mouseY, partialTicks);
-        drawChildren(matrixStack, mc, mouseX, mouseY, partialTicks);
-        postDraw(matrixStack, mc, x, y, width, height, mouseX, mouseY, partialTicks);
-        handleLongHoverDraw(matrixStack, mc, x, y, width, height, mouseX, mouseY, partialTicks);
+        preDraw(graphics, mc, x, y, width, height, mouseX, mouseY, partialTicks);
+        draw(graphics, mc, x, y, width, height, mouseX, mouseY, partialTicks);
+        drawChildren(graphics, mc, mouseX, mouseY, partialTicks);
+        postDraw(graphics, mc, x, y, width, height, mouseX, mouseY, partialTicks);
+        handleLongHoverDraw(graphics, mc, x, y, width, height, mouseX, mouseY, partialTicks);
     }
 
     default void clearWidgets() {
@@ -259,11 +259,11 @@ public interface IMKWidget {
         return getChildren().get(index);
     }
 
-    default boolean onMouseScrollWheel(Minecraft minecraft, double mouseX, double mouseY, double distance) {
+    default boolean onMouseScrollWheel(Minecraft minecraft, double mouseX, double mouseY, double pScrollX, double pScrollY) {
         return false;
     }
 
-    default boolean mouseScrollWheel(Minecraft minecraft, double mouseX, double mouseY, double distance) {
+    default boolean mouseScrollWheel(Minecraft minecraft, double mouseX, double mouseY, double pScrollX, double pScrollY) {
         if (!this.isVisible() || !this.isInBounds(mouseX, mouseY)) {
             return false;
         }
@@ -273,11 +273,11 @@ public interface IMKWidget {
         Iterator<IMKWidget> it = getChildren().descendingIterator();
         while (it.hasNext()) {
             IMKWidget child = it.next();
-            if (child.mouseScrollWheel(minecraft, mouseX, mouseY, distance)) {
+            if (child.mouseScrollWheel(minecraft, mouseX, mouseY, pScrollX, pScrollY)) {
                 return true;
             }
         }
-        return onMouseScrollWheel(minecraft, mouseX, mouseY, distance);
+        return onMouseScrollWheel(minecraft, mouseX, mouseY, pScrollX, pScrollY);
     }
 
     default void onDragEnd(IDragState state) {

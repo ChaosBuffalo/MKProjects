@@ -2,8 +2,8 @@ package com.chaosbuffalo.mkwidgets.client.gui.instructions;
 
 import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ public class HoveringTextInstruction implements IInstruction {
     }
 
     @Override
-    public void draw(PoseStack matrixStack, Font renderer, int screenWidth, int screenHeight, float partialTicks, MKScreen screen) {
-        screen.renderTooltip(matrixStack, texts, Optional.empty(), mousePos.x, mousePos.y, renderer);
+    public void draw(GuiGraphics graphics, Font renderer, int screenWidth, int screenHeight, float partialTicks, MKScreen screen) {
+        graphics.renderTooltip(renderer, texts, Optional.empty(), mousePos.x, mousePos.y);
     }
 }

@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkwidgets.client.gui.widgets;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 
 public class MCWidgetContainer extends MKWidget {
@@ -54,8 +54,8 @@ public class MCWidgetContainer extends MKWidget {
     }
 
     @Override
-    public void draw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
-        mcWidget.render(matrixStack, mouseX, mouseY, partialTicks);
+    public void draw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+        mcWidget.render(graphics, mouseX, mouseY, partialTicks);
     }
 
     @Override
@@ -74,8 +74,8 @@ public class MCWidgetContainer extends MKWidget {
     }
 
     @Override
-    public boolean onMouseScrollWheel(Minecraft minecraft, double mouseX, double mouseY, double distance) {
-        return mcWidget.mouseScrolled(mouseX, mouseY, distance);
+    public boolean onMouseScrollWheel(Minecraft minecraft, double mouseX, double mouseY, double pScrollX, double pScrollY) {
+        return mcWidget.mouseScrolled(mouseX, mouseY, pScrollX, pScrollY);
     }
 
     @Override
