@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+    implementation group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '[6.0.24,6.2)', changing: true
     implementation group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
     implementation group: 'org.parchmentmc.librarian.forgegradle', name: 'org.parchmentmc.librarian.forgegradle.gradle.plugin', version: '1.+'
 }
