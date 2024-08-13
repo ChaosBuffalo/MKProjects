@@ -1,0 +1,100 @@
+{
+  "frames": [
+    {
+      "attributes": {
+        "duration": 0,
+        "tickStart": 0
+      },
+      "scaleTrack": {
+        "trackType": "mkcore:particle_anim.render_scale",
+        "attributes": {
+          "maxVariance": 0.1,
+          "renderScale": 0.25
+        }
+      },
+      "colorTrack": {
+        "trackType": "mkcore:particle_anim.lerp_color",
+        "attributes": {
+          "red": 0.98039216,
+          "green": 0.8352941,
+          "blue": 0.0,
+          "blueVariance": 0.0,
+          "redVariance": 0.0,
+          "greenVariance": 0.39215687
+        }
+      }
+    },
+    {
+      "attributes": {
+        "duration": 75,
+        "tickStart": 5
+      },
+      "motionTrack": {
+        "trackType": "mkcore:particle_anim.orbit_in_plane",
+        "attributes": {
+          "ramp": -1.0,
+          "rpmVariance": 20.0,
+          "rpm": 0.0
+        }
+      },
+      "scaleTrack": {
+        "trackType": "mkcore:particle_anim.render_scale",
+        "attributes": {
+          "maxVariance": 0.05,
+          "renderScale": 0.4
+        }
+      },
+      "colorTrack": {
+        "trackType": "mkcore:particle_anim.lerp_color",
+        "attributes": {
+          "red": 1.0,
+          "green": 0.0,
+          "blue": 0.0,
+          "blueVariance": 0.0,
+          "redVariance": 0.0,
+          "greenVariance": 0.19607843
+        }
+      }
+    },
+    {
+      "attributes": {
+        "duration": 20,
+        "tickStart": 60
+      },
+      "motionTrack": {
+        "trackType": "mkcore:particle_anim.linear_motion",
+        "attributes": {
+          "xSpeed": 0.0,
+          "zSpeed": 0.0,
+          "ySpeed": -0.05,
+          "varianceMagnitude": 0.025
+        }
+      }
+    },
+    {
+      "attributes": {
+        "duration": 10,
+        "tickStart": 70
+      },
+      "scaleTrack": {
+        "trackType": "mkcore:particle_anim.render_scale",
+        "attributes": {
+          "maxVariance": 0.0,
+          "renderScale": 0.001
+        }
+      }
+    }
+  ],
+  "spawnPattern": {
+    "type": "mkcore:particle_spawn_pattern.sphere",
+    "attributes": {
+      "xRadius": 0.5,
+      "zRadius": 0.5,
+      "count": 150,
+      "layers": 2,
+      "yRadius": 0.15,
+      "speed": 0.15
+    }
+  },
+  "particleType": "mkcore:magic_cross"
+}

@@ -1,0 +1,171 @@
+{
+  "entityType": "mkultra:hyborean_skeleton",
+  "name": "mkultra:burning_skeleton",
+  "options": {
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 250.0
+        },
+        {
+          "attribute": "minecraft:generic.armor",
+          "value": 10.0
+        },
+        {
+          "attribute": "minecraft:generic.attack_damage",
+          "value": 5.0
+        },
+        {
+          "attribute": "mkcore:bleed_resistance",
+          "value": 1.25
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 250.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 2.0
+        }
+      ]
+    },
+    "mknpc:boss_stage": {
+      "type": "mknpc:boss_stage",
+      "value": [
+        {
+          "options": [
+            {
+              "type": "mknpc:temp_abilities",
+              "value": [
+                {
+                  "abilityId": "mkultra:fire_armor",
+                  "chance": 1.0,
+                  "priority": 3
+                },
+                {
+                  "abilityId": "mkultra:fireball",
+                  "chance": 1.0,
+                  "priority": 2
+                },
+                {
+                  "abilityId": "mkultra:wrath_beam",
+                  "chance": 1.0,
+                  "priority": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "options": [
+            {
+              "type": "mknpc:temp_abilities",
+              "value": [
+                {
+                  "abilityId": "mkultra:fireball",
+                  "chance": 1.0,
+                  "priority": 3
+                },
+                {
+                  "abilityId": "mkultra:wrath_beam_flurry",
+                  "chance": 1.0,
+                  "priority": 1
+                }
+              ]
+            }
+          ],
+          "particleMode": "line_height",
+          "transitionParticles": "mkultra:wrath_skeleton_transition",
+          "transitionSound": "mkultra:spell_dark_8"
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "value": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:dagger_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "value": 50
+    },
+    "mknpc:extra_loot": {
+      "type": "mknpc:extra_loot",
+      "lootOptions": [
+        {
+          "lootSlotName": "mkweapons:main_hand",
+          "lootSlotTier": "mkultra:burning_skeleton"
+        },
+        {
+          "lootSlotName": "mkweapons:rings",
+          "lootSlotTier": "mkultra:burning_skeleton",
+          "weight": 3.0
+        },
+        {
+          "lootSlotName": "mkweapons:earrings",
+          "lootSlotTier": "mkultra:burning_skeleton",
+          "weight": 2.0
+        }
+      ],
+      "noLootChance": 0.1
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkultra:hyborean_dead"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 1.0
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "value": "Burning Revenant"
+    },
+    "mknpc:notable": {
+      "type": "mknpc:notable",
+      "value": true
+    },
+    "mknpc:particle_effects": {
+      "type": "mknpc:particle_effects",
+      "value": [
+        {
+          "type": "mkcore:effect_instance.bone",
+          "boneName": "head",
+          "instanceUUID": "3e7496f1-f5bf-45e6-b8e5-64192633ae9f",
+          "particleAnimName": "mkultra:burning_skeleton_head"
+        }
+      ]
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "burning_skeleton"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:conjuration",
+        "mkcore:evocation"
+      ],
+      "remedial_skills": [
+        "mkcore:one_hand_pierce"
+      ]
+    }
+  }
+}

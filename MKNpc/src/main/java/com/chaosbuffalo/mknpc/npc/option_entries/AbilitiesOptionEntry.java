@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
+import com.chaosbuffalo.mknpc.npc.NpcOptionEntryTypes;
 import com.chaosbuffalo.mknpc.npc.options.AbilitiesOption;
 import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
@@ -52,6 +53,11 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
                 }
             });
         }
+    }
+
+    @Override
+    public NpcOptionEntryType<? extends INpcOptionEntry> getType() {
+        return NpcOptionEntryTypes.ABILITIES.get();
     }
 
     @Override

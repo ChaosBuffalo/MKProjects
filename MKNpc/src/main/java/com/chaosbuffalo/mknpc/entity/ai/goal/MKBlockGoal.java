@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
@@ -60,7 +61,7 @@ public class MKBlockGoal extends Goal {
     public boolean shouldConsiderBlocking(LivingEntity target) {
         //FIXME: maybe tag our swords with the sword tag and use tags here
         return target.getMainHandItem().getItem() instanceof SwordItem && MKCore.getEntityData(target).map(
-                cap -> !target.isBlocking() && cap.getCombatExtension().getAttackStrengthTicks() >=
+                cap -> !cap.getEffects().isEffectActive(CoreEffects.STUN.get()) && !target.isBlocking() && cap.getCombatExtension().getAttackStrengthTicks() >=
                         EntityUtils.getCooldownPeriod(target)).orElse(false);
     }
 

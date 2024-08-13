@@ -47,7 +47,7 @@ public class IgniteAbility extends MKAbility {
         setCastTime(GameConstants.TICKS_PER_SECOND / 4);
         addAttributes(base, scale, modifierScaling, cast_1_particles, cast_2_particles);
         addSkillAttribute(MKAttributes.EVOCATION);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
 
     @Override

@@ -43,6 +43,15 @@ public class MKUAbilities {
 
     public static final RegistryObject<HolyWordAbility> HOLY_WORD = REGISTRY.register("holy_word",
             HolyWordAbility::new);
+    public static final RegistryObject<HolyWordShotgunAbility> HOLY_WORD_SHOTGUN = REGISTRY.register("ability.holy_word_shotgun",
+            HolyWordShotgunAbility::new);
+    public static final RegistryObject<HolyFireAbility> HOLY_FIRE = REGISTRY.register("ability.holy_fire",
+            HolyFireAbility::new);
+    public static final RegistryObject<HolyFireFlurryAbility> HOLY_FIRE_FLURRY = REGISTRY.register("ability.holy_fire_flurry",
+            HolyFireFlurryAbility::new);
+    public static final RegistryObject<HolyWordBurstAbility> HOLY_WORD_BURST = REGISTRY.register("ability.holy_word_burst",
+            HolyWordBurstAbility::new);
+    public static final RegistryObject<HealingCircleAbility> HOLY_CIRCLE_ABILITY = REGISTRY.register("ability.healing_circle", HealingCircleAbility::new);
 
     //necromancer
     public static final RegistryObject<MKEntitySummonAbility> TEST_SUMMON = REGISTRY.register("test_summon",

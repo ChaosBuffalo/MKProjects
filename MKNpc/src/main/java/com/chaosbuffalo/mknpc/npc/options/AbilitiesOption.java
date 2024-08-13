@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.chaosbuffalo.mknpc.npc.option_entries.AbilitiesOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.google.common.collect.ImmutableList;
@@ -44,5 +45,10 @@ public class AbilitiesOption extends WorldPermanentOption {
             }
         }
         return new AbilitiesOptionEntry(finalChoices);
+    }
+
+    @Override
+    public NpcOptionType<? extends NpcDefinitionOption> getType() {
+        return NpcOptionTypes.ABILITIES.get();
     }
 }

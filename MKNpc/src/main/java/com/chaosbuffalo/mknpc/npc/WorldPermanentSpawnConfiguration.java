@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class WorldPermanentSpawnConfiguration {
     public static final Codec<WorldPermanentSpawnConfiguration> CODEC = Codec.unboundedMap(
-                    ResourceLocation.CODEC, Codec.unboundedMap(ResourceLocation.CODEC, NpcDefinitionManager.ENTRY_CODEC))
+                    ResourceLocation.CODEC, Codec.unboundedMap(ResourceLocation.CODEC, INpcOptionEntry.CODEC))
             .xmap(WorldPermanentSpawnConfiguration::new, i -> i.definitionMap);
 
 

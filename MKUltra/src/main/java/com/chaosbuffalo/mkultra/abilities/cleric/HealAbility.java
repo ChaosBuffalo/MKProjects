@@ -20,10 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.function.Function;
 
 public class HealAbility extends MKAbility {
     protected final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "heal_casting");
@@ -40,7 +37,7 @@ public class HealAbility extends MKAbility {
         setCastTime(GameConstants.TICKS_PER_SECOND / 4);
         addAttributes(base, scale, modifierScaling, cast_particles);
         addSkillAttribute(MKAttributes.RESTORATION);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
 
     @Override

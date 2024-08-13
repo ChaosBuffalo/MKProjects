@@ -42,7 +42,7 @@ public class FireballAbility extends ProjectileAbility {
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND);
         addAttributes(radius);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
     }

@@ -33,10 +33,13 @@ public class NotableDeadCondition extends StructureEventCondition {
 
     @Override
     public boolean meetsCondition(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
+        if (world.getServer() == null){
+            return false;
+        }
         return allNotables ?
-                entry.getAllNotablesOfType(npcDefinition).stream()
+                entry.getAllNotablesOfType(npcDefinition, world.getServer()).stream()
                         .allMatch(x -> checkSpawnerDead(x, world)) :
-                entry.getFirstNotableOfType(npcDefinition)
+                entry.getFirstNotableOfType(npcDefinition, world.getServer())
                         .map(x -> checkSpawnerDead(x, world)).orElse(false);
     }
 

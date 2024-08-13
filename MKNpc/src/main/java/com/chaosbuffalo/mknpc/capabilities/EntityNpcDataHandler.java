@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
@@ -353,8 +354,10 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         }
         if (nbt.contains("npc_definition")) {
             ResourceLocation defName = new ResourceLocation(nbt.getString("npc_definition"));
-            this.definition = NpcDefinitionManager.getDefinition(defName);
-            needsDefinitionApplied = true;
+            if (getEntity().getServer() != null) {
+                this.definition =  getEntity().getServer().registryAccess().registry(NpcRegistries.NPC_DEFINITIONS).orElseThrow().get(defName);
+                needsDefinitionApplied = true;
+            }
         }
         if (nbt.contains("difficulty_value")) {
             difficultyValue = nbt.getDouble("difficulty_value");

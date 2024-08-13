@@ -5,6 +5,8 @@ import com.chaosbuffalo.mkfaction.faction.FactionGreetings;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcOptionEntryTypes;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.chaosbuffalo.mknpc.npc.option_entries.FactionBattlecryOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.mojang.serialization.Codec;
@@ -40,5 +42,10 @@ public class FactionBattlecryOption extends WorldPermanentOption {
                     .orElse(new FactionBattlecryOptionEntry());
         }
         return new FactionBattlecryOptionEntry();
+    }
+
+    @Override
+    public NpcOptionType<? extends NpcDefinitionOption> getType() {
+        return NpcOptionTypes.FACTION_BATTLECRY.get();
     }
 }

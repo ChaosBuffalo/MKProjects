@@ -25,7 +25,7 @@ import java.util.Optional;
 public class BossStage {
     public static final Codec<BossStage> CODEC = RecordCodecBuilder.<BossStage>mapCodec(builder -> {
         return builder.group(
-                NpcDefinitionOption.CODEC.listOf().fieldOf("options").forGetter(i -> i.options),
+                NpcDefinitionOption.CODEC2.listOf().fieldOf("options").forGetter(i -> i.options),
                 ResourceLocation.CODEC.optionalFieldOf("transitionParticles").forGetter(i -> Optional.ofNullable(i.transitionParticles)),
                 ResourceLocation.CODEC.optionalFieldOf("transitionSound").forGetter(i -> Optional.ofNullable(i.transitionSound)),
                 ParticleMode.CODEC.optionalFieldOf("particleMode", ParticleMode.MIDDLE).forGetter(i -> i.particleMode)

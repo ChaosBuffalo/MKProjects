@@ -3,7 +3,9 @@ package com.chaosbuffalo.mkcore.utils.location;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public class PerpendicularLineLocationProvider extends LocationProvider{
@@ -26,6 +28,11 @@ public class PerpendicularLineLocationProvider extends LocationProvider{
     }
 
     @Override
+    public Component describe() {
+        return Component.translatable("location_provider.perpendicular_line", getCount());
+    }
+
+    @Override
     public LocationProviderType<? extends LocationProvider> getType() {
         return LocationProviderTypes.PERPENDICULAR_LINE_LOCATION.get();
     }
@@ -33,7 +40,7 @@ public class PerpendicularLineLocationProvider extends LocationProvider{
     @Override
     public WorldLocationResult getPosition(Entity entity, int index) {
         Vec3 startPos = entity.position().add(new Vec3(0, entity.getEyeHeight() * percentEyeHeight, 0));
-        Vec3 offsetPos = startPos.add(Vec3.directionFromRotation(entity.getRotationVector()).multiply(offset));
+        Vec3 offsetPos = startPos.add(Vec3.directionFromRotation(new Vec2(0, entity.getYRot())).multiply(offset));
         Vec3 entityCenter = new Vec3(entity.getX(), offsetPos.y, entity.getZ());
         Vec3 normal = offsetPos.subtract(entityCenter).normalize();
         Vec3 up = new Vec3(0.0, 1.0, 0.0);

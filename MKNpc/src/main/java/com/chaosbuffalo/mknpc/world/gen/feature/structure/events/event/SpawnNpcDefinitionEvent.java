@@ -9,6 +9,7 @@ import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.NotableDeadCondition;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.StructureEventCondition;
@@ -86,7 +87,10 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
 
     @Override
     public void execute(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level level) {
-        NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefinition);
+        if (level.getServer() == null) {
+            return;
+        }
+        NpcDefinition def = level.getServer().registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(npcDefinition);
         if (def == null) {
             return;
         }

@@ -8,15 +8,12 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
-import com.chaosbuffalo.mkcore.serialization.attributes.CodecAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.BooleanAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
-import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
+import com.chaosbuffalo.mkcore.serialization.attributes.*;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
-import com.chaosbuffalo.mkcore.utils.location.PerpendicularLineLocationProvider;
 import com.chaosbuffalo.mkcore.utils.location.SingleLocationProvider;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -26,20 +23,30 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public abstract class ProjectileAbility extends MKAbility {
-    protected final FloatAttribute baseDamage = new FloatAttribute("baseDamage", 6.0f);
-    protected final FloatAttribute scaleDamage = new FloatAttribute("scaleDamage", 2.0f);
-    protected final FloatAttribute projectileSpeed = new FloatAttribute("projectileSpeed", 1.25f);
-    protected final FloatAttribute projectileInaccuracy = new FloatAttribute("projectileInaccuracy", 0.2f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    public enum BallisticsSolveMode{
+        NO_SOLVE,
+        PITCH,
+        YAW_AND_PITCH
+    }
+
+    protected final FloatAttribute baseDamage = new FloatAttribute("base_damage", 6.0f);
+    protected final FloatAttribute scaleDamage = new FloatAttribute("scale_damage", 2.0f);
+    protected final FloatAttribute projectileSpeed = new FloatAttribute("projectile_speed", 1.25f);
+    protected final FloatAttribute projectileInaccuracy = new FloatAttribute("projectile_inaccuracy", 0.2f);
+    protected final FloatAttribute modifierScaling = new FloatAttribute("modifier_scaling", 1.0f);
     protected final ResourceLocationAttribute trailParticles = new ResourceLocationAttribute("trail_particles", EMPTY_PARTICLES);
     protected final ResourceLocationAttribute detonateParticles = new ResourceLocationAttribute("detonate_particles", EMPTY_PARTICLES);
-    protected final CodecAttribute<ProjectileCastBehavior> castBehavior = new CodecAttribute<>("castBehavior",
+    protected final CodecAttribute<ProjectileCastBehavior> castBehavior = new CodecAttribute<>("cast_behavior",
             new SimpleProjectileBehavior(new SingleLocationProvider(
-                    new Vec3(0.5f, 0.0f, 0.5f), 0.75f)), ProjectileCastBehavior.CODEC);
+                    new Vec3(0.5f, 0.0f, 0.5f), 0.6f), true), ProjectileCastBehavior.CODEC);
 
-    protected final BooleanAttribute solveBallisticsForNpc = new BooleanAttribute("npc_solve_ballistics", true);
+    protected final BallisticsSolveModeAttribute solveBallisticsForNpc = new BallisticsSolveModeAttribute("npc_solve_ballistics",
+            BallisticsSolveMode.YAW_AND_PITCH);
+
+
 
     protected final Attribute skill;
 
@@ -69,6 +76,13 @@ public abstract class ProjectileAbility extends MKAbility {
 
     public float getProjectileInaccuracy() {
         return projectileInaccuracy.value();
+    }
+
+    @Override
+    public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
+        super.buildDescription(casterData, context, consumer);
+        consumer.accept(Component.literal(""));
+        consumer.accept(Component.translatable("mkcore.ability.projectile.desc", castBehavior.getValue().describe(casterData, this)));
     }
 
     @Override
@@ -145,24 +159,17 @@ public abstract class ProjectileAbility extends MKAbility {
         castBehavior.getValue().endCastClient(this, casterData, clientState);
     }
 
-    public void fireCurrentProjectiles(IMKEntityData casterData, AbilityContext context) {
-        context.getMemory(MKAbilityMemories.CURRENT_PROJECTILES).ifPresent(current -> {
-            for (BaseProjectileEntity proj : current) {
-                casterData.getRiders().removeRider(proj);
-                fireProjectile(proj, projectileSpeed.value(), projectileInaccuracy.value(), casterData.getEntity(), context);
-            }
-        });
-        context.setMemory(MKAbilityMemories.CURRENT_PROJECTILES.get(), Optional.empty());
-    }
-
-    protected void fireProjectile(BaseProjectileEntity projectileEntity, float velocity, float accuracy,
-                               LivingEntity entity, AbilityContext context) {
-        if (!solveBallisticsForNpc.value() || entity instanceof Player) {
-            projectileEntity.shoot(projectileEntity, projectileEntity.getXRot(), projectileEntity.getYRot(),
-                    0, velocity, accuracy);
+    public void fireProjectile(BaseProjectileEntity projectileEntity, float velocity, float accuracy,
+                               LivingEntity shooter, Entity target, float xRot, float yRot) {
+        if (solveBallisticsForNpc.getValue() == BallisticsSolveMode.NO_SOLVE || shooter instanceof Player || target == null) {
+            projectileEntity.shoot(projectileEntity, xRot, yRot, 0, velocity, accuracy);
         } else {
-            context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity ->
-                    EntityUtils.shootProjectileAtTarget(projectileEntity, targetEntity, velocity, accuracy));
+            switch (solveBallisticsForNpc.getValue()) {
+                case YAW_AND_PITCH -> EntityUtils.shootProjectileAtTarget(projectileEntity, target, velocity, accuracy);
+                case PITCH -> projectileEntity.shoot(projectileEntity,
+                        EntityUtils.solvePitch(projectileEntity, target, velocity), yRot, 0, velocity, accuracy);
+            }
+
         }
     }
 }

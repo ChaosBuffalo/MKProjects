@@ -16,6 +16,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.common.util.INBTSerializable;
 
@@ -97,16 +98,16 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         return notableChests.stream().anyMatch(x -> x.getLabel() != null && x.getLabel().equals(tag));
     }
 
-    public boolean hasNotableOfType(ResourceLocation npcDef) {
-        return notables.stream().anyMatch(x -> x.getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef));
+    public boolean hasNotableOfType(ResourceLocation npcDef, MinecraftServer server) {
+        return notables.stream().anyMatch(x -> x.getDefinition(server) != null && x.getDefinition(server).getDefinitionName().equals(npcDef));
     }
 
-    public Optional<NotableNpcEntry> getFirstNotableOfType(ResourceLocation npcDef) {
-        return notables.stream().filter(x -> x.getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef)).findFirst();
+    public Optional<NotableNpcEntry> getFirstNotableOfType(ResourceLocation npcDef, MinecraftServer server) {
+        return notables.stream().filter(x -> x.getDefinition(server) != null && x.getDefinition(server).getDefinitionName().equals(npcDef)).findFirst();
     }
 
-    public List<NotableNpcEntry> getAllNotablesOfType(ResourceLocation npcDef) {
-        return notables.stream().filter(x -> x.getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef)).collect(Collectors.toList());
+    public List<NotableNpcEntry> getAllNotablesOfType(ResourceLocation npcDef, MinecraftServer server) {
+        return notables.stream().filter(x -> x.getDefinition(server) != null && x.getDefinition(server).getDefinitionName().equals(npcDef)).collect(Collectors.toList());
     }
 
     public Optional<NotableChestEntry> getFirstChestWithTag(String tag) {
@@ -131,7 +132,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
 
     public void addSpawner(MKSpawnerTileEntity spawner) {
         for (SpawnOption spawnOption : spawner.getSpawnList().getOptions()) {
-            NpcDefinition def = spawnOption.getDefinition();
+            NpcDefinition def = spawnOption.getDefinition(getWorldData().getWorld().getServer());
             if (def.isNotable()) {
                 NotableNpcEntry entry = new NotableNpcEntry(def, spawner);
                 worldData.putNotableNpc(entry);
@@ -146,6 +147,10 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
 
     public boolean hasPoi(String name) {
         return pois.containsKey(name) && !pois.get(name).isEmpty();
+    }
+
+    public WorldNpcDataHandler getWorldData() {
+        return worldData;
     }
 
     private void putPoi(PointOfInterestEntry entry) {

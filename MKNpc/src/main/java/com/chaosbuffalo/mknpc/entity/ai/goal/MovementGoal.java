@@ -37,7 +37,7 @@ public class MovementGoal extends Goal {
             WalkTarget walkTarget = targetOpt.get();
             if (!this.hasReachedTarget(walkTarget)) {
                 this.blockPos = walkTarget.getTarget().currentBlockPosition();
-                Path path = entity.getNavigation().createPath(blockPos, 0);
+                Path path = entity.getNavigation().createPath(blockPos, 1);
                 this.speed = walkTarget.getSpeedModifier();
                 if (this.path != path) {
                     this.path = path;

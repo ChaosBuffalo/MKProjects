@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainer;
 import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainingEntity;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -75,5 +76,10 @@ public class AbilityTrainingOption extends NpcDefinitionOption {
                 }
             }
         }
+    }
+
+    @Override
+    public NpcOptionType<? extends NpcDefinitionOption> getType() {
+        return NpcOptionTypes.ABILITY_TRAINING.get();
     }
 }

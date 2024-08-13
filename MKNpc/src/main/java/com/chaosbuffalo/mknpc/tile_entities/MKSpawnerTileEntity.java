@@ -60,6 +60,7 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
     private UUID structureId;
     private boolean needsUploadToWorld;
     private boolean placedByStructure;
+    private boolean needsPopulate = false;
     private final Map<ResourceLocation, UUID> notableIds = new HashMap<>();
 
 
@@ -145,16 +146,24 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
         return spawnList;
     }
 
+    protected void flagNeedsPopulate()
+    {
+        needsPopulate = true;
+    }
+
     public void setSpawnList(SpawnList list) {
         spawnList.copyList(list);
-        populateRandomSpawns();
+        flagNeedsPopulate();
         ticksSinceDeath = 0;
     }
 
     public void populateRandomSpawns() {
         randomSpawns.clear();
-        for (SpawnOption option : spawnList.getOptions()) {
-            randomSpawns.add(option.getWeight(), option.getDefinition());
+        if (getLevel().getServer() != null) {
+            for (SpawnOption option : spawnList.getOptions()) {
+                randomSpawns.add(option.getWeight(), option.getDefinition(getLevel().getServer()));
+            }
+            needsPopulate = false;
         }
     }
 
@@ -222,7 +231,7 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
         super.load(compound);
         if (compound.contains("spawnList")) {
             spawnList.deserializeNBT(compound.getCompound("spawnList"));
-            populateRandomSpawns();
+            flagNeedsPopulate();
         }
         if (compound.contains("moveType")) {
             setMoveType(MKEntity.NonCombatMoveType.values()[compound.getInt("moveType")]);
@@ -362,6 +371,9 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
 
 
     public void tick(Level level) {
+        if (needsPopulate) {
+            populateRandomSpawns();
+        }
         if (level != null && randomSpawns.size() > 0) {
             if (needsUploadToWorld) {
                 MinecraftServer server = level.getServer();

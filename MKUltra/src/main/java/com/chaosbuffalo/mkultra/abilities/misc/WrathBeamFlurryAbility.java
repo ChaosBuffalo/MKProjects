@@ -25,7 +25,7 @@ public class WrathBeamFlurryAbility extends PositionFlurryAbility {
         setManaCost(10);
         addSkillAttribute(MKAttributes.EVOCATION);
         setUseCondition(new MeleeUseCondition(this));
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
 
     @Override

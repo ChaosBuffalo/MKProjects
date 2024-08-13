@@ -1,0 +1,127 @@
+{
+  "entityType": "mkultra:zombified_piglin",
+  "name": "mkultra:trooper_executioner",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "value": [
+        {
+          "abilityId": "mkultra:furious_brooding",
+          "chance": 1.0,
+          "priority": 3
+        },
+        {
+          "abilityId": "mkultra:whirlwind_blades",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:yank",
+          "chance": 1.0,
+          "priority": 2
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 180.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 180.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 2.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "value": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:battleaxe_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "value": 20
+    },
+    "mknpc:extra_loot": {
+      "type": "mknpc:extra_loot",
+      "dropChances": 2,
+      "lootOptions": [
+        {
+          "lootSlotName": "mkweapons:main_hand",
+          "lootSlotTier": "mkultra:trooper_executioner"
+        },
+        {
+          "lootSlotName": "mkweapons:rings",
+          "lootSlotTier": "mkultra:trooper_executioner",
+          "weight": 3.0
+        }
+      ],
+      "noLootChance": 0.2,
+      "noLootIncrease": 0.25
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkultra:imperial_dead"
+    },
+    "mknpc:lunge_speed": {
+      "type": "mknpc:lunge_speed",
+      "value": 0.75
+    },
+    "mknpc:mk_combo": {
+      "type": "mknpc:mk_combo",
+      "count": 3
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 1.0
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "value": "Trooper Executioner"
+    },
+    "mknpc:notable": {
+      "type": "mknpc:notable",
+      "value": true
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "destroyed_skeletal_trooper"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "minor_skills": [
+        "mkcore:hand_to_hand",
+        "mkcore:one_hand_blunt",
+        "mkcore:one_hand_pierce",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:two_hand_slash"
+      ],
+      "remedial_skills": [
+        "mkcore:arete",
+        "mkcore:pankration",
+        "mkcore:pneuma"
+      ]
+    }
+  }
+}

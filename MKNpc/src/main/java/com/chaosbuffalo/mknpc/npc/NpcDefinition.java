@@ -7,8 +7,11 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.options.*;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -27,23 +30,41 @@ import java.util.*;
 
 public class NpcDefinition {
     private static final UUID HEALTH_SCALING_UUID = UUID.fromString("3508a0ad-a2d5-40f2-8ce7-110401cc1a2c");
+    public static final Codec<NpcDefinition> CODEC = RecordCodecBuilder.<NpcDefinition>mapCodec(builder -> builder.group(
+            ResourceLocation.CODEC.fieldOf("name").forGetter(NpcDefinition::getDefinitionName),
+            ResourceLocation.CODEC.optionalFieldOf("entityType").forGetter(i -> Optional.ofNullable(i.getEntityType())),
+            ResourceLocation.CODEC.optionalFieldOf("parent").forGetter(i -> Optional.ofNullable(i.getParentName())),
+            Codec.unboundedMap(ResourceLocation.CODEC, NpcDefinitionOption.CODEC2).fieldOf("options").forGetter(i -> i.options)
+    ).apply(builder, NpcDefinition::new)).codec();
 
     private final ResourceLocation definitionName;
+    @Nullable
     private final ResourceLocation parentName;
+    @Nullable
     private ResourceLocation entityType;
     private NpcDefinition parent;
     private final Map<ResourceLocation, NpcDefinitionOption> options;
 
-
-    public NpcDefinition(ResourceLocation definitionName, ResourceLocation entityType, ResourceLocation parentName) {
-        this.definitionName = definitionName;
-        this.entityType = entityType;
-        this.parentName = parentName;
-        this.options = new HashMap<>();
+    public NpcDefinition(ResourceLocation definitionName, Optional<ResourceLocation> parentName) {
+        this(definitionName, Optional.empty(), parentName,  new HashMap<>());
     }
 
     public NpcDefinition(ResourceLocation definitionName, ResourceLocation entityType) {
-        this(definitionName, entityType, null);
+        this(definitionName, Optional.of(entityType), Optional.empty(), new HashMap<>());
+    }
+
+    public NpcDefinition(ResourceLocation definitionName, ResourceLocation typeName, ResourceLocation parentName) {
+        this(definitionName, Optional.ofNullable(typeName), Optional.ofNullable(parentName),  new HashMap<>());
+    }
+
+    public NpcDefinition(ResourceLocation definitionName, Optional<ResourceLocation> entityType, Optional<ResourceLocation> parentName, Map<ResourceLocation, NpcDefinitionOption> options) {
+        this.definitionName = definitionName;
+        this.entityType = entityType.orElse(null);
+        this.parentName = parentName.orElse(null);
+        this.options = new HashMap<>(options);
+        if (parentName.isEmpty() && entityType.isEmpty()) {
+            MKNpc.LOGGER.error("Creating definition {} with empty parent name and empty entity type.", definitionName);
+        }
     }
 
     public ResourceLocation getDefinitionName() {
@@ -66,10 +87,10 @@ public class NpcDefinition {
         return parent;
     }
 
-    public boolean resolveParents() {
+    public boolean resolveParents(Registry<NpcDefinition> npcRegistry) {
         if (hasParentName()) {
-            parent = NpcDefinitionManager.getDefinition(parentName);
-            return parent != null && parent.resolveParents();
+            parent = npcRegistry.get(parentName);
+            return parent != null && parent.resolveParents(npcRegistry);
         }
         return true;
     }

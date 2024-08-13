@@ -45,7 +45,7 @@ public class DrownAbility extends ProjectileAbility {
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND);
         addAttributes(baseDuration, scaleDuration, tick_particles);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
         projectileSpeed.setDefaultValue(0.9f);

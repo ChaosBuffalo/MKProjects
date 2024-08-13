@@ -3,8 +3,10 @@ package com.chaosbuffalo.mkcore.client.rendering.model;
 import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mkcore.client.rendering.animations.AdditionalBipedAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedCastAnimation;
+import com.chaosbuffalo.mkcore.client.rendering.animations.BipedStunAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.PlayerCompleteCastAnimation;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.PlayerModel;
@@ -15,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
     private final BipedCastAnimation<Player> castAnimation = new BipedCastAnimation<>(this);
     private final PlayerCompleteCastAnimation completeCastAnimation = new PlayerCompleteCastAnimation(this);
+    private final BipedStunAnimation<Player> stunAnimation = new BipedStunAnimation<>(this);
 
     public MKPlayerModel(ModelPart p_170821_, boolean p_170822_) {
         super(p_170821_, p_170822_);
@@ -23,7 +26,9 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
     @Override
     public void setupAnim(AbstractClientPlayer entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         super.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
+
         entityIn.getCapability(CoreCapabilities.PLAYER_CAPABILITY).ifPresent(mkEntityData -> {
+            this.head.zRot = 0.0f;
             AdditionalBipedAnimation<Player> animation = getAdditionalAnimation(mkEntityData);
             if (animation != null) {
                 animation.apply(entityIn);
@@ -43,6 +48,9 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
     }
 
     public AdditionalBipedAnimation<Player> getAdditionalAnimation(MKPlayerData playerData) {
+        if (playerData.getEffects().isEffectActive(CoreEffects.STUN.get())) {
+            return stunAnimation;
+        }
         switch (playerData.getAnimationModule().getPlayerVisualCastState()) {
             case CASTING:
                 return castAnimation;

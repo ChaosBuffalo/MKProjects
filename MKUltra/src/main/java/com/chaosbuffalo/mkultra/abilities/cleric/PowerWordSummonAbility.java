@@ -38,7 +38,7 @@ public class PowerWordSummonAbility extends MKAbility {
         setManaCost(6);
         addAttributes(base, scale, cast_particles);
         addSkillAttribute(MKAttributes.CONJURATION);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
 
     @Override

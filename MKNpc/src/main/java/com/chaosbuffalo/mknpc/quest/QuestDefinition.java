@@ -17,6 +17,7 @@ import com.mojang.serialization.DynamicOps;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -222,8 +223,8 @@ public class QuestDefinition {
         return questChain.stream().allMatch(x -> x.isStructureRelevant(entry));
     }
 
-    public QuestChainInstance generate(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
-        QuestChainInstance instance = new QuestChainInstance(this, questStructures);
+    public QuestChainInstance generate(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {
+        QuestChainInstance instance = new QuestChainInstance(this, questStructures, level);
         return instance;
     }
 

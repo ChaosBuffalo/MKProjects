@@ -43,9 +43,10 @@ public class HolyWordAbility extends ProjectileAbility {
     protected final IntAttribute scaleStunDuration = new IntAttribute("scaleStunDuration", 1);
     protected final FloatAttribute stunModiferScaling = new FloatAttribute("stunModifier", 1.0f);
     protected final IntAttribute stacks = new IntAttribute("stacks", 5);
+
     public HolyWordAbility() {
         super(MKAttributes.EVOCATION);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         addAttributes(baseDuration, scaleDuration, baseStunDuration, scaleStunDuration, stunModiferScaling, stacks);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
@@ -54,6 +55,7 @@ public class HolyWordAbility extends ProjectileAbility {
         scaleDamage.setDefaultValue(3.0f);
         setCastTime(GameConstants.TICKS_PER_SECOND + GameConstants.TICKS_PER_SECOND / 4);
         setCooldownTicks(GameConstants.TICKS_PER_SECOND * 5);
+        projectileInaccuracy.setDefaultValue(0.0f);
     }
 
     @Override

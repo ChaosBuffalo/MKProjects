@@ -40,7 +40,7 @@ public class InspireAbility extends MKAbility {
         setCastTime(GameConstants.TICKS_PER_SECOND * 2);
         addAttributes(base, scale, cast_particles);
         addSkillAttribute(MKAttributes.ALTERATON);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
 
     @Override

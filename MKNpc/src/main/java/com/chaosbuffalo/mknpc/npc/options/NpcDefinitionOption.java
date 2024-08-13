@@ -2,12 +2,16 @@ package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 
 public abstract class NpcDefinitionOption {
     public static final Codec<NpcDefinitionOption> CODEC = NpcDefinitionManager.NPC_OPTION_CODEC;
+    public static final Codec<NpcDefinitionOption> CODEC2 = ExtraCodecs.lazyInitializedCodec(() ->
+            NpcRegistries.NPC_OPTION_TYPES.getCodec().dispatch(NpcDefinitionOption::getType, NpcOptionType::codec));
 
     private final ResourceLocation name;
 
@@ -37,5 +41,5 @@ public abstract class NpcDefinitionOption {
     public boolean canBeBossStage() {
         return false;
     }
-
+    public abstract NpcOptionType<? extends NpcDefinitionOption> getType();
 }

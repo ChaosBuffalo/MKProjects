@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mknpc.command;
 
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -31,7 +33,7 @@ public class MKSummonCommand {
 
     static CompletableFuture<Suggestions> suggestNpcDefinitions(final CommandContext<CommandSourceStack> context,
                                                                 final SuggestionsBuilder builder) {
-        return SharedSuggestionProvider.suggest(NpcDefinitionManager.DEFINITIONS.keySet().stream()
+        return SharedSuggestionProvider.suggest(context.getSource().registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).keySet().stream()
                 .map(ResourceLocation::toString), builder);
     }
 
@@ -39,7 +41,7 @@ public class MKSummonCommand {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         ResourceLocation definition_id = ctx.getArgument("npc_definition", ResourceLocation.class);
         double difficulty_value = DoubleArgumentType.getDouble(ctx, "difficulty_value");
-        NpcDefinition definition = NpcDefinitionManager.getDefinition(definition_id);
+        NpcDefinition definition = ctx.getSource().registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(definition_id);
         if (definition != null) {
             Entity entity = definition.createEntity(player.getLevel(), player.position(), difficulty_value);
             if (entity != null) {

@@ -2,7 +2,9 @@ package com.chaosbuffalo.mkcore.utils.location;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public class SingleLocationProvider extends LocationProvider {
@@ -26,9 +28,14 @@ public class SingleLocationProvider extends LocationProvider {
     }
 
     @Override
+    public Component describe() {
+        return Component.translatable("location_provider.single.desc");
+    }
+
+    @Override
     public WorldLocationResult getPosition(Entity entity, int index) {
         Vec3 startPos = entity.position().add(new Vec3(0, entity.getEyeHeight() * percentEyeHeight, 0));
-        startPos = startPos.add(Vec3.directionFromRotation(entity.getRotationVector()).multiply(offset));
+        startPos = startPos.add(Vec3.directionFromRotation(new Vec2(0.0f, entity.getYRot())).multiply(offset));
         return new WorldLocationResult(startPos, entity.getRotationVector());
     }
 }

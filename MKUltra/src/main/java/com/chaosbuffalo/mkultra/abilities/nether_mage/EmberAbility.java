@@ -48,7 +48,7 @@ public class EmberAbility extends MKAbility {
         addAttributes(base, scale, modifierScaling, baseDuration, scaleDuration, baseDot, scaleDot, dotModifierScaling,
                 cast_particles, burn_cast_particles);
         addSkillAttribute(MKAttributes.EVOCATION);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
     }
 
     @Override

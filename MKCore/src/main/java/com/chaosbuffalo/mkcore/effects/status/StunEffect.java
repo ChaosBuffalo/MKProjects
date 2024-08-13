@@ -22,6 +22,10 @@ public class StunEffect extends MKEffect {
         addAttribute(Attributes.MOVEMENT_SPEED, MODIFIER_ID, -1, AttributeModifier.Operation.MULTIPLY_TOTAL);
     }
 
+    public static MKEffectBuilder<?> from (UUID sourceId) {
+        return CoreEffects.STUN.get().builder(sourceId);
+    }
+
     public static MKEffectBuilder<?> from(LivingEntity source) {
         return CoreEffects.STUN.get().builder(source);
     }

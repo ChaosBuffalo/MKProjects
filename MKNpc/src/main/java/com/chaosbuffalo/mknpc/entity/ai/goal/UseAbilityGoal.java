@@ -79,8 +79,8 @@ public class UseAbilityGoal extends Goal {
     @Override
     public void start() {
         if (!target.is(entity)) {
-            entity.lookAt(target, 360.0f, 360.0f);
-            entity.getLookControl().setLookAt(target, 50.0f, 50.0f);
+            entity.lookAt(target, 360.0f, 90.0f);
+            entity.getLookControl().setLookAt(target, 360.0f, 90.0f);
         }
         AbilityContext context = new BrainAbilityContext(entity.getEntityDataCap(), currentAbility);
 //        MKNpc.LOGGER.debug("ai {} casting {} on {}", entity, currentAbility.getAbilityId(), target);
@@ -90,8 +90,8 @@ public class UseAbilityGoal extends Goal {
     @Override
     public void tick() {
         if (!target.is(entity)) {
-            entity.lookAt(target, 50.0f, 50.0f);
-            entity.getLookControl().setLookAt(target, 50.0f, 50.0f);
+            entity.lookAt(target, 90.0f, 50.0f);
+            entity.getLookControl().setLookAt(target, 90.0f, 50.0f);
             if (entity.getSensing().hasLineOfSight(target)) {
                 ticksSinceSeenTarget = 0;
             } else {

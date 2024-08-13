@@ -1,0 +1,166 @@
+{
+  "entityType": "mkultra:orc",
+  "name": "mkultra:green_lady_guard_2",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "value": [
+        {
+          "abilityId": "mkultra:skin_like_wood",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:natures_remedy",
+          "chance": 1.0,
+          "priority": 2
+        },
+        {
+          "abilityId": "mkultra:spirit_bomb",
+          "chance": 1.0,
+          "priority": 4
+        },
+        {
+          "abilityId": "mkultra:explosive_growth",
+          "chance": 1.0,
+          "priority": 3
+        },
+        {
+          "abilityId": "mkultra:cleansing_seed",
+          "chance": 1.0,
+          "priority": 5
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 150.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 150.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 4.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "value": {
+        "chest": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "Count": 1,
+              "id": "mkultra:green_knight_chestplate",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ],
+        "feet": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "Count": 1,
+              "id": "mkultra:green_knight_boots",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ],
+        "head": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "Count": 1,
+              "id": "mkultra:green_knight_helmet",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ],
+        "legs": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "Count": 1,
+              "id": "mkultra:green_knight_leggings",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ],
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:dagger_stone",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkultra:green_knights"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 1.1
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "value": "Green Guardian"
+    },
+    "mknpc:notable": {
+      "type": "mknpc:notable",
+      "value": true
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "green_lady_guard_2"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "major_skills": [
+        "mkcore:one_hand_blunt",
+        "mkcore:one_hand_pierce",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:two_hand_slash"
+      ],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:hand_to_hand",
+        "mkcore:pankration",
+        "mkcore:restoration"
+      ],
+      "remedial_skills": [
+        "mkcore:arete",
+        "mkcore:evocation",
+        "mkcore:pneuma"
+      ]
+    }
+  }
+}

@@ -42,7 +42,7 @@ public class SpiritBombAbility extends ProjectileAbility {
         baseDamage.setDefaultValue(4.0f);
         scaleDamage.setDefaultValue(4.0f);
         modifierScaling.setDefaultValue(1.25f);
-        casting_particles.setDefaultValue(CASTING_PARTICLES);
+        castingParticles.setDefaultValue(CASTING_PARTICLES);
         trailParticles.setDefaultValue(TRAIL_PARTICLES);
         detonateParticles.setDefaultValue(DETONATE_PARTICLES);
     }

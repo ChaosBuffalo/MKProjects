@@ -13,6 +13,9 @@ public class LocationProviderTypes {
             "single_location", () -> () -> SingleLocationProvider.CODEC);
     public static final Supplier<LocationProviderType<PerpendicularLineLocationProvider>> PERPENDICULAR_LINE_LOCATION = REGISTRY.register(
             "perpendicular_line_location", () -> () -> PerpendicularLineLocationProvider.CODEC);
+    public static final Supplier<LocationProviderType<CircularLocationProvider>> CIRCULAR_LOCATION = REGISTRY.register(
+            "circular_location", () -> () -> CircularLocationProvider.CODEC);
+
 
     public static void register(IEventBus modBus) {
         REGISTRY.register(modBus);

@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.entity.MKSkeletonEntity;
 import com.chaosbuffalo.mknpc.entity.MKZombifiedPiglinEntity;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.entities.humans.HumanEntity;
+import com.chaosbuffalo.mkultra.entities.humans.HumanGhostEntity;
 import com.chaosbuffalo.mkultra.entities.orcs.OrcEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -55,6 +56,12 @@ public class MKUEntities {
                     .sized(EntityType.ZOMBIE.getWidth(), EntityType.ZOMBIE.getHeight())
                     .build(new ResourceLocation(MKUltra.MODID, HUMAN_NAME).toString()));
 
+    public static final String HUMAN_GHOST_NAME = "human_ghost";
+    public static RegistryObject<EntityType<HumanGhostEntity>> HUMAN_GHOST_TYPE = REGISTRY.register(HUMAN_GHOST_NAME,
+            () -> EntityType.Builder.of(HumanGhostEntity::new, MobCategory.MONSTER)
+                    .sized(EntityType.ZOMBIE.getWidth(), EntityType.ZOMBIE.getHeight())
+                    .build(new ResourceLocation(MKUltra.MODID, HUMAN_GHOST_NAME).toString()));
+
 
 
     public static void register(IEventBus bus) {
@@ -70,5 +77,6 @@ public class MKUEntities {
         event.put(ZOMBIFIED_PIGLIN_TYPE.get(), MKZombifiedPiglinEntity.registerAttributes(2.0, 0.2).build());
         event.put(HUMAN_TYPE.get(), HumanEntity.registerAttributes(2.0, 0.35).build());
         event.put(GOLEM_TYPE.get(), MKGolemEntity.registerAttributes(4.0, 0.3).build());
+        event.put(HUMAN_GHOST_TYPE.get(), HumanEntity.registerAttributes(2.0, 0.3).build());
     }
 }

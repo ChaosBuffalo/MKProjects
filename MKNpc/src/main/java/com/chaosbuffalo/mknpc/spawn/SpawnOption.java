@@ -3,8 +3,10 @@ package com.chaosbuffalo.mknpc.spawn;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionClient;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public class SpawnOption implements INBTSerializable<CompoundTag> {
@@ -32,8 +34,8 @@ public class SpawnOption implements INBTSerializable<CompoundTag> {
         this.weight = weight;
     }
 
-    public NpcDefinition getDefinition() {
-        return NpcDefinitionManager.getDefinition(definitionName);
+    public NpcDefinition getDefinition(MinecraftServer server) {
+        return server.registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(definitionName);
     }
 
     public NpcDefinitionClient getDefinitionClient() {
@@ -43,7 +45,7 @@ public class SpawnOption implements INBTSerializable<CompoundTag> {
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-        tag.putString("definition", getDefinition().getDefinitionName().toString());
+        tag.putString("definition", definitionName.toString());
         tag.putDouble("weight", getWeight());
         return tag;
     }

@@ -173,7 +173,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
                     questStructures.put(needed.getKey(), finals);
                 }
 
-                QuestChainInstance instance = definition.generate(questStructures);
+                QuestChainInstance instance = definition.generate(questStructures, getWorld());
                 instance.generateDialogue(questStructures);
                 MKNpc.LOGGER.debug("Built quest {} for {}", instance.getQuestId(), definition.getName());
                 quests.put(instance.getQuestId(), instance);
@@ -332,7 +332,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         }
         ListTag questsNbt = nbt.getList("quests", Tag.TAG_COMPOUND);
         for (Tag questNbt : questsNbt) {
-            QuestChainInstance inst = new QuestChainInstance((CompoundTag) questNbt);
+            QuestChainInstance inst = new QuestChainInstance((CompoundTag) questNbt, getWorld());
             quests.put(inst.getQuestId(), inst);
         }
     }

@@ -1,0 +1,105 @@
+{
+  "entityType": "mkultra:orc",
+  "name": "mkultra:green_smith",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "value": [
+        {
+          "abilityId": "mkultra:skin_like_wood",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:natures_remedy",
+          "chance": 1.0,
+          "priority": 2
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "value": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 400.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 400.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 4.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "value": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "Count": 1,
+              "id": "mkweapons:warhammer_iron",
+              "tag": {
+                "Damage": 0
+              }
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "value": "mkultra:green_knights"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "value": 1.5
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "value": "Green Smith"
+    },
+    "mknpc:notable": {
+      "type": "mknpc:notable",
+      "value": true
+    },
+    "mknpc:offer_quests": {
+      "type": "mknpc:offer_quests",
+      "value": [
+        "mkultra:trooper_armor"
+      ]
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "value": "green_smith"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "major_skills": [
+        "mkcore:one_hand_blunt",
+        "mkcore:one_hand_pierce",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:two_hand_slash"
+      ],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:hand_to_hand",
+        "mkcore:pankration",
+        "mkcore:restoration"
+      ],
+      "remedial_skills": [
+        "mkcore:arete",
+        "mkcore:evocation",
+        "mkcore:pneuma"
+      ]
+    }
+  }
+}

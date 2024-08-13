@@ -12,6 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> {
 
     public abstract QuestObjectiveType<? extends QuestObjective<?>> getType();
 
-    public abstract List<Component> getDescription();
+    public abstract List<Component> getDescription(IWorldNpcData worldData);
 
     public String getObjectiveName() {
         return objectiveName;
@@ -51,7 +52,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> {
         return Optional.ofNullable(location);
     }
 
-    public abstract T generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures);
+    public abstract T generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level);
 
     public abstract T instanceDataFactory();
 

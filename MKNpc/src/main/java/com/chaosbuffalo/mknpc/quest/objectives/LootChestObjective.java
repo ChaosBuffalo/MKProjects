@@ -18,6 +18,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,7 @@ public class LootChestObjective extends QuestObjective<UUIDInstanceData> impleme
     }
 
     @Override
-    public List<Component> getDescription() {
+    public List<Component> getDescription(IWorldNpcData worldData) {
         return description;
     }
 
@@ -61,7 +62,7 @@ public class LootChestObjective extends QuestObjective<UUIDInstanceData> impleme
     }
 
     @Override
-    public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
+    public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {
         MKStructureEntry entry = questStructures.get(location.getStructureId()).get(location.getIndex());
         Optional<NotableChestEntry> chest = entry.getFirstChestWithTag(chestTag);
         return chest.map(x -> new UUIDInstanceData(x.getChestId())).orElse(new UUIDInstanceData());
@@ -75,7 +76,7 @@ public class LootChestObjective extends QuestObjective<UUIDInstanceData> impleme
     @Override
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
-        PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription());
+        PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription(worldData));
         NotableChestEntry chest = worldData.getNotableChest(objData.getUUID());
         if (chest != null) {
             newObj.putBlockPos("chestPos", chest.getLocation());

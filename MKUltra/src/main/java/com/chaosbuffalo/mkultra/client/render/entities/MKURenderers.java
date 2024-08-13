@@ -43,6 +43,7 @@ public class MKURenderers {
         evt.registerEntityRenderer(MKUEntities.ZOMBIFIED_PIGLIN_TYPE.get(),
                 (context) -> new ZombifiedPiglinGroupRenderer(context, MKUPiglins.ZOMBIE_PIGLIN_STYLES, MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId()));
         evt.registerEntityRenderer(MKUEntities.GOLEM_TYPE.get(), (context) -> new GolemGroupRenderer(context, MKUEntities.GOLEM_TYPE.getId()));
+        evt.registerEntityRenderer(MKUEntities.HUMAN_GHOST_TYPE.get(), (context) -> new HumanGroupRenderer(context, MKUEntities.HUMAN_GHOST_TYPE.getId()));
     }
 
     @SubscribeEvent
@@ -64,6 +65,10 @@ public class MKURenderers {
         for (ModelStyle style : humanStyles) {
             style.registerModelLayers(event, MKBipedModel::createBodyLayer,
                     MKUEntities.HUMAN_TYPE.getId(), 64, 32,
+                    new ModelArgs(CubeDeformation.NONE, false, 0.0f,
+                            LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
+            style.registerModelLayers(event, MKBipedModel::createBodyLayer,
+                    MKUEntities.HUMAN_GHOST_TYPE.getId(), 64, 32,
                     new ModelArgs(CubeDeformation.NONE, false, 0.0f,
                             LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
         }

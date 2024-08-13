@@ -12,8 +12,7 @@ import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
 import com.chaosbuffalo.mknpc.init.*;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
-import com.chaosbuffalo.mknpc.npc.IMKNpcExtension;
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.npc.*;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.QuestRegistries;
 import com.chaosbuffalo.mknpc.quest.dialogue.NpcDialogueUtils;
@@ -72,8 +71,12 @@ public class MKNpc {
         NpcDialogueEffectTypes.REGISTRY.register(modBus);
         NpcDialogueConditionTypes.REGISTRY.register(modBus);
         QuestRegistries.register(modBus);
+        NpcRegistries.register(modBus);
+        NpcOptionTypes.register(modBus);
+        NpcOptionEntryTypes.register(modBus);
         NpcDefinitionManager.setupDeserializers();
         StructureEventManager.setupDeserializers();
+
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {

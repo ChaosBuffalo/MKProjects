@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.npc.options;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -26,5 +27,10 @@ public class FactionOption extends NpcDefinitionOption {
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
         entity.getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
                 .ifPresent(cap -> cap.setFactionName(factionId));
+    }
+
+    @Override
+    public NpcOptionType<? extends NpcDefinitionOption> getType() {
+        return NpcOptionTypes.FACTION.get();
     }
 }

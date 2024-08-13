@@ -2,8 +2,9 @@ package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
-import com.chaosbuffalo.mknpc.npc.option_entries.QuestOptionsEntry;
+import com.chaosbuffalo.mknpc.npc.option_entries.QuestOptionEntry;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
@@ -29,6 +30,11 @@ public class QuestOfferingOption extends WorldPermanentOption {
 
     @Override
     protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
-        return new QuestOptionsEntry(questOfferings);
+        return new QuestOptionEntry(questOfferings);
+    }
+
+    @Override
+    public NpcOptionType<? extends NpcDefinitionOption> getType() {
+        return NpcOptionTypes.QUEST_OFFERING.get();
     }
 }

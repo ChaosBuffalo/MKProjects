@@ -18,6 +18,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.*;
@@ -30,20 +31,23 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
     private final Map<String, QuestData> questData = new HashMap<>();
     private final Map<UUID, DialogueTree> dialogueTrees = new HashMap<>();
     private UUID questSourceNpc;
+    private final Level level;
 
-    public QuestChainInstance(QuestDefinition definition, Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
+    public QuestChainInstance(QuestDefinition definition, Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {
         questId = UUID.randomUUID();
         this.definition = definition;
+        this.level = level;
         for (Quest quest : definition.getQuestChain()) {
             QuestData qData = new QuestData(quest);
             for (QuestObjective<?> objective : quest.getObjectives()) {
-                qData.putObjective(objective.getObjectiveName(), objective.generateInstanceData(questStructures));
+                qData.putObjective(objective.getObjectiveName(), objective.generateInstanceData(questStructures, level));
             }
             questData.put(quest.getQuestName(), qData);
         }
     }
 
-    public QuestChainInstance(CompoundTag nbt) {
+    public QuestChainInstance(CompoundTag nbt, Level level) {
+        this.level = level;
         deserializeNBT(nbt);
     }
 
@@ -109,6 +113,10 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         } else {
             return Optional.empty();
         }
+    }
+
+    public Level getLevel() {
+        return level;
     }
 
     public QuestData getQuestData(Quest quest) {

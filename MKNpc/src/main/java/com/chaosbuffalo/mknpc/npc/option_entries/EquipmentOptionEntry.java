@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.npc.option_entries;
 import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
+import com.chaosbuffalo.mknpc.npc.NpcOptionEntryTypes;
 import com.chaosbuffalo.mknpc.npc.options.EquipmentOption;
 import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
@@ -44,6 +45,11 @@ public class EquipmentOptionEntry implements INpcOptionEntry {
         if (entity instanceof LivingEntity livingEntity) {
             applyItemChoices(livingEntity);
         }
+    }
+
+    @Override
+    public NpcOptionEntryType<? extends INpcOptionEntry> getType() {
+        return NpcOptionEntryTypes.EQUIPMENT.get();
     }
 
     public void applyItemChoices(LivingEntity entity) {
