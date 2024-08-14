@@ -1,18 +1,20 @@
 package com.chaosbuffalo.targeting_api;
 
 
-import net.minecraftforge.fml.common.Mod;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.mojang.logging.LogUtils;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import org.slf4j.Logger;
 
 
 @Mod(TargetingAPI.MODID)
 public class TargetingAPI {
 
-    public static final Logger LOGGER = LogManager.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
     public static final String MODID = "targeting_api";
 
-    public TargetingAPI() {
+    public TargetingAPI(IEventBus modEventBus, ModContainer modContainer) {
         // do a line change in source to test ci
     }
 }

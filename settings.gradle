@@ -1,34 +1,40 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        maven { url = 'https://maven.minecraftforge.net/' }
         maven {
             name 'ParchmentMC'
             url 'https://maven.parchmentmc.org'
+        }
+        maven {
+            name = 'NeoForge'
+            url = uri("https://maven.neoforged.net/releases")
         }
     }
     resolutionStrategy {
         eachPlugin {
             switch (requested.id.toString()) {
-                case "net.minecraftforge.gradle": {
-                    useModule("${requested.id}:ForgeGradle:${requested.version}")
+                case "net.neoforged.moddev-gradle": {
+                    useModule("${requested.id}:moddev-gradle:${requested.version}")
                     break
                 }
-                case "org.spongepowered.mixin": {
-                    useModule("org.spongepowered:mixingradle:${requested.version}")
-                    break;
-                }
+//                case "org.spongepowered.mixin": {
+//                    useModule("org.spongepowered:mixingradle:${requested.version}")
+//                    break;
+//                }
             }
         }
     }
+}
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
 }
 
 rootProject.name = "mk-platform-${minecraft_version}"
 
 include 'TargetingAPI'
 project(":TargetingAPI").buildFileName = "mono.gradle"
-include 'MKWidgets'
-project(":MKWidgets").buildFileName = "mono.gradle"
+//include 'MKWidgets'
+//project(":MKWidgets").buildFileName = "mono.gradle"
 //include 'MKCore'
 //project(":MKCore").buildFileName = "mono.gradle"
 //include 'MKChat'

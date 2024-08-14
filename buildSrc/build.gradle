@@ -5,8 +5,8 @@ plugins {
 repositories {
     gradlePluginPortal() // so that external plugins can be resolved in dependencies section
     maven {
-        name 'forge'
-        url 'https://maven.minecraftforge.net/'
+        name = 'NeoForge'
+        url = uri("https://maven.neoforged.net/releases")
     }
     maven {
         name 'sponge'
@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '[6.0.24,6.2)', changing: true
-    implementation group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
-    implementation group: 'org.parchmentmc.librarian.forgegradle', name: 'org.parchmentmc.librarian.forgegradle.gradle.plugin', version: '1.+'
+    implementation group: 'net.neoforged', name: 'moddev-gradle', version: '1.0.17', changing: true
+//    implementation group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
+//    implementation group: 'org.parchmentmc.librarian.forgegradle', name: 'org.parchmentmc.librarian.forgegradle.gradle.plugin', version: '1.+'
 }

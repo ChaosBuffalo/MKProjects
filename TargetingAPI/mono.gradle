@@ -5,7 +5,7 @@ plugins {
 
 
 version = "${minecraft_version}-${targeting_api_version}"
-project.ext.base_version = version
+project.ext.mod_version = targeting_api_version
 project.ext.dependentProjects = []
 
 apply from: '../common.gradle'
