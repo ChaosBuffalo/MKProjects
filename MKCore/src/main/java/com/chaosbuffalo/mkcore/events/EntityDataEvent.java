@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.events;
 
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import net.minecraftforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
 
 public class EntityDataEvent extends LivingEvent {
     private final IMKEntityData entityData;

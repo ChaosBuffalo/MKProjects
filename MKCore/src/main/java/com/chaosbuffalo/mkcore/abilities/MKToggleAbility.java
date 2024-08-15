@@ -7,11 +7,8 @@ import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
@@ -96,13 +93,11 @@ public abstract class MKToggleAbility extends MKAbility {
 
     public class ToggleRenderer extends AbilityRenderer {
         @Override
-        public void drawAbilityBarEffect(MKPlayerData playerData, PoseStack matrixStack, Minecraft mc, int slotX, int slotY) {
+        public void drawAbilityBarEffect(MKPlayerData playerData, GuiGraphics graphics, Minecraft mc, int slotX, int slotY) {
             if (isEffectActive(playerData)) {
                 int iconSize = MKOverlay.ABILITY_ICON_SIZE + 2;
-                RenderSystem.setShader(GameRenderer::getPositionTexShader);
-                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-                RenderSystem.setShaderTexture(0, TOGGLE_EFFECT);
-                GuiComponent.blit(matrixStack, slotX - 1, slotY - 1, 0, 0, iconSize, iconSize, iconSize, iconSize);
+//                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+                graphics.blit(TOGGLE_EFFECT, slotX - 1, slotY - 1, 0, 0, iconSize, iconSize, iconSize, iconSize);
             }
         }
     }

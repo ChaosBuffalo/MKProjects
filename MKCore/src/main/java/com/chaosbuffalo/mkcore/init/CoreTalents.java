@@ -18,7 +18,7 @@ import java.util.UUID;
 public class CoreTalents {
 
     public static final DeferredRegister<MKTalent> TALENTS =
-            DeferredRegister.create(MKCoreRegistry.TALENT_REGISTRY_NAME, MKCore.MOD_ID);
+            DeferredRegister.create(MKCoreRegistry.TALENT_REGISTRY_KEY, MKCore.MOD_ID);
 
     public static final RegistryObject<AttributeTalent> MAX_HEALTH_TALENT = TALENTS.register("max_health",
             () -> new AttributeTalent(

@@ -8,25 +8,25 @@ import com.chaosbuffalo.mkcore.core.entitlements.AbilityPoolEntitlement;
 import com.chaosbuffalo.mkcore.core.entitlements.AbilitySlotEntitlement;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraft.core.Holder;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class CoreEntitlements {
 
     public static final DeferredRegister<MKEntitlement> ENTITLEMENTS =
-            DeferredRegister.create(MKCoreRegistry.ENTITLEMENT_REGISTRY_NAME, MKCore.MOD_ID);
+            DeferredRegister.create(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY, MKCore.MOD_ID);
 
-    public static final RegistryObject<AbilitySlotEntitlement> BASIC_ABILITY_SLOT = ENTITLEMENTS.register("ability_slot.basic",
+    public static final Holder<MKEntitlement> BASIC_ABILITY_SLOT = ENTITLEMENTS.register("ability_slot.basic",
             () -> new AbilitySlotEntitlement(AbilityGroupId.Basic));
 
-    public static final RegistryObject<AbilitySlotEntitlement> PASSIVE_ABILITY_SLOT = ENTITLEMENTS.register("ability_slot.passive",
+    public static final Holder<MKEntitlement> PASSIVE_ABILITY_SLOT = ENTITLEMENTS.register("ability_slot.passive",
             () -> new AbilitySlotEntitlement(AbilityGroupId.Passive));
 
-    public static final RegistryObject<AbilitySlotEntitlement> ULTIMATE_ABILITY_SLOT = ENTITLEMENTS.register("ability_slot.ultimate",
+    public static final Holder<MKEntitlement> ULTIMATE_ABILITY_SLOT = ENTITLEMENTS.register("ability_slot.ultimate",
             () -> new AbilitySlotEntitlement(AbilityGroupId.Ultimate));
 
-    public static final RegistryObject<AbilityPoolEntitlement> ABILITY_POOL_SIZE = ENTITLEMENTS.register("ability_pool.count",
+    public static final Holder<MKEntitlement> ABILITY_POOL_SIZE = ENTITLEMENTS.register("ability_pool.count",
             () -> new AbilityPoolEntitlement(GameConstants.MAX_ABILITY_POOL_SIZE - GameConstants.DEFAULT_ABILITY_POOL_SIZE));
 
     public static void register(IEventBus modBus) {

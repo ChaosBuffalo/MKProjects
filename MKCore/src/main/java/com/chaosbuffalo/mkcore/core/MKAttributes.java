@@ -4,262 +4,267 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.attributes.AttributeSyncType;
 import com.chaosbuffalo.mkcore.attributes.MKRangedAttribute;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
 import java.util.function.Consumer;
 
 public class MKAttributes {
 
-    // Players Only Attributes
-    public static final Attribute MAX_MANA = new MKRangedAttribute("attribute.name.mk.max_mana", 0, 0, 1024)
-            .setName(MKCore.makeRL("max_mana"))
-            .setSyncType(AttributeSyncType.Public);
+    public static final DeferredRegister<Attribute> REGISTRY =
+            DeferredRegister.create(Registries.ATTRIBUTE, MKCore.MOD_ID);
 
-    public static final Attribute MANA_REGEN = new MKRangedAttribute("attribute.name.mk.mana_regen", 0, 0, 1024)
-            .setName(MKCore.makeRL("mana_regen"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> MAX_MANA = REGISTRY.register("max_mana", () ->
+            new MKRangedAttribute("attribute.name.mk.max_mana", 0, 0, 1024)
+            .setSyncType(AttributeSyncType.Public));
 
-    public static final Attribute MELEE_CRIT = new MKRangedAttribute("attribute.name.mk.melee_crit_chance", 0.00, 0.0, 1.0)
+    public static final Holder<Attribute> MANA_REGEN = REGISTRY.register("mana_regen", () ->
+            new MKRangedAttribute("attribute.name.mk.mana_regen", 0, 0, 1024)
+            .setSyncType(AttributeSyncType.Private));
+
+    public static final Holder<Attribute> MELEE_CRIT = REGISTRY.register("melee_crit_chance", () ->
+            new MKRangedAttribute("attribute.name.mk.melee_crit_chance", 0.00, 0.0, 1.0)
             .setAdditionIsPercentage(true)
-            .setName(MKCore.makeRL("melee_crit_chance"))
-            .setSyncType(AttributeSyncType.Private);
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute MELEE_CRIT_MULTIPLIER = new MKRangedAttribute("attribute.name.mk.melee_crit_multiplier", 1.0, 0.0, 10.0)
-            .setName(MKCore.makeRL("melee_crit_multiplier"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> MELEE_CRIT_MULTIPLIER = REGISTRY.register("melee_crit_multiplier", () ->
+            new MKRangedAttribute("attribute.name.mk.melee_crit_multiplier", 1.0, 0.0, 10.0)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute SPELL_CRIT = new MKRangedAttribute("attribute.name.mk.spell_crit_chance", 0.1, 0.0, 1.0)
+    public static final Holder<Attribute> SPELL_CRIT = REGISTRY.register("spell_crit_chance", () ->
+            new MKRangedAttribute("attribute.name.mk.spell_crit_chance", 0.1, 0.0, 1.0)
             .setAdditionIsPercentage(true)
-            .setName(MKCore.makeRL("spell_crit_chance"))
-            .setSyncType(AttributeSyncType.Private);
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute SPELL_CRIT_MULTIPLIER = new MKRangedAttribute("attribute.name.mk.spell_crit_multiplier", 1.5, 0.0, 10.0)
-            .setName(MKCore.makeRL("spell_crit_multiplier"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> SPELL_CRIT_MULTIPLIER = REGISTRY.register("spell_crit_multiplier", () ->
+            new MKRangedAttribute("attribute.name.mk.spell_crit_multiplier", 1.5, 0.0, 10.0)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute RANGED_CRIT = new MKRangedAttribute("attribute.name.mk.ranged_crit_chance", 0.00, 0.0, 1.0)
+    public static final Holder<Attribute> RANGED_CRIT = REGISTRY.register("ranged_crit", () ->
+            new MKRangedAttribute("attribute.name.mk.ranged_crit_chance", 0.00, 0.0, 1.0)
             .setAdditionIsPercentage(true)
-            .setName(MKCore.makeRL("ranged_crit_chance"))
-            .setSyncType(AttributeSyncType.Private);
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute RANGED_CRIT_MULTIPLIER = new MKRangedAttribute("attribute.name.mk.ranged_crit_multiplier", 1.0, 0.0, 10.0)
-            .setName(MKCore.makeRL("ranged_crit_multiplier"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> RANGED_CRIT_MULTIPLIER = REGISTRY.register("ranged_crit_multiplier", () ->
+            new MKRangedAttribute("attribute.name.mk.ranged_crit_multiplier", 1.0, 0.0, 10.0)
+            .setSyncType(AttributeSyncType.Private));
 
 
     // Everyone Attributes
-    public static final Attribute RANGED_DAMAGE = new MKRangedAttribute("attribute.name.mk.ranged_damage", 0.0, 0.0, 2048)
-            .setName(MKCore.makeRL("ranged_damage"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> RANGED_DAMAGE = REGISTRY.register("ranged_damage", () ->
+            new MKRangedAttribute("attribute.name.mk.ranged_damage", 0.0, 0.0, 2048)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute RANGED_RESISTANCE = new MKRangedAttribute("attribute.name.mk.ranged_resistance", 0, -1.0, 1.0)
-            .setName(MKCore.makeRL("ranged_resistance"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> RANGED_RESISTANCE = REGISTRY.register("ranaged_resistance", () ->
+            new MKRangedAttribute("attribute.name.mk.ranged_resistance", 0, -1.0, 1.0)
+            .setSyncType(AttributeSyncType.Private));
 
     // This is slightly confusing.
     // 1.9 max means the cooldown will progress at most 10x faster than the normal rate. This translates into a 90% reduction in observed cooldown.
     // -3.0 minimum means that a cooldown can be increased up to 5x of the normal value. This translates into a 500% increase in the observed cooldown
-    public static final Attribute COOLDOWN = new MKRangedAttribute("attribute.name.mk.cooldown_rate", 1.0, -3.0, 1.9)
-            .setName(MKCore.makeRL("cooldown_rate"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> COOLDOWN = REGISTRY.register("cooldown_rate", () ->
+            new MKRangedAttribute("attribute.name.mk.cooldown_rate", 1.0, -3.0, 1.9)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute HEAL_BONUS = new MKRangedAttribute("attribute.name.mk.heal_bonus", 0.0, 0.0, 2048)
-            .setName(MKCore.makeRL("heal_bonus"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> HEAL_BONUS = REGISTRY.register("heal_bonus", () ->
+            new MKRangedAttribute("attribute.name.mk.heal_bonus", 0.0, 0.0, 2048)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute CASTING_SPEED = new MKRangedAttribute("attribute.name.mk.casting_speed", 1.0, -3.0, 1.9)
-            .setName(MKCore.makeRL("casting_speed"))
+    public static final Holder<Attribute> CASTING_SPEED = REGISTRY.register("casting_speed", () ->
+            new MKRangedAttribute("attribute.name.mk.casting_speed", 1.0, -3.0, 1.9)
             .setAdditionIsPercentage(true)
-            .setSyncType(AttributeSyncType.Private);
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute BUFF_DURATION = new MKRangedAttribute("attribute.name.mk.buff_duration", 1.0, 0.0, 5.0)
-            .setName(MKCore.makeRL("buff_duration"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> BUFF_DURATION = REGISTRY.register("buff_duration", () ->
+            new MKRangedAttribute("attribute.name.mk.buff_duration", 1.0, 0.0, 5.0)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute ARCANE_RESISTANCE = new MKRangedAttribute("attribute.name.mk.arcane_resistance", 0, -1.0, 1.0)
-            .setName(MKCore.makeRL("arcane_resistance"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> ARCANE_RESISTANCE = REGISTRY.register("arcane_resistance", () ->
+            new MKRangedAttribute("attribute.name.mk.arcane_resistance", 0, -1.0, 1.0)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute ARCANE_DAMAGE = new MKRangedAttribute("attribute.name.mk.arcane_damage", 0, 0, 2048)
-            .setName(MKCore.makeRL("arcane_damage"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> ARCANE_DAMAGE = REGISTRY.register("arcane_damage",
+            () -> new MKRangedAttribute("attribute.name.mk.arcane_damage", 0, 0, 2048)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute FIRE_RESISTANCE = new MKRangedAttribute("attribute.name.mk.fire_resistance", 0, -1.0, 1.0)
-            .setName(MKCore.makeRL("fire_resistance"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> FIRE_RESISTANCE = REGISTRY.register("fire_resistance", () ->
+            new MKRangedAttribute("attribute.name.mk.fire_resistance", 0, -1.0, 1.0)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute FIRE_DAMAGE = new MKRangedAttribute("attribute.name.mk.fire_damage", 0, 0, 2048)
-            .setName(MKCore.makeRL("fire_damage"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> FIRE_DAMAGE = REGISTRY.register("fire_damage", () ->
+            new MKRangedAttribute("attribute.name.mk.fire_damage", 0, 0, 2048)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute FROST_RESISTANCE = new MKRangedAttribute("attribute.name.mk.frost_resistance", 0, -1.0, 1.0)
-            .setName(MKCore.makeRL("frost_resistance"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> FROST_RESISTANCE = REGISTRY.register("frost_resistance", () ->
+            new MKRangedAttribute("attribute.name.mk.frost_resistance", 0, -1.0, 1.0)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute FROST_DAMAGE = new MKRangedAttribute("attribute.name.mk.frost_damage", 0, 0, 2048)
-            .setName(MKCore.makeRL("frost_damage"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> FROST_DAMAGE = REGISTRY.register("frost_damage", () ->
+            new MKRangedAttribute("attribute.name.mk.frost_damage", 0, 0, 2048)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute SHADOW_RESISTANCE = new MKRangedAttribute("attribute.name.mk.shadow_resistance", 0, -1.0, 1.0)
-            .setName(MKCore.makeRL("shadow_resistance"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> SHADOW_RESISTANCE = REGISTRY.register("shadow_resistance", () ->
+            new MKRangedAttribute("attribute.name.mk.shadow_resistance", 0, -1.0, 1.0)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute SHADOW_DAMAGE = new MKRangedAttribute("attribute.name.mk.shadow_damage", 0, 0, 2048)
-            .setName(MKCore.makeRL("shadow_damage"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> SHADOW_DAMAGE = REGISTRY.register("shadow_damage", () ->
+            new MKRangedAttribute("attribute.name.mk.shadow_damage", 0, 0, 2048)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute HOLY_RESISTANCE = new MKRangedAttribute("attribute.name.mk.holy_resistance", 0, -1.0, 1.0)
-            .setName(MKCore.makeRL("holy_resistance"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> HOLY_RESISTANCE = REGISTRY.register("holy_resistance", () ->
+            new MKRangedAttribute("attribute.name.mk.holy_resistance", 0, -1.0, 1.0)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute HOLY_DAMAGE = new MKRangedAttribute("attribute.name.mk.holy_damage", 0, 0, 2048)
-            .setName(MKCore.makeRL("holy_damage"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> HOLY_DAMAGE = REGISTRY.register("holy_damage", () ->
+            new MKRangedAttribute("attribute.name.mk.holy_damage", 0, 0, 2048)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute NATURE_RESISTANCE = new MKRangedAttribute("attribute.name.mk.nature_resistance", 0, -1.0, 1.0)
-            .setName(MKCore.makeRL("nature_resistance"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> NATURE_RESISTANCE = REGISTRY.register("nature_resistance", () ->
+            new MKRangedAttribute("attribute.name.mk.nature_resistance", 0, -1.0, 1.0)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute NATURE_DAMAGE = new MKRangedAttribute("attribute.name.mk.nature_damage", 0, 0, 2048)
-            .setName(MKCore.makeRL("nature_damage"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> NATURE_DAMAGE = REGISTRY.register("nature_damage", () ->
+            new MKRangedAttribute("attribute.name.mk.nature_damage", 0, 0, 2048)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute POISON_RESISTANCE = new MKRangedAttribute("attribute.name.mk.poison_resistance", 0, -1.0, 1.0)
-            .setName(MKCore.makeRL("poison_resistance"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> POISON_RESISTANCE = REGISTRY.register("poison_resistance", () ->
+            new MKRangedAttribute("attribute.name.mk.poison_resistance", 0, -1.0, 1.0)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute POISON_DAMAGE = new MKRangedAttribute("attribute.name.mk.poison_damage", 0, 0, 2048)
-            .setName(MKCore.makeRL("poison_damage"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> POISON_DAMAGE = REGISTRY.register("poison_damage", () ->
+            new MKRangedAttribute("attribute.name.mk.poison_damage", 0, 0, 2048)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute BLEED_RESISTANCE = new MKRangedAttribute("attribute.name.mk.bleed_resistance", 0, -1.0, 1.0)
-            .setName(MKCore.makeRL("bleed_resistance"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> BLEED_RESISTANCE = REGISTRY.register("bleed_resistance", () ->
+            new MKRangedAttribute("attribute.name.mk.bleed_resistance", 0, -1.0, 1.0)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute BLEED_DAMAGE = new MKRangedAttribute("attribute.name.mk.bleed_damage", 0, 0, 2048)
-            .setName(MKCore.makeRL("bleed_damage"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> BLEED_DAMAGE = REGISTRY.register("bleed_damage", () ->
+            new MKRangedAttribute("attribute.name.mk.bleed_damage", 0, 0, 2048)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute ABJURATION = new MKRangedAttribute("attribute.name.mk.abjuration", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("abjuration"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> ABJURATION = REGISTRY.register("abjuration", () ->
+            new MKRangedAttribute("attribute.name.mk.abjuration", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute ALTERATON = new MKRangedAttribute("attribute.name.mk.alteration", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("alteration"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> ALTERATON = REGISTRY.register("alteration", () ->
+            new MKRangedAttribute("attribute.name.mk.alteration", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute CONJURATION = new MKRangedAttribute("attribute.name.mk.conjuration", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("conjuration"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> CONJURATION = REGISTRY.register("conjuration", () ->
+            new MKRangedAttribute("attribute.name.mk.conjuration", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute DIVINATION = new MKRangedAttribute("attribute.name.mk.divination", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("divination"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> DIVINATION = REGISTRY.register("divination",
+            () -> new MKRangedAttribute("attribute.name.mk.divination", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute ENCHANTMENT = new MKRangedAttribute("attribute.name.mk.enchantment", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("enchantment"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> ENCHANTMENT = REGISTRY.register("enchantment", () ->
+            new MKRangedAttribute("attribute.name.mk.enchantment", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute PHANTASM = new MKRangedAttribute("attribute.name.mk.phantasm", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("phantasm"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> PHANTASM = REGISTRY.register("phantasm", () ->
+            new MKRangedAttribute("attribute.name.mk.phantasm", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute NECROMANCY = new MKRangedAttribute("attribute.name.mk.necromancy", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("necromancy"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> NECROMANCY = REGISTRY.register("necromancy", () ->
+            new MKRangedAttribute("attribute.name.mk.necromancy", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute RESTORATION = new MKRangedAttribute("attribute.name.mk.restoration", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("restoration"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> RESTORATION = REGISTRY.register("restoration", () ->
+            new MKRangedAttribute("attribute.name.mk.restoration", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute ARETE = new MKRangedAttribute("attribute.name.mk.arete", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("arete"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> ARETE = REGISTRY.register("arete", () ->
+            new MKRangedAttribute("attribute.name.mk.arete", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute PNEUMA = new MKRangedAttribute("attribute.name.mk.pneuma", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("pneuma"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> PNEUMA = REGISTRY.register("pneuma", () ->
+            new MKRangedAttribute("attribute.name.mk.pneuma", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute PANKRATION = new MKRangedAttribute("attribute.name.mk.pankration", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("pankration"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> PANKRATION = REGISTRY.register("pankration", () ->
+            new MKRangedAttribute("attribute.name.mk.pankration", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute EVOCATION = new MKRangedAttribute("attribute.name.mk.evocation", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("evocation"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> EVOCATION = REGISTRY.register("evocation", () ->
+            new MKRangedAttribute("attribute.name.mk.evocation", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute MARKSMANSHIP = new MKRangedAttribute("attribute.name.mk.marksmanship", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("marksmanship"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> MARKSMANSHIP = REGISTRY.register("marksmanship", () ->
+            new MKRangedAttribute("attribute.name.mk.marksmanship", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute TWO_HAND_SLASH = new MKRangedAttribute("attribute.name.mk.two_hand_slash", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("two_hand_slash"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> TWO_HAND_SLASH = REGISTRY.register("two_hand_slash", () ->
+            new MKRangedAttribute("attribute.name.mk.two_hand_slash", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute ONE_HAND_SLASH = new MKRangedAttribute("attribute.name.mk.one_hand_slash", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("one_hand_slash"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> ONE_HAND_SLASH = REGISTRY.register("one_hand_slash", () ->
+            new MKRangedAttribute("attribute.name.mk.one_hand_slash", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute TWO_HAND_BLUNT = new MKRangedAttribute("attribute.name.mk.two_hand_blunt", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("two_hand_blunt"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> TWO_HAND_BLUNT = REGISTRY.register("two_hand_blunt", () ->
+            new MKRangedAttribute("attribute.name.mk.two_hand_blunt", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute ONE_HAND_BLUNT = new MKRangedAttribute("attribute.name.mk.one_hand_blunt", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("one_hand_blunt"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> ONE_HAND_BLUNT = REGISTRY.register("one_hand_blunt", () ->
+            new MKRangedAttribute("attribute.name.mk.one_hand_blunt", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute TWO_HAND_PIERCE = new MKRangedAttribute("attribute.name.mk.two_hand_pierce", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("two_hand_pierce"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> TWO_HAND_PIERCE = REGISTRY.register("two_hand_pierce", () ->
+            new MKRangedAttribute("attribute.name.mk.two_hand_pierce", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute ONE_HAND_PIERCE = new MKRangedAttribute("attribute.name.mk.one_hand_pierce", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("one_hand_pierce"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> ONE_HAND_PIERCE = REGISTRY.register("one_hand_pierce", () ->
+            new MKRangedAttribute("attribute.name.mk.one_hand_pierce", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute HAND_TO_HAND = new MKRangedAttribute("attribute.name.mk.hand_to_hand", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("hand_to_hand"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> HAND_TO_HAND = REGISTRY.register("hand_to_hand", () ->
+            new MKRangedAttribute("attribute.name.mk.hand_to_hand", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute BLOCK = new MKRangedAttribute("attribute.name.mk.block", 0, 0, GameConstants.SKILL_MAX)
-            .setName(MKCore.makeRL("block"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> BLOCK = REGISTRY.register("block", () ->
+            new MKRangedAttribute("attribute.name.mk.block", 0, 0, GameConstants.SKILL_MAX)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute MAX_POISE = new MKRangedAttribute("attribute.name.mk.max_poise", 0, 0, 2048)
-            .setName(MKCore.makeRL("max_poise"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> MAX_POISE = REGISTRY.register("max_poise", () ->
+            new MKRangedAttribute("attribute.name.mk.max_poise", 0, 0, 2048)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute POISE_REGEN = new MKRangedAttribute("attribute.name.mk.poise_regen", 2, 0, 2048)
-            .setName(MKCore.makeRL("poise_regen"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> POISE_REGEN = REGISTRY.register("poise_regen", () ->
+            new MKRangedAttribute("attribute.name.mk.poise_regen", 2, 0, 2048)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute POISE_BREAK_CD = new MKRangedAttribute("attribute.name.mk.poise_break_cd", 20.0, 0, 2048)
-            .setName(MKCore.makeRL("poise_break_cd"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> POISE_BREAK_CD = REGISTRY.register("poise_break_cd", () ->
+            new MKRangedAttribute("attribute.name.mk.poise_break_cd", 20.0, 0, 2048)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute BLOCK_EFFICIENCY = new MKRangedAttribute("attribute.name.mk.block_efficiency", 0, 0, 1.0)
-            .setName(MKCore.makeRL("block_efficiency"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> BLOCK_EFFICIENCY = REGISTRY.register("block_efficiency", () ->
+            new MKRangedAttribute("attribute.name.mk.block_efficiency", 0, 0, 1.0)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static final Attribute HEAL_EFFICIENCY = new MKRangedAttribute("attribute.name.mk.heal_efficiency", 1.0, 0, 1000.0)
-            .setName(MKCore.makeRL("heal_efficiency"))
-            .setSyncType(AttributeSyncType.Private);
+    public static final Holder<Attribute> HEAL_EFFICIENCY = REGISTRY.register("heal_efficiency", () ->
+            new MKRangedAttribute("attribute.name.mk.heal_efficiency", 1.0, 0, 1000.0)
+            .setSyncType(AttributeSyncType.Private));
 
-    public static double getValueSafe(Attribute attr, LivingEntity target) {
+    public static double getValueSafe(Holder<Attribute> attr, LivingEntity target) {
         AttributeInstance instance = target.getAttribute(attr);
         if (instance != null) {
             return instance.getValue();
         } else {
-            return attr.getDefaultValue();
+            return attr.value().getDefaultValue();
         }
     }
 
-    public static void iterateEntityAttributes(Consumer<Attribute> consumer) {
+    public static void iterateEntityAttributes(Consumer<Holder<Attribute>> consumer) {
         consumer.accept(COOLDOWN);
         consumer.accept(CASTING_SPEED);
         consumer.accept(HEAL_BONUS);
@@ -312,7 +317,7 @@ public class MKAttributes {
         consumer.accept(HAND_TO_HAND);
     }
 
-    public static void iteratePlayerAttributes(Consumer<Attribute> consumer) {
+    public static void iteratePlayerAttributes(Consumer<Holder<Attribute>> consumer) {
         consumer.accept(MELEE_CRIT);
         consumer.accept(MELEE_CRIT_MULTIPLIER);
         consumer.accept(SPELL_CRIT);
@@ -321,24 +326,7 @@ public class MKAttributes {
         consumer.accept(RANGED_CRIT_MULTIPLIER);
     }
 
-    @Mod.EventBusSubscriber(modid = MKCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class Registration {
-
-        @SubscribeEvent
-        public static void registerAttributes(RegisterEvent event) {
-            if (event.getRegistryKey() != ForgeRegistries.ATTRIBUTES.getRegistryKey()) {
-                return;
-            }
-            iterateEntityAttributes(attr -> {
-                if (attr instanceof MKRangedAttribute mkAttr) {
-                    event.register(ForgeRegistries.ATTRIBUTES.getRegistryKey(), mkAttr.getName(), () -> attr);
-                }
-            });
-            iteratePlayerAttributes(attr -> {
-                if (attr instanceof MKRangedAttribute mkAttr) {
-                    event.register(ForgeRegistries.ATTRIBUTES.getRegistryKey(), mkAttr.getName(), () -> attr);
-                }
-            });
-        }
+    public static void register(IEventBus modBus) {
+        REGISTRY.register(modBus);
     }
 }

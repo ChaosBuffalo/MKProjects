@@ -1,5 +1,4 @@
 plugins {
-    id "com.google.cloud.artifactregistry.gradle-plugin" version "2.1.5"
     id "mk-platform"
 }
 

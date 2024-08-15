@@ -22,22 +22,17 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
+import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -58,9 +53,8 @@ public class MKCore {
 
     public static MKCore INSTANCE;
 
-    public MKCore() {
+    public MKCore(IEventBus modBus, ModContainer modContainer) {
         INSTANCE = this;
-        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         modBus.addListener(this::registerOverlays);
         modBus.addListener(this::setup);
         modBus.addListener(EventPriority.LOWEST, this::loadComplete);
@@ -71,7 +65,7 @@ public class MKCore {
         modBus.addListener(CoreCapabilities::registerCapabilities);
         MKCoreRegistry.register(modBus);
         // Register ourselves for server and other game events we are interested in
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
         talentManager = new TalentManager();
         abilityManager = new AbilityManager();
         particleAnimationManager = new ParticleAnimationManager();
@@ -99,7 +93,7 @@ public class MKCore {
     }
 
     private void registerAttributes() {
-        Attributes.ATTACK_DAMAGE.setSyncable(true);
+        Attributes.ATTACK_DAMAGE.value().setSyncable(true);
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
@@ -108,10 +102,10 @@ public class MKCore {
         ClientEventHandler.setupAttributeRenderers();
     }
 
-    public void registerOverlays(RegisterGuiOverlaysEvent event) {
-        event.registerAbove(VanillaGuiOverlay.PLAYER_HEALTH.id(), "skip_health", MKOverlay::skipHealth);
-        event.registerAboveAll("mk", MKOverlay.INSTANCE);
-    }
+//    public void registerOverlays(RegisterGuiOverlaysEvent event) {
+////        event.registerAbove(VanillaGuiOverlay.PLAYER_HEALTH.id(), "skip_health", MKOverlay::skipHealth);
+//        event.registerAboveAll("mk", MKOverlay.INSTANCE);
+//    }
 
     @SubscribeEvent
     public void registerCommands(RegisterCommandsEvent event) {
@@ -142,7 +136,7 @@ public class MKCore {
     }
 
     public static ResourceLocation makeRL(String path) {
-        return new ResourceLocation(MKCore.MOD_ID, path);
+        return ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, path);
     }
 
     public static LazyOptional<MKPlayerData> getPlayer(Entity playerEntity) {

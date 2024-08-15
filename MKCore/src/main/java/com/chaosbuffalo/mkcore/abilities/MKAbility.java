@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
@@ -29,7 +30,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraftforge.common.ForgeMod;
+import net.neoforged.neoforge.common.NeoForgeMod;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -45,9 +46,9 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     private final List<ISerializableAttribute<?>> attributes;
     private AbilityUseCondition useCondition;
     private final Set<Attribute> skillAttributes;
-    protected static final ResourceLocation EMPTY_PARTICLES = new ResourceLocation(MKCore.MOD_ID, "fx.casting.empty");
+    protected static final ResourceLocation EMPTY_PARTICLES = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "fx.casting.empty");
     protected final ResourceLocationAttribute castingParticles = new ResourceLocationAttribute("casting_particles", EMPTY_PARTICLES);
-    public static final ResourceLocation POOL_SLOT_ICON = new ResourceLocation(MKCore.MOD_ID, "textures/talents/pool_count_icon_filled.png");
+    public static final ResourceLocation POOL_SLOT_ICON = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "textures/talents/pool_count_icon_filled.png");
     public static final NumberFormat PERCENT_FORMATTER = NumberFormat.getPercentInstance();
     public static final NumberFormat INTEGER_FORMATTER = NumberFormat.getIntegerInstance();
     public static final NumberFormat NUMBER_FORMATTER = NumberFormat.getNumberInstance();
@@ -227,7 +228,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     protected float getMeleeReach(LivingEntity entity) {
-        return (float) MKAttributes.getValueSafe(ForgeMod.ENTITY_REACH.get(), entity);
+        return (float) MKAttributes.getValueSafe(NeoForgeMod.ENTITY_REACH.get(), entity);
     }
 
     protected void setCooldownTicks(int ticks) {
@@ -310,12 +311,12 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     @Nullable
     public SoundEvent getCastingSoundEvent() {
-        return CoreSounds.casting_default.get();
+        return CoreSounds.casting_default.value();
     }
 
     @Nullable
     public SoundEvent getSpellCompleteSoundEvent() {
-        return CoreSounds.spell_cast_default.get();
+        return CoreSounds.spell_cast_default.value();
     }
 
     public void executeWithContext(IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {

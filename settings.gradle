@@ -17,10 +17,6 @@ pluginManagement {
                     useModule("${requested.id}:moddev-gradle:${requested.version}")
                     break
                 }
-//                case "org.spongepowered.mixin": {
-//                    useModule("org.spongepowered:mixingradle:${requested.version}")
-//                    break;
-//                }
             }
         }
     }
@@ -33,10 +29,10 @@ rootProject.name = "mk-platform-${minecraft_version}"
 
 include 'TargetingAPI'
 project(":TargetingAPI").buildFileName = "mono.gradle"
-//include 'MKWidgets'
-//project(":MKWidgets").buildFileName = "mono.gradle"
-//include 'MKCore'
-//project(":MKCore").buildFileName = "mono.gradle"
+include 'MKWidgets'
+project(":MKWidgets").buildFileName = "mono.gradle"
+include 'MKCore'
+project(":MKCore").buildFileName = "mono.gradle"
 //include 'MKChat'
 //project(":MKChat").buildFileName = "mono.gradle"
 //include 'MKFaction'

@@ -19,7 +19,7 @@ import net.minecraftforge.registries.RegistryObject;
 public class CoreDamageTypes {
 
     private static final DeferredRegister<MKDamageType> REGISTRY =
-            DeferredRegister.create(MKCoreRegistry.DAMAGE_TYPE_REGISTRY_NAME, MKCore.MOD_ID);
+            DeferredRegister.create(MKCoreRegistry.DAMAGE_TYPE_REGISTRY_KEY, MKCore.MOD_ID);
 
     public static final ResourceKey<DamageType> MK_DAMAGE = ResourceKey.create(Registries.DAMAGE_TYPE,
             new ResourceLocation(MKCore.MOD_ID, "mk_damage"));

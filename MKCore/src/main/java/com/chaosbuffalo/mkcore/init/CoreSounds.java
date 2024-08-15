@@ -1,33 +1,33 @@
 package com.chaosbuffalo.mkcore.init;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class CoreSounds {
 
     public static final DeferredRegister<SoundEvent> SOUNDS =
-            DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, MKCore.MOD_ID);
+            DeferredRegister.create(Registries.SOUND_EVENT, MKCore.MOD_ID);
 
-    private static RegistryObject<SoundEvent> register(String name) {
-        return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(MKCore.MOD_ID, name)));
+    private static Holder<SoundEvent> register(String name) {
+        return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, name)));
     }
 
-    public static final RegistryObject<SoundEvent> casting_default = register("casting_default");
-    public static final RegistryObject<SoundEvent> spell_cast_default = register("spell_cast_default");
-    public static final RegistryObject<SoundEvent> level_up = register("level_up");
-    public static final RegistryObject<SoundEvent> block_break = register("block_break");
-    public static final RegistryObject<SoundEvent> weapon_block = register("weapon_block");
-    public static final RegistryObject<SoundEvent> arrow_block = register("arrow_block");
-    public static final RegistryObject<SoundEvent> fist_block = register("fist_block");
-    public static final RegistryObject<SoundEvent> parry = register("parry");
-    public static final RegistryObject<SoundEvent> attack_cd_reset = register("attack_cd_reset");
-    public static final RegistryObject<SoundEvent> stun_sound = register("stun");
-    public static final RegistryObject<SoundEvent> quest_complete_sound = register("quest_complete");
+    public static final Holder<SoundEvent> casting_default = register("casting_default");
+    public static final Holder<SoundEvent> spell_cast_default = register("spell_cast_default");
+    public static final Holder<SoundEvent> level_up = register("level_up");
+    public static final Holder<SoundEvent> block_break = register("block_break");
+    public static final Holder<SoundEvent> weapon_block = register("weapon_block");
+    public static final Holder<SoundEvent> arrow_block = register("arrow_block");
+    public static final Holder<SoundEvent> fist_block = register("fist_block");
+    public static final Holder<SoundEvent> parry = register("parry");
+    public static final Holder<SoundEvent> attack_cd_reset = register("attack_cd_reset");
+    public static final Holder<SoundEvent> stun_sound = register("stun");
+    public static final Holder<SoundEvent> quest_complete_sound = register("quest_complete");
 
 
     public static void register(IEventBus modBus) {

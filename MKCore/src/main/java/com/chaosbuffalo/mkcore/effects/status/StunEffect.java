@@ -19,7 +19,7 @@ public class StunEffect extends MKEffect {
 
     public StunEffect() {
         super(MobEffectCategory.HARMFUL);
-        addAttribute(Attributes.MOVEMENT_SPEED, MODIFIER_ID, -1, AttributeModifier.Operation.MULTIPLY_TOTAL);
+        addAttribute(Attributes.MOVEMENT_SPEED.value(), MODIFIER_ID, -1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
     }
 
     public static MKEffectBuilder<?> from (UUID sourceId) {
@@ -57,7 +57,7 @@ public class StunEffect extends MKEffect {
             mob.setNoAi(true);
         }
         targetData.getAbilityExecutor().interruptCast(CastInterruptReason.Stun);
-        SoundUtils.serverPlaySoundAtEntity(target, CoreSounds.stun_sound.get(), target.getSoundSource());
+        SoundUtils.serverPlaySoundAtEntity(target, CoreSounds.stun_sound.value(), target.getSoundSource());
     }
 
     @Override

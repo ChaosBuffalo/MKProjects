@@ -15,22 +15,21 @@ import com.chaosbuffalo.mkcore.events.ClientEventHandler;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class MKOverlay implements IGuiOverlay {
+public class MKOverlay implements LayeredDraw.Layer {
 
     public static final MKOverlay INSTANCE = new MKOverlay();
 
@@ -48,7 +47,7 @@ public class MKOverlay implements IGuiOverlay {
         mc = Minecraft.getInstance();
     }
 
-    private void drawTeam(PoseStack matrixStack, MKPlayerData data, float partialTicks, int winHeight, int winWidth) {
+    private void drawTeam(GuiGraphics graphics, MKPlayerData data, float partialTicks, int winHeight, int winWidth) {
         int teamX = winWidth - 55;
 
         int perMember = 18;
@@ -71,15 +70,15 @@ public class MKOverlay implements IGuiOverlay {
 
         if (memberCount + sortedPets.size() > 0) {
             MKRectangle teamBg = new MKRectangle(teamX - 2, teamY - 4, 54, totalSize + 8, 0xaa333333);
-            teamBg.drawWidget(matrixStack, mc, 0, 0, partialTicks);
+            teamBg.drawWidget(graphics, mc, 0, 0, partialTicks);
             for (MKPet.ClientMKPet pet : sortedPets) {
                 if (pet.getEntity() != null) {
                     MKText text = new MKText(mc.font, pet.getEntity().getName(), teamX, teamY);
                     text.setColor(0xffffffff);
-                    text.drawWidget(matrixStack, mc, 0, 0, partialTicks);
+                    text.drawWidget(graphics, mc, 0, 0, partialTicks);
                     int finalTeamY = teamY;
                     MKCore.getEntityData(pet.getEntity()).ifPresent(x -> {
-                        drawTeamHP(matrixStack, x, partialTicks, teamX, finalTeamY + 10);
+                        drawTeamHP(graphics, x, partialTicks, teamX, finalTeamY + 10);
                     });
                     teamY += perPet;
                 }
@@ -88,11 +87,11 @@ public class MKOverlay implements IGuiOverlay {
             for (Player teamMember : players) {
                 MKText text = new MKText(mc.font, teamMember.getDisplayName(), teamX, teamY);
                 text.setColor(0xffffffff);
-                text.drawWidget(matrixStack, mc, 0, 0, partialTicks);
+                text.drawWidget(graphics, mc, 0, 0, partialTicks);
                 int finalTeamY = teamY;
                 MKCore.getPlayer(teamMember).ifPresent(x -> {
-                    drawTeamHP(matrixStack, x, partialTicks, teamX, finalTeamY + 10);
-                    drawTeamMana(matrixStack, x, teamX, finalTeamY + 16);
+                    drawTeamHP(graphics, x, partialTicks, teamX, finalTeamY + 10);
+                    drawTeamMana(graphics, x, teamX, finalTeamY + 16);
                 });
                 teamY += perMember;
 
@@ -100,7 +99,7 @@ public class MKOverlay implements IGuiOverlay {
         }
     }
 
-    private void drawTeamHP(PoseStack matrixStack, IMKEntityData data, float partialTick, int x, int y) {
+    private void drawTeamHP(GuiGraphics graphics, IMKEntityData data, float partialTick, int x, int y) {
         boolean isWithered = data.getEntity().hasEffect(MobEffects.WITHER);
         float absorption = data.getEntity().getAbsorptionAmount();
         float maxHp = data.getEntity().getMaxHealth();
@@ -118,8 +117,8 @@ public class MKOverlay implements IGuiOverlay {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         GuiTextures.CORE_TEXTURES.bind(mc);
-        GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(matrixStack, textureName, x, y, barSize);
-        GuiTextures.CORE_TEXTURES.drawRegionAtPos(matrixStack, GuiTextures.SHORT_BAR_OUTLINE, x, y - 1);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(graphics, textureName, x, y, barSize);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPos(graphics, GuiTextures.SHORT_BAR_OUTLINE, x, y - 1);
         if (absorption > 0.0f) {
             float absorpPercentage = absorption / maxHp;
             if (absorpPercentage > 1.0f) {
@@ -129,13 +128,13 @@ public class MKOverlay implements IGuiOverlay {
             if (abarSize < 1) {
                 abarSize = 1;
             }
-            GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(matrixStack, GuiTextures.ABSORPTON_BAR,
+            GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(graphics, GuiTextures.ABSORPTON_BAR,
                     x, y - 1, abarSize);
         }
 
     }
 
-    private void drawTeamMana(PoseStack matrixStack, MKPlayerData data, int x, int y) {
+    private void drawTeamMana(GuiGraphics graphics, MKPlayerData data, int x, int y) {
         float maxMana = data.getStats().getMaxMana();
         float currentMana = data.getStats().getMana();
         String textureName = GuiTextures.MANA_BAR;
@@ -151,11 +150,11 @@ public class MKOverlay implements IGuiOverlay {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         GuiTextures.CORE_TEXTURES.bind(mc);
-        GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(matrixStack, textureName, x, y, barSize);
-        GuiTextures.CORE_TEXTURES.drawRegionAtPos(matrixStack, GuiTextures.SHORT_BAR_OUTLINE, x, y - 1);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(graphics, textureName, x, y, barSize);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPos(graphics, GuiTextures.SHORT_BAR_OUTLINE, x, y - 1);
     }
 
-    private void drawMana(PoseStack matrixStack, MKPlayerData data, int winHeight, int winWidth) {
+    private void drawMana(GuiGraphics graphics, MKPlayerData data, int winHeight, int winWidth) {
         float maxMana = data.getStats().getMaxMana();
         float currentMana = data.getStats().getMana();
         String textureName = GuiTextures.MANA_BAR_LONG;
@@ -173,21 +172,21 @@ public class MKOverlay implements IGuiOverlay {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         GuiTextures.CORE_TEXTURES.bind(mc);
-        GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(matrixStack, textureName, castStartX, castStartY, barSize);
-        GuiTextures.CORE_TEXTURES.drawRegionAtPos(matrixStack, GuiTextures.PLAYER_BAR_OUTLINE, castStartX, castStartY - 1);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(graphics, textureName, castStartX, castStartY, barSize);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPos(graphics, GuiTextures.PLAYER_BAR_OUTLINE, castStartX, castStartY - 1);
     }
 
-    private void drawXpBar(PoseStack matrixStack, MKPlayerData data, float partialTick, int height, int width) {
+    private void drawXpBar(GuiGraphics graphics, MKPlayerData data, float partialTick, int height, int width) {
         int castStartY = height - 8;
         int castStartX = (width / 2) - 89 - 100;
         xpBarWidget.syncPlayerXp(data);
         xpBarWidget.setY(castStartY);
         xpBarWidget.setX(castStartX);
-        xpBarWidget.drawWidget(matrixStack, mc, 0, 0, partialTick);
+        xpBarWidget.drawWidget(graphics, mc, 0, 0, partialTick);
     }
 
 
-    private void drawPoise(PoseStack matrixStack, MKPlayerData data, float partialTick, int winHeight, int winWidth) {
+    private void drawPoise(GuiGraphics graphics, MKPlayerData data, float partialTick, int winHeight, int winWidth) {
         float percentage;
         boolean isBroken = data.getStats().isPoiseBroke();
         if (data.getStats().getMaxPoise() > 0) {
@@ -214,12 +213,12 @@ public class MKOverlay implements IGuiOverlay {
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             GuiTextures.CORE_TEXTURES.bind(mc);
-            GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(matrixStack, isBroken ? GuiTextures.POISE_BREAK : GuiTextures.POISE_BAR, castStartX, castStartY, barSize);
-            GuiTextures.CORE_TEXTURES.drawRegionAtPos(matrixStack, GuiTextures.SHORT_BAR_OUTLINE, castStartX, castStartY - 1);
+            GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(graphics, isBroken ? GuiTextures.POISE_BREAK : GuiTextures.POISE_BAR, castStartX, castStartY, barSize);
+            GuiTextures.CORE_TEXTURES.drawRegionAtPos(graphics, GuiTextures.SHORT_BAR_OUTLINE, castStartX, castStartY - 1);
         }
     }
 
-    private void drawHP(PoseStack matrixStack, MKPlayerData data, float partialTick, int height, int winWidth) {
+    private void drawHP(GuiGraphics graphics, MKPlayerData data, float partialTick, int height, int winWidth) {
         boolean isWithered = data.getEntity().hasEffect(MobEffects.WITHER);
         float absorption = data.getEntity().getAbsorptionAmount();
         float maxHp = data.getEntity().getMaxHealth();
@@ -239,8 +238,8 @@ public class MKOverlay implements IGuiOverlay {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         GuiTextures.CORE_TEXTURES.bind(mc);
-        GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(matrixStack, textureName, castStartX, castStartY, barSize);
-        GuiTextures.CORE_TEXTURES.drawRegionAtPos(matrixStack, GuiTextures.PLAYER_BAR_OUTLINE, castStartX, castStartY - 1);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(graphics, textureName, castStartX, castStartY, barSize);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPos(graphics, GuiTextures.PLAYER_BAR_OUTLINE, castStartX, castStartY - 1);
         if (absorption > 0.0f) {
             float absorpPercentage = absorption / maxHp;
             if (absorpPercentage > 1.0f) {
@@ -250,13 +249,13 @@ public class MKOverlay implements IGuiOverlay {
             if (abarSize < 1) {
                 abarSize = 1;
             }
-            GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(matrixStack, GuiTextures.ABSORPTION_BAR_LONG,
+            GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(graphics, GuiTextures.ABSORPTION_BAR_LONG,
                     castStartX, castStartY - 1, abarSize);
         }
 
     }
 
-    private void drawCastBar(PoseStack matrixStack, MKPlayerData data, int winHeight, int winWidth) {
+    private void drawCastBar(GuiGraphics graphics, MKPlayerData data, int winHeight, int winWidth) {
         PlayerAbilityExecutor executor = data.getAbilityExecutor();
         if (!executor.isCasting()) {
             return;
@@ -277,8 +276,8 @@ public class MKOverlay implements IGuiOverlay {
         int castStartX = winWidth / 2 - barSize / 2;
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        GuiTextures.CORE_TEXTURES.bind(mc);
-        GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(matrixStack, GuiTextures.CAST_BAR_REGION, castStartX, castStartY, barSize);
+//        GuiTextures.CORE_TEXTURES.bind(mc);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPosPartialWidth(graphics, GuiTextures.CAST_BAR_REGION, castStartX, castStartY, barSize);
     }
 
     private int getBarStartY(int slotCount) {
@@ -299,7 +298,7 @@ public class MKOverlay implements IGuiOverlay {
         return null;
     }
 
-    private void drawBarSlots(PoseStack matrixStack, AbilityGroupId group, int startSlot, int slotCount, int totalSlots) {
+    private void drawBarSlots(GuiGraphics graphics, AbilityGroupId group, int startSlot, int slotCount, int totalSlots) {
         GuiTextures.CORE_TEXTURES.bind(mc);
         int xOffset = 0;
         int yOffset = getBarStartY(totalSlots);
@@ -307,12 +306,12 @@ public class MKOverlay implements IGuiOverlay {
             int yPos = yOffset - i + i * SLOT_HEIGHT;
             String texture = getAbilityGroupTexture(group);
             if (texture != null) {
-                GuiTextures.CORE_TEXTURES.drawRegionAtPos(matrixStack, texture, xOffset, yPos);
+                GuiTextures.CORE_TEXTURES.drawRegionAtPos(graphics, texture, xOffset, yPos);
             }
         }
     }
 
-    private int drawAbilities(PoseStack matrixStack, MKPlayerData data, AbilityGroupId group, int startingSlot, int totalSlots, float partialTicks) {
+    private int drawAbilities(GuiGraphics graphics, MKPlayerData data, AbilityGroupId group, int startingSlot, int totalSlots, float partialTicks) {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         RenderSystem.enableBlend();
@@ -325,7 +324,7 @@ public class MKOverlay implements IGuiOverlay {
 
         AbilityGroup abilityGroup = data.getLoadout().getAbilityGroup(group);
         int slotCount = abilityGroup.getCurrentSlotCount();
-        drawBarSlots(matrixStack, group, startingSlot, slotCount, totalSlots);
+        drawBarSlots(graphics, group, startingSlot, slotCount, totalSlots);
 
         PlayerAbilityExecutor executor = data.getAbilityExecutor();
         float globalCooldown = executor.getGlobalCooldownPercent(partialTicks);
@@ -349,8 +348,7 @@ public class MKOverlay implements IGuiOverlay {
             int slotX = slotAbilityOffsetX;
             int slotY = barStartY + slotAbilityOffsetY - (startingSlot + i) + ((startingSlot + i) * SLOT_HEIGHT);
 
-            RenderSystem.setShaderTexture(0, ability.getAbilityIcon());
-            GuiComponent.blit(matrixStack, slotX, slotY, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
+            graphics.blit(ability.getAbilityIcon(), slotX, slotY, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
 
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             float cooldownFactor = executor.getCurrentAbilityCooldownPercent(abilityId, partialTicks);
@@ -364,18 +362,23 @@ public class MKOverlay implements IGuiOverlay {
                 if (coolDownHeight < 1) {
                     coolDownHeight = 1;
                 }
-                RenderSystem.setShaderTexture(0, COOLDOWN_ICON);
-                GuiComponent.blit(matrixStack, slotX, slotY, 0, 0, ABILITY_ICON_SIZE, coolDownHeight, ABILITY_ICON_SIZE, coolDownHeight);
+                graphics.blit(COOLDOWN_ICON, slotX, slotY, 0, 0, ABILITY_ICON_SIZE, coolDownHeight, ABILITY_ICON_SIZE, coolDownHeight);
             }
 
-            ability.getRenderer().drawAbilityBarEffect(data, matrixStack, mc, slotX, slotY);
+            ability.getRenderer().drawAbilityBarEffect(data, graphics, mc, slotX, slotY);
         }
         RenderSystem.disableBlend();
         return startingSlot + slotCount;
     }
 
+
+//    public static void skipHealth(ForgeGui gui, PoseStack poseStack, float partialTick, int width, int height) {
+//        // Make room for our health and mana bars
+//        gui.leftHeight += 12;
+//    }
+
     @Override
-    public void render(ForgeGui gui, PoseStack poseStack, float partialTick, int width, int height) {
+    public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         if (mc.player == null || mc.options.hideGui)
             return;
 
@@ -383,16 +386,23 @@ public class MKOverlay implements IGuiOverlay {
         if (cap == null)
             return;
 
+        if (mc.screen == null)
+            return;
+
+        int width = mc.screen.width;
+        int height = mc.screen.height;
+
+        float partialTick = deltaTracker.getGameTimeDeltaPartialTick(true);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         if (mc.gameMode != null && mc.gameMode.canHurtPlayer() && mc.getCameraEntity() instanceof Player) {
-            drawHP(poseStack, cap, partialTick, height, width);
-            drawMana(poseStack, cap, height, width);
-            drawPoise(poseStack, cap, partialTick, height, width);
-            drawXpBar(poseStack, cap, partialTick, height, width);
-            drawTeam(poseStack, cap, partialTick, height, width);
+            drawHP(guiGraphics, cap, partialTick, height, width);
+            drawMana(guiGraphics, cap, height, width);
+            drawPoise(guiGraphics, cap, partialTick, height, width);
+            drawXpBar(guiGraphics, cap, partialTick, height, width);
+            drawTeam(guiGraphics, cap, partialTick, height, width);
         }
-        drawCastBar(poseStack, cap, height, width);
+        drawCastBar(guiGraphics, cap, height, width);
 
 
         int totalSlots = cap.getLoadout().getAbilityGroups().stream()
@@ -400,13 +410,8 @@ public class MKOverlay implements IGuiOverlay {
                 .mapToInt(AbilityGroup::getCurrentSlotCount)
                 .sum();
 
-        int slot = drawAbilities(poseStack, cap, AbilityGroupId.Basic, 0, totalSlots, partialTick);
-        slot = drawAbilities(poseStack, cap, AbilityGroupId.Ultimate, slot, totalSlots, partialTick);
-        slot = drawAbilities(poseStack, cap, AbilityGroupId.Item, slot, totalSlots, partialTick);
-    }
-
-    public static void skipHealth(ForgeGui gui, PoseStack poseStack, float partialTick, int width, int height) {
-        // Make room for our health and mana bars
-        gui.leftHeight += 12;
+        int slot = drawAbilities(guiGraphics, cap, AbilityGroupId.Basic, 0, totalSlots, partialTick);
+        slot = drawAbilities(guiGraphics, cap, AbilityGroupId.Ultimate, slot, totalSlots, partialTick);
+        slot = drawAbilities(guiGraphics, cap, AbilityGroupId.Item, slot, totalSlots, partialTick);
     }
 }

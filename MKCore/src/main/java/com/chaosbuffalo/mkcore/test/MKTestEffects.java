@@ -12,7 +12,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class MKTestEffects {
 
-    public static final DeferredRegister<MKEffect> EFFECTS = DeferredRegister.create(MKCoreRegistry.EFFECT_REGISTRY_NAME, MKCore.MOD_ID);
+    public static final DeferredRegister<MKEffect> EFFECTS = DeferredRegister.create(MKCoreRegistry.EFFECT_REGISTRY_KEY, MKCore.MOD_ID);
 
     public static final RegistryObject<FeatherFallEffect> FEATHER_FALL = EFFECTS
             .register("effect.test_featherfall", FeatherFallEffect::new);

@@ -13,6 +13,7 @@ import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -53,21 +54,22 @@ public abstract class PlayerPageBase extends MKScreen implements IPlayerDataAwar
     }
 
     @Override
-    public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         int xPos = width / 2 - PANEL_WIDTH / 2;
         int yPos = height / 2 - PANEL_HEIGHT / 2;
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         GuiTextures.CORE_TEXTURES.bind(getMinecraft());
-        GuiTextures.CORE_TEXTURES.drawRegionAtPos(matrixStack, GuiTextures.BACKGROUND_320_240, xPos, yPos);
-        drawDataBox(matrixStack, xPos, yPos);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPos(graphics, GuiTextures.BACKGROUND_320_240, xPos, yPos);
+        drawDataBox(graphics, xPos, yPos);
+        super.render(graphics, mouseX, mouseY, partialTicks);
     }
 
-    protected void drawDataBox(PoseStack matrixStack, int xPos, int yPos) {
+
+    protected void drawDataBox(GuiGraphics graphics, int xPos, int yPos) {
         String dataBoxTex = getDataBoxTexture();
         int xOffset = GuiTextures.CORE_TEXTURES.getCenterXOffset(dataBoxTex, GuiTextures.BACKGROUND_320_240);
-        GuiTextures.CORE_TEXTURES.drawRegionAtPos(matrixStack, dataBoxTex, xPos + xOffset, yPos + DATA_BOX_OFFSET);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPos(graphics, dataBoxTex, xPos + xOffset, yPos + DATA_BOX_OFFSET);
     }
 
     static class StateSwitcher extends MKStackLayoutHorizontal {

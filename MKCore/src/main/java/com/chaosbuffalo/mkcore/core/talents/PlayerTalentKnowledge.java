@@ -69,7 +69,7 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
         if (playerData.isServerSide()) {
             talentXp.add(-getXpToNextLevel());
             grantTalentPoints(1);
-            SoundUtils.serverPlaySoundAtEntity(playerData.getEntity(), CoreSounds.level_up.get(), SoundSource.PLAYERS);
+            SoundUtils.serverPlaySoundAtEntity(playerData.getEntity(), CoreSounds.level_up.value(), SoundSource.PLAYERS);
             playerData.getStats().setHealth(playerData.getStats().getMaxHealth());
             playerData.getStats().setMana(playerData.getStats().getMaxMana());
         }

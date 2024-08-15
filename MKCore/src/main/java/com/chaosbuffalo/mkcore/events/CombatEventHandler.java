@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
+import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -69,8 +70,8 @@ public class CombatEventHandler {
         return entity.isDamageSourceBlocked(source);
     }
 
-    private static void playSound(LivingEntity target, Supplier<SoundEvent> sound) {
-        SoundUtils.serverPlaySoundAtEntity(target, sound.get(), target.getSoundSource());
+    private static void playSound(LivingEntity target, Holder<SoundEvent> sound) {
+        SoundUtils.serverPlaySoundAtEntity(target, sound.value(), target.getSoundSource());
     }
 
     @SubscribeEvent

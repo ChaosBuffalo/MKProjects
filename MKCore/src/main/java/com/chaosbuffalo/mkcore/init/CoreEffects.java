@@ -14,7 +14,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
 public class CoreEffects {
-    public static final DeferredRegister<MKEffect> EFFECTS = DeferredRegister.create(MKCoreRegistry.EFFECT_REGISTRY_NAME, MKCore.MOD_ID);
+    public static final DeferredRegister<MKEffect> EFFECTS = DeferredRegister.create(MKCoreRegistry.EFFECT_REGISTRY_KEY, MKCore.MOD_ID);
 
     public static final RegistryObject<AbilityMagicDamageEffect> ABILITY_MAGIC_DAMAGE = EFFECTS
             .register("effect.ability_magic_damage", AbilityMagicDamageEffect::new);

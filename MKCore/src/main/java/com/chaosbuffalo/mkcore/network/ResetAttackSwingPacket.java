@@ -40,7 +40,7 @@ public class ResetAttackSwingPacket {
             // +2 to account for the client 2 tick lag before allowing attack
             MKCore.getPlayer(entity).ifPresent(cap ->
                     cap.getCombatExtension().setAttackStrengthTicks(packet.ticksToSet + 2));
-            SoundUtils.clientPlaySoundAtPlayer(entity, CoreSounds.attack_cd_reset.get(), entity.getSoundSource(), 1.0f, 1.0f);
+            SoundUtils.clientPlaySoundAtPlayer(entity, CoreSounds.attack_cd_reset.value(), entity.getSoundSource(), 1.0f, 1.0f);
         }
     }
 }
