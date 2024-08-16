@@ -6,19 +6,19 @@ import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraft.core.registries.Registries;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import javax.annotation.Nonnull;
 
 public class CoreParticles {
 
     public static final DeferredRegister<ParticleType<?>> PARTICLES =
-            DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, MKCore.MOD_ID);
+            DeferredRegister.create(Registries.PARTICLE_TYPE, MKCore.MOD_ID);
 
-    private static RegistryObject<ParticleType<MKParticleData>> register(String name) {
+    private static DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> register(String name) {
         return PARTICLES.register(name,
                 () -> new ParticleType<>(false, MKParticleData.DESERIALIZER) {
                     @Nonnull
@@ -29,20 +29,20 @@ public class CoreParticles {
                 });
     }
 
-    public static final RegistryObject<ParticleType<MKParticleData>> MAGIC_CROSS = register("magic_cross");
-    public static final RegistryObject<ParticleType<MKParticleData>> MAGIC_CLOVER = register("magic_clover");
-    public static final RegistryObject<ParticleType<MKParticleData>> MAGIC_LINE = register("magic_line");
-    public static final RegistryObject<ParticleType<MKParticleData>> MAGIC_CIRCLE = register("magic_circle");
-    public static final RegistryObject<ParticleType<MKParticleData>> MAGIC_GRADIENT_SQUARE = register("magic_gradient_square");
-    public static final RegistryObject<SimpleParticleType> INDICATOR_PARTICLE = PARTICLES.register("indicator_particle",
+    public static final DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> MAGIC_CROSS = register("magic_cross");
+    public static final DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> MAGIC_CLOVER = register("magic_clover");
+    public static final DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> MAGIC_LINE = register("magic_line");
+    public static final DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> MAGIC_CIRCLE = register("magic_circle");
+    public static final DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> MAGIC_GRADIENT_SQUARE = register("magic_gradient_square");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> INDICATOR_PARTICLE = PARTICLES.register("indicator_particle",
             () -> new SimpleParticleType(true));
-    public static final RegistryObject<ParticleType<MKParticleData>> MAGIC_SIDEWAYS_LINE = register("magic_sideways_line");
-    public static final RegistryObject<ParticleType<MKParticleData>> MAGIC_CHIP = register("magic_chip");
-    public static final RegistryObject<ParticleType<MKParticleData>> BLACK_MAGIC_CROSS = register("black_magic_cross");
-    public static final RegistryObject<ParticleType<MKParticleData>> BLACK_MAGIC_CLOVER = register("black_magic_clover");
-    public static final RegistryObject<ParticleType<MKParticleData>> BLACK_MAGIC_LINE = register("black_magic_line");
-    public static final RegistryObject<ParticleType<MKParticleData>> BLACK_MAGIC_CIRCLE = register("black_magic_circle");
-    public static final RegistryObject<ParticleType<MKParticleData>> BLACK_MAGIC_GRADIENT_SQUARE = register("black_magic_gradient_square");
+    public static final DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> MAGIC_SIDEWAYS_LINE = register("magic_sideways_line");
+    public static final DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> MAGIC_CHIP = register("magic_chip");
+    public static final DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> BLACK_MAGIC_CROSS = register("black_magic_cross");
+    public static final DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> BLACK_MAGIC_CLOVER = register("black_magic_clover");
+    public static final DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> BLACK_MAGIC_LINE = register("black_magic_line");
+    public static final DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> BLACK_MAGIC_CIRCLE = register("black_magic_circle");
+    public static final DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> BLACK_MAGIC_GRADIENT_SQUARE = register("black_magic_gradient_square");
 
     public static void register(IEventBus modBus) {
         PARTICLES.register(modBus);

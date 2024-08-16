@@ -22,6 +22,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -30,9 +31,13 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -55,7 +60,7 @@ public class MKCore {
 
     public MKCore(IEventBus modBus, ModContainer modContainer) {
         INSTANCE = this;
-        modBus.addListener(this::registerOverlays);
+        modBus.addListener(this::registerLayers);
         modBus.addListener(this::setup);
         modBus.addListener(EventPriority.LOWEST, this::loadComplete);
         modBus.addListener(this::clientSetup);
@@ -102,10 +107,17 @@ public class MKCore {
         ClientEventHandler.setupAttributeRenderers();
     }
 
-//    public void registerOverlays(RegisterGuiOverlaysEvent event) {
-////        event.registerAbove(VanillaGuiOverlay.PLAYER_HEALTH.id(), "skip_health", MKOverlay::skipHealth);
-//        event.registerAboveAll("mk", MKOverlay.INSTANCE);
-//    }
+    @SubscribeEvent
+    public void cancelHealth(RenderGuiLayerEvent.Pre event) {
+        if (event.getName().equals(VanillaGuiLayers.PLAYER_HEALTH)) {
+            event.setCanceled(true);
+        }
+    }
+
+    public void registerLayers(RegisterGuiLayersEvent event) {
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "mk"), MKOverlay.INSTANCE);
+    }
+
 
     @SubscribeEvent
     public void registerCommands(RegisterCommandsEvent event) {

@@ -18,6 +18,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -32,6 +33,8 @@ import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -82,13 +85,13 @@ public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
 
     public ParticleAnimationManager() {
         super(GSON, DEFINITION_FOLDER);
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     public static void putParticleTypeForEditor(ResourceLocation name,
-                                                RegistryObject<ParticleType<MKParticleData>> particleType) {
-        if (particleType.isPresent()) {
-            PARTICLE_TYPES_FOR_EDITOR.put(name, particleType.get());
+                                                DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> particleType) {
+        if (particleType.isBound()) {
+            PARTICLE_TYPES_FOR_EDITOR.put(name, particleType.value());
         } else {
             MKCore.LOGGER.warn("Provided null particle type for particle editor with name {}", name);
         }
