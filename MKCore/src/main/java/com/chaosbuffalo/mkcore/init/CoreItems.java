@@ -21,7 +21,7 @@ public class CoreItems {
         for (Item sword : swordsToAddBlocking) {
 
             //ItemStack p_174676_, @Nullable ClientLevel p_174677_, @Nullable LivingEntity p_174678_, int p_174679_
-            ItemProperties.register(sword, new ResourceLocation("blocking"),
+            ItemProperties.register(sword, ResourceLocation.withDefaultNamespace("blocking"),
                     (itemStack, world, entity, p_174679_) -> entity != null && entity.isUsingItem()
                             && entity.getUseItem() == itemStack ? 1.0F : 0.0F);
         }
