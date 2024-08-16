@@ -7,8 +7,10 @@ import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import com.chaosbuffalo.mkcore.core.talents.TalentType;
 import com.chaosbuffalo.mkcore.core.talents.nodes.AttributeTalentNode;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
@@ -16,21 +18,21 @@ import java.util.UUID;
 
 public class AttributeTalent extends MKTalent {
     private final UUID id;
-    private final Attribute attribute;
+    private final Holder<Attribute> attribute;
     private AttributeModifier.Operation operation;
     private boolean renderAsPercentage;
     private double defaultPerRank;
     private boolean requiresStatRefresh;
 
-    public AttributeTalent(Attribute attr, UUID id) {
+    public AttributeTalent(Holder<Attribute> attr, UUID id) {
         this.id = id;
         this.attribute = attr;
-        this.operation = AttributeModifier.Operation.ADDITION;
+        this.operation = AttributeModifier.Operation.ADD_VALUE;
         this.renderAsPercentage = false;
         defaultPerRank = 1;
     }
 
-    public Attribute getAttribute() {
+    public Holder<Attribute> getAttribute() {
         return attribute;
     }
 
@@ -64,7 +66,7 @@ public class AttributeTalent extends MKTalent {
 
     @Override
     public String toString() {
-        return String.format("AttributeTalent[%s, %s, %s]", attribute.getDescriptionId(), id, operation);
+        return String.format("AttributeTalent[%s, %s, %s]", attribute.value().getDescriptionId(), id, operation);
     }
 
     @Override
@@ -91,7 +93,7 @@ public class AttributeTalent extends MKTalent {
     }
 
     public AttributeModifier createModifier(double value) {
-        return new AttributeModifier(getUUID(), () -> getTalentId().toString(), value, getOp());
+        return new AttributeModifier(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, getUUID().toString()), value, getOp());
     }
 
     public double getDefaultPerRank() {
