@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -67,7 +68,7 @@ public class PlayerKnownAbility implements IMKSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serialize() {
+    public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
 
         ListTag list = new ListTag();
@@ -92,7 +93,7 @@ public class PlayerKnownAbility implements IMKSerializable<CompoundTag> {
     }
 
     @Override
-    public boolean deserialize(CompoundTag tag) {
+    public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
         sources.clear();
         if (tag.contains("sources")) {
             ListTag list = tag.getList("sources", Tag.TAG_STRING);

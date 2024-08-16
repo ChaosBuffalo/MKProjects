@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKAbilityKnowledge;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -76,22 +77,22 @@ public class MobAbilityKnowledge implements IMKAbilityKnowledge, IMKSerializable
     }
 
     @Override
-    public CompoundTag serialize() {
+    public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         CompoundTag abilityInfos = new CompoundTag();
-        knownAbilities.forEach((key, value) -> abilityInfos.put(key.toString(), value.serialize()));
+        knownAbilities.forEach((key, value) -> abilityInfos.put(key.toString(), value.serialize(provider)));
         tag.put("abilities", abilityInfos);
         return tag;
     }
 
     @Override
-    public boolean deserialize(CompoundTag tag) {
+    public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
         if (tag.contains("abilities")) {
             CompoundTag abilityInfo = tag.getCompound("abilities");
             for (String key : abilityInfo.getAllKeys()) {
                 ResourceLocation abilityId = new ResourceLocation(key);
                 MobKnownAbility info = createKnownAbility(abilityId);
-                if (info != null && info.deserialize(abilityInfo.getCompound(key))) {
+                if (info != null && info.deserialize(provider, abilityInfo.getCompound(key))) {
                     knownAbilities.put(abilityId, info);
                 }
             }

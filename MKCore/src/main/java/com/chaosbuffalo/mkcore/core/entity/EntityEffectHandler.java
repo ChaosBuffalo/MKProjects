@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkcore.effects.MKEffectTickAction;
 import com.chaosbuffalo.mkcore.network.EntityEffectPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.google.common.collect.ImmutableList;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -320,7 +321,7 @@ public class EntityEffectHandler {
                 .collect(Collectors.toList());
     }
 
-    public CompoundTag serialize() {
+    public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
 
         ListTag list = new ListTag();
@@ -337,7 +338,7 @@ public class EntityEffectHandler {
         return nbt;
     }
 
-    public void deserialize(CompoundTag nbt) {
+    public void deserialize(HolderLookup.Provider provider, CompoundTag nbt) {
         ListTag list = nbt.getList("sources", Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag entry = list.getCompound(i);

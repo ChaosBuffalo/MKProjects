@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entity.EntityStats;
 import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -93,14 +94,14 @@ public class PlayerStats extends EntityStats {
         refreshStats();
     }
 
-    public CompoundTag serialize() {
+    public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         tag.put("cooldowns", abilityTracker.serialize());
         tag.putFloat("mana", mana.get());
         return tag;
     }
 
-    public void deserialize(CompoundTag tag) {
+    public void deserialize(HolderLookup.Provider provider, CompoundTag tag) {
         abilityTracker.deserialize(tag.getCompound("cooldowns"));
         if (tag.contains("mana")) {
             setMana(tag.getFloat("mana"), false);

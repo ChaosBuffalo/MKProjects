@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core.entity;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -31,14 +32,14 @@ public class MobKnownAbility implements IMKSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serialize() {
+    public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         tag.putInt("priority", priority);
         return tag;
     }
 
     @Override
-    public boolean deserialize(CompoundTag tag) {
+    public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
         priority = tag.getInt("priority");
         return true;
     }

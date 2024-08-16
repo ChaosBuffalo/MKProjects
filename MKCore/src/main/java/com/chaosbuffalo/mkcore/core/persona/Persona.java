@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.*;
 import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 
@@ -137,25 +138,25 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     }
 
     @Override
-    public CompoundTag serialize() {
+    public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         tag.putUUID("personaId", personaId);
         tag.put("abilities", abilities.serialize());
         tag.put("talents", talents.serializeNBT());
         tag.put("entitlements", entitlements.serialize());
-        tag.put("skills", skills.serialize());
+        tag.put("skills", skills.serialize(provider));
         tag.put("loadout", loadout.serializeNBT());
         tag.put("extensions", serializeExtensions());
         return tag;
     }
 
     @Override
-    public boolean deserialize(CompoundTag tag) {
+    public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
         personaId = tag.getUUID("personaId");
         abilities.deserialize(tag.getCompound("abilities"));
         talents.deserializeNBT(tag.get("talents"));
         entitlements.deserialize(tag.getCompound("entitlements"));
-        skills.deserialize(tag.getCompound("skills"));
+        skills.deserialize(provider, tag.getCompound("skills"));
         loadout.deserializeNBT(tag.getCompound("loadout"));
         deserializeExtensions(tag.getCompound("extensions"));
         return true;

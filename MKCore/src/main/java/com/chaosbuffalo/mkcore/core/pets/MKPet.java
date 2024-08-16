@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.core.pets;
 
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -51,7 +52,7 @@ public class MKPet<T extends LivingEntity & IMKPet> {
         }
 
         @Override
-        public CompoundTag serialize() {
+        public CompoundTag serialize(HolderLookup.Provider provider) {
             CompoundTag tag = new CompoundTag();
             tag.putString("name", name.toString());
             if (hasDuration()) {
@@ -68,7 +69,7 @@ public class MKPet<T extends LivingEntity & IMKPet> {
         }
 
         @Override
-        public boolean deserialize(CompoundTag tag) {
+        public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
             int id = tag.getInt("entId");
             name = new ResourceLocation(tag.getString("name"));
             if (id != -1) {

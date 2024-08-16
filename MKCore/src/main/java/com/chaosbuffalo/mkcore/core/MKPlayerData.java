@@ -12,6 +12,7 @@ import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
 import com.chaosbuffalo.mkcore.sync.controllers.PlayerSyncController;
 import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -221,20 +222,20 @@ public class MKPlayerData implements IMKEntityData {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-        tag.put("persona", personaManager.serialize());
-        tag.put("stats", getStats().serialize());
-        tag.put("editor", getEditor().serialize());
-        tag.put("effects", getEffects().serialize());
+        tag.put("persona", personaManager.serialize(provider));
+        tag.put("stats", getStats().serialize(provider));
+        tag.put("editor", getEditor().serialize(provider));
+        tag.put("effects", getEffects().serialize(provider));
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag tag) {
-        personaManager.deserialize(tag.getCompound("persona"));
-        getStats().deserialize(tag.getCompound("stats"));
-        getEditor().deserialize(tag.getCompound("editor"));
-        getEffects().deserialize(tag.getCompound("effects"));
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag) {
+        personaManager.deserialize(provider, tag.getCompound("persona"));
+        getStats().deserialize(provider, tag.getCompound("stats"));
+        getEditor().deserialize(provider, tag.getCompound("editor"));
+        getEffects().deserialize(provider, tag.getCompound("effects"));
     }
 }

@@ -1,7 +1,8 @@
 package com.chaosbuffalo.mkcore.capabilities;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 public abstract class SingleSerializableCapabilityProvider<CapTarget, CapType extends INBTSerializable<CompoundTag>>
         extends SingleCapabilityProvider<CapTarget, CapType> {
@@ -10,13 +11,15 @@ public abstract class SingleSerializableCapabilityProvider<CapTarget, CapType ex
         super(attached);
     }
 
+
+
     @Override
-    public CompoundTag serializeNBT() {
-        return data.serializeNBT();
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        return data.serializeNBT(provider);
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        data.deserializeNBT(nbt);
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+        data.deserializeNBT(provider, nbt);
     }
 }

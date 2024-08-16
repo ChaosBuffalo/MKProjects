@@ -2,9 +2,7 @@ package com.chaosbuffalo.mkcore.utils;
 
 import com.chaosbuffalo.mkcore.capabilities.SingleSerializableCapabilityProvider;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import java.util.function.Function;
 

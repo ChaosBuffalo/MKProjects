@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -104,7 +105,7 @@ public class EntityRiderModule implements IPlayerSyncComponentProvider {
         }
 
         @Override
-        public CompoundTag serialize() {
+        public CompoundTag serialize(HolderLookup.Provider provider) {
             CompoundTag tag = new CompoundTag();
             tag.putDouble("offsetX", offset.x);
             tag.putDouble("offsetY", offset.y);
@@ -115,7 +116,7 @@ public class EntityRiderModule implements IPlayerSyncComponentProvider {
         }
 
         @Override
-        public boolean deserialize(CompoundTag tag) {
+        public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
             double x = tag.getDouble("offsetX");
             double y = tag.getDouble("offsetY");
             double z = tag.getDouble("offsetZ");

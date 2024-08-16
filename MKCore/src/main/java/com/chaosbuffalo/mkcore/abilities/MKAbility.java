@@ -30,6 +30,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.neoforged.neoforge.common.NeoForgeMod;
 
@@ -229,7 +230,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     protected float getMeleeReach(LivingEntity entity) {
-        return (float) MKAttributes.getValueSafe(MKAttributes.ENTITY_REACH, entity);
+        return (float) MKAttributes.getValueSafe(Attributes.ENTITY_INTERACTION_RANGE, entity);
     }
 
     protected void setCooldownTicks(int ticks) {

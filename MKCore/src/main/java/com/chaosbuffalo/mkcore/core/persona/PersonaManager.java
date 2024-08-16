@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
 import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.MinecraftForge;
@@ -131,24 +132,24 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serialize() {
+    public CompoundTag serialize(HolderLookup.Provider provider) {
         ensurePersonaLoaded();
 
         CompoundTag tag = new CompoundTag();
         CompoundTag personaRoot = new CompoundTag();
-        personas.forEach((name, persona) -> personaRoot.put(name, persona.serialize()));
+        personas.forEach((name, persona) -> personaRoot.put(name, persona.serialize(provider)));
         tag.put("personas", personaRoot);
         tag.putString("activePersona", getActivePersona().getName());
         return tag;
     }
 
     @Override
-    public boolean deserialize(CompoundTag tag) {
+    public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
         CompoundTag personaRoot = tag.getCompound("personas");
         for (String name : personaRoot.getAllKeys()) {
             CompoundTag personaTag = personaRoot.getCompound(name);
             Persona persona = createNewPersona(name);
-            if (!persona.deserialize(personaTag)) {
+            if (!persona.deserialize(provider, personaTag)) {
                 MKCore.LOGGER.error("Failed to deserialize persona {} for {}", name, playerData.getEntity());
                 continue;
             }

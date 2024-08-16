@@ -4,10 +4,12 @@ import com.chaosbuffalo.mkcore.core.entity.*;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
 import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.util.Lazy;
+import org.jetbrains.annotations.UnknownNullability;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,7 +21,7 @@ public class MKEntityData implements IMKEntityData {
     private final LivingEntity entity;
     private final AbilityExecutor abilityExecutor;
     private final EntityStats stats;
-    private final Lazy<EntityEquipment> equipment;
+    private final EntityEquipment equipment;
     private final MobAbilityKnowledge abilities;
     private final CombatExtensionModule combatExtensionModule;
     private final EntityEffectHandler effectHandler;
@@ -33,7 +35,7 @@ public class MKEntityData implements IMKEntityData {
         abilities = new MobAbilityKnowledge(this);
         abilityExecutor = new AbilityExecutor(this);
         stats = new EntityStats(this);
-        equipment = Lazy.of(() -> new EntityEquipment(this));
+        equipment = new EntityEquipment(this);
         combatExtensionModule = new CombatExtensionModule(this);
         effectHandler = new EntityEffectHandler(this);
         pets = new EntityPetModule(this);
@@ -73,7 +75,7 @@ public class MKEntityData implements IMKEntityData {
 
     @Override
     public EntityEquipment getEquipment() {
-        return equipment.get();
+        return equipment;
     }
 
     public void setInstanceTracker(@Nullable ParticleEffectInstanceTracker instanceTracker) {
@@ -120,16 +122,18 @@ public class MKEntityData implements IMKEntityData {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-        tag.put("abilities", abilities.serialize());
-        tag.put("effects", effectHandler.serialize());
+        tag.put("abilities", abilities.serialize(provider));
+        tag.put("effects", effectHandler.serialize(provider));
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        abilities.deserialize(nbt.getCompound("abilities"));
-        effectHandler.deserialize(nbt.getCompound("effects"));
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag compoundTag) {
+        abilities.deserialize(provider, compoundTag.getCompound("abilities"));
+        effectHandler.deserialize(provider, compoundTag.getCompound("effects"));
     }
+
+
 }

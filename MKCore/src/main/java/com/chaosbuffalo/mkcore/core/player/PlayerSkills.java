@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.objects.Object2DoubleOpenCustomHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -148,7 +149,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serialize() {
+    public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         CompoundTag skillsNbt = new CompoundTag();
         for (Object2DoubleMap.Entry<Holder<Attribute>> entry : skillValues.object2DoubleEntrySet()) {
@@ -160,7 +161,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
     }
 
     @Override
-    public boolean deserialize(CompoundTag tag) {
+    public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
         CompoundTag skillsNbt = tag.getCompound("skills");
         for (String key : skillsNbt.getAllKeys()) {
             BuiltInRegistries.ATTRIBUTE.getHolder(ResourceLocation.parse(key))

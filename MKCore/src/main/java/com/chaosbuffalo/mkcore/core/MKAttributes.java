@@ -253,9 +253,6 @@ public class MKAttributes {
             new MKRangedAttribute("attribute.name.mk.heal_efficiency", 1.0, 0, 1000.0)
             .setSyncType(AttributeSyncType.Private));
 
-    public static final Holder<Attribute> ENTITY_REACH = REGISTRY.register("entity_reach", () ->
-            new RangedAttribute("attribute.name.mk.entity_reach", 3.0, 0, 1024.0));
-
     public static double getValueSafe(Holder<Attribute> attr, LivingEntity target) {
         AttributeInstance instance = target.getAttribute(attr);
         if (instance != null) {
