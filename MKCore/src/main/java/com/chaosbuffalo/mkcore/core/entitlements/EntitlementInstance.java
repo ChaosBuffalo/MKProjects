@@ -12,7 +12,7 @@ public class EntitlementInstance implements IRecordInstance<EntitlementInstance>
 
     public static final Codec<EntitlementInstance> CODEC = RecordCodecBuilder.<EntitlementInstance>mapCodec(builder ->
                     builder.group(
-                            MKCoreRegistry.ENTITLEMENTS.getCodec().fieldOf("entitlement").forGetter(EntitlementInstance::getEntitlement),
+                            MKCoreRegistry.ENTITLEMENTS.byNameCodec().fieldOf("entitlement").forGetter(EntitlementInstance::getEntitlement),
                             UUIDUtil.STRING_CODEC.fieldOf("instanceId").forGetter(EntitlementInstance::getUUID)
                     ).apply(builder, EntitlementInstance::new))
             .codec();

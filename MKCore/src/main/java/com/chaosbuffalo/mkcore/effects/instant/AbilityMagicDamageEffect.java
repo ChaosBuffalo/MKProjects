@@ -20,7 +20,7 @@ public class AbilityMagicDamageEffect extends MKEffect {
     }
 
     public static MKEffectBuilder<State> from(LivingEntity source, float baseDamage, float scaling, float modifierScaling) {
-        return CoreEffects.ABILITY_MAGIC_DAMAGE.get().builder(source)
+        return CoreEffects.ABILITY_MAGIC_DAMAGE.value().builder(source)
                 .state(s -> s.setScalingParameters(baseDamage, scaling, modifierScaling));
     }
 

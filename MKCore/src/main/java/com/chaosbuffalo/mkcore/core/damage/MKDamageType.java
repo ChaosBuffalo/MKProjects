@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKCombatFormulas;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -17,16 +18,16 @@ import java.util.Objects;
 
 
 public class MKDamageType {
-    private final Attribute damageAttribute;
-    private final Attribute resistanceAttribute;
-    private final Attribute critAttribute;
-    private final Attribute critMultiplierAttribute;
+    private final Holder<Attribute> damageAttribute;
+    private final Holder<Attribute> resistanceAttribute;
+    private final Holder<Attribute> critAttribute;
+    private final Holder<Attribute> critMultiplierAttribute;
     private float critMultiplier;
     private boolean shouldDisplay;
     private final ChatFormatting formatting;
 
-    public MKDamageType(Attribute damageAttribute, Attribute resistanceAttribute,
-                        Attribute critAttribute, Attribute critMultiplierAttribute, ChatFormatting formatting) {
+    public MKDamageType(Holder<Attribute> damageAttribute, Holder<Attribute> resistanceAttribute,
+                        Holder<Attribute> critAttribute, Holder<Attribute> critMultiplierAttribute, ChatFormatting formatting) {
         this.damageAttribute = damageAttribute;
         this.resistanceAttribute = resistanceAttribute;
         this.critMultiplierAttribute = critMultiplierAttribute;
@@ -73,19 +74,19 @@ public class MKDamageType {
         return name.withPath(path -> "textures/damage_types/" + path + ".png");
     }
 
-    public Attribute getDamageAttribute() {
+    public Holder<Attribute> getDamageAttribute() {
         return damageAttribute;
     }
 
-    public Attribute getCritChanceAttribute() {
+    public Holder<Attribute> getCritChanceAttribute() {
         return critAttribute;
     }
 
-    public Attribute getCritMultiplierAttribute() {
+    public Holder<Attribute> getCritMultiplierAttribute() {
         return critMultiplierAttribute;
     }
 
-    public Attribute getResistanceAttribute() {
+    public Holder<Attribute> getResistanceAttribute() {
         return resistanceAttribute;
     }
 
