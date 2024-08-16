@@ -9,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -251,6 +252,9 @@ public class MKAttributes {
     public static final Holder<Attribute> HEAL_EFFICIENCY = REGISTRY.register("heal_efficiency", () ->
             new MKRangedAttribute("attribute.name.mk.heal_efficiency", 1.0, 0, 1000.0)
             .setSyncType(AttributeSyncType.Private));
+
+    public static final Holder<Attribute> ENTITY_REACH = REGISTRY.register("entity_reach", () ->
+            new RangedAttribute("attribute.name.mk.entity_reach", 3.0, 0, 1024.0));
 
     public static double getValueSafe(Holder<Attribute> attr, LivingEntity target) {
         AttributeInstance instance = target.getAttribute(attr);

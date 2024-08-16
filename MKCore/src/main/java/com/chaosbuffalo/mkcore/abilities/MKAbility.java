@@ -21,6 +21,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
@@ -45,7 +46,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     private float manaCost;
     private final List<ISerializableAttribute<?>> attributes;
     private AbilityUseCondition useCondition;
-    private final Set<Attribute> skillAttributes;
+    private final Set<Holder<Attribute>> skillAttributes;
     protected static final ResourceLocation EMPTY_PARTICLES = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "fx.casting.empty");
     protected final ResourceLocationAttribute castingParticles = new ResourceLocationAttribute("casting_particles", EMPTY_PARTICLES);
     public static final ResourceLocation POOL_SLOT_ICON = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "textures/talents/pool_count_icon_filled.png");
@@ -109,7 +110,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     protected Component getSkillDescription(IMKEntityData casterData, AbilityContext context) {
         Component skillList = ComponentUtils.formatList(getSkillAttributes(),
-                attr -> Component.translatable(attr.getDescriptionId()));
+                attr -> Component.translatable(attr.value().getDescriptionId()));
         return Component.translatable("mkcore.ability.description.skill", skillList);
     }
 
@@ -228,7 +229,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     protected float getMeleeReach(LivingEntity entity) {
-        return (float) MKAttributes.getValueSafe(NeoForgeMod.ENTITY_REACH.get(), entity);
+        return (float) MKAttributes.getValueSafe(MKAttributes.ENTITY_REACH, entity);
     }
 
     protected void setCooldownTicks(int ticks) {
@@ -268,7 +269,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     protected float getManaCostModifierForSkills(IMKEntityData casterData) {
         float total = 0.0f;
         int attrCount = 0;
-        for (Attribute attribute : getSkillAttributes()) {
+        for (Holder<Attribute> attribute : getSkillAttributes()) {
             total += getSkillLevel(casterData.getEntity(), attribute);
             attrCount++;
         }
@@ -368,7 +369,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
 
-    public static float getSkillLevel(LivingEntity castingEntity, Attribute skillAttribute) {
+    public static float getSkillLevel(LivingEntity castingEntity, Holder<Attribute> skillAttribute) {
         if (skillAttribute == null) {
             return 0.0f;
         }
@@ -380,12 +381,12 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         return value / 20.0;
     }
 
-    protected MKAbility addSkillAttribute(Attribute attribute) {
+    protected MKAbility addSkillAttribute(Holder<Attribute> attribute) {
         this.skillAttributes.add(attribute);
         return this;
     }
 
-    public Set<Attribute> getSkillAttributes() {
+    public Set<Holder<Attribute>> getSkillAttributes() {
         return Collections.unmodifiableSet(skillAttributes);
     }
 
