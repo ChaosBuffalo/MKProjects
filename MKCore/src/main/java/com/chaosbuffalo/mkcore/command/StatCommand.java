@@ -15,6 +15,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -127,7 +128,7 @@ public class StatCommand {
         return createSimpleGetSetIntCommand(name, statGet, statSet);
     }
 
-    static ArgumentBuilder<CommandSourceStack, ?> createAttributeStat(String name, Attribute attribute) {
+    static ArgumentBuilder<CommandSourceStack, ?> createAttributeStat(String name, Holder<Attribute> attribute) {
         ToIntFunction<Player> attrGet = playerEntity -> {
             AttributeInstance instance = playerEntity.getAttribute(attribute);
             if (instance != null) {

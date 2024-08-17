@@ -193,12 +193,12 @@ public class MKPlayerData implements IMKEntityData {
         }
     }
 
-    public void clone(MKPlayerData previous, boolean death) {
+    public void clone(HolderLookup.Provider provider, MKPlayerData previous, boolean death) {
         if (death) {
             previous.onDeath();
         }
-        CompoundTag tag = previous.serializeNBT();
-        deserializeNBT(tag);
+        CompoundTag tag = previous.serializeNBT(provider);
+        deserializeNBT(provider, tag);
     }
 
     @Override

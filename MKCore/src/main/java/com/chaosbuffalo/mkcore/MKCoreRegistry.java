@@ -114,6 +114,7 @@ public class MKCoreRegistry {
         ProjectileCastBehaviorTypes.register(modBus);
         AbilityClientStateTypes.register(modBus);
         MKAttributes.register(modBus);
+        CoreAttachments.register(modBus);
 
     }
 }

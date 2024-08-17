@@ -5,7 +5,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.*;
 
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -52,7 +51,7 @@ public class ItemUtils {
         if (!stack.is(other.getItem())) {
             return false;
         } else {
-            return stack.isEmpty() && other.isEmpty() ? true : stack.getComponents().stream().allMatch(
+            return stack.isEmpty() && other.isEmpty() || stack.getComponents().stream().allMatch(
                     comp -> blackList.contains(comp.type()) || Objects.equals(comp, other.getComponents().get(comp.type())));
         }
     }
@@ -74,6 +73,6 @@ public class ItemUtils {
             }
         }
         return EquipmentSlot.MAINHAND;
-    }
+        }
 
 }

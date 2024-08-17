@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityManager;
-import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mkcore.client.gui.MKOverlay;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.command.MKCommand;
@@ -13,6 +12,7 @@ import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
 import com.chaosbuffalo.mkcore.core.talents.TalentManager;
 import com.chaosbuffalo.mkcore.events.ClientEventHandler;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
+import com.chaosbuffalo.mkcore.init.CoreAttachments;
 import com.chaosbuffalo.mkcore.init.CoreItems;
 import com.chaosbuffalo.mkcore.init.CoreParticles;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
@@ -40,6 +40,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -65,7 +66,6 @@ public class MKCore {
         modBus.addListener(this::modifyAttributesEvent);
         // Register the processIMC method for modloading
         modBus.addListener(this::processIMC);
-        modBus.addListener(CoreCapabilities::registerCapabilities);
         MKCoreRegistry.register(modBus);
         // Register ourselves for server and other game events we are interested in
         NeoForge.EVENT_BUS.register(this);
@@ -142,23 +142,23 @@ public class MKCore {
         return ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, path);
     }
 
-    public static LazyOptional<MKPlayerData> getPlayer(Entity playerEntity) {
-        return playerEntity.getCapability(CoreCapabilities.PLAYER_CAPABILITY);
+    public static Optional<MKPlayerData> getPlayer(Entity playerEntity) {
+        return playerEntity.getExistingData(CoreAttachments.PLAYER_DATA_ATTACHMENT);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Nullable
     public static MKPlayerData getPlayerOrNull(Entity playerEntity) {
-        return playerEntity.getCapability(CoreCapabilities.PLAYER_CAPABILITY).orElse(null);
+        return playerEntity.getData(CoreAttachments.PLAYER_DATA_ATTACHMENT);
     }
 
-    public static LazyOptional<? extends IMKEntityData> getEntityData(@Nullable Entity entity) {
+    public static Optional<? extends IMKEntityData> getEntityData(@Nullable Entity entity) {
         if (entity instanceof Player) {
-            return entity.getCapability(CoreCapabilities.PLAYER_CAPABILITY);
+            return entity.getExistingData(CoreAttachments.PLAYER_DATA_ATTACHMENT);
         } else if (entity instanceof LivingEntity) {
-            return entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY);
+            return entity.getExistingData(CoreAttachments.ENTITY_DATA_ATTACHMENT);
         }
-        return LazyOptional.empty();
+        return Optional.empty();
     }
 
     @SuppressWarnings("ConstantConditions")
