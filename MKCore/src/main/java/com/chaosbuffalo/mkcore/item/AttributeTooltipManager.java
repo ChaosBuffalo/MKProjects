@@ -1,22 +1,19 @@
 package com.chaosbuffalo.mkcore.item;
 
-import com.chaosbuffalo.mkcore.MKCore;
-import com.google.common.collect.Multimap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,8 +28,6 @@ public class AttributeTooltipManager {
     // Why are these protected in Item? Not sure if it's worth an AT
     protected static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
     protected static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
-    public static final ResourceLocation BASE_ATTACK_DAMAGE_ID = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "base_attack_damage_id");
-    public static final ResourceLocation BASE_ATTACK_SPEED_ID = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "base_attack_speed_id");
 
     Mob
 
@@ -64,12 +59,12 @@ public class AttributeTooltipManager {
         double amount = modifier.amount();
         boolean absolute = false;
         if (player != null) {
-            if (modifier.id().equals(BASE_ATTACK_DAMAGE_ID)) {
+            if (modifier.id().equals(Item.BASE_ATTACK_DAMAGE_ID)) {
                 amount += player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
                 //FIXME: Figure out how to calculate a client side enchantment damage bonus
 //                amount += EnchantmentHelper.getDamageBonus(stack, MobType.UNDEFINED);
                 absolute = true;
-            } else if (modifier.id().equals(BASE_ATTACK_SPEED_ID)) {
+            } else if (modifier.id().equals(Item.BASE_ATTACK_SPEED_ID)) {
                 amount += player.getAttributeBaseValue(Attributes.ATTACK_SPEED);
                 absolute = true;
             }
