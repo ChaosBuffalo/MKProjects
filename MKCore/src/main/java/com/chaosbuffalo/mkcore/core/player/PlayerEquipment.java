@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
+import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -129,7 +130,7 @@ public class PlayerEquipment extends EntityEquipment {
         if (newItem.getItem() instanceof IMKAbilityProvider provider) {
             MKAbility ability = provider.getAbility(newItem);
             if (ability != null) {
-                EquipmentSlot slot = LivingEntity.getEquipmentSlotForItem(newItem);
+                EquipmentSlot slot = ItemUtils.getGenericEquipmentSlotForItem(newItem);
                 playerData.getAbilities().learnAbility(ability, AbilitySource.forEquipmentSlot(slot));
             }
         }
@@ -176,7 +177,7 @@ public class PlayerEquipment extends EntityEquipment {
         if (oldItem.getItem() instanceof IMKAbilityProvider provider) {
             MKAbility ability = provider.getAbility(oldItem);
             if (ability != null) {
-                EquipmentSlot slot = LivingEntity.getEquipmentSlotForItem(oldItem);
+                EquipmentSlot slot = ItemUtils.getGenericEquipmentSlotForItem(oldItem);
                 playerData.getAbilities().unlearnAbility(ability.getAbilityId(), AbilitySource.forEquipmentSlot(slot));
             }
         }

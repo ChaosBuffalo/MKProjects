@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.utils;
 
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.*;
 
 import java.util.HashSet;
@@ -61,5 +62,17 @@ public class ItemUtils {
     public static boolean isEqualNoDurability(ItemStack stack1, ItemStack stack2) {
         return compareItemsWithBlacklist(stack1, stack1, noDurability);
     }
+
+    public static EquipmentSlot getGenericEquipmentSlotForItem(ItemStack stack) {
+        EquipmentSlot slot = stack.getEquipmentSlot();
+        if (slot != null) {
+            return slot;
+        } else {
+            Equipable equipable = Equipable.get(stack);
+            if (equipable != null) {
+                return equipable.getEquipmentSlot();
+            }
+        }
+        return EquipmentSlot.MAINHAND;
 
 }
