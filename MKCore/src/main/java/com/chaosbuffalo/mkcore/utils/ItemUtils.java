@@ -74,5 +74,6 @@ public class ItemUtils {
             }
         }
         return EquipmentSlot.MAINHAND;
+    }
 
 }
