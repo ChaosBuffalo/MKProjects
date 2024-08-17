@@ -32,8 +32,6 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -105,13 +103,6 @@ public class MKCore {
         PlayerPageRegistry.init();
         event.enqueueWork(CoreItems::registerItemProperties);
         ClientEventHandler.setupAttributeRenderers();
-    }
-
-    @SubscribeEvent
-    public void cancelHealth(RenderGuiLayerEvent.Pre event) {
-        if (event.getName().equals(VanillaGuiLayers.PLAYER_HEALTH)) {
-            event.setCanceled(true);
-        }
     }
 
     public void registerLayers(RegisterGuiLayersEvent event) {

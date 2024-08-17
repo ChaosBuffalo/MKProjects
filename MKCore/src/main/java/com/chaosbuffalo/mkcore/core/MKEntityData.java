@@ -8,7 +8,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.common.util.Lazy;
 import org.jetbrains.annotations.UnknownNullability;
 
 import javax.annotation.Nonnull;

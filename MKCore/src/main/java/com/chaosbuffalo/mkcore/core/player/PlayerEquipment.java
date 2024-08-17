@@ -7,6 +7,8 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -97,24 +99,26 @@ public class PlayerEquipment extends EntityEquipment {
         ArmorClass itemClass = ArmorClass.getItemArmorClass(from);
         if (itemClass != null) {
             UUID uuid = getArmorClassSlotUUID(slot);
-            itemClass.getPositiveModifierMap(slot).keySet().forEach(attr -> tryRemoveModifier(attr, uuid));
-            itemClass.getNegativeModifierMap(slot).keySet().forEach(attr -> tryRemoveModifier(attr, uuid));
+            itemClass.getPositiveModifierMap(slot).forEach((attr, mod) -> tryRemoveModifier(attr, uuid, mod));
+            itemClass.getNegativeModifierMap(slot).forEach((attr, mod) -> tryRemoveModifier(attr, uuid, mod));
         }
     }
 
-    private void tryAddModifier(Attribute attribute, EquipmentSlot slot, AttributeModifier template) {
+    private void tryAddModifier(Holder<Attribute> attribute, EquipmentSlot slot, AttributeModifier template) {
         AttributeInstance instance = getEntityData().getEntity().getAttribute(attribute);
         if (instance != null) {
             UUID uuid = getArmorClassSlotUUID(slot);
-            AttributeModifier mod = new AttributeModifier(uuid, template::getName, template.getAmount(), template.getOperation());
+            AttributeModifier mod = new AttributeModifier(ResourceLocation.fromNamespaceAndPath(template.id().getNamespace(), String.format(
+                    "%s.%s", template.id().getPath(), uuid.toString())), template.amount(), template.operation());
             instance.addTransientModifier(mod);
         }
     }
 
-    private void tryRemoveModifier(Attribute attr, UUID uuid) {
+    private void tryRemoveModifier(Holder<Attribute> attr, UUID uuid, AttributeModifier template) {
         AttributeInstance instance = getEntityData().getEntity().getAttribute(attr);
         if (instance != null) {
-            instance.removeModifier(uuid);
+            instance.removeModifier(ResourceLocation.fromNamespaceAndPath(template.id().getNamespace(), String.format(
+                    "%s.%s", template.id().getPath(), uuid.toString())));
         }
     }
 
@@ -137,16 +141,16 @@ public class PlayerEquipment extends EntityEquipment {
         AttributeInstance attr = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT);
         float skillLevel = MKAbility.getSkillLevel(playerData.getEntity(), MKAttributes.HAND_TO_HAND);
         if (attr != null) {
-            if (attr.getModifier(UNARMED_SKILL_MODIFIER) == null) {
-                attr.addTransientModifier(new AttributeModifier(UNARMED_SKILL_MODIFIER, "skill scaling",
-                        0.05 + skillLevel / 100.0, AttributeModifier.Operation.ADDITION));
+            if (attr.getModifier(UNARMED_SKILL_ID) == null) {
+                attr.addTransientModifier(new AttributeModifier(UNARMED_SKILL_ID,
+                        0.05 + skillLevel / 100.0, AttributeModifier.Operation.ADD_VALUE));
             }
         }
         AttributeInstance crit = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT_MULTIPLIER);
         if (crit != null) {
-            if (crit.getModifier(UNARMED_SKILL_MODIFIER) == null) {
-                crit.addTransientModifier(new AttributeModifier(UNARMED_SKILL_MODIFIER, "skill scaling",
-                        0.5 + skillLevel / 10.0, AttributeModifier.Operation.ADDITION));
+            if (crit.getModifier(UNARMED_SKILL_ID) == null) {
+                crit.addTransientModifier(new AttributeModifier(UNARMED_SKILL_ID,
+                        0.5 + skillLevel / 10.0, AttributeModifier.Operation.ADD_VALUE));
             }
         }
     }
@@ -156,11 +160,11 @@ public class PlayerEquipment extends EntityEquipment {
         super.removeUnarmedModifier();
         AttributeInstance attr = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT);
         if (attr != null) {
-            attr.removeModifier(UNARMED_SKILL_MODIFIER);
+            attr.removeModifier(UNARMED_SKILL_ID);
         }
         AttributeInstance crit = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT_MULTIPLIER);
         if (crit != null) {
-            crit.removeModifier(UNARMED_SKILL_MODIFIER);
+            crit.removeModifier(UNARMED_SKILL_ID);
         }
 
     }

@@ -2,7 +2,7 @@ package com.chaosbuffalo.mkcore.events;
 
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.eventbus.api.Event;
+import net.neoforged.bus.api.Event;
 
 public class PlayerDataEvent extends Event {
     private final MKPlayerData data;

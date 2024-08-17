@@ -22,6 +22,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -30,23 +31,24 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.event.RenderHandEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.client.settings.KeyConflictContext;
-import net.minecraftforge.client.settings.KeyModifier;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.RenderHandEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.neoforge.client.settings.KeyConflictContext;
+import net.neoforged.neoforge.client.settings.KeyModifier;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-@Mod.EventBusSubscriber(modid = MKCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+
+@EventBusSubscriber(modid = MKCore.MOD_ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public class ClientEventHandler {
 
     private static final KeyMapping playerMenuBind = new KeyMapping("key.hud.playermenu",
@@ -57,7 +59,7 @@ public class ClientEventHandler {
     private static KeyMapping[] ultimateAbilityBinds;
     private static KeyMapping itemAbilityBind;
 
-    @Mod.EventBusSubscriber(modid = MKCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MKCore.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ModEvents {
         @SubscribeEvent
         public static void registerKeyBinding(RegisterKeyMappingsEvent event) {
@@ -121,8 +123,8 @@ public class ClientEventHandler {
 //    }
 
     @SubscribeEvent
-    public static void onOverlayRender(RenderGuiOverlayEvent.Pre event) {
-        if (event.getOverlay().id() == VanillaGuiOverlay.PLAYER_HEALTH.id()) {
+    public void cancelHealth(RenderGuiLayerEvent.Pre event) {
+        if (event.getName().equals(VanillaGuiLayers.PLAYER_HEALTH)) {
             event.setCanceled(true);
         }
     }
@@ -216,21 +218,21 @@ public class ClientEventHandler {
     }
 
     static void renderPoise(ItemStack stack, EquipmentSlot slotType, Player player,
-                            Attribute attribute, AttributeModifier modifier, Consumer<Component> output) {
+                            Holder<Attribute> attribute, AttributeModifier modifier, Consumer<Component> output) {
         output.accept(AttributeTooltipManager.makePlusOrTakeText(attribute, modifier,
-                modifier.getAmount(), modifier.getAmount()));
+                modifier.amount(), modifier.amount()));
     }
 
     static void renderAbsolutePercentTwoDigits(ItemStack stack, EquipmentSlot slotType, Player player,
-                                               Attribute attribute, AttributeModifier modifier,
+                                               Holder<Attribute> attribute, AttributeModifier modifier,
                                                Consumer<Component> output) {
         output.accept(AttributeTooltipManager.makeEqualsText(attribute, modifier,
-                modifier.getAmount() * 100, v -> String.format("%.2f%%", v)));
+                modifier.amount() * 100, v -> String.format("%.2f%%", v)));
     }
 
-    static void renderCritMultiplier(ItemStack stack, EquipmentSlot slotType, Player player, Attribute attribute,
+    static void renderCritMultiplier(ItemStack stack, EquipmentSlot slotType, Player player, Holder<Attribute> attribute,
                                      AttributeModifier modifier, Consumer<Component> output) {
-        double value = player.getAttributeBaseValue(attribute) + modifier.getAmount();
+        double value = player.getAttributeBaseValue(attribute) + modifier.amount();
         output.accept(AttributeTooltipManager.makeEqualsText(attribute, modifier, value,
                 v -> String.format("%.1fx", v)));
     }
@@ -263,21 +265,21 @@ public class ClientEventHandler {
         }
     }
 
-    private static void addAttributeToTooltip(List<Component> tooltip, Attribute attribute,
+    private static void addAttributeToTooltip(List<Component> tooltip, Holder<Attribute> attribute,
                                               AttributeModifier modifier, ChatFormatting color) {
         String suffix = "";
-        double amount = modifier.getAmount();
-        if (modifier.getOperation() == AttributeModifier.Operation.ADDITION) {
+        double amount = modifier.amount();
+        if (modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
             if (attribute instanceof MKRangedAttribute mkRangedAttribute) {
                 if (mkRangedAttribute.displayAdditionAsPercentage()) {
                     suffix = "%";
                     amount *= 100;
                 }
             }
-        } else if (modifier.getOperation() == AttributeModifier.Operation.MULTIPLY_TOTAL) {
+        } else if (modifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
             amount *= 100;
             suffix = "%";
-        } else if (modifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE) {
+        } else if (modifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE) {
             amount *= 100;
             suffix = "% of base";
         }
@@ -286,7 +288,7 @@ public class ClientEventHandler {
         Component component = Component.translatable("mkcore.gui.item.armor_class.effect.name")
                 .withStyle(color)
                 .append(String.format(": %s%.2f%s ", prefix, amount, suffix))
-                .append(Component.translatable(attribute.getDescriptionId()));
+                .append(Component.translatable(attribute.value().getDescriptionId()));
 
         tooltip.add(component);
     }
