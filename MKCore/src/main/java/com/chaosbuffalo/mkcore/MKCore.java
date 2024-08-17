@@ -143,7 +143,7 @@ public class MKCore {
     }
 
     public static Optional<MKPlayerData> getPlayer(Entity playerEntity) {
-        return playerEntity.getExistingData(CoreAttachments.PLAYER_DATA_ATTACHMENT);
+        return Optional.ofNullable(playerEntity.getData(CoreAttachments.PLAYER_DATA_ATTACHMENT));
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -154,9 +154,9 @@ public class MKCore {
 
     public static Optional<? extends IMKEntityData> getEntityData(@Nullable Entity entity) {
         if (entity instanceof Player) {
-            return entity.getExistingData(CoreAttachments.PLAYER_DATA_ATTACHMENT);
+            return Optional.ofNullable(entity.getData(CoreAttachments.PLAYER_DATA_ATTACHMENT));
         } else if (entity instanceof LivingEntity) {
-            return entity.getExistingData(CoreAttachments.ENTITY_DATA_ATTACHMENT);
+            return Optional.ofNullable(entity.getData(CoreAttachments.ENTITY_DATA_ATTACHMENT));
         }
         return Optional.empty();
     }
