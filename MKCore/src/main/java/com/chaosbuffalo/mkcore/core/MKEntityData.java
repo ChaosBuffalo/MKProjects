@@ -91,6 +91,7 @@ public class MKEntityData implements IMKEntityData {
         getEffects().onJoinWorld();
     }
 
+    @Override
     public void update() {
         getEffects().tick();
         getAbilityExecutor().tick();

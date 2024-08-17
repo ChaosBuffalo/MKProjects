@@ -181,6 +181,7 @@ public class MKPlayerData implements IMKEntityData {
         tickCallbacks.add(callback);
     }
 
+    @Override
     public void update() {
         getEffects().tick();
         getStats().tick();

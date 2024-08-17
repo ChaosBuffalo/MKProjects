@@ -47,6 +47,8 @@ public interface IMKEntityData extends INBTSerializable<CompoundTag> {
 
     void onJoinWorld();
 
+    void update();
+
     void onPlayerStartTracking(ServerPlayer playerEntity);
 
     void attachUpdateEngine(SyncController engine);

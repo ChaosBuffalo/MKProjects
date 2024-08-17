@@ -3,6 +3,8 @@ package com.chaosbuffalo.mkcore.init;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.MKServerPlayerData;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.IEventBus;
@@ -19,7 +21,9 @@ public class CoreAttachments {
 
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<MKPlayerData>> PLAYER_DATA_ATTACHMENT = ATTACHMENT_TYPES.register(
             "player_data", () -> AttachmentType.serializable((attachee) -> {
-                if (attachee instanceof Player player) {
+                if (attachee instanceof ServerPlayer player) {
+                    return new MKServerPlayerData(player);
+                } else if (attachee instanceof Player player) {
                     return new MKPlayerData(player);
                 }
                 return null;

@@ -2,14 +2,11 @@ package com.chaosbuffalo.mkcore.events;
 
 import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.entities.ISyncControllerProvider;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
-import com.chaosbuffalo.mkcore.utils.CapabilityUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -17,30 +14,24 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.scores.Team;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerXpEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerXpEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Mod.EventBusSubscriber(modid = MKCore.MOD_ID)
+@EventBusSubscriber(modid = MKCore.MOD_ID)
 public class EntityEventHandler {
 
     @SubscribeEvent
-    public static void onLivingUpdate(LivingEvent.LivingTickEvent event) {
-        LivingEntity living = event.getEntity();
-
-        if (living instanceof Player) {
-            living.getCapability(CoreCapabilities.PLAYER_CAPABILITY).ifPresent(MKPlayerData::update);
-        } else {
-            living.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent(MKEntityData::update);
-        }
+    public static void onLivingUpdate(EntityTickEvent.Post event) {
+        MKCore.getEntityData(event.getEntity()).ifPresent(IMKEntityData::update);
     }
 
     private static MKPlayerData playerCapFactory(Player player) {
@@ -51,23 +42,10 @@ public class EntityEventHandler {
         }
     }
 
-    @SuppressWarnings("unused")
-    @SubscribeEvent
-    public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> e) {
-        if (e.getObject() instanceof Player player) {
-            var provider = CapabilityUtils.provider(CoreCapabilities.PLAYER_CAPABILITY, EntityEventHandler::playerCapFactory, player);
-
-            e.addCapability(CoreCapabilities.PLAYER_CAP_ID, provider);
-        } else if (e.getObject() instanceof LivingEntity living) {
-            var provider = CapabilityUtils.provider(CoreCapabilities.ENTITY_CAPABILITY, MKEntityData::new, living);
-
-            e.addCapability(CoreCapabilities.ENTITY_CAP_ID, provider);
-        }
-    }
 
     @SubscribeEvent
     public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
-        if (event.getEntity().getLevel().isClientSide())
+        if (event.getEntity().level().isClientSide())
             return;
 
         if (event.getEntity() instanceof LivingEntity) {
@@ -149,11 +127,9 @@ public class EntityEventHandler {
         Player player = event.getEntity();
         Player oldPlayer = event.getOriginal();
 
-        oldPlayer.reviveCaps();
         MKCore.getPlayer(player)
                 .ifPresent(newCap -> MKCore.getPlayer(oldPlayer)
-                        .ifPresent(oldCap -> newCap.clone(oldCap, event.isWasDeath())));
-        oldPlayer.invalidateCaps();
+                        .ifPresent(oldCap -> newCap.clone(event.getEntity().registryAccess(), oldCap, event.isWasDeath())));
     }
 
     @SubscribeEvent
