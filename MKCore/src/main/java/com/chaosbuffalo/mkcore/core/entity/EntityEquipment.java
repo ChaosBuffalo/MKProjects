@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.item.IMKEquipment;
+import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -31,7 +32,7 @@ public class EntityEquipment {
     public void onEquipmentChange(EquipmentSlot slot, ItemStack from, ItemStack to) {
         // Currently, we only care about swapping items so modifications like durability are ignored
         // FIXME: Find the is same item ignore durability func
-        if (ItemStack.isSameItemSameTags(from, to))
+        if (ItemUtils.isEqualNoDurability(from, to))
             return;
 
         handleRemoval(slot, from);

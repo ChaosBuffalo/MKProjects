@@ -1,6 +1,12 @@
 package com.chaosbuffalo.mkcore.utils;
 
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.*;
+
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 public class ItemUtils {
     private static final float DEFAULT_CRIT_RATE = .0f;
@@ -38,6 +44,22 @@ public class ItemUtils {
         }
         Item item = itemInHand.getItem();
         return CRIT.getMultiplier(item);
+    }
+
+
+    public static boolean compareItemsWithBlacklist(ItemStack stack, ItemStack other, Set<DataComponentType<?>> blackList) {
+        if (!stack.is(other.getItem())) {
+            return false;
+        } else {
+            return stack.isEmpty() && other.isEmpty() ? true : stack.getComponents().stream().allMatch(
+                    comp -> blackList.contains(comp.type()) || Objects.equals(comp, other.getComponents().get(comp.type())));
+        }
+    }
+
+    private static Set<DataComponentType<?>> noDurability = Set.of(DataComponents.DAMAGE, DataComponents.MAX_DAMAGE);
+
+    public static boolean isEqualNoDurability(ItemStack stack1, ItemStack stack2) {
+        return compareItemsWithBlacklist(stack1, stack1, noDurability);
     }
 
 }
