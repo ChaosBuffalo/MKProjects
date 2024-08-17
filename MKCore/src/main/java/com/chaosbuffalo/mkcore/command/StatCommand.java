@@ -16,12 +16,13 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import javax.annotation.Nonnull;
 import java.util.UUID;
@@ -165,7 +166,7 @@ public class StatCommand {
                 );
     }
 
-    static ArgumentBuilder<CommandSourceStack, ?> createAttrGetSetCommand(String name, Attribute attr,
+    static ArgumentBuilder<CommandSourceStack, ?> createAttrGetSetCommand(String name, Holder<Attribute> attr,
                                                                           ToIntFunction<Player> getterAction,
                                                                           ToIntBiFunction<Player, Float> setterAction) {
         return Commands.argument("player", EntityArgument.player())
@@ -188,7 +189,7 @@ public class StatCommand {
                         FloatArgumentType.getFloat(ctx, "amount")));
     }
 
-    private static LiteralArgumentBuilder<CommandSourceStack> createAttrModCommand(Attribute attr) {
+    private static LiteralArgumentBuilder<CommandSourceStack> createAttrModCommand(Holder<Attribute> attr) {
         return Commands.literal("mod")
                 .executes(ctx -> listModifiers(ctx, attr))
                 .then(Commands.argument("value", FloatArgumentType.floatArg())
@@ -204,7 +205,7 @@ public class StatCommand {
         return s.hasPermission(ServerLifecycleHooks.getCurrentServer().getOperatorUserPermissionLevel());
     }
 
-    static int listModifiers(CommandContext<CommandSourceStack> ctx, Attribute attr) throws CommandSyntaxException {
+    static int listModifiers(CommandContext<CommandSourceStack> ctx, Holder<Attribute> attr) throws CommandSyntaxException {
         Player entity = EntityArgument.getPlayer(ctx, "player");
 
         if (entity.getAttributes().hasAttribute(attr)) {
@@ -214,15 +215,15 @@ public class StatCommand {
                 return Command.SINGLE_SUCCESS;
             }
 
-            ChatUtils.sendMessageWithBrackets(entity, "%s modifiers", attr.getDescriptionId());
+            ChatUtils.sendMessageWithBrackets(entity, "%s modifiers", attr.value().getDescriptionId());
             for (AttributeModifier mod : instance.getModifiers()) {
-                ChatUtils.sendMessage(entity, "%s: %f %s", mod.getName(), mod.getAmount(), mod.getId());
+                ChatUtils.sendMessage(entity, "%s: %f", mod.id(), mod.amount());
             }
         }
         return Command.SINGLE_SUCCESS;
     }
 
-    static int addModifier(CommandContext<CommandSourceStack> ctx, Attribute attr, float value, boolean temp) throws CommandSyntaxException {
+    static int addModifier(CommandContext<CommandSourceStack> ctx, Holder<Attribute> attr, float value, boolean temp) throws CommandSyntaxException {
         Player entity = EntityArgument.getPlayer(ctx, "player");
 
         if (entity.getAttributes().hasAttribute(attr)) {
@@ -232,13 +233,13 @@ public class StatCommand {
                 return Command.SINGLE_SUCCESS;
             }
 
-            AttributeModifier mod = new AttributeModifier(UUID.randomUUID(), "added by command", value, AttributeModifier.Operation.ADDITION);
+            AttributeModifier mod = new AttributeModifier(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, UUID.randomUUID().toString()), value, AttributeModifier.Operation.ADD_VALUE);
             if (temp) {
                 instance.addTransientModifier(mod);
             } else {
                 instance.addPermanentModifier(mod);
             }
-            ChatUtils.sendMessage(entity, "Temp mod added with UUID %s", mod.getId());
+            ChatUtils.sendMessage(entity, "Temp mod added with ID %s", mod.id());
         }
 
         return Command.SINGLE_SUCCESS;
