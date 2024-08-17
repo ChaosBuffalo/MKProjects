@@ -3,11 +3,11 @@ package com.chaosbuffalo.mkcore.client.gui;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 
@@ -22,28 +22,19 @@ public abstract class StatPageBase extends PlayerPageBase {
         super(playerData, title);
     }
 
-    protected MKText getTextForAttribute(MKPlayerData playerData, Attribute attr) {
+    protected MKText getTextForAttribute(MKPlayerData playerData, Holder<Attribute> attr) {
         AttributeInstance attribute = playerData.getEntity().getAttribute(attr);
-        String text = String.format("%s: %.2f", I18n.get(attr.getDescriptionId()), attribute.getValue());
+        String text = String.format("%s: %.2f", I18n.get(attr.value().getDescriptionId()), attribute.getValue());
         MKText textWidget = new MKText(minecraft.font, text).setMultiline(true);
         addPreDrawRunnable(() -> {
-            String newText = String.format("%s: %.2f", I18n.get(attr.getDescriptionId()), attribute.getValue());
+            String newText = String.format("%s: %.2f", I18n.get(attr.value().getDescriptionId()), attribute.getValue());
             textWidget.setText(newText);
             double baseValue = attribute.getBaseValue();
             if (attr.equals(Attributes.ATTACK_SPEED) && minecraft.player != null) {
                 ItemStack itemInHand = minecraft.player.getMainHandItem();
                 if (!itemInHand.isEmpty()) {
-                    var modifiers = itemInHand.getAttributeModifiers(EquipmentSlot.MAINHAND);
-                    if (modifiers.containsKey(attr)) {
-                        Collection<AttributeModifier> itemAttackSpeed = modifiers.get(attr);
-                        double attackSpeed = 4.0;
-                        for (AttributeModifier mod : itemAttackSpeed) {
-                            if (mod.getOperation().equals(AttributeModifier.Operation.ADDITION)) {
-                                attackSpeed += mod.getAmount();
-                            }
-                        }
-                        baseValue = attackSpeed;
-                    }
+                    var modifiers = itemInHand.getAttributeModifiers();
+                    baseValue = modifiers.compute(4.0, EquipmentSlot.MAINHAND);
                 }
             }
             if (attribute.getValue() < baseValue) {

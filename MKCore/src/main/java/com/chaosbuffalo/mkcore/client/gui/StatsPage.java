@@ -11,6 +11,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -21,7 +22,7 @@ import java.util.ArrayList;
 
 public class StatsPage extends StatPageBase {
 
-    private static final ArrayList<Attribute> STAT_PANEL_ATTRIBUTES = new ArrayList<>();
+    private static final ArrayList<Holder<Attribute>> STAT_PANEL_ATTRIBUTES = new ArrayList<>();
 
     static {
         STAT_PANEL_ATTRIBUTES.add(Attributes.MAX_HEALTH);
@@ -107,7 +108,7 @@ public class StatsPage extends StatPageBase {
         stackLayout.setMargins(4, 4, 4, 4);
         stackLayout.setPaddingTop(2).setPaddingBot(2);
         stackLayout.doSetChildWidth(true);
-        for (Attribute attr : STAT_PANEL_ATTRIBUTES) {
+        for (Holder<Attribute> attr : STAT_PANEL_ATTRIBUTES) {
             MKText textWidget = getTextForAttribute(pData, attr);
             stackLayout.addWidget(textWidget);
         }
