@@ -18,7 +18,6 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -27,13 +26,11 @@ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.storage.LevelResource;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.OnDatapackSyncEvent;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nullable;
@@ -49,8 +46,8 @@ import java.util.stream.Collectors;
 public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
     public static final String DEFINITION_FOLDER = "particle_animations";
 
-    public static final ResourceLocation RAW_EFFECT = new ResourceLocation(MKCore.MOD_ID, "particle_anim.raw_effect");
-    public static final ResourceLocation INVALID_EFFECT = new ResourceLocation(MKCore.MOD_ID, "particle_anim.invalid");
+    public static final ResourceLocation RAW_EFFECT = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "particle_anim.raw_effect");
+    public static final ResourceLocation INVALID_EFFECT = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "particle_anim.invalid");
     private MinecraftServer server;
     private boolean serverStarted = false;
 
@@ -264,7 +261,7 @@ public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
                         Collection<String> files = Arrays.stream(sources).collect(Collectors.toList());
                         for (String file : files) {
                             Path filePath = Paths.get(modPath.toString(), file);
-                            ResourceLocation overrideName = new ResourceLocation(modid, file.substring(0, file.length() - ".json".length()));
+                            ResourceLocation overrideName = ResourceLocation.fromNamespaceAndPath(modid, file.substring(0, file.length() - ".json".length()));
                             try {
                                 InputStream fileStream = new FileInputStream(filePath.toFile());
                                 Reader reader = new BufferedReader(new InputStreamReader(fileStream, StandardCharsets.UTF_8));

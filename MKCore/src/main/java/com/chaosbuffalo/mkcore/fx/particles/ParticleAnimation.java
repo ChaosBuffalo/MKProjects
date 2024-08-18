@@ -6,11 +6,11 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -89,7 +89,7 @@ public class ParticleAnimation {
         }
         if (hasParticleType()) {
             builder.put(ops.createString("particleType"),
-                    ops.createString(ForgeRegistries.PARTICLE_TYPES.getKey(particleType).toString()));
+                    ops.createString(BuiltInRegistries.PARTICLE_TYPE.getKey(particleType).toString()));
         }
         return ops.createMap(builder.build());
     }
@@ -110,9 +110,9 @@ public class ParticleAnimation {
             }
             return spawnPattern;
         }).result().orElse(null);
-        ResourceLocation loc = new ResourceLocation(dynamic.get("particleType").asString().result()
+        ResourceLocation loc = ResourceLocation.parse(dynamic.get("particleType").asString().result()
                 .orElse(CoreParticles.MAGIC_CROSS.getId().toString()));
-        particleType = (ParticleType<MKParticleData>) ForgeRegistries.PARTICLE_TYPES.getValue(loc);
+        particleType = (ParticleType<MKParticleData>) BuiltInRegistries.PARTICLE_TYPE.get(loc);
     }
 
     public void tick(MKParticle particle) {

@@ -10,12 +10,12 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -123,6 +123,7 @@ public class MKParticleData implements ParticleOptions {
         return particleType;
     }
 
+
     @Override
     public void writeToNetwork(FriendlyByteBuf buffer) {
         buffer.writeDouble(origin.x);
@@ -136,13 +137,13 @@ public class MKParticleData implements ParticleOptions {
         if (dyn instanceof CompoundTag) {
             buffer.writeNbt((CompoundTag) dyn);
         } else {
-            throw new RuntimeException(String.format("Particle Animation %s did not serialize to a CompoundNBT!", ForgeRegistries.PARTICLE_TYPES.getKey(getType())));
+            throw new RuntimeException(String.format("Particle Animation %s did not serialize to a CompoundNBT!", BuiltInRegistries.PARTICLE_TYPE.getKey(getType())));
         }
     }
 
     @Override
     public String writeToString() {
-        return ForgeRegistries.PARTICLE_TYPES.getKey(this.getType()) + " " + origin.toString();
+        return BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()) + " " + origin.toString();
     }
 
 }
