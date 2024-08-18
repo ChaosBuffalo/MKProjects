@@ -5,14 +5,15 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.entities.ISyncControllerProvider;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.*;
 import net.minecraft.world.scores.Team;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -24,6 +25,7 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @EventBusSubscriber(modid = MKCore.MOD_ID)
@@ -70,9 +72,9 @@ public class EntityEventHandler {
     }
 
     private static int applyMending(LivingEntity entityIn, int xpValue, int xpPerDurability) {
-        Map.Entry<EquipmentSlot, ItemStack> entry = EnchantmentHelper.getRandomItemWith(Enchantments.MENDING, entityIn, ItemStack::isDamaged);
-        if (entry != null) {
-            ItemStack stack = entry.getValue();
+        Optional<EnchantedItemInUse> entry = EnchantmentHelper.getRandomItemWith(EnchantmentEffectComponents.REPAIR_WITH_XP, entityIn, ItemStack::isDamaged);
+        if (entry.isPresent()) {
+            ItemStack stack = entry.get().itemStack();
             int i = Math.min((int) (xpValue * stack.getXpRepairRatio()), stack.getDamageValue());
             stack.setDamageValue(stack.getDamageValue() - i);
             xpValue -= i / Math.max(1, xpPerDurability);
