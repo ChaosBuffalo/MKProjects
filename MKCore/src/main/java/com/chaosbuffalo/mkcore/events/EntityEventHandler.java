@@ -10,6 +10,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -79,6 +80,7 @@ public class EntityEventHandler {
             stack.setDamageValue(stack.getDamageValue() - i);
             xpValue -= i / Math.max(1, xpPerDurability);
         }
+        ExperienceOrb.
         return xpValue;
     }
 
@@ -98,19 +100,19 @@ public class EntityEventHandler {
             Team team = event.getEntity().getTeam();
             MinecraftServer server = serverPlayer.getServer();
             if (team != null && server != null) {
-                List<Player> playersInRange = team.getPlayers().stream()
+                List<ServerPlayer> playersInRange = team.getPlayers().stream()
                         .map(x -> server.getPlayerList().getPlayerByName(x))
                         .filter(other -> other != null && serverPlayer.distanceToSqr(other) <= rangeSq * rangeSq)
-                        .collect(Collectors.toList());
+                        .toList();
                 if (playersInRange.size() > 1) {
                     int splitAmount = calculateXpShare(event.getOrb().value, playersInRange.size());
                     splitAmount = Math.max(splitAmount, 1);
 
-                    for (Player player : playersInRange) {
+                    for (ServerPlayer player : playersInRange) {
                         if (!player.is(serverPlayer)) {
 //                            MKCore.LOGGER.info("onPlayerPickupXP giving {} to {}", splitAmount, player);
                             if (MKConfig.SERVER.enablePartyXpShareMending.get()) {
-                                splitAmount = applyMending(player, splitAmount, 2);
+                                splitAmount = event.getOrb().repairPlayerItems(player, splitAmount);
 //                                MKCore.LOGGER.info("onPlayerPickupXP post mending {}", splitAmount);
                             }
                             if (splitAmount > 0) {
