@@ -40,8 +40,8 @@ public class EntityCastPacket implements CustomPacketPayload {
         INTERRUPT
     }
 
-    public static final StreamCodec<FriendlyByteBuf, EntityCastPacket> STREAM_CODEC = StreamCodec.of(
-            (bytes, packet) -> packet.toBytes(bytes), EntityCastPacket::new
+    public static final StreamCodec<FriendlyByteBuf, EntityCastPacket> STREAM_CODEC = StreamCodec.ofMember(
+            EntityCastPacket::toBytes, EntityCastPacket::new
     );
 
     public EntityCastPacket(IMKEntityData entityData, ResourceLocation abilityId, int castTicks, @Nullable AbilityClientState clientState) {
@@ -78,7 +78,7 @@ public class EntityCastPacket implements CustomPacketPayload {
                 CompoundTag tag = buffer.readNbt();
                 if (tag != null) {
                     clientState = AbilityClientState.CODEC.parse(NbtOps.INSTANCE, tag.get("client_state"))
-                            .getOrThrow(false, MKCore.LOGGER::error);
+                            .getOrThrow();
                 } else {
                     clientState = null;
                 }
@@ -98,7 +98,7 @@ public class EntityCastPacket implements CustomPacketPayload {
             buffer.writeBoolean(clientState != null);
             if (clientState != null) {
                 CompoundTag tag = new CompoundTag();
-                tag.put("client_state", AbilityClientState.CODEC.encodeStart(NbtOps.INSTANCE, clientState).getOrThrow(false, MKCore.LOGGER::error));
+                tag.put("client_state", AbilityClientState.CODEC.encodeStart(NbtOps.INSTANCE, clientState).getOrThrow());
                 buffer.writeNbt(tag);
             }
         } else if (action == CastAction.INTERRUPT) {

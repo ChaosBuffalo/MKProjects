@@ -7,21 +7,32 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Supplier;
 
-public class EntityEffectPacket {
+public class EntityEffectPacket implements CustomPacketPayload {
     private final int entityId;
     private final Action action;
     private final UUID sourceId;
     private final List<MKActiveEffect> effects = new ArrayList<>();
+    public static final CustomPacketPayload.Type<EntityEffectPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "entity_effect"));
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
+    public static final StreamCodec<FriendlyByteBuf, EntityEffectPacket> STREAM_CODEC = StreamCodec.ofMember(
+            EntityEffectPacket::toBytes, EntityEffectPacket::new
+    );
 
     public enum Action {
         SET,
@@ -77,10 +88,8 @@ public class EntityEffectPacket {
         }
     }
 
-    public static void handle(EntityEffectPacket packet, Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> ClientHandler.handleClient(packet));
-        ctx.setPacketHandled(true);
+    public static void handle(final EntityEffectPacket packet, IPayloadContext context) {
+        ClientHandler.handleClient(packet);
     }
 
     static class ClientHandler {

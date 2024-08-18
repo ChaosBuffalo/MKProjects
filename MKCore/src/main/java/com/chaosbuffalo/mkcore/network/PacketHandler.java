@@ -35,6 +35,56 @@ public class PacketHandler {
                 EntityCastPacket.STREAM_CODEC,
                 EntityCastPacket::handle
         );
+        registrar.playToClient(
+                EntityEffectPacket.TYPE,
+                EntityEffectPacket.STREAM_CODEC,
+                EntityEffectPacket::handle
+        );
+        registrar.playToServer(
+                ExecuteActiveAbilityPacket.TYPE,
+                ExecuteActiveAbilityPacket.STREAM_CODEC,
+                ExecuteActiveAbilityPacket::handle
+        );
+        registrar.playToServer(
+                ForgetAbilitiesRequestPacket.TYPE,
+                ForgetAbilitiesRequestPacket.STREAM_CODEC,
+                ForgetAbilitiesRequestPacket::handle
+        );
+        registrar.playToClient(
+                MKParticleEffectSpawnPacket.TYPE,
+                MKParticleEffectSpawnPacket.STREAM_CODEC,
+                MKParticleEffectSpawnPacket::handle
+        );
+        registrar.playToServer(
+                MKParticleEffectEditorSpawnPacket.TYPE,
+                MKParticleEffectEditorSpawnPacket.STREAM_CODEC,
+                MKParticleEffectEditorSpawnPacket::handle
+        );
+        registrar.playToClient(
+                OpenLearnAbilitiesGuiPacket.TYPE,
+                OpenLearnAbilitiesGuiPacket.STREAM_CODEC,
+                OpenLearnAbilitiesGuiPacket::handle
+        );
+        registrar.playToServer(
+                ParticleAnimationEditorSyncPacket.TYPE,
+                ParticleAnimationEditorSyncPacket.STREAM_CODEC,
+                ParticleAnimationEditorSyncPacket::handle
+        );
+        registrar.playToClient(
+                ParticleAnimationsSyncPacket.TYPE,
+                ParticleAnimationsSyncPacket.STREAM_CODEC,
+                ParticleAnimationsSyncPacket::handle
+        );
+        registrar.playToClient(
+                ParticleEffectSpawnPacket.TYPE,
+                ParticleEffectSpawnPacket.STREAM_CODEC,
+                ParticleEffectSpawnPacket::handle
+        );
+        registrar.playToClient(
+                PlayerAbilitiesSyncPacket.TYPE,
+                PlayerAbilitiesSyncPacket.STREAM_CODEC,
+                PlayerAbilitiesSyncPacket::handle
+        );
     }
 
 

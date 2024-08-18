@@ -43,8 +43,8 @@ public class CritMessagePacket implements CustomPacketPayload {
     private String typeName;
     private final int sourceId;
 
-    public static final StreamCodec<FriendlyByteBuf, CritMessagePacket> STREAM_CODEC = StreamCodec.of(
-            (bytes, packet) -> packet.toBytes(bytes), CritMessagePacket::new
+    public static final StreamCodec<FriendlyByteBuf, CritMessagePacket> STREAM_CODEC = StreamCodec.ofMember(
+            CritMessagePacket::toBytes, CritMessagePacket::new
     );
 
     public CritMessagePacket(int targetId, int sourceId, float critDamage) {

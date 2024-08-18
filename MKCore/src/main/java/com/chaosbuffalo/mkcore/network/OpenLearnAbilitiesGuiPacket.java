@@ -7,16 +7,26 @@ import com.chaosbuffalo.mkcore.client.gui.LearnAbilityPage;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
-public class OpenLearnAbilitiesGuiPacket {
+public class OpenLearnAbilitiesGuiPacket implements CustomPacketPayload {
     private final int entityId;
     private final List<AbilityTrainingEvaluation> abilities;
+
+    public static final CustomPacketPayload.Type<OpenLearnAbilitiesGuiPacket> TYPE = new CustomPacketPayload.Type<>(
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "open_learn_Abilities_gui"));
+
+    public static final StreamCodec<FriendlyByteBuf, OpenLearnAbilitiesGuiPacket> STREAM_CODEC = StreamCodec.ofMember(
+            OpenLearnAbilitiesGuiPacket::toBytes, OpenLearnAbilitiesGuiPacket::new
+    );
+
 
     public OpenLearnAbilitiesGuiPacket(MKPlayerData playerData, IAbilityTrainer trainingEntity) {
         abilities = new ArrayList<>(5);
@@ -45,10 +55,13 @@ public class OpenLearnAbilitiesGuiPacket {
         abilities.forEach(offer -> offer.write(buffer));
     }
 
-    public static void handle(OpenLearnAbilitiesGuiPacket packet, Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> ClientHandler.handleClient(packet));
-        ctx.setPacketHandled(true);
+    public static void handle(final OpenLearnAbilitiesGuiPacket packet, IPayloadContext context) {
+        ClientHandler.handleClient(packet);
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 
     static class ClientHandler {

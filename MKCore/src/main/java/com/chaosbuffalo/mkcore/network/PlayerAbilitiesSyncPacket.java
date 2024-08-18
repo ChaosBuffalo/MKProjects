@@ -8,17 +8,25 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Supplier;
 
-public class PlayerAbilitiesSyncPacket {
+public class PlayerAbilitiesSyncPacket implements CustomPacketPayload{
     private final Map<ResourceLocation, CompoundTag> data;
+
+    public static final CustomPacketPayload.Type<PlayerAbilitiesSyncPacket> TYPE = new CustomPacketPayload.Type<>(
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "player_abilities_sync"));
+
+    public static final StreamCodec<FriendlyByteBuf, PlayerAbilitiesSyncPacket> STREAM_CODEC = StreamCodec.ofMember(
+            PlayerAbilitiesSyncPacket::toBytes, PlayerAbilitiesSyncPacket::new
+    );
 
 
     public PlayerAbilitiesSyncPacket(Collection<MKAbility> abilities) {
@@ -51,21 +59,20 @@ public class PlayerAbilitiesSyncPacket {
         }
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        MKCore.LOGGER.debug("Handling player abilities update packet");
-        ctx.enqueueWork(() -> {
-            for (Entry<ResourceLocation, CompoundTag> abilityData : data.entrySet()) {
-                MKAbility ability = MKCoreRegistry.ABILITIES.getValue(abilityData.getKey());
-                if (ability != null) {
-                    MKCore.LOGGER.debug("Updating ability with server data: {}", abilityData.getKey());
-                    ability.deserializeDynamic(new Dynamic<>(NbtOps.INSTANCE, abilityData.getValue()));
-                } else {
-                    MKCore.LOGGER.warn("Skipping ability update for {}", abilityData.getKey());
-                }
-
+    public static void handle(final PlayerAbilitiesSyncPacket packet, IPayloadContext context) {
+        for (Entry<ResourceLocation, CompoundTag> abilityData : packet.data.entrySet()) {
+            MKAbility ability = MKCoreRegistry.ABILITIES.get(abilityData.getKey());
+            if (ability != null) {
+                MKCore.LOGGER.debug("Updating ability with server data: {}", abilityData.getKey());
+                ability.deserializeDynamic(new Dynamic<>(NbtOps.INSTANCE, abilityData.getValue()));
+            } else {
+                MKCore.LOGGER.warn("Skipping ability update for {}", abilityData.getKey());
             }
-        });
-        ctx.setPacketHandled(true);
+        }
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

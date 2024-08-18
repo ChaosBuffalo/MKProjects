@@ -9,17 +9,18 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
-public class MKParticleEffectSpawnPacket {
+public class MKParticleEffectSpawnPacket implements CustomPacketPayload {
     protected final double xPos;
     protected final double yPos;
     protected final double zPos;
@@ -28,6 +29,13 @@ public class MKParticleEffectSpawnPacket {
     protected final boolean hasRaw;
     protected final int entityId;
     protected final List<Vec3> additionalLocs;
+
+    public static final CustomPacketPayload.Type<MKParticleEffectSpawnPacket> TYPE = new CustomPacketPayload.Type<>(
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "particle_effect_spawn"));
+
+    public static final StreamCodec<FriendlyByteBuf, MKParticleEffectSpawnPacket> STREAM_CODEC = StreamCodec.ofMember(
+            MKParticleEffectSpawnPacket::toBytes, MKParticleEffectSpawnPacket::new
+    );
 
 
     public MKParticleEffectSpawnPacket(double xPos, double yPos, double zPos, ParticleAnimation anim, int entityId) {
@@ -63,7 +71,6 @@ public class MKParticleEffectSpawnPacket {
     public MKParticleEffectSpawnPacket(double xPos, double yPos, double zPos, ResourceLocation animName) {
         this(xPos, yPos, zPos, animName, -1);
     }
-
 
     public MKParticleEffectSpawnPacket(Vec3 posVec, ParticleAnimation anim) {
         this(posVec.x, posVec.y, posVec.z, anim);
@@ -134,10 +141,13 @@ public class MKParticleEffectSpawnPacket {
 
     }
 
-    public static void handle(MKParticleEffectSpawnPacket packet, Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> ClientHandler.handleClient(packet));
-        ctx.setPacketHandled(true);
+    public static void handle(final MKParticleEffectSpawnPacket packet, IPayloadContext context) {
+        ClientHandler.handleClient(packet);
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 
     static class ClientHandler {

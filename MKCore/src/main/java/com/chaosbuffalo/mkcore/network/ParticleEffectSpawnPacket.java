@@ -1,17 +1,19 @@
 package com.chaosbuffalo.mkcore.network;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.fx.ParticleEffects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
-
-public class ParticleEffectSpawnPacket {
+public class ParticleEffectSpawnPacket implements CustomPacketPayload {
     private final double xPos;
     private final double yPos;
     private final double zPos;
@@ -26,6 +28,13 @@ public class ParticleEffectSpawnPacket {
     private final double headingX;
     private final double headingY;
     private final double headingZ;
+
+    public static final CustomPacketPayload.Type<ParticleEffectSpawnPacket> TYPE = new CustomPacketPayload.Type<>(
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "particle_effect_spawn"));
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, ParticleEffectSpawnPacket> STREAM_CODEC = StreamCodec.ofMember(
+            ParticleEffectSpawnPacket::toBytes, ParticleEffectSpawnPacket::new
+    );
 
 
     public ParticleEffectSpawnPacket(ParticleOptions particleID, int motionType, int count, int data,
@@ -66,8 +75,8 @@ public class ParticleEffectSpawnPacket {
                 radiusY, radiusZ, speed, headingVec.x, headingVec.y, headingVec.z);
     }
 
-    public ParticleEffectSpawnPacket(FriendlyByteBuf buf) {
-        this.particleID = EntityDataSerializers.PARTICLE.read(buf);
+    public ParticleEffectSpawnPacket(RegistryFriendlyByteBuf buf) {
+        this.particleID = EntityDataSerializers.PARTICLE.codec().decode(buf);
         this.motionType = buf.readInt();
         this.data = buf.readInt();
         this.count = buf.readInt();
@@ -83,8 +92,8 @@ public class ParticleEffectSpawnPacket {
         this.headingZ = buf.readDouble();
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
-        EntityDataSerializers.PARTICLE.write(buf, particleID);
+    public void toBytes(RegistryFriendlyByteBuf buf) {
+        EntityDataSerializers.PARTICLE.codec().encode(buf, particleID);
         buf.writeInt(this.motionType);
         buf.writeInt(this.data);
         buf.writeInt(this.count);
@@ -100,10 +109,13 @@ public class ParticleEffectSpawnPacket {
         buf.writeDouble(this.headingZ);
     }
 
-    public static void handle(ParticleEffectSpawnPacket packet, Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> ClientHandler.handleClient(packet));
-        ctx.setPacketHandled(true);
+    public static void handle(final ParticleEffectSpawnPacket packet, IPayloadContext context) {
+        ClientHandler.handleClient(packet);
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 
     static class ClientHandler {
@@ -117,7 +129,7 @@ public class ParticleEffectSpawnPacket {
                     new Vec3(packet.xPos, packet.yPos, packet.zPos),
                     new Vec3(packet.radiusX, packet.radiusY, packet.radiusZ),
                     new Vec3(packet.headingX, packet.headingY, packet.headingZ),
-                    player.level);
+                    player.level());
         }
     }
 }
