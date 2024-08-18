@@ -10,8 +10,8 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.data.LanguageProvider;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.common.data.LanguageProvider;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,7 +44,7 @@ public abstract class MKAbilityProvider extends MKDataProvider {
         @Override
         public CompletableFuture<?> run(CachedOutput pOutput) {
             return CompletableFuture.allOf(
-                    MKCoreRegistry.ABILITIES.getEntries().stream()
+                    MKCoreRegistry.ABILITIES.entrySet().stream()
                             .filter(entry -> entry.getKey().location().getNamespace().equals(getModId()))
                             .map(entry -> writeAbility(entry.getKey().location(), entry.getValue(), pOutput))
                             .toList().toArray(CompletableFuture[]::new));
@@ -58,18 +58,18 @@ public abstract class MKAbilityProvider extends MKDataProvider {
             this.provider = provider;
         }
 
-        public Builder ability(RegistryObject<? extends MKAbility> abilitySupplier) {
+        public Builder ability(DeferredHolder<MKAbility, ? extends MKAbility> abilitySupplier) {
             return new Builder(provider, abilitySupplier);
         }
 
         public static class Builder {
             private final LanguageProvider provider;
-            private final RegistryObject<? extends MKAbility> ability;
+            private final DeferredHolder<MKAbility, ? extends MKAbility> ability;
             private final Map<String, String> customValues = new TreeMap<>();
             private String name;
             private String description;
 
-            public Builder(LanguageProvider provider, RegistryObject<? extends MKAbility> supplier) {
+            public Builder(LanguageProvider provider, DeferredHolder<MKAbility, ? extends MKAbility> supplier) {
                 this.provider = provider;
                 this.ability = supplier;
             }

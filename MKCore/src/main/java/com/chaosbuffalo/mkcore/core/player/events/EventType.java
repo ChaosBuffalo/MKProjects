@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.core.player.events;
 
-import net.minecraftforge.fml.LogicalSide;
+
+import net.neoforged.fml.LogicalSide;
 
 public class EventType<T extends PlayerEvent<?>> {
 

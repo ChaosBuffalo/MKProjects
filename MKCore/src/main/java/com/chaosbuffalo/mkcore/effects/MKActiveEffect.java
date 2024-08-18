@@ -8,7 +8,11 @@ import com.chaosbuffalo.mkcore.utils.MKNBTUtil;
 import com.google.common.reflect.TypeToken;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
@@ -17,8 +21,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.util.Lazy;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -31,7 +34,7 @@ public class MKActiveEffect {
     private final Lazy<MobEffectInstance> displayEffectInstance = Lazy.of(() -> createDisplayEffectInstance(this));
     private final MKEffectState state;
     private final MKEffectBehaviour behaviour;
-    private final Object2FloatMap<Attribute> attributeSkillSnapshot;
+    private final Object2FloatMap<Holder<Attribute>> attributeSkillSnapshot;
     private int stackCount;
     private float skillLevel;
     @Nullable
@@ -54,7 +57,7 @@ public class MKActiveEffect {
         abilityId = builder.getAbilityId();
         sourceEntity = builder.getSourceEntity();
         directEntity = builder.getDirectEntity();
-        Map<Attribute, MKEffect.Modifier> modifierMap = effect.getAttributeModifierMap();
+        Map<Holder<Attribute>, MKEffect.Modifier> modifierMap = effect.getAttributeModifierMap();
         attributeSkillSnapshot = new Object2FloatOpenHashMap<>(modifierMap.size());
         if (sourceEntity != null) {
             for (MKEffect.Modifier modifier : modifierMap.values()) {
@@ -187,7 +190,7 @@ public class MKActiveEffect {
     }
 
     public static MKActiveEffect deserializeClient(ResourceLocation effectId, UUID sourceId, CompoundTag tag) {
-        MKEffect effect = MKCoreRegistry.EFFECTS.getValue(effectId);
+        MKEffect effect = MKCoreRegistry.EFFECTS.get(effectId);
         if (effect == null) {
             return null;
         }
@@ -210,8 +213,9 @@ public class MKActiveEffect {
         }
         if (!attributeSkillSnapshot.isEmpty()) {
             CompoundTag attrTag = new CompoundTag();
+            // FIXME: We should make these serialize holders
             attributeSkillSnapshot.object2FloatEntrySet().forEach(entry -> {
-                ResourceLocation attrId = ForgeRegistries.ATTRIBUTES.getKey(entry.getKey());
+                ResourceLocation attrId = BuiltInRegistries.ATTRIBUTE.getKey(entry.getKey().value());
                 if (attrId != null) {
                     attrTag.putFloat(attrId.toString(), entry.getFloatValue());
                 }
@@ -222,7 +226,7 @@ public class MKActiveEffect {
         return stateTag;
     }
 
-    public float getAttributeSkillLevel(Attribute skill) {
+    public float getAttributeSkillLevel(Holder<Attribute> skill) {
         return attributeSkillSnapshot.getOrDefault(skill, 0f);
     }
 
@@ -242,9 +246,10 @@ public class MKActiveEffect {
         if (stateTag.contains("attrSkills")) {
             CompoundTag attrTag = stateTag.getCompound("attrSkills");
             for (String key : attrTag.getAllKeys()) {
-                ResourceLocation attrLoc = new ResourceLocation(key);
-                Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(attrLoc);
-                if (attribute != null) {
+                ResourceLocation attrLoc = ResourceLocation.parse(key);
+                // FIXME: We should make these serialize holders
+                Holder<Attribute> attribute = BuiltInRegistries.ATTRIBUTE.getHolderOrThrow(ResourceKey.create(Registries.ATTRIBUTE, attrLoc));
+                if (attribute.isBound()) {
                     float val = attrTag.getFloat(key);
                     attributeSkillSnapshot.put(attribute, val);
                 }
@@ -266,7 +271,7 @@ public class MKActiveEffect {
     public static MKActiveEffect deserializeStorage(UUID sourceId, CompoundTag tag) {
         ResourceLocation effectId = deserializeId(tag);
 
-        MKEffect effect = MKCoreRegistry.EFFECTS.getValue(effectId);
+        MKEffect effect = MKCoreRegistry.EFFECTS.get(effectId);
         if (effect == null) {
             return null;
         }

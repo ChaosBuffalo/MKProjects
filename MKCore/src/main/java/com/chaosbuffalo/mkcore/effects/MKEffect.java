@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import net.minecraft.Util;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
@@ -17,8 +18,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
-import net.minecraftforge.common.util.Lazy;
+import net.neoforged.neoforge.client.extensions.common.IClientMobEffectExtensions;
+import net.neoforged.neoforge.common.util.Lazy;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -32,11 +33,11 @@ public abstract class MKEffect {
         public final AttributeModifier attributeModifier;
         public final double base;
         @Nullable
-        public final Attribute skill;
+        public final Holder<Attribute> skill;
 
         public Modifier(UUID uuid, Supplier<String> nameProvider, double base, double amount,
-                        AttributeModifier.Operation operation, @Nullable Attribute skill) {
-            attributeModifier = new AttributeModifier(uuid, nameProvider, amount, operation);
+                        AttributeModifier.Operation operation, @Nullable Holder<Attribute> skill) {
+            attributeModifier = new AttributeModifier(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, uuid.toString()), amount, operation);
             this.base = base;
             this.skill = skill;
         }
@@ -46,7 +47,7 @@ public abstract class MKEffect {
     protected String name;
     protected final Lazy<MobEffect> wrapperEffect = Lazy.of(WrapperEffect::new);
     protected final MobEffectCategory effectType;
-    private final Map<Attribute, Modifier> attributeModifierMap = new HashMap<>();
+    private final Map<Holder<Attribute>, Modifier> attributeModifierMap = new HashMap<>();
 
     public MKEffect(MobEffectCategory effectType) {
         this.effectType = effectType;
@@ -125,7 +126,7 @@ public abstract class MKEffect {
         return new MKActiveEffect(this, sourceId);
     }
 
-    public Map<Attribute, Modifier> getAttributeModifierMap() {
+    public Map<Holder<Attribute>, Modifier> getAttributeModifierMap() {
         return attributeModifierMap;
     }
 
@@ -133,23 +134,23 @@ public abstract class MKEffect {
         return !attributeModifierMap.isEmpty();
     }
 
-    public MKEffect addAttribute(Attribute attribute, UUID uuid, double amount, AttributeModifier.Operation operation) {
+    public MKEffect addAttribute(Holder<Attribute> attribute, UUID uuid, double amount, AttributeModifier.Operation operation) {
         return this.addAttribute(attribute, uuid, amount, amount, operation, null);
     }
 
-    public MKEffect addAttribute(Attribute attribute, UUID uuid, double base, double amount,
-                                 AttributeModifier.Operation operation, @Nullable Attribute skill) {
+    public MKEffect addAttribute(Holder<Attribute> attribute, UUID uuid, double base, double amount,
+                                 AttributeModifier.Operation operation, @Nullable Holder<Attribute> skill) {
         attributeModifierMap.put(attribute, new Modifier(uuid, this::getName, base, amount, operation, skill));
         return this;
     }
 
     protected void removeAttributesModifiers(IMKEntityData targetData) {
         AttributeMap manager = targetData.getEntity().getAttributes();
-        for (Map.Entry<Attribute, Modifier> entry : getAttributeModifierMap().entrySet()) {
+        for (Map.Entry<Holder<Attribute>, Modifier> entry : getAttributeModifierMap().entrySet()) {
             AttributeInstance attrInstance = manager.getInstance(entry.getKey());
             if (attrInstance != null) {
                 AttributeModifier modifier = entry.getValue().attributeModifier;
-                if (attrInstance.hasModifier(modifier)) {
+                if (attrInstance.hasModifier(modifier.id())) {
                     attrInstance.removeModifier(modifier);
                 }
             }
@@ -158,12 +159,12 @@ public abstract class MKEffect {
 
     protected void applyAttributesModifiers(IMKEntityData targetData, MKActiveEffect activeEffect) {
         AttributeMap manager = targetData.getEntity().getAttributes();
-        for (Map.Entry<Attribute, Modifier> entry : getAttributeModifierMap().entrySet()) {
+        for (Map.Entry<Holder<Attribute>, Modifier> entry : getAttributeModifierMap().entrySet()) {
             AttributeInstance attrInstance = manager.getInstance(entry.getKey());
             if (attrInstance != null) {
                 Modifier template = entry.getValue();
                 AttributeModifier modifier = template.attributeModifier;
-                if (attrInstance.hasModifier(modifier)) {
+                if (attrInstance.hasModifier(modifier.id())) {
                     attrInstance.removeModifier(modifier);
                 }
                 attrInstance.addPermanentModifier(createModifier(template, activeEffect));
@@ -175,12 +176,11 @@ public abstract class MKEffect {
         int stacks = activeEffect.getStackCount();
 
         double amount = calculateInstanceModifierValue(template, activeEffect);
-        return new AttributeModifier(template.attributeModifier.getId(), () -> getName() + " " + stacks,
-                amount, template.attributeModifier.getOperation());
+        return new AttributeModifier(template.attributeModifier.id(), amount, template.attributeModifier.operation());
     }
 
     public double calculateModifierValue(Modifier modifier, int stackCount, float skillLevel) {
-        return modifier.base + (modifier.attributeModifier.getAmount() * stackCount * skillLevel);
+        return modifier.base + (modifier.attributeModifier.amount() * stackCount * skillLevel);
     }
 
     protected double calculateInstanceModifierValue(Modifier modifier, MKActiveEffect activeEffect) {
@@ -220,11 +220,14 @@ public abstract class MKEffect {
             return getMKEffect().getDisplayName();
         }
 
-        @Override
-        public List<ItemStack> getCurativeItems() {
-            return Collections.emptyList();
-        }
+//        @Override
+//        public List<ItemStack> getCurativeItems() {
+//            return Collections.emptyList();
+//        }
 
+        //FIXME: Looks like this is marked for deprecation
+        @SuppressWarnings("removal")
+        @Override
         public void initializeClient(Consumer<IClientMobEffectExtensions> consumer) {
             consumer.accept(new MKEffectRenderer(getMKEffect()));
         }

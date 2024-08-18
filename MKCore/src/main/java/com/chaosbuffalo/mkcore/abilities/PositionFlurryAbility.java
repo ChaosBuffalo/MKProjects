@@ -11,16 +11,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.List;
 import java.util.function.Consumer;
 
 public abstract class PositionFlurryAbility extends MKAbility {
     protected final IntAttribute tickRate = new IntAttribute("tickRate", GameConstants.TICKS_PER_SECOND / 2);
-    protected final RegistryObject<? extends PositionTargetingAbility> abilityToCast;
+    protected final DeferredHolder<MKAbility, ? extends PositionTargetingAbility> abilityToCast;
 
-    public PositionFlurryAbility(RegistryObject<? extends PositionTargetingAbility> abilityToCast) {
+    public PositionFlurryAbility(DeferredHolder<MKAbility, ? extends PositionTargetingAbility> abilityToCast) {
         super();
         addAttributes(tickRate);
         this.abilityToCast = abilityToCast;
@@ -37,7 +37,7 @@ public abstract class PositionFlurryAbility extends MKAbility {
     @Override
     public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
         super.buildDescription(casterData, context, consumer);
-        abilityToCast.ifPresent(x -> {
+        abilityToCast.asOptional().ifPresent(x -> {
             consumer.accept(x.getAbilityName().withStyle(ChatFormatting.UNDERLINE).withStyle(ChatFormatting.GRAY));
             consumer.accept(x.getAbilityDescription(casterData, context)
                     .plainCopy().withStyle(ChatFormatting.GRAY));
@@ -74,7 +74,7 @@ public abstract class PositionFlurryAbility extends MKAbility {
             Vec3 maxBound = castingEntity.position().add(dist, 4.0, dist);
             List<LivingEntity> entities = castingEntity.getCommandSenderWorld().getEntitiesOfClass(LivingEntity.class,
                     new AABB(minBound, maxBound));
-            abilityToCast.ifPresent(ab -> {
+            abilityToCast.asOptional().ifPresent(ab -> {
                 for (LivingEntity ent : entities) {
                     if (Targeting.isValidTarget(getTargetContext(), castingEntity, ent)) {
                         ab.castAtPosition(casterData, ent.position(), context);

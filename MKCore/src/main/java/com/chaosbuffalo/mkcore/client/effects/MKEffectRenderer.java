@@ -2,7 +2,7 @@ package com.chaosbuffalo.mkcore.client.effects;
 
 
 import com.chaosbuffalo.mkcore.effects.MKEffect;
-import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientMobEffectExtensions;
 
 public class MKEffectRenderer implements IClientMobEffectExtensions {
     protected final MKEffect effect;
