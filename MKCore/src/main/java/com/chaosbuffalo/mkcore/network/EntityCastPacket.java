@@ -9,15 +9,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import javax.annotation.Nullable;
-import java.util.function.Supplier;
 
-public class EntityCastPacket {
+public class EntityCastPacket implements CustomPacketPayload {
+
+    public static final CustomPacketPayload.Type<EntityCastPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "entity_cast"));
 
     private final int entityId;
     private ResourceLocation abilityId;
@@ -27,10 +30,19 @@ public class EntityCastPacket {
     @Nullable
     private AbilityClientState clientState;
 
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
     enum CastAction {
         START,
         INTERRUPT
     }
+
+    public static final StreamCodec<FriendlyByteBuf, EntityCastPacket> STREAM_CODEC = StreamCodec.of(
+            (bytes, packet) -> packet.toBytes(bytes), EntityCastPacket::new
+    );
 
     public EntityCastPacket(IMKEntityData entityData, ResourceLocation abilityId, int castTicks, @Nullable AbilityClientState clientState) {
         entityId = entityData.getEntity().getId();
@@ -95,10 +107,8 @@ public class EntityCastPacket {
 
     }
 
-    public static void handle(EntityCastPacket packet, Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> ClientHandler.handleClient(packet));
-        ctx.setPacketHandled(true);
+    public static void handle(final EntityCastPacket packet, IPayloadContext context) {
+        ClientHandler.handleClient(packet);
     }
 
     static class ClientHandler {

@@ -15,7 +15,6 @@ import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreAttachments;
 import com.chaosbuffalo.mkcore.init.CoreItems;
 import com.chaosbuffalo.mkcore.init.CoreParticles;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -28,7 +27,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
@@ -61,7 +59,6 @@ public class MKCore {
         INSTANCE = this;
         MKConfig.init(modContainer);
         modBus.addListener(this::registerLayers);
-        modBus.addListener(this::setup);
         modBus.addListener(EventPriority.LOWEST, this::loadComplete);
         modBus.addListener(this::clientSetup);
         modBus.addListener(this::modifyAttributesEvent);
@@ -75,10 +72,6 @@ public class MKCore {
         particleAnimationManager = new ParticleAnimationManager();
         AbilityManager.setupDeserializers();
         ParticleAnimationManager.setupDeserializers();
-    }
-
-    private void setup(final FMLCommonSetupEvent event) {
-        PacketHandler.setupHandler();
     }
 
     private void loadComplete(final FMLLoadCompleteEvent event) {

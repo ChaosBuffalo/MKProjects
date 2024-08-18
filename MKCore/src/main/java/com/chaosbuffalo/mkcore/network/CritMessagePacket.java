@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.network;
 
 import com.chaosbuffalo.mkcore.MKConfig;
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
@@ -8,15 +9,24 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
 
-public class CritMessagePacket {
+public class CritMessagePacket implements CustomPacketPayload {
+
+    public static final CustomPacketPayload.Type<CritMessagePacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "crit_message"));
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
     public enum CritType {
         MELEE_CRIT,
         MK_CRIT,
@@ -33,6 +43,9 @@ public class CritMessagePacket {
     private String typeName;
     private final int sourceId;
 
+    public static final StreamCodec<FriendlyByteBuf, CritMessagePacket> STREAM_CODEC = StreamCodec.of(
+            (bytes, packet) -> packet.toBytes(bytes), CritMessagePacket::new
+    );
 
     public CritMessagePacket(int targetId, int sourceId, float critDamage) {
         this.targetId = targetId;
@@ -105,10 +118,8 @@ public class CritMessagePacket {
         }
     }
 
-    public static void handle(CritMessagePacket packet, Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> ClientHandler.handleClient(packet));
-        ctx.setPacketHandled(true);
+    public static void handle(final CritMessagePacket packet, IPayloadContext context) {
+        ClientHandler.handleClient(packet);
     }
 
     static class ClientHandler {

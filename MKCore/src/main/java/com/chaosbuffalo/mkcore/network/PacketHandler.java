@@ -25,6 +25,16 @@ public class PacketHandler {
                 EntityDataUpdatePacket.STREAM_CODEC,
                 EntityDataUpdatePacket::handlePacket
         );
+        registrar.playToClient(
+                CritMessagePacket.TYPE,
+                CritMessagePacket.STREAM_CODEC,
+                CritMessagePacket::handle
+        );
+        registrar.playToClient(
+                EntityCastPacket.TYPE,
+                EntityCastPacket.STREAM_CODEC,
+                EntityCastPacket::handle
+        );
     }
 
 
