@@ -59,6 +59,7 @@ public class MKCore {
 
     public MKCore(IEventBus modBus, ModContainer modContainer) {
         INSTANCE = this;
+        MKConfig.init(modContainer);
         modBus.addListener(this::registerLayers);
         modBus.addListener(this::setup);
         modBus.addListener(EventPriority.LOWEST, this::loadComplete);
@@ -72,8 +73,6 @@ public class MKCore {
         talentManager = new TalentManager();
         abilityManager = new AbilityManager();
         particleAnimationManager = new ParticleAnimationManager();
-
-        MKConfig.init();
         AbilityManager.setupDeserializers();
         ParticleAnimationManager.setupDeserializers();
     }
