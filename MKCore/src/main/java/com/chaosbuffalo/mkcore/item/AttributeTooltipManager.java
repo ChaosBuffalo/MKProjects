@@ -29,8 +29,6 @@ public class AttributeTooltipManager {
     protected static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
     protected static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
 
-    Mob
-
     public interface ItemAttributeRenderer {
         void render(ItemStack stack, EquipmentSlot equipmentSlotType, Player player, Holder<Attribute> attribute,
                     AttributeModifier modifier, Consumer<Component> output);

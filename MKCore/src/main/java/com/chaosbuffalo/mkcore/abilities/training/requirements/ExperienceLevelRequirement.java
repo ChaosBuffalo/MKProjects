@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
 public class ExperienceLevelRequirement extends AbilityTrainingRequirement {
-    public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKCore.MOD_ID, "training_req.exp_level");
+    public final static ResourceLocation TYPE_NAME = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "training_req.exp_level");
     public static final Codec<ExperienceLevelRequirement> CODEC = Codec.INT.xmap(ExperienceLevelRequirement::new, i -> i.requiredLevel);
 
     private final int requiredLevel;

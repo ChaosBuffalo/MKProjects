@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.events;
 
 import com.chaosbuffalo.mkcore.core.persona.Persona;
-import net.minecraftforge.eventbus.api.Event;
+import net.neoforged.bus.api.Event;
 
 public class PersonaEvent extends Event {
     private final Persona persona;

@@ -8,7 +8,7 @@ import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.*;
 
@@ -120,7 +120,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
 
         var event = new PlayerEvents.PersonaEvent(playerData, persona);
         playerData.events().trigger(PlayerEvents.PERSONA_ACTIVATE, event);
-        MinecraftForge.EVENT_BUS.post(new PersonaEvent.PersonaActivated(persona));
+        NeoForge.EVENT_BUS.post(new PersonaEvent.PersonaActivated(persona));
     }
 
     private void dispatchDeactivation(Persona current) {
@@ -128,7 +128,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
 
         var event = new PlayerEvents.PersonaEvent(playerData, current);
         playerData.events().trigger(PlayerEvents.PERSONA_DEACTIVATE, event);
-        MinecraftForge.EVENT_BUS.post(new PersonaEvent.PersonaDeactivated(current));
+        NeoForge.EVENT_BUS.post(new PersonaEvent.PersonaDeactivated(current));
     }
 
     @Override

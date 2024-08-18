@@ -19,7 +19,7 @@ import java.util.NoSuchElementException;
 
 public class HasEntitlementRequirement extends AbilityTrainingRequirement {
     public final static ResourceLocation TYPE_NAME = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "training_req.has_entitlement");
-    public static final Codec<HasEntitlementRequirement> CODEC = ExtraCodecs.lazyInitializedCodec(() -> MKCoreRegistry.ENTITLEMENTS.getCodec()).xmap(HasEntitlementRequirement::new, i -> i.entitlement);
+    public static final Codec<HasEntitlementRequirement> CODEC = Codec.lazyInitialized(MKCoreRegistry.ENTITLEMENTS::byNameCodec).xmap(HasEntitlementRequirement::new, i -> i.entitlement);
 
     private final MKEntitlement entitlement;
 

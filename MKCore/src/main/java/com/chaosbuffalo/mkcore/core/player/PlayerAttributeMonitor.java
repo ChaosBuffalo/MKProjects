@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.attributes.AttributeMapExtension;
 import com.chaosbuffalo.mkcore.attributes.MKRangedAttribute;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.google.common.collect.ImmutableSet;
+import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
@@ -12,8 +13,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.util.Lazy;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
@@ -22,7 +22,8 @@ import java.util.function.Consumer;
 public class PlayerAttributeMonitor {
     private static final boolean LOG_EN = false;
     private static final UUID EV_ID = UUID.fromString("2ea5c7a6-c8b2-4e10-98cd-6cdc6e9efd1e");
-    private static final Lazy<Set<Attribute>> allInitialSync = Lazy.concurrentOf(PlayerAttributeMonitor::buildInitialSyncSet);
+
+    private static final Lazy<Set<Holder<Attribute>>> allInitialSync = Lazy.of(PlayerAttributeMonitor::buildInitialSyncSet);
 
     private final MKPlayerData playerData;
 
@@ -66,7 +67,7 @@ public class PlayerAttributeMonitor {
 
     private void onAttributeModified(AttributeInstance instance) {
         if (LOG_EN) {
-            MKCore.LOGGER.debug("attr {} for {} dirty", instance.getAttribute().getDescriptionId(), playerData.getEntity());
+            MKCore.LOGGER.debug("attr {} for {} dirty", instance.getAttribute().value().getDescriptionId(), playerData.getEntity());
 //        new Exception("!!attr " + instance.getAttribute().getDescriptionId() + " " + instance.getModifiers().size()).printStackTrace();
         }
         if (instance.getAttribute() instanceof MKRangedAttribute mkAttr) {
@@ -90,7 +91,7 @@ public class PlayerAttributeMonitor {
 
         if (playerData.getEntity() instanceof ServerPlayer serverPlayer) {
             // If not added to the world keep trying to sync
-            if (!serverPlayer.isAddedToWorld())
+            if (!serverPlayer.isAddedToLevel())
                 return false;
 
             if (LOG_EN) {
@@ -102,13 +103,13 @@ public class PlayerAttributeMonitor {
         return true;
     }
 
-    private static Set<Attribute> buildInitialSyncSet() {
-        ImmutableSet.Builder<Attribute> builder = ImmutableSet.builder();
+    private static Set<Holder<Attribute>> buildInitialSyncSet() {
+        ImmutableSet.Builder<Holder<Attribute>> builder = ImmutableSet.builder();
         AttributeSupplier playerSupplier = DefaultAttributes.getSupplier(EntityType.PLAYER);
         playerSupplier.instances.forEach((attr, instance) -> {
-            if (attr instanceof MKRangedAttribute mkAttr &&
+            if (attr.value() instanceof MKRangedAttribute mkAttr &&
                     mkAttr.getSyncType().needsInitialSync()) {
-                builder.add(mkAttr);
+                builder.add(attr);
             }
         });
         return builder.build();

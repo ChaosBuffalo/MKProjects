@@ -7,7 +7,7 @@ import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -42,7 +42,7 @@ public final class PlayerSyncController extends EntitySyncController {
     @Override
     public void deserializeUpdate(CompoundTag updateTag, Set<SyncVisibility> visibility) {
         super.deserializeUpdate(updateTag, visibility);
-        MinecraftForge.EVENT_BUS.post(new PlayerDataEvent.Updated(playerData));
+        NeoForge.EVENT_BUS.post(new PlayerDataEvent.Updated(playerData));
     }
 
     @Override
