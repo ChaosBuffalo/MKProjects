@@ -3,14 +3,19 @@ package com.chaosbuffalo.mkcore.network;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
+public class ResetAttackSwingPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<ResetAttackSwingPacket> TYPE = new CustomPacketPayload.Type<>(
+            MKCore.id("reset_attack_swing"));
 
-public class ResetAttackSwingPacket {
+    public static final StreamCodec<FriendlyByteBuf, ResetAttackSwingPacket> STREAM_CODEC = StreamCodec.ofMember(
+            ResetAttackSwingPacket::toBytes, ResetAttackSwingPacket::new
+    );
 
     private final int ticksToSet;
 
@@ -22,21 +27,21 @@ public class ResetAttackSwingPacket {
         ticksToSet = buf.readInt();
     }
 
+    public static void handle(ResetAttackSwingPacket packet, IPayloadContext context) {
+        ClientHandler.handleClient(packet, context.player());
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
     public void toBytes(FriendlyByteBuf buf) {
         buf.writeInt(ticksToSet);
     }
 
-    public static void handle(ResetAttackSwingPacket packet, Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> ClientHandler.handleClient(packet));
-        ctx.setPacketHandled(true);
-    }
-
     static class ClientHandler {
-        public static void handleClient(ResetAttackSwingPacket packet) {
-            Player entity = Minecraft.getInstance().player;
-            if (entity == null)
-                return;
+        public static void handleClient(ResetAttackSwingPacket packet, Player entity) {
             // +2 to account for the client 2 tick lag before allowing attack
             MKCore.getPlayer(entity).ifPresent(cap ->
                     cap.getCombatExtension().setAttackStrengthTicks(packet.ticksToSet + 2));

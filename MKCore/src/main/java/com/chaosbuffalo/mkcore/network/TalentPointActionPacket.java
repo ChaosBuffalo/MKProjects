@@ -1,23 +1,26 @@
 package com.chaosbuffalo.mkcore.network;
 
-import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
+import com.chaosbuffalo.mkcore.MKCore;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
+public class TalentPointActionPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<TalentPointActionPacket> TYPE = new CustomPacketPayload.Type<>(
+            MKCore.id("talent_point_action"));
 
-public class TalentPointActionPacket {
+    public static final StreamCodec<RegistryFriendlyByteBuf, TalentPointActionPacket> STREAM_CODEC = StreamCodec.ofMember(
+            TalentPointActionPacket::toBytes, TalentPointActionPacket::new
+    );
+
     private final ResourceLocation talentTree;
     private final String line;
     private final int index;
     private final Action action;
-
-    public enum Action {
-        SPEND,
-        REFUND
-    }
 
     public TalentPointActionPacket(ResourceLocation tree, String line, int index, Action action) {
         talentTree = tree;
@@ -33,6 +36,11 @@ public class TalentPointActionPacket {
         action = buffer.readEnum(Action.class);
     }
 
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
     public void toBytes(FriendlyByteBuf buffer) {
         buffer.writeResourceLocation(talentTree);
         buffer.writeUtf(line);
@@ -40,21 +48,19 @@ public class TalentPointActionPacket {
         buffer.writeEnum(action);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        ctx.enqueueWork(() -> {
-            ServerPlayer entity = ctx.getSender();
-            if (entity == null)
-                return;
-
-            entity.getCapability(CoreCapabilities.PLAYER_CAPABILITY).ifPresent(cap -> {
-                if (action == Action.SPEND) {
-                    cap.getTalents().spendTalentPoint(talentTree, line, index);
-                } else if (action == Action.REFUND) {
-                    cap.getTalents().refundTalentPoint(talentTree, line, index);
-                }
-            });
+    public void handle(IPayloadContext context) {
+        Player entity = context.player();
+        MKCore.getPlayer(entity).ifPresent(cap -> {
+            if (action == Action.SPEND) {
+                cap.getTalents().spendTalentPoint(talentTree, line, index);
+            } else if (action == Action.REFUND) {
+                cap.getTalents().refundTalentPoint(talentTree, line, index);
+            }
         });
-        ctx.setPacketHandled(true);
+    }
+
+    public enum Action {
+        SPEND,
+        REFUND
     }
 }

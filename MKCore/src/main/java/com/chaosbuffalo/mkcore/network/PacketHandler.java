@@ -85,6 +85,36 @@ public class PacketHandler {
                 PlayerAbilitiesSyncPacket.STREAM_CODEC,
                 PlayerAbilitiesSyncPacket::handle
         );
+        registrar.playToServer(
+                PlayerLearnAbilityRequestPacket.TYPE,
+                PlayerLearnAbilityRequestPacket.STREAM_CODEC,
+                PlayerLearnAbilityRequestPacket::handle
+        );
+        registrar.playToServer(
+                PlayerSlotAbilityPacket.TYPE,
+                PlayerSlotAbilityPacket.STREAM_CODEC,
+                PlayerSlotAbilityPacket::handle
+        );
+        registrar.playToClient(
+                ResetAttackSwingPacket.TYPE,
+                ResetAttackSwingPacket.STREAM_CODEC,
+                ResetAttackSwingPacket::handle
+        );
+        registrar.playToClient(
+                TalentDefinitionSyncPacket.TYPE,
+                TalentDefinitionSyncPacket.STREAM_CODEC,
+                TalentDefinitionSyncPacket::handle
+        );
+        registrar.playToServer(
+                TalentPointActionPacket.TYPE,
+                TalentPointActionPacket.STREAM_CODEC,
+                TalentPointActionPacket::handle
+        );
+        registrar.playToServer(
+                WriteAnimationPacket.TYPE,
+                WriteAnimationPacket.STREAM_CODEC,
+                WriteAnimationPacket::handle
+        );
     }
 
 

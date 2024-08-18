@@ -25,12 +25,12 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -51,8 +51,7 @@ public class ParticleEditorScreen extends MKScreen {
 
     public ParticleEditorScreen() {
         super(Component.translatable("mk.editors.particle_editor.name"));
-        editing = ParticleAnimationManager.ANIMATIONS.get(
-                new ResourceLocation(MKCore.MOD_ID, "particle_anim.blue_magic")).copy();
+        editing = ParticleAnimationManager.ANIMATIONS.get(MKCore.id("particle_anim.blue_magic")).copy();
         currentFrame = null;
         dirty = false;
         Player player = Minecraft.getInstance().player;
@@ -141,7 +140,7 @@ public class ParticleEditorScreen extends MKScreen {
     }
 
     public ResourceLocation getParticleName() {
-        return ForgeRegistries.PARTICLE_TYPES.getKey(editing.getParticleType());
+        return BuiltInRegistries.PARTICLE_TYPE.getKey(editing.getParticleType());
     }
 
     public ParticleType<MKParticleData> getParticleType() {

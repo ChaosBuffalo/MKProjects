@@ -6,16 +6,24 @@ import com.mojang.serialization.Dynamic;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
-public class TalentDefinitionSyncPacket {
+public class TalentDefinitionSyncPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<TalentDefinitionSyncPacket> TYPE = new CustomPacketPayload.Type<>(
+            MKCore.id("talent_definition_sync"));
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, TalentDefinitionSyncPacket> STREAM_CODEC = StreamCodec.ofMember(
+            TalentDefinitionSyncPacket::toBytes, TalentDefinitionSyncPacket::new
+    );
+
     private final Map<ResourceLocation, CompoundTag> data = new HashMap<>();
 
     public TalentDefinitionSyncPacket(Collection<TalentTreeDefinition> definitions) {
@@ -29,15 +37,7 @@ public class TalentDefinitionSyncPacket {
         }
     }
 
-    public void toBytes(FriendlyByteBuf buffer) {
-        buffer.writeInt(data.size());
-        for (Map.Entry<ResourceLocation, CompoundTag> abilityData : data.entrySet()) {
-            buffer.writeResourceLocation(abilityData.getKey());
-            buffer.writeNbt(abilityData.getValue());
-        }
-    }
-
-    public TalentDefinitionSyncPacket(FriendlyByteBuf buffer) {
+    public TalentDefinitionSyncPacket(RegistryFriendlyByteBuf buffer) {
         int count = buffer.readInt();
         for (int i = 0; i < count; i++) {
             ResourceLocation abilityName = buffer.readResourceLocation();
@@ -46,15 +46,26 @@ public class TalentDefinitionSyncPacket {
         }
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
+    public static void handle(TalentDefinitionSyncPacket packet, IPayloadContext context) {
         MKCore.LOGGER.debug("Handling player talent definition update packet");
-        ctx.enqueueWork(() -> {
-            for (Map.Entry<ResourceLocation, CompoundTag> abilityData : data.entrySet()) {
-                TalentTreeDefinition definition = TalentTreeDefinition.deserialize(abilityData.getKey(), new Dynamic<>(NbtOps.INSTANCE, abilityData.getValue()));
-                MKCore.getTalentManager().registerTalentTree(definition);
-            }
-        });
-        ctx.setPacketHandled(true);
+
+        for (Map.Entry<ResourceLocation, CompoundTag> abilityData : packet.data.entrySet()) {
+            var ops = context.player().registryAccess().createSerializationContext(NbtOps.INSTANCE);
+            TalentTreeDefinition definition = TalentTreeDefinition.deserialize(abilityData.getKey(), new Dynamic<>(ops, abilityData.getValue()));
+            MKCore.getTalentManager().registerTalentTree(definition);
+        }
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
+    public void toBytes(RegistryFriendlyByteBuf buffer) {
+        buffer.writeInt(data.size());
+        for (Map.Entry<ResourceLocation, CompoundTag> abilityData : data.entrySet()) {
+            buffer.writeResourceLocation(abilityData.getKey());
+            buffer.writeNbt(abilityData.getValue());
+        }
     }
 }

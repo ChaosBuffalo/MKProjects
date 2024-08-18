@@ -13,7 +13,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -41,7 +40,7 @@ public class EffectCommand {
         if (!effects.isEmpty()) {
             ChatUtils.sendMessageWithBrackets(player, "Active MobEffects");
             for (MobEffectInstance instance : effects) {
-                ChatUtils.sendMessage(player, "%s: %d", ForgeRegistries.MOB_EFFECTS.getKey(instance.getEffect()), instance.getDuration());
+                ChatUtils.sendMessage(player, "%s: %d", instance.getEffect().getRegisteredName(), instance.getDuration());
             }
         } else {
             ChatUtils.sendMessageWithBrackets(player, "No active MobEffects");

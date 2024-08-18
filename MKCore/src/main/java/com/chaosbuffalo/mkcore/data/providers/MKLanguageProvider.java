@@ -3,8 +3,6 @@ package com.chaosbuffalo.mkcore.data.providers;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import net.minecraft.core.Holder;
 import net.minecraft.data.PackOutput;
-import net.minecraftforge.common.data.LanguageProvider;
-import net.minecraftforge.registries.RegistryObject;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 
 public class MKLanguageProvider extends LanguageProvider {

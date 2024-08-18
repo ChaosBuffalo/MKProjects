@@ -2,13 +2,20 @@ package com.chaosbuffalo.mkcore.data.content;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
+import net.minecraft.core.Holder;
 import net.minecraft.data.PackOutput;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.common.data.SoundDefinitionsProvider;
+import net.minecraft.sounds.SoundEvent;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.common.data.SoundDefinition;
+import net.neoforged.neoforge.common.data.SoundDefinitionsProvider;
 
 public class CoreSoundProvider extends SoundDefinitionsProvider {
     protected CoreSoundProvider(PackOutput output, ExistingFileHelper helper) {
         super(output, MKCore.MOD_ID, helper);
+    }
+
+    protected void add(Holder<SoundEvent> event, SoundDefinition definition) {
+        add(event.value(), definition);
     }
 
     @Override

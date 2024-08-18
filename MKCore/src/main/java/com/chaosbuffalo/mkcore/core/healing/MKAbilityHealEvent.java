@@ -1,10 +1,10 @@
 package com.chaosbuffalo.mkcore.core.healing;
 
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.entity.living.LivingEvent;
+import net.neoforged.bus.api.ICancellableEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
 
-@net.minecraftforge.eventbus.api.Cancelable
-public class MKAbilityHealEvent extends LivingEvent {
+public class MKAbilityHealEvent extends LivingEvent implements ICancellableEvent {
     private final MKHealSource healSource;
     private float amount;
 

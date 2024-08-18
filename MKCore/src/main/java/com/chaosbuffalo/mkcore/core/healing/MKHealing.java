@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkcore.core.MKCombatFormulas;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 
 import javax.annotation.Nullable;
 
@@ -18,10 +18,10 @@ public class MKHealing {
                 .orElse(amount);
 
         MKAbilityHealEvent event = new MKAbilityHealEvent(target, finalValue, healSource);
-        if (!MinecraftForge.EVENT_BUS.post(event)) {
+        if (!NeoForge.EVENT_BUS.post(event).isCanceled()) {
             if (wouldHealHurtUndead(healSource.getSourceEntity(), target) && healSource.doesDamageUndead()) {
                 float healDamageMultiplier = MKConfig.SERVER.undeadHealDamageMultiplier.get().floatValue();
-                target.hurt(convertHealingToDamage(target.getLevel(), healSource), healDamageMultiplier * event.getAmount());
+                target.hurt(convertHealingToDamage(target.level(), healSource), healDamageMultiplier * event.getAmount());
             } else {
                 float afterEfficiency = MKCore.getEntityData(target).map(targetData ->
                         MKCombatFormulas.applyHealEfficiency(targetData, event.getAmount())).orElse(event.getAmount());

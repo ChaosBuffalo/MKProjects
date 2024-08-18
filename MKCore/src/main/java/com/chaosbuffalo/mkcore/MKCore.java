@@ -171,4 +171,8 @@ public class MKCore {
     public static ParticleAnimationManager getAnimationManager() {
         return INSTANCE.particleAnimationManager;
     }
+
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, path);
+    }
 }
