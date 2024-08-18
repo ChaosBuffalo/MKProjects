@@ -1,40 +1,42 @@
 package com.chaosbuffalo.mkcore;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
+
+
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class MKConfig {
 
     public static final Client CLIENT;
-    private static final ForgeConfigSpec CLIENT_SPEC;
+    private static final ModConfigSpec CLIENT_SPEC;
     public static final Server SERVER;
-    private static final ForgeConfigSpec SERVER_SPEC;
+    private static final ModConfigSpec SERVER_SPEC;
 
     static {
-        final Pair<Client, ForgeConfigSpec> clientSpecPair = new ForgeConfigSpec.Builder().configure(Client::new);
+        final Pair<Client, ModConfigSpec> clientSpecPair = new ModConfigSpec.Builder().configure(Client::new);
         CLIENT_SPEC = clientSpecPair.getRight();
         CLIENT = clientSpecPair.getLeft();
 
-        final Pair<Server, ForgeConfigSpec> serverSpecPair = new ForgeConfigSpec.Builder().configure(Server::new);
+        final Pair<Server, ModConfigSpec> serverSpecPair = new ModConfigSpec.Builder().configure(Server::new);
         SERVER_SPEC = serverSpecPair.getRight();
         SERVER = serverSpecPair.getLeft();
     }
 
-    public static void init() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CLIENT_SPEC);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, SERVER_SPEC);
+    public static void init(ModContainer container) {
+        container.registerConfig(ModConfig.Type.CLIENT, CLIENT_SPEC);
+        container.registerConfig(ModConfig.Type.SERVER, SERVER_SPEC);
     }
 
     public static class Client {
-        public ForgeConfigSpec.BooleanValue showMyCrits;
-        public ForgeConfigSpec.BooleanValue showOthersCrits;
-        public ForgeConfigSpec.BooleanValue enablePlayerCastAnimations;
-        public ForgeConfigSpec.BooleanValue showArmorClassOnTooltip;
-        public ForgeConfigSpec.BooleanValue showArmorClassEffectsOnTooltip;
+        public ModConfigSpec.BooleanValue showMyCrits;
+        public ModConfigSpec.BooleanValue showOthersCrits;
+        public ModConfigSpec.BooleanValue enablePlayerCastAnimations;
+        public ModConfigSpec.BooleanValue showArmorClassOnTooltip;
+        public ModConfigSpec.BooleanValue showArmorClassEffectsOnTooltip;
 
-        public Client(ForgeConfigSpec.Builder builder) {
+        public Client(ModConfigSpec.Builder builder) {
             builder.comment("General settings").push("general");
             showMyCrits = builder
                     .comment("Show your own crit messages")
@@ -57,13 +59,13 @@ public class MKConfig {
     }
 
     public static class Server {
-        public final ForgeConfigSpec.BooleanValue healsDamageUndead;
-        public final ForgeConfigSpec.DoubleValue undeadHealDamageMultiplier;
-        public final ForgeConfigSpec.BooleanValue enablePartyXpShare;
-        public final ForgeConfigSpec.IntValue partyXpShareDistance;
-        public final ForgeConfigSpec.BooleanValue enablePartyXpShareMending;
+        public final ModConfigSpec.BooleanValue healsDamageUndead;
+        public final ModConfigSpec.DoubleValue undeadHealDamageMultiplier;
+        public final ModConfigSpec.BooleanValue enablePartyXpShare;
+        public final ModConfigSpec.IntValue partyXpShareDistance;
+        public final ModConfigSpec.BooleanValue enablePartyXpShareMending;
 
-        public Server(ForgeConfigSpec.Builder builder) {
+        public Server(ModConfigSpec.Builder builder) {
             builder.comment("Gameplay settings").push("gameplay");
             healsDamageUndead = builder
                     .comment("Should healing spells damage undead entities")
