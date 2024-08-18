@@ -3,7 +3,9 @@ package com.chaosbuffalo.mkcore.events;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
-import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
@@ -59,53 +61,48 @@ public class ItemEventHandler {
     }
 
     private static AttributeModifier createDefaultSlotModifier(UUID uuid, double amount, AttributeModifier.Operation op) {
-        return new AttributeModifier(uuid, () -> "MK:Core default bonus", amount, op);
+        return new AttributeModifier(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, uuid.toString()), amount, op);
     }
 
-    private static void addDefaultAttribute(ItemAttributeModifierEvent event, Attribute attribute, Supplier<AttributeModifier> modifierSupplier) {
-        if (!event.getModifiers().containsKey(attribute)) {
-            event.addModifier(attribute, modifierSupplier.get());
+    private static void addDefaultAttribute(ItemAttributeModifierEvent event, Holder<Attribute> attribute, Supplier<AttributeModifier> modifierSupplier, EquipmentSlotGroup group) {
+        if (!event.getModifiers().stream().anyMatch(x -> x.attribute().equals(attribute))) {
+            event.addModifier(attribute, modifierSupplier.get(), group);
         }
     }
 
     @SubscribeEvent
     public static void onItemAttributeModifierEvent(ItemAttributeModifierEvent event) {
         Item from = event.getItemStack().getItem();
-        if (event.getSlotType().getType() != EquipmentSlot.Type.HAND) {
-            return;
-        }
-
-        int handIndex = event.getSlotType().getIndex();
-        if (from instanceof SwordItem && event.getSlotType() == EquipmentSlot.MAINHAND) {
+        if (from instanceof SwordItem) {
             addDefaultAttribute(event, MKAttributes.MAX_POISE,
-                    () -> createDefaultSlotModifier(SWORD_POISE_MOD_UUID[handIndex],
+                    () -> createDefaultSlotModifier(SWORD_POISE_MOD_UUID[0],
                             20.0,
-                            AttributeModifier.Operation.ADDITION));
+                            AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
 
             addDefaultAttribute(event, MKAttributes.BLOCK_EFFICIENCY,
-                    () -> createDefaultSlotModifier(SWORD_EFFICIENCY_MOD_UUID[handIndex],
+                    () -> createDefaultSlotModifier(SWORD_EFFICIENCY_MOD_UUID[0],
                             0.75,
-                            AttributeModifier.Operation.ADDITION));
+                            AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
 
             addDefaultAttribute(event, MKAttributes.MELEE_CRIT,
                     () -> createDefaultSlotModifier(CRIT_CHANCE_MODIFIER,
                             ItemUtils.getCritChanceForItem(event.getItemStack()),
-                            AttributeModifier.Operation.ADDITION));
+                            AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
 
             addDefaultAttribute(event, MKAttributes.MELEE_CRIT_MULTIPLIER,
                     () -> createDefaultSlotModifier(CRIT_MULT_MODIFIER,
                             ItemUtils.getCritMultiplierForItem(event.getItemStack()),
-                            AttributeModifier.Operation.ADDITION));
+                            AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         }
         if (from instanceof ShieldItem) {
             addDefaultAttribute(event, MKAttributes.MAX_POISE,
-                    () -> createDefaultSlotModifier(SHIELD_POISE_MOD_UUID[handIndex],
+                    () -> createDefaultSlotModifier(SHIELD_POISE_MOD_UUID[1],
                             50.0,
-                            AttributeModifier.Operation.ADDITION));
+                            AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.OFFHAND);
             addDefaultAttribute(event, MKAttributes.BLOCK_EFFICIENCY,
-                    () -> createDefaultSlotModifier(SHIELD_EFFICIENCY_MOD_UUID[handIndex],
+                    () -> createDefaultSlotModifier(SHIELD_EFFICIENCY_MOD_UUID[1],
                             1.0f,
-                            AttributeModifier.Operation.ADDITION));
+                            AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.OFFHAND);
         }
     }
 }

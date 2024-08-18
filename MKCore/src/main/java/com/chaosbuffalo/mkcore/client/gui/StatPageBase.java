@@ -11,7 +11,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Collection;
 
 public abstract class StatPageBase extends PlayerPageBase {
     protected static final int NEGATIVE_COLOR = 13111115;
