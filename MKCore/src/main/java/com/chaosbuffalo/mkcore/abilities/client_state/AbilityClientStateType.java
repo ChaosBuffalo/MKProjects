@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.abilities.client_state;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 public interface AbilityClientStateType<T extends AbilityClientState> {
-    Codec<T> codec();
+    MapCodec<T> codec();
 }

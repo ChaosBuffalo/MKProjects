@@ -13,9 +13,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.OnDatapackSyncEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -30,13 +30,12 @@ public class TalentManager extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     private final Map<ResourceLocation, TalentTreeDefinition> talentTreeMap = new HashMap<>();
-    public static final ResourceLocation INVALID_TREE = new ResourceLocation(MKCore.MOD_ID, "talent_tree.invalid");
     private Collection<TalentTreeDefinition> defaultTrees;
 
     public TalentManager() {
         super(GSON, DEFINITION_FOLDER);
         this.defaultTrees = null;
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     @Override
@@ -53,7 +52,7 @@ public class TalentManager extends SimpleJsonResourceReloadListener {
 
     private boolean parse(ResourceLocation loc, JsonObject json) {
         MKCore.LOGGER.debug("Parsing Talent Tree Json for {}", loc);
-        ResourceLocation treeId = new ResourceLocation(loc.getNamespace(), "talent_tree." + loc.getPath());
+        ResourceLocation treeId = ResourceLocation.fromNamespaceAndPath(loc.getNamespace(), "talent_tree." + loc.getPath());
 
         TalentTreeDefinition talentTree = TalentTreeDefinition.deserialize(treeId, new Dynamic<>(JsonOps.INSTANCE, json));
 

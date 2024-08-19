@@ -71,7 +71,7 @@ public class MKPet<T extends LivingEntity & IMKPet> {
         @Override
         public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
             int id = tag.getInt("entId");
-            name = new ResourceLocation(tag.getString("name"));
+            name = ResourceLocation.parse(tag.getString("name"));
             if (id != -1) {
                 entity = ClientHandler.handleClient(id);
                 if (tag.contains("dur")) {

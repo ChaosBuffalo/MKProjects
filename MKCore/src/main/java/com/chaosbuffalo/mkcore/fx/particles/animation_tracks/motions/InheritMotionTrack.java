@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import net.minecraft.resources.ResourceLocation;
 
 public class InheritMotionTrack extends BaseMotionTrack {
-    public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKCore.MOD_ID, "particle_anim.particle_motion");
+    public final static ResourceLocation TYPE_NAME = MKCore.id("particle_anim.particle_motion");
 
     public InheritMotionTrack() {
         super(TYPE_NAME);

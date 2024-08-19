@@ -27,8 +27,7 @@ public class TalentIdArgument implements ArgumentType<ResourceLocation> {
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-        Stream<String> all = MKCoreRegistry.TALENTS.getValues()
-                .stream()
+        Stream<String> all = MKCoreRegistry.TALENTS.stream()
                 .map(MKTalent::getTalentId)
                 .map(ResourceLocation::toString);
 

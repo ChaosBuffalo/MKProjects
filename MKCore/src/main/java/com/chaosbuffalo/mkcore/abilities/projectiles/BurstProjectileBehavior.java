@@ -63,7 +63,7 @@ public class BurstProjectileBehavior extends ProjectileCastBehavior{
             projectiles.add(proj);
             clientState.addTrackedProjectile(proj, thisCast, i, context.getMemory(MKAbilityMemories.ABILITY_TARGET));
             casterData.getRiders().addRider(proj, doPitch);
-            casterData.getEntity().level.addFreshEntity(proj);
+            casterData.getEntity().level().addFreshEntity(proj);
         }
         context.setClientState(clientState);
         context.setMemory(MKAbilityMemories.CURRENT_PROJECTILES.get(), Optional.of(projectiles));
@@ -76,14 +76,14 @@ public class BurstProjectileBehavior extends ProjectileCastBehavior{
         for (ProjectileAbilityClientState.TrackedProjectile proj : projectileClientState.getTrackedProjectiles()) {
             if (proj.getTicksToFireAt() <= totalTicks - castTimeLeft && !proj.getFired()) {
                 proj.setFired(true);
-                Entity entity = casterData.getEntity().getLevel().getEntity(proj.getEntityId());
+                Entity entity = casterData.getEntity().level().getEntity(proj.getEntityId());
                 if (entity instanceof BaseProjectileEntity projEnt) {
                     casterData.getRiders().removeRider(projEnt);
                     LocationProvider.WorldLocationResult loc = getLocationProvider().getPosition(
                             casterData.getEntity(), proj.getIndex());
                     ability.fireProjectile(projEnt, ability.getProjectileSpeed(), ability.getProjectileInaccuracy(),
                             casterData.getEntity(),
-                            casterData.getEntity().getLevel().getEntity(proj.getTargetEntityId()),
+                            casterData.getEntity().level().getEntity(proj.getTargetEntityId()),
                             loc.rotation().x, loc.rotation().y);
                     if (context != null) {
                         context.getMemory(MKAbilityMemories.CURRENT_PROJECTILES).ifPresent(projectiles -> {
@@ -132,14 +132,14 @@ public class BurstProjectileBehavior extends ProjectileCastBehavior{
                 for (ProjectileAbilityClientState.TrackedProjectile tracked : projectileState.getTrackedProjectiles()) {
                     if (!tracked.getFired()) {
                         tracked.setFired(true);
-                        Entity entity = casterData.getEntity().getLevel().getEntity(tracked.getEntityId());
+                        Entity entity = casterData.getEntity().level().getEntity(tracked.getEntityId());
                         if (entity instanceof BaseProjectileEntity proj) {
                             casterData.getRiders().removeRider(proj);
                             LocationProvider.WorldLocationResult loc = locationProvider.getPosition(
                                     casterData.getEntity(), tracked.getIndex());
                             ability.fireProjectile(proj, ability.getProjectileSpeed(), ability.getProjectileInaccuracy(),
                                     casterData.getEntity(),
-                                    casterData.getEntity().getLevel().getEntity(tracked.getTargetEntityId()),
+                                    casterData.getEntity().level().getEntity(tracked.getTargetEntityId()),
                                     loc.rotation().x, loc.rotation().y);
                         }
                     }

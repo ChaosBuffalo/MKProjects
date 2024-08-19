@@ -30,7 +30,7 @@ public interface IDynamicMapTypedSerializer {
     ResourceLocation getTypeName();
 
     static <D> Optional<ResourceLocation> getType(Dynamic<D> dynamic, String typeEntryName) {
-        return dynamic.get(typeEntryName).asString().resultOrPartial(MKCore.LOGGER::error).map(ResourceLocation::new);
+        return dynamic.get(typeEntryName).asString().resultOrPartial(MKCore.LOGGER::error).map(ResourceLocation::parse);
     }
 
     String getTypeEntryName();

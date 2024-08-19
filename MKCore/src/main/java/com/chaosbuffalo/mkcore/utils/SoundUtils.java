@@ -2,14 +2,16 @@ package com.chaosbuffalo.mkcore.utils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.PlayLevelSoundEvent;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.event.PlayLevelSoundEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class SoundUtils {
     public static void playSoundAtEntity(Entity entity, SoundEvent event) {
@@ -28,7 +30,7 @@ public class SoundUtils {
         if (event == null) {
             return;
         }
-        player.level.playSound(player, player.getX(), player.getY(), player.getZ(), event, cat, volume, pitch);
+        player.level().playSound(player, player.getX(), player.getY(), player.getZ(), event, cat, volume, pitch);
     }
 
     public static void playSoundAtEntity(Entity entity, SoundEvent event, SoundSource cat, float volume, float pitch) {
@@ -41,7 +43,7 @@ public class SoundUtils {
 
     public static class ClientHandler {
         public static void playSoundAtEntity(Entity entity, SoundEvent event, SoundSource cat, float volume, float pitch) {
-            entity.level.playSound(Minecraft.getInstance().player, entity.getX(), entity.getY(), entity.getZ(), event, cat, volume, pitch);
+            entity.level().playSound(Minecraft.getInstance().player, entity.getX(), entity.getY(), entity.getZ(), event, cat, volume, pitch);
         }
     }
 
@@ -50,16 +52,19 @@ public class SoundUtils {
                                                  Entity source) {
 
 
-        PlayLevelSoundEvent.AtEntity event = net.minecraftforge.event.ForgeEventFactory
-                .onPlaySoundAtEntity(source, ForgeRegistries.SOUND_EVENTS.getHolder(soundIn).orElseThrow(), category, volume, pitch);
+        PlayLevelSoundEvent.AtEntity event = EventHooks
+                .onPlaySoundAtEntity(source, BuiltInRegistries.SOUND_EVENT.getHolder(soundIn.getLocation()).orElseThrow(), category, volume, pitch);
         if (event.isCanceled() || event.getSound() == null) return;
         Holder<SoundEvent> pSound = event.getSound();
         SoundSource pSource = event.getSource();
         float pVolume = event.getNewVolume();
         float pPitch = event.getNewPitch();
 
-        PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> source).send(
-                new ClientboundSoundPacket(pSound, pSource, x, y, z, pVolume, pPitch, source.getLevel().random.nextLong()));
+        // TODO(1.21): Make sure this is the right way to broadcast a vanilla packet
+        if (source.level() instanceof ServerLevel serverLevel) {
+            serverLevel.getChunkSource().broadcastAndSend(source,
+                    new ClientboundSoundPacket(pSound, pSource, x, y, z, pVolume, pPitch, source.level().random.nextLong()));
+        }
     }
 
     public static void serverPlaySoundAtEntity(Entity source, SoundEvent soundIn, SoundSource category, float volume, float pitch) {

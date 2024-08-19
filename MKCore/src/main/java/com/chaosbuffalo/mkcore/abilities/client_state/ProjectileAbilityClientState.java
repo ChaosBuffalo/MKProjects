@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.abilities.client_state;
 
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -11,9 +12,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class ProjectileAbilityClientState extends AbilityClientState{
-    public static final Codec<ProjectileAbilityClientState> CODEC = RecordCodecBuilder.<ProjectileAbilityClientState>mapCodec(builder -> builder.group(
+    public static final MapCodec<ProjectileAbilityClientState> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
             TrackedProjectile.CODEC.listOf().fieldOf("tracked").forGetter(i -> i.trackedProjectiles)
-    ).apply(builder, ProjectileAbilityClientState::new)).codec();
+    ).apply(builder, ProjectileAbilityClientState::new));
 
     public static class TrackedProjectile {
         public static final Codec<TrackedProjectile> CODEC = RecordCodecBuilder.<TrackedProjectile>mapCodec(builder -> builder.group(

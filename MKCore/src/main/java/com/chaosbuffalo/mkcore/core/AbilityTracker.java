@@ -125,7 +125,7 @@ public class AbilityTracker implements ISyncObject {
 
     private void deserializeList(CompoundTag root, boolean local) {
         for (String key : root.getAllKeys()) {
-            setTimer(new ResourceLocation(key), root.getInt(key), local);
+            setTimer(ResourceLocation.parse(key), root.getInt(key), local);
         }
     }
 

@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entity.EntityStats;
 import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
@@ -39,7 +40,7 @@ public class PlayerStats extends EntityStats {
         setupBaseStats();
     }
 
-    private void addBaseStat(Attribute attribute, double value) {
+    private void addBaseStat(Holder<Attribute> attribute, double value) {
         LivingEntity entity = getEntity();
         AttributeInstance instance = entity.getAttribute(attribute);
         if (instance != null) {

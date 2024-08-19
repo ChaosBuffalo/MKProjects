@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 public class ParticleRenderScaleAnimationTrack extends ParticleAnimationTrack {
     protected final FloatAttribute renderScale = new FloatAttribute("renderScale", 1.0f);
     protected final FloatAttribute maxVariance = new FloatAttribute("maxVariance", 0.0f);
-    public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKCore.MOD_ID, "particle_anim.render_scale");
+    public final static ResourceLocation TYPE_NAME = MKCore.id("particle_anim.render_scale");
     private final MKParticle.ParticleDataKey VARIANCE_KEY = new MKParticle.ParticleDataKey(this, keyCount++);
 
 

@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.abilities;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -18,7 +19,7 @@ public class AbilityContext {
     private final Map<MemoryModuleType<?>, Optional<?>> memories;
     private final IMKEntityData casterData;
     @Nullable
-    private BiFunction<IMKEntityData, Attribute, Float> skillValueOverrideProvider;
+    private BiFunction<IMKEntityData, Holder<Attribute>, Float> skillValueOverrideProvider;
     private AbilityClientState clientState;
 
     public AbilityContext(IMKEntityData entityData) {
@@ -88,14 +89,14 @@ public class AbilityContext {
         return type != null && type.isPresent();
     }
 
-    public float getSkill(Attribute attribute) {
+    public float getSkill(Holder<Attribute> attribute) {
         if (skillValueOverrideProvider != null) {
             return skillValueOverrideProvider.apply(casterData, attribute);
         }
         return MKAbility.getSkillLevel(casterData.getEntity(), attribute);
     }
 
-    public void setSkillResolver(BiFunction<IMKEntityData, Attribute, Float> supplier) {
+    public void setSkillResolver(BiFunction<IMKEntityData, Holder<Attribute>, Float> supplier) {
         this.skillValueOverrideProvider = supplier;
     }
 

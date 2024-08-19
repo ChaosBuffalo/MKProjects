@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityDecisionContext;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
+import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -13,13 +14,13 @@ import java.util.function.Supplier;
 
 public class NeedsBuffCondition extends AbilityUseCondition {
 
-    private final MobEffect buffEffect;
+    private final Holder<MobEffect> buffEffect;
     private final Supplier<? extends MKEffect> buffMKEffect;
     private final AbilityTargetingDecision.MovementSuggestion movementSuggestion;
     private boolean selfOnly;
 
 
-    public NeedsBuffCondition(MKAbility ability, MobEffect buffEffect) {
+    public NeedsBuffCondition(MKAbility ability, Holder<MobEffect> buffEffect) {
         super(ability);
         this.buffEffect = buffEffect;
         buffMKEffect = null;

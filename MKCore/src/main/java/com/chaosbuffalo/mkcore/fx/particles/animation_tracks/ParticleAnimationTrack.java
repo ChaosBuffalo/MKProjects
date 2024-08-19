@@ -19,7 +19,7 @@ import java.util.List;
 
 public abstract class ParticleAnimationTrack implements ISerializableAttributeContainer, IDynamicMapTypedSerializer {
     private static final String TYPE_NAME_FIELD = "trackType";
-    public final static ResourceLocation INVALID_OPTION = new ResourceLocation(MKCore.MOD_ID, "particle_anim.invalid");
+    public final static ResourceLocation INVALID_OPTION = MKCore.id("particle_anim.invalid");
 
     private final ResourceLocation typeName;
     private final List<ISerializableAttribute<?>> attributes;

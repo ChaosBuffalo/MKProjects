@@ -7,12 +7,12 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectState;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.UUID;
 
@@ -54,7 +54,7 @@ public class SoundEffect extends MKEffect {
         public SoundSource category;
 
         public void setup(SoundEvent event, float pitch, float volume, SoundSource cat) {
-            soundEvent = ForgeRegistries.SOUND_EVENTS.getKey(event);
+            soundEvent = BuiltInRegistries.SOUND_EVENT.getKey(event);
             this.volume = volume;
             this.pitch = pitch;
             this.category = cat;
@@ -66,7 +66,7 @@ public class SoundEffect extends MKEffect {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect instance) {
-            SoundEvent event = ForgeRegistries.SOUND_EVENTS.getValue(soundEvent);
+            SoundEvent event = BuiltInRegistries.SOUND_EVENT.get(soundEvent);
             if (event == null)
                 return false;
 

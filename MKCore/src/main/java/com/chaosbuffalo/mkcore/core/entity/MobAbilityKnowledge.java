@@ -90,7 +90,7 @@ public class MobAbilityKnowledge implements IMKAbilityKnowledge, IMKSerializable
         if (tag.contains("abilities")) {
             CompoundTag abilityInfo = tag.getCompound("abilities");
             for (String key : abilityInfo.getAllKeys()) {
-                ResourceLocation abilityId = new ResourceLocation(key);
+                ResourceLocation abilityId = ResourceLocation.parse(key);
                 MobKnownAbility info = createKnownAbility(abilityId);
                 if (info != null && info.deserialize(provider, abilityInfo.getCompound(key))) {
                     knownAbilities.put(abilityId, info);

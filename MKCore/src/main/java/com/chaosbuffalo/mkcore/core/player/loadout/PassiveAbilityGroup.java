@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 
@@ -56,7 +57,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
         removeAllPassiveTalents();
     }
 
-    public void onSkillUpdate(Attribute skill) {
+    public void onSkillUpdate(Holder<Attribute> skill) {
         getAbilities().forEach(id -> {
             MKAbilityInfo info = playerData.getAbilities().getAbilityInfo(id);
             if (info != null && info.getAbility().getSkillAttributes().contains(skill)) {
@@ -80,7 +81,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
         // We come here during deserialization of the active persona, and it tries to apply effects which will crash the client because it's too early
         // Active persona passives should be caught by onJoinWorld
         // Persona switching while in-game should not go inside this branch
-        if (willBeInWorld || playerData.getEntity().isAddedToWorld()) {
+        if (willBeInWorld || playerData.getEntity().isAddedToLevel()) {
             getAbilities().forEach(this::activatePassive);
         }
     }

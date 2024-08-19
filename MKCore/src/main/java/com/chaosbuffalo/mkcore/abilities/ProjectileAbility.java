@@ -13,6 +13,7 @@ import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.location.SingleLocationProvider;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -48,9 +49,9 @@ public abstract class ProjectileAbility extends MKAbility {
 
 
 
-    protected final Attribute skill;
+    protected final Holder<Attribute> skill;
 
-    public ProjectileAbility(Attribute skillAttribute) {
+    public ProjectileAbility(Holder<Attribute> skillAttribute) {
         super();
         addSkillAttribute(skillAttribute);
         skill = skillAttribute;
@@ -90,7 +91,7 @@ public abstract class ProjectileAbility extends MKAbility {
         return 50.0f;
     }
 
-    public Attribute getSkill() {
+    public Holder<Attribute> getSkill() {
         return skill;
     }
 

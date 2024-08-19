@@ -84,8 +84,8 @@ public class TalentLineDefinition {
             return DataResult.error(() -> "Node did not have a name");
         }
 
-        ResourceLocation nodeType = new ResourceLocation(nameOpt.get());
-        MKTalent talentType = MKCoreRegistry.TALENTS.getValue(nodeType);
+        ResourceLocation nodeType = ResourceLocation.parse(nameOpt.get());
+        MKTalent talentType = MKCoreRegistry.TALENTS.get(nodeType);
         if (talentType == null) {
             return DataResult.error(() -> "Node referenced unknown talent " + nodeType);
         }

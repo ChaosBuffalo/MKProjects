@@ -77,7 +77,7 @@ public class AbilityCommand {
                                                                   final SuggestionsBuilder builder) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         return SharedSuggestionProvider.suggest(MKCore.getPlayer(player)
-                        .map(playerData -> MKCoreRegistry.ABILITIES.getKeys().stream()
+                        .map(playerData -> MKCoreRegistry.ABILITIES.keySet().stream()
                                 .filter(abilityId -> !playerData.getAbilities().knowsAbility(abilityId))
                                 .map(ResourceLocation::toString))
                         .orElse(Stream.empty()),

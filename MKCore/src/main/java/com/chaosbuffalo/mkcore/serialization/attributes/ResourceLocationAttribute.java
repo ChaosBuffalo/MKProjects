@@ -18,12 +18,12 @@ public class ResourceLocationAttribute extends SimpleAttribute<ResourceLocation>
 
     @Override
     public <D> void deserialize(Dynamic<D> dynamic) {
-        setValue(new ResourceLocation(dynamic.asString(getDefaultValue().toString())));
+        setValue(ResourceLocation.parse(dynamic.asString(getDefaultValue().toString())));
     }
 
     @Override
     public void setValueFromString(String stringValue) {
-        setValue(new ResourceLocation(stringValue));
+        setValue(ResourceLocation.parse(stringValue));
     }
 
     @Override

@@ -31,7 +31,7 @@ public class PlayerAttributeMonitor {
         void onValueChanged(MKPlayerData playerData, AttributeInstance instance);
     }
 
-    private final Map<Attribute, AttributeChangeHandler> handlerMap = new IdentityHashMap<>();
+    private final Map<Holder<Attribute>, AttributeChangeHandler> handlerMap = new IdentityHashMap<>();
     private final Set<AttributeInstance> dirtyPrivates = new HashSet<>();
     private final Consumer<BooleanSupplier> tickRequest;
 
@@ -41,7 +41,7 @@ public class PlayerAttributeMonitor {
         playerData.events().subscribe(PlayerEvents.SERVER_JOIN_WORLD, EV_ID, this::onJoinWorld);
     }
 
-    public void monitor(Attribute attribute, AttributeChangeHandler handler) {
+    public void monitor(Holder<Attribute> attribute, AttributeChangeHandler handler) {
         handlerMap.put(attribute, handler);
     }
 

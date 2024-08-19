@@ -40,7 +40,7 @@ public abstract class ParticleSpawnPattern implements ISerializableAttributeCont
     }
 
     private static final String TYPE_NAME_FIELD = "type";
-    public final static ResourceLocation INVALID_OPTION = new ResourceLocation(MKCore.MOD_ID, "particle_spawn_pattern.invalid");
+    public final static ResourceLocation INVALID_OPTION = MKCore.id("particle_spawn_pattern.invalid");
     protected final List<ISerializableAttribute<?>> attributes;
     private final ResourceLocation type;
     protected final IntAttribute count = new IntAttribute("count", 10);

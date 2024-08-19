@@ -240,7 +240,7 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
 
         dynamic.get("trees")
                 .asMap(Dynamic::asString, Function.identity())
-                .forEach((idOpt, dyn) -> idOpt.map(ResourceLocation::new).result().ifPresent(id -> deserializeTree(id, dyn)));
+                .forEach((idOpt, dyn) -> idOpt.map(ResourceLocation::parse).result().ifPresent(id -> deserializeTree(id, dyn)));
     }
 
     private <T> void deserializeTree(ResourceLocation treeId, Dynamic<T> dyn) {

@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
 import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.sync.types.SyncFloat;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,7 +20,7 @@ import java.util.Objects;
 
 public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider {
 
-    public static final ResourceLocation POISE_BREAK_TIMER = new ResourceLocation(MKCore.MOD_ID, "timer.poise_break");
+    public static final ResourceLocation POISE_BREAK_TIMER = MKCore.id("timer.poise_break");
     protected final IMKEntityData entityData;
     protected final AbilityTracker abilityTracker;
     protected final SyncFloat mana = new SyncFloat("mana", 0f);
@@ -44,7 +45,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
 
     // Mostly to shut up warning about null returns from getAttribute. Only use this for attrs you know will be present
     @Nonnull
-    protected AttributeInstance requiredAttribute(Attribute attribute) {
+    protected AttributeInstance requiredAttribute(Holder<Attribute> attribute) {
         return Objects.requireNonNull(getEntity().getAttribute(attribute));
     }
 
@@ -59,7 +60,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
 
     public void setMana(float value, boolean sendUpdate) {
         // Here we're using isAddedToWorld as a proxy to know that attribute deserialization is done and max mana is available
-        if (getEntity().isAddedToWorld()) {
+        if (getEntity().isAddedToLevel()) {
             value = Mth.clamp(value, 0, getMaxMana());
         }
         mana.set(value, sendUpdate);
@@ -86,7 +87,7 @@ public class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider
     }
 
     public void setPoise(float value, boolean sendUpdate) {
-        if (getEntity().isAddedToWorld()) {
+        if (getEntity().isAddedToLevel()) {
             value = Mth.clamp(value, 0, getMaxPoise());
         }
         poise.set(value, sendUpdate);

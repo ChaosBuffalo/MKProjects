@@ -26,7 +26,7 @@ public class AbilityIdArgument implements ArgumentType<ResourceLocation> {
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-        Stream<String> values = MKCoreRegistry.ABILITIES.getKeys()
+        Stream<String> values = MKCoreRegistry.ABILITIES.keySet()
                 .stream()
                 .map(ResourceLocation::toString);
         return SharedSuggestionProvider.suggest(values, builder);

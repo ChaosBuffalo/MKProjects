@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
@@ -14,7 +15,7 @@ import java.util.UUID;
 
 public class PlayerCombatExtensionModule extends CombatExtensionModule implements IPlayerSyncComponentProvider {
     private static final UUID EV_ID = UUID.fromString("fce9b2a1-c8ec-4c1d-9da4-63bdd95e2ff9");
-    private static final UUID blockScalerUUID = UUID.fromString("8cabfe08-4ad3-4b8a-9b94-cb146f743c36");
+    private static final ResourceLocation blockMaxPoiseBonusId = MKCore.id("block skill modifier");
     private final PlayerSyncComponent sync = new PlayerSyncComponent("combatExtension");
     private final SyncInt currentProjectileHitCount = new SyncInt("projectileHits", 0);
 
@@ -42,9 +43,9 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
     private static void updatePoiseBonus(MKPlayerData playerData) {
         AttributeInstance maxPoise = playerData.getEntity().getAttribute(MKAttributes.MAX_POISE);
         if (maxPoise != null) {
-            maxPoise.removeModifier(blockScalerUUID);
-            AttributeModifier blockPoiseBonus = new AttributeModifier(blockScalerUUID, "block skill bonus",
-                    getBlockSkillMaxPoiseBonus(playerData), AttributeModifier.Operation.MULTIPLY_TOTAL);
+            maxPoise.removeModifier(blockMaxPoiseBonusId);
+            AttributeModifier blockPoiseBonus = new AttributeModifier(blockMaxPoiseBonusId,
+                    getBlockSkillMaxPoiseBonus(playerData), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
             maxPoise.addTransientModifier(blockPoiseBonus);
         }
     }

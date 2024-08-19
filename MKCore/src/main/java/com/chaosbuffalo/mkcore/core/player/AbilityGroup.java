@@ -325,7 +325,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         for (int i = 0; i < passives.size(); i++) {
             int index = i;
             passives.get(i).resultOrPartial(MKCore.LOGGER::error).ifPresent(idString -> {
-                ResourceLocation abilityId = new ResourceLocation(idString);
+                ResourceLocation abilityId = ResourceLocation.parse(idString);
                 MKAbility ability = MKCoreRegistry.getAbility(abilityId);
                 if (ability != null) {
                     consumer.accept(index, abilityId);

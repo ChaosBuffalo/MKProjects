@@ -48,7 +48,7 @@ public class EntitySyncController extends SyncController {
             if (group.isDirty()) {
                 CompoundTag tag = new CompoundTag();
                 group.serializeUpdate(tag);
-                EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity, tag, EnumSet.of(visibility));
+                EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), tag, EnumSet.of(visibility));
                 MKCore.LOGGER.info("sending {} dirty update {} for {}", visibility, packet, entity);
                 visibility.sendPacket(packet, entity);
             }
@@ -59,7 +59,7 @@ public class EntitySyncController extends SyncController {
 
     @Override
     public void sendFullSync(ServerPlayer otherPlayer) {
-        if (entity.getLevel().isClientSide) {
+        if (entity.level().isClientSide) {
             return;
         }
 
@@ -73,7 +73,7 @@ public class EntitySyncController extends SyncController {
             }
         }
 
-        EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity, tag, visibilities);
+        EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), tag, visibilities);
         MKCore.LOGGER.info("sending full sync {} for {} to {}", packet, entity, otherPlayer);
         PacketHandler.sendMessage(packet, otherPlayer);
     }
