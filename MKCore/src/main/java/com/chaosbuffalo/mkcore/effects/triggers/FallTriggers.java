@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 public class FallTriggers extends SpellTriggers.TriggerCollectionBase {
     @FunctionalInterface
     public interface FallTrigger {
-        void apply(LivingHurtEvent event, DamageSource source, LivingEntity entity);
+        void apply(LivingDamageEvent.Pre event, DamageSource source, LivingEntity entity);
     }
 
     private static final String TAG = "FALL";
@@ -28,7 +28,7 @@ public class FallTriggers extends SpellTriggers.TriggerCollectionBase {
         fallTriggers.add(trigger);
     }
 
-    public void onLivingFall(LivingHurtEvent event, DamageSource source, LivingEntity entity) {
+    public void onLivingFall(LivingDamageEvent.Pre event, DamageSource source, LivingEntity entity) {
         if (fallTriggers.isEmpty())
             return;
 

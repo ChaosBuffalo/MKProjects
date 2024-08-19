@@ -21,15 +21,19 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 
 @EventBusSubscriber(modid = MKCore.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public class CombatEventHandler {
 
     @SubscribeEvent
-    public static void onLivingHurt(LivingHurtEvent event) {
+    public static void onLivingHurt(LivingDamageEvent.Pre event) {
         LivingEntity livingTarget = event.getEntity();
-        if (livingTarget.level.isClientSide)
+        if (livingTarget.level().isClientSide)
             return;
 
         DamageSource source = event.getSource();
@@ -68,9 +72,9 @@ public class CombatEventHandler {
     }
 
     @SubscribeEvent
-    public static void onLivingAttackEvent(LivingAttackEvent event) {
+    public static void onLivingAttackEvent(LivingIncomingDamageEvent event) {
         LivingEntity target = event.getEntity();
-        if (target.level.isClientSide)
+        if (target.level().isClientSide)
             return;
 
         IMKEntityData targetData = MKCore.getEntityDataOrNull(target);
@@ -155,7 +159,7 @@ public class CombatEventHandler {
 
         DamageSource source = event.getSource();
         if (source.getEntity() instanceof LivingEntity killer) {
-            if (killer.level.isClientSide) {
+            if (killer.level().isClientSide) {
                 return;
             }
             MKCore.getEntityData(killer).ifPresent(killerData -> {

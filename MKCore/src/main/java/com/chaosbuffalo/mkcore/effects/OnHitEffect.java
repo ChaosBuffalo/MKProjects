@@ -10,6 +10,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -46,7 +47,7 @@ public class OnHitEffect extends MKEffect {
         trigger.accept(this, this::onLivingHurtEntity);
     }
 
-    public void onLivingHurtEntity(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
+    public void onLivingHurtEntity(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
                                    IMKEntityData sourceData, MKActiveEffect instance) {
 
         MKCore.getEntityData(livingTarget).ifPresent(data -> {

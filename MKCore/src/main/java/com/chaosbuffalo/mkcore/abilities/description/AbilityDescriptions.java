@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -35,7 +36,7 @@ public class AbilityDescriptions {
         for (Map.Entry<Attribute, AttributeModifier> entry : effect.getAttributeModifiers().entrySet()) {
             desc.add(Component.literal("    ")
                     .append(Component.translatable(entry.getKey().getDescriptionId()))
-                    .append(String.format(": %s%.2f ", entry.getValue().getAmount() > 0 ? "+" : "", entry.getValue().getAmount()))
+                    .append(String.format(": %s%.2f ", entry.getValue().amount() > 0 ? "+" : "", entry.getValue().amount()))
                     .append(Component.translatable("mkcore.ability.description.per_level")));
         }
         return desc;
@@ -50,14 +51,14 @@ public class AbilityDescriptions {
         } else {
             consumer.accept(Component.translatable("mkcore.ability.description.effect"));
         }
-        for (Map.Entry<Attribute, MKEffect.Modifier> entry : effect.getAttributeModifierMap().entrySet()) {
+        for (Map.Entry<Holder<Attribute>, MKEffect.Modifier> entry : effect.getAttributeModifierMap().entrySet()) {
             MKEffect.Modifier modifier = entry.getValue();
             double value = effect.calculateModifierValue(modifier, 1,
                     modifier.skill != null ? context.getSkill(modifier.skill) : 0.0f);
             consumer.accept(Component.literal("    ")
-                    .append(Component.translatable(entry.getKey().getDescriptionId()))
+                    .append(Component.translatable(entry.getKey().value().getDescriptionId()))
                     .append(String.format(": %s%s ", value > 0 ? "+" : "",
-                            modifier.attributeModifier.getOperation() == AttributeModifier.Operation.ADDITION ?
+                            modifier.attributeModifier.operation() == AttributeModifier.Operation.ADD_VALUE ?
                                     MKAbility.NUMBER_FORMATTER.format(value) :
                                     MKAbility.PERCENT_FORMATTER.format(value)))
                     .withStyle(value > 0 ? ChatFormatting.GREEN : ChatFormatting.DARK_RED));

@@ -8,7 +8,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 public class FeatherFallEffect extends MKEffect {
 
@@ -21,10 +21,10 @@ public class FeatherFallEffect extends MKEffect {
         SpellTriggers.FALL.register(this::onFall);
     }
 
-    private void onFall(LivingHurtEvent event, DamageSource source, LivingEntity entity) {
+    private void onFall(LivingDamageEvent.Pre event, DamageSource source, LivingEntity entity) {
         MKCore.getEntityData(entity).ifPresent(targetData -> {
             if (targetData.getEffects().isEffectActive(this)) {
-                event.setAmount(0.0f);
+                event.setNewDamage(0.0f);
                 if (entity instanceof Player) {
                     entity.sendSystemMessage(Component.translatable("My legs are OK"));
                 }

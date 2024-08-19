@@ -45,7 +45,7 @@ public abstract class MKEffect {
 
     @Nullable
     protected String name;
-    protected final Lazy<MobEffect> wrapperEffect = Lazy.of(WrapperEffect::new);
+    protected final Lazy<Holder<MobEffect>> wrapperEffect = Lazy.of(() -> Holder.direct(new WrapperEffect()));
     protected final MobEffectCategory effectType;
     private final Map<Holder<Attribute>, Modifier> attributeModifierMap = new HashMap<>();
 
@@ -194,7 +194,7 @@ public abstract class MKEffect {
     }
 
     // Keep this package-private so no one calls it by accident
-    MobEffect getVanillaWrapper() {
+    Holder<MobEffect> getVanillaWrapper() {
         return wrapperEffect.get();
     }
 

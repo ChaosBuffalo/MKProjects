@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 public class EntityHurtTriggers extends SpellTriggers.TriggerCollectionBase {
     @FunctionalInterface
     public interface Trigger {
-        void apply(LivingHurtEvent event, DamageSource source, IMKEntityData victimData);
+        void apply(LivingDamageEvent.Pre event, DamageSource source, IMKEntityData victimData);
     }
 
     private static final String TAG = "ENTITY_HURT_LIVING";
@@ -33,7 +33,7 @@ public class EntityHurtTriggers extends SpellTriggers.TriggerCollectionBase {
         entityHurtLivingPostTriggers.add(trigger);
     }
 
-    public void onEntityHurtLiving(LivingHurtEvent event, DamageSource source, IMKEntityData targetData) {
+    public void onEntityHurtLiving(LivingDamageEvent.Pre event, DamageSource source, IMKEntityData targetData) {
         if (startTrigger(targetData, TAG))
             return;
         entityHurtLivingPreTriggers.forEach(f -> f.apply(event, source, targetData));
@@ -42,7 +42,7 @@ public class EntityHurtTriggers extends SpellTriggers.TriggerCollectionBase {
             // we check unblockable here because if it is blockable than the armor calculation will already be applied
             // by vanilla mc, we don't want to apply armor reduction twice
             if (mkDamageSource.is(DamageTypeTags.BYPASSES_ARMOR)) {
-                event.setAmount(mkDamageSource.getMKDamageType().applyResistance(targetData.getEntity(), event.getAmount()));
+                event.setNewDamage(mkDamageSource.getMKDamageType().applyResistance(targetData.getEntity(), event.getNewDamage()));
             }
         }
 

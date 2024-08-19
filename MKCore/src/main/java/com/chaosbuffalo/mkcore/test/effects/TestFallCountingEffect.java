@@ -9,7 +9,7 @@ import com.google.common.reflect.TypeToken;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import java.util.UUID;
 
@@ -23,8 +23,8 @@ public class TestFallCountingEffect extends MKEffect {
         SpellTriggers.FALL.register(this::onFall);
     }
 
-    private void onFall(LivingHurtEvent event, DamageSource source, LivingEntity entity) {
-        MKCore.LOGGER.info("onFall {} {}", entity, event.getAmount());
+    private void onFall(LivingDamageEvent.Pre event, DamageSource source, LivingEntity entity) {
+        MKCore.LOGGER.info("onFall {} {}", entity, event.getNewDamage());
 
         MKPlayerData targetData = MKCore.getPlayerOrNull(entity);
         if (targetData == null)

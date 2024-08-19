@@ -22,7 +22,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
 
     @FunctionalInterface
     public interface Trigger {
-        void apply(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
+        void apply(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
                    IMKEntityData attackerData);
     }
 
@@ -66,11 +66,11 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
 
         @FunctionalInterface
         public interface Trigger {
-            void apply(LivingHurtEvent event, DamageSource source,
+            void apply(LivingDamageEvent.Pre event, DamageSource source,
                        LivingEntity livingTarget, IMKEntityData sourceData, MKActiveEffect effect);
         }
 
-        public void onLivingHurtEntity(LivingHurtEvent event, DamageSource source,
+        public void onLivingHurtEntity(LivingDamageEvent.Pre event, DamageSource source,
                                        LivingEntity livingTarget, IMKEntityData sourceData) {
             runTrigger(sourceData, tag, (trigger, instance) ->
                     trigger.apply(event, source, livingTarget, sourceData, instance));
@@ -124,7 +124,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         hasTriggers = true;
     }
 
-    public void onLivingHurtEntity(LivingHurtEvent event, DamageSource source,
+    public void onLivingHurtEntity(LivingDamageEvent.Pre event, DamageSource source,
                                    LivingEntity livingTarget, IMKEntityData sourceData) {
         LivingEntity livingSource = sourceData.getEntity();
         if (source instanceof MKDamageSource mkSource) {
@@ -152,7 +152,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         endTrigger(sourceData, POST_TAG);
     }
 
-    private void handleMKDamage(LivingHurtEvent event, MKDamageSource source, LivingEntity livingTarget,
+    private void handleMKDamage(LivingDamageEvent.Pre event, MKDamageSource source, LivingEntity livingTarget,
                                 LivingEntity livingSource,
                                 IMKEntityData sourceData) {
         calculateMKDamage(event, livingTarget, livingSource, sourceData, source,
@@ -166,12 +166,12 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         return false;
     }
 
-    private void calculateMKDamage(LivingHurtEvent event, LivingEntity livingTarget,
+    private void calculateMKDamage(LivingDamageEvent.Pre event, LivingEntity livingTarget,
                                    LivingEntity livingSource, IMKEntityData sourceData,
                                    MKDamageSource source, String typeTag,
                                    List<Trigger> playerHurtTriggers, LivingHurtEntityEffectTriggers effectTriggers) {
         Entity immediate = source.getDirectEntity() != null ? source.getDirectEntity() : livingSource;
-        float newDamage = source.getMKDamageType().applyDamage(livingSource, livingTarget, immediate, event.getAmount(), source.getModifierScaling());
+        float newDamage = source.getMKDamageType().applyDamage(livingSource, livingTarget, immediate, event.getNewDamage(), source.getModifierScaling());
         boolean notBlocked = !wasBlocked(source);
         if (notBlocked && source.getMKDamageType().rollCrit(livingSource, livingTarget, immediate)) {
             newDamage = source.getMKDamageType().applyCritDamage(livingSource, livingTarget, immediate, newDamage);
@@ -184,7 +184,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
                     break;
             }
         }
-        event.setAmount(newDamage);
+        event.setNewDamage(newDamage);
         if (!notBlocked) {
             return;
         }
@@ -222,11 +222,11 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         }
     }
 
-    private void handleProjectile(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
+    private void handleProjectile(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
                                   LivingEntity livingSource, IMKEntityData sourceData) {
 
         Entity projectile = source.getDirectEntity();
-        float damage = event.getAmount();
+        float damage = event.getNewDamage();
         if (DamageUtils.isNonMKProjectileDamage(source)) {
             damage += (float) livingSource.getAttributeValue(MKAttributes.RANGED_DAMAGE);
         }
@@ -236,7 +236,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
             wasCrit = true;
         }
         damage = (float) (damage * (1.0 - livingTarget.getAttributeValue(MKAttributes.RANGED_RESISTANCE)));
-        event.setAmount(damage);
+        event.setNewDamage(damage);
         if (wasCrit) {
             sendCritPacket(livingTarget, livingSource,
                     new CritMessagePacket(livingTarget.getId(), livingSource.getId(), damage,
@@ -251,19 +251,19 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         endTrigger(sourceData, PROJECTILE_TAG);
     }
 
-    private void handleMKMelee(LivingHurtEvent event, MKDamageSource source, LivingEntity livingTarget,
+    private void handleMKMelee(LivingDamageEvent.Pre event, MKDamageSource source, LivingEntity livingTarget,
                                LivingEntity livingSource, IMKEntityData sourceData) {
 
         calculateMKDamage(event, livingTarget, livingSource, sourceData, source,
                 MELEE_TAG, livingHurtEntityMeleeTriggers, livingHurtEntityMeleeEffectTriggers);
     }
 
-    private void handleVanillaMelee(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
+    private void handleVanillaMelee(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
                                     LivingEntity livingSource, IMKEntityData sourceData) {
         if (sourceData instanceof MKPlayerData) {
             if (CoreDamageTypes.MeleeDamage.get().rollCrit(livingSource, livingTarget)) {
-                float newDamage = CoreDamageTypes.MeleeDamage.get().applyCritDamage(livingSource, livingTarget, event.getAmount());
-                event.setAmount(newDamage);
+                float newDamage = CoreDamageTypes.MeleeDamage.get().applyCritDamage(livingSource, livingTarget, event.getNewDamage());
+                event.setNewDamage(newDamage);
                 sendCritPacket(livingTarget, livingSource,
                         new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage));
             }

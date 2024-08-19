@@ -69,7 +69,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
             instanceMap.clear();
             ListTag effectsNbt = tag.getList("effectInstances", Tag.TAG_COMPOUND);
             for (Tag effNbt : effectsNbt) {
-                ParticleEffectInstance inst = ParticleEffectInstance.CODEC.parse(NbtOps.INSTANCE, effNbt).getOrThrow(false, MKCore.LOGGER::error);
+                ParticleEffectInstance inst = ParticleEffectInstance.CODEC.parse(NbtOps.INSTANCE, effNbt).getOrThrow();
                 if (inst != null) {
                     addParticleInstance(inst);
                 }
@@ -78,7 +78,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         if (tag.contains("effectInstancesAdd")) {
             ListTag effectsNbt = tag.getList("effectInstancesAdd", Tag.TAG_COMPOUND);
             for (Tag effNbt : effectsNbt) {
-                ParticleEffectInstance inst = ParticleEffectInstance.CODEC.parse(NbtOps.INSTANCE, effNbt).getOrThrow(false, MKCore.LOGGER::error);
+                ParticleEffectInstance inst = ParticleEffectInstance.CODEC.parse(NbtOps.INSTANCE, effNbt).getOrThrow();
                 if (inst != null) {
                     addParticleInstance(inst);
                 }
@@ -142,7 +142,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         public void serializeFull(CompoundTag tag) {
             ListTag effectsNbt = new ListTag();
             for (ParticleEffectInstance instance : instanceMap.values()) {
-                Tag etag = ParticleEffectInstance.CODEC.encodeStart(NbtOps.INSTANCE, instance).getOrThrow(false, MKCore.LOGGER::error);
+                Tag etag = ParticleEffectInstance.CODEC.encodeStart(NbtOps.INSTANCE, instance).getOrThrow();
                 effectsNbt.add(etag);
             }
             tag.put("effectInstances", effectsNbt);
@@ -160,7 +160,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
             toRemoveDirty.clear();
             ListTag toAdd = new ListTag();
             for (ParticleEffectInstance instance : toAddDirty) {
-                Tag etag = ParticleEffectInstance.CODEC.encodeStart(NbtOps.INSTANCE, instance).getOrThrow(false, MKCore.LOGGER::error);
+                Tag etag = ParticleEffectInstance.CODEC.encodeStart(NbtOps.INSTANCE, instance).getOrThrow();
                 toAdd.add(etag);
             }
             tag.put("effectInstancesAdd", toAdd);

@@ -319,7 +319,7 @@ public class MKActiveEffect {
         }
 
         @Override
-        public MobEffect getEffect() {
+        public Holder<MobEffect> getEffect() {
             // Stop the call to the MobEffects registry
             return effectInstance.getEffect().getVanillaWrapper();
         }
