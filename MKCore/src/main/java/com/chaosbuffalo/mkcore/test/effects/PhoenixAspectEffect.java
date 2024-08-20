@@ -19,8 +19,8 @@ public class PhoenixAspectEffect extends MKEffect {
 
     public PhoenixAspectEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        addAttribute(MKAttributes.COOLDOWN, MODIFIER_ID, 0.33, AttributeModifier.Operation.MULTIPLY_TOTAL);
-        addAttribute(MKAttributes.MANA_REGEN, MODIFIER_ID, 1.0f, AttributeModifier.Operation.ADDITION);
+        addAttribute(MKAttributes.COOLDOWN, MODIFIER_ID, 0.33, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+        addAttribute(MKAttributes.MANA_REGEN, MODIFIER_ID, 1.0f, AttributeModifier.Operation.ADD_VALUE);
     }
 
     public void enableFlying(LivingEntity target) {

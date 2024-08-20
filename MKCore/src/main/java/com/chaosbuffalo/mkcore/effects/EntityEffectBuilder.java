@@ -110,7 +110,7 @@ public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
 
     public void spawn() {
         if (effect.getOwner() != null) {
-            effect.getOwner().level.addFreshEntity(effect);
+            effect.getOwner().level().addFreshEntity(effect);
         }
     }
 
@@ -194,7 +194,7 @@ public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
         }
 
         public BlockAnchoredLineEffectBuilder setBlock(Block block) {
-            return setBlockSupplier(Lazy.of(() -> block));
+            return setBlockSupplier(() -> block);
         }
 
         public BlockAnchoredLineEffectBuilder setRange(float range) {

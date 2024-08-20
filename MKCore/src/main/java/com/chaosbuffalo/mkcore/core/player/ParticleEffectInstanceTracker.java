@@ -1,13 +1,11 @@
 package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ParticleEffectInstance;
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
-import com.mojang.serialization.Dynamic;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.*;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 import java.util.*;
@@ -64,7 +62,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
 
 
     @Override
-    public void deserializeUpdate(CompoundTag tag) {
+    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         if (tag.contains("effectInstances")) {
             instanceMap.clear();
             ListTag effectsNbt = tag.getList("effectInstances", Tag.TAG_COMPOUND);
@@ -95,12 +93,12 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
     }
 
     @Override
-    public void serializeUpdate(CompoundTag tag) {
+    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
 
     }
 
     @Override
-    public void serializeFull(CompoundTag tag) {
+    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
 
     }
 
@@ -139,7 +137,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         }
 
         @Override
-        public void serializeFull(CompoundTag tag) {
+        public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
             ListTag effectsNbt = new ListTag();
             for (ParticleEffectInstance instance : instanceMap.values()) {
                 Tag etag = ParticleEffectInstance.CODEC.encodeStart(NbtOps.INSTANCE, instance).getOrThrow();
@@ -151,7 +149,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         }
 
         @Override
-        public void serializeUpdate(CompoundTag tag) {
+        public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
             ListTag toRemove = new ListTag();
             for (UUID id : toRemoveDirty) {
                 toRemove.add(StringTag.valueOf(id.toString()));

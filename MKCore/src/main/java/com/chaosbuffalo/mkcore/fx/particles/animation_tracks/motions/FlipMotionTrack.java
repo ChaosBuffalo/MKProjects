@@ -6,7 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 public class FlipMotionTrack extends BaseMotionTrack {
-    public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKCore.MOD_ID, "particle_anim.flip_motion");
+    public final static ResourceLocation TYPE_NAME = MKCore.id("particle_anim.flip_motion");
 
     public FlipMotionTrack() {
         super(TYPE_NAME);

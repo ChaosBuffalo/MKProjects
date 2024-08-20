@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.utils.location;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
@@ -11,10 +12,10 @@ public class SingleLocationProvider extends LocationProvider {
     protected final Vec3 offset;
     protected final float percentEyeHeight;
 
-    public static final Codec<SingleLocationProvider> CODEC = RecordCodecBuilder.<SingleLocationProvider>mapCodec(builder -> builder.group(
+    public static final MapCodec<SingleLocationProvider> CODEC = RecordCodecBuilder.<SingleLocationProvider>mapCodec(builder -> builder.group(
             Vec3.CODEC.fieldOf("offset").forGetter(i -> i.offset),
             Codec.FLOAT.fieldOf("percentEyeHeight").forGetter(i -> i.percentEyeHeight)
-    ).apply(builder, SingleLocationProvider::new)).codec();
+    ).apply(builder, SingleLocationProvider::new));
 
     public SingleLocationProvider(Vec3 offset, float percentEyeHeight) {
         super(1);

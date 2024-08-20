@@ -15,8 +15,8 @@ public class NewBurningSoulEffect extends MKEffect {
 
     public NewBurningSoulEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        addAttribute(MKAttributes.SPELL_CRIT_MULTIPLIER, MODIFIER_ID, 1.0, AttributeModifier.Operation.ADDITION);
-        addAttribute(MKAttributes.SPELL_CRIT, MODIFIER_ID, 0.1, AttributeModifier.Operation.ADDITION);
+        addAttribute(MKAttributes.SPELL_CRIT_MULTIPLIER, MODIFIER_ID, 1.0, AttributeModifier.Operation.ADD_VALUE);
+        addAttribute(MKAttributes.SPELL_CRIT, MODIFIER_ID, 0.1, AttributeModifier.Operation.ADD_VALUE);
     }
 
     @Override

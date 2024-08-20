@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class AbilityForgetOption extends MKLayout {
 
@@ -38,7 +39,7 @@ public class AbilityForgetOption extends MKLayout {
     }
 
     @Override
-    public void postDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    public void postDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         boolean isForgetting = popup.isForgetting(ability);
         boolean hovered = isHovered();
         if (hovered || isForgetting) {
@@ -46,7 +47,8 @@ public class AbilityForgetOption extends MKLayout {
             if (hovered && isForgetting) {
                 color = 0xaaff8800;
             }
-            mkFill(matrixStack, x, y, x + width, y + height, color);
+//            mkFill(matrixStack, x, y, x + width, y + height, color);
+            graphics.fill(x, y, x + width, y + height, color);
         }
     }
 }

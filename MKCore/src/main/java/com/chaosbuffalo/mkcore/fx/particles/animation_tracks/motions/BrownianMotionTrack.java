@@ -17,7 +17,7 @@ public class BrownianMotionTrack extends ParticleMotionAnimationTrack {
     protected final BooleanAttribute doY = new BooleanAttribute("doY", true);
     protected final BooleanAttribute doZ = new BooleanAttribute("doZ", true);
     protected final BooleanAttribute doGravity = new BooleanAttribute("doGravity", true);
-    public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKCore.MOD_ID, "particle_anim.brownian_motion");
+    public final static ResourceLocation TYPE_NAME = MKCore.id("particle_anim.brownian_motion");
     private final MKParticle.ParticleDataKey VARIANCE_VECTOR = new MKParticle.ParticleDataKey(this,
             keyCount++);
 

@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.utils.location;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -19,7 +20,7 @@ public class CircularLocationProvider extends LocationProvider{
     protected final boolean inheritPitch;
 
 
-    public static final Codec<CircularLocationProvider> CODEC = RecordCodecBuilder.<CircularLocationProvider>mapCodec(builder -> builder.group(
+    public static final MapCodec<CircularLocationProvider> CODEC = RecordCodecBuilder.<CircularLocationProvider>mapCodec(builder -> builder.group(
             Vec3.CODEC.fieldOf("offset").forGetter(i -> i.offset),
             Codec.FLOAT.fieldOf("percentEyeHeight").forGetter(i -> i.percentEyeHeight),
             Codec.INT.fieldOf("count").forGetter(i -> i.count),
@@ -27,7 +28,7 @@ public class CircularLocationProvider extends LocationProvider{
             Codec.FLOAT.fieldOf("minDegrees").forGetter(i -> i.minDegrees),
             Codec.FLOAT.fieldOf("maxDegrees").forGetter(i -> i.maxDegrees),
             Codec.BOOL.fieldOf("inheritPitch").forGetter(i -> i.inheritPitch)
-    ).apply(builder, CircularLocationProvider::new)).codec();
+    ).apply(builder, CircularLocationProvider::new));
 
     public CircularLocationProvider(Vec3 offset, float percentEyeHeight, int count, float distance, boolean inheritPitch) {
         this(offset, percentEyeHeight, count, distance, 0f, -360f, inheritPitch);

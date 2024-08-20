@@ -26,9 +26,8 @@ public class PointEffectEntity extends BaseEffectEntity {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.getEntityData().define(RADIUS, 1.0F);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(RADIUS, 1.0F);
     }
 
     @Override
@@ -36,7 +35,7 @@ public class PointEffectEntity extends BaseEffectEntity {
         if (RADIUS.equals(key)) {
             this.refreshDimensions();
 //            this.recenterBoundingBox();
-            this.setBoundingBox(this.dimensions.makeBoundingBox(getX(), getY() - getRadius(), getZ()));
+            this.setBoundingBox(this.getDimensions(getPose()).makeBoundingBox(getX(), getY() - getRadius(), getZ()));
         }
 
         super.onSyncedDataUpdated(key);
@@ -49,7 +48,7 @@ public class PointEffectEntity extends BaseEffectEntity {
     }
 
     public void setRadius(float radiusIn) {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide) {
             this.getEntityData().set(RADIUS, radiusIn);
         }
     }
@@ -77,6 +76,6 @@ public class PointEffectEntity extends BaseEffectEntity {
 
     @Override
     protected Collection<LivingEntity> getEntitiesInBounds() {
-        return this.level.getEntitiesOfClass(LivingEntity.class, getBoundingBox(), this::entityCheck);
+        return this.level().getEntitiesOfClass(LivingEntity.class, getBoundingBox(), this::entityCheck);
     }
 }

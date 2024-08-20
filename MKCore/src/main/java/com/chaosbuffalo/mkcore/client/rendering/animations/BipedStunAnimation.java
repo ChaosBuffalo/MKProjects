@@ -16,7 +16,7 @@ public class BipedStunAnimation<T extends LivingEntity> extends AdditionalBipedA
     public void apply(T entity) {
         HumanoidModel<?> model = getModel();
         MKCore.getEntityData(entity).ifPresent(mkEntityData -> {
-            long time = entity.getLevel().getGameTime();
+            long time = entity.level().getGameTime();
             float progress = (time % 100) / 100f;
             float armZ = Mth.sin((float) (Math.PI / 2.0f + progress * (float) Math.PI / 2.f)) * 1.0f * (float) Math.PI / 4.0f;
             float angle = (float) ((float) (0) + Mth.sin((float) (progress * Math.PI)) * (Math.PI / 8.0f));

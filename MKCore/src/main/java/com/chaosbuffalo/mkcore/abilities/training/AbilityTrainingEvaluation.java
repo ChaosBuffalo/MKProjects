@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.abilities.training;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
@@ -37,7 +38,7 @@ public class AbilityTrainingEvaluation {
         return requirements.stream().allMatch(AbilityRequirementEvaluation::isMet);
     }
 
-    public void write(FriendlyByteBuf buffer) {
+    public void write(RegistryFriendlyByteBuf buffer) {
         buffer.writeResourceLocation(getAbility().getAbilityId());
         buffer.writeBoolean(usesAbilityPool());
         buffer.writeVarInt(requirements.size());
@@ -45,7 +46,7 @@ public class AbilityTrainingEvaluation {
     }
 
     @Nullable
-    public static AbilityTrainingEvaluation read(FriendlyByteBuf buffer) {
+    public static AbilityTrainingEvaluation read(RegistryFriendlyByteBuf buffer) {
         ResourceLocation abilityId = buffer.readResourceLocation();
         boolean usesPool = buffer.readBoolean();
         List<AbilityRequirementEvaluation> requirementEvaluations = new ArrayList<>();

@@ -12,6 +12,7 @@ import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.utils.location.LocationProvider;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
@@ -23,10 +24,10 @@ import java.util.Optional;
 
 public class BurstProjectileBehavior extends ProjectileCastBehavior{
     protected final boolean doPitch;
-    public static final Codec<BurstProjectileBehavior> CODEC = RecordCodecBuilder.<BurstProjectileBehavior>mapCodec(builder -> builder.group(
+    public static final MapCodec<BurstProjectileBehavior> CODEC = RecordCodecBuilder.<BurstProjectileBehavior>mapCodec(builder -> builder.group(
             LocationProvider.CODEC.fieldOf("location").forGetter(i -> i.locationProvider),
             Codec.BOOL.fieldOf("doPitch").forGetter(i -> i.doPitch)
-    ).apply(builder, BurstProjectileBehavior::new)).codec();
+    ).apply(builder, BurstProjectileBehavior::new));
 
     public BurstProjectileBehavior(LocationProvider provider, boolean doPitch) {
         super(provider);

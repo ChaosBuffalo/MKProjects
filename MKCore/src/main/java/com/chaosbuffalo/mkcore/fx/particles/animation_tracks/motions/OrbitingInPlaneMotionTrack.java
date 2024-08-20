@@ -13,7 +13,7 @@ public class OrbitingInPlaneMotionTrack extends BaseMotionTrack {
     protected final DoubleAttribute rpm = new DoubleAttribute("rpm", 1.0f);
     protected final DoubleAttribute rpmVarianceMagnitude = new DoubleAttribute("rpmVariance", 0.0f);
     protected final FloatAttribute rampTime = new FloatAttribute("ramp", -1.0f);
-    public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKCore.MOD_ID, "particle_anim.orbit_in_plane");
+    public final static ResourceLocation TYPE_NAME = MKCore.id("particle_anim.orbit_in_plane");
     private final MKParticle.ParticleDataKey MOTION_VECTOR = new MKParticle.ParticleDataKey(this,
             keyCount++);
     private final MKParticle.ParticleDataKey VARIANCE_SCALAR = new MKParticle.ParticleDataKey(this, keyCount++);

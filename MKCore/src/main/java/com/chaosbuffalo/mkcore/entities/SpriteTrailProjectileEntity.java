@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.entities;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
@@ -29,15 +30,14 @@ public abstract class SpriteTrailProjectileEntity extends TrailProjectileEntity 
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buffer) {
+    public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
         super.writeSpawnData(buffer);
-        buffer.writeItem(stack);
-
+        ItemStack.STREAM_CODEC.encode(buffer, stack);
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf additionalData) {
+    public void readSpawnData(RegistryFriendlyByteBuf additionalData) {
         super.readSpawnData(additionalData);
-        stack = additionalData.readItem();
+        stack = ItemStack.STREAM_CODEC.decode(additionalData);
     }
 }

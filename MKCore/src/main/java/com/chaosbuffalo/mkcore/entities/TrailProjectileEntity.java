@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.entities;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
@@ -41,7 +42,7 @@ public abstract class TrailProjectileEntity extends BaseProjectileEntity {
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf additionalData) {
+    public void readSpawnData(RegistryFriendlyByteBuf additionalData) {
         super.readSpawnData(additionalData);
         boolean hasTrail = additionalData.readBoolean();
         if (hasTrail) {
@@ -50,7 +51,7 @@ public abstract class TrailProjectileEntity extends BaseProjectileEntity {
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buffer) {
+    public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
         super.writeSpawnData(buffer);
         if (getTrailAnimation() != null) {
             buffer.writeBoolean(true);

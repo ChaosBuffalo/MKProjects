@@ -21,10 +21,8 @@ import java.util.List;
 
 public class TalentButton extends MKButton {
 
-    private static final ResourceLocation TALENT_SLOT_GRAPHIC = new ResourceLocation(MKCore.MOD_ID,
-            "textures/talents/talent_slot.png");
-    private static final ResourceLocation TALENT_SLOT_OVERLAY = new ResourceLocation(MKCore.MOD_ID,
-            "textures/talents/talent_slot_complete.png");
+    private static final ResourceLocation TALENT_SLOT_GRAPHIC = MKCore.id("textures/talents/talent_slot.png");
+    private static final ResourceLocation TALENT_SLOT_OVERLAY = MKCore.id("textures/talents/talent_slot_complete.png");
     public static final int SLOT_WIDTH = 16;
     public static final int SLOT_HEIGHT = 16;
     private static final int OVERLAY_WIDTH = 2;

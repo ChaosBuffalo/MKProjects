@@ -5,9 +5,8 @@ import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
@@ -17,17 +16,15 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
+import net.neoforged.neoforge.event.EventHooks;
 
 import javax.annotation.Nullable;
 
-public abstract class BaseProjectileEntity extends Projectile implements IClientUpdatable, IEntityAdditionalSpawnData {
+public abstract class BaseProjectileEntity extends Projectile implements IClientUpdatable, IEntityWithComplexSpawn {
     public static final float DEFAULT_MC_GRAVITY = 0.03F;
     @Nullable
     private BlockState inBlockState;
@@ -79,18 +76,18 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         //replacement for the old get owner on client logic
         Entity ret = super.getOwner();
         if (ret == null && ownerNetworkId != 0) {
-            return this.level.getEntity(ownerNetworkId);
+            return this.level().getEntity(ownerNetworkId);
         }
         return ret;
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buffer) {
+    public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
         buffer.writeInt(ownerNetworkId);
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf additionalData) {
+    public void readSpawnData(RegistryFriendlyByteBuf additionalData) {
         ownerNetworkId = additionalData.readInt();
     }
 
@@ -107,7 +104,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
     }
 
     @Override
-    protected void defineSynchedData() {
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
 
     }
 
@@ -188,11 +185,6 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         return distance < edgeLength * edgeLength;
     }
 
-    @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket() {
-        return NetworkHooks.getEntitySpawningPacket(this);
-    }
-
 
     public void shoot(Entity source, float rotationPitchIn, float rotationYawIn,
                       float pitchOffset, float velocity, float inaccuracy) {
@@ -228,7 +220,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
 
     protected boolean checkIfInGround(BlockPos blockpos, BlockState blockstate) {
         if (!blockstate.isAir()) {
-            VoxelShape voxelshape = blockstate.getBlockSupportShape(this.level, blockpos);
+            VoxelShape voxelshape = blockstate.getBlockSupportShape(this.level(), blockpos);
             if (!voxelshape.isEmpty()) {
                 Vec3 entityPos = this.position();
                 for (AABB axisalignedbb : voxelshape.toAabbs()) {
@@ -298,7 +290,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
     }
 
     private EntityHitResult rayTraceEntities(Vec3 traceStart, Vec3 traceEnd) {
-        return ProjectileUtil.getEntityHitResult(level, this, traceStart, traceEnd,
+        return ProjectileUtil.getEntityHitResult(level(), this, traceStart, traceEnd,
                 getBoundingBox().expandTowards(getDeltaMovement()).inflate(1.0D), this::canHitEntity);
     }
 
@@ -310,7 +302,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
     protected boolean onMKHit(HitResult rayTraceResult) {
         if (rayTraceResult.getType() == HitResult.Type.BLOCK) {
             BlockHitResult blockraytraceresult = (BlockHitResult) rayTraceResult;
-            BlockState blockstate = this.level.getBlockState(blockraytraceresult.getBlockPos());
+            BlockState blockstate = this.level().getBlockState(blockraytraceresult.getBlockPos());
             this.inBlockState = blockstate;
             Vec3 vec3d = blockraytraceresult.getLocation().subtract(this.getX(), this.getY(), this.getZ());
             this.setDeltaMovement(vec3d);
@@ -318,7 +310,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
             this.setPosRaw(this.getX() - vec3d1.x, this.getY() - vec3d1.y,
                     this.getZ() - vec3d1.z);
             this.inGround = true;
-            blockstate.onProjectileHit(this.level, blockstate, blockraytraceresult, this);
+            blockstate.onProjectileHit(this.level(), blockstate, blockraytraceresult, this);
         }
         return this.onImpact(getOwner(), rayTraceResult, getAmplifier());
 
@@ -388,7 +380,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         this.zOld = this.getZ();
 
         super.tick();
-        if (!level.isClientSide && tickCount < preFireTicks) {
+        if (!level().isClientSide && tickCount < preFireTicks) {
             return;
         }
         if (!isAlive()) {
@@ -406,7 +398,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
         }
 
         BlockPos blockpos = blockPosition();
-        BlockState blockstate = this.level.getBlockState(blockpos);
+        BlockState blockstate = this.level().getBlockState(blockpos);
         this.inGround = checkIfInGround(blockpos, blockstate);
 
 //        if (world.isRemote && ticksExisted % graphicalEffectTickInterval == 0) {
@@ -414,7 +406,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
 //        }
 
         if (this.inGround) {
-            if (this.inBlockState != blockstate && this.level.noCollision(this.getBoundingBox().inflate(0.06D))) {
+            if (this.inBlockState != blockstate && this.level().noCollision(this.getBoundingBox().inflate(0.06D))) {
                 this.inGround = false;
                 this.setDeltaMovement(motion.multiply(this.random.nextFloat() * 0.2F,
                         this.random.nextFloat() * 0.2F,
@@ -441,7 +433,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
             HitResult trace;
             Vec3 traceStart = this.position();
             Vec3 traceEnd = traceStart.add(motion);
-            HitResult blockRayTrace = this.level.clip(new ClipContext(traceStart, traceEnd,
+            HitResult blockRayTrace = this.level().clip(new ClipContext(traceStart, traceEnd,
                     ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
             trace = blockRayTrace;
             if (blockRayTrace.getType() != HitResult.Type.MISS) {
@@ -453,7 +445,7 @@ public abstract class BaseProjectileEntity extends Projectile implements IClient
                 trace = entityRayTrace;
             }
 
-            if (trace.getType() != HitResult.Type.MISS && !ForgeEventFactory.onProjectileImpact(this, trace)) {
+            if (trace.getType() != HitResult.Type.MISS && !EventHooks.onProjectileImpact(this, trace)) {
                 if (this.onMKHit(trace)) {
                     this.remove(RemovalReason.KILLED);
                 }

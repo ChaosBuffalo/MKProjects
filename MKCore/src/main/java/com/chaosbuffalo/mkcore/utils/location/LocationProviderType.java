@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.utils.location;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 public interface LocationProviderType<T extends LocationProvider> {
-    Codec<T> codec();
+    MapCodec<T> codec();
 }

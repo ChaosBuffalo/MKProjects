@@ -20,7 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class AdvancedLineSpawnPattern extends ParticleSpawnPattern {
-    public final static ResourceLocation TYPE = new ResourceLocation(MKCore.MOD_ID, "particle_spawn_pattern.advanced_line");
+    public final static ResourceLocation TYPE = MKCore.id("particle_spawn_pattern.advanced_line");
     protected final DoubleAttribute offset = new DoubleAttribute("offset", 0.0);
     protected final DoubleAttribute motion = new DoubleAttribute("motion", 0.0);
     protected final IntAttribute perPosCount = new IntAttribute("per_pos_count", 10);

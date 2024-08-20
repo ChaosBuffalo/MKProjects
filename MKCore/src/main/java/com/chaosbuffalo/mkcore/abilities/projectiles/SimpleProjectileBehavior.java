@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.utils.location.LocationProvider;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
@@ -21,10 +22,10 @@ import java.util.Optional;
 
 public class SimpleProjectileBehavior extends ProjectileCastBehavior{
     protected final boolean doPitch;
-    public static final Codec<SimpleProjectileBehavior> CODEC = RecordCodecBuilder.<SimpleProjectileBehavior>mapCodec(builder -> builder.group(
+    public static final MapCodec<SimpleProjectileBehavior> CODEC = RecordCodecBuilder.<SimpleProjectileBehavior>mapCodec(builder -> builder.group(
             LocationProvider.CODEC.fieldOf("location").forGetter(i -> i.locationProvider),
             Codec.BOOL.fieldOf("doPitch").forGetter(i -> i.doPitch)
-    ).apply(builder, SimpleProjectileBehavior::new)).codec();
+    ).apply(builder, SimpleProjectileBehavior::new));
 
     public SimpleProjectileBehavior(LocationProvider provider, boolean doPitch) {
         super(provider);

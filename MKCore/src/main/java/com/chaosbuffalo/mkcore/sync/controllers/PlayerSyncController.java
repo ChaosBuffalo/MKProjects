@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.events.PlayerDataEvent;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.common.NeoForge;
@@ -40,8 +41,8 @@ public final class PlayerSyncController extends EntitySyncController {
     }
 
     @Override
-    public void deserializeUpdate(CompoundTag updateTag, Set<SyncVisibility> visibility) {
-        super.deserializeUpdate(updateTag, visibility);
+    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag updateTag, Set<SyncVisibility> visibility) {
+        super.deserializeUpdate(provider, updateTag, visibility);
         NeoForge.EVENT_BUS.post(new PlayerDataEvent.Updated(playerData));
     }
 

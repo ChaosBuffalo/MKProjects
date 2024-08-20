@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.function.Function;
 
 public class SinglePositionSpawnPattern extends ParticleSpawnPattern {
-    public final static ResourceLocation TYPE = new ResourceLocation(MKCore.MOD_ID, "particle_spawn_pattern.single");
+    public final static ResourceLocation TYPE = MKCore.id("particle_spawn_pattern.single");
 
     public SinglePositionSpawnPattern() {
         super(TYPE);

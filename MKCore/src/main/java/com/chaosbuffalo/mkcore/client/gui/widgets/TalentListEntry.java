@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class TalentListEntry extends MKStackLayoutHorizontal {
 
@@ -35,12 +36,15 @@ public class TalentListEntry extends MKStackLayoutHorizontal {
     }
 
     @Override
-    public void postDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    public void postDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+        super.postDraw(graphics, mc, x, y, width, height, mouseX, mouseY, partialTicks);
         if (isHovered()) {
-            mkFill(matrixStack, x, y, x + width, y + height, 0x55ffffff);
+//            mkFill(matrixStack, x, y, x + width, y + height, 0x55ffffff);
+            graphics.fill(x, y, x + width, y + height, 0x55ffffff);
         }
         if (record.equals(screen.getCurrentTree())) {
-            mkFill(matrixStack, x, y, x + width, y + height, 0x99ffffff);
+            graphics.fill(x, y, x + width, y + height, 0x55ffffff);
+//            mkFill(matrixStack, x, y, x + width, y + height, 0x99ffffff);
         }
     }
 }

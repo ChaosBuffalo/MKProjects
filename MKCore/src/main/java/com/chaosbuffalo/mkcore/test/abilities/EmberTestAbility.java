@@ -26,7 +26,7 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class EmberTestAbility extends MKAbility {
-    private static final ResourceLocation TEST_PARTICLES = new ResourceLocation(MKCore.MOD_ID, "beam_effect");
+    private static final ResourceLocation TEST_PARTICLES = MKCore.id("beam_effect");
     protected final FloatAttribute damage = new FloatAttribute("damage", 6.0f);
     protected final IntAttribute burnTime = new IntAttribute("burnTime", 5);
 
@@ -73,8 +73,8 @@ public class EmberTestAbility extends MKAbility {
             int burnDuration = burnTime.value();
             float amount = damage.value();
             MKCore.LOGGER.info("Ember damage {} burnTime {}", amount, burnDuration);
-            targetEntity.setSecondsOnFire(burnDuration);
-            targetEntity.hurt(MKDamageSource.causeAbilityDamage(targetEntity.getLevel(), CoreDamageTypes.FireDamage.get(),
+            targetEntity.setRemainingFireTicks(burnDuration);
+            targetEntity.hurt(MKDamageSource.causeAbilityDamage(targetEntity.level(), CoreDamageTypes.FireDamage.get(),
                     getAbilityId(), castingEntity, castingEntity), amount);
 //            SoundUtils.playSoundAtEntity(targetEntity, ModSounds.spell_fire_6);
             EntityEffectBuilder.LineEffectBuilder lineBuilder = EntityEffectBuilder.createLineEffectOnEntity(castingEntity, targetEntity,

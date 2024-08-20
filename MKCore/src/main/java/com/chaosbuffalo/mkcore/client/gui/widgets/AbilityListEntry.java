@@ -7,9 +7,9 @@ import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterYWithOffsetConstr
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKImage;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class AbilityListEntry extends MKStackLayoutHorizontal {
     private final MKAbility ability;
@@ -45,12 +45,14 @@ public class AbilityListEntry extends MKStackLayoutHorizontal {
     }
 
     @Override
-    public void postDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    public void postDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         if (isHovered()) {
-            mkFill(matrixStack, x, y, x + width, y + height, 0x55ffffff);
+//            mkFill(matrixStack, x, y, x + width, y + height, 0x55ffffff);
+            graphics.fill(x, y, x + width, y + height, 0x55ffffff);
         }
         if (ability.equals(screen.getSelectedAbility())) {
-            mkFill(matrixStack, x, y, x + width, y + height, 0x99ffffff);
+//            mkFill(matrixStack, x, y, x + width, y + height, 0x99ffffff);
+            graphics.fill(x, y, x + width, y + height, 0x99ffffff);
         }
     }
 

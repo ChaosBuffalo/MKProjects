@@ -141,7 +141,7 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         tag.putUUID("personaId", personaId);
-        tag.put("abilities", abilities.serialize());
+        tag.put("abilities", abilities.serialize(provider));
         tag.put("talents", talents.serializeNBT());
         tag.put("entitlements", entitlements.serialize());
         tag.put("skills", skills.serialize(provider));
@@ -153,7 +153,7 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     @Override
     public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
         personaId = tag.getUUID("personaId");
-        abilities.deserialize(tag.getCompound("abilities"));
+        abilities.deserialize(provider, tag.getCompound("abilities"));
         talents.deserializeNBT(tag.get("talents"));
         entitlements.deserialize(tag.getCompound("entitlements"));
         skills.deserialize(provider, tag.getCompound("skills"));

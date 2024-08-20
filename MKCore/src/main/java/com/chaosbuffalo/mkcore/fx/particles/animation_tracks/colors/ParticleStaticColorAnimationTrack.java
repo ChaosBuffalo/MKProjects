@@ -14,7 +14,7 @@ public class ParticleStaticColorAnimationTrack extends ParticleColorAnimationTra
     protected final ColorFloatAttribute redVariance = new ColorFloatAttribute("redVariance", 0.0f);
     protected final ColorFloatAttribute greenVariance = new ColorFloatAttribute("greenVariance", 0.0f);
     protected final ColorFloatAttribute blueVariance = new ColorFloatAttribute("blueVariance", 0.0f);
-    public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKCore.MOD_ID, "particle_anim.static_color");
+    public final static ResourceLocation TYPE_NAME = MKCore.id("particle_anim.static_color");
     private final MKParticle.ParticleDataKey COLOR = new MKParticle.ParticleDataKey(this, keyCount++);
 
 

@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkcore.core.IMKAbilityKnowledge;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -164,15 +165,15 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         knownAbilityUpdater.markDirty(knownAbility.getId());
     }
 
-    public CompoundTag serialize() {
+    public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-        tag.put("known", knownAbilityUpdater.serializeStorage());
+        tag.put("known", knownAbilityUpdater.serializeStorage(provider));
         tag.putInt("poolSize", poolSize.get());
         return tag;
     }
 
-    public void deserialize(CompoundTag tag) {
-        knownAbilityUpdater.deserializeStorage(tag.get("known"));
+    public void deserialize(HolderLookup.Provider provider, CompoundTag tag) {
+        knownAbilityUpdater.deserializeStorage(provider, tag.get("known"));
         setAbilityPoolSize(tag.getInt("poolSize"));
     }
 

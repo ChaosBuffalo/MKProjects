@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.sync.controllers;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncGroup;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -35,8 +36,8 @@ public abstract class SyncController {
         getVisibilityGroup(visibility).remove(syncObject);
     }
 
-    public void deserializeUpdate(CompoundTag updateTag, Set<SyncVisibility> visibility) {
-        visibility.forEach(v -> getVisibilityGroup(v).deserializeUpdate(updateTag));
+    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag updateTag, Set<SyncVisibility> visibility) {
+        visibility.forEach(v -> getVisibilityGroup(v).deserializeUpdate(provider, updateTag));
     }
 
     public abstract boolean syncUpdates();

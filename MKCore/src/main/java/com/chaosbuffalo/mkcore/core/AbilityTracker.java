@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -225,7 +226,7 @@ public class AbilityTracker implements ISyncObject {
         }
 
         @Override
-        public void serializeUpdate(CompoundTag tag) {
+        public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
             CompoundTag root = new CompoundTag();
             dirty.forEach(id -> root.putInt(id.toString(), getTimerTicksRemaining(id)));
             tag.put("cooldowns", root);
@@ -233,7 +234,7 @@ public class AbilityTracker implements ISyncObject {
         }
 
         @Override
-        public void serializeFull(CompoundTag tag) {
+        public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
             CompoundTag root = new CompoundTag();
             iterateActiveEntries(e -> {
                 return !e.getValue().isLocal();
@@ -265,17 +266,17 @@ public class AbilityTracker implements ISyncObject {
     }
 
     @Override
-    public void deserializeUpdate(CompoundTag tag) {
+    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         deserializeList(tag.getCompound("cooldowns"), false);
     }
 
     @Override
-    public void serializeUpdate(CompoundTag tag) {
+    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
 
     }
 
     @Override
-    public void serializeFull(CompoundTag tag) {
+    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
 
     }
 }

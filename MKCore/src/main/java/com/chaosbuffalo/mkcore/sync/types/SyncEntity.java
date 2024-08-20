@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.sync.types;
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 
@@ -57,7 +58,7 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
     }
 
     @Override
-    public void deserializeUpdate(CompoundTag tag) {
+    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         if (tag.contains(name)) {
             int id = tag.getInt(name);
             if (id != -1) {
@@ -74,15 +75,15 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
     }
 
     @Override
-    public void serializeUpdate(CompoundTag tag) {
+    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         if (dirty) {
-            serializeFull(tag);
+            serializeFull(provider, tag);
             dirty = false;
         }
     }
 
     @Override
-    public void serializeFull(CompoundTag tag) {
+    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
         tag.putInt(name, value != null ? value.getId() : -1);
     }
 

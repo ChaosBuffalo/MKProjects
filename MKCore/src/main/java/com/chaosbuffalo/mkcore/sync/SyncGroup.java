@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.sync;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.*;
@@ -57,22 +58,22 @@ public class SyncGroup implements ISyncObject {
     }
 
     @Override
-    public void deserializeUpdate(CompoundTag tag) {
+    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         CompoundTag groupTag = extractGroupTag(tag);
         if (!groupTag.isEmpty()) {
             boolean fullSync = groupTag.contains(FULL_FLAG);
             beforeClientUpdate(groupTag, fullSync);
         }
-        components.forEach(c -> c.deserializeUpdate(groupTag));
+        components.forEach(c -> c.deserializeUpdate(provider, groupTag));
     }
 
     @Override
-    public void serializeUpdate(CompoundTag tag) {
+    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         if (dirty.isEmpty())
             return;
 
         CompoundTag groupTag = extractGroupTag(tag);
-        dirty.forEach(c -> c.serializeUpdate(groupTag));
+        dirty.forEach(c -> c.serializeUpdate(provider, groupTag));
         if (!groupTag.isEmpty()) {
             insertGroupTag(tag, groupTag);
         }
@@ -80,13 +81,13 @@ public class SyncGroup implements ISyncObject {
     }
 
     @Override
-    public void serializeFull(CompoundTag tag) {
+    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
         if (components.isEmpty())
             return;
 
         CompoundTag groupTag = extractGroupTag(tag);
         groupTag.putBoolean(FULL_FLAG, true);
-        components.forEach(c -> c.serializeFull(groupTag));
+        components.forEach(c -> c.serializeFull(provider, groupTag));
         if (!groupTag.isEmpty()) {
             insertGroupTag(tag, groupTag);
         }

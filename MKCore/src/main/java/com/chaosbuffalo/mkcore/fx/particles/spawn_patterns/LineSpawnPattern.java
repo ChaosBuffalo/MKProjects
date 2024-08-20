@@ -18,7 +18,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class LineSpawnPattern extends ParticleSpawnPattern {
-    public final static ResourceLocation TYPE = new ResourceLocation(MKCore.MOD_ID, "particle_spawn_pattern.line");
+    public final static ResourceLocation TYPE = MKCore.id("particle_spawn_pattern.line");
     protected final DoubleAttribute xRadius = new DoubleAttribute("xRadius", 1.0);
     protected final DoubleAttribute yRadius = new DoubleAttribute("yRadius", 1.0);
     protected final DoubleAttribute zRadius = new DoubleAttribute("zRadius", 1.0);

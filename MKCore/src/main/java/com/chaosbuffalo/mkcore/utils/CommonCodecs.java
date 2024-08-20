@@ -4,9 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.Products;
 import com.mojang.datafixers.kinds.K1;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -18,31 +20,27 @@ import java.util.Set;
 import java.util.function.Function;
 
 public class CommonCodecs {
-    public static final Codec<EquipmentSlot> EQUIPMENT_SLOT_CODEC = ExtraCodecs.stringResolverCodec(EquipmentSlot::getName, EquipmentSlot::byName);
+    public static final Codec<EquipmentSlot> EQUIPMENT_SLOT_CODEC = EquipmentSlot.CODEC;
 
     // ItemStack.CODEC does not include capabilities, so we need this workaround
-    public static final Codec<ItemStack> ITEM_STACK_WITH_CAPS_CODEC = CompoundTag.CODEC.xmap(ItemStack::of, i -> i.save(new CompoundTag()));
+//    public static final Codec<ItemStack> ITEM_STACK_WITH_CAPS_CODEC = CompoundTag.CODEC.xmap(ItemStack::of, i -> i.save(new CompoundTag()));
 
     public static final Codec<ItemStack> ITEM_STACK = ItemStack.CODEC;
 
-    public static final Codec<AttributeModifier.Operation> ATTRIBUTE_MODIFIER_OPERATION_CODEC =
-            Codec.intRange(0, 2).xmap(AttributeModifier.Operation::fromValue, AttributeModifier.Operation::toValue);
-
     public static final Codec<AttributeModifier> ATTRIBUTE_MODIFIER_CODEC = RecordCodecBuilder.<AttributeModifier>mapCodec(builder -> {
         return builder.group(
-                UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(AttributeModifier::getId),
-                Codec.STRING.fieldOf("name").forGetter(AttributeModifier::getName),
-                Codec.DOUBLE.fieldOf("amount").forGetter(AttributeModifier::getAmount),
-                ATTRIBUTE_MODIFIER_OPERATION_CODEC.fieldOf("operation").forGetter(AttributeModifier::getOperation)
+                ResourceLocation.CODEC.fieldOf("name").forGetter(AttributeModifier::id),
+                Codec.DOUBLE.fieldOf("amount").forGetter(AttributeModifier::amount),
+                AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(AttributeModifier::operation)
         ).apply(builder, AttributeModifier::new);
     }).codec();
 
 
     public static <K, V> Codec<V> createMapBackedDispatch(Codec<K> keyCodec,
-                                                          Map<K, Codec<? extends V>> codecMap,
+                                                          Map<K, MapCodec<? extends V>> codecMap,
                                                           Function<V, K> valueToKey) {
         return keyCodec.dispatch(valueToKey, type -> {
-            Codec<? extends V> codec = codecMap.get(type);
+            MapCodec<? extends V> codec = codecMap.get(type);
             if (codec != null) {
                 return codec;
             }
@@ -51,10 +49,10 @@ public class CommonCodecs {
     }
 
     public static <K, V> Codec<V> createLookupDispatch(Codec<K> keyCodec,
-                                                       Function<K, Codec<? extends V>> keyToValueCodec,
+                                                       Function<K, MapCodec<? extends V>> keyToValueCodec,
                                                        Function<V, K> valueToKey) {
         return keyCodec.dispatch(valueToKey, type -> {
-            Codec<? extends V> codec = keyToValueCodec.apply(type);
+            MapCodec<? extends V> codec = keyToValueCodec.apply(type);
             if (codec != null) {
                 return codec;
             }

@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.sync.adapters;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -42,7 +43,7 @@ public class SyncListUpdater<T> implements ISyncObject {
     }
 
     @Override
-    public void deserializeUpdate(CompoundTag tag) {
+    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         CompoundTag root = tag.getCompound(name);
 
         if (root.getBoolean("f")) {
@@ -57,7 +58,7 @@ public class SyncListUpdater<T> implements ISyncObject {
     }
 
     @Override
-    public void serializeUpdate(CompoundTag tag) {
+    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         if (dirtyEntries.isEmpty())
             return;
 
@@ -68,7 +69,7 @@ public class SyncListUpdater<T> implements ISyncObject {
     }
 
     @Override
-    public void serializeFull(CompoundTag tag) {
+    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
         CompoundTag root = new CompoundTag();
 
         root.putBoolean("f", true);

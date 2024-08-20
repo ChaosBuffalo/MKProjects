@@ -13,7 +13,7 @@ public class SkinLikeWoodEffect extends MKEffect {
 
     public SkinLikeWoodEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        addAttribute(Attributes.ARMOR, UUID.fromString("4b488b68-1151-4bae-b99e-b381707a6964"), 2, AttributeModifier.Operation.ADDITION);
+        addAttribute(Attributes.ARMOR, UUID.fromString("4b488b68-1151-4bae-b99e-b381707a6964"), 2, AttributeModifier.Operation.ADD_VALUE);
     }
 
     @Override

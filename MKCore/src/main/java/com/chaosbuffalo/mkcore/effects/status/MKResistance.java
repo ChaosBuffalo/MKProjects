@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectState;
 import com.chaosbuffalo.mkcore.effects.MKSimplePassiveState;
+import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -13,10 +14,10 @@ import java.util.UUID;
 public class MKResistance extends MKEffect {
     private final float perLevel;
 
-    public MKResistance(Attribute attribute, UUID attrId, float perLevel) {
+    public MKResistance(Holder<Attribute> attribute, UUID attrId, float perLevel) {
         super(perLevel > 0.0f ? MobEffectCategory.BENEFICIAL : MobEffectCategory.HARMFUL);
         this.perLevel = perLevel;
-        addAttribute(attribute, attrId, perLevel, perLevel, AttributeModifier.Operation.ADDITION, MKAttributes.ABJURATION);
+        addAttribute(attribute, attrId, perLevel, perLevel, AttributeModifier.Operation.ADD_VALUE, MKAttributes.ABJURATION);
     }
 
     public float getPerLevel() {

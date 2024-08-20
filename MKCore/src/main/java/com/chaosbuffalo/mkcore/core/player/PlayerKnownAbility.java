@@ -78,7 +78,7 @@ public class PlayerKnownAbility implements IMKSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeStorage() {
+    public CompoundTag serializeStorage(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
 
         ListTag list = new ListTag();

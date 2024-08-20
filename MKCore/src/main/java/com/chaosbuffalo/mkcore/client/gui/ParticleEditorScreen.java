@@ -377,7 +377,7 @@ public class ParticleEditorScreen extends MKScreen {
         };
         button.setWidth(POPUP_WIDTH - 10);
         button.setPressedCallback((btn, click) -> {
-            ResourceLocation saveName = new ResourceLocation(textFieldWidget.getText());
+            ResourceLocation saveName = ResourceLocation.parse(textFieldWidget.getText());
             PacketHandler.sendMessageToServer(new WriteAnimationPacket(saveName, editing));
             closeModal(popup);
             return true;

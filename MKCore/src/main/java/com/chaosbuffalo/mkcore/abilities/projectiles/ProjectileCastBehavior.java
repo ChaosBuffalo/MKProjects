@@ -19,8 +19,8 @@ import java.util.Optional;
 
 public abstract class ProjectileCastBehavior {
 
-    public static final Codec<ProjectileCastBehavior> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
-            MKCoreRegistry.PROJECTILE_CAST_BEHAVIOR_TYPES.getCodec().dispatch(ProjectileCastBehavior::getType, ProjectileCastBehaviorType::codec));
+    public static final Codec<ProjectileCastBehavior> CODEC = Codec.lazyInitialized(MKCoreRegistry.CAST_BEHAVIOR_TYPES::byNameCodec)
+            .dispatch(ProjectileCastBehavior::getType, ProjectileCastBehaviorType::codec);
     protected final LocationProvider locationProvider;
 
     public ProjectileCastBehavior(LocationProvider provider) {
@@ -42,14 +42,14 @@ public abstract class ProjectileCastBehavior {
             for (ProjectileAbilityClientState.TrackedProjectile tracked : projectileState.getTrackedProjectiles()) {
                 if (!tracked.getFired()) {
                     tracked.setFired(true);
-                    Entity entity = casterData.getEntity().getLevel().getEntity(tracked.getEntityId());
+                    Entity entity = casterData.getEntity().level().getEntity(tracked.getEntityId());
                     if (entity instanceof BaseProjectileEntity proj) {
                         casterData.getRiders().removeRider(proj);
                         LocationProvider.WorldLocationResult loc = getLocationProvider().getPosition(
                                 casterData.getEntity(), tracked.getIndex());
                         ability.fireProjectile(proj, ability.getProjectileSpeed(), ability.getProjectileInaccuracy(),
                                 casterData.getEntity(),
-                                casterData.getEntity().getLevel().getEntity(tracked.getTargetEntityId()),
+                                casterData.getEntity().level().getEntity(tracked.getTargetEntityId()),
                                 loc.rotation().x, loc.rotation().y);
                     }
                 }

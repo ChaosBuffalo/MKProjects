@@ -10,8 +10,8 @@ import net.minecraft.world.phys.Vec3;
 
 public abstract class LocationProvider {
     protected final int count;
-    public static final Codec<LocationProvider> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
-            MKCoreRegistry.LOC_PROVIDER_TYPES.getCodec().dispatch(LocationProvider::getType, LocationProviderType::codec));
+    public static final Codec<LocationProvider> CODEC = Codec.lazyInitialized(MKCoreRegistry.LOCATION_PROVIDER_TYPES::byNameCodec)
+            .dispatch(LocationProvider::getType, LocationProviderType::codec);
 
 
     public LocationProvider(int count) {

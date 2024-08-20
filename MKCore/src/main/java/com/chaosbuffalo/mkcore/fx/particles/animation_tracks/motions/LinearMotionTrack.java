@@ -15,7 +15,7 @@ public class LinearMotionTrack extends ParticleMotionAnimationTrack {
     protected final DoubleAttribute zSpeed = new DoubleAttribute("zSpeed", 0.0f);
     protected final DoubleAttribute varianceMagnitude = new DoubleAttribute("varianceMagnitude", 0.0f);
     private Vec3 motionVec;
-    public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKCore.MOD_ID, "particle_anim.linear_motion");
+    public final static ResourceLocation TYPE_NAME = MKCore.id("particle_anim.linear_motion");
     private final MKParticle.ParticleDataKey VARIANCE_VECTOR = new MKParticle.ParticleDataKey(this,
             keyCount++);
 

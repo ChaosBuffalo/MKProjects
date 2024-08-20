@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.function.Function;
 
 public class SpiralSpawnPattern extends ParticleSpawnPattern {
-    public final static ResourceLocation TYPE = new ResourceLocation(MKCore.MOD_ID, "particle_spawn_pattern.spiral");
+    public final static ResourceLocation TYPE = MKCore.id("particle_spawn_pattern.spiral");
     protected final DoubleAttribute xRadius = new DoubleAttribute("xRadius", 1.0);
     protected final DoubleAttribute yRadius = new DoubleAttribute("yRadius", 0.0);
     protected final DoubleAttribute zRadius = new DoubleAttribute("zRadius", 1.0);

@@ -47,7 +47,7 @@ public class EntitySyncController extends SyncController {
             SyncGroup group = getVisibilityGroup(visibility);
             if (group.isDirty()) {
                 CompoundTag tag = new CompoundTag();
-                group.serializeUpdate(tag);
+                group.serializeUpdate(entity.registryAccess(), tag);
                 EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), tag, EnumSet.of(visibility));
                 MKCore.LOGGER.info("sending {} dirty update {} for {}", visibility, packet, entity);
                 visibility.sendPacket(packet, entity);
@@ -68,7 +68,7 @@ public class EntitySyncController extends SyncController {
         EnumSet<SyncVisibility> visibilities = EnumSet.noneOf(SyncVisibility.class);
         for (SyncVisibility visibility : supportedVisibilities()) {
             if (visibility.isVisibleTo(entity, otherPlayer)) {
-                getVisibilityGroup(visibility).serializeFull(tag);
+                getVisibilityGroup(visibility).serializeFull(entity.registryAccess(), tag);
                 visibilities.add(visibility);
             }
         }

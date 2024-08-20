@@ -16,6 +16,7 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -49,18 +50,18 @@ public class AbilityManager extends SimpleJsonResourceReloadListener {
     }
 
     public static void setTrainingRequirementDeserializer(ResourceLocation name,
-                                                          Codec<? extends AbilityTrainingRequirement> codec) {
+                                                          MapCodec<? extends AbilityTrainingRequirement> codec) {
         REQUIREMENT_CODEC_MAP.put(name, codec);
     }
 
-    private static final Map<ResourceLocation, Codec<? extends AbilityTrainingRequirement>> REQUIREMENT_CODEC_MAP = new HashMap<>();
+    private static final Map<ResourceLocation, MapCodec<? extends AbilityTrainingRequirement>> REQUIREMENT_CODEC_MAP = new HashMap<>();
     public static final Codec<AbilityTrainingRequirement> TRAINING_REQUIREMENT_CODEC =
             CommonCodecs.createMapBackedDispatch(ResourceLocation.CODEC, REQUIREMENT_CODEC_MAP, AbilityTrainingRequirement::getTypeName);
 
     @SubscribeEvent
     public void onDataPackSync(OnDatapackSyncEvent event) {
         MKCore.LOGGER.debug("AbilityManager.onDataPackSync");
-        PlayerAbilitiesSyncPacket updatePacket = new PlayerAbilitiesSyncPacket(MKCoreRegistry.ABILITIES.getValues());
+        PlayerAbilitiesSyncPacket updatePacket = new PlayerAbilitiesSyncPacket(MKCoreRegistry.ABILITIES);
         if (event.getPlayer() != null) {
             // sync to single player
             MKCore.LOGGER.debug("Sending {} ability definition update packet", event.getPlayer());
@@ -74,7 +75,7 @@ public class AbilityManager extends SimpleJsonResourceReloadListener {
     public static void setupDeserializers() {
         setTrainingRequirementDeserializer(ExperienceLevelRequirement.TYPE_NAME, ExperienceLevelRequirement.CODEC);
         setTrainingRequirementDeserializer(HasEntitlementRequirement.TYPE_NAME, HasEntitlementRequirement.CODEC);
-        setTrainingRequirementDeserializer(HeldItemRequirement.TYPE_NAME, HasEntitlementRequirement.CODEC);
+        setTrainingRequirementDeserializer(HeldItemRequirement.TYPE_NAME, HeldItemRequirement.CODEC);
     }
 
     private boolean parse(ResourceLocation abilityId, JsonObject json) {

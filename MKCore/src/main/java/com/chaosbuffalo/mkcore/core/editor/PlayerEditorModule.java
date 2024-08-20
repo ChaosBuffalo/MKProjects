@@ -28,7 +28,7 @@ public class PlayerEditorModule implements IPlayerSyncComponentProvider {
     public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         CompoundTag particlesTag = new CompoundTag();
-        particleEditorData.serializeFull(particlesTag);
+        particleEditorData.serializeFull(provider, particlesTag);
         tag.put("particleEditor", particlesTag);
         return tag;
     }
@@ -36,7 +36,7 @@ public class PlayerEditorModule implements IPlayerSyncComponentProvider {
     public void deserialize(HolderLookup.Provider provider, CompoundTag nbt) {
         if (nbt.contains("particleEditor")) {
             CompoundTag particlesTag = nbt.getCompound("particleEditor");
-            particleEditorData.deserializeUpdate(particlesTag);
+            particleEditorData.deserializeUpdate(provider, particlesTag);
             particleEditorData.markDirty();
         }
     }

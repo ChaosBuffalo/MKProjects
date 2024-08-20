@@ -35,7 +35,7 @@ public abstract class DamageTypeDotEffect extends MKEffect {
             }
 
             targetData.getEntity().hurt(
-                    MKDamageSource.causeEffectDamage(targetData.getEntity().getLevel(), damageType, effectName, activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getModifierScale()),
+                    MKDamageSource.causeEffectDamage(targetData.getEntity().level(), damageType, effectName, activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getModifierScale()),
                     damage);
             return true;
         }

@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -265,7 +266,7 @@ public class TalentTreeRecord {
         }
 
         @Override
-        public void deserializeUpdate(CompoundTag tag) {
+        public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
             CompoundTag root = tag.getCompound(getTreeDefinition().getTreeId().toString());
 
             if (root.getBoolean("f")) {
@@ -299,7 +300,7 @@ public class TalentTreeRecord {
         }
 
         @Override
-        public void serializeUpdate(CompoundTag tag) {
+        public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
             CompoundTag root = new CompoundTag();
 
             CompoundTag updateTag = new CompoundTag();
@@ -323,7 +324,7 @@ public class TalentTreeRecord {
         }
 
         @Override
-        public void serializeFull(CompoundTag tag) {
+        public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
             CompoundTag root = new CompoundTag();
             root.putBoolean("f", true);
 

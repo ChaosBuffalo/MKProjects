@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.network.ParticleAnimationEditorSyncPacket;
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 
@@ -62,7 +63,7 @@ public class ParticleEditorSyncComponent implements ISyncObject {
     }
 
     @Override
-    public void deserializeUpdate(CompoundTag tag) {
+    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         if (tag.contains(name)) {
             CompoundTag syncTag = tag.getCompound(name);
             if (syncTag.contains("animation")) {
@@ -76,14 +77,14 @@ public class ParticleEditorSyncComponent implements ISyncObject {
     }
 
     @Override
-    public void serializeUpdate(CompoundTag tag) {
+    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         if (isDirty()) {
-            serializeFull(tag);
+            serializeFull(provider, tag);
         }
     }
 
     @Override
-    public void serializeFull(CompoundTag tag) {
+    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
         CompoundTag syncTag = new CompoundTag();
         if (animation != null) {
             syncTag.put("animation", animation.serialize(NbtOps.INSTANCE));

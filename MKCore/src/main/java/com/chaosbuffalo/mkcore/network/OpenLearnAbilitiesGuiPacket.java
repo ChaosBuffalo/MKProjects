@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.client.gui.LearnAbilityPage;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
@@ -23,7 +24,7 @@ public class OpenLearnAbilitiesGuiPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<OpenLearnAbilitiesGuiPacket> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "open_learn_Abilities_gui"));
 
-    public static final StreamCodec<FriendlyByteBuf, OpenLearnAbilitiesGuiPacket> STREAM_CODEC = StreamCodec.ofMember(
+    public static final StreamCodec<RegistryFriendlyByteBuf, OpenLearnAbilitiesGuiPacket> STREAM_CODEC = StreamCodec.ofMember(
             OpenLearnAbilitiesGuiPacket::toBytes, OpenLearnAbilitiesGuiPacket::new
     );
 
@@ -37,7 +38,7 @@ public class OpenLearnAbilitiesGuiPacket implements CustomPacketPayload {
         });
     }
 
-    public OpenLearnAbilitiesGuiPacket(FriendlyByteBuf buffer) {
+    public OpenLearnAbilitiesGuiPacket(RegistryFriendlyByteBuf buffer) {
         entityId = buffer.readInt();
         int count = buffer.readVarInt();
         abilities = new ArrayList<>(count);
@@ -49,7 +50,7 @@ public class OpenLearnAbilitiesGuiPacket implements CustomPacketPayload {
         }
     }
 
-    public void toBytes(FriendlyByteBuf buffer) {
+    public void toBytes(RegistryFriendlyByteBuf buffer) {
         buffer.writeInt(entityId);
         buffer.writeVarInt(abilities.size());
         abilities.forEach(offer -> offer.write(buffer));

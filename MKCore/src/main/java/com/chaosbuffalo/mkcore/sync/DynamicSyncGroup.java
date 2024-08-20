@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.sync;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.function.Supplier;
@@ -36,12 +37,12 @@ public abstract class DynamicSyncGroup extends NamedSyncGroup {
     }
 
     @Override
-    public void serializeUpdate(CompoundTag tag) {
+    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         if (forceFull) {
-            serializeFull(tag);
+            serializeFull(provider, tag);
             forceFull = false;
         } else {
-            super.serializeUpdate(tag);
+            super.serializeUpdate(provider, tag);
         }
     }
 

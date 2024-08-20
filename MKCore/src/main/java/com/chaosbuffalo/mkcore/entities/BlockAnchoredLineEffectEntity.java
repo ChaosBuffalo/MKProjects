@@ -14,7 +14,8 @@ import com.chaosbuffalo.mkcore.utils.RayTraceUtils;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -26,8 +27,7 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.util.Lazy;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -96,7 +96,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         if (RANGE.equals(key)) {
             this.refreshDimensions();
-            this.setBoundingBox(this.dimensions.makeBoundingBox(getX(), getY() - getRange(), getZ()));
+            this.setBoundingBox(this.getDimensions(getPose()).makeBoundingBox(getX(), getY() - getRange(), getZ()));
         }
         super.onSyncedDataUpdated(key);
     }
@@ -109,9 +109,8 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.getEntityData().define(RANGE, 0.0F);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(RANGE, 0.0f);
     }
 
     @Override
@@ -137,7 +136,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
 
     @Override
     protected boolean serverUpdate() {
-        if (!(getLevel().getBlockState(startPos).getBlock() == block.get())) {
+        if (!(level().getBlockState(startPos).getBlock() == block.get())) {
             onDeath(DeathReason.KILLED);
             return true;
         }
@@ -177,7 +176,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
 
 
     protected Collection<LivingEntity> getPotentialTargets() {
-        return level.getEntitiesOfClass(LivingEntity.class, getBoundingBox(), this::potentialTargetCheck);
+        return level().getEntitiesOfClass(LivingEntity.class, getBoundingBox(), this::potentialTargetCheck);
     }
 
 
@@ -205,7 +204,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     }
 
     public BlockAnchoredLineEffectEntity setRange(float newValue) {
-        if (!level.isClientSide) {
+        if (!level().isClientSide) {
             getEntityData().set(RANGE, newValue);
         }
         return this;
@@ -216,15 +215,14 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buffer) {
+    public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
         super.writeSpawnData(buffer);
         buffer.writeBlockPos(startPos);
-        ResourceLocation blockKey = ForgeRegistries.BLOCKS.getKey(block.get());
+        ResourceLocation blockKey = BuiltInRegistries.BLOCK.getKey(block.get());
         buffer.writeBoolean(blockKey != null);
         if (blockKey != null) {
             buffer.writeResourceLocation(blockKey);
         }
-
     }
 
     public BlockPos getStartPos() {
@@ -232,13 +230,13 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf additionalData) {
+    public void readSpawnData(RegistryFriendlyByteBuf additionalData) {
         super.readSpawnData(additionalData);
         startPos = additionalData.readBlockPos();
         boolean hasKey = additionalData.readBoolean();
         if (hasKey) {
             ResourceLocation blockKey = additionalData.readResourceLocation();
-            block = Lazy.of(() -> ForgeRegistries.BLOCKS.getValue(blockKey));
+            block = Lazy.of(() -> BuiltInRegistries.BLOCK.get(blockKey));
         }
     }
 

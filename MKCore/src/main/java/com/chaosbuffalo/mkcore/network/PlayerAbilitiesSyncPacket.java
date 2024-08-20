@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -29,7 +30,7 @@ public class PlayerAbilitiesSyncPacket implements CustomPacketPayload{
     );
 
 
-    public PlayerAbilitiesSyncPacket(Collection<MKAbility> abilities) {
+    public PlayerAbilitiesSyncPacket(Registry<MKAbility> abilities) {
         data = new HashMap<>();
         for (MKAbility ability : abilities) {
             Tag dyn = ability.serializeDynamic(NbtOps.INSTANCE);

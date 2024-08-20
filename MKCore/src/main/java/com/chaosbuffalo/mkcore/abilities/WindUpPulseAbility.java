@@ -11,8 +11,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class WindUpPulseAbility extends PositionTargetingAbility {
-    private static final ResourceLocation PULSE_PARTICLES = new ResourceLocation(MKCore.MOD_ID, "test_pulse_detonate");
-    private static final ResourceLocation WAIT_PARTICLES = new ResourceLocation(MKCore.MOD_ID, "test_pulse_wait");
+    private static final ResourceLocation PULSE_PARTICLES = MKCore.id("test_pulse_detonate");
+    private static final ResourceLocation WAIT_PARTICLES = MKCore.id("test_pulse_wait");
     protected final ResourceLocationAttribute pulseParticles = new ResourceLocationAttribute("pulse_particles", PULSE_PARTICLES);
     protected final ResourceLocationAttribute waitParticles = new ResourceLocationAttribute("wait_particles", WAIT_PARTICLES);
     protected final IntAttribute tickRate = new IntAttribute("tick_rate", GameConstants.TICKS_PER_SECOND / 5);

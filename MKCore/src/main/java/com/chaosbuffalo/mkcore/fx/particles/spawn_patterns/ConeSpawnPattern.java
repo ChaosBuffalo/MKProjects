@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.function.Function;
 
 public class ConeSpawnPattern extends ParticleSpawnPattern {
-    public final static ResourceLocation TYPE = new ResourceLocation(MKCore.MOD_ID, "particle_spawn_pattern.cone");
+    public final static ResourceLocation TYPE = MKCore.id("particle_spawn_pattern.cone");
     protected final DoubleAttribute minRadius = new DoubleAttribute("minRadius", 0.1);
     protected final DoubleAttribute maxRadius = new DoubleAttribute("maxRadius", 1.0);
     protected final DoubleAttribute height = new DoubleAttribute("height", 1.0);

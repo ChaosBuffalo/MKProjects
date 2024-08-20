@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.utils.location;
 
 import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
@@ -13,12 +14,12 @@ public class PerpendicularLineLocationProvider extends LocationProvider{
     protected final float percentEyeHeight;
     protected final float distance;
 
-    public static final Codec<PerpendicularLineLocationProvider> CODEC = RecordCodecBuilder.<PerpendicularLineLocationProvider>mapCodec(builder -> builder.group(
+    public static final MapCodec<PerpendicularLineLocationProvider> CODEC = RecordCodecBuilder.<PerpendicularLineLocationProvider>mapCodec(builder -> builder.group(
             Vec3.CODEC.fieldOf("offset").forGetter(i -> i.offset),
             Codec.FLOAT.fieldOf("percentEyeHeight").forGetter(i -> i.percentEyeHeight),
             Codec.INT.fieldOf("count").forGetter(i -> i.count),
             Codec.FLOAT.fieldOf("distance").forGetter(i -> i.distance)
-    ).apply(builder, PerpendicularLineLocationProvider::new)).codec();
+    ).apply(builder, PerpendicularLineLocationProvider::new));
 
     public PerpendicularLineLocationProvider(Vec3 offset, float percentEyeHeight, int count, float distance) {
         super(count);

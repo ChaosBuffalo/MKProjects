@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingRequirement;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -16,12 +17,12 @@ import net.minecraft.world.item.ItemStack;
 
 public class HeldItemRequirement extends AbilityTrainingRequirement {
     public final static ResourceLocation TYPE_NAME = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "training_req.held_item");
-    public static final Codec<HeldItemRequirement> CODEC = RecordCodecBuilder.<HeldItemRequirement>mapCodec(builder -> {
+    public static final MapCodec<HeldItemRequirement> CODEC = RecordCodecBuilder.<HeldItemRequirement>mapCodec(builder -> {
         return builder.group(
                 BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(i -> i.item),
                 Codec.STRING.xmap(InteractionHand::valueOf, InteractionHand::name).fieldOf("hand").forGetter(i -> i.hand)
         ).apply(builder, HeldItemRequirement::new);
-    }).codec();
+    });
 
     private final Item item;
     private final InteractionHand hand;

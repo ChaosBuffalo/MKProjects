@@ -44,7 +44,7 @@ public class MKSpriteRenderer<T extends Entity & IMKRenderAsItem> extends Entity
         matrixStackIn.mulPose(this.entityRenderDispatcher.cameraOrientation());
         matrixStackIn.mulPose(Axis.YP.rotationDegrees(180.0F));
         this.itemRenderer.renderStatic(entityIn.getItem(), ItemDisplayContext.GROUND, packedLightIn, OverlayTexture.NO_OVERLAY,
-                matrixStackIn, bufferIn, entityIn.getLevel(), entityIn.getId());
+                matrixStackIn, bufferIn, entityIn.level(), entityIn.getId());
         matrixStackIn.popPose();
         super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
     }

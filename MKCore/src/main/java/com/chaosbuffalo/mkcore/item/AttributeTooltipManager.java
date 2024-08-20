@@ -155,7 +155,7 @@ public class AttributeTooltipManager {
     public static void renderTooltip(List<Component> list, Player player, ItemStack stack,
                                      EquipmentSlot equipmentSlot) {
         ItemAttributeModifiers multimap = stack.getAttributeModifiers();
-        if (!multimap.isEmpty()) {
+        if (!multimap.modifiers().isEmpty()) {
             list.add(Component.literal(""));
             list.add(Component.translatable("item.modifiers." + equipmentSlot.getName()).withStyle(ChatFormatting.GRAY));
 

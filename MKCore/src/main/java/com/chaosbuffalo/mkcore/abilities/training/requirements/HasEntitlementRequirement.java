@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -19,7 +20,7 @@ import java.util.NoSuchElementException;
 
 public class HasEntitlementRequirement extends AbilityTrainingRequirement {
     public final static ResourceLocation TYPE_NAME = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "training_req.has_entitlement");
-    public static final Codec<HasEntitlementRequirement> CODEC = Codec.lazyInitialized(MKCoreRegistry.ENTITLEMENTS::byNameCodec).xmap(HasEntitlementRequirement::new, i -> i.entitlement);
+    public static final MapCodec<HasEntitlementRequirement> CODEC = Codec.lazyInitialized(MKCoreRegistry.ENTITLEMENTS::byNameCodec).fieldOf("entitlement").xmap(HasEntitlementRequirement::new, i -> i.entitlement);
 
     private final MKEntitlement entitlement;
 

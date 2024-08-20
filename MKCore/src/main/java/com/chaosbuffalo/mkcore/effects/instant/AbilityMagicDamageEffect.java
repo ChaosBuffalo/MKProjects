@@ -43,7 +43,7 @@ public class AbilityMagicDamageEffect extends MKEffect {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
-            DamageSources damageSources = targetData.getEntity().getLevel().damageSources();
+            DamageSources damageSources = targetData.getEntity().level().damageSources();
             DamageSource damage;
             if (activeEffect.getDirectEntity() != null) {
                 damage = damageSources.indirectMagic(activeEffect.getDirectEntity(), activeEffect.getSourceEntity());

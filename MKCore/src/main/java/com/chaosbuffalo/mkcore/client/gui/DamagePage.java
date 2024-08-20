@@ -54,7 +54,7 @@ public class DamagePage extends StatPageBase {
         stackLayout.setMarginTop(4).setMarginBot(4).setPaddingTop(2).setMarginLeft(4)
                 .setMarginRight(4).setPaddingBot(2);
         stackLayout.doSetChildWidth(false);
-        List<MKDamageType> damageTypes = new ArrayList<>(MKCoreRegistry.DAMAGE_TYPES.getValues());
+        List<MKDamageType> damageTypes = new ArrayList<>(MKCoreRegistry.DAMAGE_TYPES.stream().toList());
         damageTypes.sort(Comparator.comparing(d -> d.getDisplayName().getString()));
         for (MKDamageType damageType : damageTypes) {
             if (damageType.shouldDisplay()) {

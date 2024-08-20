@@ -4,7 +4,8 @@ import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.mkcore.utils.RayTraceUtils;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -26,6 +27,11 @@ public class LineEffectEntity extends BaseEffectEntity {
     public LineEffectEntity(Level worldIn, double x, double y, double z) {
         this(CoreEntities.LINE_EFFECT.get(), worldIn);
         this.setPos(x, y, z);
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+
     }
 
     public void setStartPoint(Vec3 startPoint) {
@@ -61,14 +67,14 @@ public class LineEffectEntity extends BaseEffectEntity {
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buffer) {
+    public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
         super.writeSpawnData(buffer);
         writeVector(buffer, startPoint);
         writeVector(buffer, endPoint);
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf additionalData) {
+    public void readSpawnData(RegistryFriendlyByteBuf additionalData) {
         super.readSpawnData(additionalData);
         startPoint = readVector(additionalData);
         endPoint = readVector(additionalData);

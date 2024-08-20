@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.client.rendering.model;
 
-import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.client.rendering.animations.AdditionalBipedAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedCastAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedStunAnimation;
@@ -27,7 +27,7 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
     public void setupAnim(AbstractClientPlayer entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         super.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
 
-        entityIn.getCapability(CoreCapabilities.PLAYER_CAPABILITY).ifPresent(mkEntityData -> {
+        MKCore.getPlayer(entityIn).ifPresent(mkEntityData -> {
             this.head.zRot = 0.0f;
             AdditionalBipedAnimation<Player> animation = getAdditionalAnimation(mkEntityData);
             if (animation != null) {

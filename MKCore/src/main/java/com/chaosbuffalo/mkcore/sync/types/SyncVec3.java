@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.sync.types;
 
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.Vec3;
 
@@ -47,7 +48,7 @@ public class SyncVec3 implements ISyncObject {
     }
 
     @Override
-    public void deserializeUpdate(CompoundTag tag) {
+    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         if (tag.contains(name)) {
             CompoundTag root = tag.getCompound(name);
             Vec3 prev = value;
@@ -59,15 +60,15 @@ public class SyncVec3 implements ISyncObject {
     }
 
     @Override
-    public void serializeUpdate(CompoundTag tag) {
+    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         if (dirty) {
-            serializeFull(tag);
+            serializeFull(provider, tag);
             dirty = false;
         }
     }
 
     @Override
-    public void serializeFull(CompoundTag tag) {
+    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
         CompoundTag root = new CompoundTag();
         root.putDouble("x", value.x);
         root.putDouble("y", value.y);

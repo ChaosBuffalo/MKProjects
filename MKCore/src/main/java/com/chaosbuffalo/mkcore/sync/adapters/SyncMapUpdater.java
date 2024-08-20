@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -94,7 +95,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     }
 
     @Override
-    public void deserializeUpdate(CompoundTag tag) {
+    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         CompoundTag root = tag.getCompound(rootName);
 
         if (root.getBoolean("f")) {
@@ -109,17 +110,17 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
         if (root.contains("l")) {
             CompoundTag list = root.getCompound("l");
             if (!list.isEmpty()) {
-                deserializeMap(list, IMKSerializable::deserializeSync);
+                deserializeMap(list, (o, t) -> o.deserializeSync(provider, t));
             }
         }
     }
 
-    private CompoundTag makeSyncMap(Collection<K> keySet) {
-        return serializeMap(keySet, IMKSerializable::serializeSync);
+    private CompoundTag makeSyncMap(HolderLookup.Provider provider, Collection<K> keySet) {
+        return serializeMap(keySet, o -> o.serializeSync(provider));
     }
 
     @Override
-    public void serializeUpdate(CompoundTag tag) {
+    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
         if (dirty.isEmpty())
             return;
 
@@ -129,7 +130,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
             root.put("r", removals);
         }
 
-        CompoundTag updates = makeSyncMap(dirty);
+        CompoundTag updates = makeSyncMap(provider, dirty);
         if (!updates.isEmpty()) {
             root.put("l", updates);
         }
@@ -139,10 +140,10 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     }
 
     @Override
-    public void serializeFull(CompoundTag tag) {
+    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
         CompoundTag root = new CompoundTag();
         root.putBoolean("f", true);
-        root.put("l", makeSyncMap(backingMap.keySet()));
+        root.put("l", makeSyncMap(provider, backingMap.keySet()));
         tag.put(rootName, root);
 
         dirty.clear();
@@ -188,14 +189,14 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
         }
     }
 
-    public CompoundTag serializeStorage() {
-        return serializeMap(backingMap.keySet(), IMKSerializable::serializeStorage);
+    public CompoundTag serializeStorage(HolderLookup.Provider provider) {
+        return serializeMap(backingMap.keySet(), o -> o.serializeStorage(provider));
     }
 
-    public void deserializeStorage(Tag tag) {
+    public void deserializeStorage(HolderLookup.Provider provider, Tag tag) {
         if (tag instanceof CompoundTag compoundTag) {
             backingMap.clear();
-            deserializeMap(compoundTag, IMKSerializable::deserializeStorage);
+            deserializeMap(compoundTag, (o, t) -> o.deserializeStorage(provider, t));
         }
     }
 
