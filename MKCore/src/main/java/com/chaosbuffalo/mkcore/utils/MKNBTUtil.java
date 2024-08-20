@@ -12,7 +12,7 @@ public class MKNBTUtil {
 
     public static ResourceLocation readResourceLocation(CompoundTag tag, String name) {
         String raw = tag.getString(name);
-        return new ResourceLocation(raw);
+        return ResourceLocation.parse(raw);
     }
 
     public static Vec3 readVector3(CompoundTag nbt, String name) {

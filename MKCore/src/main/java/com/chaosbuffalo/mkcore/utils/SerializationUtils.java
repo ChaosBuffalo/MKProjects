@@ -21,24 +21,4 @@ public class SerializationUtils {
     public static CompoundTag fromJsonString(String nbtString) throws CommandSyntaxException {
         return TagParser.parseTag(nbtString);
     }
-
-    public static <D> D serializeItemStack(DynamicOps<D> ops, ItemStack stack) {
-        CompoundTag nbt = new CompoundTag();
-        stack.save(nbt);
-        return ops.createString(fromCompoundNbt(nbt).getString());
-    }
-
-    public static <D> ItemStack deserializeItemStack(Dynamic<D> dynamic) {
-        Optional<String> nbtString = dynamic.asString().result();
-        if (nbtString.isPresent()) {
-            try {
-                CompoundTag nbt = fromJsonString(nbtString.get());
-                return ItemStack.of(nbt);
-            } catch (CommandSyntaxException e) {
-                MKCore.LOGGER.error("Failed to deserialize nbt string {}",
-                        e.getMessage());
-            }
-        }
-        return ItemStack.EMPTY;
-    }
 }

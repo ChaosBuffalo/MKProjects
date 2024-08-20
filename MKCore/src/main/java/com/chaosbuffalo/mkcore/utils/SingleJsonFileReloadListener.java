@@ -22,7 +22,7 @@ public abstract class SingleJsonFileReloadListener extends SimplePreparableReloa
 
     public SingleJsonFileReloadListener(Gson gson, String modid, String path) {
         this.gson = gson;
-        this.resourcePath = new ResourceLocation(modid, path + ".json");
+        this.resourcePath = ResourceLocation.fromNamespaceAndPath(modid, path + ".json");
     }
 
     @Override

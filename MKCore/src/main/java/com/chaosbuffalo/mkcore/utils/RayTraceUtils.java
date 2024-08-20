@@ -34,7 +34,7 @@ public class RayTraceUtils {
 
         HitResult position = null;
 
-        if (mainEntity.level != null) {
+        if (mainEntity.level() != null) {
             Vec3 look = mainEntity.getLookAngle().scale(distance);
             Vec3 from = mainEntity.position().add(0, mainEntity.getEyeHeight(), 0);
             Vec3 to = from.add(look);

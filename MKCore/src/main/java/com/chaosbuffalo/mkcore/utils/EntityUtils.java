@@ -133,7 +133,7 @@ public class EntityUtils {
             finalTarget = targetEntity.getRootVehicle();
         }
         AABB axisalignedbb = targetEntity.getLocalBoundsForPose(targetEntity.getPose());
-        if (DismountHelper.canDismountTo(targetEntity.level, targetEntity, axisalignedbb.move(teleLoc))) {
+        if (DismountHelper.canDismountTo(targetEntity.level(), targetEntity, axisalignedbb.move(teleLoc))) {
             finalTarget.teleportTo(teleLoc.x, teleLoc.y, teleLoc.z);
             return true;
         }

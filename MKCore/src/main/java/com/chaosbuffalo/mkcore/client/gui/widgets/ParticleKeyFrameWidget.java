@@ -11,6 +11,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class ParticleKeyFrameWidget extends MKLayout {
     private final ParticleKeyFrame keyFrame;
@@ -39,7 +40,7 @@ public class ParticleKeyFrameWidget extends MKLayout {
     }
 
     @Override
-    public void draw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    public void draw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         if (isHovered()) {
             rect.setColor(0xffffffff);
         } else if (keyFrame.equals(editor.getCurrentFrame())) {
@@ -47,6 +48,6 @@ public class ParticleKeyFrameWidget extends MKLayout {
         } else {
             rect.setColor(0xff888888);
         }
-        super.draw(matrixStack, mc, x, y, width, height, mouseX, mouseY, partialTicks);
+        super.draw(graphics, mc, x, y, width, height, mouseX, mouseY, partialTicks);
     }
 }

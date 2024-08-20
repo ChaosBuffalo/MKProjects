@@ -50,12 +50,12 @@ public class LocationProviderAttribute implements ISerializableAttribute<Locatio
 
     @Override
     public <D> D serialize(DynamicOps<D> ops) {
-        return LocationProvider.CODEC.encodeStart(ops, currentValue).getOrThrow(false, MKCore.LOGGER::error);
+        return LocationProvider.CODEC.encodeStart(ops, currentValue).getOrThrow();
     }
 
     @Override
     public <D> void deserialize(Dynamic<D> dynamic) {
-        setValue(LocationProvider.CODEC.parse(dynamic).getOrThrow(false, MKCore.LOGGER::error));
+        setValue(LocationProvider.CODEC.parse(dynamic).getOrThrow());
     }
 
     @Override
