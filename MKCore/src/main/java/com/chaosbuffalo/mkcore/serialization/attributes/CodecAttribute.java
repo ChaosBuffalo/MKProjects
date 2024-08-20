@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.serialization.attributes;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
@@ -52,12 +51,12 @@ public class CodecAttribute<T> implements ISerializableAttribute<T> {
 
     @Override
     public <D> D serialize(DynamicOps<D> ops) {
-        return codec.encodeStart(ops, currentValue).getOrThrow(false, MKCore.LOGGER::error);
+        return codec.encodeStart(ops, currentValue).getOrThrow();
     }
 
     @Override
     public <D> void deserialize(Dynamic<D> dynamic) {
-        setValue(codec.parse(dynamic).getOrThrow(false, MKCore.LOGGER::error));
+        setValue(codec.parse(dynamic).getOrThrow());
     }
 
     @Override

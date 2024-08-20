@@ -6,25 +6,25 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.WorldAreaEffectEntry;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
 import com.chaosbuffalo.targeting_api.TargetingContext;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MKAreaEffectEntity extends AreaEffectCloud implements IEntityAdditionalSpawnData {
+public class MKAreaEffectEntity extends AreaEffectCloud implements IEntityWithComplexSpawn {
 
     private static final float DEFAULT_RADIUS = 3.0f;
     private static final float DEFAULT_HEIGHT = 1.0f;
@@ -32,6 +32,7 @@ public class MKAreaEffectEntity extends AreaEffectCloud implements IEntityAdditi
     private final List<WorldAreaEffectEntry> effects;
     private boolean particlesDisabled;
     private IMKEntityData ownerData;
+    private int color;
 
 
     public MKAreaEffectEntity(EntityType<? extends MKAreaEffectEntity> entityType, Level world) {
@@ -79,7 +80,7 @@ public class MKAreaEffectEntity extends AreaEffectCloud implements IEntityAdditi
     @Override
     public void tick() {
         entityTick();
-        if (this.level.isClientSide()) {
+        if (level().isClientSide()) {
             if (!particlesDisabled) {
                 clientUpdate();
             }
@@ -102,15 +103,19 @@ public class MKAreaEffectEntity extends AreaEffectCloud implements IEntityAdditi
         particlesDisabled = compound.getBoolean("ParticlesDisabled");
     }
 
-    @Override
-    public void writeSpawnData(FriendlyByteBuf buffer) {
-        buffer.writeBoolean(particlesDisabled);
+    public void setColor(int color) {
+        getEntityData().set(DATA_PARTICLE, ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, color));
     }
 
-    @Override
-    public void readSpawnData(FriendlyByteBuf additionalData) {
-        particlesDisabled = additionalData.readBoolean();
+    public int getColor() {
+        ParticleOptions options = getEntityData().get(DATA_PARTICLE);
+        if (options instanceof ColorParticleOption colorParticle) {
+            return colorParticle.color;
+        }
+        return -1;
     }
+
+
 
     public void addEffect(MobEffectInstance effect, TargetingContext targetContext) {
         this.effects.add(WorldAreaEffectEntry.forEffect(this, effect, targetContext));
@@ -182,7 +187,7 @@ public class MKAreaEffectEntity extends AreaEffectCloud implements IEntityAdditi
 
         // Copy in case callbacks try to add more effects
         List<WorldAreaEffectEntry> targetEffects = new ArrayList<>(effects);
-        List<LivingEntity> potentialTargets = this.level.getEntitiesOfClass(LivingEntity.class,
+        List<LivingEntity> potentialTargets = level().getEntitiesOfClass(LivingEntity.class,
                 getBoundingBox(), this::entityCheck);
         if (potentialTargets.isEmpty()) {
             return false;
@@ -233,9 +238,9 @@ public class MKAreaEffectEntity extends AreaEffectCloud implements IEntityAdditi
                     int r = color >> 16 & 255;
                     int g = color >> 8 & 255;
                     int b = color & 255;
-                    level.addAlwaysVisibleParticle(particle, getX() + xOff, getY(), getZ() + zOff, r / 255f, g / 255f, b / 255f);
+                    level().addAlwaysVisibleParticle(particle, getX() + xOff, getY(), getZ() + zOff, r / 255f, g / 255f, b / 255f);
                 } else {
-                    level.addAlwaysVisibleParticle(particle, getX() + xOff, getY(), getZ() + zOff, 0, 0, 0);
+                    level().addAlwaysVisibleParticle(particle, getX() + xOff, getY(), getZ() + zOff, 0, 0, 0);
                 }
             }
         } else {
@@ -253,19 +258,25 @@ public class MKAreaEffectEntity extends AreaEffectCloud implements IEntityAdditi
                     int r = color >> 16 & 255;
                     int g = color >> 8 & 255;
                     int b = color & 255;
-                    level.addAlwaysVisibleParticle(particle, getX() + xOffset, getY(), getZ() + zOffset, r / 255f, g / 255f, b / 255f);
+                    level().addAlwaysVisibleParticle(particle, getX() + xOffset, getY(), getZ() + zOffset, r / 255f, g / 255f, b / 255f);
                 } else if (particle == ParticleTypes.NOTE) {
-                    level.addAlwaysVisibleParticle(particle, getX() + xOffset, getY(), getZ() + zOffset, random.nextInt(24) / 24.0f, 0.009999999776482582D, (0.5D - random.nextDouble()) * 0.15D);
+                    level().addAlwaysVisibleParticle(particle, getX() + xOffset, getY(), getZ() + zOffset, random.nextInt(24) / 24.0f, 0.009999999776482582D, (0.5D - random.nextDouble()) * 0.15D);
                 } else {
-                    level.addAlwaysVisibleParticle(particle, getX() + xOffset, getY(), getZ() + zOffset, (0.5D - random.nextDouble()) * 0.15D, 0.009999999776482582D, (0.5D - random.nextDouble()) * 0.15D);
+                    level().addAlwaysVisibleParticle(particle, getX() + xOffset, getY(), getZ() + zOffset, (0.5D - random.nextDouble()) * 0.15D, 0.009999999776482582D, (0.5D - random.nextDouble()) * 0.15D);
                 }
             }
         }
     }
 
-    @Nonnull
     @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket() {
-        return NetworkHooks.getEntitySpawningPacket(this);
+    public void writeSpawnData(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
+        registryFriendlyByteBuf.writeBoolean(particlesDisabled);
     }
+
+    @Override
+    public void readSpawnData(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
+
+        particlesDisabled = registryFriendlyByteBuf.readBoolean();
+    }
+
 }

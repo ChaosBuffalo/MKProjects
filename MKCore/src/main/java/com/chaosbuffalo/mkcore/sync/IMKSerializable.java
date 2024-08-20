@@ -1,27 +1,26 @@
 package com.chaosbuffalo.mkcore.sync;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
 public interface IMKSerializable<T extends Tag> {
     T serialize(HolderLookup.Provider provider);
 
-    boolean deserialize(HolderLookup.Provider provider, CompoundTag tag);
+    boolean deserialize(HolderLookup.Provider provider, T tag);
 
-    default T serializeSync() {
+    default T serializeSync(HolderLookup.Provider provider) {
         return serialize(provider);
     }
 
-    default boolean deserializeSync(T tag) {
+    default boolean deserializeSync(HolderLookup.Provider provider, T tag) {
         return deserialize(provider, tag);
     }
 
-    default T serializeStorage() {
+    default T serializeStorage(HolderLookup.Provider provider) {
         return serialize(provider);
     }
 
-    default boolean deserializeStorage(T tag) {
+    default boolean deserializeStorage(HolderLookup.Provider provider, T tag) {
         return deserialize(provider, tag);
     }
 }

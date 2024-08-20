@@ -75,8 +75,8 @@ public abstract class WorldAreaEffectEntry {
                 return;
             }
 
-            if (effect.getEffect().isInstantenous()) {
-                effect.getEffect().applyInstantenousEffect(directSource, casterData.getEntity(), target, effect.getAmplifier(), 0.5D);
+            if (effect.getEffect().value().isInstantenous()) {
+                effect.getEffect().value().applyInstantenousEffect(directSource, casterData.getEntity(), target, effect.getAmplifier(), 0.5D);
             } else {
                 target.addEffect(new MobEffectInstance(effect));
             }

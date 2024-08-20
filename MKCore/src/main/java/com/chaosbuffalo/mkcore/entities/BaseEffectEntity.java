@@ -9,10 +9,10 @@ import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.google.common.collect.Maps;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -23,13 +23,14 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
 
-public abstract class BaseEffectEntity extends Entity implements IEntityAdditionalSpawnData {
+public abstract class BaseEffectEntity extends Entity implements IEntityWithComplexSpawn {
     protected final List<WorldAreaEffectEntry> effects;
     protected final int WAIT_LAG = 5;
     protected final int DEFAULT_VISUAL_TICK_RATE = 5;
@@ -140,10 +141,6 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         this.preDelay = preDelay;
     }
 
-    @Override
-    protected void defineSynchedData() {
-
-    }
 
     public void setParticles(ResourceLocation particles) {
         this.particles = new ParticleDisplay(particles, DEFAULT_VISUAL_TICK_RATE, ParticleDisplay.DisplayType.CONTINUOUS);
@@ -197,11 +194,6 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
     protected void addAdditionalSaveData(CompoundTag compound) {
     }
 
-    @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket() {
-        return NetworkHooks.getEntitySpawningPacket(this);
-    }
-
     protected void onDeath(BaseEffectEntity.DeathReason reason) {
         if (deathCallback != null) {
             deathCallback.accept(reason, this);
@@ -211,7 +203,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
     @Override
     public void tick() {
         super.tick();
-        if (this.level.isClientSide) {
+        if (level().isClientSide) {
             clientUpdate();
         } else {
             if (serverUpdate()) {
@@ -258,19 +250,19 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buffer) {
+    public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
         buffer.writeInt(owner.getId());
         buffer.writeInt(tickRate);
         buffer.writeInt(waitTime);
         buffer.writeInt(tickCount);
         buffer.writeInt(preDelay);
-        buffer.writeNullable(tickSound, (buf, x) -> buf.writeRegistryIdUnsafe(ForgeRegistries.SOUND_EVENTS, x));
+        buffer.writeInt(BuiltInRegistries.SOUND_EVENT.getId(tickSound));
         buffer.writeNullable(particles, (buf, x) -> x.write(buf));
         buffer.writeNullable(waitingParticles, (buf, x) -> x.write(buf));
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf additionalData) {
+    public void readSpawnData(RegistryFriendlyByteBuf additionalData) {
         Entity ent = getCommandSenderWorld().getEntity(additionalData.readInt());
         if (ent instanceof LivingEntity) {
             owner = (LivingEntity) ent;
@@ -279,7 +271,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
         waitTime = additionalData.readInt();
         tickCount = additionalData.readInt();
         preDelay = additionalData.readInt();
-        tickSound = additionalData.readNullable(x -> x.readRegistryIdUnsafe(ForgeRegistries.SOUND_EVENTS));
+        tickSound = BuiltInRegistries.SOUND_EVENT.byId(additionalData.readInt());
         particles = additionalData.readNullable(ParticleDisplay::read);
         waitingParticles = additionalData.readNullable(ParticleDisplay::read);
     }
@@ -291,8 +283,8 @@ public abstract class BaseEffectEntity extends Entity implements IEntityAddition
 
     @Nullable
     public LivingEntity getOwner() {
-        if (this.owner == null && this.ownerUniqueId != null && this.level instanceof ServerLevel) {
-            Entity entity = ((ServerLevel) this.level).getEntity(this.ownerUniqueId);
+        if (this.owner == null && this.ownerUniqueId != null && level() instanceof ServerLevel serverLevel) {
+            Entity entity = serverLevel.getEntity(this.ownerUniqueId);
             if (entity instanceof LivingEntity) {
                 this.owner = (LivingEntity) entity;
             }

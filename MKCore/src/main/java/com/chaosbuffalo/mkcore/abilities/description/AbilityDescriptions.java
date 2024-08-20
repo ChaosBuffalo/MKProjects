@@ -24,7 +24,7 @@ public class AbilityDescriptions {
     }
 
     public static List<Component> getEffectModifiers(MobEffect effect, IMKEntityData casterData, boolean showName) {
-        if (effect.getAttributeModifiers().isEmpty()) {
+        if (effect.attributeModifiers.isEmpty()) {
             return Collections.emptyList();
         }
         List<Component> desc = new ArrayList<>(4);
@@ -33,9 +33,9 @@ public class AbilityDescriptions {
         } else {
             desc.add(Component.translatable("mkcore.ability.description.effect"));
         }
-        for (Map.Entry<Attribute, AttributeModifier> entry : effect.getAttributeModifiers().entrySet()) {
+        for (Map.Entry<Holder<Attribute>, MobEffect.AttributeTemplate> entry : effect.attributeModifiers.entrySet()) {
             desc.add(Component.literal("    ")
-                    .append(Component.translatable(entry.getKey().getDescriptionId()))
+                    .append(Component.translatable(entry.getKey().value().getDescriptionId()))
                     .append(String.format(": %s%.2f ", entry.getValue().amount() > 0 ? "+" : "", entry.getValue().amount()))
                     .append(Component.translatable("mkcore.ability.description.per_level")));
         }

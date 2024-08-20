@@ -74,7 +74,7 @@ public class AreaEffectBuilder {
     }
 
     public AreaEffectBuilder color(int color) {
-        areaEffectCloud.setFixedColor(color);
+        areaEffectCloud.setColor(color);
         return this;
     }
 
@@ -95,7 +95,7 @@ public class AreaEffectBuilder {
 
     public void spawn() {
         if (areaEffectCloud.getOwner() != null) {
-            areaEffectCloud.getOwner().level.addFreshEntity(areaEffectCloud);
+            areaEffectCloud.getOwner().level().addFreshEntity(areaEffectCloud);
         }
 
     }
