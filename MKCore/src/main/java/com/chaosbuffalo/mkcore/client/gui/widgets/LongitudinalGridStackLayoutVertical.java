@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 public class LongitudinalGridStackLayoutVertical extends MKStackLayoutVertical {
@@ -42,16 +43,17 @@ public class LongitudinalGridStackLayoutVertical extends MKStackLayoutVertical {
     }
 
     @Override
-    public void preDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
-        mkFill(matrixStack, getX() + 2, getY() + 10, getX() + 2 + gridCount * (gridSpacing + gridWidth), getY() + 9, gridColor);
+    public void preDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+        super.preDraw(graphics, mc, x, y, width, height, mouseX, mouseY, partialTicks);
+        graphics.fill(getX() + 2, getY() + 10, getX() + 2 + gridCount * (gridSpacing + gridWidth), getY() + 9, gridColor);
         for (int i = 0; i <= gridCount; i++) {
             int xPos = i * (gridSpacing + gridWidth);
             int rowColor = i % 4 == 0 ? gridColor & 0xbbffffff : gridColor;
-            mkFill(matrixStack, getX() + xPos + 2, getY() + 10, getX() + 2 + xPos + gridWidth,
+            graphics.fill(getX() + xPos + 2, getY() + 10, getX() + 2 + xPos + gridWidth,
                     getY() + getHeight() + 10, rowColor);
             if (i % 4 == 0) {
                 String text = String.format("%d", i / 4);
-                font.draw(matrixStack,
+                graphics.drawString(font,
                         Component.literal(text), getX() + 2 + xPos - (font.width(text) / 2),
                         getY(), gridColor);
             }

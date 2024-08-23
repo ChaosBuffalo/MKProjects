@@ -23,7 +23,7 @@ public class SerializableAttributeEntry extends MKStackLayoutHorizontal {
         MKTextFieldWidget textField = new MKTextFieldWidget(renderer, x, y, 50, renderer.lineHeight + 2,
                 Component.translatable(attr.getName()));
         textField.setText(attr.valueAsString());
-        textField.getContainedWidget().moveCursorToStart();
+        textField.getContainedWidget().moveCursorToStart(true);
         textField.setSubmitCallback((wid, str) -> {
             if (!attr.isEmptyStringInput(str)) {
                 attr.setValueFromString(str);

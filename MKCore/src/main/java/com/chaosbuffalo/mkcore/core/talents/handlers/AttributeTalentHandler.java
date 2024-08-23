@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import com.chaosbuffalo.mkcore.core.talents.TalentTypeHandler;
 import com.chaosbuffalo.mkcore.core.talents.nodes.AttributeTalentNode;
 import com.chaosbuffalo.mkcore.core.talents.talent_types.AttributeTalent;
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
@@ -57,7 +58,7 @@ public class AttributeTalentHandler extends TalentTypeHandler {
     }
 
     private void dumpAttrInstance(AttributeInstance instance) {
-        MKCore.LOGGER.info("\tAttribute {}", instance.getAttribute().getDescriptionId());
+        MKCore.LOGGER.info("\tAttribute {}", instance.getAttribute().value().getDescriptionId());
         for (AttributeModifier modifier : instance.getModifiers()) {
             MKCore.LOGGER.info("\t\tmodifier {}", modifier);
         }
@@ -74,7 +75,7 @@ public class AttributeTalentHandler extends TalentTypeHandler {
         AttributeMap map = playerData.getEntity().getAttributes();
 
         MKCore.LOGGER.info("Dirty Attributes @ {}", location);
-        map.getDirtyAttributes().forEach(this::dumpAttrInstance);
+        map.getAttributesToSync().forEach(this::dumpAttrInstance);
     }
 
     private void applyAttribute(AttributeEntry entry) {
@@ -84,7 +85,7 @@ public class AttributeTalentHandler extends TalentTypeHandler {
             return;
         }
 
-        instance.removeModifier(entry.getUUID());
+        instance.removeModifier(entry.getModifier());
         instance.addTransientModifier(entry.getModifier());
         if (entry.getAttributeTalent().requiresStatRefresh()) {
             playerData.getStats().refreshStats();
@@ -98,7 +99,7 @@ public class AttributeTalentHandler extends TalentTypeHandler {
         if (entry != null) {
             AttributeInstance instance = playerData.getEntity().getAttribute(entry.getAttribute());
             if (instance != null) {
-                instance.removeModifier(entry.getUUID());
+                instance.removeModifier(entry.getModifier());
             }
         }
     }
@@ -139,7 +140,7 @@ public class AttributeTalentHandler extends TalentTypeHandler {
             return attribute.getUUID();
         }
 
-        public Attribute getAttribute() {
+        public Holder<Attribute> getAttribute() {
             return attribute.getAttribute();
         }
 
@@ -149,7 +150,7 @@ public class AttributeTalentHandler extends TalentTypeHandler {
 
         public AttributeModifier getModifier() {
             double rank = getTotalValue();
-            if (modifier == null || modifier.getAmount() != rank) {
+            if (modifier == null || modifier.amount() != rank) {
                 modifier = attribute.createModifier(rank);
             }
             return modifier;
@@ -176,7 +177,7 @@ public class AttributeTalentHandler extends TalentTypeHandler {
         public String toString() {
             return "AttributeEntry{" +
                     "attribute=" + attribute +
-                    ", value=" + getModifier().getAmount() +
+                    ", value=" + getModifier().amount() +
                     ", dirty=" + dirty +
                     ", modifier=" + getModifier() +
                     '}';

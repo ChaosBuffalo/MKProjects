@@ -1,19 +1,19 @@
 package com.chaosbuffalo.mkcore.serialization.attributes;
 
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.IForgeRegistry;
 
 import java.util.Optional;
 
 public class RegistryEntryAttribute<T> extends ResourceLocationAttribute {
-    private final IForgeRegistry<T> registry;
+    private final Registry<T> registry;
 
-    public RegistryEntryAttribute(String name, IForgeRegistry<T> registry, ResourceLocation defaultValue) {
+    public RegistryEntryAttribute(String name, Registry<T> registry, ResourceLocation defaultValue) {
         super(name, defaultValue);
         this.registry = registry;
     }
 
     public Optional<T> resolve() {
-        return Optional.ofNullable(registry.getValue(getValue()));
+        return Optional.ofNullable(registry.get(getValue()));
     }
 }

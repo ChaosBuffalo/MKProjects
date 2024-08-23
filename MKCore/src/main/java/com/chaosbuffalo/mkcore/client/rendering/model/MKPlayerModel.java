@@ -42,8 +42,8 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
 
 
     @Override
-    public void renderToBuffer(PoseStack matrixStackIn, VertexConsumer bufferIn, int packedLightIn, int packedOverlayIn, float red, float green, float blue, float alpha) {
-        super.renderToBuffer(matrixStackIn, bufferIn, packedLightIn, packedOverlayIn, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack matrixStackIn, VertexConsumer bufferIn, int packedLightIn, int packedOverlayIn, int color) {
+        super.renderToBuffer(matrixStackIn, bufferIn, packedLightIn, packedOverlayIn, color);
 
     }
 

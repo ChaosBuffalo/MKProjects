@@ -4,16 +4,16 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterShadersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Objects;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = MKCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(value = Dist.CLIENT, modid = MKCore.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public class ShaderEventHandler {
     @Nullable
     private static ShaderInstance rendertypeMagicParticle;
@@ -31,11 +31,11 @@ public class ShaderEventHandler {
 
     @SubscribeEvent
     public static void registerShaders(RegisterShadersEvent event) throws IOException {
-        event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(MKCore.MOD_ID, "magic_particle"),
+        event.registerShader(new ShaderInstance(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "magic_particle"),
                 DefaultVertexFormat.PARTICLE), (p_172645_) -> {
             rendertypeMagicParticle = p_172645_;
         });
-        event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(MKCore.MOD_ID, "black_magic_particle"),
+        event.registerShader(new ShaderInstance(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "black_magic_particle"),
                 DefaultVertexFormat.PARTICLE), (shader) -> {
             rendertypeBlackMagicParticle = shader;
         });
