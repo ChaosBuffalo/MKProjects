@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkcore.mixins.client;
 
-import com.chaosbuffalo.mkcore.fx.particles.IMKParticleRenderType;
+import com.chaosbuffalo.mkcore.fx.particles.MKParticleRenderType;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Camera;
 import net.minecraft.client.particle.ParticleEngine;
@@ -34,7 +34,7 @@ public class ParticleEngineMixins {
                                Frustum frustum, Predicate<ParticleRenderType> renderTypePredicate,
                                CallbackInfo ci, @Local ParticleRenderType particlerendertype) {
 
-        if (particlerendertype instanceof IMKParticleRenderType mkType) {
+        if (particlerendertype instanceof MKParticleRenderType mkType) {
             mkType.end(textureManager);
         }
     }
