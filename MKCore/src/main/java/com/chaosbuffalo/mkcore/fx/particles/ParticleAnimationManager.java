@@ -18,6 +18,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -76,7 +77,7 @@ public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
     public static final Map<ResourceLocation, TrackDeserializerEntry> TRACK_DESERIALIZERS = new HashMap<>();
     public static final Map<ResourceLocation, ParticleAnimation> ANIMATIONS = new HashMap<>();
     public static final Map<ResourceLocation, Supplier<ParticleSpawnPattern>> SPAWN_PATTERN_DESERIALIZERS = new HashMap<>();
-    public static final Map<ResourceLocation, Codec<? extends ParticleEffectInstance>> EFFECT_INSTANCE_CODEC_MAP = new HashMap<>();
+    public static final Map<ResourceLocation, MapCodec<? extends ParticleEffectInstance>> EFFECT_INSTANCE_CODEC_MAP = new HashMap<>();
     public static final Codec<ParticleEffectInstance> EFFECT_INSTANCE_CODEC =
             CommonCodecs.createMapBackedDispatch(ResourceLocation.CODEC, EFFECT_INSTANCE_CODEC_MAP, ParticleEffectInstance::getTypeName);
 
@@ -129,7 +130,7 @@ public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
         putEffectInstanceDeserializer(BoneEffectInstance.TYPE, BoneEffectInstance.CODEC);
     }
 
-    public static void putEffectInstanceDeserializer(ResourceLocation name, Codec<? extends ParticleEffectInstance> codec) {
+    public static void putEffectInstanceDeserializer(ResourceLocation name, MapCodec<? extends ParticleEffectInstance> codec) {
         EFFECT_INSTANCE_CODEC_MAP.put(name, codec);
     }
 

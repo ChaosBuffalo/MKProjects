@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.core.damage;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.damagesource.CombatRules;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -31,8 +32,8 @@ public class RangedDamageType extends MKDamageType {
     }
 
     @Override
-    public float applyResistance(LivingEntity target, float originalDamage) {
-        return (float) (CombatRules.getDamageAfterAbsorb(originalDamage, target.getArmorValue(),
+    public float applyResistance(LivingEntity target, float originalDamage, DamageSource source) {
+        return (float) (CombatRules.getDamageAfterAbsorb(target, originalDamage, source, target.getArmorValue(),
                 (float) target.getAttributeValue(getResistanceAttribute()))
                 * (1.0 - target.getAttributeValue(MKAttributes.RANGED_RESISTANCE)));
     }

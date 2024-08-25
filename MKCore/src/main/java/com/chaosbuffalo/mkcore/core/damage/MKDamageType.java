@@ -8,6 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -134,7 +135,7 @@ public class MKDamageType {
         return (float) (originalDamage + source.getAttributeValue(getDamageAttribute()) * modifierScaling);
     }
 
-    public float applyResistance(LivingEntity target, float originalDamage) {
+    public float applyResistance(LivingEntity target, float originalDamage, DamageSource source) {
         return (float) (originalDamage - (originalDamage * target.getAttributeValue(getResistanceAttribute())));
     }
 

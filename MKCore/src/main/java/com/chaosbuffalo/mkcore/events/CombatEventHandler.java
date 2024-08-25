@@ -90,9 +90,9 @@ public class CombatEventHandler {
             if (!(dmgSource instanceof MKDamageSource)) {
                 // correct for if we're a vanilla damage source and we're going to bypass armor so pre-apply armor
                 if (DamageUtils.isProjectileDamage(dmgSource)) {
-                    left = CoreDamageTypes.RangedDamage.get().applyResistance(target, left);
+                    left = CoreDamageTypes.RangedDamage.get().applyResistance(target, left, dmgSource);
                 } else {
-                    left = CoreDamageTypes.MeleeDamage.get().applyResistance(target, left);
+                    left = CoreDamageTypes.MeleeDamage.get().applyResistance(target, left, dmgSource);
                 }
             }
             // need to stop remainder damage from being blockable

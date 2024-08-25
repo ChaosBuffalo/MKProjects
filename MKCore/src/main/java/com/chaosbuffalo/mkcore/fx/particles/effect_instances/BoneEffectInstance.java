@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCSkeleton;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceLocation;
@@ -16,13 +17,11 @@ import java.util.UUID;
 
 public class BoneEffectInstance extends ParticleEffectInstance {
     public static final ResourceLocation TYPE = MKCore.makeRL("effect_instance.bone");
-    public static final Codec<BoneEffectInstance> CODEC = RecordCodecBuilder.<BoneEffectInstance>mapCodec(builder -> {
-        return builder.group(
-                UUIDUtil.STRING_CODEC.fieldOf("instanceUUID").forGetter(ParticleEffectInstance::getInstanceUUID),
-                ResourceLocation.CODEC.fieldOf("particleAnimName").forGetter(ParticleEffectInstance::getParticleAnimName),
-                Codec.STRING.optionalFieldOf("boneName", BipedSkeleton.ROOT_BONE_NAME).forGetter(i -> i.boneName)
-        ).apply(builder, BoneEffectInstance::new);
-    }).codec();
+    public static final MapCodec<BoneEffectInstance> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            UUIDUtil.STRING_CODEC.fieldOf("instanceUUID").forGetter(ParticleEffectInstance::getInstanceUUID),
+            ResourceLocation.CODEC.fieldOf("particleAnimName").forGetter(ParticleEffectInstance::getParticleAnimName),
+            Codec.STRING.optionalFieldOf("boneName", BipedSkeleton.ROOT_BONE_NAME).forGetter(i -> i.boneName)
+    ).apply(builder, BoneEffectInstance::new));
 
     private final String boneName;
 

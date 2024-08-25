@@ -6,6 +6,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.damagesource.CombatRules;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
@@ -37,8 +38,8 @@ public class MeleeDamageType extends MKDamageType {
     }
 
     @Override
-    public float applyResistance(LivingEntity target, float originalDamage) {
-        return CombatRules.getDamageAfterAbsorb(originalDamage, target.getArmorValue(),
+    public float applyResistance(LivingEntity target, float originalDamage, DamageSource source) {
+        return CombatRules.getDamageAfterAbsorb(target, originalDamage, source, target.getArmorValue(),
                 (float) target.getAttributeValue(getResistanceAttribute()));
     }
 }

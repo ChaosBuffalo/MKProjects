@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "com.chaosbuffalo.mkcore.mixins",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "refmap": "mkcore.refmap.json",
   "mixins": [
     "AttributeInstanceMixins",
@@ -23,7 +23,8 @@
     "client.ItemStackClientMixins",
     "client.LevelRendererMixins",
     "client.LocalPlayerMixins",
-    "client.MobEffectTextureManagerMixins"
+    "client.MobEffectTextureManagerMixins",
+    "client.ParticleEngineMixins"
   ],
   "minVersion": "0.8"
 }

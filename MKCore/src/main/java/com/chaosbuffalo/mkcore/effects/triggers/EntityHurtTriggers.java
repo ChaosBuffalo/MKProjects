@@ -42,7 +42,7 @@ public class EntityHurtTriggers extends SpellTriggers.TriggerCollectionBase {
             // we check unblockable here because if it is blockable than the armor calculation will already be applied
             // by vanilla mc, we don't want to apply armor reduction twice
             if (mkDamageSource.is(DamageTypeTags.BYPASSES_ARMOR)) {
-                event.setNewDamage(mkDamageSource.getMKDamageType().applyResistance(targetData.getEntity(), event.getNewDamage()));
+                event.setNewDamage(mkDamageSource.getMKDamageType().applyResistance(targetData.getEntity(), event.getNewDamage(), source));
             }
         }
 
