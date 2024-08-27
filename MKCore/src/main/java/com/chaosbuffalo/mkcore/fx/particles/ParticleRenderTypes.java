@@ -57,6 +57,8 @@ public class ParticleRenderTypes {
         public BufferBuilder begin(Tesselator tesselator, TextureManager textureManager) {
             RenderSystem.setShader(ShaderEventHandler::getBlackMagicParticleShader);
             RenderSystem.depthMask(false);
+            RenderSystem.blendEquation(GL14.GL_FUNC_REVERSE_SUBTRACT);
+            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
             RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
             textureManager.getTexture(TextureAtlas.LOCATION_PARTICLES).setBlurMipmap(true, false);
             RenderSystem.enableBlend();
