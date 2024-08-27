@@ -15,8 +15,8 @@ public class MobEntityMixins {
      * <p>
      * Real name maybeDisableShield
      */
-    @Overwrite
-    private void maybeDisableShield(Player p_233655_1_, ItemStack p_233655_2_, ItemStack p_233655_3_) {
-
-    }
+//    @Overwrite
+//    private void maybeDisableShield(Player p_233655_1_, ItemStack p_233655_2_, ItemStack p_233655_3_) {
+//
+//    }
 }

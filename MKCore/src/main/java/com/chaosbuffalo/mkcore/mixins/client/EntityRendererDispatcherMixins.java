@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -20,16 +21,16 @@ import java.util.Map;
 public abstract class EntityRendererDispatcherMixins {
 
     @Unique
-    private static final Map<String, EntityRendererProvider<AbstractClientPlayer>> PLAYER_PROVIDERS = ImmutableMap.of("default", (p_174098_) -> {
+    private static final Map<PlayerSkin.Model, EntityRendererProvider<AbstractClientPlayer>> PLAYER_PROVIDERS = ImmutableMap.of(PlayerSkin.Model.WIDE, (p_174098_) -> {
         return new MKPlayerRenderer(p_174098_, false);
-    }, "slim", (p_174096_) -> {
+    }, PlayerSkin.Model.SLIM, (p_174096_) -> {
         return new MKPlayerRenderer(p_174096_, true);
     });
 
     @Unique
-    private static final Map<String, EntityRendererProvider<AbstractClientPlayer>> VANILLA_PROVIDERS = ImmutableMap.of("default", (p_174098_) -> {
+    private static final Map<PlayerSkin.Model, EntityRendererProvider<AbstractClientPlayer>> VANILLA_PROVIDERS = ImmutableMap.of(PlayerSkin.Model.WIDE, (p_174098_) -> {
         return new PlayerRenderer(p_174098_, false);
-    }, "slim", (p_174096_) -> {
+    }, PlayerSkin.Model.SLIM, (p_174096_) -> {
         return new PlayerRenderer(p_174096_, true);
     });
 
@@ -41,9 +42,9 @@ public abstract class EntityRendererDispatcherMixins {
                     target = "Lnet/minecraft/client/renderer/entity/EntityRenderers;createPlayerRenderers(Lnet/minecraft/client/renderer/entity/EntityRendererProvider$Context;)Ljava/util/Map;"
             )
     )
-    private Map<String, EntityRenderer<? extends Player>> mkcore$proxyCreatePlayerRenderers(EntityRendererProvider.Context p_174052_) {
-        ImmutableMap.Builder<String, EntityRenderer<? extends Player>> builder = ImmutableMap.builder();
-        Map<String, EntityRendererProvider<AbstractClientPlayer>> providers;
+    private Map<PlayerSkin.Model, EntityRenderer<? extends Player>> mkcore$proxyCreatePlayerRenderers(EntityRendererProvider.Context p_174052_) {
+        ImmutableMap.Builder<PlayerSkin.Model, EntityRenderer<? extends Player>> builder = ImmutableMap.builder();
+        Map<PlayerSkin.Model, EntityRendererProvider<AbstractClientPlayer>> providers;
         if (MKConfig.CLIENT.enablePlayerCastAnimations.get()) {
             providers = PLAYER_PROVIDERS;
         } else {
