@@ -106,7 +106,7 @@ public class ClientEventHandler {
     }
 
     @SubscribeEvent
-    public static void onMouseEvent(InputEvent.MouseButton event) {
+    public static void onMouseEvent(InputEvent.MouseButton.Post event) {
         handleInputEvent();
     }
 
@@ -123,7 +123,7 @@ public class ClientEventHandler {
 //    }
 
     @SubscribeEvent
-    public void cancelHealth(RenderGuiLayerEvent.Pre event) {
+    public static void cancelHealth(RenderGuiLayerEvent.Pre event) {
         if (event.getName().equals(VanillaGuiLayers.PLAYER_HEALTH)) {
             event.setCanceled(true);
         }

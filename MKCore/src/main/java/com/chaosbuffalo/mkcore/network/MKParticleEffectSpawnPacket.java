@@ -31,7 +31,7 @@ public class MKParticleEffectSpawnPacket implements CustomPacketPayload {
     protected final List<Vec3> additionalLocs;
 
     public static final CustomPacketPayload.Type<MKParticleEffectSpawnPacket> TYPE = new CustomPacketPayload.Type<>(
-            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "particle_effect_spawn"));
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "mk_particle_effect_spawn"));
 
     public static final StreamCodec<FriendlyByteBuf, MKParticleEffectSpawnPacket> STREAM_CODEC = StreamCodec.ofMember(
             MKParticleEffectSpawnPacket::toBytes, MKParticleEffectSpawnPacket::new

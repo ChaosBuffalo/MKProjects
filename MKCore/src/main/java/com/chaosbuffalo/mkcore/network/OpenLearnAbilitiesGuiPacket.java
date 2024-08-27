@@ -22,7 +22,7 @@ public class OpenLearnAbilitiesGuiPacket implements CustomPacketPayload {
     private final List<AbilityTrainingEvaluation> abilities;
 
     public static final CustomPacketPayload.Type<OpenLearnAbilitiesGuiPacket> TYPE = new CustomPacketPayload.Type<>(
-            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "open_learn_Abilities_gui"));
+            ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "open_learn_abilities_gui"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, OpenLearnAbilitiesGuiPacket> STREAM_CODEC = StreamCodec.ofMember(
             OpenLearnAbilitiesGuiPacket::toBytes, OpenLearnAbilitiesGuiPacket::new

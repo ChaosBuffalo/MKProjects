@@ -2,10 +2,10 @@ package com.chaosbuffalo.mkcore.mixins.client;
 
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
 @Mixin(Gui.class)
-public abstract class InGameGuiMixins extends GuiComponent {
+public abstract class InGameGuiMixins {
 
     @Shadow
     @Final
@@ -28,9 +28,9 @@ public abstract class InGameGuiMixins extends GuiComponent {
      * @reason testing better cursor rendering
      */
     @Inject(
-            method = "renderCrosshair(Lcom/mojang/blaze3d/vertex/PoseStack;)V",
+            method = "Lnet/minecraft/client/gui/Gui;renderCrosshair(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V",
             at = @At(
-                    target = "Lnet/minecraft/client/gui/Gui;blit(Lcom/mojang/blaze3d/vertex/PoseStack;IIIIII)V",
+                    target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V",
                     value = "INVOKE",
                     ordinal = 0
 //                    args = {
@@ -38,7 +38,7 @@ public abstract class InGameGuiMixins extends GuiComponent {
 //                    }
             )
     )
-    private void mkcore$colorCrosshair(PoseStack poseStack, CallbackInfo ci) {
+    private void mkcore$colorCrosshair(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         Vector3f color = mkcore$getColorForSituation();
         RenderSystem.setShaderColor(color.x, color.y, color.z, 1.0f);
     }

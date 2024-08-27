@@ -25,21 +25,11 @@ public abstract class EntityMixins {
     @Shadow
     public abstract double getZ();
 
-    @Shadow
-    public abstract double getPassengersRidingOffset();
+    @Shadow public abstract Vec3 getPassengerRidingPosition(Entity entity);
 
     @Unique
     private Entity getSelf() {
         return ((Entity)(Object)this);
-    }
-
-    //copy of the original vanilla logic
-    @Unique
-    private void mkPositionRider(Entity pPassenger, Entity.MoveFunction pCallback) {
-        if (hasPassenger(pPassenger)) {
-            double d0 = getY() + getPassengersRidingOffset() + pPassenger.getMyRidingOffset();
-            pCallback.accept(pPassenger, getX(), d0, getZ());
-        }
     }
 
     /**
@@ -48,20 +38,27 @@ public abstract class EntityMixins {
      * <p>
      */
     @Overwrite
-    public void positionRider(Entity pPassenger) {
-        mkPositionRider(pPassenger, Entity::setPos);
-        MKCore.getEntityData(getSelf()).ifPresent(entityData -> {
-            if (entityData.getRiders().hasRider(pPassenger)) {
-                EntityRiderModule.EntityRider rider = entityData.getRiders().getRider(pPassenger);
+    protected void positionRider(Entity passenger, Entity.MoveFunction callback) {
+        MKCore.getEntityData(getSelf()).ifPresentOrElse(entityData -> {
+            if (entityData.getRiders().hasRider(passenger)) {
+                EntityRiderModule.EntityRider rider = entityData.getRiders().getRider(passenger);
                 Vec2 rot = entityData.getEntity().getRotationVector();
                 Vec3 newOffset = rider.getOffset().yRot(-rot.y * ((float)Math.PI / 180F));
-                pPassenger.setPos(entityData.getEntity().position().add(newOffset));
+                Vec3 newPos = entityData.getEntity().position().add(newOffset);
+                callback.accept(passenger, newPos.x, newPos.y, newPos.z);
                 if (rider.shouldDoPitch()) {
-                    pPassenger.setXRot(rot.x);
+                    passenger.setXRot(rot.x);
                 }
-                pPassenger.setYRot(rot.y + rider.getYawOffset());
+                passenger.setYRot(rot.y + rider.getYawOffset());
+            } else {
+                Vec3 vec3 = getPassengerRidingPosition(passenger);
+                Vec3 vec31 = passenger.getVehicleAttachmentPoint(getSelf());
+                callback.accept(passenger, vec3.x - vec31.x, vec3.y - vec31.y, vec3.z - vec31.z);
             }
+        }, () -> {
+            Vec3 vec3 = getPassengerRidingPosition(passenger);
+            Vec3 vec31 = passenger.getVehicleAttachmentPoint(getSelf());
+            callback.accept(passenger, vec3.x - vec31.x, vec3.y - vec31.y, vec3.z - vec31.z);
         });
-
     }
 }

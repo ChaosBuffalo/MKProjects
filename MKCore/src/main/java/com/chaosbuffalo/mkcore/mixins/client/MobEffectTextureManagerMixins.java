@@ -1,13 +1,16 @@
 package com.chaosbuffalo.mkcore.mixins.client;
 
 import com.chaosbuffalo.mkcore.effects.MKEffect;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.client.resources.TextureAtlasHolder;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
@@ -38,12 +41,13 @@ public abstract class MobEffectTextureManagerMixins extends TextureAtlasHolder {
      * @reason Allow texture lookup for MKActiveEffect-based effects
      */
     @Overwrite
-    public TextureAtlasSprite get(MobEffect effectIn) {
-        if (effectIn instanceof MKEffect.WrapperEffect vanilla) {
+    public TextureAtlasSprite get(Holder<MobEffect> effect) {
+
+        if (effect.value() instanceof MKEffect.WrapperEffect vanilla) {
             ResourceLocation effectId = vanilla.getMKEffect().getId();
             return super.getSprite(effectId);
         }
         // Vanilla logic
-        return super.getSprite(ForgeRegistries.MOB_EFFECTS.getKey(effectIn));
+        return this.getSprite(effect.unwrapKey().map(ResourceKey::location).orElseGet(MissingTextureAtlasSprite::getLocation));
     }
 }

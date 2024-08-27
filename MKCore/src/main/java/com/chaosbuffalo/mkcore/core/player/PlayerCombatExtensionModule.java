@@ -15,7 +15,7 @@ import java.util.UUID;
 
 public class PlayerCombatExtensionModule extends CombatExtensionModule implements IPlayerSyncComponentProvider {
     private static final UUID EV_ID = UUID.fromString("fce9b2a1-c8ec-4c1d-9da4-63bdd95e2ff9");
-    private static final ResourceLocation blockMaxPoiseBonusId = MKCore.id("block skill modifier");
+    private static final ResourceLocation blockMaxPoiseBonusId = MKCore.id("block_skill_modifier");
     private final PlayerSyncComponent sync = new PlayerSyncComponent("combatExtension");
     private final SyncInt currentProjectileHitCount = new SyncInt("projectileHits", 0);
 
