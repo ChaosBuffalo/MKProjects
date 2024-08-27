@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.fx.particles;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.events.ShaderEventHandler;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -26,6 +27,8 @@ public class ParticleRenderTypes {
             //its rendering phase causing the checking to see if blend mode has already been enabled to have invalid state
             // and not know it needs to re-enable, for now lets just manually do it
             RenderSystem.enableBlend();
+            RenderSystem.blendEquation(GL14.GL_FUNC_ADD);
+            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
             RenderSystem.depthMask(false);
             RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
             textureManager.getTexture(TextureAtlas.LOCATION_PARTICLES).setBlurMipmap(true, false);

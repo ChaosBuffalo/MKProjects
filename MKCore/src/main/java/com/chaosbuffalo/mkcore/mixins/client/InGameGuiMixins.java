@@ -43,6 +43,18 @@ public abstract class InGameGuiMixins {
         RenderSystem.setShaderColor(color.x, color.y, color.z, 1.0f);
     }
 
+    @Inject(
+            method = "Lnet/minecraft/client/gui/Gui;renderCrosshair(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V",
+            at = @At(
+                    target = "Lcom/mojang/blaze3d/systems/RenderSystem;disableBlend()V",
+                    value = "INVOKE",
+                    ordinal = 0
+            )
+    )
+    private void mkcore$colorReset(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
     @Unique
     private static final Vector3f COLOR_HOSTILE = new Vector3f(1.0f, 0.0f, 0.0f);
     @Unique

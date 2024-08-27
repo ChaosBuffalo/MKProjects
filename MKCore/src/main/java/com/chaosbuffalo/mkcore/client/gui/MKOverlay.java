@@ -386,11 +386,8 @@ public class MKOverlay implements LayeredDraw.Layer {
         if (cap == null)
             return;
 
-        if (mc.screen == null)
-            return;
-
-        int width = mc.screen.width;
-        int height = mc.screen.height;
+        int width = mc.getWindow().getGuiScaledWidth();
+        int height = mc.getWindow().getGuiScaledHeight();
 
         float partialTick = deltaTracker.getGameTimeDeltaPartialTick(true);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
