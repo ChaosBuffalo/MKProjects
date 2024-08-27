@@ -1,73 +1,37 @@
 package com.chaosbuffalo.mkcore.mixins.client;
 
 import com.chaosbuffalo.mkcore.item.AttributeTooltipManager;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
+import javax.annotation.Nullable;
+import java.util.function.Consumer;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackClientMixins {
 
-    @Unique
-    private List<Component> mkcore$tooltipList;
-
-    @Unique
-    private Player mkcore$player;
-
-    @Shadow
-    public abstract Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot equipmentSlot);
-
-    // lets us remove attributes only from the automatic tooltip generation in item stack
-    @Redirect(
-            method = "getTooltipLines(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;",
-            at = @At(
-                    target = "Lnet/minecraft/world/item/ItemStack;getAttributeModifiers(Lnet/minecraft/world/entity/EquipmentSlot;)Lcom/google/common/collect/Multimap;",
-                    value = "INVOKE"
-            )
-    )
-    private Multimap<Attribute, AttributeModifier> mkcore$proxyGetAttributeModifiers(ItemStack itemStack, EquipmentSlot equipmentSlot) {
-        // Don't follow our path if it's building the search tree during startup
-        if (mkcore$player == null) {
-            return getAttributeModifiers(equipmentSlot);
-        }
-
-        if (mkcore$tooltipList != null) {
-            AttributeTooltipManager.renderTooltip(mkcore$tooltipList, mkcore$player, itemStack, equipmentSlot);
-        }
-        return ImmutableMultimap.of();
-    }
-
-    @ModifyVariable(
-            method = "getTooltipLines(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;",
+    @Inject(
+            method = "addModifierTooltip(Ljava/util/function/Consumer;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/core/Holder;Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;)V",
             at = @At("HEAD"),
-            argsOnly = true
+            cancellable = true
     )
-    private Player mkcore$capturePlayer(Player player) {
-        this.mkcore$player = player;
-        return player;
-    }
+    private void mkcore_addModifierTooltip(Consumer<Component> tooltipAdder, @Nullable Player player,
+                                           Holder<Attribute> attribute, AttributeModifier modifier, CallbackInfo ci) {
+        if (player == null) {
+            return;
+        }
 
-    @ModifyVariable(
-            method = "getTooltipLines(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;",
-            at = @At("STORE"),
-            index = 3,
-            ordinal = 0
-    )
-    private List<Component> mkcore$captureList(List<Component> list) {
-        this.mkcore$tooltipList = list;
-        return list;
+        final ItemStack stack = (ItemStack) (Object) this;
+        if (AttributeTooltipManager.renderModifier(player, stack, attribute, modifier, tooltipAdder)) {
+            ci.cancel();
+        }
     }
 }

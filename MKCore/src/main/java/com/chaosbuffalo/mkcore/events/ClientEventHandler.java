@@ -217,20 +217,20 @@ public class ClientEventHandler {
         AttributeTooltipManager.registerAttributeRenderer(MKAttributes.MELEE_CRIT_MULTIPLIER, ClientEventHandler::renderCritMultiplier);
     }
 
-    static void renderPoise(ItemStack stack, EquipmentSlot slotType, Player player,
+    static void renderPoise(ItemStack stack, Player player,
                             Holder<Attribute> attribute, AttributeModifier modifier, Consumer<Component> output) {
         output.accept(AttributeTooltipManager.makePlusOrTakeText(attribute, modifier,
                 modifier.amount(), modifier.amount()));
     }
 
-    static void renderAbsolutePercentTwoDigits(ItemStack stack, EquipmentSlot slotType, Player player,
+    static void renderAbsolutePercentTwoDigits(ItemStack stack, Player player,
                                                Holder<Attribute> attribute, AttributeModifier modifier,
                                                Consumer<Component> output) {
         output.accept(AttributeTooltipManager.makeEqualsText(attribute, modifier,
                 modifier.amount() * 100, v -> String.format("%.2f%%", v)));
     }
 
-    static void renderCritMultiplier(ItemStack stack, EquipmentSlot slotType, Player player, Holder<Attribute> attribute,
+    static void renderCritMultiplier(ItemStack stack, Player player, Holder<Attribute> attribute,
                                      AttributeModifier modifier, Consumer<Component> output) {
         double value = player.getAttributeBaseValue(attribute) + modifier.amount();
         output.accept(AttributeTooltipManager.makeEqualsText(attribute, modifier, value,
