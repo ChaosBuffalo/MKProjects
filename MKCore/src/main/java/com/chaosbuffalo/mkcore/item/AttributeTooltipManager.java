@@ -6,7 +6,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -24,10 +23,6 @@ import java.util.function.Consumer;
 import java.util.function.DoubleFunction;
 
 public class AttributeTooltipManager {
-
-    // Why are these protected in Item? Not sure if it's worth an AT
-    protected static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
-    protected static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
 
     public interface ItemAttributeRenderer {
         void render(ItemStack stack, EquipmentSlot equipmentSlotType, Player player, Holder<Attribute> attribute,
@@ -159,10 +154,10 @@ public class AttributeTooltipManager {
             list.add(Component.literal(""));
             list.add(Component.translatable("item.modifiers." + equipmentSlot.getName()).withStyle(ChatFormatting.GRAY));
 
-            Comparator<Map.Entry<Attribute, AttributeModifier>> comp = Comparator.comparing(attr -> attr.getKey().getDescriptionId());
+            Comparator<ItemAttributeModifiers.Entry> comp = Comparator.comparing(attr -> attr.attribute().value().getDescriptionId());
 
-            multimap.entries().stream().sorted(comp).forEach(entry -> {
-                renderAttribute(stack, equipmentSlot, player, entry.getKey(), entry.getValue(), list::add);
+            multimap.modifiers().stream().sorted(comp).forEach(entry -> {
+                renderAttribute(stack, equipmentSlot, player, entry.attribute(), entry.modifier(), list::add);
             });
         }
     }

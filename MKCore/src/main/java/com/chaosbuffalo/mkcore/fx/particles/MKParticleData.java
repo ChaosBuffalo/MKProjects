@@ -2,11 +2,10 @@ package com.chaosbuffalo.mkcore.fx.particles;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.google.common.collect.ImmutableMap;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
@@ -14,7 +13,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -30,10 +30,12 @@ public class MKParticleData implements ParticleOptions {
 
     private final ParticleType<MKParticleData> particleType;
 
+    public static MapCodec<MKParticleData> mapCodec(ParticleType<MKParticleData> type) {
+        return MapCodec.assumeMapUnsafe(typeCodec(type));
+    }
+
     public static PrimitiveCodec<MKParticleData> typeCodec(ParticleType<MKParticleData> type) {
         return new PrimitiveCodec<>() {
-
-
             @Override
             public <T> DataResult<MKParticleData> read(DynamicOps<T> ops, T input) {
                 Dynamic<T> d = new Dynamic<>(ops, input);
@@ -77,26 +79,35 @@ public class MKParticleData implements ParticleOptions {
 
     }
 
-    public static final ParticleOptions.Deserializer<MKParticleData> DESERIALIZER = new ParticleOptions.Deserializer<>() {
-        public MKParticleData fromCommand(ParticleType<MKParticleData> particleTypeIn, StringReader reader) throws CommandSyntaxException {
-            // todo make this read json nbt
-            return new MKParticleData(particleTypeIn, new Vec3(reader.readDouble(), reader.readDouble(), reader.readDouble()),
-                    new ParticleAnimation(), -1, new Vec3(1., 1., 1.));
-        }
-
-        public MKParticleData fromNetwork(ParticleType<MKParticleData> particleTypeIn, FriendlyByteBuf buffer) {
-            Vec3 origin = new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
-            int source = buffer.readInt();
-            Vec3 scale = new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
-            Dynamic<?> dynamic = new Dynamic<>(NbtOps.INSTANCE, buffer.readNbt());
+    public static StreamCodec<RegistryFriendlyByteBuf, MKParticleData> streamCodec(ParticleType<MKParticleData> type) {
+        return StreamCodec.of((bytes, particle) -> {
+            bytes.writeDouble(particle.origin.x);
+            bytes.writeDouble(particle.origin.y);
+            bytes.writeDouble(particle.origin.z);
+            bytes.writeInt(particle.entityId);
+            bytes.writeDouble(particle.scale.x);
+            bytes.writeDouble(particle.scale.y);
+            bytes.writeDouble(particle.scale.z);
+            Tag dyn = particle.animation.serialize(NbtOps.INSTANCE);
+            if (dyn instanceof CompoundTag) {
+                bytes.writeNbt(dyn);
+            } else {
+                throw new RuntimeException(String.format("Particle Animation %s did not serialize to a CompoundNBT!", BuiltInRegistries.PARTICLE_TYPE.getKey(particle.getType())));
+            }
+        }, (bytes) -> {
+            Vec3 origin = new Vec3(bytes.readDouble(), bytes.readDouble(), bytes.readDouble());
+            int source = bytes.readInt();
+            Vec3 scale = new Vec3(bytes.readDouble(), bytes.readDouble(), bytes.readDouble());
+            Dynamic<?> dynamic = new Dynamic<>(NbtOps.INSTANCE, bytes.readNbt());
             ParticleAnimation newAnim = dynamic.into(d -> {
                 ParticleAnimation anim = new ParticleAnimation();
                 anim.deserialize(d);
                 return anim;
             });
-            return new MKParticleData(particleTypeIn, origin, newAnim, source, scale);
-        }
-    };
+            return new MKParticleData(type, origin, newAnim, source, scale);
+        });
+    }
+
 
     public MKParticleData(ParticleType<MKParticleData> typeIn, Vec3 origin, ParticleAnimation animation, int entityId, Vec3 scale) {
         this.particleType = typeIn;
@@ -122,28 +133,4 @@ public class MKParticleData implements ParticleOptions {
     public ParticleType<MKParticleData> getType() {
         return particleType;
     }
-
-
-    @Override
-    public void writeToNetwork(FriendlyByteBuf buffer) {
-        buffer.writeDouble(origin.x);
-        buffer.writeDouble(origin.y);
-        buffer.writeDouble(origin.z);
-        buffer.writeInt(entityId);
-        buffer.writeDouble(scale.x);
-        buffer.writeDouble(scale.y);
-        buffer.writeDouble(scale.z);
-        Tag dyn = animation.serialize(NbtOps.INSTANCE);
-        if (dyn instanceof CompoundTag) {
-            buffer.writeNbt((CompoundTag) dyn);
-        } else {
-            throw new RuntimeException(String.format("Particle Animation %s did not serialize to a CompoundNBT!", BuiltInRegistries.PARTICLE_TYPE.getKey(getType())));
-        }
-    }
-
-    @Override
-    public String writeToString() {
-        return BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()) + " " + origin.toString();
-    }
-
 }

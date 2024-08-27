@@ -3,10 +3,12 @@ package com.chaosbuffalo.mkcore.init;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.fx.particles.MKParticleData;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -18,13 +20,18 @@ public class CoreParticles {
     public static final DeferredRegister<ParticleType<?>> PARTICLES =
             DeferredRegister.create(Registries.PARTICLE_TYPE, MKCore.MOD_ID);
 
+
     private static DeferredHolder<ParticleType<?>, ParticleType<MKParticleData>> register(String name) {
         return PARTICLES.register(name,
-                () -> new ParticleType<>(false, MKParticleData.DESERIALIZER) {
-                    @Nonnull
+                () -> new ParticleType<MKParticleData>(false) {
                     @Override
-                    public Codec<MKParticleData> codec() {
-                        return MKParticleData.typeCodec(this);
+                    public MapCodec<MKParticleData> codec() {
+                        return MKParticleData.mapCodec(this);
+                    }
+
+                    @Override
+                    public StreamCodec<? super RegistryFriendlyByteBuf, MKParticleData> streamCodec() {
+                        return MKParticleData.streamCodec(this);
                     }
                 });
     }
