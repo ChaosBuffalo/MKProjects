@@ -70,7 +70,7 @@ public class PlayerAttributeMonitor {
             MKCore.LOGGER.debug("attr {} for {} dirty", instance.getAttribute().value().getDescriptionId(), playerData.getEntity());
 //        new Exception("!!attr " + instance.getAttribute().getDescriptionId() + " " + instance.getModifiers().size()).printStackTrace();
         }
-        if (instance.getAttribute() instanceof MKRangedAttribute mkAttr) {
+        if (instance.getAttribute().value() instanceof MKRangedAttribute mkAttr) {
             if (mkAttr.getSyncType().syncChanges()) {
                 dirtyPrivates.add(instance);
                 tickRequest.accept(this::sendUpdates);

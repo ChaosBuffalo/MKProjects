@@ -1,16 +1,29 @@
 package com.chaosbuffalo.mkcore.mixins;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
 import org.spongepowered.asm.mixin.Mixin;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Mixin(SwordItem.class)
 public abstract class SwordItemMixins extends TieredItem {
+    private static final Set<ItemAbility> SWORD_ACTIONS_AMENDED = Stream.of(
+            ItemAbilities.SWORD_DIG, ItemAbilities.SWORD_SWEEP, ItemAbilities.SHIELD_BLOCK)
+            .collect(Collectors.toCollection(Sets::newIdentityHashSet));
+
 
     public SwordItemMixins(Tier tierIn, Properties builder) {
         super(tierIn, builder);
@@ -32,6 +45,12 @@ public abstract class SwordItemMixins extends TieredItem {
     @Override
     public int getUseDuration(ItemStack stack, LivingEntity entity) {
         return 72000;
+    }
+
+
+    @Override
+    public boolean canPerformAction(ItemStack stack, ItemAbility itemAbility) {
+        return SWORD_ACTIONS_AMENDED.contains(itemAbility);
     }
 
     /**
