@@ -137,11 +137,4 @@ public class EntityEventHandler {
             }
         });
     }
-
-    @SubscribeEvent
-    public static void onConstructing(EntityEvent.EntityConstructing event) {
-        if (event.getEntity() instanceof LivingEntity) {
-            MKCore.getEntityData(event.getEntity());
-        }
-    }
 }
