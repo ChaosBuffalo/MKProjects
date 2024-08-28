@@ -56,7 +56,7 @@ public class ManualAtlas {
             MKWidgets.LOGGER.info("Skip drawing region {} for manual atlas {}, region not found.", regionName, textureLoc);
             return;
         }
-        graphics.blit(textureLoc, xPos, yPos, region.u, region.v, region.width, region.height, width, height);
+        graphics.blit(textureLoc, xPos, yPos, region.u, region.v, partialWidth, region.height, width, height);
     }
 
     @Nullable
