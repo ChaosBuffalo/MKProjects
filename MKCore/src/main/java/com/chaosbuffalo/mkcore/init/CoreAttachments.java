@@ -20,22 +20,22 @@ public class CoreAttachments {
             NeoForgeRegistries.ATTACHMENT_TYPES, MKCore.MOD_ID);
 
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<MKPlayerData>> PLAYER_DATA_ATTACHMENT = ATTACHMENT_TYPES.register(
-            "player_data", () -> AttachmentType.serializable((attachee) -> {
-                if (attachee instanceof ServerPlayer player) {
+            "player_data", () -> AttachmentType.serializable(holder -> {
+                if (holder instanceof ServerPlayer player) {
                     return new MKServerPlayerData(player);
-                } else if (attachee instanceof Player player) {
+                } else if (holder instanceof Player player) {
                     return new MKPlayerData(player);
                 }
-                return null;
+                throw new IllegalArgumentException("Cannot construct player attachment for non-player entity " + holder);
             }).build()
     );
 
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<MKEntityData>> ENTITY_DATA_ATTACHMENT = ATTACHMENT_TYPES.register(
-            "entity_data", () -> AttachmentType.serializable((attachee) -> {
-                if (attachee instanceof LivingEntity entity && !(attachee instanceof Player)) {
+            "entity_data", () -> AttachmentType.serializable(holder -> {
+                if (holder instanceof LivingEntity entity && !(entity instanceof Player)) {
                     return new MKEntityData(entity);
                 }
-                return null;
+                throw new IllegalArgumentException("Cannot construct entity_data attachment for non-living entity " + holder);
             }).build()
     );
 

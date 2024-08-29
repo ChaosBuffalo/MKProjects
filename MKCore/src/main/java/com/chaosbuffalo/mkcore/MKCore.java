@@ -135,29 +135,43 @@ public class MKCore {
         return ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, path);
     }
 
-    public static Optional<MKPlayerData> getPlayer(Entity playerEntity) {
-        return Optional.ofNullable(playerEntity.getData(CoreAttachments.PLAYER_DATA_ATTACHMENT));
+    public static Optional<MKPlayerData> getPlayer(Entity entity) {
+        return entity instanceof Player player ? getPlayer(player) : Optional.empty();
     }
 
-    @SuppressWarnings("ConstantConditions")
+    // FIXME: this is a pointless Optional. All players will have this attachment
+    public static Optional<MKPlayerData> getPlayer(Player playerEntity) {
+        return Optional.of(playerEntity.getData(CoreAttachments.PLAYER_DATA_ATTACHMENT));
+    }
+
     @Nullable
-    public static MKPlayerData getPlayerOrNull(Entity playerEntity) {
+    public static MKPlayerData getPlayerOrNull(Entity entity) {
+        return entity instanceof Player player ? getPlayerOrNull(player) : null;
+    }
+
+    // FIXME: Not actually nullable, but fix callers before removing the annotation
+    @Nullable
+    public static MKPlayerData getPlayerOrNull(Player playerEntity) {
         return playerEntity.getData(CoreAttachments.PLAYER_DATA_ATTACHMENT);
     }
 
     public static Optional<? extends IMKEntityData> getEntityData(@Nullable Entity entity) {
-        if (entity instanceof Player) {
-            return Optional.ofNullable(entity.getData(CoreAttachments.PLAYER_DATA_ATTACHMENT));
-        } else if (entity instanceof LivingEntity) {
-            return Optional.ofNullable(entity.getData(CoreAttachments.ENTITY_DATA_ATTACHMENT));
-        }
-        return Optional.empty();
+        return Optional.ofNullable(getEntityDataOrNull(entity));
     }
 
-    @SuppressWarnings("ConstantConditions")
+    // FIXME: All LivingEntity will have the attachment so we don't need optionals here
+    public static Optional<? extends IMKEntityData> getEntityData(@Nullable LivingEntity entity) {
+        return Optional.ofNullable(getEntityDataOrNull(entity));
+    }
+
     @Nullable
     public static IMKEntityData getEntityDataOrNull(@Nullable Entity entity) {
-        return getEntityData(entity).orElse(null);
+        if (entity instanceof Player) {
+            return entity.getData(CoreAttachments.PLAYER_DATA_ATTACHMENT);
+        } else if (entity instanceof LivingEntity) {
+            return entity.getData(CoreAttachments.ENTITY_DATA_ATTACHMENT);
+        }
+        return null;
     }
 
     public static TalentManager getTalentManager() {
