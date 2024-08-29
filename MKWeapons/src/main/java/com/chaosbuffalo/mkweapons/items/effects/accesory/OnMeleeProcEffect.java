@@ -13,6 +13,7 @@ import com.chaosbuffalo.mkweapons.items.effects.IDifficultyAwareEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -30,20 +31,19 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class OnMeleeProcEffect extends BaseAccessoryEffect implements IDifficultyAwareEffect {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "accessory_effect.on_hit_ability");
-    public static final Codec<OnMeleeProcEffect> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
-            RecordCodecBuilder.<OnMeleeProcEffect>mapCodec(builder -> {
-                return builder.group(
-                        ScalableDouble.CODEC.fieldOf("proc_chance").forGetter(i -> i.procChance),
-                        ScalableFloat.CODEC.fieldOf("skill_level").forGetter(i -> i.skillLevel),
-                        MKCoreRegistry.ABILITIES.getCodec().comapFlatMap(ability -> {
-                            if (ability instanceof EntityTargetingAbility targetingAbility) {
-                                return DataResult.success(targetingAbility);
-                            }
-                            return DataResult.error(() -> "Ability " + ability + " is not an EntityTargetingAbility");
-                        }, Function.identity()).fieldOf("ability").forGetter(i -> i.abilitySupplier.get())
-                ).apply(builder, OnMeleeProcEffect::new);
-            }).codec());
+    public static final ResourceLocation NAME = MKWeapons.id("accessory_effect.on_hit_ability");
+    public static final MapCodec<OnMeleeProcEffect> MAP_CODEC =
+            RecordCodecBuilder.mapCodec(builder -> builder.group(
+                    ScalableDouble.CODEC.fieldOf("proc_chance").forGetter(i -> i.procChance),
+                    ScalableFloat.CODEC.fieldOf("skill_level").forGetter(i -> i.skillLevel),
+                    MKCoreRegistry.ABILITIES.byNameCodec().comapFlatMap(ability -> {
+                        if (ability instanceof EntityTargetingAbility targetingAbility) {
+                            return DataResult.success(targetingAbility);
+                        }
+                        return DataResult.error(() -> "Ability " + ability + " is not an EntityTargetingAbility");
+                    }, Function.identity()).fieldOf("ability").forGetter(i -> i.abilitySupplier.get())
+            ).apply(builder, OnMeleeProcEffect::new));
+    public static final Codec<OnMeleeProcEffect> CODEC = MAP_CODEC.codec();
 
 
     protected final ScalableDouble procChance;

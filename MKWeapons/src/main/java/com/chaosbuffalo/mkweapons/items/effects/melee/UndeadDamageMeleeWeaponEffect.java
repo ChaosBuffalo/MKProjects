@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class UndeadDamageMeleeWeaponEffect extends DamageMultiplierMeleeWeaponEffect {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.undead_damage");
+    public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.undead_damage");
     public static final Codec<UndeadDamageMeleeWeaponEffect> CODEC =
             Codec.FLOAT.xmap(UndeadDamageMeleeWeaponEffect::new, DamageMultiplierMeleeWeaponEffect::getDamageMultiplier);
 

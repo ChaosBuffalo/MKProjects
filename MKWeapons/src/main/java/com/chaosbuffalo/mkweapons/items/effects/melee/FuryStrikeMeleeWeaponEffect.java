@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class FuryStrikeMeleeWeaponEffect extends BaseMeleeWeaponEffect {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.fury_strike");
+    public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.fury_strike");
     public static final Codec<FuryStrikeMeleeWeaponEffect> CODEC = RecordCodecBuilder.<FuryStrikeMeleeWeaponEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.INT.fieldOf("numberOfHits").forGetter(FuryStrikeMeleeWeaponEffect::getNumberOfHits),

@@ -6,14 +6,17 @@ import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurio;
 
@@ -24,7 +27,7 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
     private final ItemStack stack;
     private final List<IAccessoryEffect> effects;
     private final List<IAccessoryEffect> cachedEffects;
-    private final Map<String, Multimap<Attribute, AttributeModifier>> modifiers = new HashMap<>();
+    private final Map<String, Multimap<Holder<Attribute>, AttributeModifier>> modifiers = new HashMap<>();
     private boolean isCacheDirty;
 
     public MKCurioItemHandler(ItemStack itemStack) {
@@ -93,7 +96,7 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
     }
 
     private void loadSlotModifiers(String slotId) {
-        Multimap<Attribute, AttributeModifier> newMods = HashMultimap.create();
+        Multimap<Holder<Attribute>, AttributeModifier> newMods = HashMultimap.create();
         for (IAccessoryEffect weaponEffect : getEffects()) {
             if (weaponEffect instanceof ItemModifierEffect modEffect) {
                 modEffect.getModifiers().forEach(e -> newMods.put(e.getAttribute(), e.getModifier()));
@@ -103,7 +106,7 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
     }
 
     @Override
-    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(SlotContext slotContext, UUID uuid) {
+    public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, ResourceLocation id) {
         if (!modifiers.containsKey(slotContext.identifier())) {
             loadSlotModifiers(slotContext.identifier());
         }
@@ -111,7 +114,7 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
         ListTag effectList = new ListTag();
         for (IAccessoryEffect effect : getStackEffects()) {
@@ -122,7 +125,7 @@ public class MKCurioItemHandler implements ICurio, INBTSerializable<CompoundTag>
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         if (nbt.contains("accessory_effects")) {
             ListTag effectList = nbt.getList("accessory_effects", Tag.TAG_COMPOUND);
             effects.clear();

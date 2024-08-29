@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkweapons.items.effects.ranged;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -16,13 +17,14 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class RapidFireRangedWeaponEffect extends BaseRangedWeaponEffect {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.rapid_fire");
-    public static final Codec<RapidFireRangedWeaponEffect> CODEC = RecordCodecBuilder.<RapidFireRangedWeaponEffect>mapCodec(builder -> {
+    public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.rapid_fire");
+    public static final MapCodec<RapidFireRangedWeaponEffect> MAP_CODEC = RecordCodecBuilder.<RapidFireRangedWeaponEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.INT.fieldOf("maxHits").forGetter(i -> i.maxHits),
                 Codec.FLOAT.fieldOf("perHit").forGetter(i -> i.perHitReduction)
         ).apply(builder, RapidFireRangedWeaponEffect::new);
-    }).codec();
+    });
+    public static final Codec<RapidFireRangedWeaponEffect> CODEC = MAP_CODEC.codec();
 
     private final int maxHits;
     private final float perHitReduction;

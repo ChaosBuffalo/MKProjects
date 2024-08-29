@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -29,12 +30,13 @@ import java.util.UUID;
 
 public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
     public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.ranged_skill_scaling");
-    public static final Codec<RangedSkillScalingEffect> CODEC = RecordCodecBuilder.<RangedSkillScalingEffect>mapCodec(builder -> {
+    public static final MapCodec<RangedSkillScalingEffect> MAP_CODEC = RecordCodecBuilder.<RangedSkillScalingEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.DOUBLE.fieldOf("baseDamage").forGetter(i -> i.baseDamage),
                 BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("skill").forGetter(i -> i.skill)
         ).apply(builder, RangedSkillScalingEffect::new);
-    }).codec();
+    });
+    public static final Codec<RangedSkillScalingEffect> CODEC = MAP_CODEC.codec();
 
     public static final ResourceLocation skillScaling = MKWeapons.id("ranged_skill_scaling");
     private final double baseDamage;

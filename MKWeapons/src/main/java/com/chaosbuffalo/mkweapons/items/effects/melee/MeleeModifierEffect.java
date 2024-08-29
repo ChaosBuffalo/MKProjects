@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.List;
 
 public class MeleeModifierEffect extends ItemModifierEffect implements IMeleeWeaponEffect {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.melee_modifier");
+    public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.melee_modifier");
     public static final Codec<MeleeModifierEffect> CODEC =
             AttributeOptionEntry.CODEC.listOf().xmap(MeleeModifierEffect::new, MeleeModifierEffect::getModifiers);
 

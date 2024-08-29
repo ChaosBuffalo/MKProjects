@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class DoubleStrikeMeleeWeaponEffect extends BaseMeleeWeaponEffect {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.double_strike");
+    public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.double_strike");
     public static final Codec<DoubleStrikeMeleeWeaponEffect> CODEC = Codec.DOUBLE.xmap(DoubleStrikeMeleeWeaponEffect::new, DoubleStrikeMeleeWeaponEffect::getChance);
 
     private final double chance;

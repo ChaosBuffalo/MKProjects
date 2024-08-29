@@ -32,7 +32,7 @@ public class MKWeaponsItemTagProvider extends ItemTagsProvider {
     }
 
     private static TagKey<Item> accessory(String name) {
-        return ItemTags.create(new ResourceLocation("curios", name));
+        return ItemTags.create(ResourceLocation.fromNamespaceAndPath("curios", name));
     }
 
     @Override

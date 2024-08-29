@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkweapons.items.effects.armor.IArmorEffect;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -25,7 +26,7 @@ public class ArmorDataHandler implements IArmorData {
     private final ItemStack itemStack;
     private final List<IArmorEffect> armorEffects;
     private final List<IArmorEffect> cachedArmorEffects;
-    private final Map<EquipmentSlot, Multimap<Attribute, AttributeModifier>> modifiers = new EnumMap<>(EquipmentSlot.class);
+    private final Map<EquipmentSlot, Multimap<Holder<Attribute>, AttributeModifier>> modifiers = new EnumMap<>(EquipmentSlot.class);
     private boolean isCacheDirty;
 
     public ArmorDataHandler(ItemStack itemStack) {
@@ -69,8 +70,8 @@ public class ArmorDataHandler implements IArmorData {
     }
 
     private void loadSlotModifiers(EquipmentSlot slot) {
-        Multimap<Attribute, AttributeModifier> modifiers = getItemStack().getItem().getDefaultAttributeModifiers(slot);
-        Multimap<Attribute, AttributeModifier> newMods = HashMultimap.create();
+        Multimap<Holder<Attribute>, AttributeModifier> modifiers = getItemStack().getItem().getDefaultAttributeModifiers(slot);
+        Multimap<Holder<Attribute>, AttributeModifier> newMods = HashMultimap.create();
         newMods.putAll(modifiers);
         if (slot == getArmorItem().getType().getSlot()) {
             for (IArmorEffect armorEffect : getArmorEffects()) {
@@ -87,7 +88,7 @@ public class ArmorDataHandler implements IArmorData {
     }
 
     @Override
-    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot) {
+    public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(EquipmentSlot slot) {
         if (!modifiers.containsKey(slot)) {
             loadSlotModifiers(slot);
         }

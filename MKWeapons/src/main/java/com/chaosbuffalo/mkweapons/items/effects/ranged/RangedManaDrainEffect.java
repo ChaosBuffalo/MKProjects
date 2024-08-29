@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -22,12 +23,13 @@ import java.util.List;
 
 public class RangedManaDrainEffect extends BaseRangedWeaponEffect {
     public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.ranged_mana_drain");
-    public static final Codec<RangedManaDrainEffect> CODEC = RecordCodecBuilder.<RangedManaDrainEffect>mapCodec(builder -> {
+    public static final MapCodec<RangedManaDrainEffect> MAP_CODEC = RecordCodecBuilder.<RangedManaDrainEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.FLOAT.fieldOf("damage_multiplier").forGetter(i -> i.damageMultiplier),
                 Codec.FLOAT.fieldOf("efficiency").forGetter(i -> i.efficiency)
         ).apply(builder, RangedManaDrainEffect::new);
-    }).codec();
+    });
+    public static final Codec<RangedManaDrainEffect> CODEC = MAP_CODEC.codec();
 
     private final float damageMultiplier;
     private final float efficiency;

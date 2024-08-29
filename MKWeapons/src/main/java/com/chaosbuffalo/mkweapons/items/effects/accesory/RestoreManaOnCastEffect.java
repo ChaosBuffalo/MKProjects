@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
 import com.chaosbuffalo.mkweapons.items.effects.IDifficultyAwareEffect;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -21,13 +22,14 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class RestoreManaOnCastEffect extends BaseAccessoryEffect implements IDifficultyAwareEffect {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "accessory_effect.restore_mana");
-    public static final Codec<RestoreManaOnCastEffect> CODEC = RecordCodecBuilder.<RestoreManaOnCastEffect>mapCodec(builder -> {
+    public static final ResourceLocation NAME = MKWeapons.id("accessory_effect.restore_mana");
+    public static final MapCodec<RestoreManaOnCastEffect> MAP_CODEC = RecordCodecBuilder.<RestoreManaOnCastEffect>mapCodec(builder -> {
         return builder.group(
                 ScalableDouble.CODEC.fieldOf("chance").forGetter(i -> i.chance),
                 ScalableFloat.CODEC.fieldOf("percentage").forGetter(i -> i.percentage)
         ).apply(builder, RestoreManaOnCastEffect::new);
-    }).codec();
+    });
+    public static final Codec<RestoreManaOnCastEffect> CODEC = MAP_CODEC.codec();
 
     protected final ScalableDouble chance;
     protected final ScalableFloat percentage;

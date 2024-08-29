@@ -15,7 +15,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -27,13 +26,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.on_hit_ability");
-    public static final Codec<OnHitAbilityEffect> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
+    public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.on_hit_ability");
+    public static final Codec<OnHitAbilityEffect> CODEC = Codec.lazyInitialized(() ->
             RecordCodecBuilder.<OnHitAbilityEffect>mapCodec(builder -> {
                 return builder.group(
                         Codec.DOUBLE.fieldOf("chance").forGetter(i -> i.procChance),
                         Codec.FLOAT.fieldOf("skill_level").forGetter(i -> i.skillLevel),
-                        MKCoreRegistry.ABILITIES.getCodec().comapFlatMap(ability -> {
+                        MKCoreRegistry.ABILITIES.byNameCodec().comapFlatMap(ability -> {
                             if (ability instanceof EntityTargetingAbility targetingAbility) {
                                 return DataResult.success(targetingAbility);
                             }

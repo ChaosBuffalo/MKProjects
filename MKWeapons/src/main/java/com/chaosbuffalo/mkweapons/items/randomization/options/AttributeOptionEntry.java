@@ -5,25 +5,40 @@ import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 
 
 public class AttributeOptionEntry {
-    public static final Codec<AttributeOptionEntry> CODEC = RecordCodecBuilder.<AttributeOptionEntry>mapCodec(builder -> {
+    public static final MapCodec<AttributeOptionEntry> MAP_CODEC = RecordCodecBuilder.<AttributeOptionEntry>mapCodec(builder -> {
         return builder.group(
                 BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("attribute").forGetter(AttributeOptionEntry::getAttribute),
                 AttributeModifier.CODEC.fieldOf("modifier").forGetter(AttributeOptionEntry::getModifier),
                 Codec.DOUBLE.fieldOf("minValue").forGetter(i -> i.minValue),
                 Codec.DOUBLE.fieldOf("maxValue").forGetter(i -> i.maxValue)
         ).apply(builder, AttributeOptionEntry::new);
-    }).codec();
+    });
+    public static final Codec<AttributeOptionEntry> CODEC = MAP_CODEC.codec();
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, AttributeOptionEntry> STREAM_CODEC = StreamCodec.composite(
+            Attribute.STREAM_CODEC, AttributeOptionEntry::getAttribute,
+            AttributeModifier.STREAM_CODEC, AttributeOptionEntry::getModifier,
+            ByteBufCodecs.DOUBLE, i -> i.minValue,
+            ByteBufCodecs.DOUBLE, i -> i.maxValue,
+            AttributeOptionEntry::new
+    );
+
 
     private final AttributeModifier modifier;
     private final Holder<Attribute> attribute;

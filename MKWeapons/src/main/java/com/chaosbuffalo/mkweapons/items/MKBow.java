@@ -145,7 +145,6 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
 
     }
 
-
     @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
         return stack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).map(x -> x.getAttributeModifiers(slot))

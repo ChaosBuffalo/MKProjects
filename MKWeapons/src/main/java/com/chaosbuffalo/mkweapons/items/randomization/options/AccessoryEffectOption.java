@@ -16,7 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 
 public class AccessoryEffectOption extends EffectOption<IAccessoryEffect> {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "accessory_effect");
+    public static final ResourceLocation NAME = MKWeapons.id("accessory_effect");
     public static final Codec<AccessoryEffectOption> CODEC = RecordCodecBuilder.<AccessoryEffectOption>mapCodec(builder -> {
         return builder.group(
                 IRandomizationSlot.CODEC.optionalFieldOf("slot", RandomizationSlotManager.EFFECT_SLOT).forGetter(BaseRandomizationOption::getSlot),

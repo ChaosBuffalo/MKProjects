@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class ManaDrainWeaponEffect extends BaseMeleeWeaponEffect {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.mana_drain");
+    public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.mana_drain");
     public static final Codec<ManaDrainWeaponEffect> CODEC = RecordCodecBuilder.<ManaDrainWeaponEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.FLOAT.fieldOf("damage_multiplier").forGetter(i -> i.damageMultiplier),

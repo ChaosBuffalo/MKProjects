@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -163,7 +164,7 @@ public class WeaponDataHandler implements IWeaponData {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
         ListTag effectList = new ListTag();
         for (IMeleeWeaponEffect effect : getStackMeleeEffects()) {
@@ -181,7 +182,7 @@ public class WeaponDataHandler implements IWeaponData {
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         if (nbt.contains("melee_effects")) {
             ListTag effectList = nbt.getList("melee_effects", Tag.TAG_COMPOUND);
             for (Tag effectNBT : effectList) {

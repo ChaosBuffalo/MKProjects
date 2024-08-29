@@ -44,10 +44,10 @@ public class RandomizationTemplate {
     }
 
     public <D> D serialize(DynamicOps<D> ops) {
-        return CODEC.encodeStart(ops, this).getOrThrow(false, MKWeapons.LOGGER::error);
+        return CODEC.encodeStart(ops, this).getOrThrow();
     }
 
     public static <D> RandomizationTemplate deserialize(Dynamic<D> dynamic) {
-        return CODEC.parse(dynamic).getOrThrow(false, MKWeapons.LOGGER::error);
+        return CODEC.parse(dynamic).getOrThrow();
     }
 }

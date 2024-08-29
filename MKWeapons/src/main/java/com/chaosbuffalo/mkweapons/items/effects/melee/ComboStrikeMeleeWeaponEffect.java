@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class ComboStrikeMeleeWeaponEffect extends BaseMeleeWeaponEffect {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.combo_strike");
+    public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.combo_strike");
     public static final Codec<ComboStrikeMeleeWeaponEffect> CODEC = RecordCodecBuilder.<ComboStrikeMeleeWeaponEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.INT.fieldOf("numberOfHits").forGetter(ComboStrikeMeleeWeaponEffect::getNumberOfHits),

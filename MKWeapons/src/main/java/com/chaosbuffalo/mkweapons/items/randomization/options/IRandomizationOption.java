@@ -24,6 +24,6 @@ public interface IRandomizationOption {
     IRandomizationSlot getSlot();
 
     default <D> D serialize(DynamicOps<D> ops) {
-        return CODEC.encodeStart(ops, this).getOrThrow(false, MKWeapons.LOGGER::error);
+        return CODEC.encodeStart(ops, this).getOrThrow();
     }
 }
