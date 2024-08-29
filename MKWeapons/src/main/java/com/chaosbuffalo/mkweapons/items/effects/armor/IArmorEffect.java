@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkweapons.items.effects.armor;
 
-import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ItemEffects;
 import com.mojang.serialization.Codec;
@@ -18,10 +17,10 @@ public interface IArmorEffect extends IItemEffect {
     }
 
     default <D> D serialize(DynamicOps<D> ops) {
-        return DISPATCH_CODEC.encodeStart(ops, this).getOrThrow(false, MKWeapons.LOGGER::error);
+        return DISPATCH_CODEC.encodeStart(ops, this).getOrThrow();
     }
 
     static <D> IArmorEffect deserialize(Dynamic<D> dynamic) {
-        return DISPATCH_CODEC.parse(dynamic).getOrThrow(false, MKWeapons.LOGGER::error);
+        return DISPATCH_CODEC.parse(dynamic).getOrThrow();
     }
 }

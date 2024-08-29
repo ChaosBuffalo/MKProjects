@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkweapons.items.effects.accesory;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ItemEffects;
@@ -34,11 +33,11 @@ public interface IAccessoryEffect extends IItemEffect {
     }
 
     default <D> D serialize(DynamicOps<D> ops) {
-        return DISPATCH_CODEC.encodeStart(ops, this).getOrThrow(false, MKWeapons.LOGGER::error);
+        return DISPATCH_CODEC.encodeStart(ops, this).getOrThrow();
     }
 
     static <D> IAccessoryEffect deserialize(Dynamic<D> dynamic) {
-        return DISPATCH_CODEC.parse(dynamic).getOrThrow(false, MKWeapons.LOGGER::error);
+        return DISPATCH_CODEC.parse(dynamic).getOrThrow();
     }
 
     default IAccessoryEffect copy() {

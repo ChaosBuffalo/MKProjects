@@ -6,18 +6,20 @@ import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraftforge.common.Tags;
+import net.neoforged.neoforge.common.Tags;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class MKWeaponRecipeProvider extends RecipeProvider {
@@ -66,59 +68,59 @@ public class MKWeaponRecipeProvider extends RecipeProvider {
     }
 
 
-    public MKWeaponRecipeProvider(PackOutput generatorIn) {
-        super(generatorIn);
+    public MKWeaponRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+        super(output, registries);
     }
 
     @Override
-    protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
-        getHaftRecipe().save(consumer);
+    protected void buildRecipes(RecipeOutput recipeOutput) {
+        getHaftRecipe().save(recipeOutput);
 
         for (MKMeleeWeapon weapon : MKWeaponsItems.WEAPONS) {
             if (!weapon.getMKTier().equals(MKWeaponsItems.NETHERITE_TIER)) {
-                getRecipe(weapon).save(consumer);
+                getRecipe(weapon).save(recipeOutput);
             } else {
-                mkNetheriteSmithing(consumer,
+                mkNetheriteSmithing(recipeOutput,
                         MKWeaponsItems.lookupWeapon(MKWeaponsItems.DIAMOND_TIER, weapon.getWeaponType()),
                         RecipeCategory.COMBAT, weapon);
             }
         }
 
         for (MKBow bow : MKWeaponsItems.BOWS) {
-            getLongbowRecipe(bow).save(consumer);
+            getLongbowRecipe(bow).save(recipeOutput);
         }
     }
 
     private ShapedRecipeBuilder getHaftRecipe() {
         return ShapedRecipeBuilder.shaped(RecipeCategory.MISC, MKWeaponsItems.Haft.get(), 3)
                 .define('S', Items.STICK)
-                .define('L', Tags.Items.LEATHER)
+                .define('L', Tags.Items.LEATHERS)
                 .pattern("SSS")
                 .pattern(" L ")
                 .pattern("SSS")
                 .unlockedBy("has_stick", has(Items.STICK))
-                .unlockedBy("has_leather", has(Tags.Items.LEATHER));
+                .unlockedBy("has_leather", has(Tags.Items.LEATHERS));
     }
 
-    private static void mkNetheriteSmithing(Consumer<FinishedRecipe> pFinishedRecipeConsumer, Item pIngredientItem, RecipeCategory pCategory, Item pResultItem) {
+    private static void mkNetheriteSmithing(RecipeOutput pFinishedRecipeConsumer, Item pIngredientItem, RecipeCategory pCategory, Item pResultItem) {
         SmithingTransformRecipeBuilder.smithing(
                         Ingredient.of(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE),
                         Ingredient.of(pIngredientItem),
                         Ingredient.of(Items.NETHERITE_INGOT), pCategory, pResultItem)
                 .unlocks("has_netherite_ingot", has(Items.NETHERITE_INGOT))
-                .save(pFinishedRecipeConsumer, new ResourceLocation(MKWeapons.MODID, getItemName(pResultItem) + "_smithing"));
+                .save(pFinishedRecipeConsumer, MKWeapons.id(getItemName(pResultItem) + "_smithing"));
     }
 
     private ShapedRecipeBuilder getLongbowRecipe(MKBow bow) {
         return ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, bow)
                 .define('H', MKWeaponsItems.Haft.get())
                 .define('I', bow.getMKTier().getPrimaryIngredient())
-                .define('S', Tags.Items.STRING)
+                .define('S', Tags.Items.STRINGS)
                 .pattern(" IS")
                 .pattern("H S")
                 .pattern(" IS")
                 .unlockedBy("has_haft", has(MKWeaponsItems.Haft.get()))
-                .unlockedBy("has_string", has(Tags.Items.STRING))
+                .unlockedBy("has_string", has(Tags.Items.STRINGS))
                 .unlockedBy("has_ingot", has(bow.getMKTier().getPrimaryIngredientTag()))
                 ;
     }

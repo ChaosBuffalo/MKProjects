@@ -42,10 +42,10 @@ public interface IMeleeWeaponEffect extends IItemEffect {
     }
 
     default <D> D serialize(DynamicOps<D> ops) {
-        return DISPATCH_CODEC.encodeStart(ops, this).getOrThrow(false, MKWeapons.LOGGER::error);
+        return DISPATCH_CODEC.encodeStart(ops, this).getOrThrow();
     }
 
     static <D> IMeleeWeaponEffect deserialize(Dynamic<D> dynamic) {
-        return DISPATCH_CODEC.parse(dynamic).getOrThrow(false, MKWeapons.LOGGER::error);
+        return DISPATCH_CODEC.parse(dynamic).getOrThrow();
     }
 }

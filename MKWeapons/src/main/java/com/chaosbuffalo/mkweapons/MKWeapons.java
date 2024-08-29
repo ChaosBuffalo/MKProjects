@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mkweapons;
 
 import com.chaosbuffalo.mkweapons.capabilities.IArrowData;
+import com.chaosbuffalo.mkweapons.capabilities.WeaponsAttachments;
 import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
+import com.chaosbuffalo.mkweapons.capabilities.WeaponsComponents;
 import com.chaosbuffalo.mkweapons.event.MKWeaponsEventHandler;
 import com.chaosbuffalo.mkweapons.extensions.MKWCuriosExtension;
 import com.chaosbuffalo.mkweapons.init.MKWeaponEffects;
@@ -14,19 +16,19 @@ import com.chaosbuffalo.mkweapons.items.weapon.types.WeaponTypeManager;
 import com.chaosbuffalo.mkweapons.network.PacketHandler;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
+import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Optional;
 
 
 @Mod(MKWeapons.MODID)
@@ -38,9 +40,8 @@ public class MKWeapons {
     public final WeaponTypeManager weaponTypeManager;
     public final LootTierManager lootTierManager;
 
-    public MKWeapons() {
-        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-        MinecraftForge.EVENT_BUS.register(this);
+    public MKWeapons(IEventBus modBus) {
+        NeoForge.EVENT_BUS.register(this);
         modBus.addListener(this::setup);
         modBus.addListener(this::clientSetup);
         modBus.addListener(this::processIMC);
@@ -56,6 +57,8 @@ public class MKWeapons {
         MKWeaponsItems.register(modBus);
         MKWeaponsCommands.register(modBus);
         MKWeaponEffects.register(modBus);
+        WeaponsAttachments.register(modBus);
+        WeaponsComponents.register(modBus);
     }
 
     private void setup(final FMLCommonSetupEvent event) {
@@ -90,11 +93,11 @@ public class MKWeapons {
         MKWeaponsCommands.registerCommands(event.getDispatcher());
     }
 
-    public static LazyOptional<IArrowData> getArrowCapability(AbstractArrow entity) {
+    public static Optional<IArrowData> getArrowCapability(AbstractArrow entity) {
         return entity.getCapability(WeaponsCapabilities.ARROW_DATA_CAPABILITY);
     }
 
     public static ResourceLocation id(String path) {
-        return new ResourceLocation(MODID, path);
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 }

@@ -13,12 +13,13 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 public interface IRangedWeaponEffect extends IItemEffect {
     Codec<IRangedWeaponEffect> DISPATCH_CODEC = ItemEffects.RANGED_EFFECT_CODEC;
 
-    default void onProjectileHit(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
+    default void onProjectileHit(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
                                  IMKEntityData attackerData, AbstractArrow arrow, ItemStack bow) {
 
     }
@@ -41,10 +42,10 @@ public interface IRangedWeaponEffect extends IItemEffect {
     }
 
     default <D> D serialize(DynamicOps<D> ops) {
-        return DISPATCH_CODEC.encodeStart(ops, this).getOrThrow(false, MKWeapons.LOGGER::error);
+        return DISPATCH_CODEC.encodeStart(ops, this).getOrThrow();
     }
 
     static <D> IRangedWeaponEffect deserialize(Dynamic<D> dynamic) {
-        return DISPATCH_CODEC.parse(dynamic).getOrThrow(false, MKWeapons.LOGGER::error);
+        return DISPATCH_CODEC.parse(dynamic).getOrThrow();
     }
 }

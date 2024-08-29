@@ -12,27 +12,27 @@ import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotManager;
 import com.chaosbuffalo.mkweapons.items.randomization.templates.RandomizationTemplate;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class MKWeaponsGenerator {
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {
         DataGenerator gen = event.getGenerator();
         ExistingFileHelper helper = event.getExistingFileHelper();
-        gen.addProvider(event.includeServer(), new MKWeaponRecipeProvider(gen.getPackOutput()));
+        gen.addProvider(event.includeServer(), new MKWeaponRecipeProvider(gen.getPackOutput(), event.getLookupProvider()));
         gen.addProvider(event.includeServer(), new MKWeaponTypesProvider(gen));
         gen.addProvider(event.includeServer(), new MKWeaponsLootTierProvider(gen));
         MKCoreGenerators.MKBlockTagsProvider blockTagsProvider = new MKCoreGenerators.MKBlockTagsProvider(
@@ -56,7 +56,7 @@ public class MKWeaponsGenerator {
         }
 
         private LootTier generateTierOne() {
-            LootTier tier = new LootTier(new ResourceLocation(MKWeapons.MODID, "tier_one"));
+            LootTier tier = new LootTier(MKWeapons.id("tier_one"));
             List<IMKTier> weaponTiers = List.of(MKWeaponsItems.STONE_TIER, MKWeaponsItems.WOOD_TIER);
 
             LootItemTemplate weaponTemplate = new LootItemTemplate(LootSlotManager.MAIN_HAND);
@@ -64,7 +64,7 @@ public class MKWeaponsGenerator {
             // Sort the items for stable datagen output
             List<MKMeleeWeapon> sorted = new ArrayList<>(MKWeaponsItems.WEAPONS);
             Comparator<MKMeleeWeapon> comp = Comparator.comparing((MKMeleeWeapon w) -> w.getMKTier().getName())
-                    .thenComparing(ForgeRegistries.ITEMS::getKey);
+                    .thenComparing(BuiltInRegistries.ITEM::getKey);
             sorted.sort(comp);
 
             for (MKMeleeWeapon weapon : sorted) {
@@ -72,12 +72,15 @@ public class MKWeaponsGenerator {
                     weaponTemplate.addItem(weapon);
                 }
             }
+
+            ResourceLocation modifierId = MKWeapons.id("mod_" + tier.getName());
+
             AttributeOption healthAttribute = new AttributeOption();
-            healthAttribute.addAttributeModifier(Attributes.MAX_HEALTH, tier.getName().toString(),
-                    5, 10, AttributeModifier.Operation.ADDITION);
+            healthAttribute.addAttributeModifier(Attributes.MAX_HEALTH, modifierId,
+                    5, 10, AttributeModifier.Operation.ADD_VALUE);
             AttributeOption manaRegen = new AttributeOption();
-            manaRegen.addAttributeModifier(MKAttributes.MANA_REGEN, tier.getName().toString(),
-                    0.5, 2.0, AttributeModifier.Operation.ADDITION);
+            manaRegen.addAttributeModifier(MKAttributes.MANA_REGEN, modifierId,
+                    0.5, 2.0, AttributeModifier.Operation.ADD_VALUE);
 
             LootItemTemplate ringTemplate = new LootItemTemplate(LootSlotManager.RINGS);
             ringTemplate.addItem(MKWeaponsItems.CopperRing.get());
@@ -87,9 +90,9 @@ public class MKWeaponsGenerator {
             for (LootItemTemplate temp : templates) {
                 temp.addRandomizationOption(healthAttribute);
                 temp.addRandomizationOption(manaRegen);
-                temp.addTemplate(new RandomizationTemplate(new ResourceLocation(MKWeapons.MODID, "simple_template"),
+                temp.addTemplate(new RandomizationTemplate(MKWeapons.id("simple_template"),
                         RandomizationSlotManager.ATTRIBUTE_SLOT), 10);
-                temp.addTemplate(new RandomizationTemplate(new ResourceLocation(MKWeapons.MODID, "simple_template_2x"),
+                temp.addTemplate(new RandomizationTemplate(MKWeapons.id("simple_template_2x"),
                         RandomizationSlotManager.ATTRIBUTE_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT), 10);
                 tier.addItemTemplate(temp, 1.0);
             }

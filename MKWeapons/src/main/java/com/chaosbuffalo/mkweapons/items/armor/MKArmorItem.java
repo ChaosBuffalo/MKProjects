@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
 import com.chaosbuffalo.mkweapons.items.effects.armor.IArmorEffect;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -31,13 +32,13 @@ public class MKArmorItem extends ArmorItem implements IMKArmor {
     private final Multimap<Attribute, AttributeModifier> attributeMap;
 
 
-    public MKArmorItem(ArmorMaterial materialIn, ArmorItem.Type type, Properties builderIn,
+    public MKArmorItem(Holder<ArmorMaterial> materialIn, ArmorItem.Type type, Properties builderIn,
                        IArmorEffect... armorEffects) {
         super(materialIn, type, builderIn);
         ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
         UUID uuid = ARMOR_MODIFIERS[type.getSlot().getIndex()];
         builder.put(Attributes.ARMOR, new AttributeModifier(uuid, "Armor modifier", getDefense(),
-                AttributeModifier.Operation.ADDITION));
+                AttributeModifier.Operation.ADD_VALUE));
         builder.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(uuid, "Armor toughness", getToughness(),
                 AttributeModifier.Operation.ADDITION));
         if (this.knockbackResistance > 0) {

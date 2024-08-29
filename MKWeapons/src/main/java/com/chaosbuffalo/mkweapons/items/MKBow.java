@@ -15,6 +15,7 @@ import com.google.common.collect.Multimap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -25,13 +26,16 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.event.EventHooks;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -60,6 +64,11 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
             time = weaponEffect.modifyDrawTime(time, item, entity);
         }
         return time;
+    }
+
+    @Override
+    public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack) {
+        return super.getDefaultAttributeModifiers(stack);
     }
 
     @Nullable
@@ -108,79 +117,43 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
     }
 
     @Override
+    public void releaseUsing(ItemStack stack, Level level, LivingEntity entityLiving, int timeLeft) {
+        if (entityLiving instanceof Player player) {
+            ItemStack itemstack = player.getProjectile(stack);
+            if (!itemstack.isEmpty()) {
+                int i = this.getUseDuration(stack, entityLiving) - timeLeft;
+                i = EventHooks.onArrowLoose(stack, level, player, i, !itemstack.isEmpty());
+                if (i < 0) {
+                    return;
+                }
+
+                float f = getPowerFactor(i, stack, entityLiving);
+                if (!((double)f < 0.1)) {
+                    List<ItemStack> list = draw(stack, itemstack, player);
+                    if (level instanceof ServerLevel serverLevel) {
+                        if (!list.isEmpty()) {
+                            float velocity = getLaunchVelocity(stack, entityLiving);
+                            this.shoot(serverLevel, player, player.getUsedItemHand(), stack, list, f * velocity, 1.0F, f == 1.0F, null);
+                        }
+                    }
+
+                    level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F / (level.getRandom().nextFloat() * 0.4F + 1.2F) + f * 0.5F);
+                    player.awardStat(Stats.ITEM_USED.get(this));
+                }
+            }
+        }
+
+    }
+
+
+    @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
         return stack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).map(x -> x.getAttributeModifiers(slot))
                 .orElse(getDefaultAttributeModifiers(slot));
     }
 
-
     @Override
-    public void releaseUsing(ItemStack stack, Level worldIn, LivingEntity entityLiving, int timeLeft) {
-        if (entityLiving instanceof Player player) {
-            boolean doesntNeedAmmo = player.getAbilities().instabuild || EnchantmentHelper.getItemEnchantmentLevel(
-                    Enchantments.INFINITY_ARROWS, stack) > 0;
-            ItemStack ammoStack = player.getProjectile(stack);
-
-            int useTicks = this.getUseDuration(stack) - timeLeft;
-            useTicks = net.minecraftforge.event.ForgeEventFactory.onArrowLoose(stack, worldIn, player, useTicks, !ammoStack.isEmpty() || doesntNeedAmmo);
-            if (useTicks < 0) return;
-
-            if (!ammoStack.isEmpty() || doesntNeedAmmo) {
-                if (ammoStack.isEmpty()) {
-                    ammoStack = new ItemStack(Items.ARROW);
-                }
-
-                float powerFactor = getPowerFactor(useTicks, stack, entityLiving);
-                if (!((double) powerFactor < 0.1D)) {
-                    boolean hasAmmo = player.getAbilities().instabuild || (ammoStack.getItem() instanceof ArrowItem && ((ArrowItem) ammoStack.getItem()).isInfinite(ammoStack, stack, player));
-                    if (!worldIn.isClientSide) {
-                        ArrowItem arrowItem = (ArrowItem) (ammoStack.getItem() instanceof ArrowItem ? ammoStack.getItem() : Items.ARROW);
-                        AbstractArrow arrowEntity = arrowItem.createArrow(worldIn, ammoStack, player);
-                        arrowEntity = customArrow(arrowEntity, stack);
-                        arrowEntity.shootFromRotation(entityLiving, entityLiving.getXRot(), entityLiving.getYRot(),
-                                0.0F, powerFactor * getLaunchVelocity(stack, entityLiving), 1.0F);
-                        if (powerFactor == 1.0F) {
-                            arrowEntity.setCritArrow(true);
-                        }
-
-                        int powerLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, stack);
-                        if (powerLevel > 0) {
-                            arrowEntity.setBaseDamage(arrowEntity.getBaseDamage() + (double) powerLevel * 0.5D + 0.5D);
-                        }
-
-                        int punchLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PUNCH_ARROWS, stack);
-                        if (punchLevel > 0) {
-                            arrowEntity.setKnockback(punchLevel);
-                        }
-
-                        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, stack) > 0) {
-                            arrowEntity.setSecondsOnFire(100);
-                        }
-
-                        stack.hurtAndBreak(1, player, (ent) -> ent.broadcastBreakEvent(ent.getUsedItemHand()));
-                        if (hasAmmo || player.getAbilities().instabuild && (ammoStack.getItem() == Items.SPECTRAL_ARROW || ammoStack.getItem() == Items.TIPPED_ARROW)) {
-                            arrowEntity.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
-                        }
-                        worldIn.addFreshEntity(arrowEntity);
-                    }
-
-                    worldIn.playSound(null, player.getX(), player.getY(), player.getZ(),
-                            SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F,
-                            1.0F / (entityLiving.getRandom().nextFloat() * 0.4F + 1.2F) + powerFactor * 0.5F);
-                    if (!hasAmmo && !player.getAbilities().instabuild) {
-                        ammoStack.shrink(1);
-                        if (ammoStack.isEmpty()) {
-                            player.getInventory().removeItem(ammoStack);
-                        }
-                    }
-                    player.awardStat(Stats.ITEM_USED.get(this));
-                }
-            }
-        }
-    }
-
-
-    public AbstractArrow customArrow(AbstractArrow arrow, ItemStack stack) {
+    public AbstractArrow customArrow(AbstractArrow arrow, ItemStack projectileStack, ItemStack weaponStack) {
         // set item stack on cap here
         Entity shooter = arrow.getOwner();
         double damage = arrow.getBaseDamage();
@@ -188,12 +161,12 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
         if (shooter instanceof LivingEntity shootingEntity) {
             MKWeapons.getArrowCapability(arrow).ifPresent(cap ->
                     cap.setShootingWeapon(shootingEntity.getMainHandItem()));
-            for (IRangedWeaponEffect weaponEffect : getWeaponEffects(stack)) {
+            for (IRangedWeaponEffect weaponEffect : getWeaponEffects(weaponStack)) {
                 damage = weaponEffect.modifyArrowDamage(damage, shootingEntity, arrow);
             }
         }
         arrow.setBaseDamage(damage);
-        return super.customArrow(arrow);
+        return super.customArrow(arrow, projectileStack, weaponStack);
     }
 
     public void addToTooltip(ItemStack stack, @Nullable Player player, List<Component> tooltip) {

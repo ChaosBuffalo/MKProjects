@@ -23,21 +23,20 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tiers;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
 import java.util.*;
 
-@Mod.EventBusSubscriber(modid = MKWeapons.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKWeapons.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class MKWeaponsItems {
 
-    public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, MKWeapons.MODID);
+    public static final net.neoforged.neoforge.registries.DeferredRegister.Items REGISTRY = DeferredRegister.createItems(MKWeapons.MODID);
 
     public static void register(IEventBus bus) {
         REGISTRY.register(bus);
@@ -50,7 +49,7 @@ public class MKWeaponsItems {
     public static MKWrapperTier WOOD_TIER = new MKWrapperTier(Tiers.WOOD, "wood", ItemTags.PLANKS);
     public static MKWrapperTier DIAMOND_TIER = new MKWrapperTier(Tiers.DIAMOND, "diamond", Tags.Items.GEMS_DIAMOND);
     public static MKWrapperTier GOLD_TIER = new MKWrapperTier(Tiers.GOLD, "gold", Tags.Items.INGOTS_GOLD);
-    public static MKWrapperTier STONE_TIER = new MKWrapperTier(Tiers.STONE, "stone", Tags.Items.COBBLESTONE);
+    public static MKWrapperTier STONE_TIER = new MKWrapperTier(Tiers.STONE, "stone", Tags.Items.COBBLESTONES);
     public static MKWrapperTier NETHERITE_TIER = new MKWrapperTier(Tiers.NETHERITE, "netherite", Tags.Items.INGOTS_NETHERITE,
             new LivingDamageMeleeWeaponEffect(1.2f));
 
@@ -58,28 +57,28 @@ public class MKWeaponsItems {
 
     public static Map<IMKTier, Map<IMeleeWeaponType, Item>> WEAPON_LOOKUP = new HashMap<>();
 
-    public static RegistryObject<Item> Haft = REGISTRY.register("haft",
+    public static DeferredItem<Item> Haft = REGISTRY.register("haft",
             () -> new Item(new Item.Properties()));
 
-    public static RegistryObject<Item> CopperRing = REGISTRY.register("copper_ring",
+    public static DeferredItem<Item> CopperRing = REGISTRY.register("copper_ring",
             () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
-    public static RegistryObject<Item> GoldRing = REGISTRY.register("gold_ring",
+    public static DeferredItem<Item> GoldRing = REGISTRY.register("gold_ring",
             () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
-    public static RegistryObject<Item> RoseGoldRing = REGISTRY.register("rose_gold_ring",
+    public static DeferredItem<Item> RoseGoldRing = REGISTRY.register("rose_gold_ring",
             () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
-    public static RegistryObject<Item> SilverRing = REGISTRY.register("silver_ring",
+    public static DeferredItem<Item> SilverRing = REGISTRY.register("silver_ring",
             () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
-    public static RegistryObject<Item> SilverEarring = REGISTRY.register("silver_earring",
+    public static DeferredItem<Item> SilverEarring = REGISTRY.register("silver_earring",
             () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
-    public static RegistryObject<Item> CopperEarring = REGISTRY.register("copper_earring",
+    public static DeferredItem<Item> CopperEarring = REGISTRY.register("copper_earring",
             () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
-    public static RegistryObject<Item> GoldEarring = REGISTRY.register("gold_earring",
+    public static DeferredItem<Item> GoldEarring = REGISTRY.register("gold_earring",
             () -> new MKAccessory(new Item.Properties().stacksTo(1)));
 
     public static void putWeaponForLookup(IMKTier tier, IMeleeWeaponType weaponType, Item item) {
@@ -121,11 +120,13 @@ public class MKWeaponsItems {
                         () -> weapon);
             }
 
+            ResourceLocation modifierId = MKWeapons.id("bow_crit_mod");
+
             RangedModifierEffect rangedMods = new RangedModifierEffect();
             rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT,
-                    new AttributeModifier(RANGED_WEP_UUID, "Bow Crit", 0.05, AttributeModifier.Operation.ADDITION));
+                    new AttributeModifier(modifierId, 0.05, AttributeModifier.Operation.ADD_VALUE));
             rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT_MULTIPLIER,
-                    new AttributeModifier(RANGED_WEP_UUID, "Bow Crit", 0.25, AttributeModifier.Operation.ADDITION));
+                    new AttributeModifier(modifierId, 0.25, AttributeModifier.Operation.ADD_VALUE));
             MKBow bow = new MKBow(
                     new Item.Properties().durability(tier.getUses() * 3),
                     tier,
@@ -135,30 +136,30 @@ public class MKWeaponsItems {
             );
             BOWS.add(bow);
             event.register(Registries.ITEM,
-                    new ResourceLocation(MKWeapons.MODID, String.format("longbow_%s", mat.getKey())), () -> bow);
+                    MKWeapons.id(String.format("longbow_%s", mat.getKey())), () -> bow);
         }
         TestNBTWeaponEffectItem testNBTWeaponEffectItem = new TestNBTWeaponEffectItem(new Item.Properties());
         event.register(Registries.ITEM,
-                new ResourceLocation(MKWeapons.MODID, "test_nbt_effect"), () -> testNBTWeaponEffectItem);
+                MKWeapons.id("test_nbt_effect"), () -> testNBTWeaponEffectItem);
     }
 
     public static void registerItemProperties() {
         for (MKBow bow : BOWS) {
-            ItemProperties.register(bow, new ResourceLocation("pull"), (itemStack, world, entity, seed) -> {
+            ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("pull"), (itemStack, world, entity, seed) -> {
                 if (entity == null) {
                     return 0.0F;
                 } else {
                     return !(entity.getUseItem().getItem() instanceof MKBow mkBow) ? 0.0F :
-                            (float) (itemStack.getUseDuration() - entity.getUseItemRemainingTicks()) / mkBow.getDrawTime(itemStack, entity);
+                            (float) (itemStack.getUseDuration(entity) - entity.getUseItemRemainingTicks()) / mkBow.getDrawTime(itemStack, entity);
                 }
             });
-            ItemProperties.register(bow, new ResourceLocation("pulling"), (itemStack, world, entity, seed) -> {
+            ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("pulling"), (itemStack, world, entity, seed) -> {
                 return entity != null && entity.isUsingItem() && entity.getUseItem() == itemStack ? 1.0F : 0.0F;
             });
         }
         for (MKMeleeWeapon weapon : WEAPONS) {
             if (weapon.getWeaponType().canBlock()) {
-                ItemProperties.register(weapon, new ResourceLocation("blocking"),
+                ItemProperties.register(weapon, ResourceLocation.withDefaultNamespace("blocking"),
                         (itemStack, world, entity, seed) -> entity != null && entity.isUsingItem()
                                 && entity.getUseItem() == itemStack ? 1.0F : 0.0F);
             }

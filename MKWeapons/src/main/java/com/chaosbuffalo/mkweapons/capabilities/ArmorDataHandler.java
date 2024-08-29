@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkweapons.items.effects.armor.IArmorEffect;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.*;
 
@@ -105,9 +107,8 @@ public class ArmorDataHandler implements IArmorData {
         markCacheDirty();
     }
 
-
     @Override
-    public CompoundTag serializeNBT() {
+    public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
         ListTag effectList = new ListTag();
         for (IArmorEffect effect : getStackArmorEffects()) {
@@ -118,7 +119,7 @@ public class ArmorDataHandler implements IArmorData {
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         if (nbt.contains("armor_effects")) {
             ListTag effectList = nbt.getList("armor_effects", Tag.TAG_COMPOUND);
             for (Tag effectNBT : effectList) {

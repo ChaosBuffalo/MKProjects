@@ -10,9 +10,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +24,7 @@ public class LootTierManager extends SimpleJsonResourceReloadListener {
 
     public LootTierManager() {
         super(GSON, DEFINITION_FOLDER);
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class LootTierManager extends SimpleJsonResourceReloadListener {
     }
 
     @SubscribeEvent
-    public void subscribeEvent(AddReloadListenerEvent event) {
+    public void addReloadListener(AddReloadListenerEvent event) {
         event.addListener(this);
     }
 

@@ -12,34 +12,35 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 public class BleedMeleeWeaponEffect extends BaseMeleeWeaponEffect {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.bleed");
+    public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.bleed");
     public static final Codec<BleedMeleeWeaponEffect> CODEC = RecordCodecBuilder.<BleedMeleeWeaponEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.FLOAT.fieldOf("damageMultiplier").forGetter(i -> i.damageMultiplier),
                 Codec.INT.fieldOf("maxStacks").forGetter(i -> i.maxStacks),
                 Codec.INT.fieldOf("durationSeconds").forGetter(i -> i.durationSeconds),
-                ForgeRegistries.ATTRIBUTES.getCodec().fieldOf("skill").forGetter(i -> i.skill)
+                BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("skill").forGetter(i -> i.skill)
         ).apply(builder, BleedMeleeWeaponEffect::new);
     }).codec();
 
     private final float damageMultiplier;
     private final int maxStacks;
     private final int durationSeconds;
-    private final Attribute skill;
+    private final Holder<Attribute> skill;
 
-    public BleedMeleeWeaponEffect(float damageMultiplier, int maxStacks, int durationSeconds, Attribute skill) {
+    public BleedMeleeWeaponEffect(float damageMultiplier, int maxStacks, int durationSeconds, Holder<Attribute> skill) {
         super(NAME, ChatFormatting.DARK_RED);
         this.damageMultiplier = damageMultiplier;
         this.maxStacks = maxStacks;
@@ -67,7 +68,7 @@ public class BleedMeleeWeaponEffect extends BaseMeleeWeaponEffect {
         super.addInformation(stack, player, tooltip);
         if (Screen.hasShiftDown()) {
             tooltip.add(Component.translatable("mkweapons.weapon_effect.bleed.description",
-                    damageMultiplier, durationSeconds, maxStacks, Component.translatable(skill.getDescriptionId())));
+                    damageMultiplier, durationSeconds, maxStacks, Component.translatable(skill.value().getDescriptionId())));
         }
     }
 }

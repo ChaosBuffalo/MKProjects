@@ -16,6 +16,7 @@ import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AttributeOption extends BaseRandomizationOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "attributes");
+    public static final ResourceLocation NAME = MKWeapons.id("attributes");
     public static final Codec<AttributeOption> CODEC = RecordCodecBuilder.<AttributeOption>mapCodec(builder -> {
         return builder.group(
                 IRandomizationSlot.CODEC.optionalFieldOf("slot", RandomizationSlotManager.ATTRIBUTE_SLOT).forGetter(BaseRandomizationOption::getSlot),
@@ -55,8 +56,8 @@ public class AttributeOption extends BaseRandomizationOption {
         return modifiers.stream().map(mod -> mod.createScaledModifier(difficulty)).collect(Collectors.toList());
     }
 
-    public void addFixedAttributeModifier(Attribute attribute, AttributeModifier attributeModifier) {
-        modifiers.add(new AttributeOptionEntry(attribute, attributeModifier, attributeModifier.getAmount(), attributeModifier.getAmount()));
+    public void addFixedAttributeModifier(Holder<Attribute> attribute, AttributeModifier attributeModifier) {
+        modifiers.add(new AttributeOptionEntry(attribute, attributeModifier, attributeModifier.amount(), attributeModifier.amount()));
     }
 
     public static AttributeOption withModifier(Attribute attribute, String name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
@@ -69,8 +70,8 @@ public class AttributeOption extends BaseRandomizationOption {
         return opt;
     }
 
-    public void addAttributeModifier(Attribute attribute, String name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
-        modifiers.add(new AttributeOptionEntry(attribute, new AttributeModifier(Util.NIL_UUID, name, minAmount, op), minAmount, maxAmount));
+    public void addAttributeModifier(Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
+        modifiers.add(new AttributeOptionEntry(attribute, new AttributeModifier(name, minAmount, op), minAmount, maxAmount));
     }
 
     @Override

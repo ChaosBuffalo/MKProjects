@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkweapons.items.effects;
 
 import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -22,8 +23,8 @@ public class ItemModifierEffect extends BaseItemEffect {
     }
 
 
-    public void addAttributeModifier(Attribute attribute, AttributeModifier attributeModifier) {
-        modifiers.add(new AttributeOptionEntry(attribute, attributeModifier, attributeModifier.getAmount(), attributeModifier.getAmount()));
+    public void addAttributeModifier(Holder<Attribute> attribute, AttributeModifier attributeModifier) {
+        modifiers.add(new AttributeOptionEntry(attribute, attributeModifier, attributeModifier.amount(), attributeModifier.amount()));
     }
 
     public List<AttributeOptionEntry> getModifiers() {

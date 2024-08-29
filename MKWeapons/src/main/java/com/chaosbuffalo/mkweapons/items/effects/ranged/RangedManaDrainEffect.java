@@ -15,13 +15,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 public class RangedManaDrainEffect extends BaseRangedWeaponEffect {
-    public static final ResourceLocation NAME = new ResourceLocation(MKWeapons.MODID, "weapon_effect.ranged_mana_drain");
+    public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.ranged_mana_drain");
     public static final Codec<RangedManaDrainEffect> CODEC = RecordCodecBuilder.<RangedManaDrainEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.FLOAT.fieldOf("damage_multiplier").forGetter(i -> i.damageMultiplier),
@@ -39,11 +39,11 @@ public class RangedManaDrainEffect extends BaseRangedWeaponEffect {
     }
 
     @Override
-    public void onProjectileHit(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
+    public void onProjectileHit(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
                                 IMKEntityData attackerData, AbstractArrow arrow, ItemStack bow) {
         MKCore.getEntityData(livingTarget).ifPresent(targetData -> {
-            if (targetData.getStats().consumeMana(event.getAmount() * damageMultiplier)) {
-                attackerData.getStats().addMana(event.getAmount() * damageMultiplier * efficiency);
+            if (targetData.getStats().consumeMana(event.getNewDamage() * damageMultiplier)) {
+                attackerData.getStats().addMana(event.getNewDamage() * damageMultiplier * efficiency);
             }
         });
     }

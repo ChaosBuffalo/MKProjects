@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
+import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.capabilities.IWeaponData;
 import com.chaosbuffalo.mkweapons.capabilities.MKCurioItemHandler;
 import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
@@ -20,8 +21,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -31,14 +35,11 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ShieldItem;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.common.ToolAction;
-import net.minecraftforge.common.ToolActions;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -50,13 +51,13 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     private final IMeleeWeaponType weaponType;
     private final IMKTier mkTier;
     private final List<IMeleeWeaponEffect> weaponEffects;
-    protected Multimap<Attribute, AttributeModifier> modifiers;
-    protected static final UUID ATTACK_REACH_MODIFIER = UUID.fromString("f74aa80c-43b8-4d00-a6ce-8d52694ff20c");
-    protected static final UUID CRIT_CHANCE_MODIFIER = UUID.fromString("9b9c4389-0036-4beb-9dcc-5e11928ff499");
-    protected static final UUID CRIT_MULT_MODIFIER = UUID.fromString("11fc07d2-7844-44f2-94ad-02479cff424d");
-    protected static final UUID MAX_POISE_MODIFIER = UUID.fromString("fbc2bba2-27d6-4de8-8962-2febb418c718");
-    protected static final UUID BLOCK_EFFICIENCY_MODIFIER = UUID.fromString("da287a85-0c12-459c-97a5-faea98bc3d6f");
-    public static final Set<ToolAction> SWORD_ACTIONS = ImmutableSet.of(ToolActions.SWORD_DIG, ToolActions.SHIELD_BLOCK);
+    protected Multimap<Holder<Attribute>, AttributeModifier> modifiers;
+    protected static final ResourceLocation ATTACK_REACH_MODIFIER = MKWeapons.id("innate_attack_reach");
+    protected static final ResourceLocation CRIT_CHANCE_MODIFIER = MKWeapons.id("innate_crit_chance");
+    protected static final ResourceLocation CRIT_MULT_MODIFIER = MKWeapons.id("innate_crit_multiplier");
+    protected static final ResourceLocation MAX_POISE_MODIFIER = MKWeapons.id("innate_max_poise");
+    protected static final ResourceLocation BLOCK_EFFICIENCY_MODIFIER = MKWeapons.id("innate_block_efficiency");
+    public static final Set<ItemAbility> SWORD_ACTIONS = ImmutableSet.of(ItemAbilities.SWORD_DIG, ItemAbilities.SHIELD_BLOCK);
 
     public MKMeleeWeapon(IMKTier tier, IMeleeWeaponType weaponType, Properties builder) {
         super(tier, Math.round(weaponType.getDamageForTier(tier) - tier.getAttackDamageBonus()), weaponType.getAttackSpeed(), builder);
@@ -69,27 +70,37 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     }
 
     protected void recalculateModifiers() {
-        ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
-        builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID,
-                "Weapon modifier", getDamage(), AttributeModifier.Operation.ADDITION));
-        builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID,
-                "Weapon modifier", getWeaponType().getAttackSpeed(), AttributeModifier.Operation.ADDITION));
-        builder.put(ForgeMod.ENTITY_REACH.get(), new AttributeModifier(ATTACK_REACH_MODIFIER,
-                "Weapon modifier", getWeaponType().getReach(), AttributeModifier.Operation.ADDITION));
+        ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> builder = ImmutableMultimap.builder();
+        builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID,
+                getDamage(), AttributeModifier.Operation.ADD_VALUE));
+        builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID,
+                getWeaponType().getAttackSpeed(), AttributeModifier.Operation.ADD_VALUE));
+        builder.put(Attributes.ENTITY_INTERACTION_RANGE, new AttributeModifier(ATTACK_REACH_MODIFIER,
+                getWeaponType().getReach(), AttributeModifier.Operation.ADD_VALUE));
         builder.put(MKAttributes.MELEE_CRIT, new AttributeModifier(CRIT_CHANCE_MODIFIER,
-                "Weapon modifier", getWeaponType().getCritChance(), AttributeModifier.Operation.ADDITION));
+                getWeaponType().getCritChance(), AttributeModifier.Operation.ADD_VALUE));
         builder.put(MKAttributes.MELEE_CRIT_MULTIPLIER, new AttributeModifier(CRIT_MULT_MODIFIER,
-                "Weapon modifier", getWeaponType().getCritMultiplier(), AttributeModifier.Operation.ADDITION));
+                getWeaponType().getCritMultiplier(), AttributeModifier.Operation.ADD_VALUE));
         builder.put(MKAttributes.MAX_POISE, new AttributeModifier(MAX_POISE_MODIFIER,
-                "Weapon Modifier", getWeaponType().getMaxPoise(), AttributeModifier.Operation.ADDITION));
+                getWeaponType().getMaxPoise(), AttributeModifier.Operation.ADD_VALUE));
         builder.put(MKAttributes.BLOCK_EFFICIENCY, new AttributeModifier(BLOCK_EFFICIENCY_MODIFIER,
-                "Weapon Modifier", getWeaponType().getBlockEfficiency(), AttributeModifier.Operation.ADDITION));
+                getWeaponType().getBlockEfficiency(), AttributeModifier.Operation.ADD_VALUE));
         modifiers = builder.build();
     }
 
-    @Override
-    public float getDamage() {
+    public int getDamage() {
         return Math.round(getWeaponType().getDamageForTier(getMKTier()) - getMKTier().getAttackDamageBonus());
+    }
+
+
+    @Override
+    public int getDamage(ItemStack stack) {
+        return Math.round(getWeaponType().getDamageForTier(getMKTier()) - getMKTier().getAttackDamageBonus());
+    }
+
+    @Override
+    public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack) {
+        return super.getDefaultAttributeModifiers(stack);
     }
 
     @Override
@@ -149,7 +160,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack, LivingEntity entity) {
         return 72000;
     }
 
@@ -170,8 +181,8 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     }
 
     @Override
-    public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
-        return SWORD_ACTIONS.contains(toolAction);
+    public boolean canPerformAction(ItemStack stack, ItemAbility itemAbility) {
+        return SWORD_ACTIONS.contains(itemAbility);
     }
 
     @Nullable

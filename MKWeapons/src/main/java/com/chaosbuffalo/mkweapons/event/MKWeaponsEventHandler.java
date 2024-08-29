@@ -21,27 +21,26 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
-import net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = MKWeapons.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = MKWeapons.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class MKWeaponsEventHandler {
 
-    private static void handleProjectileDamage(LivingHurtEvent event, DamageSource source, LivingEntity livingTarget,
+    private static void handleProjectileDamage(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
                                                IMKEntityData attackerData) {
         if (source.getDirectEntity() instanceof AbstractArrow arrow && !livingTarget.isBlocking()) {
-            MKWeapons.getArrowCapability(arrow).ifPresent(cap -> {
-                if (!cap.getShootingWeapon().isEmpty() && cap.getShootingWeapon().getItem() instanceof IMKRangedWeapon bow) {
-                    for (IRangedWeaponEffect effect : bow.getWeaponEffects(cap.getShootingWeapon())) {
-                        effect.onProjectileHit(event, source, livingTarget, attackerData,
-                                arrow, cap.getShootingWeapon());
-                    }
+            ItemStack weapon = arrow.getWeaponItem();
+            if (weapon != null && weapon.getItem() instanceof IMKRangedWeapon bow) {
+                for (IRangedWeaponEffect effect : bow.getWeaponEffects(weapon)) {
+                    effect.onProjectileHit(event, source, livingTarget, attackerData,
+                            arrow, weapon);
                 }
-            });
+            }
         }
     }
 
@@ -95,13 +94,13 @@ public class MKWeaponsEventHandler {
     }
 
     @SubscribeEvent
-    public static void onLivingHurt(LivingHurtEvent event) {
+    public static void onLivingHurt(LivingDamageEvent.Pre event) {
         LivingEntity livingTarget = event.getEntity();
-        if (livingTarget.level.isClientSide)
+        if (livingTarget.level().isClientSide)
             return;
         DamageSource source = event.getSource();
         Entity trueSource = source.getEntity();
-        float newDamage = event.getAmount();
+        float newDamage = event.getNewDamage();
         boolean isMelee = DamageUtils.isMeleeDamage(source);
         if (trueSource instanceof LivingEntity livingSource) {
             if (isMelee) {
@@ -129,6 +128,6 @@ public class MKWeaponsEventHandler {
                 }
             }
         }
-        event.setAmount(newDamage);
+        event.setNewDamage(newDamage);
     }
 }

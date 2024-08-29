@@ -4,7 +4,8 @@ plugins {
 }
 
 
-version = "${minecraft_version}-${mkweapons_version}"
+version = "${minecraft_version}-${mk_weapons_version}"
+project.ext.mod_version = mk_weapons_version
 project.ext.dependentProjects = [
         project(":TargetingAPI"),
         project(":MKWidgets"),
@@ -27,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${minecraft_version}-${curios_version}")
-    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${minecraft_version}-${curios_version}:api")
-    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+//    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${minecraft_version}-${curios_version}")
+//    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${minecraft_version}-${curios_version}:api")
+//    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
 }

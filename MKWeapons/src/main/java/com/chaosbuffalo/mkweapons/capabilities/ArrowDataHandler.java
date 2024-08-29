@@ -1,10 +1,12 @@
 package com.chaosbuffalo.mkweapons.capabilities;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.UnknownNullability;
 
 public class ArrowDataHandler implements IArrowData {
 
@@ -31,17 +33,18 @@ public class ArrowDataHandler implements IArrowData {
         return arrow;
     }
 
+
     @Override
-    public CompoundTag serializeNBT() {
+    public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-        ContainerHelper.saveAllItems(tag, NonNullList.of(shootingWeapon));
+        ContainerHelper.saveAllItems(tag, NonNullList.of(shootingWeapon), provider);
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag compoundTag) {
         NonNullList<ItemStack> itemStacks = NonNullList.withSize(1, ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(nbt, itemStacks);
+        ContainerHelper.loadAllItems(compoundTag, itemStacks, provider);
         shootingWeapon = itemStacks.get(0);
     }
 }

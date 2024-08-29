@@ -3,12 +3,12 @@ package com.chaosbuffalo.mkweapons.client;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.client.particle.BloodDripParticle;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsParticles;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 
-@Mod.EventBusSubscriber(modid = MKWeapons.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKWeapons.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class MKWeaponsRenderers {
 
     @SubscribeEvent
