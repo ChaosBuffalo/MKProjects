@@ -27,7 +27,6 @@ public class ParticleRenderTypes {
             //its rendering phase causing the checking to see if blend mode has already been enabled to have invalid state
             // and not know it needs to re-enable, for now lets just manually do it
             RenderSystem.enableBlend();
-            RenderSystem.blendEquation(GL14.GL_FUNC_ADD);
             RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
             RenderSystem.depthMask(false);
             RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
@@ -39,8 +38,8 @@ public class ParticleRenderTypes {
         public void end(TextureManager textureManager) {
             textureManager.getTexture(TextureAtlas.LOCATION_PARTICLES).restoreLastBlurMipmap();
             RenderSystem.defaultBlendFunc();
-            RenderSystem.depthMask(true);
-            RenderSystem.disableBlend();
+//            RenderSystem.depthMask(true);
+//            RenderSystem.enableBlend();
             RenderSystem.setShader(GameRenderer::getParticleShader);
         }
 
@@ -56,9 +55,9 @@ public class ParticleRenderTypes {
         @Override
         public BufferBuilder begin(Tesselator tesselator, TextureManager textureManager) {
             RenderSystem.setShader(ShaderEventHandler::getBlackMagicParticleShader);
-            RenderSystem.depthMask(false);
             RenderSystem.blendEquation(GL14.GL_FUNC_REVERSE_SUBTRACT);
             RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+            RenderSystem.depthMask(false);
             RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
             textureManager.getTexture(TextureAtlas.LOCATION_PARTICLES).setBlurMipmap(true, false);
             RenderSystem.enableBlend();
@@ -70,8 +69,7 @@ public class ParticleRenderTypes {
             textureManager.getTexture(TextureAtlas.LOCATION_PARTICLES).restoreLastBlurMipmap();
             RenderSystem.blendEquation(GL14.GL_FUNC_ADD);
             RenderSystem.defaultBlendFunc();
-            RenderSystem.depthMask(true);
-            RenderSystem.disableBlend();
+//            RenderSystem.disableBlend();
             RenderSystem.setShader(GameRenderer::getParticleShader);
         }
 
