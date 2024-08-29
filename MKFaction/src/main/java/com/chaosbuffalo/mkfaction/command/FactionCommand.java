@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkfaction.command;
 
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
-import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
+import com.chaosbuffalo.mkfaction.capabilities.IPlayerFaction;
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
 import com.mojang.brigadier.Command;
@@ -62,7 +62,7 @@ public class FactionCommand {
         ResourceLocation factionId = ctx.getArgument("faction", ResourceLocation.class);
         int amount = IntegerArgumentType.getInteger(ctx, "amount");
 
-        player.getCapability(FactionCapabilities.PLAYER_FACTION_CAPABILITY).ifPresent(faction -> {
+        IPlayerFaction.get(player).ifPresent(faction -> {
             faction.getFactionEntry(factionId).ifPresent(entry -> {
                 entry.incrementFaction(amount);
                 String line = describeEntry(entry);
@@ -78,7 +78,7 @@ public class FactionCommand {
         ResourceLocation factionId = ctx.getArgument("faction", ResourceLocation.class);
         int amount = IntegerArgumentType.getInteger(ctx, "amount");
 
-        player.getCapability(FactionCapabilities.PLAYER_FACTION_CAPABILITY).ifPresent(faction -> {
+        IPlayerFaction.get(player).ifPresent(faction -> {
             faction.getFactionEntry(factionId).ifPresent(entry -> {
                 entry.setFactionScore(amount);
                 String line = describeEntry(entry);
@@ -93,7 +93,7 @@ public class FactionCommand {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         ResourceLocation factionId = ctx.getArgument("faction", ResourceLocation.class);
 
-        player.getCapability(FactionCapabilities.PLAYER_FACTION_CAPABILITY).ifPresent(faction -> {
+        IPlayerFaction.get(player).ifPresent(faction -> {
             faction.getFactionEntry(factionId).ifPresent(entry -> {
                 String line = describeEntry(entry);
                 ChatUtils.sendMessage(player, line);
@@ -107,7 +107,7 @@ public class FactionCommand {
     static int showAllFactions(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
 
-        player.getCapability(FactionCapabilities.PLAYER_FACTION_CAPABILITY).ifPresent(faction -> {
+        IPlayerFaction.get(player).ifPresent(faction -> {
             faction.getFactionMap().forEach((name, entry) -> {
                 String line = describeEntry(entry);
                 ChatUtils.sendMessage(player, line);
@@ -130,7 +130,7 @@ public class FactionCommand {
 
         @Override
         public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-            return SharedSuggestionProvider.suggest(MKFactionRegistry.FACTION_REGISTRY.getKeys().stream().map(ResourceLocation::toString), builder);
+            return SharedSuggestionProvider.suggest(MKFactionRegistry.FACTION_REGISTRY.keySet().stream().map(ResourceLocation::toString), builder);
         }
     }
 }

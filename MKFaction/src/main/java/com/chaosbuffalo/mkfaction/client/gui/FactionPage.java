@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.client.gui.PlayerPageBase;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
-import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
+import com.chaosbuffalo.mkfaction.capabilities.IPlayerFaction;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
@@ -22,7 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class FactionPage extends PlayerPageBase {
-    public static final ResourceLocation PAGE_ID = new ResourceLocation(MKFactionMod.MODID, "factions");
+    public static final ResourceLocation PAGE_ID = MKFactionMod.id("factions");
 
     protected MKScrollView scrollView;
 
@@ -32,7 +32,7 @@ public class FactionPage extends PlayerPageBase {
 
     @Override
     public ResourceLocation getPageId() {
-        return new ResourceLocation(MKFactionMod.MODID, "factions");
+        return MKFactionMod.id("factions");
     }
 
     @Override
@@ -73,7 +73,7 @@ public class FactionPage extends PlayerPageBase {
         stackLayout.setPaddingTop(2).setPaddingBot(2);
         stackLayout.doSetChildWidth(true);
 
-        pData.getEntity().getCapability(FactionCapabilities.PLAYER_FACTION_CAPABILITY).ifPresent(playerFaction -> {
+        IPlayerFaction.get(pData.getEntity()).ifPresent(playerFaction -> {
             List<PlayerFactionEntry> factions = ImmutableList.copyOf(playerFaction.getFactionMap().values());
             factions.stream()
                     .sorted(Comparator.comparing(entry -> entry.getFaction().getDisplayName().getString()))

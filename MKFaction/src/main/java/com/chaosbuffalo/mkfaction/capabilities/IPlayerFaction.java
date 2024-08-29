@@ -3,11 +3,12 @@ package com.chaosbuffalo.mkfaction.capabilities;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionStatus;
+import com.chaosbuffalo.mkfaction.init.FactionAttachments;
 import com.chaosbuffalo.targeting_api.Targeting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import java.util.Map;
 import java.util.Optional;
@@ -50,5 +51,9 @@ public interface IPlayerFaction extends INBTSerializable<CompoundTag> {
 
     default void subRepFromFaction(ResourceLocation factionName, int factionAmount) {
         getFactionEntry(factionName).ifPresent(entry -> entry.decrementFaction(factionAmount));
+    }
+
+    static Optional<IPlayerFaction> get(Player entity) {
+        return Optional.of(entity.getData(FactionAttachments.PLAYER_DATA_ATTACHMENT));
     }
 }

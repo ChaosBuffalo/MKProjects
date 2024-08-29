@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,18 +82,18 @@ public class FactionGreetings implements IDynamicMapSerializer {
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         builder.put(ops.createString("battlecries"), ops.createList(battlecries.stream()
-                .map(x -> ops.createString(Component.Serializer.toJson(x)))));
+                .map(x -> ComponentSerialization.CODEC.encodeStart(ops, x).getOrThrow())));
         builder.put(ops.createString("outsider_greetings"), ops.createList(outsiderGreetings.stream()
-                .map(x -> ops.createString(Component.Serializer.toJson(x)))));
+                .map(x -> ComponentSerialization.CODEC.encodeStart(ops, x).getOrThrow())));
         builder.put(ops.createString("friendly_greetings"), ops.createList(friendlyGreetings.stream()
-                .map(x -> ops.createString(Component.Serializer.toJson(x)))));
+                .map(x -> ComponentSerialization.CODEC.encodeStart(ops, x).getOrThrow())));
         builder.put(ops.createString("member_greetings"), ops.createList(memberGreetings.stream()
-                .map(x -> ops.createString(Component.Serializer.toJson(x)))));
+                .map(x -> ComponentSerialization.CODEC.encodeStart(ops, x).getOrThrow())));
     }
 
     private <D> void deserializeComponentList(Dynamic<D> dynamic, String listName, Consumer<Component> consumer) {
         dynamic.get(listName).asStream()
-                .map(x -> x.asString().map(Component.Serializer::fromJson).result()
+                .map(x -> ComponentSerialization.CODEC.parse(x).result()
                         .orElseThrow(() -> new IllegalStateException("Failed to parse entry in '" + listName +
                                 "' for faction greetings '" + faction.getId() + "': " + x)))
                 .forEach(consumer);

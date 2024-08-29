@@ -10,10 +10,11 @@ import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.fml.InterModComms;
+import net.neoforged.fml.InterModComms;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -57,18 +58,19 @@ public class PlayerFactionHandler implements IPlayerFaction {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         // This would be where global data that is shared across personas would be persisted.
         // Currently, there is none.
         return new CompoundTag();
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag compoundTag) {
+
     }
 
     public static class PersonaFactionData implements IPersonaExtension {
-        final static ResourceLocation NAME = new ResourceLocation(MKFactionMod.MODID, "faction_data");
+        final static ResourceLocation NAME = MKFactionMod.id("faction_data");
 
         private final Map<ResourceLocation, PlayerFactionEntry> factionMap = new HashMap<>();
         private final SyncMapUpdater<ResourceLocation, PlayerFactionEntry> factionUpdater;
@@ -124,17 +126,17 @@ public class PlayerFactionHandler implements IPlayerFaction {
         }
 
         @Override
-        public CompoundTag serialize() {
+        public CompoundTag serialize(HolderLookup.Provider provider) {
 //            MKFactionMod.LOGGER.info("PersonaFactionData.serialize");
             CompoundTag tag = new CompoundTag();
-            tag.put("factions", factionUpdater.serializeStorage());
+            tag.put("factions", factionUpdater.serializeStorage(provider));
             return tag;
         }
 
         @Override
-        public void deserialize(CompoundTag nbt) {
+        public void deserialize(HolderLookup.Provider provider, CompoundTag nbt) {
 //            MKFactionMod.LOGGER.info("PersonaFactionData.deserialize {}", nbt);
-            factionUpdater.deserializeStorage(nbt.getCompound("factions"));
+            factionUpdater.deserializeStorage(provider, nbt.getCompound("factions"));
         }
     }
 

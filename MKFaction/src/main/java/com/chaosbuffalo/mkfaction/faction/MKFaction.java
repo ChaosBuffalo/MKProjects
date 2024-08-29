@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkfaction.faction;
 
 import com.chaosbuffalo.mkfaction.MKFactionMod;
-import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
+import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableMap;
@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public class MKFaction {
-    public static final ResourceLocation INVALID_FACTION = new ResourceLocation(MKFactionMod.MODID, "faction.invalid");
+    public static final ResourceLocation INVALID_FACTION = MKFactionMod.id("faction.invalid");
     private final Set<ResourceLocation> allies;
     private final Set<ResourceLocation> enemies;
     private final Set<String> firstNames;
@@ -130,7 +130,7 @@ public class MKFaction {
         if (entity instanceof Player) {
             return false;
         } else {
-            return entity.getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
+            return IMobFaction.get(entity)
                     .map(cap -> cap.getFactionName().equals(getId()))
                     .orElse(false);
         }
@@ -179,7 +179,7 @@ public class MKFaction {
     }
 
     private <D> String getStringOrThrow(Dynamic<D> dynamic) {
-        return dynamic.asString().getOrThrow(false, MKFactionMod.LOGGER::error);
+        return dynamic.asString().getOrThrow();
     }
 
     private <D> void deserializeNameList(Dynamic<D> dynamic, String listName, Consumer<String> consumer) {
@@ -193,7 +193,7 @@ public class MKFaction {
     private <D> void deserializeFactionList(Dynamic<D> dynamic, String listName, Consumer<ResourceLocation> consumer) {
         dynamic.get(listName).asStream()
                 .map(x -> x.asString().result()
-                        .map(ResourceLocation::new)
+                        .map(ResourceLocation::parse)
                         .orElseThrow(() -> new IllegalStateException("Failed to parse entry in '" + listName +
                                 "' for faction '" + getId() + "': " + x)))
                 .forEach(consumer);

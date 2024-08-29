@@ -114,10 +114,10 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         onPersonaDeactivated();
     }
 
-    private CompoundTag serializeExtensions() {
+    private CompoundTag serializeExtensions(HolderLookup.Provider provider) {
         CompoundTag root = new CompoundTag();
         extensions.values().forEach(extension -> {
-            CompoundTag output = extension.serialize();
+            CompoundTag output = extension.serialize(provider);
             if (output != null) {
                 root.put(extension.getName().toString(), output);
             }
@@ -125,14 +125,14 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         return root;
     }
 
-    private void deserializeExtensions(CompoundTag root) {
+    private void deserializeExtensions(HolderLookup.Provider provider, CompoundTag root) {
         if (root.isEmpty())
             return;
 
         extensions.values().forEach(extension -> {
             String name = extension.getName().toString();
             if (root.contains(name)) {
-                extension.deserialize(root.getCompound(name));
+                extension.deserialize(provider, root.getCompound(name));
             }
         });
     }
@@ -146,7 +146,7 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         tag.put("entitlements", entitlements.serialize());
         tag.put("skills", skills.serialize(provider));
         tag.put("loadout", loadout.serializeNBT());
-        tag.put("extensions", serializeExtensions());
+        tag.put("extensions", serializeExtensions(provider));
         return tag;
     }
 
@@ -158,7 +158,7 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         entitlements.deserialize(tag.getCompound("entitlements"));
         skills.deserialize(provider, tag.getCompound("skills"));
         loadout.deserializeNBT(tag.getCompound("loadout"));
-        deserializeExtensions(tag.getCompound("extensions"));
+        deserializeExtensions(provider, tag.getCompound("extensions"));
         return true;
     }
 }

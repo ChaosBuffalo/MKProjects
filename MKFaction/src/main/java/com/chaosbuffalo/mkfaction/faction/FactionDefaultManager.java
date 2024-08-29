@@ -3,13 +3,13 @@ package com.chaosbuffalo.mkfaction.faction;
 import com.chaosbuffalo.mkcore.utils.SingleJsonFileReloadListener;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.google.gson.*;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,7 +22,7 @@ public class FactionDefaultManager extends SingleJsonFileReloadListener {
 
     public FactionDefaultManager() {
         super(GSON, MKFactionMod.MODID, "categories");
-        MinecraftForge.EVENT_BUS.addListener(this::addReloadListener);
+        NeoForge.EVENT_BUS.addListener(this::addReloadListener);
     }
 
     public static Optional<ResourceLocation> getDefaultFaction(ResourceLocation entityType) {
@@ -30,7 +30,7 @@ public class FactionDefaultManager extends SingleJsonFileReloadListener {
     }
 
     public static Optional<ResourceLocation> getDefaultFaction(Entity entity) {
-        return getDefaultFaction(ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()));
+        return getDefaultFaction(BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()));
     }
 
     private void addReloadListener(AddReloadListenerEvent event) {
@@ -44,10 +44,10 @@ public class FactionDefaultManager extends SingleJsonFileReloadListener {
         factionDefaults.clear();
         for (JsonElement ele : arr) {
             JsonObject obj = ele.getAsJsonObject();
-            ResourceLocation factionName = new ResourceLocation(obj.get("name").getAsString());
+            ResourceLocation factionName = ResourceLocation.parse(obj.get("name").getAsString());
             JsonArray members = obj.getAsJsonArray("defaultMembers");
             for (JsonElement memb : members) {
-                ResourceLocation memberName = new ResourceLocation(memb.getAsString());
+                ResourceLocation memberName = ResourceLocation.parse(memb.getAsString());
                 factionDefaults.put(memberName, factionName);
             }
         }

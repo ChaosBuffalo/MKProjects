@@ -4,18 +4,27 @@ import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.function.Supplier;
 
-public class MKFactionDefinitionUpdatePacket {
+public class MKFactionDefinitionUpdatePacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<MKFactionDefinitionUpdatePacket> TYPE = new CustomPacketPayload.Type<>(
+            MKFactionMod.id("faction_definition_update"));
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, MKFactionDefinitionUpdatePacket> STREAM_CODEC = StreamCodec.ofMember(
+            MKFactionDefinitionUpdatePacket::toBytes, MKFactionDefinitionUpdatePacket::new
+    );
+
+
     private final List<MKFactionData> factionData;
 
     private static class MKFactionData {
@@ -27,18 +36,20 @@ public class MKFactionDefinitionUpdatePacket {
         }
     }
 
-    public MKFactionDefinitionUpdatePacket(Collection<MKFaction> factions) {
+    public MKFactionDefinitionUpdatePacket(Registry<MKFaction> factions) {
         this.factionData = new ArrayList<>();
         for (MKFaction faction : factions) {
             factionData.add(new MKFactionData(faction));
         }
     }
 
-    public MKFactionDefinitionUpdatePacket(FriendlyByteBuf buffer) {
+    public MKFactionDefinitionUpdatePacket(RegistryFriendlyByteBuf buffer) {
         factionData = new ArrayList<>();
         int count = buffer.readInt();
+        Registry<MKFaction> registry = buffer.registryAccess().registryOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY);
         for (int i = 0; i < count; i++) {
-            MKFaction faction = buffer.readRegistryIdUnsafe(MKFactionRegistry.FACTION_REGISTRY);
+            int regId = buffer.readVarInt();
+            MKFaction faction = registry.byId(regId);
             if (faction != null) {
                 MKFactionData data = new MKFactionData(faction);
                 data.encoded = buffer.readNbt();
@@ -47,27 +58,31 @@ public class MKFactionDefinitionUpdatePacket {
         }
     }
 
-    public void toBytes(FriendlyByteBuf buffer) {
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
+    public void toBytes(RegistryFriendlyByteBuf buffer) {
+        Registry<MKFaction> registry = buffer.registryAccess().registryOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY);
         buffer.writeInt(factionData.size());
         for (MKFactionData data : factionData) {
-            buffer.writeRegistryIdUnsafe(MKFactionRegistry.FACTION_REGISTRY, data.faction);
+            buffer.writeVarInt(registry.getId(data.faction));
             buffer.writeNbt((CompoundTag) data.faction.serialize(NbtOps.INSTANCE));
         }
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
-        MKFactionMod.LOGGER.debug("Handling faction update packet");
-        ctx.enqueueWork(() -> {
-            for (MKFactionData data : factionData) {
-                MKFaction faction = data.faction;
-                MKFactionMod.LOGGER.debug("Parsing faction data: {}", faction.getId());
+    public static void handle(final MKFactionDefinitionUpdatePacket packet, IPayloadContext context) {
 
-                faction.deserialize(new Dynamic<>(NbtOps.INSTANCE, data.encoded));
-                MKFactionMod.LOGGER.info("Updated Faction: {} new score: {}",
-                        faction.getId(), faction.getDefaultPlayerScore());
-            }
-        });
-        ctx.setPacketHandled(true);
+        MKFactionMod.LOGGER.debug("Handling faction update packet");
+
+        for (MKFactionData data : packet.factionData) {
+            MKFaction faction = data.faction;
+            MKFactionMod.LOGGER.debug("Parsing faction data: {}", faction.getId());
+
+            faction.deserialize(new Dynamic<>(NbtOps.INSTANCE, data.encoded));
+            MKFactionMod.LOGGER.info("Updated Faction: {} new score: {}",
+                    faction.getId(), faction.getDefaultPlayerScore());
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkfaction.faction;
 
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.targeting_api.Targeting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -65,14 +66,14 @@ public class PlayerFactionEntry implements IMKSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serialize() {
+    public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         tag.putInt("factionScore", getFactionScore());
         return tag;
     }
 
     @Override
-    public boolean deserialize(CompoundTag nbt) {
+    public boolean deserialize(HolderLookup.Provider provider, CompoundTag nbt) {
         if (nbt.contains("factionScore")) {
             setFactionScore(nbt.getInt("factionScore"));
         }

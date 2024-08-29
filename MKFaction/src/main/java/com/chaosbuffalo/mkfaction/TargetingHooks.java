@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkfaction;
 
-import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
+import com.chaosbuffalo.mkfaction.capabilities.IPlayerFaction;
 import com.chaosbuffalo.targeting_api.Targeting;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -10,19 +10,19 @@ import net.minecraft.world.entity.player.Player;
 public class TargetingHooks {
 
     private static Targeting.TargetRelation getPlayerMobRelation(Player source, IMobFaction mobFaction) {
-        return source.getCapability(FactionCapabilities.PLAYER_FACTION_CAPABILITY)
+        return IPlayerFaction.get(source)
                 .map(playerFaction -> playerFaction.getFactionRelation(mobFaction))
                 .orElse(Targeting.TargetRelation.UNHANDLED);
     }
 
     private static Targeting.TargetRelation playerTargetLiving(Player source, LivingEntity target) {
-        return target.getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
+        return IMobFaction.get(target)
                 .map(targetFaction -> getPlayerMobRelation(source, targetFaction))
                 .orElse(Targeting.TargetRelation.UNHANDLED);
     }
 
     private static Targeting.TargetRelation livingTargetLiving(LivingEntity source, LivingEntity target) {
-        return source.getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
+        return IMobFaction.get(source)
                 .map(sourceFaction -> sourceFaction.getRelationToEntity(target))
                 .orElse(Targeting.TargetRelation.UNHANDLED);
     }

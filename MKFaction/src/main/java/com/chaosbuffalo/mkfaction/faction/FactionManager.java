@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkfaction.faction;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.network.MKFactionDefinitionUpdatePacket;
-import com.chaosbuffalo.mkfaction.network.PacketHandler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -14,11 +13,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.OnDatapackSyncEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.network.NetworkDirection;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
@@ -29,7 +28,7 @@ public class FactionManager extends SimpleJsonResourceReloadListener {
 
     public FactionManager() {
         super(GSON, DEFINITION_FOLDER);
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     @Override
@@ -53,16 +52,14 @@ public class FactionManager extends SimpleJsonResourceReloadListener {
     @SubscribeEvent
     public void onDataPackSync(OnDatapackSyncEvent event) {
         MKFactionMod.LOGGER.debug("FactionManager.onDataPackSync");
-        MKFactionDefinitionUpdatePacket updatePacket = new MKFactionDefinitionUpdatePacket(MKFactionRegistry.FACTION_REGISTRY.getValues());
+        MKFactionDefinitionUpdatePacket updatePacket = new MKFactionDefinitionUpdatePacket(MKFactionRegistry.FACTION_REGISTRY);
         if (event.getPlayer() != null) {
             // sync to single player
             MKFactionMod.LOGGER.debug("Sending {} faction definition update packet", event.getPlayer());
-            event.getPlayer().connection.send(
-                    PacketHandler.getNetworkChannel().toVanillaPacket(updatePacket, NetworkDirection.PLAY_TO_CLIENT));
+            PacketDistributor.sendToPlayer(event.getPlayer(), updatePacket);
         } else {
             // sync to playerlist
-            event.getPlayerList().broadcastAll(
-                    PacketHandler.getNetworkChannel().toVanillaPacket(updatePacket, NetworkDirection.PLAY_TO_CLIENT));
+            PacketDistributor.sendToAllPlayers(updatePacket);
         }
     }
 

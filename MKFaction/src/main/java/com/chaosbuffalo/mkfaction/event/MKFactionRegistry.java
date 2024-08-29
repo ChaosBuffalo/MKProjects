@@ -2,30 +2,30 @@ package com.chaosbuffalo.mkfaction.event;
 
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.NewRegistryEvent;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import javax.annotation.Nullable;
 
-@Mod.EventBusSubscriber(modid = MKFactionMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKFactionMod.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class MKFactionRegistry {
-    public static IForgeRegistry<MKFaction> FACTION_REGISTRY = null;
+    public static final ResourceKey<Registry<MKFaction>> FACTION_REGISTRY_KEY = ResourceKey.createRegistryKey(MKFactionMod.id("factions"));
 
-    public static final ResourceLocation FACTION_REGISTRY_NAME = new ResourceLocation(MKFactionMod.MODID, "factions");
+    public static final Registry<MKFaction> FACTION_REGISTRY = new RegistryBuilder<>(FACTION_REGISTRY_KEY).create();
 
     @Nullable
     public static MKFaction getFaction(ResourceLocation name) {
-        return FACTION_REGISTRY.getValue(name);
+        return FACTION_REGISTRY.get(name);
     }
 
     @SuppressWarnings("unused")
     @SubscribeEvent
     public static void createRegistries(NewRegistryEvent event) {
-        event.create(new RegistryBuilder<MKFaction>()
-                .setName(FACTION_REGISTRY_NAME), r -> FACTION_REGISTRY = r);
+        event.register(FACTION_REGISTRY);
     }
 }
