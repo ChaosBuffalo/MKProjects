@@ -16,10 +16,11 @@ public record DialogueContext(LivingEntity speaker, ServerPlayer player, Dialogu
 
     public static MutableComponent evaluate(LivingEntity speaker, Component message, DialogueContext context) {
         var ctx = DialogueComponentContents.createSigningContext(context);
-        CommandSourceStack sourceStack = speaker.createCommandSourceStack().withSigningContext(ctx);
+        CommandSourceStack sourceStack = speaker.createCommandSourceStack();
+        var newStack = sourceStack.withSigningContext(ctx, sourceStack.getChatMessageChainer());
 
         try {
-            return ComponentUtils.updateForEntity(sourceStack, message, context.player(), 0);
+            return ComponentUtils.updateForEntity(newStack, message, context.player(), 0);
         } catch (CommandSyntaxException e) {
             throw new RuntimeException(e);
         }

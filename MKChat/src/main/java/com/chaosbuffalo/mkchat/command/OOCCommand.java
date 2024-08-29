@@ -24,7 +24,7 @@ public class OOCCommand {
         MutableComponent oocMessage = Component.literal(String.format("[OOC]<%s>: %s",
                 ctx.getSource().getPlayerOrException().getName().getString(), msg));
         oocMessage.withStyle(ChatFormatting.DARK_GREEN);
-        player.getLevel().players().forEach(
+        player.level().players().forEach(
                 playerEntity -> playerEntity.sendSystemMessage(oocMessage));
         return Command.SINGLE_SUCCESS;
     }

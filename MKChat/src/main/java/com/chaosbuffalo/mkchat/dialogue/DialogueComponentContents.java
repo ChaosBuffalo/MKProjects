@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.commands.CommandSigningContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
@@ -15,6 +16,10 @@ import java.util.function.Function;
 public class DialogueComponentContents implements ComponentContents {
     private final Function<DialogueContext, Component> valueSupplier;
 
+    public static final MapCodec<DialogueComponentContents> CODEC = MapCodec.unit(null);
+    public static final ComponentContents.Type<DialogueComponentContents> TYPE = new ComponentContents.Type<>(CODEC, "dialogue");
+
+
     public DialogueComponentContents(Function<DialogueContext, Component> argsSupplier) {
         this.valueSupplier = argsSupplier;
     }
@@ -27,6 +32,11 @@ public class DialogueComponentContents implements ComponentContents {
             return value instanceof MutableComponent mutVal ? mutVal : Component.empty().append(value);
         }
         return ComponentContents.super.resolve(sourceStack, pEntity, pRecursionDepth);
+    }
+
+    @Override
+    public Type<?> type() {
+        return TYPE;
     }
 
     public static MutableComponent create(Function<DialogueContext, Component> valueSupplier) {

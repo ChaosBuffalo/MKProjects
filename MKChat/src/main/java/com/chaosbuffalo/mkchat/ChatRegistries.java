@@ -5,13 +5,14 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueProviders;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueConditionType;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueConditionTypes;
-import com.chaosbuffalo.mkchat.dialogue.effects.*;
+import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffectType;
+import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffectTypes;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.NewRegistryEvent;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.minecraft.resources.ResourceKey;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -20,10 +21,10 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class ChatRegistries {
-    public static final ResourceLocation EFFECT_TYPES_REGISTRY_NAME = new ResourceLocation(MKChat.MODID, "dialogue_effect_types");
-    public static final ResourceLocation CONDITION_TYPES_REGISTRY_NAME = new ResourceLocation(MKChat.MODID, "dialogue_condition_types");
-    public static IForgeRegistry<DialogueEffectType<?>> DIALOGUE_EFFECTS = null;
-    public static IForgeRegistry<DialogueConditionType<?>> DIALOGUE_CONDITIONS = null;
+    public static final ResourceKey<Registry<DialogueEffectType<?>>> EFFECT_TYPES_REGISTRY_NAME = ResourceKey.createRegistryKey(MKChat.id("dialogue_effect_types"));
+    public static final ResourceKey<Registry<DialogueConditionType<?>>> CONDITION_TYPES_REGISTRY_NAME = ResourceKey.createRegistryKey(MKChat.id("dialogue_condition_types"));
+    public static final Registry<DialogueEffectType<?>> DIALOGUE_EFFECTS = new RegistryBuilder<>(EFFECT_TYPES_REGISTRY_NAME).create();
+    public static final Registry<DialogueConditionType<?>> DIALOGUE_CONDITIONS = new RegistryBuilder<>(CONDITION_TYPES_REGISTRY_NAME).create();
 
 
     private static final Map<String, BiFunction<String, DialogueTree, Component>> textComponentProviders = new HashMap<>();
@@ -56,10 +57,8 @@ public class ChatRegistries {
     }
 
     public static void createRegistries(NewRegistryEvent event) {
-        event.create(new RegistryBuilder<DialogueEffectType<?>>()
-                .setName(EFFECT_TYPES_REGISTRY_NAME), r -> DIALOGUE_EFFECTS = r);
-        event.create(new RegistryBuilder<DialogueConditionType<?>>()
-                .setName(CONDITION_TYPES_REGISTRY_NAME), r -> DIALOGUE_CONDITIONS = r);
+        event.register(DIALOGUE_EFFECTS);
+        event.register(DIALOGUE_CONDITIONS);
     }
 
     public static void register(IEventBus modBus) {

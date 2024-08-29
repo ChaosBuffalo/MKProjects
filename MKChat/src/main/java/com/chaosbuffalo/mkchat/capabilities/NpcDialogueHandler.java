@@ -8,13 +8,14 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueUtils;
 import com.chaosbuffalo.mkchat.event.PlayerNpcDialogueTreeGatherEvent;
 import com.chaosbuffalo.mkcore.GameConstants;
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -87,7 +88,7 @@ public class NpcDialogueHandler implements INpcDialogue {
 
 
     public static final String NO_THANKS = "Talk to me about something else.";
-    private static final DialogueTree moveNextTree = new DialogueTree(new ResourceLocation(MKChat.MODID, "move_next_tree"));
+    private static final DialogueTree moveNextTree = new DialogueTree(MKChat.id("move_next_tree"));
     public static final DialoguePrompt ADDITIONAL_DIALOGUE =
             Util.make(new DialoguePrompt("nextTree", NO_THANKS, NO_THANKS, "More"), p -> p.setDialogueTree(moveNextTree));
 
@@ -120,7 +121,7 @@ public class NpcDialogueHandler implements INpcDialogue {
             trees.add(primaryTree);
         }
         trees.addAll(secondaryTrees);
-        MinecraftForge.EVENT_BUS.post(new PlayerNpcDialogueTreeGatherEvent(player, getEntity(), trees));
+        NeoForge.EVENT_BUS.post(new PlayerNpcDialogueTreeGatherEvent(player, getEntity(), trees));
         if (!trees.isEmpty()) {
             Conversation entry = new Conversation(player, entity, trees);
             conversations.put(player.getUUID(), entry);
@@ -199,12 +200,12 @@ public class NpcDialogueHandler implements INpcDialogue {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         return new CompoundTag();
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
 
     }
 }

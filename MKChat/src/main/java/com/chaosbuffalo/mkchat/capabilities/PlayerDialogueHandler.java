@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkchat.capabilities;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 
@@ -31,24 +32,24 @@ public class PlayerDialogueHandler implements IPlayerDialogue {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         CompoundTag npcEntriesTag = new CompoundTag();
         for (Map.Entry<UUID, PlayerConversationMemory> entry : npcEntries.entrySet()) {
-            npcEntriesTag.put(entry.getKey().toString(), entry.getValue().serializeNBT());
+            npcEntriesTag.put(entry.getKey().toString(), entry.getValue().serializeNBT(provider));
         }
         tag.put("npcEntries", npcEntriesTag);
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         CompoundTag npcEntriesTag = nbt.getCompound("npcEntries");
         npcEntries.clear();
         for (String key : npcEntriesTag.getAllKeys()) {
             UUID uuid = UUID.fromString(key);
             PlayerConversationMemory dialogueEntry = new PlayerConversationMemory(uuid);
-            dialogueEntry.deserializeNBT(npcEntriesTag.getCompound(key));
+            dialogueEntry.deserializeNBT(provider, npcEntriesTag.getCompound(key));
             npcEntries.put(uuid, dialogueEntry);
         }
     }

@@ -1,10 +1,10 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
 import com.chaosbuffalo.mkchat.ChatRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class DialogueProviders {
     public static Component playerNameProvider(DialogueContext context) {
@@ -25,8 +25,8 @@ public class DialogueProviders {
     }
 
     public static Component itemProvider(String name, DialogueTree tree) {
-        ResourceLocation itemId = new ResourceLocation(name);
-        Item item = ForgeRegistries.ITEMS.getValue(itemId);
+        ResourceLocation itemId = ResourceLocation.parse(name);
+        Item item = BuiltInRegistries.ITEM.get(itemId);
         if (item != null) {
             return Component.translatable(item.getDescriptionId());
         } else {

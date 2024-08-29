@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.common.util.Lazy;
+import net.neoforged.neoforge.common.util.Lazy;
 
 import java.util.function.Supplier;
 

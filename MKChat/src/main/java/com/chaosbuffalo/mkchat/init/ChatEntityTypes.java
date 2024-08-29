@@ -2,31 +2,27 @@ package com.chaosbuffalo.mkchat.init;
 
 import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.entity.TestChatReceiverEntity;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.animal.Pig;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
-@Mod.EventBusSubscriber(modid = MKChat.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKChat.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class ChatEntityTypes {
-
-    public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES,
+    public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE,
             MKChat.MODID);
 
-
-    public static final RegistryObject<EntityType<TestChatReceiverEntity>> TEST_CHAT = ENTITY_TYPES.register(
+    public static final DeferredHolder<EntityType<?>, EntityType<TestChatReceiverEntity>> TEST_CHAT = ENTITY_TYPES.register(
             "test_entity", () ->
                     EntityType.Builder.<TestChatReceiverEntity>of(TestChatReceiverEntity::new, MobCategory.CREATURE)
                             .sized(EntityType.PIG.getWidth(), EntityType.PIG.getHeight())
-                            .build(new ResourceLocation(MKChat.MODID, "test_entity").toString())
+                            .build("test_entity")
     );
-
 
     @SubscribeEvent
     public static void registerEntityAttributes(EntityAttributeCreationEvent event) {

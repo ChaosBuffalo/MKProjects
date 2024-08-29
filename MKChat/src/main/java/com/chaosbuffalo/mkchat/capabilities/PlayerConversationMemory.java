@@ -1,8 +1,9 @@
 package com.chaosbuffalo.mkchat.capabilities;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,7 @@ public class PlayerConversationMemory implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         tag.putUUID("npcId", uuid);
         CompoundTag boolFlagsTag = new CompoundTag();
@@ -42,13 +43,13 @@ public class PlayerConversationMemory implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         uuid = nbt.getUUID("npcId");
         boolFlags.clear();
         CompoundTag boolFlagsTag = nbt.getCompound("boolFlags");
         for (String key : boolFlagsTag.getAllKeys()) {
             boolean value = boolFlagsTag.getBoolean(key);
-            boolFlags.put(new ResourceLocation(key), value);
+            boolFlags.put(ResourceLocation.parse(key), value);
         }
     }
 }

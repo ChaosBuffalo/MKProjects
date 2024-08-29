@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkchat.event;
 
-import net.minecraftforge.eventbus.api.Event;
+
+import net.neoforged.bus.api.Event;
 
 public class DialogueManagerSetupEvent extends Event {
 

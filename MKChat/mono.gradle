@@ -1,13 +1,17 @@
 plugins {
-    id "com.google.cloud.artifactregistry.gradle-plugin" version "2.1.5"
     id "mk-platform"
 }
 
 
-version = "${minecraft_version}-${mkchat_version}"
+version = "${minecraft_version}-${mk_chat_version}"
+project.ext.mod_version = mk_chat_version
 project.ext.dependentProjects = [
         project(":MKWidgets"),
         project(":MKCore")
 ]
 
 apply from: '../common.gradle'
+
+idea.module {
+    excludeDirs << file("run")
+}

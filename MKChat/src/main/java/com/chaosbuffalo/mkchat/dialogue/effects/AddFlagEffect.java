@@ -2,18 +2,18 @@ package com.chaosbuffalo.mkchat.dialogue.effects;
 
 import com.chaosbuffalo.mkchat.capabilities.IPlayerDialogue;
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 public class AddFlagEffect extends DialogueEffect {
-    public static final Codec<AddFlagEffect> CODEC = RecordCodecBuilder.<AddFlagEffect>mapCodec(builder ->
+    public static final MapCodec<AddFlagEffect> CODEC = RecordCodecBuilder.<AddFlagEffect>mapCodec(builder ->
             builder.group(
                     ResourceLocation.CODEC.fieldOf("flag").forGetter(i -> i.flagName)
             ).apply(builder, AddFlagEffect::new)
-    ).codec();
+    );
 
     private final ResourceLocation flagName;
 

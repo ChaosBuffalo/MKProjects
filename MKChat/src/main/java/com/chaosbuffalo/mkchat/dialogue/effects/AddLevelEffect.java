@@ -1,20 +1,18 @@
 package com.chaosbuffalo.mkchat.dialogue.effects;
 
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
-import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 public class AddLevelEffect extends DialogueEffect {
-    public static final Codec<AddLevelEffect> CODEC = RecordCodecBuilder.<AddLevelEffect>mapCodec(builder ->
+    public static final MapCodec<AddLevelEffect> CODEC = RecordCodecBuilder.<AddLevelEffect>mapCodec(builder ->
             builder.group(
                     Codec.INT.fieldOf("amount").forGetter(i -> i.levelAmount)
             ).apply(builder, AddLevelEffect::new)
-    ).codec();
+    );
 
     private final int levelAmount;
 

@@ -1,11 +1,12 @@
 package com.chaosbuffalo.mkchat.capabilities;
 
+import com.chaosbuffalo.mkchat.init.ChatAttachments;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.common.util.LazyOptional;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface IPlayerDialogue extends INBTSerializable<CompoundTag> {
@@ -20,7 +21,7 @@ public interface IPlayerDialogue extends INBTSerializable<CompoundTag> {
 
     void cleanHistory();
 
-    static LazyOptional<IPlayerDialogue> get(Player player) {
-        return player.getCapability(ChatCapabilities.PLAYER_DIALOGUE_CAPABILITY);
+    static Optional<IPlayerDialogue> get(Player player) {
+        return Optional.of(player.getData(ChatAttachments.PLAYER_DATA_ATTACHMENT));
     }
 }

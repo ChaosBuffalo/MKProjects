@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkchat.event;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import java.util.List;
 

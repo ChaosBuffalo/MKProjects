@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
 import com.chaosbuffalo.mkchat.ChatConstants;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -8,12 +9,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class DialogueUtils {
 
     public static void sendMessageToAllAround(LivingEntity speaker, Component message) {
-        if (speaker.getLevel() instanceof ServerLevel serverLevel) {
+        if (speaker.level() instanceof ServerLevel serverLevel) {
             sendMessageToAllAround(serverLevel, speaker, message);
         }
     }
@@ -36,13 +36,13 @@ public class DialogueUtils {
     }
 
     public static String getItemNameProvider(Item item) {
-        ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
-        return String.format("{item:%s}", id.toString());
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+        return String.format("{item:%s}", id);
     }
 
     public static String getStackCountItemProvider(ItemStack item) {
-        ResourceLocation id = ForgeRegistries.ITEMS.getKey(item.getItem());
-        return String.format("%d {item:%s}", item.getCount(), id.toString());
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item.getItem());
+        return String.format("%d {item:%s}", item.getCount(), id);
     }
 
 }

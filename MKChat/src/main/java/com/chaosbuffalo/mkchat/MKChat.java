@@ -1,19 +1,19 @@
 package com.chaosbuffalo.mkchat;
 
-import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
 import com.chaosbuffalo.mkchat.command.ChatCommands;
 import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
 import com.chaosbuffalo.mkchat.dialogue.IDialogueExtension;
+import com.chaosbuffalo.mkchat.init.ChatAttachments;
 import com.chaosbuffalo.mkchat.init.ChatEntityTypes;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -25,15 +25,15 @@ public class MKChat {
     public static final String REGISTER_DIALOGUE_EXTENSION = "register_dialogue_extension";
     private final DialogueManager dialogueManager;
 
-    public MKChat() {
-        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+
+    public MKChat(IEventBus modBus) {
         modBus.addListener(this::setup);
         modBus.addListener(this::processIMC);
-        modBus.addListener(ChatCapabilities::registerCapabilities);
         ChatEntityTypes.ENTITY_TYPES.register(modBus);
         ChatRegistries.register(modBus);
+        ChatAttachments.register(modBus);
 
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
         dialogueManager = new DialogueManager();
     }
 
@@ -61,5 +61,9 @@ public class MKChat {
                 ext.registerDialogueExtension();
             }
         });
+    }
+
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 }

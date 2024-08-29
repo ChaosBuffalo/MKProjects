@@ -1,19 +1,18 @@
 package com.chaosbuffalo.mkchat.dialogue.conditions;
 
 import com.chaosbuffalo.mkchat.capabilities.IPlayerDialogue;
-import com.chaosbuffalo.mkchat.dialogue.effects.AddFlagEffect;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 public class HasFlagCondition extends DialogueCondition {
-    public static final Codec<HasFlagCondition> CODEC = RecordCodecBuilder.<HasFlagCondition>mapCodec(builder ->
+    public static final MapCodec<HasFlagCondition> CODEC = RecordCodecBuilder.<HasFlagCondition>mapCodec(builder ->
             builder.group(
                     ResourceLocation.CODEC.fieldOf("flag").forGetter(i -> i.flagName)
             ).apply(builder, HasFlagCondition::new)
-    ).codec();
+    );
 
     private final ResourceLocation flagName;
 

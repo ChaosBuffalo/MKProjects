@@ -9,13 +9,13 @@ import com.chaosbuffalo.mkchat.dialogue.effects.AddLevelEffect;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import java.util.concurrent.CompletableFuture;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class MKChatGenerator {
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {
@@ -35,10 +35,10 @@ public class MKChatGenerator {
         }
 
         private DialogueTree getTestTree() {
-            DialogueTree tree = new DialogueTree(new ResourceLocation(MKChat.MODID, "test"));
+            DialogueTree tree = new DialogueTree(MKChat.id("test"));
             DialogueNode grantLevel = new DialogueNode("grant_level", "Here is 1 level.");
             grantLevel.addEffect(new AddLevelEffect(1));
-            ResourceLocation levelFlag = new ResourceLocation(MKChat.MODID, "grant_level");
+            ResourceLocation levelFlag = MKChat.id("grant_level");
             grantLevel.addEffect(new AddFlagEffect(levelFlag));
 
             tree.addNode(grantLevel);
@@ -67,7 +67,6 @@ public class MKChatGenerator {
                     .addResponse(new DialogueResponse("cant_help")
                             .addCondition(new HasFlagCondition(levelFlag))
                     );
-
 
 
             DialogueNode root = new DialogueNode("root", String.format("Hello %s, I am %s. Do you %s",

@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.capabilities.INpcDialogue;
 import com.chaosbuffalo.mkchat.init.ChatEntityTypes;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -21,13 +20,17 @@ public class TestChatReceiverEntity extends Pig {
     public TestChatReceiverEntity(final EntityType<? extends TestChatReceiverEntity> entityType, Level world) {
         super(entityType, world);
         setCustomName(Component.literal("Talking Pig"));
-        INpcDialogue.get(this).ifPresent(cap -> cap.setDialogueTree(new ResourceLocation(MKChat.MODID, "test")));
     }
 
     public TestChatReceiverEntity(Level world) {
         this(ChatEntityTypes.TEST_CHAT.get(), world);
     }
 
+    @Override
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
+        INpcDialogue.get(this).ifPresent(cap -> cap.setDialogueTree(MKChat.id("test")));
+    }
 
     @Override
     protected void registerGoals() {
@@ -37,7 +40,7 @@ public class TestChatReceiverEntity extends Pig {
 
     @Override
     public InteractionResult interactAt(Player player, Vec3 vec, InteractionHand hand) {
-        if (!player.level.isClientSide()) {
+        if (!player.level().isClientSide()) {
             INpcDialogue.get(this).ifPresent(cap -> cap.hail((ServerPlayer) player));
 
         }

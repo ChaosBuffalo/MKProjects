@@ -3,8 +3,8 @@ plugins {
 }
 
 
-version = "${minecraft_version}-${mkfaction_version}"
-project.ext.mod_version = mkfaction_version
+version = "${minecraft_version}-${mk_faction_version}"
+project.ext.mod_version = mk_faction_version
 project.ext.dependentProjects = [
         project(":TargetingAPI"),
         project(":MKWidgets"),

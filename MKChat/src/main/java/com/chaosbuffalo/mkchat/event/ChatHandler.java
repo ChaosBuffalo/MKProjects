@@ -8,13 +8,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.event.ServerChatEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.ServerChatEvent;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = MKChat.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = MKChat.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class ChatHandler {
 
 
@@ -29,7 +29,7 @@ public class ChatHandler {
 
             DialogueUtils.sendMessageToAllAround(player, event.getMessage());
 
-            List<Mob> entities = player.getLevel().getEntitiesOfClass(Mob.class,
+            List<Mob> entities = player.level().getEntitiesOfClass(Mob.class,
                     getChatBoundingBox(player, ChatConstants.NPC_CHAT_RADIUS),
                     x -> x.getSensing().hasLineOfSight(player) && INpcDialogue.get(x).map(INpcDialogue::hasDialogue).orElse(false));
 

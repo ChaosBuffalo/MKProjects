@@ -25,7 +25,7 @@ public class DimCommand {
                 player.getName().getString(), msg));
         compMessage.withStyle(ChatFormatting.GOLD);
         // emulate sendMessage but only to players in the dimension
-        player.getLevel().players().forEach(
+        player.level().players().forEach(
                 playerEntity -> playerEntity.sendSystemMessage(compMessage));
         return Command.SINGLE_SUCCESS;
     }

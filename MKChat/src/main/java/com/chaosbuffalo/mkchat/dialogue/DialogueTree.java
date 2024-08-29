@@ -137,7 +137,7 @@ public class DialogueTree {
     }
 
     public <D> D serialize(DynamicOps<D> ops) {
-        return CODEC.encodeStart(ops, this).getOrThrow(false, MKChat.LOGGER::error);
+        return CODEC.encodeStart(ops, this).getOrThrow();
     }
 
     public static <D> DialogueTree deserialize(ResourceLocation name, Dynamic<D> dynamic) {
@@ -149,7 +149,7 @@ public class DialogueTree {
     }
 
     public static <D> DialogueTree deserialize(Dynamic<D> dynamic) {
-        return CODEC.parse(dynamic).getOrThrow(false, MKChat.LOGGER::error);
+        return CODEC.parse(dynamic).getOrThrow();
     }
 
     protected void internalMerge(DialogueTree other) {

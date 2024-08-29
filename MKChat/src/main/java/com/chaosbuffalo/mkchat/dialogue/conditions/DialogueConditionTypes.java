@@ -2,7 +2,7 @@ package com.chaosbuffalo.mkchat.dialogue.conditions;
 
 import com.chaosbuffalo.mkchat.ChatRegistries;
 import com.chaosbuffalo.mkchat.MKChat;
-import net.minecraftforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.Supplier;
 

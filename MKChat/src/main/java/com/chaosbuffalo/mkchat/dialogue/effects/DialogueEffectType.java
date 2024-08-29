@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkchat.dialogue.effects;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 public interface DialogueEffectType<T extends DialogueEffect> {
 
-    Codec<T> codec();
+    MapCodec<T> codec();
 }
