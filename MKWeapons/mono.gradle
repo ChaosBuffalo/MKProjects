@@ -1,5 +1,4 @@
 plugins {
-    id "com.google.cloud.artifactregistry.gradle-plugin" version "2.1.5"
     id "mk-platform"
 }
 
@@ -22,13 +21,13 @@ repositories {
         url = "https://maven.blamejared.com/"
     }
     maven {
-        name = 'Curios Maven'
-        url = "https://maven.theillusivec4.top/"
+        // new host for curios
+        name = "OctoStudios"
+        url = uri("https://maven.octo-studios.com/releases")
     }
 }
 
 dependencies {
-//    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${minecraft_version}-${curios_version}")
-//    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${minecraft_version}-${curios_version}:api")
-//    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+    runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    implementation "top.theillusivec4.curios:curios-neoforge:${curios_version}"
 }
