@@ -28,7 +28,8 @@ public class ParticleEngineMixins {
     at= @At(
             target="Lcom/mojang/blaze3d/vertex/BufferUploader;drawWithShader(Lcom/mojang/blaze3d/vertex/MeshData;)V",
             value ="INVOKE",
-            shift = At.Shift.AFTER
+            shift = At.Shift.BY,
+            by = 2
     ))
     private void mkcore$render(LightTexture lightTexture, Camera camera, float partialTick,
                                Frustum frustum, Predicate<ParticleRenderType> renderTypePredicate,
