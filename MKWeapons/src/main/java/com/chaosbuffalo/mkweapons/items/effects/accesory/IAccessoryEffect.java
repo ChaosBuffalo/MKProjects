@@ -2,7 +2,7 @@ package com.chaosbuffalo.mkweapons.items.effects.accesory;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
+import com.chaosbuffalo.mkweapons.items.accessories.IMKAccessory;
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ItemEffects;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
@@ -18,12 +18,12 @@ public interface IAccessoryEffect extends IItemEffect {
     Codec<IAccessoryEffect> DISPATCH_CODEC = ItemEffects.ACCESSORY_EFFECT_CODEC;
 
 
-    default float modifyDamageDealt(float damage, MKAccessory accessory, ItemStack stack,
+    default float modifyDamageDealt(float damage, IMKAccessory accessory, ItemStack stack,
                                     LivingEntity target, LivingEntity attacker) {
         return damage;
     }
 
-    default void livingCompleteAbility(IMKEntityData entityData, MKAccessory accessory,
+    default void livingCompleteAbility(IMKEntityData entityData, IMKAccessory accessory,
                                        ItemStack stack, MKAbility ability) {
 
     }

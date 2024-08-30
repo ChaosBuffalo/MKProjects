@@ -2,7 +2,7 @@ package com.chaosbuffalo.mkweapons.items.randomization.options;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
+import com.chaosbuffalo.mkweapons.components.AccessoryEffectsComponent;
 import com.chaosbuffalo.mkweapons.items.effects.IDifficultyAwareEffect;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.IRandomizationSlot;
@@ -40,12 +40,12 @@ public class AccessoryEffectOption extends EffectOption<IAccessoryEffect> {
 
     @Override
     public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
-        MKAccessory.getAccessoryHandler(stack).ifPresent(x -> getItemEffects().forEach(eff -> {
+        getItemEffects().forEach(eff -> {
             IAccessoryEffect copied = eff.copy();
             if (eff instanceof IDifficultyAwareEffect scalable) {
                 scalable.tuneEffect(difficulty / GameConstants.MAX_DIFFICULTY);
             }
-            x.addEffect(copied);
-        }));
+            AccessoryEffectsComponent.addEffect(stack, copied);
+        });
     }
 }

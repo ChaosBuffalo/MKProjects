@@ -20,5 +20,4 @@ public interface IMKMeleeWeapon extends IMKWeapon {
         return false;
     }
 
-    List<IMeleeWeaponEffect> getWeaponEffects();
 }

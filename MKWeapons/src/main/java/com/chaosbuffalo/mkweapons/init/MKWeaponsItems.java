@@ -7,9 +7,8 @@ import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.TestNBTWeaponEffectItem;
-import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
+import com.chaosbuffalo.mkweapons.items.accessories.MKCurioAccessory;
 import com.chaosbuffalo.mkweapons.items.effects.melee.LivingDamageMeleeWeaponEffect;
-import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RapidFireRangedWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.MKWrapperTier;
@@ -20,9 +19,11 @@ import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -61,25 +62,25 @@ public class MKWeaponsItems {
             () -> new Item(new Item.Properties()));
 
     public static DeferredItem<Item> CopperRing = REGISTRY.register("copper_ring",
-            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
+            () -> new MKCurioAccessory(new Item.Properties().stacksTo(1)));
 
     public static DeferredItem<Item> GoldRing = REGISTRY.register("gold_ring",
-            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
+            () -> new MKCurioAccessory(new Item.Properties().stacksTo(1)));
 
     public static DeferredItem<Item> RoseGoldRing = REGISTRY.register("rose_gold_ring",
-            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
+            () -> new MKCurioAccessory(new Item.Properties().stacksTo(1)));
 
     public static DeferredItem<Item> SilverRing = REGISTRY.register("silver_ring",
-            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
+            () -> new MKCurioAccessory(new Item.Properties().stacksTo(1)));
 
     public static DeferredItem<Item> SilverEarring = REGISTRY.register("silver_earring",
-            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
+            () -> new MKCurioAccessory(new Item.Properties().stacksTo(1)));
 
     public static DeferredItem<Item> CopperEarring = REGISTRY.register("copper_earring",
-            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
+            () -> new MKCurioAccessory(new Item.Properties().stacksTo(1)));
 
     public static DeferredItem<Item> GoldEarring = REGISTRY.register("gold_earring",
-            () -> new MKAccessory(new Item.Properties().stacksTo(1)));
+            () -> new MKCurioAccessory(new Item.Properties().stacksTo(1)));
 
     public static void putWeaponForLookup(IMKTier tier, IMeleeWeaponType weaponType, Item item) {
         WEAPON_LOOKUP.computeIfAbsent(tier, t -> new HashMap<>()).put(weaponType, item);
@@ -111,7 +112,8 @@ public class MKWeaponsItems {
         for (Map.Entry<String, IMKTier> mat : tiers.entrySet()) {
             IMKTier tier = mat.getValue();
             for (IMeleeWeaponType weaponType : MeleeWeaponTypes.WEAPON_TYPES.values()) {
-                MKMeleeWeapon weapon = new MKMeleeWeapon(tier, weaponType, new Item.Properties());
+                MKMeleeWeapon weapon = new MKMeleeWeapon(tier, weaponType, new Item.Properties()
+                        .attributes(MKMeleeWeapon.createAttributes(tier, weaponType)));
                 WEAPONS.add(weapon);
                 WeaponTypeManager.addMeleeWeapon(weapon);
                 putWeaponForLookup(tier, weaponType, weapon);
@@ -120,19 +122,32 @@ public class MKWeaponsItems {
                         () -> weapon);
             }
 
-            ResourceLocation modifierId = MKWeapons.id("bow_crit_mod");
+            ResourceLocation modifierId = MKWeapons.id("base." + tier.getName());
 
-            RangedModifierEffect rangedMods = new RangedModifierEffect();
-            rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT,
-                    new AttributeModifier(modifierId, 0.05, AttributeModifier.Operation.ADD_VALUE));
-            rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT_MULTIPLIER,
-                    new AttributeModifier(modifierId, 0.25, AttributeModifier.Operation.ADD_VALUE));
+            ItemAttributeModifiers defaultAttributes = ItemAttributeModifiers.builder()
+                    .add(
+                            MKAttributes.RANGED_CRIT,
+                            new AttributeModifier(
+                                    modifierId, 0.05, AttributeModifier.Operation.ADD_VALUE
+                            ),
+                            EquipmentSlotGroup.MAINHAND
+                    )
+                    .add(
+                            MKAttributes.RANGED_CRIT_MULTIPLIER,
+                            new AttributeModifier(
+                                    modifierId, 0.25, AttributeModifier.Operation.ADD_VALUE
+                            ),
+                            EquipmentSlotGroup.MAINHAND
+                    )
+                    .build();
+
             MKBow bow = new MKBow(
-                    new Item.Properties().durability(tier.getUses() * 3),
+                    new Item.Properties()
+                            .durability(tier.getUses() * 3)
+                            .attributes(defaultAttributes),
                     tier,
                     GameConstants.TICKS_PER_SECOND * 2.5f, 4.0f,
-                    new RapidFireRangedWeaponEffect(7, .10f),
-                    rangedMods
+                    new RapidFireRangedWeaponEffect(7, .10f)
             );
             BOWS.add(bow);
             event.register(Registries.ITEM,

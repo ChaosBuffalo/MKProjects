@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.serialization.attributes.ScalableDouble;
 import com.chaosbuffalo.mkcore.serialization.attributes.ScalableFloat;
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
+import com.chaosbuffalo.mkweapons.items.accessories.IMKAccessory;
 import com.chaosbuffalo.mkweapons.items.effects.IDifficultyAwareEffect;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -55,7 +55,7 @@ public class RestoreManaOnCastEffect extends BaseAccessoryEffect implements IDif
     }
 
     @Override
-    public void livingCompleteAbility(IMKEntityData entityData, MKAccessory accessory,
+    public void livingCompleteAbility(IMKEntityData entityData, IMKAccessory accessory,
                                       ItemStack stack, MKAbility ability) {
         if (entityData.isServerSide() && entityData instanceof MKPlayerData playerData) {
             double roll = entityData.getEntity().getRandom().nextDouble();

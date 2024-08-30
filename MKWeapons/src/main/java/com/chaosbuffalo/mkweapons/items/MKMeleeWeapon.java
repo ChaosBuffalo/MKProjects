@@ -5,11 +5,9 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
-import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.capabilities.*;
 import com.chaosbuffalo.mkweapons.components.MeleeEffectsComponent;
 import com.chaosbuffalo.mkweapons.components.WeaponsComponents;
-import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
+import com.chaosbuffalo.mkweapons.items.accessories.MKAccessories;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
@@ -28,7 +26,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.ItemAbilities;
@@ -43,16 +44,10 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     private final IMeleeWeaponType weaponType;
     private final IMKTier mkTier;
     private final List<IMeleeWeaponEffect> weaponEffects;
-//    protected Multimap<Holder<Attribute>, AttributeModifier> modifiers;
-    protected static final ResourceLocation ATTACK_REACH_MODIFIER = MKWeapons.id("innate_attack_reach");
-    protected static final ResourceLocation CRIT_CHANCE_MODIFIER = MKWeapons.id("innate_crit_chance");
-    protected static final ResourceLocation CRIT_MULT_MODIFIER = MKWeapons.id("innate_crit_multiplier");
-    protected static final ResourceLocation MAX_POISE_MODIFIER = MKWeapons.id("innate_max_poise");
-    protected static final ResourceLocation BLOCK_EFFICIENCY_MODIFIER = MKWeapons.id("innate_block_efficiency");
     public static final Set<ItemAbility> SWORD_ACTIONS = ImmutableSet.of(ItemAbilities.SWORD_DIG, ItemAbilities.SHIELD_BLOCK);
 
     public MKMeleeWeapon(IMKTier tier, IMeleeWeaponType weaponType, Properties builder) {
-        super(tier, builder.attributes(createAttributes(tier, weaponType)));
+        super(tier, builder);
         this.weaponType = weaponType;
         this.mkTier = tier;
         this.weaponEffects = ConcatenatedListView.of(
@@ -66,9 +61,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
         return ItemAttributeModifiers.builder()
                 .add(
                         Attributes.ATTACK_DAMAGE,
-                        new AttributeModifier(
-                                BASE_ATTACK_DAMAGE_ID, calculateDamage(tier, weaponType), AttributeModifier.Operation.ADD_VALUE
-                        ),
+                        new AttributeModifier(BASE_ATTACK_DAMAGE_ID, calculateDamage(tier, weaponType), AttributeModifier.Operation.ADD_VALUE),
                         EquipmentSlotGroup.MAINHAND
                 )
                 .add(
@@ -115,11 +108,6 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     }
 
     @Override
-    public List<IMeleeWeaponEffect> getWeaponEffects() {
-        return weaponEffects;
-    }
-
-    @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         if (!target.isBlocking()) {
             MKCore.getEntityData(attacker).ifPresent(attackerData -> {
@@ -127,12 +115,12 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
                     for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
                         effect.onHit(this, stack, attackerData, target);
                     }
-                    List<MKCurioItemHandler> curios = MKAccessory.getMKCurios(attacker);
-                    for (MKCurioItemHandler handler : curios) {
-                        for (IAccessoryEffect effect : handler.getEffects()) {
+
+                    MKAccessories.iterateAccessories(attacker, (accStack, accessory) -> {
+                        for (IAccessoryEffect effect : accessory.getAccessoryEffects(accStack)) {
                             effect.onMeleeHit(this, stack, attackerData, target);
                         }
-                    }
+                    });
                 }
 
             });

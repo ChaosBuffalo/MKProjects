@@ -26,7 +26,6 @@ import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.UUID;
 
 public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
     public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.ranged_skill_scaling");

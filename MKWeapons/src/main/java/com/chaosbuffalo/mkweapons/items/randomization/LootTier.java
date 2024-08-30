@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkweapons.items.randomization;
 
 import com.chaosbuffalo.mkcore.utils.RandomCollection;
-import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.templates.LootItemTemplateEntry;
 import com.mojang.serialization.Codec;

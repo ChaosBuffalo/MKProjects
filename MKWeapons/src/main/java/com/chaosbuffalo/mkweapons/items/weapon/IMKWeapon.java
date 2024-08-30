@@ -16,8 +16,6 @@ public interface IMKWeapon extends IMKEquipment, IMKAbilityProvider {
 
     List<? extends IItemEffect> getWeaponEffects(ItemStack item);
 
-    List<? extends IItemEffect> getWeaponEffects();
-
     @Override
     default void onEntityEquip(LivingEntity entity, EquipmentSlot equipmentSlot, ItemStack itemStack) {
         getWeaponEffects(itemStack).forEach(eff -> eff.onEntityEquip(entity));

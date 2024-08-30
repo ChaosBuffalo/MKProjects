@@ -15,9 +15,9 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 
 
 public class AttributeOptionEntry {
@@ -25,6 +25,9 @@ public class AttributeOptionEntry {
         return builder.group(
                 BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("attribute").forGetter(AttributeOptionEntry::getAttribute),
                 AttributeModifier.CODEC.fieldOf("modifier").forGetter(AttributeOptionEntry::getModifier),
+                EquipmentSlotGroup.CODEC
+                        .optionalFieldOf("slot", EquipmentSlotGroup.ANY)
+                        .forGetter(AttributeOptionEntry::getSlotGroup),
                 Codec.DOUBLE.fieldOf("minValue").forGetter(i -> i.minValue),
                 Codec.DOUBLE.fieldOf("maxValue").forGetter(i -> i.maxValue)
         ).apply(builder, AttributeOptionEntry::new);
@@ -34,6 +37,7 @@ public class AttributeOptionEntry {
     public static final StreamCodec<RegistryFriendlyByteBuf, AttributeOptionEntry> STREAM_CODEC = StreamCodec.composite(
             Attribute.STREAM_CODEC, AttributeOptionEntry::getAttribute,
             AttributeModifier.STREAM_CODEC, AttributeOptionEntry::getModifier,
+            EquipmentSlotGroup.STREAM_CODEC, AttributeOptionEntry::getSlotGroup,
             ByteBufCodecs.DOUBLE, i -> i.minValue,
             ByteBufCodecs.DOUBLE, i -> i.maxValue,
             AttributeOptionEntry::new
@@ -44,12 +48,18 @@ public class AttributeOptionEntry {
     private final Holder<Attribute> attribute;
     private final double minValue;
     private final double maxValue;
+    private final EquipmentSlotGroup slotGroup;
 
-    public AttributeOptionEntry(Holder<Attribute> attribute, AttributeModifier modifier, double minValue, double maxValue) {
+    public AttributeOptionEntry(Holder<Attribute> attribute, AttributeModifier modifier, EquipmentSlotGroup slotGroup, double minValue, double maxValue) {
         this.modifier = modifier;
         this.attribute = attribute;
+        this.slotGroup = slotGroup;
         this.minValue = minValue;
         this.maxValue = maxValue;
+    }
+
+    public AttributeOptionEntry(Holder<Attribute> attribute, AttributeModifier modifier, double minValue, double maxValue) {
+        this(attribute, modifier, EquipmentSlotGroup.ANY, minValue, maxValue);
     }
 
     public AttributeOptionEntry(Holder<Attribute> attribute, AttributeModifier modifier) {
@@ -64,16 +74,15 @@ public class AttributeOptionEntry {
         return attribute;
     }
 
-    public AttributeOptionEntry copy(double difficulty) {
-        double finalAmount = MathUtils.lerpDouble(minValue, maxValue, difficulty / GameConstants.MAX_DIFFICULTY);
-        return new AttributeOptionEntry(getAttribute(), new AttributeModifier(modifier.id(),
-                finalAmount, modifier.operation()), minValue, maxValue);
+    public EquipmentSlotGroup getSlotGroup() {
+        return slotGroup;
     }
 
     public AttributeOptionEntry createScaledModifier(double difficultyScale) {
-        return copy(difficultyScale);
+        double finalAmount = MathUtils.lerpDouble(minValue, maxValue, difficultyScale / GameConstants.MAX_DIFFICULTY);
+        return new AttributeOptionEntry(getAttribute(), new AttributeModifier(modifier.id(),
+                finalAmount, modifier.operation()), slotGroup, minValue, maxValue);
     }
-
 
     private String getTranslationKeyForModifier(AttributeModifier.Operation op) {
         switch (op) {

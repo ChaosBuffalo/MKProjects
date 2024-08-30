@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkweapons.items.randomization.templates;
 
-import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;

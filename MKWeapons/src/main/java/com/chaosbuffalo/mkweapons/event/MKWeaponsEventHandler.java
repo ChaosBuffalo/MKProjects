@@ -6,11 +6,15 @@ import com.chaosbuffalo.mkcore.events.EntityAbilityEvent;
 import com.chaosbuffalo.mkcore.events.PostAttackEvent;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.capabilities.MKCurioItemHandler;
-import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
+import com.chaosbuffalo.mkweapons.items.accessories.IMKAccessory;
+import com.chaosbuffalo.mkweapons.items.accessories.MKAccessories;
+import com.chaosbuffalo.mkweapons.items.armor.IMKArmor;
+import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
+import com.chaosbuffalo.mkweapons.items.effects.ItemModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.IRangedWeaponEffect;
+import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,6 +27,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
 
@@ -39,6 +44,31 @@ public class MKWeaponsEventHandler {
                 for (IRangedWeaponEffect effect : bow.getWeaponEffects(weapon)) {
                     effect.onProjectileHit(event, source, livingTarget, attackerData,
                             arrow, weapon);
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onItemAttributeModifierEvent(ItemAttributeModifierEvent event) {
+        ItemStack stack = event.getItemStack();
+        switch (stack.getItem()) {
+            case IMKMeleeWeapon meleeWeapon -> addModifierEffects(event, meleeWeapon.getWeaponEffects(stack));
+            case IMKRangedWeapon rangedWeapon -> addModifierEffects(event, rangedWeapon.getWeaponEffects(stack));
+            case IMKArmor armor -> addModifierEffects(event, armor.getArmorEffects(stack));
+            case IMKAccessory accessory -> addModifierEffects(event, accessory.getAccessoryEffects(stack));
+            default -> {
+            }
+        }
+    }
+
+    private static void addModifierEffects(ItemAttributeModifierEvent event, List<? extends IItemEffect> effects) {
+        if (effects.isEmpty())
+            return;
+        for (var effect : effects) {
+            if (effect instanceof ItemModifierEffect modifierEffect) {
+                for (AttributeOptionEntry m : modifierEffect.getModifiers()) {
+                    event.addModifier(m.getAttribute(), m.getModifier(), m.getSlotGroup());
                 }
             }
         }
@@ -84,13 +114,11 @@ public class MKWeaponsEventHandler {
 
     @SubscribeEvent
     public static void onLivingCast(EntityAbilityEvent.EntityCompleteAbilityEvent event) {
-        List<MKCurioItemHandler> curios = MKAccessory.getMKCurios(event.getEntity());
-        for (MKCurioItemHandler handler : curios) {
-            for (IAccessoryEffect effect : handler.getEffects()) {
-                effect.livingCompleteAbility(event.getEntityData(), handler.getAccessory(),
-                        handler.getStack(), event.getAbility());
+        MKAccessories.iterateAccessories(event.getEntity(), (accStack, accessory) -> {
+            for (IAccessoryEffect effect : accessory.getAccessoryEffects(accStack)) {
+                effect.livingCompleteAbility(event.getEntityData(), accessory, accStack, event.getAbility());
             }
-        }
+        });
     }
 
     @SubscribeEvent
@@ -112,13 +140,15 @@ public class MKWeaponsEventHandler {
                     }
                 }
             }
-            List<MKCurioItemHandler> curios = MKAccessory.getMKCurios(livingSource);
-            for (MKCurioItemHandler handler : curios) {
-                for (IAccessoryEffect effect : handler.getEffects()) {
-                    newDamage = effect.modifyDamageDealt(newDamage, handler.getAccessory(),
-                            handler.getStack(), livingTarget, livingSource);
+
+            event.setNewDamage(newDamage);
+            MKAccessories.iterateAccessories(event.getEntity(), (accStack, accessory) -> {
+                for (IAccessoryEffect effect : accessory.getAccessoryEffects(accStack)) {
+                    var nextDamage = effect.modifyDamageDealt(event.getNewDamage(), accessory, accStack, livingTarget, livingSource);
+                    event.setNewDamage(nextDamage);
                 }
-            }
+            });
+
             if (isMelee) {
                 ItemStack mainHand = livingSource.getMainHandItem();
                 if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
@@ -128,6 +158,5 @@ public class MKWeaponsEventHandler {
                 }
             }
         }
-        event.setNewDamage(newDamage);
     }
 }

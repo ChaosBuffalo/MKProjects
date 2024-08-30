@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkweapons.items.effects.ranged;
 
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ItemEffects;
 import com.mojang.serialization.Codec;
@@ -14,7 +13,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 public interface IRangedWeaponEffect extends IItemEffect {
     Codec<IRangedWeaponEffect> DISPATCH_CODEC = ItemEffects.RANGED_EFFECT_CODEC;

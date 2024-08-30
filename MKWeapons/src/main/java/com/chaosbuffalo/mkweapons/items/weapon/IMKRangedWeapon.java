@@ -9,7 +9,5 @@ public interface IMKRangedWeapon extends IMKWeapon {
 
     List<IRangedWeaponEffect> getWeaponEffects(ItemStack item);
 
-    List<IRangedWeaponEffect> getWeaponEffects();
-
 
 }

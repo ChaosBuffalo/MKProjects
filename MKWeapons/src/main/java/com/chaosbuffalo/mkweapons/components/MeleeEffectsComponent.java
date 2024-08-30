@@ -15,8 +15,8 @@ public record MeleeEffectsComponent(List<IMeleeWeaponEffect> effects) {
     public static final MeleeEffectsComponent EMPTY = new MeleeEffectsComponent(List.of());
 
     public static final Codec<MeleeEffectsComponent> CODEC = RecordCodecBuilder.create(builder -> builder.group(
-                    IMeleeWeaponEffect.DISPATCH_CODEC.listOf().fieldOf("effects").forGetter(MeleeEffectsComponent::effects)
-            ).apply(builder, MeleeEffectsComponent::new));
+            IMeleeWeaponEffect.DISPATCH_CODEC.listOf().fieldOf("effects").forGetter(MeleeEffectsComponent::effects)
+    ).apply(builder, MeleeEffectsComponent::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, MeleeEffectsComponent> STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistries(CODEC);
 

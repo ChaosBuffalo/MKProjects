@@ -16,6 +16,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -23,7 +24,10 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
@@ -78,7 +82,7 @@ public class MKWeaponsGenerator {
 
             AttributeOption healthAttribute = new AttributeOption();
             healthAttribute.addAttributeModifier(Attributes.MAX_HEALTH, modifierId,
-                    5, 10, AttributeModifier.Operation.ADD_VALUE);
+                    5, 10, AttributeModifier.Operation.ADD_VALUE, EquipmentSlotGroup.MAINHAND);
             AttributeOption manaRegen = new AttributeOption();
             manaRegen.addAttributeModifier(MKAttributes.MANA_REGEN, modifierId,
                     0.5, 2.0, AttributeModifier.Operation.ADD_VALUE);

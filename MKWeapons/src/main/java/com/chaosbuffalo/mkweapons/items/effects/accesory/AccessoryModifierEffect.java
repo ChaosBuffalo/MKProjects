@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkweapons.items.effects.accesory;
 
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.effects.ItemModifierEffect;
-import com.chaosbuffalo.mkweapons.items.effects.armor.ArmorModifierEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
