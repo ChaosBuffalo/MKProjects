@@ -1,11 +1,8 @@
 package com.chaosbuffalo.mkweapons;
 
-import com.chaosbuffalo.mkweapons.capabilities.IArrowData;
 import com.chaosbuffalo.mkweapons.capabilities.WeaponsAttachments;
-import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
-import com.chaosbuffalo.mkweapons.capabilities.WeaponsComponents;
+import com.chaosbuffalo.mkweapons.components.WeaponsComponents;
 import com.chaosbuffalo.mkweapons.event.MKWeaponsEventHandler;
-import com.chaosbuffalo.mkweapons.extensions.MKWCuriosExtension;
 import com.chaosbuffalo.mkweapons.init.MKWeaponEffects;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsCommands;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
@@ -15,20 +12,17 @@ import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.WeaponTypeManager;
 import com.chaosbuffalo.mkweapons.network.PacketHandler;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
 import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Optional;
 
 
 @Mod(MKWeapons.MODID)
@@ -45,8 +39,7 @@ public class MKWeapons {
         modBus.addListener(this::setup);
         modBus.addListener(this::clientSetup);
         modBus.addListener(this::processIMC);
-        modBus.addListener(this::enqueueIMC);
-        modBus.addListener(WeaponsCapabilities::registerCapabilities);
+        modBus.addListener(PacketHandler::register);
         setupRegistries(modBus);
         weaponTypeManager = new WeaponTypeManager();
         lootTierManager = new LootTierManager();
@@ -63,13 +56,7 @@ public class MKWeapons {
 
     private void setup(final FMLCommonSetupEvent event) {
         // some preinit code
-        PacketHandler.setupHandler();
         MKWeaponsEventHandler.registerCombatTriggers();
-    }
-
-
-    private void enqueueIMC(final InterModEnqueueEvent event) {
-        MKWCuriosExtension.sendExtension();
     }
 
     private void processIMC(final InterModProcessEvent event) {
@@ -91,10 +78,6 @@ public class MKWeapons {
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
         MKWeaponsCommands.registerCommands(event.getDispatcher());
-    }
-
-    public static Optional<IArrowData> getArrowCapability(AbstractArrow entity) {
-        return entity.getCapability(WeaponsCapabilities.ARROW_DATA_CAPABILITY);
     }
 
     public static ResourceLocation id(String path) {

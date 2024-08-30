@@ -1,40 +1,29 @@
 package com.chaosbuffalo.mkweapons.items;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
-import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.capabilities.IWeaponData;
-import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
+import com.chaosbuffalo.mkweapons.components.RangedEffectsComponent;
+import com.chaosbuffalo.mkweapons.components.WeaponsComponents;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.IRangedWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedSkillScalingEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
-import com.google.common.collect.Multimap;
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.util.ConcatenatedListView;
 import net.neoforged.neoforge.event.EventHooks;
 
 import javax.annotation.Nullable;
@@ -69,34 +58,6 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
     @Override
     public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack) {
         return super.getDefaultAttributeModifiers(stack);
-    }
-
-    @Nullable
-    @Override
-    public CompoundTag getShareTag(ItemStack stack) {
-        // See comment in MKMeleeWeapon#getShareTag
-        CompoundTag newTag = new CompoundTag();
-        CompoundTag original = super.getShareTag(stack);
-        if (original != null) {
-            newTag.put("share", original);
-        }
-        stack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).ifPresent(weaponData ->
-                newTag.put("weaponCap", weaponData.serializeNBT()));
-        return newTag;
-    }
-
-    @Override
-    public void readShareTag(ItemStack stack, @Nullable CompoundTag shareTag) {
-        if (shareTag == null)
-            return;
-
-        if (shareTag.contains("share")) {
-            super.readShareTag(stack, shareTag.getCompound("share"));
-        }
-        if (shareTag.contains("weaponCap")) {
-            stack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).ifPresent(weaponData ->
-                    weaponData.deserializeNBT(shareTag.getCompound("weaponCap")));
-        }
     }
 
     public float getPowerFactor(int useTicks, ItemStack stack, LivingEntity entity) {
@@ -146,20 +107,12 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
     }
 
     @Override
-    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
-        return stack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).map(x -> x.getAttributeModifiers(slot))
-                .orElse(getDefaultAttributeModifiers(slot));
-    }
-
-    @Override
     public AbstractArrow customArrow(AbstractArrow arrow, ItemStack projectileStack, ItemStack weaponStack) {
         // set item stack on cap here
         Entity shooter = arrow.getOwner();
         double damage = arrow.getBaseDamage();
         damage += getMKTier().getAttackDamageBonus();
         if (shooter instanceof LivingEntity shootingEntity) {
-            MKWeapons.getArrowCapability(arrow).ifPresent(cap ->
-                    cap.setShootingWeapon(shootingEntity.getMainHandItem()));
             for (IRangedWeaponEffect weaponEffect : getWeaponEffects(weaponStack)) {
                 damage = weaponEffect.modifyArrowDamage(damage, shootingEntity, arrow);
             }
@@ -191,20 +144,23 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
 
     @Override
     public List<IRangedWeaponEffect> getWeaponEffects(ItemStack item) {
-        return item.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).map(cap -> {
-            if (cap.hasRangedWeaponEffects()) {
-                return cap.getRangedEffects();
-            } else {
-                return weaponEffects;
-            }
-        }).orElse(weaponEffects);
+        RangedEffectsComponent stackEffects = item.get(WeaponsComponents.RANGED_EFFECTS);
+        if (stackEffects != null) {
+            return ConcatenatedListView.of(weaponEffects, stackEffects.effects());
+        } else {
+            return weaponEffects;
+        }
     }
 
     @Nullable
     @Override
     public MKAbility getAbility(ItemStack itemStack) {
-        return MKCoreRegistry.getAbility(itemStack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY)
-                .map(IWeaponData::getAbilityName).orElse(MKCoreRegistry.INVALID_ABILITY));
+        var ability = itemStack.get(WeaponsComponents.WEAPON_ABILITY);
+        if (ability != null) {
+            return ability.abilityHolder().value();
+        } else {
+            return null;
+        }
     }
 
     @Override

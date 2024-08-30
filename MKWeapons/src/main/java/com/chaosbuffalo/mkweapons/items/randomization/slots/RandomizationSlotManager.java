@@ -10,25 +10,25 @@ import java.util.Map;
 public class RandomizationSlotManager {
 
     public static final IRandomizationSlot ATTRIBUTE_SLOT = new RandomizationSlot(
-            new ResourceLocation(MKWeapons.MODID, "randomization.attributes"), ChatFormatting.DARK_GREEN, false);
+            MKWeapons.id("randomization.attributes"), ChatFormatting.DARK_GREEN, false);
 
     public static final IRandomizationSlot EFFECT_SLOT = new RandomizationSlot(
-            new ResourceLocation(MKWeapons.MODID, "randomization.effect"), ChatFormatting.AQUA, false);
+            MKWeapons.id("randomization.effect"), ChatFormatting.AQUA, false);
 
     public static final IRandomizationSlot ABILITY_SLOT = new RandomizationSlot(
-            new ResourceLocation(MKWeapons.MODID, "randomization.ability"), ChatFormatting.AQUA, false);
+            MKWeapons.id("randomization.ability"), ChatFormatting.AQUA, false);
 
     public static final IRandomizationSlot NAME_SLOT = new RandomizationSlot(
-            new ResourceLocation(MKWeapons.MODID, "randomization.name"), ChatFormatting.WHITE, true);
+            MKWeapons.id("randomization.name"), ChatFormatting.WHITE, true);
 
     public static final IRandomizationSlot PERM_ATTRIBUTE_SLOT = new RandomizationSlot(
-            new ResourceLocation(MKWeapons.MODID, "randomization.attributes_perm"), ChatFormatting.DARK_GREEN, true);
+            MKWeapons.id("randomization.attributes_perm"), ChatFormatting.DARK_GREEN, true);
 
     public static final IRandomizationSlot PERM_EFFECT_SLOT = new RandomizationSlot(
-            new ResourceLocation(MKWeapons.MODID, "randomization.effect_perm"), ChatFormatting.AQUA, true);
+            MKWeapons.id("randomization.effect_perm"), ChatFormatting.AQUA, true);
 
     public static final IRandomizationSlot PERM_ABILITY_SLOT = new RandomizationSlot(
-            new ResourceLocation(MKWeapons.MODID, "randomization.ability_perm"), ChatFormatting.AQUA, true);
+            MKWeapons.id("randomization.ability_perm"), ChatFormatting.AQUA, true);
 
 
     public static final Map<ResourceLocation, IRandomizationSlot> SLOTS = new HashMap<>();

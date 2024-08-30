@@ -1,8 +1,6 @@
 package com.chaosbuffalo.mkweapons.items.weapon.types;
 
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.capabilities.IWeaponData;
-import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.network.PacketHandler;
 import com.chaosbuffalo.mkweapons.network.SyncWeaponTypesPacket;
@@ -18,15 +16,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +55,7 @@ public class WeaponTypeManager extends SimpleJsonResourceReloadListener {
 
     public void syncToPlayers() {
         SyncWeaponTypesPacket updatePacket = new SyncWeaponTypesPacket(MeleeWeaponTypes.WEAPON_TYPES.values());
-        PacketHandler.sendToAll(updatePacket);
+        PacketDistributor.sendToAllPlayers(updatePacket);
     }
 
     @SubscribeEvent
@@ -72,43 +69,23 @@ public class WeaponTypeManager extends SimpleJsonResourceReloadListener {
     @SubscribeEvent
     public void playerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
         MKWeapons.LOGGER.debug("Player logged in weapon type manager");
-        if (event.getEntity() instanceof ServerPlayer) {
+        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             SyncWeaponTypesPacket updatePacket = new SyncWeaponTypesPacket(MeleeWeaponTypes.WEAPON_TYPES.values());
             MKWeapons.LOGGER.debug("Sending {} update packet", event.getEntity());
-            PacketHandler.sendMessage(updatePacket, (ServerPlayer) event.getEntity());
+            PacketDistributor.sendToPlayer(serverPlayer, updatePacket);
         }
     }
 
     public static void handleMKWeaponReloadForPlayerPre(Player player) {
-        ItemStack mainHand = player.getMainHandItem();
-        if (mainHand.getItem() instanceof IMKMeleeWeapon) {
-            player.getAttributes().removeAttributeModifiers(mainHand.getAttributeModifiers(EquipmentSlot.MAINHAND));
-        }
+
     }
 
     public static void refreshAllWeapons() {
-        for (IMKMeleeWeapon weapon : MELEE_WEAPONS) {
-            weapon.reload();
-        }
+
     }
 
     public static void handleMKWeaponReloadForPlayerPost(Player player) {
-        ItemStack mainHand = player.getMainHandItem();
-        if (mainHand.getItem() instanceof IMKMeleeWeapon) {
-            player.getAttributes().addTransientAttributeModifiers(mainHand.getAttributeModifiers(EquipmentSlot.MAINHAND));
-        }
-        for (ItemStack item : player.getInventory().items) {
-            if (!item.isEmpty()) {
-                item.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY)
-                        .ifPresent(IWeaponData::markCacheDirty);
-            }
-        }
-        for (ItemStack item : player.getInventory().offhand) {
-            if (!item.isEmpty()) {
-                item.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY)
-                        .ifPresent(IWeaponData::markCacheDirty);
-            }
-        }
+
     }
 
     private boolean parse(ResourceLocation loc, JsonObject json) {

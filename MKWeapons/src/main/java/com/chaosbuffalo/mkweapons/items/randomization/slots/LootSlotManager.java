@@ -9,30 +9,30 @@ import java.util.Map;
 
 public class LootSlotManager {
 
-    public static final LootSlot MAIN_HAND = new LootSlot(new ResourceLocation(MKWeapons.MODID, "main_hand"),
+    public static final LootSlot MAIN_HAND = new LootSlot(MKWeapons.id("main_hand"),
             EquipmentSlot.MAINHAND);
-    public static final LootSlot OFF_HAND = new LootSlot(new ResourceLocation(MKWeapons.MODID, "off_hand"),
+    public static final LootSlot OFF_HAND = new LootSlot(MKWeapons.id("off_hand"),
             EquipmentSlot.OFFHAND);
-    public static final LootSlot CHEST = new LootSlot(new ResourceLocation(MKWeapons.MODID, "chest"),
+    public static final LootSlot CHEST = new LootSlot(MKWeapons.id("chest"),
             EquipmentSlot.CHEST);
-    public static final LootSlot LEGS = new LootSlot(new ResourceLocation(MKWeapons.MODID, "legs"),
+    public static final LootSlot LEGS = new LootSlot(MKWeapons.id("legs"),
             EquipmentSlot.LEGS);
-    public static final LootSlot HEAD = new LootSlot(new ResourceLocation(MKWeapons.MODID, "head"),
+    public static final LootSlot HEAD = new LootSlot(MKWeapons.id("head"),
             EquipmentSlot.HEAD);
-    public static final LootSlot FEET = new LootSlot(new ResourceLocation(MKWeapons.MODID, "feet"),
+    public static final LootSlot FEET = new LootSlot(MKWeapons.id("feet"),
             EquipmentSlot.FEET);
 
-    public static final LootSlot ITEMS = new LootSlot(new ResourceLocation(MKWeapons.MODID, "items"),
+    public static final LootSlot ITEMS = new LootSlot(MKWeapons.id("items"),
             (ent, item) -> {
             });
-    public static final LootSlot RINGS = new LootSlot(new ResourceLocation(MKWeapons.MODID, "rings"),
+    public static final LootSlot RINGS = new LootSlot(MKWeapons.id("rings"),
             (ent, item) -> {
             });
-    public static final LootSlot EARRINGS = new LootSlot(new ResourceLocation(MKWeapons.MODID, "earrings"),
+    public static final LootSlot EARRINGS = new LootSlot(MKWeapons.id("earrings"),
             (ent, item) -> {
             });
 
-    public static final LootSlot HANDS = new LootSlot(new ResourceLocation(MKWeapons.MODID, "hands"),
+    public static final LootSlot HANDS = new LootSlot(MKWeapons.id("hands"),
             (ent, item) -> {
             });
 

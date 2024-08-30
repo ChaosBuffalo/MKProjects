@@ -41,6 +41,7 @@ public class MKWeaponsGenerator {
         gen.addProvider(event.includeServer(), new MKWeaponsItemTagProvider(gen, event.getLookupProvider(),
                 blockTagsProvider, helper));
         gen.addProvider(event.includeClient(), new MKWeaponModelProvider(gen.getPackOutput(), helper, MKWeapons.MODID));
+        gen.addProvider(event.includeServer(), new MKWeaponCurioGenerator(MKWeapons.MODID, gen.getPackOutput(), event.getExistingFileHelper(), event.getLookupProvider()));
 
     }
 

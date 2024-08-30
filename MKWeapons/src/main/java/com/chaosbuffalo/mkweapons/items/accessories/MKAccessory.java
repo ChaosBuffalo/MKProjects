@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkweapons.items.accessories;
 
 import com.chaosbuffalo.mkweapons.capabilities.MKCurioItemHandler;
-import com.chaosbuffalo.mkweapons.capabilities.MKCurioItemProvider;
+import com.chaosbuffalo.mkweapons.components.WeaponsComponents;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -9,10 +9,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.neoforged.neoforge.common.util.ConcatenatedListView;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.CuriosCapability;
+import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurio;
+import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -21,9 +24,9 @@ import java.util.List;
 import java.util.Optional;
 
 
-public class MKAccessory extends Item {
+public class MKAccessory extends Item implements ICurioItem {
 
-    private List<IAccessoryEffect> effects;
+    private final List<IAccessoryEffect> effects;
 
     public MKAccessory(Properties properties, IAccessoryEffect... effectsIn) {
         super(properties);
@@ -32,17 +35,34 @@ public class MKAccessory extends Item {
     }
 
     public List<? extends IAccessoryEffect> getAccessoryEffects(ItemStack item) {
-        return item.getCapability(CuriosCapability.ITEM).map(cap -> {
-            if (cap instanceof MKCurioItemHandler) {
-                return ((MKCurioItemHandler) cap).getEffects();
-            } else {
-                return effects;
-            }
-        }).orElse(effects);
+        var stackComp = item.get(WeaponsComponents.ACCESSORY_EFFECTS);
+        if (stackComp != null) {
+            return ConcatenatedListView.of(
+                    stackComp.effects(),
+                    effects
+            );
+        } else {
+            return effects;
+        }
     }
 
     public List<? extends IAccessoryEffect> getAccessoryEffects() {
         return effects;
+    }
+
+
+    @Override
+    public void onEquip(SlotContext slotContext, ItemStack prevStack, ItemStack stack) {
+        for (IAccessoryEffect effect : getAccessoryEffects(stack)) {
+            effect.onEntityEquip(slotContext.entity());
+        }
+    }
+
+    @Override
+    public void onUnequip(SlotContext slotContext, ItemStack newStack, ItemStack stack) {
+        for (IAccessoryEffect effect : getAccessoryEffects(stack)) {
+            effect.onEntityUnequip(slotContext.entity());
+        }
     }
 
     public void addToTooltip(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
@@ -51,54 +71,12 @@ public class MKAccessory extends Item {
         }
     }
 
-    @Nullable
-    @Override
-    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
-        MKCurioItemProvider provider = new MKCurioItemProvider(stack);
-        if (nbt != null) {
-            provider.deserializeNBT(nbt);
-        }
-        return provider;
-    }
-
     public static Optional<MKCurioItemHandler> getAccessoryHandler(ItemStack item) {
-        Optional<ICurio> curioCap = item.getCapability(CuriosCapability.ITEM).resolve();
-        if (curioCap.isPresent()) {
-            ICurio cap = curioCap.get();
-            if (cap instanceof MKCurioItemHandler) {
-                return Optional.of((MKCurioItemHandler) cap);
-            }
+        ICurio curioCap = item.getCapability(CuriosCapability.ITEM);
+        if (curioCap instanceof MKCurioItemHandler handler) {
+            return Optional.of(handler);
         }
         return Optional.empty();
-    }
-
-
-    @Nullable
-    @Override
-    public CompoundTag getShareTag(ItemStack stack) {
-        // See comment in MKMeleeWeapon#getShareTag
-        CompoundTag newTag = new CompoundTag();
-        CompoundTag original = super.getShareTag(stack);
-        if (original != null) {
-            newTag.put("share", original);
-        }
-        getAccessoryHandler(stack).ifPresent(cap -> newTag.put("accessoryCap", cap.serializeNBT()));
-        return newTag;
-    }
-
-    @Override
-    public void readShareTag(ItemStack stack, @Nullable CompoundTag shareTag) {
-        if (shareTag == null)
-            return;
-
-        if (shareTag.contains("share")) {
-            super.readShareTag(stack, shareTag.getCompound("share"));
-        }
-        if (shareTag.contains("accessoryCap")) {
-            getAccessoryHandler(stack).ifPresent(cap -> {
-                cap.deserializeNBT(shareTag.getCompound("accessoryCap"));
-            });
-        }
     }
 
     public static List<MKCurioItemHandler> getMKCurios(LivingEntity entity) {

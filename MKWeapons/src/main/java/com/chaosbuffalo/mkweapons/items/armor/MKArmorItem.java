@@ -1,25 +1,27 @@
 package com.chaosbuffalo.mkweapons.items.armor;
 
-import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
+import com.chaosbuffalo.mkweapons.components.ArmorEffectsComponent;
+import com.chaosbuffalo.mkweapons.components.WeaponsComponents;
 import com.chaosbuffalo.mkweapons.items.effects.armor.IArmorEffect;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.base.Suppliers;
 import net.minecraft.core.Holder;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.neoforged.neoforge.common.util.ConcatenatedListView;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 public class MKArmorItem extends ArmorItem implements IMKArmor {
     public static final UUID CHEST_UUID = UUID.fromString("77ab4b54-5885-4f7f-ab41-71af536309d1");
@@ -29,58 +31,60 @@ public class MKArmorItem extends ArmorItem implements IMKArmor {
     public static final UUID[] ARMOR_MODIFIERS = new UUID[]{FEET_UUID, LEGGINGS_UUID, CHEST_UUID, HELMET_UUID};
     private final List<IArmorEffect> armorEffects;
 
-    private final Multimap<Attribute, AttributeModifier> attributeMap;
+    //    private final Multimap<Attribute, AttributeModifier> attributeMap;
+    private final Supplier<ItemAttributeModifiers> defaultModifiers;
 
 
     public MKArmorItem(Holder<ArmorMaterial> materialIn, ArmorItem.Type type, Properties builderIn,
                        IArmorEffect... armorEffects) {
         super(materialIn, type, builderIn);
-        ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
-        UUID uuid = ARMOR_MODIFIERS[type.getSlot().getIndex()];
-        builder.put(Attributes.ARMOR, new AttributeModifier(uuid, "Armor modifier", getDefense(),
-                AttributeModifier.Operation.ADD_VALUE));
-        builder.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(uuid, "Armor toughness", getToughness(),
-                AttributeModifier.Operation.ADDITION));
-        if (this.knockbackResistance > 0) {
-            builder.put(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(uuid, "Armor knockback resistance",
-                    knockbackResistance, AttributeModifier.Operation.ADDITION));
-        }
-        buildAttributes(builder, type.getSlot(), materialIn, uuid);
-        this.attributeMap = builder.build();
+//        ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
+//        UUID uuid = ARMOR_MODIFIERS[type.getSlot().getIndex()];
+//        builder.put(Attributes.ARMOR, new AttributeModifier(uuid, "Armor modifier", getDefense(),
+//                AttributeModifier.Operation.ADD_VALUE));
+//        builder.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(uuid, "Armor toughness", getToughness(),
+//                AttributeModifier.Operation.ADDITION));
+//        if (this.knockbackResistance > 0) {
+//            builder.put(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(uuid, "Armor knockback resistance",
+//                    knockbackResistance, AttributeModifier.Operation.ADDITION));
+//        }
+//        buildAttributes(builder, type.getSlot());
+//        this.attributeMap = builder.build();
+
+
+        this.defaultModifiers = Suppliers.memoize(() -> {
+            int defense = material.value().getDefense(type);
+            float toughness = material.value().toughness();
+            ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
+            EquipmentSlotGroup slotGroup = EquipmentSlotGroup.bySlot(type.getSlot());
+            ResourceLocation modifierId = ResourceLocation.withDefaultNamespace("armor." + type.getName());
+            builder.add(Attributes.ARMOR, new AttributeModifier(modifierId, defense, AttributeModifier.Operation.ADD_VALUE), slotGroup);
+            builder.add(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(modifierId, toughness, AttributeModifier.Operation.ADD_VALUE), slotGroup);
+            float resistance = material.value().knockbackResistance();
+            if (resistance > 0.0F) {
+                builder.add(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(modifierId, resistance, AttributeModifier.Operation.ADD_VALUE), slotGroup);
+            }
+
+            buildAttributes(builder, slotGroup);
+
+            return builder.build();
+        });
+
+
         this.armorEffects = Arrays.asList(armorEffects);
     }
 
-    protected void buildAttributes(ImmutableMultimap.Builder<Attribute, AttributeModifier> builder,
-                                   EquipmentSlot slot, ArmorMaterial material, UUID slotUUID) {
+    protected void buildAttributes(ItemAttributeModifiers.Builder builder, EquipmentSlotGroup slot) {
 
     }
 
-    @Nullable
-    @Override
-    public CompoundTag getShareTag(ItemStack stack) {
-        // See comment in MKMeleeWeapon#getShareTag
-        CompoundTag newTag = new CompoundTag();
-        CompoundTag original = super.getShareTag(stack);
-        if (original != null) {
-            newTag.put("share", original);
-        }
-        stack.getCapability(WeaponsCapabilities.ARMOR_DATA_CAPABILITY).ifPresent(armorData ->
-                newTag.put("armorCap", armorData.serializeNBT()));
-        return newTag;
+    public ItemAttributeModifiers getDefaultAttributeModifiers() {
+        return this.defaultModifiers.get();
     }
 
     @Override
-    public void readShareTag(ItemStack stack, @Nullable CompoundTag shareTag) {
-        if (shareTag == null)
-            return;
-
-        if (shareTag.contains("share")) {
-            super.readShareTag(stack, shareTag.getCompound("share"));
-        }
-        if (shareTag.contains("armorCap")) {
-            stack.getCapability(WeaponsCapabilities.ARMOR_DATA_CAPABILITY).ifPresent(armorData ->
-                    armorData.deserializeNBT(shareTag.getCompound("armorCap")));
-        }
+    public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack) {
+        return super.getDefaultAttributeModifiers(stack);
     }
 
     public void addToTooltip(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
@@ -95,25 +99,12 @@ public class MKArmorItem extends ArmorItem implements IMKArmor {
     }
 
     @Override
-    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
-        return stack.getCapability(WeaponsCapabilities.ARMOR_DATA_CAPABILITY).map(x -> x.getAttributeModifiers(slot))
-                .orElse(getDefaultAttributeModifiers(slot));
-    }
-
-
-    @Override
     public List<IArmorEffect> getArmorEffects(ItemStack item) {
-        return item.getCapability(WeaponsCapabilities.ARMOR_DATA_CAPABILITY).map(cap -> {
-            if (cap.hasArmorEffects()) {
-                return cap.getArmorEffects();
-            } else {
-                return armorEffects;
-            }
-        }).orElse(armorEffects);
-    }
-
-    @Override
-    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot equipmentSlot) {
-        return equipmentSlot == this.type.getSlot() ? this.attributeMap : super.getDefaultAttributeModifiers(equipmentSlot);
+        ArmorEffectsComponent stackEffects = item.get(WeaponsComponents.ARMOR_EFFECTS);
+        if (stackEffects != null) {
+            return ConcatenatedListView.of(armorEffects, stackEffects.effects());
+        } else {
+            return armorEffects;
+        }
     }
 }

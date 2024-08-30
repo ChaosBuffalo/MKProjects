@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mkweapons.items.randomization.options;
 
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
+import com.chaosbuffalo.mkweapons.components.ArmorEffectsComponent;
+import com.chaosbuffalo.mkweapons.components.MeleeEffectsComponent;
+import com.chaosbuffalo.mkweapons.components.RangedEffectsComponent;
 import com.chaosbuffalo.mkweapons.items.accessories.MKAccessory;
 import com.chaosbuffalo.mkweapons.items.armor.IMKArmor;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.AccessoryModifierEffect;
@@ -14,8 +16,8 @@ import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotMan
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -28,13 +30,14 @@ import java.util.stream.Collectors;
 
 public class AttributeOption extends BaseRandomizationOption {
     public static final ResourceLocation NAME = MKWeapons.id("attributes");
-    public static final Codec<AttributeOption> CODEC = RecordCodecBuilder.<AttributeOption>mapCodec(builder -> {
+    public static final MapCodec<AttributeOption> MAP_CODEC = RecordCodecBuilder.<AttributeOption>mapCodec(builder -> {
         return builder.group(
                 IRandomizationSlot.CODEC.optionalFieldOf("slot", RandomizationSlotManager.ATTRIBUTE_SLOT).forGetter(BaseRandomizationOption::getSlot),
                 Codec.DOUBLE.optionalFieldOf("weight", 1.0).forGetter(BaseRandomizationOption::getWeight),
                 AttributeOptionEntry.CODEC.listOf().fieldOf("modifiers").forGetter(i -> i.modifiers)
         ).apply(builder, AttributeOption::new);
-    }).codec();
+    });
+    public static final Codec<AttributeOption> CODEC = MAP_CODEC.codec();
 
     private final List<AttributeOptionEntry> modifiers;
 
@@ -60,11 +63,11 @@ public class AttributeOption extends BaseRandomizationOption {
         modifiers.add(new AttributeOptionEntry(attribute, attributeModifier, attributeModifier.amount(), attributeModifier.amount()));
     }
 
-    public static AttributeOption withModifier(Attribute attribute, String name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
+    public static AttributeOption withModifier(Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
         return withModifier(RandomizationSlotManager.ATTRIBUTE_SLOT, attribute, name, minAmount, maxAmount, op);
     }
 
-    public static AttributeOption withModifier(IRandomizationSlot slot, Attribute attribute, String name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
+    public static AttributeOption withModifier(IRandomizationSlot slot, Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
         AttributeOption opt = new AttributeOption(slot);
         opt.addAttributeModifier(attribute, name, minAmount, maxAmount, op);
         return opt;
@@ -77,15 +80,11 @@ public class AttributeOption extends BaseRandomizationOption {
     @Override
     public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
         if (stack.getItem() instanceof IMKMeleeWeapon) {
-            stack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).ifPresent(
-                    cap -> cap.addMeleeWeaponEffect(new MeleeModifierEffect(getModifiers(difficulty))));
+            MeleeEffectsComponent.addEffect(stack, new MeleeModifierEffect(getModifiers(difficulty)));
         } else if (stack.getItem() instanceof IMKRangedWeapon) {
-            stack.getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).ifPresent(
-                    cap -> cap.addRangedWeaponEffect(new RangedModifierEffect(getModifiers(difficulty))));
+            RangedEffectsComponent.addEffect(stack, new RangedModifierEffect(getModifiers(difficulty)));
         } else if (stack.getItem() instanceof IMKArmor) {
-            stack.getCapability(WeaponsCapabilities.ARMOR_DATA_CAPABILITY).ifPresent(
-                    cap -> cap.addArmorEffect(new ArmorModifierEffect(getModifiers(difficulty)))
-            );
+            ArmorEffectsComponent.addEffect(stack, new ArmorModifierEffect(getModifiers(difficulty)));
         } else if (stack.getItem() instanceof MKAccessory) {
             MKAccessory.getAccessoryHandler(stack).ifPresent(
                     cap -> cap.addEffect(new AccessoryModifierEffect(getModifiers(difficulty)))

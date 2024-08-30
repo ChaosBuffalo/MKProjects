@@ -5,6 +5,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Block;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -49,9 +50,10 @@ public class MKWrapperTier implements IMKTier {
         return itemTier.getAttackDamageBonus();
     }
 
+    @Nonnull
     @Override
-    public int getLevel() {
-        return itemTier.getLevel();
+    public TagKey<Block> getIncorrectBlocksForDrops() {
+        return itemTier.getIncorrectBlocksForDrops();
     }
 
     @Override

@@ -1,20 +1,31 @@
 package com.chaosbuffalo.mkweapons.network;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.network.EntityCastPacket;
+import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class SyncWeaponTypesPacket {
+public class SyncWeaponTypesPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<SyncWeaponTypesPacket> TYPE = new CustomPacketPayload.Type<>(MKWeapons.id("weapon_type_sync"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, SyncWeaponTypesPacket> STREAM_CODEC = StreamCodec.ofMember(
+            SyncWeaponTypesPacket::toBytes, SyncWeaponTypesPacket::new
+    );
+
+
     public final Map<ResourceLocation, CompoundTag> data;
 
 
@@ -32,7 +43,7 @@ public class SyncWeaponTypesPacket {
         }
     }
 
-    public void toBytes(FriendlyByteBuf buffer) {
+    public void toBytes(RegistryFriendlyByteBuf buffer) {
         buffer.writeInt(data.size());
         for (Map.Entry<ResourceLocation, CompoundTag> meleeData : data.entrySet()) {
             buffer.writeResourceLocation(meleeData.getKey());
@@ -40,7 +51,7 @@ public class SyncWeaponTypesPacket {
         }
     }
 
-    public SyncWeaponTypesPacket(FriendlyByteBuf buffer) {
+    public SyncWeaponTypesPacket(RegistryFriendlyByteBuf buffer) {
         int count = buffer.readInt();
         data = new HashMap<>();
         for (int i = 0; i < count; i++) {
@@ -50,13 +61,15 @@ public class SyncWeaponTypesPacket {
         }
     }
 
-
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
+    public static void handle(final SyncWeaponTypesPacket packet, IPayloadContext context) {
         MKCore.LOGGER.debug("Handling player abilities update packet");
-        ctx.enqueueWork(() -> {
-            ClientHandlerWeaponPacket.handlePacket(this);
+        context.enqueueWork(() -> {
+            ClientHandlerWeaponPacket.handlePacket(packet);
         });
-        ctx.setPacketHandled(true);
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return null;
     }
 }

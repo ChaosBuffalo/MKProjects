@@ -1,7 +1,8 @@
 package com.chaosbuffalo.mkweapons.items;
 
 import com.chaosbuffalo.mkcore.test.MKTestAbilities;
-import com.chaosbuffalo.mkweapons.capabilities.WeaponsCapabilities;
+import com.chaosbuffalo.mkweapons.components.MeleeEffectsComponent;
+import com.chaosbuffalo.mkweapons.components.WeaponAbilityComponent;
 import com.chaosbuffalo.mkweapons.items.effects.melee.StunMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.google.common.collect.Lists;
@@ -25,11 +26,10 @@ public class TestNBTWeaponEffectItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand handIn) {
         if (!worldIn.isClientSide() && handIn.equals(InteractionHand.MAIN_HAND)) {
-            if (playerIn.getOffhandItem().getItem() instanceof IMKMeleeWeapon) {
-                playerIn.getOffhandItem().getCapability(WeaponsCapabilities.WEAPON_DATA_CAPABILITY).ifPresent(cap -> {
-                    cap.addMeleeWeaponEffect(new StunMeleeWeaponEffect(0.5, 2));
-                    cap.setAbilityId(MKTestAbilities.TEST_EMBER.get().getAbilityId());
-                });
+            ItemStack offhand = playerIn.getOffhandItem();
+            if (offhand.getItem() instanceof IMKMeleeWeapon) {
+                MeleeEffectsComponent.addEffect(offhand, new StunMeleeWeaponEffect(0.5, 2));
+                WeaponAbilityComponent.setAbility(offhand, MKTestAbilities.TEST_EMBER);
                 ServerPlayer serverPlayer = (ServerPlayer) playerIn;
                 serverPlayer.connection.send(new ClientboundSetEquipmentPacket(playerIn.getId(),
                         Lists.newArrayList(Pair.of(EquipmentSlot.OFFHAND, playerIn.getOffhandItem()))));

@@ -5,11 +5,13 @@ import com.chaosbuffalo.mkweapons.items.effects.ItemEffects;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 
 public interface IArmorEffect extends IItemEffect {
     Codec<IArmorEffect> DISPATCH_CODEC = ItemEffects.ARMOR_EFFECT_CODEC;
+    MapCodec<IArmorEffect> DISPATCH_MAP_CODEC = ItemEffects.ARMOR_EFFECT_MAP_CODEC;
 
     default IArmorEffect copy() {
         Tag tag = serialize(NbtOps.INSTANCE);

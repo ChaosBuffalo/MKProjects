@@ -14,10 +14,6 @@ public interface IMKWeapon extends IMKEquipment, IMKAbilityProvider {
 
     IMKTier getMKTier();
 
-    default void reload() {
-
-    }
-
     List<? extends IItemEffect> getWeaponEffects(ItemStack item);
 
     List<? extends IItemEffect> getWeaponEffects();

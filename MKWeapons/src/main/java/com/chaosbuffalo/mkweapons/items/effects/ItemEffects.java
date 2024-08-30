@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class ItemEffects {
 
-    public static final Map<ResourceLocation, Codec<? extends IMeleeWeaponEffect>> MELEE_EFFECT_CODECS =
+    public static final Map<ResourceLocation, MapCodec<? extends IMeleeWeaponEffect>> MELEE_EFFECT_CODECS =
             new HashMap<>();
     public static final Codec<IMeleeWeaponEffect> MELEE_EFFECT_CODEC =
             CommonCodecs.createMapBackedDispatch(ResourceLocation.CODEC, MELEE_EFFECT_CODECS, IItemEffect::getTypeName);
@@ -34,10 +34,13 @@ public class ItemEffects {
             new HashMap<>();
     public static final Codec<IArmorEffect> ARMOR_EFFECT_CODEC =
             CommonCodecs.createMapBackedDispatch(ResourceLocation.CODEC, ARMOR_EFFECT_CODECS, IItemEffect::getTypeName);
+    public static final MapCodec<IArmorEffect> ARMOR_EFFECT_MAP_CODEC =
+            CommonCodecs.createMapBackedDispatchMap(ResourceLocation.CODEC, ARMOR_EFFECT_CODECS, IItemEffect::getTypeName);
 
     public static void meleeEffect(ResourceLocation type,
                                    Codec<? extends IMeleeWeaponEffect> codec) {
-        MELEE_EFFECT_CODECS.put(type, codec);
+        // FIXME: do this properly
+        MELEE_EFFECT_CODECS.put(type, MapCodec.assumeMapUnsafe(codec));
     }
 
     public static void rangedEffect(ResourceLocation type,

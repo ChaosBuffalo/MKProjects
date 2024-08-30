@@ -48,6 +48,18 @@ public class CommonCodecs {
         });
     }
 
+    public static <K, V> MapCodec<V> createMapBackedDispatchMap(Codec<K> keyCodec,
+                                                                Map<K, MapCodec<? extends V>> codecMap,
+                                                                Function<V, K> valueToKey) {
+        return keyCodec.dispatchMap(valueToKey, type -> {
+            MapCodec<? extends V> codec = codecMap.get(type);
+            if (codec != null) {
+                return codec;
+            }
+            throw new IllegalStateException("No codec registered for " + type);
+        });
+    }
+
     public static <K, V> Codec<V> createLookupDispatch(Codec<K> keyCodec,
                                                        Function<K, MapCodec<? extends V>> keyToValueCodec,
                                                        Function<V, K> valueToKey) {
