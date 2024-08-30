@@ -78,7 +78,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
                 )
                 .add(
                         Attributes.ENTITY_INTERACTION_RANGE,
-                        new AttributeModifier(modId, weaponType.getAttackSpeed(), AttributeModifier.Operation.ADD_VALUE),
+                        new AttributeModifier(modId, weaponType.getReach(), AttributeModifier.Operation.ADD_VALUE),
                         EquipmentSlotGroup.MAINHAND
                 )
                 .add(

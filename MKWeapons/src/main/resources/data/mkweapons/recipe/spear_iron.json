@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "H": {
+      "item": "mkweapons:haft"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    }
+  },
+  "pattern": [
+    "  I",
+    " H ",
+    "H  "
+  ],
+  "result": {
+    "count": 1,
+    "id": "mkweapons:spear_iron"
+  }
+}

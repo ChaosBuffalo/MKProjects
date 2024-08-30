@@ -32,6 +32,8 @@ public class StatsPage extends StatPageBase {
         STAT_PANEL_ATTRIBUTES.add(Attributes.ARMOR_TOUGHNESS);
         STAT_PANEL_ATTRIBUTES.add(Attributes.ATTACK_DAMAGE);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.RANGED_DAMAGE);
+        STAT_PANEL_ATTRIBUTES.add(Attributes.ENTITY_INTERACTION_RANGE);
+        STAT_PANEL_ATTRIBUTES.add(Attributes.BLOCK_INTERACTION_RANGE);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.HEAL_BONUS);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.HEAL_EFFICIENCY);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.BUFF_DURATION);

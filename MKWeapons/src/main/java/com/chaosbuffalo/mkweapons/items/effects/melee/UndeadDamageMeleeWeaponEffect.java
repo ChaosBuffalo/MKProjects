@@ -4,6 +4,8 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -17,8 +19,9 @@ import java.util.List;
 
 public class UndeadDamageMeleeWeaponEffect extends DamageMultiplierMeleeWeaponEffect {
     public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.undead_damage");
-    public static final Codec<UndeadDamageMeleeWeaponEffect> CODEC =
-            Codec.FLOAT.xmap(UndeadDamageMeleeWeaponEffect::new, DamageMultiplierMeleeWeaponEffect::getDamageMultiplier);
+    public static final MapCodec<UndeadDamageMeleeWeaponEffect> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.FLOAT.fieldOf("multiplier").forGetter(DamageMultiplierMeleeWeaponEffect::getDamageMultiplier)
+    ).apply(builder, UndeadDamageMeleeWeaponEffect::new));
 
     public UndeadDamageMeleeWeaponEffect(float multiplier) {
         super(NAME, ChatFormatting.GOLD, multiplier);

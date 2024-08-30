@@ -74,7 +74,7 @@ public class MKWeaponsGenerator {
                 }
             }
 
-            ResourceLocation modifierId = MKWeapons.id("mod_" + tier.getName());
+            ResourceLocation modifierId = MKWeapons.id("mod_" + tier.getName().getNamespace() + "_" + tier.getName().getPath());
 
             AttributeOption healthAttribute = new AttributeOption();
             healthAttribute.addAttributeModifier(Attributes.MAX_HEALTH, modifierId,

@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.effects.BleedEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -26,14 +27,14 @@ import java.util.List;
 
 public class BleedMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.bleed");
-    public static final Codec<BleedMeleeWeaponEffect> CODEC = RecordCodecBuilder.<BleedMeleeWeaponEffect>mapCodec(builder -> {
+    public static final MapCodec<BleedMeleeWeaponEffect> MAP_CODEC = RecordCodecBuilder.<BleedMeleeWeaponEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.FLOAT.fieldOf("damageMultiplier").forGetter(i -> i.damageMultiplier),
                 Codec.INT.fieldOf("maxStacks").forGetter(i -> i.maxStacks),
                 Codec.INT.fieldOf("durationSeconds").forGetter(i -> i.durationSeconds),
                 BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("skill").forGetter(i -> i.skill)
         ).apply(builder, BleedMeleeWeaponEffect::new);
-    }).codec();
+    });
 
     private final float damageMultiplier;
     private final int maxStacks;

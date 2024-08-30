@@ -8,6 +8,8 @@ import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -22,6 +24,9 @@ import java.util.List;
 
 public class DoubleStrikeMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.double_strike");
+    public static final MapCodec<DoubleStrikeMeleeWeaponEffect> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.DOUBLE.fieldOf("chance").forGetter(DoubleStrikeMeleeWeaponEffect::getChance)
+    ).apply(builder, DoubleStrikeMeleeWeaponEffect::new));
     public static final Codec<DoubleStrikeMeleeWeaponEffect> CODEC = Codec.DOUBLE.xmap(DoubleStrikeMeleeWeaponEffect::new, DoubleStrikeMeleeWeaponEffect::getChance);
 
     private final double chance;

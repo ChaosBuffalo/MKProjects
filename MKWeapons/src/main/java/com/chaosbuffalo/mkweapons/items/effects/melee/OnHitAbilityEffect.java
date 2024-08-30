@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -27,7 +28,7 @@ import java.util.function.Supplier;
 
 public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
     public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.on_hit_ability");
-    public static final Codec<OnHitAbilityEffect> CODEC = Codec.lazyInitialized(() ->
+    public static final MapCodec<OnHitAbilityEffect> MAP_CODEC =
             RecordCodecBuilder.<OnHitAbilityEffect>mapCodec(builder -> {
                 return builder.group(
                         Codec.DOUBLE.fieldOf("chance").forGetter(i -> i.procChance),
@@ -39,7 +40,7 @@ public class OnHitAbilityEffect extends BaseMeleeWeaponEffect {
                             return DataResult.error(() -> "Ability " + ability + " is not an EntityTargetingAbility");
                         }, Function.identity()).fieldOf("ability").forGetter(i -> i.abilitySupplier.get())
                 ).apply(builder, OnHitAbilityEffect::new);
-            }).codec());
+            });
 
 
     private final double procChance;

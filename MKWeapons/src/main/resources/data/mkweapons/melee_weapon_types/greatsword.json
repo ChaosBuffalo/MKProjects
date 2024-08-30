@@ -12,7 +12,7 @@
     },
     {
       "type": "mkweapons:weapon_effect.double_strike",
-      "value": 0.2
+      "chance": 0.2
     }
   ],
   "isTwoHanded": true,

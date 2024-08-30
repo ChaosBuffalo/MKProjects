@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": {
+      "tag": "c:leathers"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "SSS",
+    " L ",
+    "SSS"
+  ],
+  "result": {
+    "count": 3,
+    "id": "mkweapons:haft"
+  }
+}

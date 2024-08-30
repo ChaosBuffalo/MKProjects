@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -19,12 +20,12 @@ import java.util.List;
 
 public class ManaDrainWeaponEffect extends BaseMeleeWeaponEffect {
     public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.mana_drain");
-    public static final Codec<ManaDrainWeaponEffect> CODEC = RecordCodecBuilder.<ManaDrainWeaponEffect>mapCodec(builder -> {
+    public static final MapCodec<ManaDrainWeaponEffect> MAP_CODEC = RecordCodecBuilder.<ManaDrainWeaponEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.FLOAT.fieldOf("damage_multiplier").forGetter(i -> i.damageMultiplier),
                 Codec.FLOAT.fieldOf("efficiency").forGetter(i -> i.efficiency)
         ).apply(builder, ManaDrainWeaponEffect::new);
-    }).codec();
+    });
 
     private final float damageMultiplier;
     private final float efficiency;

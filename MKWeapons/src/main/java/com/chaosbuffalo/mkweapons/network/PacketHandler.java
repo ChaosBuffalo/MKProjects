@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkweapons.network;
 
+import com.chaosbuffalo.mkweapons.network.packets.SyncWeaponTypesPacket;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;

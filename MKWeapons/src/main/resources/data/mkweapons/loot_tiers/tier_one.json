@@ -15,8 +15,8 @@
                   "minValue": 5.0,
                   "modifier": {
                     "amount": 5.0,
-                    "name": "mkweapons:tier_one",
-                    "operation": 0
+                    "id": "mkweapons:mod_mkweapons_tier_one",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -30,8 +30,8 @@
                   "minValue": 0.5,
                   "modifier": {
                     "amount": 0.5,
-                    "name": "mkweapons:tier_one",
-                    "operation": 0
+                    "id": "mkweapons:mod_mkweapons_tier_one",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -40,164 +40,110 @@
           "potentialItems": [
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:battleaxe_stone",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:battleaxe_stone"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:dagger_stone",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:dagger_stone"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:greatsword_stone",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:greatsword_stone"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:katana_stone",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:katana_stone"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:longsword_stone",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:longsword_stone"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:mace_stone",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:mace_stone"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:spear_stone",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:spear_stone"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:staff_stone",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:staff_stone"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:warhammer_stone",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:warhammer_stone"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:battleaxe_wood",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:battleaxe_wood"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:dagger_wood",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:dagger_wood"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:greatsword_wood",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:greatsword_wood"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:katana_wood",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:katana_wood"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:longsword_wood",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:longsword_wood"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:mace_wood",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:mace_wood"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:spear_wood",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:spear_wood"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:staff_wood",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:staff_wood"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:warhammer_wood",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:warhammer_wood"
               }
             }
           ],
@@ -240,8 +186,8 @@
                   "minValue": 5.0,
                   "modifier": {
                     "amount": 5.0,
-                    "name": "mkweapons:tier_one",
-                    "operation": 0
+                    "id": "mkweapons:mod_mkweapons_tier_one",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -255,8 +201,8 @@
                   "minValue": 0.5,
                   "modifier": {
                     "amount": 0.5,
-                    "name": "mkweapons:tier_one",
-                    "operation": 0
+                    "id": "mkweapons:mod_mkweapons_tier_one",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -265,7 +211,7 @@
           "potentialItems": [
             {
               "item": {
-                "Count": 1,
+                "count": 1,
                 "id": "mkweapons:copper_ring"
               }
             }

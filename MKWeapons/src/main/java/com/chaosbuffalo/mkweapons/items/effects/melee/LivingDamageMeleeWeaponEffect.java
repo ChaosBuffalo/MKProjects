@@ -4,6 +4,8 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.FriendlyByteBuf;
@@ -20,8 +22,9 @@ import java.util.List;
 
 public class LivingDamageMeleeWeaponEffect extends DamageMultiplierMeleeWeaponEffect {
     public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.living_damage");
-    public static final Codec<LivingDamageMeleeWeaponEffect> CODEC =
-            Codec.FLOAT.xmap(LivingDamageMeleeWeaponEffect::new, DamageMultiplierMeleeWeaponEffect::getDamageMultiplier);
+    public static final MapCodec<LivingDamageMeleeWeaponEffect> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.FLOAT.fieldOf("multiplier").forGetter(LivingDamageMeleeWeaponEffect::getDamageMultiplier)
+    ).apply(builder, LivingDamageMeleeWeaponEffect::new));
     public static final StreamCodec<FriendlyByteBuf, LivingDamageMeleeWeaponEffect> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.FLOAT, LivingDamageMeleeWeaponEffect::getDamageMultiplier,
             LivingDamageMeleeWeaponEffect::new

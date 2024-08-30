@@ -12,11 +12,11 @@
     },
     {
       "type": "mkweapons:weapon_effect.undead_damage",
-      "value": 1.5
+      "multiplier": 1.5
     },
     {
       "type": "mkweapons:weapon_effect.double_strike",
-      "value": 0.1
+      "chance": 0.1
     }
   ],
   "isTwoHanded": false,

@@ -38,9 +38,9 @@ public class ItemEffects {
             CommonCodecs.createMapBackedDispatchMap(ResourceLocation.CODEC, ARMOR_EFFECT_CODECS, IItemEffect::getTypeName);
 
     public static void meleeEffect(ResourceLocation type,
-                                   Codec<? extends IMeleeWeaponEffect> codec) {
+                                   MapCodec<? extends IMeleeWeaponEffect> codec) {
         // FIXME: do this properly
-        MELEE_EFFECT_CODECS.put(type, MapCodec.assumeMapUnsafe(codec));
+        MELEE_EFFECT_CODECS.put(type, codec);
     }
 
     public static void rangedEffect(ResourceLocation type,
@@ -60,17 +60,17 @@ public class ItemEffects {
 
     static {
         // melee
-        meleeEffect(MeleeModifierEffect.NAME, MeleeModifierEffect.CODEC);
-        meleeEffect(BleedMeleeWeaponEffect.NAME, BleedMeleeWeaponEffect.CODEC);
-        meleeEffect(ComboStrikeMeleeWeaponEffect.NAME, ComboStrikeMeleeWeaponEffect.CODEC);
-        meleeEffect(DoubleStrikeMeleeWeaponEffect.NAME, DoubleStrikeMeleeWeaponEffect.CODEC);
-        meleeEffect(FuryStrikeMeleeWeaponEffect.NAME, FuryStrikeMeleeWeaponEffect.CODEC);
-        meleeEffect(StunMeleeWeaponEffect.NAME, StunMeleeWeaponEffect.CODEC);
-        meleeEffect(UndeadDamageMeleeWeaponEffect.NAME, UndeadDamageMeleeWeaponEffect.CODEC);
-        meleeEffect(MeleeSkillScalingEffect.NAME, MeleeSkillScalingEffect.CODEC);
-        meleeEffect(OnHitAbilityEffect.NAME, OnHitAbilityEffect.CODEC);
-        meleeEffect(LivingDamageMeleeWeaponEffect.NAME, LivingDamageMeleeWeaponEffect.CODEC);
-        meleeEffect(ManaDrainWeaponEffect.NAME, ManaDrainWeaponEffect.CODEC);
+        meleeEffect(MeleeModifierEffect.NAME, MeleeModifierEffect.MAP_CODEC);
+        meleeEffect(BleedMeleeWeaponEffect.NAME, BleedMeleeWeaponEffect.MAP_CODEC);
+        meleeEffect(ComboStrikeMeleeWeaponEffect.NAME, ComboStrikeMeleeWeaponEffect.MAP_CODEC);
+        meleeEffect(DoubleStrikeMeleeWeaponEffect.NAME, DoubleStrikeMeleeWeaponEffect.MAP_CODEC);
+        meleeEffect(FuryStrikeMeleeWeaponEffect.NAME, FuryStrikeMeleeWeaponEffect.MAP_CODEC);
+        meleeEffect(StunMeleeWeaponEffect.NAME, StunMeleeWeaponEffect.MAP_CODEC);
+        meleeEffect(UndeadDamageMeleeWeaponEffect.NAME, UndeadDamageMeleeWeaponEffect.MAP_CODEC);
+        meleeEffect(MeleeSkillScalingEffect.NAME, MeleeSkillScalingEffect.MAP_CODEC);
+        meleeEffect(OnHitAbilityEffect.NAME, OnHitAbilityEffect.MAP_CODEC);
+        meleeEffect(LivingDamageMeleeWeaponEffect.NAME, LivingDamageMeleeWeaponEffect.MAP_CODEC);
+        meleeEffect(ManaDrainWeaponEffect.NAME, ManaDrainWeaponEffect.MAP_CODEC);
 
         // ranged
         rangedEffect(RangedModifierEffect.NAME, RangedModifierEffect.MAP_CODEC);

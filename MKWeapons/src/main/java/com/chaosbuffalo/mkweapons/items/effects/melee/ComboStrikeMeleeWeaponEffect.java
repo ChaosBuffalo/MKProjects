@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -19,12 +20,12 @@ import java.util.List;
 
 public class ComboStrikeMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.combo_strike");
-    public static final Codec<ComboStrikeMeleeWeaponEffect> CODEC = RecordCodecBuilder.<ComboStrikeMeleeWeaponEffect>mapCodec(builder -> {
+    public static final MapCodec<ComboStrikeMeleeWeaponEffect> MAP_CODEC = RecordCodecBuilder.<ComboStrikeMeleeWeaponEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.INT.fieldOf("numberOfHits").forGetter(ComboStrikeMeleeWeaponEffect::getNumberOfHits),
                 Codec.DOUBLE.fieldOf("perHit").forGetter(ComboStrikeMeleeWeaponEffect::getPerHit)
         ).apply(builder, ComboStrikeMeleeWeaponEffect::new);
-    }).codec();
+    });
 
     protected final int numberOfHits;
     protected final double perHit;

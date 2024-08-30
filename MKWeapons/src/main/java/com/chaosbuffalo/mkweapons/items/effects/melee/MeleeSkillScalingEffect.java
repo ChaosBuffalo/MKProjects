@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -26,12 +27,12 @@ import java.util.List;
 
 public class MeleeSkillScalingEffect extends BaseMeleeWeaponEffect {
     public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.skill_scaling");
-    public static final Codec<MeleeSkillScalingEffect> CODEC = RecordCodecBuilder.<MeleeSkillScalingEffect>mapCodec(builder -> {
+    public static final MapCodec<MeleeSkillScalingEffect> MAP_CODEC = RecordCodecBuilder.<MeleeSkillScalingEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.DOUBLE.fieldOf("baseDamage").forGetter(i -> i.baseDamage),
                 BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("skill").forGetter(i -> i.skill)
         ).apply(builder, MeleeSkillScalingEffect::new);
-    }).codec();
+    });
     public static final ResourceLocation skillScaling = MKWeapons.id("melee_skill_scaling");
     private final double baseDamage;
     private final Holder<Attribute> skill;

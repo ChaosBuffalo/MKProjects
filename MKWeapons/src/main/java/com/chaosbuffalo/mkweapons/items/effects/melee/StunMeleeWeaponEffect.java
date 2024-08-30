@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -24,12 +25,12 @@ import java.util.List;
 
 public class StunMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.stun");
-    public static final Codec<StunMeleeWeaponEffect> CODEC = RecordCodecBuilder.<StunMeleeWeaponEffect>mapCodec(builder -> {
+    public static final MapCodec<StunMeleeWeaponEffect> MAP_CODEC = RecordCodecBuilder.<StunMeleeWeaponEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.DOUBLE.fieldOf("chance").forGetter(i -> i.stunChance),
                 Codec.INT.fieldOf("duration").forGetter(i -> i.stunDuration)
         ).apply(builder, StunMeleeWeaponEffect::new);
-    }).codec();
+    });
     public static final ResourceLocation PARTICLES = MKWeapons.id("stun_effect");
 
     private final int stunDuration;

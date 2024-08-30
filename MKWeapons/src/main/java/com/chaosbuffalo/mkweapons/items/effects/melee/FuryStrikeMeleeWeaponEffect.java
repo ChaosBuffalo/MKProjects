@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -19,12 +20,12 @@ import java.util.List;
 
 public class FuryStrikeMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     public static final ResourceLocation NAME = MKWeapons.id("weapon_effect.fury_strike");
-    public static final Codec<FuryStrikeMeleeWeaponEffect> CODEC = RecordCodecBuilder.<FuryStrikeMeleeWeaponEffect>mapCodec(builder -> {
+    public static final MapCodec<FuryStrikeMeleeWeaponEffect> MAP_CODEC = RecordCodecBuilder.<FuryStrikeMeleeWeaponEffect>mapCodec(builder -> {
         return builder.group(
                 Codec.INT.fieldOf("numberOfHits").forGetter(FuryStrikeMeleeWeaponEffect::getNumberOfHits),
                 Codec.DOUBLE.fieldOf("perHit").forGetter(FuryStrikeMeleeWeaponEffect::getPerHit)
         ).apply(builder, FuryStrikeMeleeWeaponEffect::new);
-    }).codec();
+    });
 
     protected final int numberOfHits;
     protected final double perHit;

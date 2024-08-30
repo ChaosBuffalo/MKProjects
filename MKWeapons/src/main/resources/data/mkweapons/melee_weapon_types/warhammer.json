@@ -12,7 +12,7 @@
     },
     {
       "type": "mkweapons:weapon_effect.undead_damage",
-      "value": 2.0
+      "multiplier": 2.0
     },
     {
       "type": "mkweapons:weapon_effect.stun",
