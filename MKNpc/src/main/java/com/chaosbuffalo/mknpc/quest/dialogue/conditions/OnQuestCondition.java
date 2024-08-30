@@ -6,21 +6,19 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
-import java.util.Collections;
 import java.util.UUID;
 
 public class OnQuestCondition extends DialogueCondition {
-    public static final Codec<OnQuestCondition> CODEC = RecordCodecBuilder.<OnQuestCondition>mapCodec(builder ->
-            builder.group(
-                    UUIDUtil.STRING_CODEC.fieldOf("questId").forGetter(i -> i.questId),
-                    Codec.STRING.fieldOf("questStep").forGetter(i -> i.questStep)
-            ).apply(builder, OnQuestCondition::new)
-    ).codec();
+    public static final MapCodec<OnQuestCondition> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            UUIDUtil.STRING_CODEC.fieldOf("questId").forGetter(i -> i.questId),
+            Codec.STRING.fieldOf("questStep").forGetter(i -> i.questStep)
+    ).apply(builder, OnQuestCondition::new));
 
     private final UUID questId;
     private final String questStep;

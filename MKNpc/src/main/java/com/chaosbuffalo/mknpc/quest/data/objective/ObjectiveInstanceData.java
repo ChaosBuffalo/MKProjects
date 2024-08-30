@@ -1,7 +1,8 @@
 package com.chaosbuffalo.mknpc.quest.data.objective;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 public abstract class ObjectiveInstanceData implements INBTSerializable<CompoundTag> {
 
@@ -9,7 +10,7 @@ public abstract class ObjectiveInstanceData implements INBTSerializable<Compound
 
     }
 
-    public ObjectiveInstanceData(CompoundTag nbt) {
-        deserializeNBT(nbt);
+    public ObjectiveInstanceData(HolderLookup.Provider provider, CompoundTag nbt) {
+        deserializeNBT(provider, nbt);
     }
 }

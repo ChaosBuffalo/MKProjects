@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.data.providers.MKDataProvider;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
@@ -18,11 +19,11 @@ public abstract class QuestDefinitionProvider extends MKDataProvider {
         super(generator, modId, "Quest Definitions");
     }
 
-    public CompletableFuture<?> writeDefinition(QuestDefinition definition, CachedOutput pOutput) {
+    public CompletableFuture<?> writeDefinition(QuestDefinition definition, CachedOutput pOutput, HolderLookup.Provider provider) {
         Path outputFolder = this.generator.getPackOutput().getOutputFolder();
         ResourceLocation key = definition.getName();
         Path path = outputFolder.resolve("data/" + key.getNamespace() + "/mkquests/" + key.getPath() + ".json");
-        JsonElement element = definition.serialize(JsonOps.INSTANCE);
+        JsonElement element = definition.serialize(JsonOps.INSTANCE, provider);
         return DataProvider.saveStable(pOutput, element, path);
     }
 }

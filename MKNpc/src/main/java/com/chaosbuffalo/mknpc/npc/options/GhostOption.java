@@ -5,19 +5,18 @@ import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 public class GhostOption extends NpcDefinitionOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "ghost");
-    public static final Codec<GhostOption> CODEC = RecordCodecBuilder.<GhostOption>mapCodec(builder -> {
-        return builder.group(
-                Codec.FLOAT.fieldOf("ghost_translucency").forGetter(GhostOption::getGhostTranslucency),
-                Codec.BOOL.fieldOf("ghost_armor").forGetter(GhostOption::getGhostArmor),
-                Codec.FLOAT.fieldOf("armor_translucency").forGetter(GhostOption::getArmorTranslucency)
-        ).apply(builder, GhostOption::new);
-    }).codec();
+    public static final ResourceLocation NAME = MKNpc.id("ghost");
+    public static final MapCodec<GhostOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.FLOAT.fieldOf("ghost_translucency").forGetter(GhostOption::getGhostTranslucency),
+            Codec.BOOL.fieldOf("ghost_armor").forGetter(GhostOption::getGhostArmor),
+            Codec.FLOAT.fieldOf("armor_translucency").forGetter(GhostOption::getArmorTranslucency)
+    ).apply(builder, GhostOption::new));
 
     private float ghostTranslucency;
     private boolean doGhostArmor;

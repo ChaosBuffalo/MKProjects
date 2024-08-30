@@ -14,6 +14,8 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ColorRGBA;
+import net.minecraft.util.FastColor;
 
 import java.util.function.Function;
 
@@ -49,7 +51,9 @@ public class MKAdditionalBipedLayer<T extends MKEntity, M extends HumanoidModel<
 
     protected static <T extends MKEntity> void renderTranslucentModel(HumanoidModel<T> modelIn, ResourceLocation textureLocationIn, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn, T entityIn, float red, float green, float blue) {
         VertexConsumer ivertexbuilder = bufferIn.getBuffer(RenderType.entityTranslucent(textureLocationIn, false));
-        modelIn.renderToBuffer(matrixStackIn, ivertexbuilder, packedLightIn, LivingEntityRenderer.getOverlayCoords(entityIn, 0.0F), red, green, blue, 1.0F);
+
+        int color = FastColor.ARGB32.colorFromFloat(1.0f, red, green, blue);
+        modelIn.renderToBuffer(matrixStackIn, ivertexbuilder, packedLightIn, LivingEntityRenderer.getOverlayCoords(entityIn, 0.0F), color);
     }
 
     protected static <T extends MKEntity> void renderCopyCutoutModel(HumanoidModel<T> modelParentIn, HumanoidModel<T> modelIn,
@@ -62,7 +66,8 @@ public class MKAdditionalBipedLayer<T extends MKEntity, M extends HumanoidModel<
             modelParentIn.copyPropertiesTo(modelIn);
             modelIn.prepareMobModel(entityIn, limbSwing, limbSwingAmount, partialTicks);
             modelIn.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-            renderColoredCutoutModel(modelIn, textureLocationIn, matrixStackIn, bufferIn, packedLightIn, entityIn, red, green, blue);
+            int color = FastColor.ARGB32.colorFromFloat(1.0f, red, green, blue);
+            renderColoredCutoutModel(modelIn, textureLocationIn, matrixStackIn, bufferIn, packedLightIn, entityIn, color);
         }
 
     }

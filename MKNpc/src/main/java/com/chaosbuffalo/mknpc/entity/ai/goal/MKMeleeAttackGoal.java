@@ -12,8 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.EnumSet;
 import java.util.Optional;
@@ -89,7 +88,7 @@ public class MKMeleeAttackGoal extends Goal {
         MKEntityData cap = entity.getEntityDataCap();
         CombatExtensionModule combat = cap.getCombatExtension();
         combat.recordSwingHit();
-        MinecraftForge.EVENT_BUS.post(new PostAttackEvent(cap));
+        NeoForge.EVENT_BUS.post(new PostAttackEvent(cap));
         if (combat.getCurrentSwingCount() > 0 && combat.getCurrentSwingCount() % getComboCount() == 0) {
             entity.subtractFromTicksSinceLastSwing(getComboDelay());
         }

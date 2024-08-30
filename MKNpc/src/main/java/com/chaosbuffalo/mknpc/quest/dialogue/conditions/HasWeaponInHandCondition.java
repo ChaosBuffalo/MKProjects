@@ -3,14 +3,14 @@ package com.chaosbuffalo.mknpc.quest.dialogue.conditions;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueConditionType;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.*;
 
 public class HasWeaponInHandCondition extends DialogueCondition {
     private static final HasWeaponInHandCondition INSTANCE = new HasWeaponInHandCondition();
-    public static final Codec<HasWeaponInHandCondition> CODEC = Codec.unit(INSTANCE);
+    public static final MapCodec<HasWeaponInHandCondition> MAP_CODEC = MapCodec.unit(INSTANCE);
 
     @Override
     public DialogueConditionType<? extends DialogueCondition> getType() {

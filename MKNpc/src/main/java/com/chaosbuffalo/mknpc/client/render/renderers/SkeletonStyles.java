@@ -8,14 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SkeletonStyles {
-    public static final ResourceLocation SKELETON_TEXTURES = new ResourceLocation(
+    public static final ResourceLocation SKELETON_TEXTURES = ResourceLocation.withDefaultNamespace(
             "textures/entity/skeleton/skeleton.png");
-    public static final ResourceLocation STRAY_SKELETON_TEXTURES = new ResourceLocation(
+    public static final ResourceLocation STRAY_SKELETON_TEXTURES = ResourceLocation.withDefaultNamespace(
             "textures/entity/skeleton/stray.png");
-    public static final ResourceLocation WITHER_SKELETON_TEXTURES = new ResourceLocation(
+    public static final ResourceLocation WITHER_SKELETON_TEXTURES = ResourceLocation.withDefaultNamespace(
             "textures/entity/skeleton/wither_skeleton.png");
 
-    public static final ResourceLocation STRAY_CLOTHES_TEXTURES = new ResourceLocation(
+    public static final ResourceLocation STRAY_CLOTHES_TEXTURES = ResourceLocation.withDefaultNamespace(
             "textures/entity/skeleton/stray_overlay.png");
 
     private static final Map<String, ResourceLocation> TEXTURE_VARIANTS = new HashMap<>();

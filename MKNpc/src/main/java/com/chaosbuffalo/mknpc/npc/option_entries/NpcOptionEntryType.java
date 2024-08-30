@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 public interface NpcOptionEntryType<T extends INpcOptionEntry> {
-    Codec<T> codec();
+    MapCodec<T> codec();
 }

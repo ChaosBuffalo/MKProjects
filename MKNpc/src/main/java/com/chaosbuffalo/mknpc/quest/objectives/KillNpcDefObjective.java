@@ -4,13 +4,13 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.EmptyInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -19,21 +19,21 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 import java.util.List;
 import java.util.Map;
 
 public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> implements IKillObjectiveHandler {
-    public static final Codec<KillNpcDefObjective> CODEC = RecordCodecBuilder.<KillNpcDefObjective>mapCodec(builder -> {
+    public static final MapCodec<KillNpcDefObjective> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> {
         return builder.group(
                 Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
                 ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
                 Codec.INT.fieldOf("count").forGetter(i -> i.requiredCount)
         ).apply(builder, KillNpcDefObjective::new);
-    }).codec();
+    });
 
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.kill_npc_def");
+    public static final ResourceLocation NAME = MKNpc.id("objective.kill_npc_def");
     private final ResourceLocation npcDefinition;
     private final int requiredCount;
 

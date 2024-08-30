@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -108,8 +109,8 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag compound) {
-        super.saveAdditional(compound);
+    protected void saveAdditional(CompoundTag compound, HolderLookup.Provider registries) {
+        super.saveAdditional(compound, registries);
         compound.putUUID("poiId", poiID);
         compound.putBoolean("hasUploadedToWorld", needsUploadToWorld);
         compound.putBoolean("placedByStructure", placedByStructure);
@@ -120,10 +121,10 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
     }
 
     @Override
-    public void load(CompoundTag compound) {
-        super.load(compound);
+    protected void loadAdditional(CompoundTag compound, HolderLookup.Provider registries) {
+        super.loadAdditional(compound, registries);
         if (compound.contains("structureName")) {
-            setStructureName(new ResourceLocation(compound.getString("structureName")));
+            setStructureName(ResourceLocation.parse(compound.getString("structureName")));
         }
         if (compound.contains("structureId")) {
             setStructureId(compound.getUUID("structureId"));

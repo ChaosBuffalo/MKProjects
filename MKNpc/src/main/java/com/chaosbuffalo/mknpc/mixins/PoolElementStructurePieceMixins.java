@@ -14,6 +14,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import org.spongepowered.asm.mixin.*;
 
@@ -33,6 +34,7 @@ public abstract class PoolElementStructurePieceMixins implements IMKPoolPiece {
     @Shadow
     @Final
     protected Rotation rotation;
+    @Shadow @Final private LiquidSettings liquidSettings;
     @Unique
     protected UUID mknpc$instanceId;
     @Unique
@@ -56,10 +58,10 @@ public abstract class PoolElementStructurePieceMixins implements IMKPoolPiece {
         if (getElement() instanceof IMKPoolElement poolElement) {
             ResourceLocation name = pStructureManager.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(mknpc$structure);
             poolElement.mkPlace(structureTemplateManager, pLevel, pStructureManager, pGenerator,
-                    position, pPos, rotation, pBox, pRandom, pKeepJigsaws, name, mknpc$instanceId);
+                    position, pPos, rotation, pBox, pRandom, liquidSettings, pKeepJigsaws, name, mknpc$instanceId);
         } else {
             getElement().place(structureTemplateManager, pLevel, pStructureManager, pGenerator, position, pPos, rotation,
-                    pBox, pRandom, pKeepJigsaws);
+                    pBox, pRandom, liquidSettings, pKeepJigsaws);
         }
     }
 }

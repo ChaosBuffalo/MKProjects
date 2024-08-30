@@ -5,12 +5,17 @@ import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 public class MKSizeOption extends NpcDefinitionOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "mk_size");
+    public static final ResourceLocation NAME = MKNpc.id("mk_size");
     public static final Codec<MKSizeOption> CODEC = Codec.FLOAT.xmap(MKSizeOption::new, MKSizeOption::getValue);
+    public static final MapCodec<MKSizeOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.FLOAT.fieldOf("scale").forGetter(i -> i.scale)
+    ).apply(builder, MKSizeOption::new));
 
     private final float scale;
 

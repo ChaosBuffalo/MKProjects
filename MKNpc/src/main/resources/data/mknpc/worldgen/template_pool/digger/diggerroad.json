@@ -5,6 +5,7 @@
         "bWaterLog": false,
         "element_type": "mknpc:mk_single_jigsaw",
         "location": "mknpc:digger/diggerrd1",
+        "override_liquid_settings": "ignore_waterlogging",
         "processors": {
           "processors": []
         },

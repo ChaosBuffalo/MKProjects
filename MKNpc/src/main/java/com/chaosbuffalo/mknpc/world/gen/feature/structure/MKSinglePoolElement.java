@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -21,23 +22,30 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
 public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolElement {
     private static final Holder<StructureProcessorList> EMPTY = Holder.direct(new StructureProcessorList(List.of()));
 
-    public static final Codec<MKSinglePoolElement> codec = RecordCodecBuilder.create((builder) ->
-            builder.group(templateCodec(), processorsCodec(), projectionCodec(),
-                            Codec.BOOL.fieldOf("bWaterLog").forGetter(MKSinglePoolElement::doWaterlog))
-                    .apply(builder, MKSinglePoolElement::new));
+    public static final MapCodec<MKSinglePoolElement> codec = RecordCodecBuilder.mapCodec((builder) -> builder.group(
+            templateCodec(),
+            processorsCodec(),
+            projectionCodec(),
+            overrideLiquidSettingsCodec(),
+            Codec.BOOL.fieldOf("bWaterLog").forGetter(MKSinglePoolElement::doWaterlog)
+    ).apply(builder, MKSinglePoolElement::new));
 
+    // TODO: see if this is still needed now that overrideLiquidSettingsCodec exists
     private final boolean bWaterlogBlocks;
 
-    protected MKSinglePoolElement(Either<ResourceLocation, StructureTemplate> templateEither,
-                                  Holder<StructureProcessorList> structureProcessor,
-                                  StructureTemplatePool.Projection placementBehaviour, boolean waterlogBlocks) {
-        super(templateEither, structureProcessor, placementBehaviour);
+    protected MKSinglePoolElement(Either<ResourceLocation, StructureTemplate> template,
+                                  Holder<StructureProcessorList> processors,
+                                  StructureTemplatePool.Projection projection,
+                                  Optional<LiquidSettings> overrideLiquidSettings,
+                                  Boolean waterlogBlocks) {
+        super(template, processors, projection, overrideLiquidSettings);
         bWaterlogBlocks = waterlogBlocks;
     }
 
@@ -61,14 +69,14 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolEle
     }
 
     @Override
-    protected StructurePlaceSettings getSettings(Rotation pRotation, BoundingBox pBoundingBox, boolean keepJigsaws) {
-        StructurePlaceSettings settings = super.getSettings(pRotation, pBoundingBox, keepJigsaws);
-        settings.keepLiquids = doWaterlog();
+    protected StructurePlaceSettings getSettings(Rotation rotation, BoundingBox boundingBox, LiquidSettings liquidSettings, boolean offset) {
+        var settings = super.getSettings(rotation, boundingBox, liquidSettings, offset);
+        settings.setLiquidSettings(doWaterlog() ? LiquidSettings.APPLY_WATERLOGGING : LiquidSettings.IGNORE_WATERLOGGING);
         return settings;
     }
 
     @Override
-    public boolean place(StructureTemplateManager pStructureTemplateManager, WorldGenLevel pLevel, StructureManager pStructureManager, ChunkGenerator pGenerator, BlockPos p_227306_, BlockPos p_227307_, Rotation pRotation, BoundingBox pBox, RandomSource pRandom, boolean p_227311_) {
+    public boolean place(StructureTemplateManager structureTemplateManager, WorldGenLevel level, StructureManager structureManager, ChunkGenerator generator, BlockPos offset, BlockPos pos, Rotation rotation, BoundingBox box, RandomSource random, LiquidSettings liquidSettings, boolean keepJigsaws) {
         throw new IllegalStateException("Should not get here. Did the mixins fail?");
     }
 
@@ -78,16 +86,17 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolEle
     }
 
     public static Function<StructureTemplatePool.Projection, StructurePoolElement> forTemplate(ResourceLocation pieceName, boolean doWaterlog) {
-        return (placementBehaviour) -> new MKSinglePoolElement(Either.left(pieceName), EMPTY, placementBehaviour, doWaterlog);
+        LiquidSettings liquidSettings = doWaterlog ? LiquidSettings.APPLY_WATERLOGGING : LiquidSettings.IGNORE_WATERLOGGING;
+        return (placementBehaviour) -> new MKSinglePoolElement(Either.left(pieceName), EMPTY, placementBehaviour, Optional.of(liquidSettings), doWaterlog);
     }
 
     @Override
     public boolean mkPlace(StructureTemplateManager pStructureTemplateManager, WorldGenLevel pLevel,
                            StructureManager pStructureManager, ChunkGenerator pGenerator,
                            BlockPos piecePosition, BlockPos firstPieceBottomCenter, Rotation pRotation, BoundingBox pBox,
-                           RandomSource pRandom, boolean pKeepJigsaws, ResourceLocation name, UUID instanceId) {
+                           RandomSource pRandom, LiquidSettings liquidSettings, boolean pKeepJigsaws, ResourceLocation name, UUID instanceId) {
         StructureTemplate template = this.getTemplate(pStructureTemplateManager);
-        StructurePlaceSettings settings = this.getSettings(pRotation, pBox, pKeepJigsaws);
+        StructurePlaceSettings settings = this.getSettings(pRotation, pBox, liquidSettings, pKeepJigsaws);
         if (!template.placeInWorld(pLevel, piecePosition, firstPieceBottomCenter, settings, pRandom, 18)) {
             return false;
         } else {
@@ -97,7 +106,7 @@ public class MKSinglePoolElement extends SinglePoolElement implements IMKPoolEle
             settings.popProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
             var dataBlocks = StructureTemplate.processBlockInfos(pLevel, piecePosition, firstPieceBottomCenter, settings, dataMarkers, template);
             for (var markerBlock : dataBlocks) {
-                if (pBox.isInside(markerBlock.pos)) {
+                if (pBox.isInside(markerBlock.pos())) {
                     mkHandleDataMarker(pLevel, markerBlock, piecePosition, pRotation, pRandom, pBox, name, instanceId);
                 }
             }

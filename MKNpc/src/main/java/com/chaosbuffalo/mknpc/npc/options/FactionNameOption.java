@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.npc.option_entries.FactionNameOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INameEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -21,13 +22,13 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class FactionNameOption extends WorldPermanentOption implements INameProvider {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "faction_name");
-    public static final Codec<FactionNameOption> CODEC = RecordCodecBuilder.<FactionNameOption>mapCodec(builder -> {
+    public static final ResourceLocation NAME = MKNpc.id("faction_name");
+    public static final MapCodec<FactionNameOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> {
         return builder.group(
                 Codec.STRING.optionalFieldOf("title").forGetter(i -> Optional.ofNullable(i.title)),
                 Codec.BOOL.optionalFieldOf("hasLastName", false).forGetter(i -> i.hasLastName)
         ).apply(builder, FactionNameOption::new);
-    }).codec();
+    });
 
     @Nullable
     private String title;

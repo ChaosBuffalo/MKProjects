@@ -6,23 +6,23 @@ import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 public class MKLootReward extends QuestReward {
-    public static final Codec<MKLootReward> CODEC = RecordCodecBuilder.<MKLootReward>mapCodec(builder ->
+    public static final MapCodec<MKLootReward> MAP_CODEC = RecordCodecBuilder.<MKLootReward>mapCodec(builder ->
             builder.group(
                     ResourceLocation.CODEC.fieldOf("loot_tier").forGetter(i -> i.lootTier),
                     ResourceLocation.CODEC.fieldOf("loot_slot").forGetter(i -> i.lootSlot),
-                    ExtraCodecs.COMPONENT.fieldOf("description").forGetter(i -> i.description)
+                    ComponentSerialization.CODEC.fieldOf("description").forGetter(i -> i.description)
             ).apply(builder, MKLootReward::new)
-    ).codec();
+    );
 
     private final ResourceLocation lootTier;
     private final ResourceLocation lootSlot;

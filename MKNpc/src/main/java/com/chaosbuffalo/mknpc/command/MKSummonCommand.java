@@ -43,9 +43,9 @@ public class MKSummonCommand {
         double difficulty_value = DoubleArgumentType.getDouble(ctx, "difficulty_value");
         NpcDefinition definition = ctx.getSource().registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(definition_id);
         if (definition != null) {
-            Entity entity = definition.createEntity(player.getLevel(), player.position(), difficulty_value);
+            Entity entity = definition.createEntity(player.level(), player.position(), difficulty_value);
             if (entity != null) {
-                player.getLevel().addFreshEntity(entity);
+                player.level().addFreshEntity(entity);
                 // TODO: fix spawn
 //                if (entity instanceof Mob) {
 //                    ((Mob) entity).finalizeSpawn(player.getLevel(), player.getLevel().getCurrentDifficultyAt(

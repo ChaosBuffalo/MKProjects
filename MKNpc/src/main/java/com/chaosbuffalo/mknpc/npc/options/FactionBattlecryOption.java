@@ -5,11 +5,10 @@ import com.chaosbuffalo.mkfaction.faction.FactionGreetings;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.NpcOptionEntryTypes;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.chaosbuffalo.mknpc.npc.option_entries.FactionBattlecryOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
@@ -17,9 +16,9 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class FactionBattlecryOption extends WorldPermanentOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "faction_battlecry");
+    public static final ResourceLocation NAME = MKNpc.id("faction_battlecry");
     public static final FactionBattlecryOption INSTANCE = new FactionBattlecryOption();
-    public static final Codec<FactionBattlecryOption> CODEC = Codec.unit(INSTANCE);
+    public static final MapCodec<FactionBattlecryOption> MAP_CODEC = MapCodec.unit(INSTANCE);
 
     public FactionBattlecryOption() {
         super(NAME, ApplyOrder.LATE);

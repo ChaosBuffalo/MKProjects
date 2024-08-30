@@ -5,12 +5,17 @@ import com.chaosbuffalo.mknpc.entity.IModelLookProvider;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 public class RenderGroupOption extends NpcDefinitionOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "render_group");
+    public static final ResourceLocation NAME = MKNpc.id("render_group");
     public static final Codec<RenderGroupOption> CODEC = Codec.STRING.xmap(RenderGroupOption::new, RenderGroupOption::getValue);
+    public static final MapCodec<RenderGroupOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.STRING.fieldOf("renderGroup").forGetter(i -> i.renderGroup)
+    ).apply(builder, RenderGroupOption::new));
 
     private final String renderGroup;
 

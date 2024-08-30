@@ -15,6 +15,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -106,7 +107,7 @@ public class QuestDefinition {
     }
 
     private static ResourceLocation makeTreeId(ResourceLocation questName) {
-        return new ResourceLocation(MKNpc.MODID, String.format("give_quest.%s.%s", questName.getNamespace(), questName.getPath()));
+        return MKNpc.id(String.format("give_quest.%s.%s", questName.getNamespace(), questName.getPath()));
     }
 
     public DialogueTree getStartQuestTree() {
@@ -166,21 +167,21 @@ public class QuestDefinition {
     }
 
 
-    public <D> D serialize(DynamicOps<D> ops) {
+    public <D> D serialize(DynamicOps<D> ops, HolderLookup.Provider provider) {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
-        builder.put(ops.createString("quests"), ops.createList(questChain.stream().map(x -> x.serialize(ops))));
+        builder.put(ops.createString("quests"), ops.createList(questChain.stream().map(x -> x.serialize(ops, provider))));
         builder.put(ops.createString("repeatable"), ops.createBoolean(isRepeatable()));
-        builder.put(ops.createString("questName"), ops.createString(Component.Serializer.toJson(questName)));
+        builder.put(ops.createString("questName"), ops.createString(Component.Serializer.toJson(questName, provider)));
         builder.put(ops.createString("requirements"), ops.createList(requirements.stream().flatMap(x -> QuestRequirement.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
         builder.put(ops.createString("questMode"), ops.createInt(getMode().ordinal()));
         builder.put(ops.createString("dialogue"), startQuestTree.serialize(ops));
         return ops.createMap(builder.build());
     }
 
-    public <D> void deserialize(Dynamic<D> dynamic) {
+    public <D> void deserialize(Dynamic<D> dynamic, HolderLookup.Provider provider) {
         List<Quest> dQuests = dynamic.get("quests").asList(d -> {
             Quest q = new Quest();
-            q.deserialize(d);
+            q.deserialize(d, provider);
             return q;
         });
         questIndex.clear();
@@ -190,7 +191,7 @@ public class QuestDefinition {
             addQuest(quest);
         }
         questName = Component.Serializer.fromJson(
-                dynamic.get("questName").asString(Component.Serializer.toJson(defaultQuestName)));
+                dynamic.get("questName").asString(Component.Serializer.toJson(defaultQuestName, provider)), provider);
         mode = QuestMode.values()[dynamic.get("questMode").asInt(0)];
         dynamic.get("requirements").asStream().forEach(x -> {
             QuestRequirement.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addRequirement);

@@ -1,40 +1,40 @@
 package com.chaosbuffalo.mknpc.network;
 
-import com.chaosbuffalo.mknpc.MKNpc;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
 
+import com.chaosbuffalo.mknpc.MKNpc;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+
+@EventBusSubscriber(modid= MKNpc.MODID, bus= EventBusSubscriber.Bus.MOD)
 public class PacketHandler {
 
-    private static SimpleChannel networkChannel;
     private static final String VERSION = "1.0";
 
-    public static void setupHandler() {
-        networkChannel = NetworkRegistry.newSimpleChannel(new ResourceLocation(MKNpc.MODID, "packet_handler"),
-                () -> VERSION,
-                s -> s.equals(VERSION),
-                s -> s.equals(VERSION));
-        registerMessages();
-    }
 
-    public static SimpleChannel getNetworkChannel() {
-        return networkChannel;
-    }
-
-    public static void registerMessages() {
-        int id = 1;
-        networkChannel.registerMessage(id++, NpcDefinitionClientUpdatePacket.class,
-                NpcDefinitionClientUpdatePacket::toBytes,
-                NpcDefinitionClientUpdatePacket::new, NpcDefinitionClientUpdatePacket::handle);
-        networkChannel.registerMessage(id++, SetSpawnListPacket.class,
-                SetSpawnListPacket::toBytes,
-                SetSpawnListPacket::new, SetSpawnListPacket::handle);
-        networkChannel.registerMessage(id++, OpenMKSpawnerPacket.class,
-                OpenMKSpawnerPacket::toBytes,
-                OpenMKSpawnerPacket::new, OpenMKSpawnerPacket::handle);
-        networkChannel.registerMessage(id++, FinalizeMKSpawnerPacket.class,
-                FinalizeMKSpawnerPacket::toBytes,
-                FinalizeMKSpawnerPacket::new, FinalizeMKSpawnerPacket::handle);
+    @SubscribeEvent
+    public static void register(final RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar(VERSION);
+        registrar.playToServer(
+                SetSpawnListPacket.TYPE,
+                SetSpawnListPacket.STREAM_CODEC,
+                SetSpawnListPacket::handle
+        );
+        registrar.playToClient(
+                OpenMKSpawnerPacket.TYPE,
+                OpenMKSpawnerPacket.STREAM_CODEC,
+                OpenMKSpawnerPacket::handle
+        );
+        registrar.playToClient(
+                NpcDefinitionClientUpdatePacket.TYPE,
+                NpcDefinitionClientUpdatePacket.STREAM_CODEC,
+                NpcDefinitionClientUpdatePacket::handle
+        );
+        registrar.playToServer(
+                FinalizeMKSpawnerPacket.TYPE,
+                FinalizeMKSpawnerPacket.STREAM_CODEC,
+                FinalizeMKSpawnerPacket::handle
+        );
     }
 }

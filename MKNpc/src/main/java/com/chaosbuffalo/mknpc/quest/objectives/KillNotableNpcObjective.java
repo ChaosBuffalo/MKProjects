@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.quest.objectives;
 
+import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -11,26 +11,27 @@ import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class KillNotableNpcObjective extends QuestObjective<UUIDInstanceData> implements IKillObjectiveHandler {
-    public static final Codec<KillNotableNpcObjective> CODEC = RecordCodecBuilder.<KillNotableNpcObjective>mapCodec(builder -> {
+    public static final MapCodec<KillNotableNpcObjective> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> {
         return builder.group(
                 Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
                 QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
                 ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition)
         ).apply(builder, KillNotableNpcObjective::new);
-    }).codec();
+    });
 
     private final ResourceLocation npcDefinition;
 
@@ -54,7 +55,7 @@ public class KillNotableNpcObjective extends QuestObjective<UUIDInstanceData> im
                                             LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = getInstanceData(quest);
-            boolean applies = event.getEntity().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY)
+            boolean applies = IEntityNpcData.get(event.getEntity())
                     .map(x -> x.getNotableUUID().equals(objData.getUUID()))
                     .orElse(false);
             if (applies) {

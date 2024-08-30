@@ -12,7 +12,7 @@ public class ModelLook {
     private final ResourceLocation baseTexture;
     private final ModelStyle baseStyle;
     private final Map<String, ResourceLocation> layerTexture;
-    public static final ResourceLocation MISSING_TEXTURE = new ResourceLocation(MKNpc.MODID, "textures/entity/missing_texture.png");
+    public static final ResourceLocation MISSING_TEXTURE = MKNpc.id("textures/entity/missing_texture.png");
 
     public ModelLook(ModelStyle baseStyle, ResourceLocation baseTexture, ResourceLocation... textureLayers) {
         this.baseTexture = baseTexture;

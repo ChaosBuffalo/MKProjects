@@ -9,7 +9,7 @@ import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueEffectTypes;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
@@ -20,11 +20,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class AdvanceQuestChainEffect extends DialogueEffect implements IReceivesChainId {
-    public static final Codec<AdvanceQuestChainEffect> CODEC = RecordCodecBuilder.<AdvanceQuestChainEffect>mapCodec(builder ->
+    public static final MapCodec<AdvanceQuestChainEffect> MAP_CODEC = RecordCodecBuilder.mapCodec(builder ->
             builder.group(
                     UUIDUtil.STRING_CODEC.optionalFieldOf("chainId").forGetter(i -> i.chainId.equals(Util.NIL_UUID) ? Optional.empty() : Optional.of(i.chainId))
             ).apply(builder, AdvanceQuestChainEffect::new)
-    ).codec();
+    );
 
     private UUID chainId;
 

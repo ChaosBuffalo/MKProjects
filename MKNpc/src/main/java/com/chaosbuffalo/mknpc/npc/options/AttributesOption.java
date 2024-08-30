@@ -6,6 +6,8 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,8 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AttributesOption extends NpcDefinitionOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "attributes");
+    public static final ResourceLocation NAME = MKNpc.id("attributes");
     public static final Codec<AttributesOption> CODEC = NpcAttributeEntry.CODEC.listOf().xmap(AttributesOption::new, i -> i.attributes);
+    public static final MapCodec<AttributesOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            NpcAttributeEntry.CODEC.listOf().fieldOf("attributes").forGetter(i -> i.attributes)
+    ).apply(builder, AttributesOption::new));
 
     private final List<NpcAttributeEntry> attributes;
 

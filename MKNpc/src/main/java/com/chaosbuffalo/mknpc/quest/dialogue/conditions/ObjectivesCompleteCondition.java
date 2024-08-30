@@ -9,6 +9,7 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
@@ -18,13 +19,13 @@ import net.minecraft.world.entity.LivingEntity;
 import java.util.*;
 
 public class ObjectivesCompleteCondition extends DialogueCondition implements IReceivesChainId {
-    public static final Codec<ObjectivesCompleteCondition> CODEC = RecordCodecBuilder.<ObjectivesCompleteCondition>mapCodec(builder ->
+    public static final MapCodec<ObjectivesCompleteCondition> MAP_CODEC = RecordCodecBuilder.mapCodec(builder ->
             builder.group(
                     Codec.STRING.fieldOf("questName").forGetter(i -> i.questName),
                     Codec.list(Codec.STRING).fieldOf("objectiveNames").forGetter(i -> i.objectiveNames),
                     UUIDUtil.STRING_CODEC.optionalFieldOf("chainId").forGetter(i -> i.chainId.equals(Util.NIL_UUID) ? Optional.empty() : Optional.of(i.chainId))
             ).apply(builder, ObjectivesCompleteCondition::new)
-    ).codec();
+    );
 
     private final List<String> objectiveNames = new ArrayList<>();
     private final String questName;

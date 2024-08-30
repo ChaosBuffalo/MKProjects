@@ -140,7 +140,9 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mk_widgets_version: mk_widgets_version,
             mk_core_version: mk_core_version,
             mk_faction_version: mk_faction_version,
-            mk_chat_version: mk_chat_version
+            mk_chat_version: mk_chat_version,
+            mk_weapons_version: mk_weapons_version,
+            mk_npc_version: mk_npc_version
     ]
     inputs.properties replaceProperties
     expand replaceProperties

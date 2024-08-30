@@ -28,7 +28,7 @@ public class TalentManager extends SimpleJsonResourceReloadListener {
     public static final String DEFINITION_FOLDER = "player_talents";
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-
+    public static final ResourceLocation INVALID_TREE = MKCore.id("tree.invalid");
     private final Map<ResourceLocation, TalentTreeDefinition> talentTreeMap = new HashMap<>();
     private Collection<TalentTreeDefinition> defaultTrees;
 

@@ -14,12 +14,13 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,9 +47,9 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         }
     }
 
-    public QuestChainInstance(CompoundTag nbt, Level level) {
+    public QuestChainInstance(HolderLookup.Provider provider, CompoundTag nbt, Level level) {
         this.level = level;
-        deserializeNBT(nbt);
+        deserializeNBT(provider, nbt);
     }
 
     public void generateDialogue(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
@@ -128,11 +129,11 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
         nbt.putUUID("questId", questId);
         nbt.putString("definitionId", definition.getName().toString());
-        nbt.put("questData", serializeQuestParameters());
+        nbt.put("questData", serializeQuestParameters(provider));
         if (questSourceNpc != null) {
             nbt.putUUID("questSource", questSourceNpc);
         }
@@ -144,23 +145,23 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         return nbt;
     }
 
-    private CompoundTag serializeQuestParameters() {
+    private CompoundTag serializeQuestParameters(HolderLookup.Provider provider) {
         CompoundTag questNbt = new CompoundTag();
         for (Map.Entry<String, QuestData> entry : questData.entrySet()) {
-            questNbt.put(entry.getKey(), entry.getValue().serializeNBT());
+            questNbt.put(entry.getKey(), entry.getValue().serializeNBT(provider));
         }
         return questNbt;
     }
 
     protected ResourceLocation getDialogueTreeName() {
-        return new ResourceLocation(MKNpc.MODID, String.format("quest_dialogue.%s", questId.toString()));
+        return ResourceLocation.fromNamespaceAndPath(MKNpc.MODID, String.format("quest_dialogue.%s", questId.toString()));
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         questId = nbt.getUUID("questId");
-        definition = QuestDefinitionManager.getDefinition(new ResourceLocation(nbt.getString("definitionId")));
-        deserializeQuestParameters(nbt.getCompound("questData"));
+        definition = QuestDefinitionManager.getDefinition(ResourceLocation.parse(nbt.getString("definitionId")));
+        deserializeQuestParameters(provider, nbt.getCompound("questData"));
         if (nbt.contains("questSource")) {
             questSourceNpc = nbt.getUUID("questSource");
         }
@@ -173,12 +174,12 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         }
     }
 
-    private void deserializeQuestParameters(CompoundTag tag) {
+    private void deserializeQuestParameters(HolderLookup.Provider provider, CompoundTag tag) {
         for (String key : tag.getAllKeys()) {
             Quest source = definition.getQuest(key);
             if (source != null) {
                 QuestData data = new QuestData(source);
-                data.deserializeNBT(tag.getCompound(key), source);
+                data.deserializeNBT(provider, tag.getCompound(key), source);
                 questData.put(source.getQuestName(), data);
             }
         }

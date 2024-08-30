@@ -22,7 +22,7 @@ public class ThreatSensor extends Sensor<MKEntity> {
 
 
     private float getAggroDistanceForEntity(LivingEntity entity) {
-        double aggroDist = entity.getAttributeValue(MKNpcAttributes.AGGRO_RANGE.get());
+        double aggroDist = entity.getAttributeValue(MKNpcAttributes.AGGRO_RANGE);
         return (float) (aggroDist * aggroDist);
     }
 

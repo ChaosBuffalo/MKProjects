@@ -6,23 +6,20 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.LivingEntity;
 
 public class HasEntitlementCondition extends DialogueCondition {
-    public static final Codec<HasEntitlementCondition> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
-            RecordCodecBuilder.<HasEntitlementCondition>mapCodec(builder ->
-                    builder.group(
-                            MKCoreRegistry.ENTITLEMENTS.getCodec().fieldOf("entitlement").forGetter(i -> i.entitlement)
-                    ).apply(builder, HasEntitlementCondition::new)
-            ).codec());
+    public static final MapCodec<HasEntitlementCondition> MAP_CODEC = RecordCodecBuilder.<HasEntitlementCondition>mapCodec(builder -> builder.group(
+            MKCoreRegistry.ENTITLEMENTS.holderByNameCodec().fieldOf("entitlement").forGetter(i -> i.entitlement)
+    ).apply(builder, HasEntitlementCondition::new));
 
-    private final MKEntitlement entitlement;
+    private final Holder<MKEntitlement> entitlement;
 
-    public HasEntitlementCondition(MKEntitlement entitlement) {
+    public HasEntitlementCondition(Holder<MKEntitlement> entitlement) {
         this.entitlement = entitlement;
     }
 
@@ -36,7 +33,7 @@ public class HasEntitlementCondition extends DialogueCondition {
         if (entitlement == null) {
             return false;
         }
-        return MKCore.getPlayer(serverPlayerEntity).map(x -> x.getEntitlements().hasEntitlement(entitlement)).orElse(false);
+        return MKCore.getPlayer(serverPlayerEntity).map(x -> x.getEntitlements().hasEntitlement(entitlement.value())).orElse(false);
     }
 
     @Override

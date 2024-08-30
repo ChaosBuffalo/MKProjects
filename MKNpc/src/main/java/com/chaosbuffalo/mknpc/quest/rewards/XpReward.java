@@ -1,17 +1,18 @@
 package com.chaosbuffalo.mknpc.quest.rewards;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
 public class XpReward extends QuestReward {
-    public static final Codec<XpReward> CODEC = RecordCodecBuilder.<XpReward>mapCodec(builder ->
+    public static final MapCodec<XpReward> MAP_CODEC = RecordCodecBuilder.<XpReward>mapCodec(builder ->
             builder.group(
                     Codec.INT.fieldOf("xp_amount").forGetter(i -> i.xpAmount)
             ).apply(builder, XpReward::new)
-    ).codec();
+    );
 
     private final int xpAmount;
 

@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.quest.requirements;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 public interface QuestRequirementType<T extends QuestRequirement> {
-    Codec<T> codec();
+    MapCodec<T> codec();
 }

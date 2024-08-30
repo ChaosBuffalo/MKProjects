@@ -5,17 +5,16 @@ import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueConditionType;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 
 public class HasSpentTalentPointsCondition extends DialogueCondition {
-    public static final Codec<HasSpentTalentPointsCondition> CODEC = RecordCodecBuilder.<HasSpentTalentPointsCondition>mapCodec(builder ->
-            builder.group(
-                    Codec.INT.fieldOf("talentCount").forGetter(i -> i.talentCount)
-            ).apply(builder, HasSpentTalentPointsCondition::new)
-    ).codec();
+    public static final MapCodec<HasSpentTalentPointsCondition> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.INT.fieldOf("talentCount").forGetter(i -> i.talentCount)
+    ).apply(builder, HasSpentTalentPointsCondition::new));
 
     private final int talentCount;
 

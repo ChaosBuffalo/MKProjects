@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.ObjectiveInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.mojang.serialization.Codec;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -19,8 +20,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public abstract class QuestObjective<T extends ObjectiveInstanceData> {
-    public static final Codec<QuestObjective<?>> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
-            QuestRegistries.QUEST_OBJECTIVES.getCodec().dispatch(QuestObjective::getType, QuestObjectiveType::codec));
+    public static final Codec<QuestObjective<?>> CODEC = Codec.lazyInitialized(() ->
+            QuestRegistries.QUEST_OBJECTIVES.byNameCodec().dispatch(QuestObjective::getType, QuestObjectiveType::codec));
 
     protected final String objectiveName;
     protected QuestStructureLocation location; // temporary
@@ -56,9 +57,9 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> {
 
     public abstract T instanceDataFactory();
 
-    public T loadInstanceData(CompoundTag nbt) {
+    public T loadInstanceData(HolderLookup.Provider provider, CompoundTag nbt) {
         T data = instanceDataFactory();
-        data.deserializeNBT(nbt);
+        data.deserializeNBT(provider, nbt);
         return data;
     }
 

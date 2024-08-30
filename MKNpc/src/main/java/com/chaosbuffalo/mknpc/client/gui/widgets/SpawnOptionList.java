@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class SpawnOptionList extends ScrollingList {
     private final Font font;
@@ -22,8 +23,8 @@ public class SpawnOptionList extends ScrollingList {
     }
 
     @Override
-    public void preDraw(PoseStack stack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
-        mkFill(stack, x, y, x + width, y + height, 0x55aaaaaa);
+    public void preDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+        graphics.fill(x, y, x + width, y + height, 0x55aaaaaa);
     }
 
     @Override

@@ -1,11 +1,9 @@
 package com.chaosbuffalo.mknpc.data;
 
 
-import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mkcore.data.providers.MKDataProvider;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.google.gson.JsonElement;
-import com.mojang.serialization.JsonOps;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
@@ -17,8 +15,11 @@ import java.util.concurrent.CompletableFuture;
 
 public abstract class NpcDefinitionProvider extends MKDataProvider {
 
-    public NpcDefinitionProvider(DataGenerator generator, String modId) {
+    protected final CompletableFuture<HolderLookup.Provider> lookupProvider;
+
+    public NpcDefinitionProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> lookupProvider, String modId) {
         super(generator, modId, "Npc Definitions");
+        this.lookupProvider = lookupProvider;
     }
 
     public CompletableFuture<?> writeDefinition(NpcDefinition definition, CachedOutput pOutput) {
@@ -26,7 +27,6 @@ public abstract class NpcDefinitionProvider extends MKDataProvider {
         ResourceLocation key = definition.getDefinitionName();
         Path local = Paths.get("data", key.getNamespace(), "mknpc", "mknpcs", key.getPath() + ".json");
         Path path = outputFolder.resolve(local);
-        JsonElement out = NpcDefinition.CODEC.encodeStart(JsonOps.INSTANCE, definition).getOrThrow(false, MKNpc.LOGGER::error);
-        return DataProvider.saveStable(pOutput, out, path);
+        return lookupProvider.thenCompose(registries -> DataProvider.saveStable(pOutput, registries, NpcDefinition.CODEC, definition, path));
     }
 }

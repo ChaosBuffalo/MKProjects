@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.npc;
 
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 public interface INotifyOnEntityDeath {
 

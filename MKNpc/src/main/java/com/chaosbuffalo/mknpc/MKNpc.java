@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc;
 
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
 import com.chaosbuffalo.mknpc.client.gui.screens.QuestPage;
 import com.chaosbuffalo.mknpc.command.NpcCommands;
@@ -18,22 +17,23 @@ import com.chaosbuffalo.mknpc.quest.QuestRegistries;
 import com.chaosbuffalo.mknpc.quest.dialogue.NpcDialogueUtils;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueEffectTypes;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEventManager;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
+import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Optional;
 
 
 @Mod(MKNpc.MODID)
@@ -44,21 +44,20 @@ public class MKNpc {
     private final NpcDefinitionManager npcDefinitionManager;
     private final QuestDefinitionManager questDefinitionManager;
 
-    public MKNpc() {
-        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+    public MKNpc(IEventBus modBus) {
         modBus.addListener(this::setup);
         modBus.addListener(this::clientSetup);
         modBus.addListener(this::enqueueIMC);
         modBus.addListener(this::processIMC);
         setupRegistries(modBus);
-
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
         NpcDialogueUtils.setupMKNpcHandlers();
         npcDefinitionManager = new NpcDefinitionManager();
         questDefinitionManager = new QuestDefinitionManager();
     }
 
     private void setupRegistries(IEventBus modBus) {
+        MKNpcAttachments.register(modBus);
         MKNpcAttributes.register(modBus);
         MKNpcBlocks.register(modBus);
         NpcCommands.register(modBus);
@@ -103,7 +102,6 @@ public class MKNpc {
 
 
     private void setup(final FMLCommonSetupEvent event) {
-        PacketHandler.setupHandler();
 //        MKNpcWorldGen.registerStructurePoolTypes();
     }
 
@@ -125,12 +123,16 @@ public class MKNpc {
         }
     }
 
-    public static LazyOptional<IEntityNpcData> getNpcData(Entity entity) {
-        return entity.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY);
+    public static Optional<IEntityNpcData> getNpcData(Entity entity) {
+        return IEntityNpcData.get(entity);
     }
 
-    public static LazyOptional<IPlayerQuestingData> getPlayerQuestData(Player entity) {
-        return entity.getCapability(NpcCapabilities.PLAYER_QUEST_DATA_CAPABILITY);
+    public static Optional<IPlayerQuestingData> getPlayerQuestData(Player entity) {
+        return IPlayerQuestingData.get(entity);
+    }
+
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 
 }

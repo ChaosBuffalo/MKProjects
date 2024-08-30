@@ -20,6 +20,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructure;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -287,14 +288,14 @@ public class WorldNpcDataHandler implements IWorldNpcData {
             if (chestLevel != null) {
                 BlockEntity entity = chestLevel.getBlockEntity(pos.pos());
                 if (entity != null) {
-                    entity.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(IChestNpcData::onLoad);
+                    IChestNpcData.get(entity).ifPresent(IChestNpcData::onLoad);
                 }
             }
         }
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         CompoundTag spawnConfig = new CompoundTag();
         for (UUID entityId : worldPermanentSpawnConfigurations.keySet()) {
@@ -304,19 +305,19 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         tag.put("spawnConfigs", spawnConfig);
         ListTag structuresNbt = new ListTag();
         for (MKStructureEntry structure : structureIndex.values()) {
-            structuresNbt.add(structure.serializeNBT());
+            structuresNbt.add(structure.serializeNBT(provider));
         }
         tag.put("structures", structuresNbt);
         ListTag questNbt = new ListTag();
         for (QuestChainInstance inst : quests.values()) {
-            questNbt.add(inst.serializeNBT());
+            questNbt.add(inst.serializeNBT(provider));
         }
         tag.put("quests", questNbt);
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         CompoundTag spawnConfigNbt = nbt.getCompound("spawnConfigs");
         for (String idKey : spawnConfigNbt.getAllKeys()) {
             UUID entityId = UUID.fromString(idKey);
@@ -326,13 +327,13 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         ListTag structuresNbt = nbt.getList("structures", Tag.TAG_COMPOUND);
         for (Tag structureNbt : structuresNbt) {
             MKStructureEntry newStructure = new MKStructureEntry(this);
-            newStructure.deserializeNBT((CompoundTag) structureNbt);
+            newStructure.deserializeNBT(provider, (CompoundTag) structureNbt);
             structureIndex.put(newStructure.getStructureId(), newStructure);
             indexStructureEntry(newStructure);
         }
         ListTag questsNbt = nbt.getList("quests", Tag.TAG_COMPOUND);
         for (Tag questNbt : questsNbt) {
-            QuestChainInstance inst = new QuestChainInstance((CompoundTag) questNbt, getWorld());
+            QuestChainInstance inst = new QuestChainInstance(provider, (CompoundTag) questNbt, getWorld());
             quests.put(inst.getQuestId(), inst);
         }
     }

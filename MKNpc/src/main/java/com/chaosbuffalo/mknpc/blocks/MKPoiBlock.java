@@ -3,18 +3,17 @@ package com.chaosbuffalo.mknpc.blocks;
 
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
-import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -23,13 +22,15 @@ import javax.annotation.Nullable;
 
 
 public class MKPoiBlock extends BaseEntityBlock {
-
-    public static final Material MATERIAL = new Material(MaterialColor.NONE, false,
-            false, true, false, false, false,
-            PushReaction.IGNORE);
+    public static final MapCodec<MKPoiBlock> CODEC = simpleCodec(MKPoiBlock::new);
 
     public MKPoiBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
     }
 
 

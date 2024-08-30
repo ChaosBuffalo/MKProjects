@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.quest.data.objective.EmptyInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -19,20 +20,19 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 import java.util.List;
 import java.util.Map;
 
 public class KillWithAbilityObjective extends QuestObjective<EmptyInstanceData> implements IKillObjectiveHandler {
-    public static final Codec<KillWithAbilityObjective> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
-            RecordCodecBuilder.<KillWithAbilityObjective>mapCodec(builder -> {
-                return builder.group(
-                        Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
-                        MKCoreRegistry.ABILITIES.getCodec().fieldOf("ability").forGetter(i -> i.ability),
-                        Codec.INT.fieldOf("count").forGetter(i -> i.requiredCount)
-                ).apply(builder, KillWithAbilityObjective::new);
-            }).codec());
+    public static final MapCodec<KillWithAbilityObjective> CODEC = RecordCodecBuilder.mapCodec(builder -> {
+        return builder.group(
+                Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
+                MKCoreRegistry.ABILITIES.byNameCodec().fieldOf("ability").forGetter(i -> i.ability),
+                Codec.INT.fieldOf("count").forGetter(i -> i.requiredCount)
+        ).apply(builder, KillWithAbilityObjective::new);
+    });
 
     private final MKAbility ability;
     private final int requiredCount;

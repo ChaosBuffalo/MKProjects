@@ -6,26 +6,21 @@ import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.monster.piglin.PiglinArmPose;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 
 public abstract class MKAbstractPiglinEntity extends MKEntity implements IPiglinActionProvider {
 
     protected MKAbstractPiglinEntity(EntityType<? extends MKAbstractPiglinEntity> type, Level worldIn) {
         super(type, worldIn);
         setupBreakDoors();
-        this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 16.0F);
-        this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, -1.0F);
+        this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
+        this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
     }
 
     private void setupBreakDoors() {
         if (GoalUtils.hasGroundPathNavigation(this)) {
             ((GroundPathNavigation) this.getNavigation()).setCanOpenDoors(true);
         }
-    }
-
-    @Override
-    public double getMyRidingOffset() {
-        return this.isBaby() ? -0.05D : -0.45D;
     }
 
     @Override

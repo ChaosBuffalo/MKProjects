@@ -4,10 +4,11 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionClient;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 public class SpawnOption implements INBTSerializable<CompoundTag> {
     private double weight;
@@ -43,7 +44,7 @@ public class SpawnOption implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         tag.putString("definition", definitionName.toString());
         tag.putDouble("weight", getWeight());
@@ -51,8 +52,8 @@ public class SpawnOption implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        ResourceLocation definitionName = new ResourceLocation(nbt.getString("definition"));
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+        ResourceLocation definitionName = ResourceLocation.parse(nbt.getString("definition"));
         setDefinition(definitionName);
         setWeight(nbt.getDouble("weight"));
     }

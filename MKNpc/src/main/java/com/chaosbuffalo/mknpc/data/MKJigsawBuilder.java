@@ -11,8 +11,10 @@ import net.minecraft.world.level.levelgen.heightproviders.ConstantHeight;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 public class MKJigsawBuilder {
@@ -81,7 +83,8 @@ public class MKJigsawBuilder {
 
     public MKJigsawStructure build() {
         var struct = new MKJigsawStructure(settings, templatePool, startJigsawName, maxDepth, heightProvider,
-                useExpansionHack, heightmapTypes, maxDistFromCenter, new CompoundTag());
+                useExpansionHack, heightmapTypes, maxDistFromCenter, List.of(),
+                JigsawStructure.DEFAULT_DIMENSION_PADDING, JigsawStructure.DEFAULT_LIQUID_SETTINGS, new CompoundTag());
         for (var entry : events.entrySet()) {
             struct.addEvent(entry.getValue());
         }

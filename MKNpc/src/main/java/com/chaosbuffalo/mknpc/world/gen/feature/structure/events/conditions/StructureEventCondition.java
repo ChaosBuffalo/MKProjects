@@ -26,6 +26,6 @@ public abstract class StructureEventCondition {
                                            WorldStructureManager.ActiveStructure activeStructure, Level world);
 
     public <D> D serialize(DynamicOps<D> ops) {
-        return CODEC.encodeStart(ops, this).getOrThrow(false, MKNpc.LOGGER::error);
+        return CODEC.encodeStart(ops, this).getOrThrow();
     }
 }

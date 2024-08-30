@@ -2,11 +2,10 @@ package com.chaosbuffalo.mknpc.quest.objectives;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mknpc.quest.QuestStructureLocation;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
@@ -14,36 +13,37 @@ import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> implements IKillObjectiveHandler {
-    public static final Codec<QuestLootNpcObjective> CODEC = RecordCodecBuilder.<QuestLootNpcObjective>mapCodec(builder -> {
+    public static final MapCodec<QuestLootNpcObjective> MAP_CODEC = RecordCodecBuilder.<QuestLootNpcObjective>mapCodec(builder -> {
         return builder.group(
                 Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
                 QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
                 ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
                 Codec.DOUBLE.optionalFieldOf("chance", 1.0).forGetter(i -> i.chanceToFind),
                 Codec.INT.optionalFieldOf("count", 1).forGetter(i -> i.requiredCount),
-                ExtraCodecs.COMPONENT.fieldOf("itemDescription").forGetter(i -> i.itemDescription),
-                Codec.list(ExtraCodecs.COMPONENT).fieldOf("description").forGetter(i -> i.description)
+                ComponentSerialization.CODEC.fieldOf("itemDescription").forGetter(i -> i.itemDescription),
+                Codec.list(ComponentSerialization.CODEC).fieldOf("description").forGetter(i -> i.description)
         ).apply(builder, QuestLootNpcObjective::new);
-    }).codec();
+    });
 
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.quest_loot_npc");
+    public static final ResourceLocation NAME = MKNpc.id("objective.quest_loot_npc");
     protected ResourceLocation npcDefinition;
     protected double chanceToFind;
     private final int requiredCount;
@@ -88,8 +88,9 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
                                             LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = getInstanceData(quest);
-            boolean applies = event.getEntity().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
-                    x -> x.getStructureId().map(structId -> structId.equals(objData.getUUID())).orElse(false)).orElse(false)
+            boolean applies = IEntityNpcData.get(event.getEntity())
+                    .map(x -> x.getStructureId().map(structId -> structId.equals(objData.getUUID())).orElse(false))
+                    .orElse(false)
                     && def.getDefinitionName().equals(npcDefinition);
             if (applies && player.getRandom().nextDouble() <= chanceToFind) {
                 int currentCount = objectiveData.getInt("lootCount");

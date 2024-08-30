@@ -2,28 +2,27 @@ package com.chaosbuffalo.mknpc.content;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.level.LevelEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = MKNpc.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = MKNpc.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class ContentDB {
 
-    static Map<ResourceKey<Level>, LazyOptional<IWorldNpcData>> levelCaps = new IdentityHashMap<>();
-    static LazyOptional<IWorldNpcData> overworldData = LazyOptional.empty();
-
+    static Map<ResourceKey<Level>, IWorldNpcData> levelCaps = new IdentityHashMap<>();
+    @Nullable
+    static IWorldNpcData overworldData = null;
 
     @Nullable
     public static QuestChainInstance getQuestInstance(UUID questId) {
@@ -36,15 +35,15 @@ public class ContentDB {
     }
 
     @Nonnull
-    public static LazyOptional<IWorldNpcData> tryGetLevelData(Level level) {
-        LazyOptional<IWorldNpcData> cap = levelCaps.get(level.dimension());
+    public static Optional<IWorldNpcData> tryGetLevelData(Level level) {
+        IWorldNpcData cap = levelCaps.get(level.dimension());
         if (cap == null) {
-            cap = level.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY);
-            if (cap.isPresent()) {
+            cap = IWorldNpcData.get(level);
+            if (cap != null) {
                 levelCaps.put(level.dimension(), cap);
             }
         }
-        return cap;
+        return Optional.ofNullable(cap);
     }
 
     @Nonnull
@@ -53,8 +52,8 @@ public class ContentDB {
     }
 
     @Nonnull
-    public static LazyOptional<IWorldNpcData> tryGetPrimaryData() {
-        return overworldData;
+    public static Optional<IWorldNpcData> tryGetPrimaryData() {
+        return Optional.ofNullable(overworldData);
     }
 
     @Nonnull
@@ -65,7 +64,7 @@ public class ContentDB {
     @SubscribeEvent
     public static void onLevelLoad(LevelEvent.Load event) {
         if (event.getLevel() instanceof ServerLevel serverLevel) {
-            LazyOptional<IWorldNpcData> worldData = serverLevel.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY);
+            IWorldNpcData worldData = IWorldNpcData.get(serverLevel);
 
             levelCaps.put(serverLevel.dimension(), worldData);
             if (serverLevel.dimension() == Level.OVERWORLD) {
@@ -79,7 +78,7 @@ public class ContentDB {
         if (event.getLevel() instanceof ServerLevel serverLevel) {
             levelCaps.remove(serverLevel.dimension());
             if (serverLevel.dimension() == Level.OVERWORLD) {
-                overworldData = LazyOptional.empty();
+                overworldData = null;
             }
         }
     }

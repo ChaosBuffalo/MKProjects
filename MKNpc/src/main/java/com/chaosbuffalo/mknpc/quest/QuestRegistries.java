@@ -7,28 +7,28 @@ import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirementType;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirementTypes;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestRewardType;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestRewardTypes;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.NewRegistryEvent;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
 public class QuestRegistries {
-    public static final ResourceLocation QUEST_REWARD_TYPES_REGISTRY_NAME = new ResourceLocation(MKNpc.MODID, "quest_reward_types");
-    public static final ResourceLocation QUEST_REQUIREMENT_TYPES_REGISTRY_NAME = new ResourceLocation(MKNpc.MODID, "quest_requirement_types");
-    public static final ResourceLocation QUEST_OBJECTIVE_TYPES_REGISTRY_NAME = new ResourceLocation(MKNpc.MODID, "quest_objective_types");
-    public static IForgeRegistry<QuestRewardType<?>> QUEST_REWARDS = null;
-    public static IForgeRegistry<QuestRequirementType<?>> QUEST_REQUIREMENTS = null;
-    public static IForgeRegistry<QuestObjectiveType<?>> QUEST_OBJECTIVES = null;
+    public static final ResourceKey<Registry<QuestRewardType<?>>> QUEST_REWARD_TYPES_REGISTRY_NAME = ResourceKey.createRegistryKey(MKNpc.id("quest_reward_types"));
+    public static final ResourceKey<Registry<QuestRequirementType<?>>> QUEST_REQUIREMENT_TYPES_REGISTRY_NAME = ResourceKey.createRegistryKey(MKNpc.id("quest_requirement_types"));
+    public static final ResourceKey<Registry<QuestObjectiveType<?>>> QUEST_OBJECTIVE_TYPES_REGISTRY_NAME = ResourceKey.createRegistryKey(MKNpc.id("quest_objective_types"));
+    public static final Registry<QuestRewardType<?>> QUEST_REWARDS = new RegistryBuilder<>(QUEST_REWARD_TYPES_REGISTRY_NAME)
+            .create();
+    public static final Registry<QuestRequirementType<?>> QUEST_REQUIREMENTS = new RegistryBuilder<>(QUEST_REQUIREMENT_TYPES_REGISTRY_NAME)
+            .create();
+    public static final Registry<QuestObjectiveType<?>> QUEST_OBJECTIVES = new RegistryBuilder<>(QUEST_OBJECTIVE_TYPES_REGISTRY_NAME)
+            .create();
 
 
     public static void createRegistries(NewRegistryEvent event) {
-        event.create(new RegistryBuilder<QuestRewardType<?>>()
-                .setName(QUEST_REWARD_TYPES_REGISTRY_NAME), r -> QUEST_REWARDS = r);
-        event.create(new RegistryBuilder<QuestRequirementType<?>>()
-                .setName(QUEST_REQUIREMENT_TYPES_REGISTRY_NAME), r -> QUEST_REQUIREMENTS = r);
-        event.create(new RegistryBuilder<QuestObjectiveType<?>>()
-                .setName(QUEST_OBJECTIVE_TYPES_REGISTRY_NAME), r -> QUEST_OBJECTIVES = r);
+        event.register(QUEST_REWARDS);
+        event.register(QUEST_REQUIREMENTS);
+        event.register(QUEST_OBJECTIVES);
     }
 
     public static void register(IEventBus modBus) {

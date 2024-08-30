@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -15,15 +16,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ExtraLootOption extends NpcDefinitionOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "extra_loot");
-    public static final Codec<ExtraLootOption> CODEC = RecordCodecBuilder.<ExtraLootOption>mapCodec(builder -> {
-        return builder.group(
-                LootOptionEntry.CODEC.listOf().fieldOf("lootOptions").forGetter(i -> i.lootOptions),
-                Codec.DOUBLE.optionalFieldOf("noLootChance", 0.0).forGetter(i -> i.noLootChance),
-                Codec.INT.optionalFieldOf("dropChances", 1).forGetter(i -> i.dropChances),
-                Codec.DOUBLE.optionalFieldOf("noLootIncrease", 0.0).forGetter(i -> i.noLootIncrease)
-        ).apply(builder, ExtraLootOption::new);
-    }).codec();
+    public static final ResourceLocation NAME = MKNpc.id("extra_loot");
+    public static final MapCodec<ExtraLootOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            LootOptionEntry.CODEC.listOf().fieldOf("lootOptions").forGetter(i -> i.lootOptions),
+            Codec.DOUBLE.optionalFieldOf("noLootChance", 0.0).forGetter(i -> i.noLootChance),
+            Codec.INT.optionalFieldOf("dropChances", 1).forGetter(i -> i.dropChances),
+            Codec.DOUBLE.optionalFieldOf("noLootIncrease", 0.0).forGetter(i -> i.noLootIncrease)
+    ).apply(builder, ExtraLootOption::new));
 
     private final List<LootOptionEntry> lootOptions;
     private double noLootChance;

@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class QuestListEntry extends MKStackLayoutHorizontal {
     private final Font font;
@@ -35,13 +36,14 @@ public class QuestListEntry extends MKStackLayoutHorizontal {
         return true;
     }
 
-    public void postDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    @Override
+    public void postDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         if (this.isHovered()) {
-            mkFill(matrixStack, x, y, x + width, y + height, 0x55ffffff);
+            graphics.fill(x, y, x + width, y + height, 0x55ffffff);
         }
 //
         if (playerQuestChain.equals(screen.getCurrentQuest())) {
-            mkFill(matrixStack, x, y, x + width, y + height, 0x99ffffff);
+            graphics.fill(x, y, x + width, y + height, 0x99ffffff);
         }
     }
 }

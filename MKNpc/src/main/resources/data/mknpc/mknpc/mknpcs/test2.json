@@ -4,7 +4,7 @@
   "options": {
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkfaction:undead"
+      "factionId": "mkfaction:undead"
     },
     "mknpc:faction_name": {
       "type": "mknpc:faction_name",
@@ -13,7 +13,7 @@
     },
     "mknpc:notable": {
       "type": "mknpc:notable",
-      "value": true
+      "isNotable": true
     }
   }
 }

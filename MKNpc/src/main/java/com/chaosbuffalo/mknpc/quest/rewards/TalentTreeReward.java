@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkcore.core.talents.TalentManager;
 import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -14,11 +14,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
 public class TalentTreeReward extends QuestReward {
-    public static final Codec<TalentTreeReward> CODEC = RecordCodecBuilder.<TalentTreeReward>mapCodec(builder ->
+    public static final MapCodec<TalentTreeReward> MAP_CODEC = RecordCodecBuilder.<TalentTreeReward>mapCodec(builder ->
             builder.group(
                     ResourceLocation.CODEC.fieldOf("tree_name").forGetter(i -> i.tree)
             ).apply(builder, TalentTreeReward::new)
-    ).codec();
+    );
 
     private final ResourceLocation tree;
 

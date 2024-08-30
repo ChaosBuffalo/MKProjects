@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueConditionType;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
@@ -16,11 +16,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class OnQuestChainCondition extends DialogueCondition {
-    public static final Codec<OnQuestChainCondition> CODEC = RecordCodecBuilder.<OnQuestChainCondition>mapCodec(builder ->
-            builder.group(
-                    UUIDUtil.STRING_CODEC.optionalFieldOf("questId").forGetter(i -> i.questId.equals(Util.NIL_UUID) ? Optional.empty() : Optional.of(i.questId))
-            ).apply(builder, OnQuestChainCondition::new)
-    ).codec();
+    public static final MapCodec<OnQuestChainCondition> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            UUIDUtil.STRING_CODEC.optionalFieldOf("questId").forGetter(i -> i.questId.equals(Util.NIL_UUID) ? Optional.empty() : Optional.of(i.questId))
+    ).apply(builder, OnQuestChainCondition::new));
 
     private final UUID questId;
 

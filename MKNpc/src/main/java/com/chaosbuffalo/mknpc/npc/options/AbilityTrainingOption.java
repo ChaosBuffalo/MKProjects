@@ -11,7 +11,9 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
@@ -21,22 +23,25 @@ import java.util.Arrays;
 import java.util.List;
 
 public class AbilityTrainingOption extends NpcDefinitionOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "ability_trainings");
+    public static final ResourceLocation NAME = MKNpc.id("ability_trainings");
     public static final Codec<AbilityTrainingOption> CODEC = AbilityTrainingOptionEntry.CODEC.listOf().xmap(AbilityTrainingOption::new, AbilityTrainingOption::getValue);
+    public static final MapCodec<AbilityTrainingOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            AbilityTrainingOptionEntry.CODEC.listOf().fieldOf("abilities").forGetter(i -> i.options)
+    ).apply(builder, AbilityTrainingOption::new));
 
     public static class AbilityTrainingOptionEntry {
-        public static final Codec<AbilityTrainingOptionEntry> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
+        public static final Codec<AbilityTrainingOptionEntry> CODEC = Codec.lazyInitialized(() ->
                 RecordCodecBuilder.<AbilityTrainingOptionEntry>mapCodec(builder -> {
                     return builder.group(
-                            MKCoreRegistry.ABILITIES.getCodec().fieldOf("ability").forGetter(i -> i.ability),
+                            MKCoreRegistry.ABILITIES.holderByNameCodec().fieldOf("ability").forGetter(i -> i.ability),
                             AbilityTrainingRequirement.CODEC.listOf().fieldOf("requirements").forGetter(i -> i.requirements)
                     ).apply(builder, AbilityTrainingOptionEntry::new);
                 }).codec());
 
-        private final MKAbility ability;
+        private final Holder<MKAbility> ability;
         private final List<AbilityTrainingRequirement> requirements = new ArrayList<>();
 
-        public AbilityTrainingOptionEntry(MKAbility ability, List<AbilityTrainingRequirement> requirements) {
+        public AbilityTrainingOptionEntry(Holder<MKAbility> ability, List<AbilityTrainingRequirement> requirements) {
             this.ability = ability;
             this.requirements.addAll(requirements);
         }
@@ -58,7 +63,7 @@ public class AbilityTrainingOption extends NpcDefinitionOption {
         return options;
     }
 
-    public AbilityTrainingOption withTrainingOption(MKAbility ability, AbilityTrainingRequirement... reqs) {
+    public AbilityTrainingOption withTrainingOption(Holder<MKAbility> ability, AbilityTrainingRequirement... reqs) {
         getValue().add(new AbilityTrainingOptionEntry(ability, Arrays.asList(reqs)));
         return this;
     }
@@ -68,8 +73,8 @@ public class AbilityTrainingOption extends NpcDefinitionOption {
         if (entity instanceof IAbilityTrainingEntity trainingEntity) {
             IAbilityTrainer trainer = trainingEntity.getAbilityTrainer();
             for (AbilityTrainingOptionEntry entry : options) {
-                if (entry.ability != null) {
-                    AbilityTrainingEntry trainingEntry = trainer.addTrainedAbility(entry.ability);
+                if (entry.ability.isBound()) {
+                    AbilityTrainingEntry trainingEntry = trainer.addTrainedAbility(entry.ability.value());
                     for (AbilityTrainingRequirement req : entry.requirements) {
                         trainingEntry.addRequirement(req);
                     }

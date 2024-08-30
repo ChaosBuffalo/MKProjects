@@ -9,6 +9,8 @@ import com.chaosbuffalo.mknpc.npc.option_entries.AbilitiesOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
@@ -16,8 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AbilitiesOption extends WorldPermanentOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "abilities");
+    public static final ResourceLocation NAME = MKNpc.id("abilities");
     public static final Codec<AbilitiesOption> CODEC = Codec.list(NpcAbilityEntry.CODEC).xmap(AbilitiesOption::new, i -> i.abilities);
+    public static final MapCodec<AbilitiesOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            NpcAbilityEntry.CODEC.listOf().fieldOf("abilities").forGetter(i -> i.abilities)
+    ).apply(builder, AbilitiesOption::new));
 
     private final List<NpcAbilityEntry> abilities;
 

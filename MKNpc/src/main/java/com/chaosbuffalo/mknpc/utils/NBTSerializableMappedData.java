@@ -3,12 +3,13 @@ package com.chaosbuffalo.mknpc.utils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -184,7 +185,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
         if (!doubleData.isEmpty()) {
             CompoundTag doubleNbt = new CompoundTag();
@@ -204,7 +205,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
             CompoundTag blockPosNbt = new CompoundTag();
             for (Map.Entry<String, GlobalPos> entry : blockPosData.entrySet()) {
                 blockPosNbt.put(entry.getKey(), GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, entry.getValue())
-                        .getOrThrow(false, MKNpc.LOGGER::error));
+                        .getOrThrow());
             }
             nbt.put("blockPosData", blockPosNbt);
         }
@@ -232,7 +233,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
         if (!textData.isEmpty()) {
             CompoundTag textNbt = new CompoundTag();
             for (Map.Entry<String, Component> entry : textData.entrySet()) {
-                textNbt.putString(entry.getKey(), Component.Serializer.toJson(entry.getValue()));
+                textNbt.putString(entry.getKey(), Component.Serializer.toJson(entry.getValue(), provider));
             }
             nbt.put("textData", textNbt);
         }
@@ -254,7 +255,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         clearData();
         if (nbt.contains("doubleData")) {
             CompoundTag doubleNbt = nbt.getCompound("doubleData");
@@ -284,7 +285,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
         if (nbt.contains("rlData")) {
             CompoundTag rlNbt = nbt.getCompound("rlData");
             for (String key : rlNbt.getAllKeys()) {
-                putResourceLocation(key, new ResourceLocation(rlNbt.getString(key)));
+                putResourceLocation(key, ResourceLocation.parse(rlNbt.getString(key)));
             }
         }
         if (nbt.contains("boolData")) {
@@ -296,7 +297,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
         if (nbt.contains("textData")) {
             CompoundTag textNbt = nbt.getCompound("textData");
             for (String key : textNbt.getAllKeys()) {
-                putTextComponent(key, Component.Serializer.fromJson(textNbt.getString(key)));
+                putTextComponent(key, Component.Serializer.fromJson(textNbt.getString(key), provider));
             }
         }
         if (nbt.contains("uuidData")) {

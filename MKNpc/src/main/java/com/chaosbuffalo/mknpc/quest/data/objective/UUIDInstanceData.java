@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.quest.data.objective;
 
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.UUID;
@@ -22,14 +23,14 @@ public class UUIDInstanceData extends ObjectiveInstanceData {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         tag.putUUID("id", uuid);
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         uuid = nbt.getUUID("id");
     }
 }

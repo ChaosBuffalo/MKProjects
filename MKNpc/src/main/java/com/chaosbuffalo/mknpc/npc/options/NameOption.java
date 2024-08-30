@@ -4,6 +4,8 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -14,8 +16,11 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 public class NameOption extends NpcDefinitionOption implements INameProvider {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "name");
+    public static final ResourceLocation NAME = MKNpc.id("name");
     public static final Codec<NameOption> CODEC = Codec.STRING.xmap(NameOption::new, NameOption::getValue);
+    public static final MapCodec<NameOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.STRING.fieldOf("name").forGetter(i -> i.name)
+    ).apply(builder, NameOption::new));
 
     private final String name;
 

@@ -6,9 +6,8 @@ import com.chaosbuffalo.mknpc.data.NpcTags;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.random.WeightedRandomList;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
@@ -24,10 +23,10 @@ public class NpcStructures {
     public static final ResourceKey<Structure> TEST_JIGSAW = createKey("test_jigsaw");
 
     private static ResourceKey<Structure> createKey(String name) {
-        return ResourceKey.create(Registries.STRUCTURE, new ResourceLocation(MKNpc.MODID, name));
+        return ResourceKey.create(Registries.STRUCTURE, MKNpc.id(name));
     }
 
-    public static void bootstrap(BootstapContext<Structure> context) {
+    public static void bootstrap(BootstrapContext<Structure> context) {
         HolderGetter<Biome> biomes = context.lookup(Registries.BIOME);
         HolderGetter<StructureTemplatePool> templates = context.lookup(Registries.TEMPLATE_POOL);
 

@@ -1,11 +1,12 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
+import com.chaosbuffalo.mknpc.init.MKNpcAttachments;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,4 +30,8 @@ public interface IPlayerQuestingData extends INBTSerializable<CompoundTag> {
     PlayerQuestingDataHandler.QuestStatus getQuestStatus(UUID questId);
 
     List<String> getCurrentQuestSteps(UUID questId);
+
+    static Optional<IPlayerQuestingData> get(Player player) {
+        return Optional.of(player.getData(MKNpcAttachments.PLAYER_QUEST_DATA));
+    }
 }

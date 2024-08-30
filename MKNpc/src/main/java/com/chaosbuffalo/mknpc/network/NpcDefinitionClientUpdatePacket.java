@@ -4,13 +4,23 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionClient;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Supplier;
 
-public class NpcDefinitionClientUpdatePacket {
+public class NpcDefinitionClientUpdatePacket implements CustomPacketPayload {
+
+    public static final CustomPacketPayload.Type<NpcDefinitionClientUpdatePacket> TYPE = new CustomPacketPayload.Type<>(
+            ResourceLocation.fromNamespaceAndPath(MKNpc.MODID, "npc_definition_client_update"));
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, NpcDefinitionClientUpdatePacket> STREAM_CODEC = StreamCodec.ofMember(
+            NpcDefinitionClientUpdatePacket::toBytes, NpcDefinitionClientUpdatePacket::new
+    );
 
     private final ArrayList<NpcDefinitionClient> clientDefs;
 
@@ -35,16 +45,17 @@ public class NpcDefinitionClientUpdatePacket {
         }
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context ctx = supplier.get();
+    public static void handle(final NpcDefinitionClientUpdatePacket packet, IPayloadContext context) {
         MKNpc.LOGGER.info("Handling client npc definition data sync");
-        ctx.enqueueWork(() -> {
-            NpcDefinitionManager.CLIENT_DEFINITIONS.clear();
-            for (NpcDefinitionClient client : clientDefs) {
-                NpcDefinitionManager.CLIENT_DEFINITIONS.put(client.getDefinitionName(), client);
-            }
-        });
-        ctx.setPacketHandled(true);
+        NpcDefinitionManager.CLIENT_DEFINITIONS.clear();
+        for (NpcDefinitionClient client : packet.clientDefs) {
+            NpcDefinitionManager.CLIENT_DEFINITIONS.put(client.getDefinitionName(), client);
+        }
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }
 

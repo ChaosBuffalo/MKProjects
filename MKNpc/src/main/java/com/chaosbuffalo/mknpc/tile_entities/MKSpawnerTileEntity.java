@@ -18,6 +18,7 @@ import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -33,10 +34,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -106,18 +105,6 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
         this.notableIds.put(loc, notableId);
     }
 
-    @Nonnull
-    @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        return super.getCapability(cap, side);
-    }
-
-    @Nonnull
-    @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap) {
-        return super.getCapability(cap);
-    }
-
     @Override
     public void setStructureId(UUID structureId) {
         this.structureId = structureId;
@@ -168,9 +155,9 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
     }
 
     @Override
-    protected void saveAdditional(CompoundTag compound) {
-        super.saveAdditional(compound);
-        compound.put("spawnList", spawnList.serializeNBT());
+    protected void saveAdditional(CompoundTag compound, HolderLookup.Provider registries) {
+        super.saveAdditional(compound, registries);
+        compound.put("spawnList", spawnList.serializeNBT(registries));
         compound.putUUID("spawnId", spawnUUID);
         compound.putInt("ticksSinceDeath", ticksSinceDeath);
         compound.putInt("moveType", moveType.ordinal());
@@ -225,19 +212,18 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
         }
     }
 
-
     @Override
-    public void load(CompoundTag compound) {
-        super.load(compound);
+    protected void loadAdditional(CompoundTag compound, HolderLookup.Provider registries) {
+        super.loadAdditional(compound, registries);
         if (compound.contains("spawnList")) {
-            spawnList.deserializeNBT(compound.getCompound("spawnList"));
+            spawnList.deserializeNBT(registries, compound.getCompound("spawnList"));
             flagNeedsPopulate();
         }
         if (compound.contains("moveType")) {
             setMoveType(MKEntity.NonCombatMoveType.values()[compound.getInt("moveType")]);
         }
         if (compound.contains("structureName")) {
-            setStructureName(new ResourceLocation(compound.getString("structureName")));
+            setStructureName(ResourceLocation.parse(compound.getString("structureName")));
         }
         if (compound.contains("structureId")) {
             setStructureId(compound.getUUID("structureId"));
@@ -261,7 +247,7 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
             CompoundTag notableTag = compound.getCompound("notableIds");
             for (String key : notableTag.getAllKeys()) {
                 UUID notId = notableTag.getUUID(key);
-                notableIds.put(new ResourceLocation(key), notId);
+                notableIds.put(ResourceLocation.parse(key), notId);
             }
         }
     }
@@ -311,9 +297,9 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
                     mkEntity.setNonCombatMoveType(getMoveType());
                 }
                 if (entity instanceof Mob mobEnt && getLevel() instanceof ServerLevel serverLevel) {
-                    ForgeEventFactory.onFinalizeSpawn(mobEnt, serverLevel,
+                    EventHooks.finalizeMobSpawn(mobEnt, serverLevel,
                             serverLevel.getCurrentDifficultyAt(getBlockPos()),
-                            MobSpawnType.SPAWNER, null, null);
+                            MobSpawnType.SPAWNER, null);
                 }
                 getLevel().addFreshEntity(entity);
                 MKNpc.getNpcData(entity).ifPresent(cap -> cap.setMKSpawned(true));

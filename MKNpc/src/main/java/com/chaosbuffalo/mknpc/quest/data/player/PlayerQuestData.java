@@ -1,10 +1,11 @@
 package com.chaosbuffalo.mknpc.quest.data.player;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import java.util.*;
 
@@ -20,8 +21,8 @@ public class PlayerQuestData implements INBTSerializable<CompoundTag> {
         this.description = description;
     }
 
-    public PlayerQuestData(CompoundTag nbt) {
-        deserializeNBT(nbt);
+    public PlayerQuestData(HolderLookup.Provider provider, CompoundTag nbt) {
+        deserializeNBT(provider, nbt);
     }
 
     public void putObjective(String objectiveName, PlayerQuestObjectiveData data) {
@@ -58,35 +59,35 @@ public class PlayerQuestData implements INBTSerializable<CompoundTag> {
 
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
         ListTag objectiveNbt = new ListTag();
         for (Map.Entry<String, PlayerQuestObjectiveData> entry : objectives.entrySet()) {
-            objectiveNbt.add(entry.getValue().serializeNBT());
+            objectiveNbt.add(entry.getValue().serializeNBT(provider));
         }
         nbt.put("objectives", objectiveNbt);
         nbt.putString("questName", questName);
-        nbt.putString("description", Component.Serializer.toJson(description));
+        nbt.putString("description", Component.Serializer.toJson(description, provider));
         ListTag rewardNbt = new ListTag();
         for (PlayerQuestReward reward : playerQuestRewards) {
-            rewardNbt.add(reward.serializeNBT());
+            rewardNbt.add(reward.serializeNBT(provider));
         }
         nbt.put("rewards", rewardNbt);
         return nbt;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         ListTag objectiveNbt = nbt.getList("objectives", Tag.TAG_COMPOUND);
         for (Tag objNbt : objectiveNbt) {
-            PlayerQuestObjectiveData objective = new PlayerQuestObjectiveData((CompoundTag) objNbt);
+            PlayerQuestObjectiveData objective = new PlayerQuestObjectiveData(provider, (CompoundTag) objNbt);
             objectives.put(objective.getObjectiveName(), objective);
         }
         questName = nbt.getString("questName");
-        description = Component.Serializer.fromJson(nbt.getString("description"));
+        description = Component.Serializer.fromJson(nbt.getString("description"), provider);
         ListTag rewardNbts = nbt.getList("rewards", Tag.TAG_COMPOUND);
         for (Tag rewardNbt : rewardNbts) {
-            addReward(new PlayerQuestReward((CompoundTag) rewardNbt));
+            addReward(new PlayerQuestReward(provider, (CompoundTag) rewardNbt));
         }
     }
 }

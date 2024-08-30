@@ -8,7 +8,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.fml.InterModComms;
+import net.neoforged.fml.InterModComms;
 
 import java.util.UUID;
 

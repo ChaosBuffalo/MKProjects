@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -22,7 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.fml.InterModComms;
+import net.neoforged.fml.InterModComms;
 
 import java.util.*;
 
@@ -102,7 +103,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         // This would be where global data that is shared across personas would be persisted.
         // Currently there is none.
         CompoundTag tag = new CompoundTag();
@@ -110,11 +111,11 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
     }
 
     public static class PersonaQuestData implements IPersonaExtension {
-        final static ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "player_quest_data");
+        final static ResourceLocation NAME = MKNpc.id("player_quest_data");
         private final Map<UUID, PlayerQuestChainInstance> questChains = new HashMap<>();
         private final SyncMapUpdater<UUID, PlayerQuestChainInstance> questChainUpdater;
         private final Set<UUID> completedQuests = new HashSet<>();
@@ -193,7 +194,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             PlayerQuestChainInstance chain = questChains.get(questChainInstance.getQuestId());
             if (chain != null && currentQuest != null) {
                 currentQuest.grantRewards(questingData);
-                SoundUtils.serverPlaySoundAtEntity(questingData.getPlayer(), CoreSounds.quest_complete_sound.get(), SoundSource.PLAYERS);
+                SoundUtils.serverPlaySoundAtEntity(questingData.getPlayer(), CoreSounds.quest_complete_sound.value(), SoundSource.PLAYERS);
                 switch (questChainInstance.getDefinition().getMode()) {
                     case LINEAR:
                         String currentQuestName = currentQuest.getQuestName();
@@ -245,21 +246,21 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         }
 
         @Override
-        public CompoundTag serialize() {
+        public CompoundTag serialize(HolderLookup.Provider provider) {
             CompoundTag tag = new CompoundTag();
             ListTag chainsNbt = new ListTag();
             for (PlayerQuestChainInstance chain : questChains.values()) {
-                chainsNbt.add(chain.serialize());
+                chainsNbt.add(chain.serialize(provider));
             }
             tag.put("chains", chainsNbt);
             return tag;
         }
 
         @Override
-        public void deserialize(CompoundTag nbt) {
+        public void deserialize(HolderLookup.Provider provider, CompoundTag nbt) {
             ListTag chainsNbt = nbt.getList("chains", Tag.TAG_COMPOUND);
             for (Tag chainNbt : chainsNbt) {
-                PlayerQuestChainInstance newChain = new PlayerQuestChainInstance((CompoundTag) chainNbt);
+                PlayerQuestChainInstance newChain = new PlayerQuestChainInstance(provider, (CompoundTag) chainNbt);
                 newChain.setDirtyNotifier(this::onDirtyEntry);
                 questChains.put(newChain.getQuestId(), newChain);
                 if (newChain.isQuestComplete()) {

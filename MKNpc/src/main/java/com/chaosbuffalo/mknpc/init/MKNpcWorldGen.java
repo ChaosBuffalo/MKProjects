@@ -5,18 +5,19 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSinglePoolElement;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 
 public class MKNpcWorldGen {
 
-    public static final ResourceLocation UNKNOWN_PIECE = new ResourceLocation(MKNpc.MODID, "unknown_structure_piece");
+    public static final ResourceLocation UNKNOWN_PIECE = MKNpc.id("unknown_structure_piece");
 
     public static final DeferredRegister<Structure> STRUCTURE_REGISTRY = DeferredRegister.create(
             Registries.STRUCTURE, MKNpc.MODID);
@@ -30,10 +31,10 @@ public class MKNpcWorldGen {
             Registries.STRUCTURE_POOL_ELEMENT, MKNpc.MODID);
 
 
-    public static final RegistryObject<StructureType<MKJigsawStructure>> MK_STRUCTURE_TYPE = STRUCTURE_TYPE_REGISTRY.register("mk_jigsaw",
+    public static final DeferredHolder<StructureType<?>, StructureType<MKJigsawStructure>> MK_STRUCTURE_TYPE = STRUCTURE_TYPE_REGISTRY.register("mk_jigsaw",
             () -> () -> MKJigsawStructure.CODEC);
 
-    public static final RegistryObject<StructurePoolElementType<MKSinglePoolElement>> MK_SINGLE_JIGSAW_DESERIALIZER =
+    public static final DeferredHolder<StructurePoolElementType<?>, StructurePoolElementType<MKSinglePoolElement>> MK_SINGLE_JIGSAW_DESERIALIZER =
             STRUCTURE_POOL_REGISTRY.register("mk_single_jigsaw", () -> () -> MKSinglePoolElement.codec);
 
     public static void register(IEventBus modBus) {

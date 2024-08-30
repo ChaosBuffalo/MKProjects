@@ -6,6 +6,8 @@ import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
@@ -13,8 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BossStageOption extends NpcDefinitionOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "boss_stage");
+    public static final ResourceLocation NAME = MKNpc.id("boss_stage");
     public static final Codec<BossStageOption> CODEC = BossStage.CODEC.listOf().xmap(BossStageOption::new, i -> i.stages);
+    public static final MapCodec<BossStageOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            BossStage.CODEC.listOf().fieldOf("stages").forGetter(i -> i.stages)
+    ).apply(builder, BossStageOption::new));
+
 
     private final List<BossStage> stages = new ArrayList<>();
 

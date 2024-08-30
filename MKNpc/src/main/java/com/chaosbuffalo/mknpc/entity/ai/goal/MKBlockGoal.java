@@ -11,11 +11,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.SwordItem;
-import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.common.ToolActions;
+import net.neoforged.neoforge.common.ItemAbilities;
 
 import java.util.EnumSet;
 import java.util.Optional;
@@ -29,7 +29,7 @@ public class MKBlockGoal extends Goal {
 
     private int currentHold;
 
-    public static final ResourceLocation BLOCK_TIMER = new ResourceLocation(MKNpc.MODID, "ai_block_cooldown");
+    public static final ResourceLocation BLOCK_TIMER = MKNpc.id("ai_block_cooldown");
 
 
     public MKBlockGoal(MKEntity entity) {
@@ -39,7 +39,7 @@ public class MKBlockGoal extends Goal {
     }
 
     protected double getAttackReachSqr(LivingEntity attackTarget) {
-        double range = MKAttributes.getValueSafe(ForgeMod.ENTITY_REACH.get(), attackTarget) * 2.5;
+        double range = MKAttributes.getValueSafe(Attributes.ENTITY_INTERACTION_RANGE, attackTarget) * 2.5;
         range *= attackTarget.getScale();
         return range * range;
     }
@@ -90,8 +90,8 @@ public class MKBlockGoal extends Goal {
             if (isPoiseBroke()) {
                 return false;
             }
-            if (!(entity.getMainHandItem().canPerformAction(ToolActions.SHIELD_BLOCK)
-                    || entity.getOffhandItem().canPerformAction(ToolActions.SHIELD_BLOCK))) {
+            if (!(entity.getMainHandItem().canPerformAction(ItemAbilities.SHIELD_BLOCK)
+                    || entity.getOffhandItem().canPerformAction(ItemAbilities.SHIELD_BLOCK))) {
                 return false;
             }
             LivingEntity target = targetOpt.get();
@@ -104,7 +104,7 @@ public class MKBlockGoal extends Goal {
     }
 
     protected InteractionHand getBlockingHand() {
-        if (entity.getOffhandItem().canPerformAction(ToolActions.SHIELD_BLOCK) &&
+        if (entity.getOffhandItem().canPerformAction(ItemAbilities.SHIELD_BLOCK) &&
                 entity.getOffhandItem().getItem() instanceof ShieldItem) {
             return InteractionHand.OFF_HAND;
         } else {

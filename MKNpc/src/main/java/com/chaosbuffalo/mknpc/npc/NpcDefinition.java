@@ -12,6 +12,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -23,18 +24,17 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
 public class NpcDefinition {
-    private static final UUID HEALTH_SCALING_UUID = UUID.fromString("3508a0ad-a2d5-40f2-8ce7-110401cc1a2c");
+    private static final ResourceLocation HEALTH_SCALING_MOD_ID = MKNpc.id("health_difficulty_scaling");
     public static final Codec<NpcDefinition> CODEC = RecordCodecBuilder.<NpcDefinition>mapCodec(builder -> builder.group(
             ResourceLocation.CODEC.fieldOf("name").forGetter(NpcDefinition::getDefinitionName),
             ResourceLocation.CODEC.optionalFieldOf("entityType").forGetter(i -> Optional.ofNullable(i.getEntityType())),
             ResourceLocation.CODEC.optionalFieldOf("parent").forGetter(i -> Optional.ofNullable(i.getParentName())),
-            Codec.unboundedMap(ResourceLocation.CODEC, NpcDefinitionOption.CODEC2).fieldOf("options").forGetter(i -> i.options)
+            Codec.unboundedMap(ResourceLocation.CODEC, NpcDefinitionOption.DIRECT_CODEC).fieldOf("options").forGetter(i -> i.options)
     ).apply(builder, NpcDefinition::new)).codec();
 
     private final ResourceLocation definitionName;
@@ -194,8 +194,7 @@ public class NpcDefinition {
             AttributeInstance inst = living.getAttribute(Attributes.MAX_HEALTH);
             if (inst != null) {
                 inst.addTransientModifier(new AttributeModifier(
-                        HEALTH_SCALING_UUID, "Health Difficulty Scaling",
-                        diffScale, AttributeModifier.Operation.MULTIPLY_TOTAL));
+                        HEALTH_SCALING_MOD_ID, diffScale, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
             }
         }
     }
@@ -233,7 +232,7 @@ public class NpcDefinition {
         D type = getDynamicType(ops);
         return ops.mergeToMap(type, ImmutableMap.of(
                         ops.createString("options"),
-                        ops.createList(options.values().stream().flatMap(entry -> NpcDefinitionOption.CODEC.encodeStart(ops, entry).resultOrPartial(MKNpc.LOGGER::error).stream()))
+                        ops.createList(options.values().stream().flatMap(entry -> NpcDefinitionOption.DIRECT_CODEC.encodeStart(ops, entry).resultOrPartial(MKNpc.LOGGER::error).stream()))
                 )
         ).result().orElse(type);
     }
@@ -241,13 +240,13 @@ public class NpcDefinition {
     public <D> void deserialize(Dynamic<D> dynamic) {
         options.clear();
         dynamic.get("options").asStream().forEach(x -> {
-            NpcDefinitionOption.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(o -> options.put(o.getName(), o));
+            NpcDefinitionOption.DIRECT_CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(o -> options.put(o.getName(), o));
         });
     }
 
     public static <D> NpcDefinition deserializeDefinitionFromDynamic(ResourceLocation name, Dynamic<D> dynamic) {
-        ResourceLocation parentName = dynamic.get("parent").asString().result().map(ResourceLocation::new).orElse(null);
-        ResourceLocation typeName = dynamic.get("entityType").asString().result().map(ResourceLocation::new).orElse(null);
+        ResourceLocation parentName = dynamic.get("parent").asString().result().map(ResourceLocation::parse).orElse(null);
+        ResourceLocation typeName = dynamic.get("entityType").asString().result().map(ResourceLocation::parse).orElse(null);
         NpcDefinition def = new NpcDefinition(name, typeName, parentName);
         def.deserialize(dynamic);
         return def;
@@ -255,7 +254,7 @@ public class NpcDefinition {
 
     @Nullable
     public Entity createEntity(Level world, Vec3 pos, UUID uuid, double difficultyValue) {
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(getEntityType());
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(getEntityType());
         if (type != null) {
             Entity entity = type.create(world);
             if (entity == null) {

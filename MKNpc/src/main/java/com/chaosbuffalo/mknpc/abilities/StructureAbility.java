@@ -18,7 +18,7 @@ public abstract class StructureAbility extends MKAbility {
     }
 
     public Optional<MKStructureEntry> getStructure(LivingEntity caster) {
-        return MKNpc.getNpcData(caster).resolve()
+        return MKNpc.getNpcData(caster)
                 .flatMap(IEntityNpcData::getStructureId)
                 .flatMap(id -> ContentDB.getPrimaryData().getStructureData(id));
     }

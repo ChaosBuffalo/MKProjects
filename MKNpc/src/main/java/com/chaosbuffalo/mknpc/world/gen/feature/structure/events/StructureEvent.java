@@ -68,7 +68,7 @@ public abstract class StructureEvent {
                              List<StructureEventRequirement> requirements, List<StructureEventCondition> conditions) {
         this.typeName = typeName;
         this.eventName = eventName;
-        timerName = new ResourceLocation("event_timer", eventName);
+        timerName = ResourceLocation.fromNamespaceAndPath("event_timer", eventName);
         eventTimer = cooldown;
         this.triggers = triggers;
         this.requirements.addAll(requirements);
@@ -139,6 +139,6 @@ public abstract class StructureEvent {
 
 
     public <D> D serialize(DynamicOps<D> ops) {
-        return CODEC.encodeStart(ops, this).getOrThrow(false, MKNpc.LOGGER::error);
+        return CODEC.encodeStart(ops, this).getOrThrow();
     }
 }

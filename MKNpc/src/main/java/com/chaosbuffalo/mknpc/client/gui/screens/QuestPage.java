@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.client.gui.widgets.ScrollingListPanelLayout;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.client.gui.widgets.QuestListEntry;
 import com.chaosbuffalo.mknpc.client.gui.widgets.QuestPanel;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
@@ -21,7 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 
 
 public class QuestPage extends PlayerPageBase {
-    public static final ResourceLocation PAGE_ID = new ResourceLocation(MKNpc.MODID, "quests");
+    public static final ResourceLocation PAGE_ID = MKNpc.id("quests");
     private QuestPanel questPanel;
     private ScrollingListPanelLayout currentScrollingPanel;
     private PlayerQuestChainInstance currentQuest;
@@ -51,7 +51,7 @@ public class QuestPage extends PlayerPageBase {
         int xOffset = GuiTextures.CORE_TEXTURES.getCenterXOffset(
                 GuiTextures.DATA_BOX, GuiTextures.BACKGROUND_320_240);
         MKLayout root = getRootLayout(xPos, yPos, xOffset, dataBoxRegion.width, true);
-        minecraft.player.getCapability(NpcCapabilities.PLAYER_QUEST_DATA_CAPABILITY).ifPresent((pData) -> {
+        IPlayerQuestingData.get(minecraft.player).ifPresent((pData) -> {
             int contentX = xPos + xOffset;
             int contentY = yPos + DATA_BOX_OFFSET;
             int contentWidth = dataBoxRegion.width;

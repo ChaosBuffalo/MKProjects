@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -136,21 +137,21 @@ public class Quest {
         }
     }
 
-    public <D> D serialize(DynamicOps<D> ops) {
+    public <D> D serialize(DynamicOps<D> ops, HolderLookup.Provider provider) {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("questName"), ops.createString(questName));
         builder.put(ops.createString("objectives"), ops.createList(objectives.stream().flatMap(x -> QuestObjective.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
-        builder.put(ops.createString("description"), ops.createString(Component.Serializer.toJson(description)));
+        builder.put(ops.createString("description"), ops.createString(Component.Serializer.toJson(description, provider)));
         builder.put(ops.createString("autoComplete"), ops.createBoolean(autoComplete));
         builder.put(ops.createString("rewards"), ops.createList(rewards.stream().flatMap(x -> QuestReward.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
         return ops.createMap(builder.build());
     }
 
-    public <D> void deserialize(Dynamic<D> dynamic) {
+    public <D> void deserialize(Dynamic<D> dynamic, HolderLookup.Provider provider) {
         questName = dynamic.get("questName").asString("default");
         autoComplete = dynamic.get("autoComplete").asBoolean(false);
         description = Component.Serializer.fromJson(
-                dynamic.get("description").asString(Component.Serializer.toJson(defaultDescription)));
+                dynamic.get("description").asString(Component.Serializer.toJson(defaultDescription, provider)), provider);
 
         dynamic.get("objectives").asStream().forEach(x -> {
             QuestObjective.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addObjective);

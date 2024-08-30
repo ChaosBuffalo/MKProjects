@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.quest.data;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.data.objective.ObjectiveInstanceData;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.HashMap;
@@ -29,22 +30,22 @@ public class QuestData {
         return questDefinition.getQuestName();
     }
 
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
         CompoundTag objectiveNbt = new CompoundTag();
         for (Map.Entry<String, ObjectiveInstanceData> entry : objectives.entrySet()) {
-            objectiveNbt.put(entry.getKey(), entry.getValue().serializeNBT());
+            objectiveNbt.put(entry.getKey(), entry.getValue().serializeNBT(provider));
         }
         nbt.put("objectives", objectiveNbt);
         return nbt;
     }
 
-    public void deserializeNBT(CompoundTag nbt, Quest quest) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt, Quest quest) {
         CompoundTag objectiveNbt = nbt.getCompound("objectives");
         for (String key : objectiveNbt.getAllKeys()) {
             QuestObjective<?> obj = quest.getObjective(key);
             if (obj != null) {
-                putObjective(obj.getObjectiveName(), obj.loadInstanceData(objectiveNbt.getCompound(key)));
+                putObjective(obj.getObjectiveName(), obj.loadInstanceData(provider, objectiveNbt.getCompound(key)));
             }
         }
     }

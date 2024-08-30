@@ -7,7 +7,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.Pools;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -19,20 +19,20 @@ public class NpcStructurePools {
     public static final ResourceKey<StructureTemplatePool> DIGGER_BASE_POOL = createKey("digger/diggerbase");
     public static final ResourceKey<StructureTemplatePool> DIGGER_ROAD_POOL = createKey("digger/diggerroad");
 
-    private static final ResourceLocation DIGGER_TENT_DBL_1 = new ResourceLocation(MKNpc.MODID, "digger/diggertentdbl1");
-    private static final ResourceLocation DIGGER_TENT_SGL_1 = new ResourceLocation(MKNpc.MODID, "digger/diggertentsgl1");
-    private static final ResourceLocation DIGGER_BIG_1 = new ResourceLocation(MKNpc.MODID, "digger/diggerbig1");
-    private static final ResourceLocation DIGGER_ROAD_1 = new ResourceLocation(MKNpc.MODID, "digger/diggerrd1");
+    private static final ResourceLocation DIGGER_TENT_DBL_1 = MKNpc.id("digger/diggertentdbl1");
+    private static final ResourceLocation DIGGER_TENT_SGL_1 = MKNpc.id("digger/diggertentsgl1");
+    private static final ResourceLocation DIGGER_BIG_1 = MKNpc.id("digger/diggerbig1");
+    private static final ResourceLocation DIGGER_ROAD_1 = MKNpc.id("digger/diggerrd1");
 
     public static ResourceKey<StructureTemplatePool> createKey(String pName) {
-        return ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation(MKNpc.MODID, pName));
+        return ResourceKey.create(Registries.TEMPLATE_POOL, MKNpc.id(pName));
     }
 
-    public static void register(BootstapContext<StructureTemplatePool> pContext, String pName, StructureTemplatePool pValue) {
+    public static void register(BootstrapContext<StructureTemplatePool> pContext, String pName, StructureTemplatePool pValue) {
         pContext.register(createKey(pName), pValue);
     }
 
-    public static void bootstrap(BootstapContext<StructureTemplatePool> pContext) {
+    public static void bootstrap(BootstrapContext<StructureTemplatePool> pContext) {
         HolderGetter<StructureTemplatePool> holderGetter = pContext.lookup(Registries.TEMPLATE_POOL);
         Holder<StructureTemplatePool> empty = holderGetter.getOrThrow(Pools.EMPTY);
         pContext.register(DIGGER_CAMP_POOL, new StructureTemplatePool(empty,

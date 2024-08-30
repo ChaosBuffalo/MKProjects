@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.inventories.PseudoChestContainer;
 import com.chaosbuffalo.mknpc.inventories.QuestChestInventory;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -136,7 +137,7 @@ public class ChestNpcDataHandler implements IChestNpcData {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         tag.putBoolean("placedByStructure", placedByStructure);
         tag.putBoolean("needsUploadToWorld", needsUploadToWorld);
@@ -154,14 +155,14 @@ public class ChestNpcDataHandler implements IChestNpcData {
         }
         CompoundTag questInvNbt = new CompoundTag();
         for (Map.Entry<UUID, QuestChestInventory> entry : questInventories.entrySet()) {
-            questInvNbt.put(entry.getKey().toString(), entry.getValue().createTag());
+            questInvNbt.put(entry.getKey().toString(), entry.getValue().createTag(provider));
         }
         tag.put("questInventories", questInvNbt);
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         placedByStructure = nbt.getBoolean("placedByStructure");
         needsUploadToWorld = nbt.getBoolean("needsUploadToWorld");
         if (nbt.contains("chestId")) {
@@ -174,14 +175,14 @@ public class ChestNpcDataHandler implements IChestNpcData {
             chestLabel = nbt.getString("chestLabel");
         }
         if (nbt.contains("structureName")) {
-            structureName = new ResourceLocation(nbt.getString("structureName"));
+            structureName = ResourceLocation.parse(nbt.getString("structureName"));
         }
         if (nbt.contains("questInventories")) {
             questInventories.clear();
             CompoundTag questInvNbt = nbt.getCompound("questInventories");
             for (String key : questInvNbt.getAllKeys()) {
                 QuestChestInventory newInventory = new QuestChestInventory(entity);
-                newInventory.fromTag(questInvNbt.getList(key, Tag.TAG_COMPOUND));
+                newInventory.fromTag(questInvNbt.getList(key, Tag.TAG_COMPOUND), provider);
                 questInventories.put(UUID.fromString(key), newInventory);
             }
         }

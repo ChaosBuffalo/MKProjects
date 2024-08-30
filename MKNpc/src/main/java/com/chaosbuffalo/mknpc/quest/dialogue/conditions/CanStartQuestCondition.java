@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
@@ -17,12 +18,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class CanStartQuestCondition extends DialogueCondition implements IReceivesChainId {
-    public static final Codec<CanStartQuestCondition> CODEC = RecordCodecBuilder.<CanStartQuestCondition>mapCodec(builder ->
+    public static final MapCodec<CanStartQuestCondition> MAP_CODEC = RecordCodecBuilder.mapCodec(builder ->
             builder.group(
                     UUIDUtil.STRING_CODEC.optionalFieldOf("questId").forGetter(i -> i.questId.equals(Util.NIL_UUID) ? Optional.empty() : Optional.of(i.questId)),
                     Codec.BOOL.fieldOf("allowRepeat").forGetter(i -> i.allowRepeat)
             ).apply(builder, CanStartQuestCondition::new)
-    ).codec();
+    );
 
     private UUID questId;
     private final boolean allowRepeat;

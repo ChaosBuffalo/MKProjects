@@ -8,7 +8,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.monster.piglin.PiglinArmPose;
 import net.minecraft.world.item.Items;
@@ -44,10 +43,10 @@ public class MKZombifiedPiglinEntity extends MKAbstractPiglinEntity {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(CHARGING_CROSSBOW, false);
-        this.entityData.define(DANCING, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(CHARGING_CROSSBOW, false);
+        builder.define(DANCING, false);
     }
 
     public void setChargingCrossbow(boolean isCharging) {
@@ -71,11 +70,6 @@ public class MKZombifiedPiglinEntity extends MKAbstractPiglinEntity {
     @Override
     protected SoundEvent getDeathSound() {
         return SoundEvents.ZOMBIFIED_PIGLIN_DEATH;
-    }
-
-    @Override
-    public MobType getMobType() {
-        return MobType.UNDEAD;
     }
 
     public static AttributeSupplier.Builder registerAttributes(double attackDamage, double movementSpeed) {

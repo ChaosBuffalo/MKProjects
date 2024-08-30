@@ -4,12 +4,17 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 public class ExperienceOption extends NpcDefinitionOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "experience");
+    public static final ResourceLocation NAME = MKNpc.id("experience");
     public static final Codec<ExperienceOption> CODEC = Codec.INT.xmap(ExperienceOption::new, ExperienceOption::getBonusXp);
+    public static final MapCodec<ExperienceOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.INT.fieldOf("experience").forGetter(i -> i.bonusXp)
+    ).apply(builder, ExperienceOption::new));
 
     private final int bonusXp;
 

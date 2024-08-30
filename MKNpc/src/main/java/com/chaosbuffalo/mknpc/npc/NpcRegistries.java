@@ -6,25 +6,26 @@ import com.chaosbuffalo.mknpc.npc.options.NpcOptionType;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DataPackRegistryEvent;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.NewRegistryEvent;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
 public class NpcRegistries {
-    public static final ResourceLocation NPC_OPTION_TYPE_NAME = new ResourceLocation(MKNpc.MODID, "npc_option_types");
-    public static IForgeRegistry<NpcOptionType<?>> NPC_OPTION_TYPES = null;
-    public static final ResourceLocation NPC_OPTION_ENTRY_TYPE_NAME = new ResourceLocation(MKNpc.MODID, "npc_option_entry_types");
-    public static IForgeRegistry<NpcOptionEntryType<?>> NPC_OPTION_ENTRY_TYPES = null;
+    public static final ResourceLocation NPC_OPTION_TYPE_NAME = MKNpc.id("npc_option_types");
+    public static final ResourceKey<Registry<NpcOptionType<?>>> NPC_OPTION_TYPE_REGISTRY_KEY = ResourceKey.createRegistryKey(NPC_OPTION_TYPE_NAME);
+    public static final Registry<NpcOptionType<?>> NPC_OPTION_TYPES = new RegistryBuilder<>(NPC_OPTION_TYPE_REGISTRY_KEY)
+            .create();
+    public static final ResourceLocation NPC_OPTION_ENTRY_TYPE_NAME = MKNpc.id("npc_option_entry_types");
+    public static final ResourceKey<Registry<NpcOptionEntryType<?>>> NPC_OPTION_ENTRY_TYPE_REGISTRY_KEY = ResourceKey.createRegistryKey(NPC_OPTION_ENTRY_TYPE_NAME);
+    public static final Registry<NpcOptionEntryType<?>> NPC_OPTION_ENTRY_TYPES = new RegistryBuilder<>(NPC_OPTION_ENTRY_TYPE_REGISTRY_KEY)
+            .create();
 
-    public static ResourceKey<Registry<NpcDefinition>> NPC_DEFINITIONS = ResourceKey.createRegistryKey(new ResourceLocation(MKNpc.MODID, "mknpcs"));
+    public static ResourceKey<Registry<NpcDefinition>> NPC_DEFINITIONS = ResourceKey.createRegistryKey(MKNpc.id("mknpcs"));
 
     public static void createRegistries(NewRegistryEvent event) {
-        event.create(new RegistryBuilder<NpcOptionType<?>>()
-                .setName(NPC_OPTION_TYPE_NAME), r -> NPC_OPTION_TYPES = r);
-        event.create(new RegistryBuilder<NpcOptionEntryType<?>>()
-                .setName(NPC_OPTION_ENTRY_TYPE_NAME), r -> NPC_OPTION_ENTRY_TYPES = r);
+        event.register(NPC_OPTION_TYPES);
+        event.register(NPC_OPTION_ENTRY_TYPES);
     }
 
     public static void createDataRegistries(DataPackRegistryEvent.NewRegistry event) {

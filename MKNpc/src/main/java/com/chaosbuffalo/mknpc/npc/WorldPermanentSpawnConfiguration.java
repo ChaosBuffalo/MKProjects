@@ -52,10 +52,10 @@ public class WorldPermanentSpawnConfiguration {
     }
 
     public <D> D serialize(DynamicOps<D> ops) {
-        return CODEC.encodeStart(ops, this).getOrThrow(false, MKNpc.LOGGER::error);
+        return CODEC.encodeStart(ops, this).getOrThrow();
     }
 
     public static <D> WorldPermanentSpawnConfiguration deserialize(DynamicOps<D> ops, D input) {
-        return CODEC.parse(ops, input).getOrThrow(false, MKNpc.LOGGER::error);
+        return CODEC.parse(ops, input).getOrThrow();
     }
 }

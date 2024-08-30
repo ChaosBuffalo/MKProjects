@@ -19,10 +19,11 @@ import com.chaosbuffalo.mknpc.quest.dialogue.conditions.OnQuestCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
@@ -31,15 +32,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class TalkToNpcObjective extends QuestObjective<UUIDInstanceData> {
-    public static final Codec<TalkToNpcObjective> CODEC = RecordCodecBuilder.<TalkToNpcObjective>mapCodec(builder -> {
+    public static final MapCodec<TalkToNpcObjective> MAP_CODEC = RecordCodecBuilder.<TalkToNpcObjective>mapCodec(builder -> {
         return builder.group(
                 Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
                 QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
                 ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
-                Codec.list(ExtraCodecs.COMPONENT).fieldOf("description").forGetter(i -> i.description),
+                ComponentSerialization.CODEC.listOf().fieldOf("description").forGetter(i -> i.description),
                 DialogueTree.CODEC.fieldOf("dialogue").forGetter(i -> i.tree)
         ).apply(builder, TalkToNpcObjective::new);
-    }).codec();
+    });
 
     protected final ResourceLocation npcDefinition;
     protected final List<Component> description;
@@ -77,7 +78,7 @@ public class TalkToNpcObjective extends QuestObjective<UUIDInstanceData> {
     }
 
     private ResourceLocation makeDialogueTreeId(String name) {
-        return new ResourceLocation(MKNpc.MODID, String.format("quest.dialogue.%s", name));
+        return MKNpc.id(String.format("quest.dialogue.%s", name));
     }
 
     @Override

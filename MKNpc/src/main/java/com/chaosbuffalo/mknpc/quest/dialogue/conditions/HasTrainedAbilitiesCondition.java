@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,12 +17,12 @@ import java.util.Arrays;
 import java.util.List;
 
 public class HasTrainedAbilitiesCondition extends DialogueCondition {
-    public static final Codec<HasTrainedAbilitiesCondition> CODEC = RecordCodecBuilder.<HasTrainedAbilitiesCondition>mapCodec(builder ->
+    public static final MapCodec<HasTrainedAbilitiesCondition> MAP_CODEC = RecordCodecBuilder.mapCodec(builder ->
             builder.group(
                     Codec.list(ResourceLocation.CODEC).fieldOf("abilities").forGetter(i -> i.abilities),
                     Codec.BOOL.fieldOf("allMatch").forGetter(i -> i.allMatch)
             ).apply(builder, HasTrainedAbilitiesCondition::new)
-    ).codec();
+    );
 
     private final List<ResourceLocation> abilities = new ArrayList<>();
     private final boolean allMatch;

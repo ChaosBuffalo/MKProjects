@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.init.CoreParticles;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.client.gui.screens.QuestPage;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
@@ -13,26 +13,26 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 
-@Mod.EventBusSubscriber(modid = MKNpc.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MKNpc.MODID, value = Dist.CLIENT)
 public class NpcClientEventHandler {
 
     private static final KeyMapping questMenuBind = new KeyMapping("key.hud.questmenu",
             InputConstants.KEY_K, "key.mknpc.category");
     private static int ticks = -1;
 
-    @Mod.EventBusSubscriber(modid = MKNpc.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MKNpc.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ModEvents {
         @SubscribeEvent
         public static void registerKeyBinding(RegisterKeyMappingsEvent event) {
@@ -68,7 +68,7 @@ public class NpcClientEventHandler {
             if (player.tickCount != ticks) {
                 ticks = player.tickCount;
                 Set<GlobalPos> alreadySeen = new HashSet<>();
-                player.getCapability(NpcCapabilities.PLAYER_QUEST_DATA_CAPABILITY).ifPresent(x -> {
+                IPlayerQuestingData.get(player).ifPresent(x -> {
                     x.getQuestChains().forEach(pQuestChain -> {
                         pQuestChain.getCurrentQuests().forEach(questName -> {
                             PlayerQuestData playerQuestData = pQuestChain.getQuestData(questName);

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.capabilities.structure_tracking;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -11,7 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,7 @@ public class StructureData implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         tag.putInt("chunkX", chunkPos.x);
         tag.putInt("chunkY", chunkPos.z);
@@ -53,7 +54,7 @@ public class StructureData implements INBTSerializable<CompoundTag> {
         tag.putIntArray("bounds", boundsArr);
         ListTag comps = new ListTag();
         for (StructureComponentData dat : components) {
-            comps.add(dat.serializeNBT());
+            comps.add(dat.serializeNBT(provider));
         }
         tag.put("components", comps);
         tag.putString("world", worldKey.location().toString());
@@ -61,18 +62,18 @@ public class StructureData implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         int chunkX = nbt.getInt("chunkX");
         int chunkZ = nbt.getInt("chunkY");
         chunkPos = new ChunkPos(chunkX, chunkZ);
-        worldKey = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(nbt.getString("world")));
+        worldKey = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(nbt.getString("world")));
         int[] boundsArr = nbt.getIntArray("bounds");
         boundingBox = new BoundingBox(boundsArr[0], boundsArr[1], boundsArr[2], boundsArr[3], boundsArr[4], boundsArr[5]);
         ListTag comps = nbt.getList("components", Tag.TAG_COMPOUND);
         List<StructureComponentData> newComps = new ArrayList<>();
         for (Tag comp : comps) {
             StructureComponentData data = new StructureComponentData();
-            data.deserializeNBT((CompoundTag) comp);
+            data.deserializeNBT(provider, (CompoundTag) comp);
             newComps.add(data);
         }
         components.clear();

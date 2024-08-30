@@ -7,14 +7,19 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 import java.util.List;
 
 public class ParticleEffectsOption extends NpcDefinitionOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "particle_effects");
+    public static final ResourceLocation NAME = MKNpc.id("particle_effects");
     public static final Codec<ParticleEffectsOption> CODEC = ParticleEffectInstance.CODEC.listOf().xmap(ParticleEffectsOption::new, ParticleEffectsOption::getValue);
+    public static final MapCodec<ParticleEffectsOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            ParticleEffectInstance.CODEC.listOf().fieldOf("instances").forGetter(i -> i.instances)
+    ).apply(builder, ParticleEffectsOption::new));
 
     private final List<ParticleEffectInstance> instances;
 

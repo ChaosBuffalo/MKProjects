@@ -1,16 +1,21 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
-import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
+import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 public class FactionOption extends NpcDefinitionOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "faction");
+    public static final ResourceLocation NAME = MKNpc.id("faction");
     public static final Codec<FactionOption> CODEC = ResourceLocation.CODEC.xmap(FactionOption::new, FactionOption::getValue);
+    public static final MapCodec<FactionOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+        ResourceLocation.CODEC.fieldOf("factionId").forGetter(i -> i.factionId)
+    ).apply(builder, FactionOption::new));
 
     private final ResourceLocation factionId;
 
@@ -25,7 +30,7 @@ public class FactionOption extends NpcDefinitionOption {
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
-        entity.getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
+        IMobFaction.get(entity)
                 .ifPresent(cap -> cap.setFactionName(factionId));
     }
 

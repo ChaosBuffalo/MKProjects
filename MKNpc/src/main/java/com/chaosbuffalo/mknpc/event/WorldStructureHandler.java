@@ -15,16 +15,16 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Mod.EventBusSubscriber(modid = MKNpc.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = MKNpc.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class WorldStructureHandler {
     public static final Map<ResourceLocation, MKStructure> MK_STRUCTURE_INDEX = new HashMap<>();
 
@@ -34,8 +34,8 @@ public class WorldStructureHandler {
     }
 
     @SubscribeEvent
-    public static void onWorldTick(TickEvent.LevelTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && event.level instanceof ServerLevel serverLevel) {
+    public static void onWorldTick(LevelTickEvent.Post event) {
+        if (event.getLevel() instanceof ServerLevel serverLevel) {
             IWorldNpcData over = ContentDB.getPrimaryData();
             StructureManager levelStructures = serverLevel.structureManager();
             WorldStructureManager activeStructures = over.getStructureManager();
@@ -49,11 +49,11 @@ public class WorldStructureHandler {
                         .filter(StructureStart::isValid)
                         .toList();
                 for (StructureStart start : starts) {
-                    over.setupStructureDataIfAbsent(start, event.level);
+                    over.setupStructureDataIfAbsent(start, serverLevel);
                     activeStructures.visitStructure(StructureStartExtension.getInstanceId(start), player);
                 }
             }
-            if (event.level.dimension() == Level.OVERWORLD) {
+            if (serverLevel.dimension() == Level.OVERWORLD) {
                 over.update();
             }
         }
@@ -62,9 +62,9 @@ public class WorldStructureHandler {
     public static void cacheStructures(MinecraftServer server) {
         server.registryAccess().registry(Registries.STRUCTURE).ifPresent(registry -> {
             MK_STRUCTURE_INDEX.clear();
-            registry.holders().filter(r -> r.get() instanceof MKStructure).forEach(r -> {
+            registry.holders().filter(r -> r.value() instanceof MKStructure).forEach(r -> {
                 MKNpc.LOGGER.info("Caching MK Structure {}", r.key().location());
-                MK_STRUCTURE_INDEX.put(r.key().location(), (MKStructure) r.get());
+                MK_STRUCTURE_INDEX.put(r.key().location(), (MKStructure) r.value());
             });
         });
     }

@@ -65,7 +65,7 @@ public class QuestOfferingEntry {
     }
 
     private ResourceLocation makeTreeId(UUID questId) {
-        return new ResourceLocation(MKNpc.MODID, String.format("give_quest.%s", questId));
+        return MKNpc.id(String.format("give_quest.%s", questId));
     }
 
     private DialogueTree specializeTree(QuestDefinition definition, QuestChainBuildResult buildResult) {

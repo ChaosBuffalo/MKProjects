@@ -21,8 +21,10 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 
 public class MKSpawnerScreen extends MKScreen {
@@ -88,7 +90,7 @@ public class MKSpawnerScreen extends MKScreen {
         MKButton finalize = new MKButton(xPos + PANEL_WIDTH / 2 - 50,
                 options.getY() + options.getHeight() + 25, 100, 20, "Finalize");
         finalize.setPressedCallback((button, mouse) -> {
-            PacketHandler.getNetworkChannel().sendToServer(new FinalizeMKSpawnerPacket(getSpawnerTileEntity()));
+            PacketDistributor.sendToServer(new FinalizeMKSpawnerPacket(getSpawnerTileEntity()));
             return true;
         });
         IncrementableField spawnTimeController = new IncrementableField(0, 0, 20, "Respawn Time",
@@ -121,20 +123,18 @@ public class MKSpawnerScreen extends MKScreen {
 
     @Override
     public void removed() {
-        PacketHandler.getNetworkChannel().sendToServer(new SetSpawnListPacket(spawnerTileEntity));
+        PacketDistributor.sendToServer(new SetSpawnListPacket(spawnerTileEntity));
         super.removed();
     }
 
     @Override
-    public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         int xPos = width / 2 - PANEL_WIDTH / 2;
         int yPos = height / 2 - PANEL_HEIGHT / 2;
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         GuiTextures.CORE_TEXTURES.bind(getMinecraft());
-        GuiTextures.CORE_TEXTURES.drawRegionAtPos(matrixStack, GuiTextures.BACKGROUND_320_240, xPos, yPos);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPos(graphics, GuiTextures.BACKGROUND_320_240, xPos, yPos);
+        super.render(graphics, mouseX, mouseY, partialTicks);
     }
-
-
 }

@@ -6,6 +6,9 @@ import com.chaosbuffalo.mknpc.npc.NpcOptionEntryTypes;
 import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
 import com.chaosbuffalo.mknpc.npc.options.QuestOfferingOption;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -20,6 +23,9 @@ import java.util.Map;
 public class QuestOptionEntry implements INpcOptionEntry {
     public static final Codec<QuestOptionEntry> CODEC = Codec.unboundedMap(ResourceLocation.CODEC, QuestOfferingEntry.CODEC)
             .xmap(QuestOptionEntry::new, i -> i.questOfferings);
+    public static final MapCodec<QuestOptionEntry> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.unboundedMap(ResourceLocation.CODEC, QuestOfferingEntry.CODEC).fieldOf("quests").forGetter(i -> i.questOfferings)
+    ).apply(builder, QuestOptionEntry::new));
 
     private final Map<ResourceLocation, QuestOfferingEntry> questOfferings = new HashMap<>();
 
@@ -75,21 +81,21 @@ public class QuestOptionEntry implements INpcOptionEntry {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
         ListTag offeringNbt = new ListTag();
         for (QuestOfferingEntry entry : questOfferings.values()) {
-            offeringNbt.add(QuestOfferingEntry.CODEC.encodeStart(NbtOps.INSTANCE, entry).getOrThrow(false, MKNpc.LOGGER::error));
+            offeringNbt.add(QuestOfferingEntry.CODEC.encodeStart(NbtOps.INSTANCE, entry).getOrThrow());
         }
         nbt.put("offerings", offeringNbt);
         return nbt;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         ListTag offeringNbt = nbt.getList("offerings", Tag.TAG_COMPOUND);
         for (Tag offering : offeringNbt) {
-            QuestOfferingEntry newEntry = QuestOfferingEntry.CODEC.parse(NbtOps.INSTANCE, offering).getOrThrow(false, MKNpc.LOGGER::error);
+            QuestOfferingEntry newEntry = QuestOfferingEntry.CODEC.parse(NbtOps.INSTANCE, offering).getOrThrow();
             questOfferings.put(newEntry.getQuestDef(), newEntry);
         }
     }

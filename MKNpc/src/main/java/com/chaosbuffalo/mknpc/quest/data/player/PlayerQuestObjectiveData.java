@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.quest.data.player;
 
 import com.chaosbuffalo.mknpc.utils.NBTSerializableMappedData;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -20,8 +21,8 @@ public class PlayerQuestObjectiveData extends NBTSerializableMappedData {
         this.description.addAll(description);
     }
 
-    public PlayerQuestObjectiveData(CompoundTag nbt) {
-        deserializeNBT(nbt);
+    public PlayerQuestObjectiveData(HolderLookup.Provider provider, CompoundTag nbt) {
+        deserializeNBT(provider, nbt);
     }
 
     public List<Component> getDescription() {
@@ -51,24 +52,24 @@ public class PlayerQuestObjectiveData extends NBTSerializableMappedData {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag nbt = super.serializeNBT();
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        CompoundTag nbt = super.serializeNBT(provider);
         nbt.putString("name", objectiveName);
         ListTag descriptions = new ListTag();
         for (Component comp : this.description) {
-            descriptions.add(StringTag.valueOf(Component.Serializer.toJson(comp)));
+            descriptions.add(StringTag.valueOf(Component.Serializer.toJson(comp, provider)));
         }
         nbt.put("description", descriptions);
         return nbt;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        super.deserializeNBT(nbt);
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+        super.deserializeNBT(provider, nbt);
         objectiveName = nbt.getString("name");
         ListTag descriptions = nbt.getList("description", Tag.TAG_STRING);
         for (Tag desc : descriptions) {
-            description.add(Component.Serializer.fromJson(desc.getAsString()));
+            description.add(Component.Serializer.fromJson(desc.getAsString(), provider));
         }
     }
 }

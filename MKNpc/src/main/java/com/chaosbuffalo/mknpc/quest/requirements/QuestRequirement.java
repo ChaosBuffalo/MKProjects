@@ -7,8 +7,8 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 
 public abstract class QuestRequirement {
-    public static final Codec<QuestRequirement> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
-            QuestRegistries.QUEST_REQUIREMENTS.getCodec().dispatch(QuestRequirement::getType, QuestRequirementType::codec));
+    public static final Codec<QuestRequirement> CODEC = Codec.lazyInitialized(() ->
+            QuestRegistries.QUEST_REQUIREMENTS.byNameCodec().dispatch(QuestRequirement::getType, QuestRequirementType::codec));
 
     public abstract QuestRequirementType<? extends QuestRequirement> getType();
 

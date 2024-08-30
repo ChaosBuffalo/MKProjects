@@ -8,13 +8,13 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.options.NpcDefinitionOption;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import java.util.Optional;
 public class BossStage {
     public static final Codec<BossStage> CODEC = RecordCodecBuilder.<BossStage>mapCodec(builder -> {
         return builder.group(
-                NpcDefinitionOption.CODEC2.listOf().fieldOf("options").forGetter(i -> i.options),
+                NpcDefinitionOption.DIRECT_CODEC.listOf().fieldOf("options").forGetter(i -> i.options),
                 ResourceLocation.CODEC.optionalFieldOf("transitionParticles").forGetter(i -> Optional.ofNullable(i.transitionParticles)),
                 ResourceLocation.CODEC.optionalFieldOf("transitionSound").forGetter(i -> Optional.ofNullable(i.transitionSound)),
                 ParticleMode.CODEC.optionalFieldOf("particleMode", ParticleMode.MIDDLE).forGetter(i -> i.particleMode)
@@ -109,8 +109,8 @@ public class BossStage {
     }
 
     public BossStage copy() {
-        Tag tag = CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow(false, MKNpc.LOGGER::error);
-        return CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow(false, MKNpc.LOGGER::error);
+        Tag tag = CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow();
+        return CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
     }
 
     public void setParticleMode(ParticleMode particleMode) {
@@ -136,7 +136,7 @@ public class BossStage {
                     break;
             }
             if (transitionSound != null) {
-                SoundEvent event = ForgeRegistries.SOUND_EVENTS.getValue(transitionSound);
+                SoundEvent event = BuiltInRegistries.SOUND_EVENT.get(transitionSound);
                 if (event != null) {
                     SoundUtils.serverPlaySoundAtEntity(entity, event, entity.getSoundSource());
                 }

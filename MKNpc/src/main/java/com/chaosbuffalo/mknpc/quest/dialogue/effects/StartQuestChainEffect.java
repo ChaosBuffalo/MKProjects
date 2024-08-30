@@ -6,7 +6,7 @@ import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffectType;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueEffectTypes;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
@@ -17,11 +17,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class StartQuestChainEffect extends DialogueEffect implements IReceivesChainId {
-    public static final Codec<StartQuestChainEffect> CODEC = RecordCodecBuilder.<StartQuestChainEffect>mapCodec(builder ->
+    public static final MapCodec<StartQuestChainEffect> MAP_CODEC = RecordCodecBuilder.mapCodec(builder ->
             builder.group(
                     UUIDUtil.STRING_CODEC.optionalFieldOf("chainId").forGetter(i -> i.chainId.equals(Util.NIL_UUID) ? Optional.empty() : Optional.of(i.chainId))
             ).apply(builder, StartQuestChainEffect::new)
-    ).codec();
+    );
 
     private UUID chainId;
 

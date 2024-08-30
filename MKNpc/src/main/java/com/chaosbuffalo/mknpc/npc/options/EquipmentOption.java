@@ -9,6 +9,8 @@ import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.chaosbuffalo.mknpc.npc.option_entries.EquipmentOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -19,9 +21,13 @@ import java.util.List;
 import java.util.Map;
 
 public class EquipmentOption extends WorldPermanentOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "equipment");
+    public static final ResourceLocation NAME = MKNpc.id("equipment");
     public static final Codec<EquipmentOption> CODEC = Codec.unboundedMap(CommonCodecs.EQUIPMENT_SLOT_CODEC, NpcItemChoice.CODEC.listOf())
             .xmap(EquipmentOption::new, i -> i.itemChoices);
+    public static final MapCodec<EquipmentOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.unboundedMap(CommonCodecs.EQUIPMENT_SLOT_CODEC, NpcItemChoice.CODEC.listOf())
+                    .fieldOf("equipment").forGetter(i -> i.itemChoices)
+    ).apply(builder, EquipmentOption::new));
 
     private final Map<EquipmentSlot, List<NpcItemChoice>> itemChoices;
 

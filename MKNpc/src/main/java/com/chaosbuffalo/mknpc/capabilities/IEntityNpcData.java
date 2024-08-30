@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
+import com.chaosbuffalo.mkcore.init.CoreAttachments;
+import com.chaosbuffalo.mknpc.init.MKNpcAttachments;
 import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
@@ -8,9 +10,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -92,4 +96,18 @@ public interface IEntityNpcData extends INBTSerializable<CompoundTag> {
     Optional<INotifyOnEntityDeath> getDeathReceiver();
 
     void setDeathReceiver(INotifyOnEntityDeath receiver);
+
+    static Optional<IEntityNpcData> get(Entity entity) {
+        if (entity instanceof LivingEntity livingEntity) {
+            return get(livingEntity);
+        }
+        return Optional.empty();
+    }
+
+    static Optional<IEntityNpcData> get(LivingEntity entity) {
+        if (entity instanceof Player) {
+            return Optional.empty();
+        }
+        return Optional.of(entity.getData(MKNpcAttachments.NPC_DATA));
+    }
 }

@@ -5,23 +5,20 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasEntitlementCondition;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.player.Player;
 
 public class HasEntitlementRequirement extends QuestRequirement {
-    public static final Codec<HasEntitlementRequirement> CODEC = ExtraCodecs.lazyInitializedCodec(() ->
-            RecordCodecBuilder.<HasEntitlementRequirement>mapCodec(builder ->
-                    builder.group(
-                            MKCoreRegistry.ENTITLEMENTS.getCodec().fieldOf("entitlement").forGetter(i -> i.entitlement)
-                    ).apply(builder, HasEntitlementRequirement::new)
-            ).codec());
+    public static final MapCodec<HasEntitlementRequirement> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            MKCoreRegistry.ENTITLEMENTS.holderByNameCodec().fieldOf("entitlement").forGetter(i -> i.entitlement)
+    ).apply(builder, HasEntitlementRequirement::new));
 
 
-    private final MKEntitlement entitlement;
+    private final Holder<MKEntitlement> entitlement;
 
-    public HasEntitlementRequirement(MKEntitlement entitlement) {
+    public HasEntitlementRequirement(Holder<MKEntitlement> entitlement) {
         this.entitlement = entitlement;
     }
 
@@ -35,7 +32,7 @@ public class HasEntitlementRequirement extends QuestRequirement {
         if (entitlement == null) {
             return false;
         }
-        return MKCore.getPlayer(player).map(x -> x.getEntitlements().hasEntitlement(entitlement)).orElse(false);
+        return MKCore.getPlayer(player).map(x -> x.getEntitlements().hasEntitlement(entitlement.value())).orElse(false);
     }
 
     @Override

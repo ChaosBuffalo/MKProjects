@@ -7,7 +7,6 @@ import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.effects.HealingThreatEffect;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -32,18 +31,23 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.living.*;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+
+import java.util.Optional;
 
 
 @SuppressWarnings("unused")
-@Mod.EventBusSubscriber(modid = MKNpc.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = MKNpc.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class EntityHandler {
 
     @SubscribeEvent
@@ -56,11 +60,11 @@ public class EntityHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onEntityDamage(LivingDamageEvent event) {
+    public static void onEntityDamage(LivingDamageEvent.Pre event) {
         if (event.getSource() instanceof MKDamageSource) {
             if (event.getEntity() instanceof Player) {
                 if (!(event.getSource().getEntity() instanceof Player)) {
-                    event.setAmount((float) (event.getAmount() * MKNpc.getDifficultyScale(event.getEntity())));
+                    event.setNewDamage((float) (event.getNewDamage() * MKNpc.getDifficultyScale(event.getEntity())));
                 }
                 //add threat to pets here
 
@@ -98,7 +102,7 @@ public class EntityHandler {
             if (te == null) {
                 return;
             }
-            te.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(chestCap -> {
+            IChestNpcData.get(te).ifPresent(chestCap -> {
                 Player player = event.getEntity();
                 processLootChestEvents(player, chestCap);
                 if (!player.isShiftKeyDown() && chestCap.hasQuestInventoryForPlayer(player)) {
@@ -143,7 +147,7 @@ public class EntityHandler {
 
     @SubscribeEvent
     public static void onSetupDialogue(PlayerNpcDialogueTreeGatherEvent event) {
-        if (event.getEntity().level.isClientSide) {
+        if (event.getEntity().level().isClientSide) {
             return;
         }
         MKNpc.LOGGER.debug("Setting up dialogue between {} and {}", event.getSpeaker(), event.getEntity());
@@ -194,11 +198,11 @@ public class EntityHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDeathEvent(LivingDeathEvent event) {
-        if (event.getEntity().level.isClientSide) {
+        if (event.getEntity().level().isClientSide) {
             return;
         }
 
-        LazyOptional<IEntityNpcData> npcCap = MKNpc.getNpcData(event.getEntity());
+        Optional<IEntityNpcData> npcCap = MKNpc.getNpcData(event.getEntity());
         npcCap.ifPresent(npcData -> {
             npcData.getDeathReceiver().ifPresent(receiver -> receiver.onEntityDeath(npcData, event));
             handleNpcInStructureDeath(npcData);
@@ -225,15 +229,18 @@ public class EntityHandler {
 
 
     @SubscribeEvent
-    public static void onEntityTick(LivingEvent.LivingTickEvent event) {
-        MKNpc.getNpcData(event.getEntity()).ifPresent(IEntityNpcData::tick);
+    public static void onEntityTick(EntityTickEvent.Post event) {
+        if (event.getEntity() instanceof LivingEntity) {
+            MKNpc.getNpcData(event.getEntity()).ifPresent(IEntityNpcData::tick);
+        }
     }
 
     @SubscribeEvent
     public static void onLootDrop(LivingDropsEvent event) {
         if (event.isRecentlyHit()) {
+            // FIXME: Since the enchantment rework event.getLootingLevel() doesn't exist
             MKNpc.getNpcData(event.getEntity()).ifPresent(x -> x.handleExtraLoot(
-                    event.getLootingLevel(), event.getDrops(), event.getSource()));
+                    0, event.getDrops(), event.getSource()));
         }
     }
 

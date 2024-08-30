@@ -1,13 +1,12 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
-import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
+import com.chaosbuffalo.mkchat.capabilities.INpcDialogue;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.utils.RandomCollection;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
@@ -22,6 +21,7 @@ import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -174,8 +174,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             }
             if (entry.getTree() != null) {
                 MKNpc.LOGGER.debug("Adding dialogue offering for start quest {} to {}", entry.getQuestDef(), entity);
-                entity.getCapability(ChatCapabilities.NPC_DIALOGUE_CAPABILITY).ifPresent(
-                        chat -> chat.addAdditionalDialogueTree(entry.getTree()));
+                INpcDialogue.get(entity).ifPresent(chat -> chat.addAdditionalDialogueTree(entry.getTree()));
             }
         } else {
             MKNpc.LOGGER.debug("Failed to generate quest request for: {} entity is {}", entry.getQuestDef(), entity);
@@ -333,7 +332,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         if (definition != null) {
             tag.putString("npc_definition", definition.getDefinitionName().toString());
@@ -345,7 +344,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         if (nbt.contains("mk_spawned")) {
             mkSpawned = nbt.getBoolean("mk_spawned");
         }
@@ -353,7 +352,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             spawnID = nbt.getUUID("spawn_id");
         }
         if (nbt.contains("npc_definition")) {
-            ResourceLocation defName = new ResourceLocation(nbt.getString("npc_definition"));
+            ResourceLocation defName = ResourceLocation.parse(nbt.getString("npc_definition"));
             if (getEntity().getServer() != null) {
                 this.definition =  getEntity().getServer().registryAccess().registry(NpcRegistries.NPC_DEFINITIONS).orElseThrow().get(defName);
                 needsDefinitionApplied = true;

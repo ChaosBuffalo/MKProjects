@@ -39,10 +39,10 @@ public class NpcAbilityEntry {
     }
 
     public <D> D serialize(DynamicOps<D> ops) {
-        return CODEC.encodeStart(ops, this).getOrThrow(false, MKNpc.LOGGER::error);
+        return CODEC.encodeStart(ops, this).getOrThrow();
     }
 
     public static <D> NpcAbilityEntry deserialize(DynamicOps<D> ops, D instance) {
-        return CODEC.parse(new Dynamic<>(ops, instance)).getOrThrow(false, MKNpc.LOGGER::error);
+        return CODEC.parse(new Dynamic<>(ops, instance)).getOrThrow();
     }
 }

@@ -1,14 +1,17 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
-import com.chaosbuffalo.mkcore.capabilities.CoreCapabilities;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
 import com.chaosbuffalo.mknpc.npc.NpcOptionEntryTypes;
 import com.chaosbuffalo.mknpc.npc.options.AbilitiesOption;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -22,6 +25,9 @@ import java.util.List;
 
 public class AbilitiesOptionEntry implements INpcOptionEntry {
     public static final Codec<AbilitiesOptionEntry> CODEC = Codec.list(NpcAbilityEntry.CODEC).xmap(AbilitiesOptionEntry::new, i -> i.abilities);
+    public static final MapCodec<AbilitiesOptionEntry> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            NpcAbilityEntry.CODEC.listOf().fieldOf("abilities").forGetter(i -> i.abilities)
+    ).apply(builder, AbilitiesOptionEntry::new));
 
     private final List<NpcAbilityEntry> abilities;
 
@@ -37,7 +43,7 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
     @Override
     public void applyToEntity(Entity entity) {
         if (entity instanceof LivingEntity livingEntity) {
-            livingEntity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((cap) -> {
+            MKCore.getEntitySpecificData(livingEntity).ifPresent((cap) -> {
                 List<ResourceLocation> toUnlearn = new ArrayList<>();
                 for (MKAbilityInfo ability : cap.getAbilities().getAllAbilities()) {
                     toUnlearn.add(ability.getId());
@@ -61,7 +67,7 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         ListTag abilitiesList = new ListTag();
         for (NpcAbilityEntry entry : abilities) {
@@ -72,7 +78,7 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         ListTag abilitiesList = nbt.getList("abilities", Tag.TAG_COMPOUND);
         abilities.clear();
         for (Tag tag : abilitiesList) {

@@ -4,7 +4,7 @@
   "options": {
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 100.0
@@ -13,31 +13,25 @@
     },
     "mknpc:dialogue": {
       "type": "mknpc:dialogue",
-      "value": "mkchat:test"
+      "dialogueId": "mkchat:test"
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "mainhand": [
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:katana_iron",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:katana_iron"
             },
             "weight": 5.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:dagger_iron",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:dagger_iron"
             },
             "weight": 10.0
           }
@@ -46,11 +40,11 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkfaction:villagers"
+      "factionId": "mkfaction:villagers"
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Test Lady"
+      "name": "Test Lady"
     }
   }
 }

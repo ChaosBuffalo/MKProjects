@@ -1,9 +1,10 @@
 package com.chaosbuffalo.mknpc.capabilities.structure_tracking;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 
 public class StructureComponentData implements INBTSerializable<CompoundTag> {
@@ -30,7 +31,7 @@ public class StructureComponentData implements INBTSerializable<CompoundTag> {
 
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
         int[] boundsArr = {bounds.minX(), bounds.minY(), bounds.minZ(), bounds.maxX(), bounds.maxY(), bounds.maxZ()};
         nbt.putIntArray("bounds", boundsArr);
@@ -39,9 +40,9 @@ public class StructureComponentData implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         int[] boundsArr = nbt.getIntArray("bounds");
         bounds = new BoundingBox(boundsArr[0], boundsArr[1], boundsArr[2], boundsArr[3], boundsArr[4], boundsArr[5]);
-        pieceName = new ResourceLocation(nbt.getString("pieceName"));
+        pieceName = ResourceLocation.parse(nbt.getString("pieceName"));
     }
 }

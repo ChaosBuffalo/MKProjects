@@ -11,10 +11,11 @@ import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -25,15 +26,15 @@ import java.util.Map;
 import java.util.Optional;
 
 public class LootChestObjective extends QuestObjective<UUIDInstanceData> implements IContainerObjectiveHandler {
-    public static final Codec<LootChestObjective> CODEC = RecordCodecBuilder.<LootChestObjective>mapCodec(builder -> {
+    public static final MapCodec<LootChestObjective> MAP_CODEC = RecordCodecBuilder.<LootChestObjective>mapCodec(builder -> {
         return builder.group(
                 Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
                 QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
                 Codec.STRING.fieldOf("chestTag").forGetter(i -> i.chestTag),
                 CommonCodecs.ITEM_STACK.listOf().fieldOf("items").forGetter(i -> i.itemsToAdd),
-                ExtraCodecs.COMPONENT.listOf().fieldOf("description").forGetter(i -> i.description)
+                ComponentSerialization.CODEC.listOf().fieldOf("description").forGetter(i -> i.description)
         ).apply(builder, LootChestObjective::new);
-    }).codec();
+    });
 
     private final List<ItemStack> itemsToAdd;
     private final String chestTag;

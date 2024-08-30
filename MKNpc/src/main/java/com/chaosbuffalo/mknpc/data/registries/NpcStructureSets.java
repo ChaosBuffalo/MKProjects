@@ -3,9 +3,8 @@ package com.chaosbuffalo.mknpc.data.registries;
 import com.chaosbuffalo.mknpc.MKNpc;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
@@ -16,10 +15,10 @@ public class NpcStructureSets {
     public static final ResourceKey<StructureSet> TEST_STRUCTURES = createKey("test_structures");
 
     private static ResourceKey<StructureSet> createKey(String name) {
-        return ResourceKey.create(Registries.STRUCTURE_SET, new ResourceLocation(MKNpc.MODID, name));
+        return ResourceKey.create(Registries.STRUCTURE_SET, MKNpc.id(name));
     }
 
-    public static void bootstrap(BootstapContext<StructureSet> context) {
+    public static void bootstrap(BootstrapContext<StructureSet> context) {
         HolderGetter<Structure> structures = context.lookup(Registries.STRUCTURE);
         context.register(TEST_STRUCTURES,
                 new StructureSet(structures.getOrThrow(NpcStructures.TEST_JIGSAW),

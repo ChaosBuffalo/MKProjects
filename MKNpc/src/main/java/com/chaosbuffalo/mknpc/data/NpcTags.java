@@ -13,7 +13,7 @@ public class NpcTags {
         public static final TagKey<Biome> HAS_TEST_STRUCTURES = tag("has_test_structures");
 
         private static TagKey<Biome> tag(String name) {
-            return TagKey.create(Registries.BIOME, new ResourceLocation(MKNpc.MODID, name));
+            return TagKey.create(Registries.BIOME, MKNpc.id(name));
         }
     }
 
@@ -21,7 +21,7 @@ public class NpcTags {
         public static final TagKey<Structure> TEST_STRUCTURE = tag("test_structures");
 
         private static TagKey<Structure> tag(String name) {
-            return TagKey.create(Registries.STRUCTURE, new ResourceLocation(MKNpc.MODID, name));
+            return TagKey.create(Registries.STRUCTURE, MKNpc.id(name));
         }
     }
 }

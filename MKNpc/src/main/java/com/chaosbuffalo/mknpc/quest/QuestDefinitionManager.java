@@ -10,8 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +24,7 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
 
     public QuestDefinitionManager() {
         super(GSON, DEFINITION_FOLDER);
-        MinecraftForge.EVENT_BUS.addListener(this::addReloadListener);
+        NeoForge.EVENT_BUS.addListener(this::addReloadListener);
     }
 
     private void addReloadListener(AddReloadListenerEvent event) {
@@ -38,7 +38,7 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
             ResourceLocation definitionId = entry.getKey();
             MKNpc.LOGGER.info("Found Quest Definition file: {}", definitionId);
             QuestDefinition def = new QuestDefinition(definitionId);
-            def.deserialize(new Dynamic<>(JsonOps.INSTANCE, entry.getValue()));
+            def.deserialize(new Dynamic<>(JsonOps.INSTANCE, entry.getValue()), getRegistryLookup());
             DEFINITIONS.put(def.getName(), def);
         }
     }

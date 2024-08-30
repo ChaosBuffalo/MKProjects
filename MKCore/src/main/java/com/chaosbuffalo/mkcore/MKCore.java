@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.command.MKCommand;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtensionProvider;
 import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
@@ -172,6 +173,16 @@ public class MKCore {
             return entity.getData(CoreAttachments.ENTITY_DATA_ATTACHMENT);
         }
         return null;
+    }
+
+    public static Optional<MKEntityData> getEntitySpecificData(@Nullable LivingEntity entity) {
+        if (entity instanceof Player) {
+            return Optional.empty();
+        }
+        if (entity instanceof LivingEntity) {
+            return Optional.of(entity.getData(CoreAttachments.ENTITY_DATA_ATTACHMENT));
+        }
+        return Optional.empty();
     }
 
     public static TalentManager getTalentManager() {

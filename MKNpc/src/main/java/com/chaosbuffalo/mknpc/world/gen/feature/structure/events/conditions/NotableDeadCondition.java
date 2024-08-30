@@ -6,20 +6,18 @@ import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 public class NotableDeadCondition extends StructureEventCondition {
-    public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID,
-            "struct_condition.notable_dead");
-    public static final Codec<NotableDeadCondition> CODEC = RecordCodecBuilder.<NotableDeadCondition>mapCodec(builder -> {
-        return builder.group(
-                ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
-                Codec.BOOL.fieldOf("allNotables").forGetter(i -> i.allNotables)
-        ).apply(builder, NotableDeadCondition::new);
-    }).codec();
+    public final static ResourceLocation TYPE_NAME = MKNpc.id("struct_condition.notable_dead");
+    public static final MapCodec<NotableDeadCondition> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
+            Codec.BOOL.fieldOf("allNotables").forGetter(i -> i.allNotables)
+    ).apply(builder, NotableDeadCondition::new));
 
     private final ResourceLocation npcDefinition;
     private final boolean allNotables;

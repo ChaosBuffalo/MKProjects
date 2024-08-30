@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class PiglinStyles {
 
-    public static final ResourceLocation VANILLA_ZOMBIFIED_PIGLIN_TEXTURE = new ResourceLocation(
+    public static final ResourceLocation VANILLA_ZOMBIFIED_PIGLIN_TEXTURE = ResourceLocation.withDefaultNamespace(
             "textures/entity/piglin/zombified_piglin.png");
 
     private static final Map<String, ResourceLocation> TEXTURE_VARIANTS = new HashMap<>();

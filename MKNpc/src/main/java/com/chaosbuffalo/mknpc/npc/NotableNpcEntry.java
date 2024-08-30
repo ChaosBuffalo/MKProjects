@@ -1,15 +1,15 @@
 package com.chaosbuffalo.mknpc.npc;
 
-import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -62,10 +62,9 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-        tag.put("location", GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, getLocation())
-                .getOrThrow(false, MKNpc.LOGGER::error));
+        tag.put("location", GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, getLocation()).getOrThrow());
         tag.putUUID("spawnerId", spawnerId);
         tag.putUUID("structureId", structureId);
         tag.putUUID("notableId", notableId);
@@ -75,12 +74,11 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        location = GlobalPos.CODEC.parse(NbtOps.INSTANCE, nbt.getCompound("location"))
-                .getOrThrow(false, MKNpc.LOGGER::error);
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+        location = GlobalPos.CODEC.parse(NbtOps.INSTANCE, nbt.getCompound("location")).getOrThrow();
         spawnerId = nbt.getUUID("spawnerId");
         structureId = nbt.getUUID("structureId");
-        definition = new ResourceLocation(nbt.getString("definition"));
+        definition = ResourceLocation.parse(nbt.getString("definition"));
         name = Component.literal(nbt.getString("name"));
         notableId = nbt.getUUID("notableId");
     }

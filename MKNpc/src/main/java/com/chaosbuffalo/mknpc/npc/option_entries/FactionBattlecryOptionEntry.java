@@ -4,8 +4,12 @@ import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.NpcOptionEntryTypes;
 import com.chaosbuffalo.mknpc.npc.options.FactionBattlecryOption;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
@@ -13,7 +17,10 @@ import net.minecraft.world.entity.Entity;
 import javax.annotation.Nullable;
 
 public class FactionBattlecryOptionEntry implements INpcOptionEntry {
-    public static final Codec<FactionBattlecryOptionEntry> CODEC = ExtraCodecs.COMPONENT.xmap(FactionBattlecryOptionEntry::new, FactionBattlecryOptionEntry::getBattlecry);
+    public static final Codec<FactionBattlecryOptionEntry> CODEC = ComponentSerialization.CODEC.xmap(FactionBattlecryOptionEntry::new, FactionBattlecryOptionEntry::getBattlecry);
+    public static final MapCodec<FactionBattlecryOptionEntry> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            ComponentSerialization.CODEC.fieldOf("battlecry").forGetter(i -> i.battlecry)
+    ).apply(builder, FactionBattlecryOptionEntry::new));
 
     @Nullable
     private Component battlecry;
@@ -49,19 +56,19 @@ public class FactionBattlecryOptionEntry implements INpcOptionEntry {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
         if (battlecry != null) {
-            nbt.putString("battlecry", Component.Serializer.toJson(battlecry));
+            nbt.putString("battlecry", Component.Serializer.toJson(battlecry, provider));
         }
 
         return nbt;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         if (nbt.contains("battlecry")) {
-            battlecry = Component.Serializer.fromJson(nbt.getString("battlecry"));
+            battlecry = Component.Serializer.fromJson(nbt.getString("battlecry"), provider);
         }
     }
 

@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.quest.data.player;
 
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -32,8 +33,8 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundTag> {
         return questData;
     }
 
-    public PlayerQuestChainInstance(CompoundTag nbt) {
-        deserialize(nbt);
+    public PlayerQuestChainInstance(HolderLookup.Provider provider, CompoundTag nbt) {
+        deserialize(provider, nbt);
     }
 
     public boolean isQuestComplete() {
@@ -57,9 +58,9 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serialize() {
+    public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-        tag.putString("questName", Component.Serializer.toJson(questName));
+        tag.putString("questName", Component.Serializer.toJson(questName, provider));
         tag.putUUID("questId", questId);
         ListTag currentQuestsNbt = new ListTag();
         for (String questName : currentQuests) {
@@ -69,7 +70,7 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundTag> {
         tag.putBoolean("questComplete", questComplete);
         ListTag quests = new ListTag();
         for (Map.Entry<String, PlayerQuestData> entry : questData.entrySet()) {
-            quests.add(entry.getValue().serializeNBT());
+            quests.add(entry.getValue().serializeNBT(provider));
         }
         tag.put("quests", quests);
         return tag;
@@ -97,14 +98,14 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundTag> {
     }
 
     @Override
-    public boolean deserialize(CompoundTag compoundNBT) {
-        questName = Component.Serializer.fromJson(compoundNBT.getString("questName"));
+    public boolean deserialize(HolderLookup.Provider provider, CompoundTag compoundNBT) {
+        questName = Component.Serializer.fromJson(compoundNBT.getString("questName"), provider);
         questId = compoundNBT.getUUID("questId");
         ListTag currentQuestsNbt = compoundNBT.getList("currentQuests", Tag.TAG_STRING);
         currentQuests = currentQuestsNbt.stream().map(Tag::getAsString).collect(Collectors.toList());
         ListTag questData = compoundNBT.getList("quests", Tag.TAG_COMPOUND);
         for (Tag questNbt : questData) {
-            PlayerQuestData newData = new PlayerQuestData((CompoundTag) questNbt);
+            PlayerQuestData newData = new PlayerQuestData(provider, (CompoundTag) questNbt);
             this.questData.put(newData.getQuestName(), newData);
         }
         questComplete = compoundNBT.getBoolean("questComplete");

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
+import com.chaosbuffalo.mknpc.init.MKNpcAttachments;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableChestEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
@@ -14,10 +15,11 @@ import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -69,4 +71,15 @@ public interface IWorldNpcData extends INBTSerializable<CompoundTag> {
     Level getWorld();
 
     void queueChestForProcessing(GlobalPos pos);
+
+    static IWorldNpcData get(Level level) {
+        if (level instanceof ServerLevel serverLevel) {
+            return get(serverLevel);
+        }
+        throw new IllegalArgumentException("cannot get world cap for client level");
+    }
+
+    static IWorldNpcData get(ServerLevel level) {
+        return level.getData(MKNpcAttachments.WORLD_NPC_DATA);
+    }
 }

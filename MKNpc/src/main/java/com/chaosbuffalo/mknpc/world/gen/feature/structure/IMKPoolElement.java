@@ -10,6 +10,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
@@ -20,12 +21,12 @@ public interface IMKPoolElement {
 
     boolean mkPlace(StructureTemplateManager pStructureTemplateManager, WorldGenLevel pLevel, StructureManager pStructureManager,
                     ChunkGenerator pGenerator, BlockPos piecePosition, BlockPos firstPieceBottomCenter, Rotation pRotation,
-                    BoundingBox pBox, RandomSource pRandom, boolean pKeepJigsaws, ResourceLocation name, UUID uuid);
+                    BoundingBox pBox, RandomSource pRandom, LiquidSettings liquidSettings, boolean pKeepJigsaws, ResourceLocation name, UUID uuid);
 
     default void mkHandleDataMarker(LevelAccessor worldIn, StructureTemplate.StructureBlockInfo blockInfo,
                                     BlockPos structureStartPos, Rotation rotationIn,
                                     RandomSource rand, BoundingBox boundingBox, ResourceLocation structureName, UUID instanceId) {
-        StructureUtils.handleMKDataMarker(blockInfo.nbt.getString("metadata"), blockInfo.pos, worldIn, rand, boundingBox,
+        StructureUtils.handleMKDataMarker(blockInfo.nbt().getString("metadata"), blockInfo.pos(), worldIn, rand, boundingBox,
                 structureName, instanceId);
     }
 }

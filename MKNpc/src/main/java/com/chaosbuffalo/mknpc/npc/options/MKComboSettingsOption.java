@@ -5,18 +5,17 @@ import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 public class MKComboSettingsOption extends NpcDefinitionOption {
-    public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "mk_combo");
-    public static final Codec<MKComboSettingsOption> CODEC = RecordCodecBuilder.<MKComboSettingsOption>mapCodec(builder -> {
-        return builder.group(
-                Codec.INT.optionalFieldOf("cooldown", 20).forGetter(i -> i.ticks),
-                Codec.INT.optionalFieldOf("count", 1).forGetter(i -> i.comboCount)
-        ).apply(builder, MKComboSettingsOption::new);
-    }).codec();
+    public static final ResourceLocation NAME = MKNpc.id("mk_combo");
+    public static final MapCodec<MKComboSettingsOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.INT.optionalFieldOf("cooldown", 20).forGetter(i -> i.ticks),
+            Codec.INT.optionalFieldOf("count", 1).forGetter(i -> i.comboCount)
+    ).apply(builder, MKComboSettingsOption::new));
 
 
     private int comboCount;

@@ -1,9 +1,10 @@
 package com.chaosbuffalo.mknpc.spawn;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,24 +37,24 @@ public class SpawnList implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         ListTag opts = new ListTag();
         for (SpawnOption option : getOptions()) {
-            opts.add(option.serializeNBT());
+            opts.add(option.serializeNBT(provider));
         }
         tag.put("options", opts);
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         ListTag opts = nbt.getList("options", Tag.TAG_COMPOUND);
         options.clear();
         for (int i = 0; i < opts.size(); i++) {
             CompoundTag option = opts.getCompound(i);
             SpawnOption spawnOption = new SpawnOption();
-            spawnOption.deserializeNBT(option);
+            spawnOption.deserializeNBT(provider, option);
             addOption(spawnOption);
         }
     }

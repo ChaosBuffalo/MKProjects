@@ -4,15 +4,15 @@
   "options": {
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkfaction:undead"
+      "factionId": "mkfaction:undead"
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 0.25
+      "scale": 0.25
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "wither_stray"
+      "renderGroup": "wither_king"
     }
   }
 }

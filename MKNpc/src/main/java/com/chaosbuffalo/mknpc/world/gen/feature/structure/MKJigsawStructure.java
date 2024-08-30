@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -14,15 +15,21 @@ import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
+import net.minecraft.world.level.levelgen.structure.pools.DimensionPadding;
 import net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding;
+import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasLookup;
+import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
 public class MKJigsawStructure extends MKStructure {
 
-    public static final Codec<MKJigsawStructure> CODEC = RecordCodecBuilder.<MKJigsawStructure>mapCodec(builder ->
+    public static final MapCodec<MKJigsawStructure> CODEC = RecordCodecBuilder.<MKJigsawStructure>mapCodec(builder ->
             builder.group(settingsCodec(builder),
                     StructureTemplatePool.CODEC.fieldOf("start_pool")
                             .forGetter(s -> s.startPool),
@@ -38,15 +45,20 @@ public class MKJigsawStructure extends MKStructure {
                             .forGetter(s -> s.projectStartToHeightmap),
                     Codec.intRange(1, 128).fieldOf("max_distance_from_center")
                             .forGetter(s -> s.maxDistanceFromCenter),
+                    Codec.list(PoolAliasBinding.CODEC).optionalFieldOf("pool_aliases", List.of()).forGetter(p_307187_ -> p_307187_.poolAliases),
+                    DimensionPadding.CODEC
+                            .optionalFieldOf("dimension_padding", JigsawStructure.DEFAULT_DIMENSION_PADDING)
+                            .forGetter(p_348455_ -> p_348455_.dimensionPadding),
+                    LiquidSettings.CODEC.optionalFieldOf("liquid_settings", JigsawStructure.DEFAULT_LIQUID_SETTINGS).forGetter(p_352036_ -> p_352036_.liquidSettings),
                     CompoundTag.CODEC.fieldOf("structure_events")
                             .forGetter(MKJigsawStructure::getNbt)
-            ).apply(builder, MKJigsawStructure::new)).flatXmap(verifyRange(), verifyRange()).codec();
+            ).apply(builder, MKJigsawStructure::new)).flatXmap(verifyRange(), verifyRange());
 
     private static Function<MKJigsawStructure, DataResult<MKJigsawStructure>> verifyRange() {
         return structure -> {
             int i = switch (structure.terrainAdaptation()) {
                 case NONE -> 0;
-                case BURY, BEARD_THIN, BEARD_BOX -> 12;
+                case BURY, BEARD_THIN, BEARD_BOX, ENCAPSULATE -> 12;
             };
             return structure.maxDistanceFromCenter + i > 128 ?
                     DataResult.error(() -> "Structure size including terrain adaptation must not exceed 128") :
@@ -61,10 +73,16 @@ public class MKJigsawStructure extends MKStructure {
     private final boolean useExpansionHack;
     private final Optional<Heightmap.Types> projectStartToHeightmap;
     private final int maxDistanceFromCenter;
+    private final List<PoolAliasBinding> poolAliases;
+    private final DimensionPadding dimensionPadding;
+    private final LiquidSettings liquidSettings;
 
     public MKJigsawStructure(StructureSettings pSettings, Holder<StructureTemplatePool> templatePool,
                              Optional<ResourceLocation> startJigsawName, int maxDepth, HeightProvider heightProvider,
                              boolean useExpansionHack, Optional<Heightmap.Types> heightmapTypes, int maxDistanceFromCenter,
+                             List<PoolAliasBinding> poolAliases,
+                             DimensionPadding dimensionPadding,
+                             LiquidSettings liquidSettings,
                              CompoundTag structureNbt) {
         super(pSettings, structureNbt);
         this.startPool = templatePool;
@@ -74,6 +92,9 @@ public class MKJigsawStructure extends MKStructure {
         this.useExpansionHack = useExpansionHack;
         this.projectStartToHeightmap = heightmapTypes;
         this.maxDistanceFromCenter = maxDistanceFromCenter;
+        this.poolAliases = poolAliases;
+        this.dimensionPadding = dimensionPadding;
+        this.liquidSettings = liquidSettings;
     }
 
     @Override
@@ -87,6 +108,9 @@ public class MKJigsawStructure extends MKStructure {
         int startY = this.startHeight.sample(pContext.random(), new WorldGenerationContext(pContext.chunkGenerator(), pContext.heightAccessor()));
         BlockPos startPos = new BlockPos(chunkpos.getMinBlockX(), startY, chunkpos.getMinBlockZ());
         return JigsawPlacement.addPieces(pContext, startPool, startJigsawName, maxDepth, startPos,
-                useExpansionHack, projectStartToHeightmap, maxDistanceFromCenter);
+                useExpansionHack, projectStartToHeightmap, maxDistanceFromCenter,
+                PoolAliasLookup.create(this.poolAliases, startPos, pContext.seed()),
+                this.dimensionPadding,
+                this.liquidSettings);
     }
 }

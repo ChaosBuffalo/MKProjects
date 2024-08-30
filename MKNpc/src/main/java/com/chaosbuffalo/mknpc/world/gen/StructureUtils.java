@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen;
 
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
@@ -53,7 +53,7 @@ public class StructureUtils {
             BlockEntity blockEntity = worldIn.getBlockEntity(pos.below());
             if (blockEntity instanceof ChestBlockEntity) {
                 worldIn.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-                blockEntity.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(x -> {
+                IChestNpcData.get(blockEntity).ifPresent(x -> {
                     x.setStructureId(instanceId);
                     x.setStructureName(structureName);
                     if (names.length == 2) {
