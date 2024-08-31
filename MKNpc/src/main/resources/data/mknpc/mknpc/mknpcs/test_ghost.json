@@ -1,0 +1,31 @@
+{
+  "entityType": "mknpc:skeleton",
+  "name": "mknpc:test_ghost",
+  "options": {
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "equipment": {
+        "chest": [
+          {
+            "dropChance": 1.1,
+            "item": {
+              "count": 1,
+              "id": "minecraft:iron_chestplate"
+            },
+            "weight": 5.0
+          }
+        ]
+      }
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "factionId": "mkfaction:undead"
+    },
+    "mknpc:ghost": {
+      "type": "mknpc:ghost",
+      "armor_translucency": 0.7,
+      "ghost_armor": true,
+      "ghost_translucency": 0.7
+    }
+  }
+}

@@ -26,6 +26,7 @@ import net.minecraft.util.InclusiveRange;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
@@ -73,7 +74,8 @@ public class MKNpcGenerator {
             return CompletableFuture.allOf(
                     writeDefinition(generateTestSkeleton(), pOutput),
                     writeDefinition(generateTestLady(), pOutput),
-                    writeDefinition(generateTestLady2(), pOutput)
+                    writeDefinition(generateTestLady2(), pOutput),
+                    writeDefinition(generateTestGhostSkeleton(), pOutput)
             );
         }
 
@@ -83,6 +85,17 @@ public class MKNpcGenerator {
             def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
             def.addOption(new MKSizeOption(0.25f));
             def.addOption(new RenderGroupOption("wither_king"));
+            return def;
+        }
+
+        private NpcDefinition generateTestGhostSkeleton() {
+            NpcDefinition def = new NpcDefinition(MKNpc.id("test_ghost"),
+                    MKNpc.id("skeleton"));
+            def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+            def.addOption(new EquipmentOption()
+                    .addItemChoice(EquipmentSlot.CHEST, new NpcItemChoice(new ItemStack(Items.IRON_CHESTPLATE), 5, 1.1f))
+            );
+            def.addOption(new GhostOption());
             return def;
         }
 
