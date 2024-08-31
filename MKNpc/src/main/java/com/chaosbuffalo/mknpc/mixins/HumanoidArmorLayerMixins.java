@@ -80,7 +80,7 @@ public class HumanoidArmorLayerMixins {
     )
     private void mknpc$proxyRenderTrim(Model model, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay) {
         if (toRender instanceof MKEntity mkEntity && mkEntity.hasGhostArmor()) {
-            model.renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, FastColor.as8BitChannel(mkEntity.getGhostArmorTranslucency()));
+            model.renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, FastColor.ARGB32.color(FastColor.as8BitChannel(mkEntity.getGhostArmorTranslucency()), 0xFFFFFF));
             return;
         }
         model.renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay);
