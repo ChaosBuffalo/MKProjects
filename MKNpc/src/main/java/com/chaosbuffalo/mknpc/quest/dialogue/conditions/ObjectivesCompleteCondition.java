@@ -69,7 +69,7 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
 
     @Override
     public ObjectivesCompleteCondition copy() {
-        return new ObjectivesCompleteCondition(questName, objectiveNames);
+         return new ObjectivesCompleteCondition(questName, objectiveNames, Optional.of(chainId));
     }
 
     @Override
