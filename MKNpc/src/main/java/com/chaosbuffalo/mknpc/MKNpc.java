@@ -10,7 +10,6 @@ import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
 import com.chaosbuffalo.mknpc.init.*;
-import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.npc.*;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.QuestRegistries;
@@ -61,7 +60,7 @@ public class MKNpc {
         MKNpcAttributes.register(modBus);
         MKNpcBlocks.register(modBus);
         NpcCommands.register(modBus);
-        MKNpcTileEntityTypes.register(modBus);
+        MKNpcBlockEntityTypes.register(modBus);
         MKNpcEntityTypes.register(modBus);
         MKNpcEffects.register(modBus);
         MKMemoryModuleTypes.register(modBus);

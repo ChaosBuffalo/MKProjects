@@ -1,14 +1,13 @@
 package com.chaosbuffalo.mknpc.blocks;
 
 
-import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
-import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
+import com.chaosbuffalo.mknpc.init.MKNpcBlockEntityTypes;
+import com.chaosbuffalo.mknpc.block_entities.MKPoiBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -41,7 +40,7 @@ public class MKPoiBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos p_153215_, BlockState p_153216_) {
-        return new MKPoiTileEntity(p_153215_, p_153216_);
+        return new MKPoiBlockEntity(p_153215_, p_153216_);
     }
 
     @Override
@@ -53,7 +52,7 @@ public class MKPoiBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
         return level.isClientSide() ? null : createTickerHelper(blockEntityType,
-                MKNpcTileEntityTypes.MK_POI_TILE_ENTITY_TYPE.get(), MKPoiTileEntity::poiTick);
+                MKNpcBlockEntityTypes.MK_POI_BLOCK_ENTITY_TYPE.get(), MKPoiBlockEntity::poiTick);
     }
 
 }

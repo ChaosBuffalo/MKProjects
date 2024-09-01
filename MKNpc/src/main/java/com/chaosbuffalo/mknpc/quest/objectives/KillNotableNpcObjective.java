@@ -74,7 +74,7 @@ public class KillNotableNpcObjective extends QuestObjective<UUIDInstanceData> im
     @Override
     public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {
         MKStructureEntry entry = questStructures.get(location.getStructureId()).get(location.getIndex());
-        Optional<NotableNpcEntry> npcOpt = entry.getFirstNotableOfType(npcDefinition, level.getServer());
+        Optional<NotableNpcEntry> npcOpt = entry.getFirstNotableOfType(npcDefinition, level.registryAccess());
         return npcOpt.map(x -> new UUIDInstanceData(x.getNotableId())).orElse(new UUIDInstanceData());
     }
 
@@ -86,7 +86,7 @@ public class KillNotableNpcObjective extends QuestObjective<UUIDInstanceData> im
 
     @Override
     public boolean isStructureRelevant(MKStructureEntry entry) {
-        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNotableOfType(npcDefinition, entry.getWorldData().getWorld().getServer());
+        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNotableOfType(npcDefinition, entry.getWorldData().getWorld().registryAccess());
     }
 
     @Override

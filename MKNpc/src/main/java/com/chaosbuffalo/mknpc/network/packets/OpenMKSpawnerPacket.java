@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.network.packets;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.gui.screens.MKSpawnerScreen;
-import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -25,7 +25,7 @@ public class OpenMKSpawnerPacket extends SetSpawnListPacket {
             OpenMKSpawnerPacket::toBytes, OpenMKSpawnerPacket::new
     );
 
-    public OpenMKSpawnerPacket(MKSpawnerTileEntity entity) {
+    public OpenMKSpawnerPacket(MKSpawnerBlockEntity entity) {
         super(entity);
     }
 
@@ -47,7 +47,7 @@ public class OpenMKSpawnerPacket extends SetSpawnListPacket {
         private static void handleInternal(OpenMKSpawnerPacket packet, @Nonnull Player player) {
             Level level = player.level();
             BlockEntity blockEntity = level.getBlockEntity(packet.blockEntityPos);
-            if (blockEntity instanceof MKSpawnerTileEntity spawner) {
+            if (blockEntity instanceof MKSpawnerBlockEntity spawner) {
                 packet.setSpawnerFromPacket(spawner);
                 Minecraft.getInstance().setScreen(new MKSpawnerScreen(spawner));
             }

@@ -4,7 +4,7 @@ package com.chaosbuffalo.mknpc.network.packets;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.spawn.SpawnList;
-import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -29,7 +29,7 @@ public class SetSpawnListPacket implements CustomPacketPayload {
             SetSpawnListPacket::toBytes, SetSpawnListPacket::new
     );
 
-    public SetSpawnListPacket(MKSpawnerTileEntity entity) {
+    public SetSpawnListPacket(MKSpawnerBlockEntity entity) {
         blockEntityPos = entity.getBlockPos();
         spawnList = entity.getSpawnList();
         spawnTime = entity.getRespawnTime();
@@ -60,7 +60,7 @@ public class SetSpawnListPacket implements CustomPacketPayload {
         buffer.writeNbt(spawnList.serializeNBT(buffer.registryAccess()));
     }
 
-    protected void setSpawnerFromPacket(MKSpawnerTileEntity spawner) {
+    protected void setSpawnerFromPacket(MKSpawnerBlockEntity spawner) {
         spawner.setSpawnList(spawnList);
         spawner.setRespawnTime(spawnTime);
         spawner.setMoveType(moveType);
@@ -73,7 +73,7 @@ public class SetSpawnListPacket implements CustomPacketPayload {
             return;
         }
         BlockEntity blockEntity = entity.level().getBlockEntity(packet.blockEntityPos);
-        if (blockEntity instanceof MKSpawnerTileEntity spawner) {
+        if (blockEntity instanceof MKSpawnerBlockEntity spawner) {
             packet.setSpawnerFromPacket(spawner);
         }
     }

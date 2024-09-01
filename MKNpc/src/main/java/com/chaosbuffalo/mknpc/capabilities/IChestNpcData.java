@@ -26,7 +26,7 @@ public interface IChestNpcData extends INBTSerializable<CompoundTag>, IStructure
     @Nullable
     String getChestLabel();
 
-    ChestBlockEntity getTileEntity();
+    ChestBlockEntity getBlockEntity();
 
     void generateChestId(String chestLabel);
 

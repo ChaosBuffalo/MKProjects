@@ -46,7 +46,7 @@ public class ChestNpcDataHandler implements IChestNpcData {
     }
 
     public QuestChestInventory createQuestInventoryForPlayer(UUID playerId) {
-        QuestChestInventory inventory = new QuestChestInventory(getTileEntity());
+        QuestChestInventory inventory = new QuestChestInventory(getBlockEntity());
         return inventory;
     }
 
@@ -108,11 +108,11 @@ public class ChestNpcDataHandler implements IChestNpcData {
     @Nullable
     @Override
     public Level getStructureLevel() {
-        return getTileEntity().getLevel();
+        return getBlockEntity().getLevel();
     }
 
     @Override
-    public ChestBlockEntity getTileEntity() {
+    public ChestBlockEntity getBlockEntity() {
         return entity;
     }
 
@@ -128,7 +128,7 @@ public class ChestNpcDataHandler implements IChestNpcData {
     @Override
     public void onLoad() {
         if (needsUploadToWorld) {
-            Level level = getTileEntity().getLevel();
+            Level level = getBlockEntity().getLevel();
             if (level != null && !level.isClientSide()) {
                 ContentDB.getPrimaryData().addChest(this);
                 needsUploadToWorld = false;

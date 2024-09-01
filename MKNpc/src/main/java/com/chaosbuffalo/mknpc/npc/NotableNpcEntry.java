@@ -1,14 +1,14 @@
 package com.chaosbuffalo.mknpc.npc;
 
-import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
@@ -23,7 +23,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
     private UUID spawnerId;
     private UUID notableId;
 
-    public NotableNpcEntry(NpcDefinition definition, MKSpawnerTileEntity spawner) {
+    public NotableNpcEntry(NpcDefinition definition, MKSpawnerBlockEntity spawner) {
         this.location = spawner.getGlobalPos();
         this.name = definition.getNameForEntity(spawner.getLevel(), spawner.getSpawnUUID());
         this.definition = definition.getDefinitionName();
@@ -57,8 +57,8 @@ public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
     }
 
     @Nullable
-    public NpcDefinition getDefinition(MinecraftServer server) {
-        return server.registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(definition);
+    public NpcDefinition getDefinition(RegistryAccess registryAccess) {
+        return registryAccess.registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(definition);
     }
 
     @Override

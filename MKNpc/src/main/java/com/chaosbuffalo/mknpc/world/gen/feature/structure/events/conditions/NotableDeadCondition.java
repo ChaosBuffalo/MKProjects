@@ -4,7 +4,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
-import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -30,21 +30,21 @@ public class NotableDeadCondition extends StructureEventCondition {
     }
 
     @Override
-    public boolean meetsCondition(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
-        if (world.getServer() == null){
+    public boolean meetsCondition(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level level) {
+        if (level.getServer() == null){
             return false;
         }
         return allNotables ?
-                entry.getAllNotablesOfType(npcDefinition, world.getServer()).stream()
-                        .allMatch(x -> checkSpawnerDead(x, world)) :
-                entry.getFirstNotableOfType(npcDefinition, world.getServer())
-                        .map(x -> checkSpawnerDead(x, world)).orElse(false);
+                entry.getAllNotablesOfType(npcDefinition, level.registryAccess()).stream()
+                        .allMatch(x -> checkSpawnerDead(x, level)) :
+                entry.getFirstNotableOfType(npcDefinition, level.registryAccess())
+                        .map(x -> checkSpawnerDead(x, level)).orElse(false);
     }
 
     private boolean checkSpawnerDead(NotableNpcEntry entry, Level world) {
         if (world.dimension() == entry.getLocation().dimension()) {
             BlockEntity entity = world.getBlockEntity(entry.getLocation().pos());
-            if (entity instanceof MKSpawnerTileEntity spawner) {
+            if (entity instanceof MKSpawnerBlockEntity spawner) {
                 return spawner.isOnRespawnTimer();
             }
         }

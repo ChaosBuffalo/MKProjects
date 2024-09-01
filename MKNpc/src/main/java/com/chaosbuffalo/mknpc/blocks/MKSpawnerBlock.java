@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mknpc.blocks;
 
-import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
+import com.chaosbuffalo.mknpc.init.MKNpcBlockEntityTypes;
 import com.chaosbuffalo.mknpc.network.packets.OpenMKSpawnerPacket;
-import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -103,14 +103,14 @@ public class MKSpawnerBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos p_153215_, BlockState p_153216_) {
-        return new MKSpawnerTileEntity(p_153215_, p_153216_);
+        return new MKSpawnerBlockEntity(p_153215_, p_153216_);
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
         return level.isClientSide() ? null : createTickerHelper(blockEntityType,
-                MKNpcTileEntityTypes.MK_SPAWNER_TILE_ENTITY_TYPE.get(), MKSpawnerTileEntity::spawnerTick);
+                MKNpcBlockEntityTypes.MK_SPAWNER_BLOCK_ENTITY_TYPE.get(), MKSpawnerBlockEntity::spawnerTick);
     }
 
     @Override
@@ -147,11 +147,11 @@ public class MKSpawnerBlock extends BaseEntityBlock {
             if (player.isShiftKeyDown()) {
                 level.setBlockAndUpdate(pos, state.setValue(ORIENTATION, getNextOrientation(state.getValue(ORIENTATION))));
                 BlockEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof MKSpawnerTileEntity spawner) {
+                if (entity instanceof MKSpawnerBlockEntity spawner) {
                     spawner.clearSpawn();
                 }
             } else {
-                ((ServerPlayer) player).connection.send(new OpenMKSpawnerPacket((MKSpawnerTileEntity) level.getBlockEntity(pos)));
+                ((ServerPlayer) player).connection.send(new OpenMKSpawnerPacket((MKSpawnerBlockEntity) level.getBlockEntity(pos)));
             }
         }
         return InteractionResult.SUCCESS;

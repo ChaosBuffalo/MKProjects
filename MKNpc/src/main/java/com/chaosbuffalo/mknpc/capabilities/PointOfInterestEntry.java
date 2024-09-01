@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
-import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
+import com.chaosbuffalo.mknpc.block_entities.MKPoiBlockEntity;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -17,7 +17,7 @@ public class PointOfInterestEntry implements INBTSerializable<CompoundTag> {
     private UUID structureId;
     private UUID pointId;
 
-    public PointOfInterestEntry(MKPoiTileEntity entity) {
+    public PointOfInterestEntry(MKPoiBlockEntity entity) {
         this.location = entity.getGlobalPos();
         this.label = entity.getPoiTag();
         this.structureId = entity.getStructureId();

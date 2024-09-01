@@ -7,18 +7,17 @@ import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
 import com.chaosbuffalo.mknpc.capabilities.structure_tracking.StructureData;
 import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
-import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
-import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.block_entities.MKPoiBlockEntity;
+import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import com.chaosbuffalo.mknpc.utils.NBTSerializableMappedData;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructure;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
@@ -100,16 +99,25 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         return notableChests.stream().anyMatch(x -> x.getLabel() != null && x.getLabel().equals(tag));
     }
 
-    public boolean hasNotableOfType(ResourceLocation npcDef, MinecraftServer server) {
-        return notables.stream().anyMatch(x -> x.getDefinition(server) != null && x.getDefinition(server).getDefinitionName().equals(npcDef));
+    public boolean hasNotableOfType(ResourceLocation npcDef, RegistryAccess registryAccess) {
+        return notables.stream().anyMatch(x -> {
+            var definition = x.getDefinition(registryAccess);
+            return definition != null && definition.getDefinitionName().equals(npcDef);
+        });
     }
 
-    public Optional<NotableNpcEntry> getFirstNotableOfType(ResourceLocation npcDef, MinecraftServer server) {
-        return notables.stream().filter(x -> x.getDefinition(server) != null && x.getDefinition(server).getDefinitionName().equals(npcDef)).findFirst();
+    public Optional<NotableNpcEntry> getFirstNotableOfType(ResourceLocation npcDef, RegistryAccess registryAccess) {
+        return notables.stream().filter(x -> {
+            var definition = x.getDefinition(registryAccess);
+            return definition != null && definition.getDefinitionName().equals(npcDef);
+        }).findFirst();
     }
 
-    public List<NotableNpcEntry> getAllNotablesOfType(ResourceLocation npcDef, MinecraftServer server) {
-        return notables.stream().filter(x -> x.getDefinition(server) != null && x.getDefinition(server).getDefinitionName().equals(npcDef)).collect(Collectors.toList());
+    public List<NotableNpcEntry> getAllNotablesOfType(ResourceLocation npcDef, RegistryAccess registryAccess) {
+        return notables.stream().filter(x -> {
+            var definition = x.getDefinition(registryAccess);
+            return definition != null && definition.getDefinitionName().equals(npcDef);
+        }).collect(Collectors.toList());
     }
 
     public Optional<NotableChestEntry> getFirstChestWithTag(String tag) {
@@ -132,9 +140,9 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         return structureName;
     }
 
-    public void addSpawner(MKSpawnerTileEntity spawner) {
+    public void addSpawner(MKSpawnerBlockEntity spawner) {
         for (SpawnOption spawnOption : spawner.getSpawnList().getOptions()) {
-            NpcDefinition def = spawnOption.getDefinition(getWorldData().getWorld().getServer());
+            NpcDefinition def = spawnOption.getDefinition(getWorldData().getWorld().registryAccess());
             if (def.isNotable()) {
                 NotableNpcEntry entry = new NotableNpcEntry(def, spawner);
                 worldData.putNotableNpc(entry);
@@ -165,7 +173,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         return customStructureData;
     }
 
-    public void addPOI(MKPoiTileEntity poi) {
+    public void addPOI(MKPoiBlockEntity poi) {
         PointOfInterestEntry entry = new PointOfInterestEntry(poi);
         putPoi(entry);
     }

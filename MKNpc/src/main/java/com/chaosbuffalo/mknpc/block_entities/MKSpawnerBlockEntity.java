@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.tile_entities;
+package com.chaosbuffalo.mknpc.block_entities;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
@@ -9,14 +9,13 @@ import com.chaosbuffalo.mknpc.blocks.MKSpawnerBlock;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
-import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
+import com.chaosbuffalo.mknpc.init.MKNpcBlockEntityTypes;
 import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.spawn.SpawnList;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -37,13 +36,12 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced, INotifyOnEntityDeath {
+public class MKSpawnerBlockEntity extends BlockEntity implements IStructurePlaced, INotifyOnEntityDeath {
     private final SpawnList spawnList;
     private UUID spawnUUID;
     private Entity entity;
@@ -63,8 +61,8 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
     private final Map<ResourceLocation, UUID> notableIds = new HashMap<>();
 
 
-    public MKSpawnerTileEntity(BlockPos blockPos, BlockState blockState) {
-        super(MKNpcTileEntityTypes.MK_SPAWNER_TILE_ENTITY_TYPE.get(), blockPos, blockState);
+    public MKSpawnerBlockEntity(BlockPos blockPos, BlockState blockState) {
+        super(MKNpcBlockEntityTypes.MK_SPAWNER_BLOCK_ENTITY_TYPE.get(), blockPos, blockState);
         this.spawnList = new SpawnList();
         this.spawnUUID = UUID.randomUUID();
         this.structureName = null;
@@ -146,9 +144,9 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
 
     public void populateRandomSpawns() {
         randomSpawns.clear();
-        if (getLevel().getServer() != null) {
+        if (getLevel() instanceof ServerLevel serverLevel) {
             for (SpawnOption option : spawnList.getOptions()) {
-                randomSpawns.add(option.getWeight(), option.getDefinition(getLevel().getServer()));
+                randomSpawns.add(option.getWeight(), option.getDefinition(serverLevel.registryAccess()));
             }
             needsPopulate = false;
         }
@@ -351,8 +349,8 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
     }
 
 
-    public static void spawnerTick(Level world, BlockPos blockPos, BlockState blockState, MKSpawnerTileEntity tileEntity) {
-        tileEntity.tick(world);
+    public static void spawnerTick(Level world, BlockPos blockPos, BlockState blockState, MKSpawnerBlockEntity blockEntity) {
+        blockEntity.tick(world);
     }
 
 

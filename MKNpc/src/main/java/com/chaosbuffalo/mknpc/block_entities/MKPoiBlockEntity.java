@@ -1,7 +1,7 @@
-package com.chaosbuffalo.mknpc.tile_entities;
+package com.chaosbuffalo.mknpc.block_entities;
 
 import com.chaosbuffalo.mknpc.content.ContentDB;
-import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
+import com.chaosbuffalo.mknpc.init.MKNpcBlockEntityTypes;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
+public class MKPoiBlockEntity extends BlockEntity implements IStructurePlaced {
     private ResourceLocation structureName;
     private UUID structureId;
     private UUID poiID;
@@ -25,8 +25,8 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
     private String tag;
 
 
-    public MKPoiTileEntity(BlockPos blockPos, BlockState blockState) {
-        super(MKNpcTileEntityTypes.MK_POI_TILE_ENTITY_TYPE.get(), blockPos, blockState);
+    public MKPoiBlockEntity(BlockPos blockPos, BlockState blockState) {
+        super(MKNpcBlockEntityTypes.MK_POI_BLOCK_ENTITY_TYPE.get(), blockPos, blockState);
         this.structureName = null;
         this.structureId = null;
         this.placedByStructure = false;
@@ -85,8 +85,8 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
         return getLevel();
     }
 
-    public static void poiTick(Level world, BlockPos blockPos, BlockState blockState, MKPoiTileEntity tileEntity) {
-        tileEntity.tick(world);
+    public static void poiTick(Level world, BlockPos blockPos, BlockState blockState, MKPoiBlockEntity blockEntity) {
+        blockEntity.tick(world);
     }
 
     public void tick(Level level) {

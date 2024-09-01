@@ -11,8 +11,8 @@ import com.chaosbuffalo.mknpc.npc.options.WorldPermanentOption;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
-import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
-import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.block_entities.MKPoiBlockEntity;
+import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import com.chaosbuffalo.mknpc.world.gen.StructureStartExtension;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSinglePoolElement;
@@ -224,7 +224,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     }
 
     @Override
-    public void addSpawner(MKSpawnerTileEntity spawner) {
+    public void addSpawner(MKSpawnerBlockEntity spawner) {
         MKStructureEntry structure = structureIndex.computeIfAbsent(spawner.getStructureId(),
                 key -> computeStructureEntry(spawner));
         structure.addSpawner(spawner);
@@ -239,7 +239,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     }
 
     @Override
-    public void addPointOfInterest(MKPoiTileEntity entity) {
+    public void addPointOfInterest(MKPoiBlockEntity entity) {
         MKStructureEntry structure = structureIndex.computeIfAbsent(entity.getStructureId(),
                 key -> computeStructureEntry(entity));
         structure.addPOI(entity);

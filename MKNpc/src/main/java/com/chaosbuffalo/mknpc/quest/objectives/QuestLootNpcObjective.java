@@ -16,11 +16,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -72,8 +72,8 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
         return description;
     }
 
-    private MutableComponent getDescriptionWithCount(int count, MinecraftServer server) {
-        NpcDefinition def = server.registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(npcDefinition);
+    private MutableComponent getDescriptionWithCount(int count, RegistryAccess registryAccess) {
+        NpcDefinition def = registryAccess.registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(npcDefinition);
         return Component.translatable("mknpc.objective.quest_loot_npc.desc", itemDescription, def.getDisplayName(),
                 MKAbility.INTEGER_FORMATTER.format(count), MKAbility.INTEGER_FORMATTER.format(requiredCount));
     }
@@ -96,7 +96,7 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
                 int currentCount = objectiveData.getInt("lootCount");
                 currentCount++;
                 objectiveData.putInt("lootCount", currentCount);
-                objectiveData.setDescription(getDescriptionWithCount(currentCount, player.getServer()));
+                objectiveData.setDescription(getDescriptionWithCount(currentCount, player.registryAccess()));
                 player.sendSystemMessage(getProgressMessage(event.getEntity(), currentCount)
                         .withStyle(ChatFormatting.GOLD));
                 if (currentCount == requiredCount) {
@@ -123,7 +123,7 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
 
     @Override
     public boolean isStructureRelevant(MKStructureEntry entry) {
-        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNotableOfType(npcDefinition, entry.getWorldData().getWorld().getServer());
+        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNotableOfType(npcDefinition, entry.getWorldData().getWorld().registryAccess());
     }
 
     @Override

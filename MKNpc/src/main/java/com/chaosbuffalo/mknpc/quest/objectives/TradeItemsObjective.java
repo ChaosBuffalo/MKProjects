@@ -64,7 +64,7 @@ public class TradeItemsObjective extends QuestObjective<UUIDInstanceData> implem
     @Override
     public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {
         MKStructureEntry entry = questStructures.get(location.getStructureId()).get(location.getIndex());
-        Optional<NotableNpcEntry> npcOpt = entry.getFirstNotableOfType(npcDefinition, level.getServer());
+        Optional<NotableNpcEntry> npcOpt = entry.getFirstNotableOfType(npcDefinition, level.registryAccess());
         return npcOpt.map(x -> new UUIDInstanceData(x.getNotableId())).orElse(new UUIDInstanceData());
     }
 

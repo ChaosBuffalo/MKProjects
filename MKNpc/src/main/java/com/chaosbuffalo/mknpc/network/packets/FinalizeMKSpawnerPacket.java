@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.network.packets;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -26,7 +26,7 @@ public class FinalizeMKSpawnerPacket implements CustomPacketPayload {
 
     protected final BlockPos blockEntityPos;
 
-    public FinalizeMKSpawnerPacket(MKSpawnerTileEntity entity) {
+    public FinalizeMKSpawnerPacket(MKSpawnerBlockEntity entity) {
         blockEntityPos = entity.getBlockPos();
     }
 
@@ -50,7 +50,7 @@ public class FinalizeMKSpawnerPacket implements CustomPacketPayload {
             return;
         }
         BlockEntity blockEntity = entity.level().getBlockEntity(packet.blockEntityPos);
-        if (blockEntity instanceof MKSpawnerTileEntity spawner) {
+        if (blockEntity instanceof MKSpawnerBlockEntity spawner) {
             BlockState dataState = Blocks.STRUCTURE_BLOCK.getStateForPlacement(null);
             if (dataState != null) {
                 entity.level().setBlock(packet.blockEntityPos.above(), dataState, 3);

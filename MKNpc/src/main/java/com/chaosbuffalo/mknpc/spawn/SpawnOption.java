@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinitionClient;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -35,8 +36,8 @@ public class SpawnOption implements INBTSerializable<CompoundTag> {
         this.weight = weight;
     }
 
-    public NpcDefinition getDefinition(MinecraftServer server) {
-        return server.registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(definitionName);
+    public NpcDefinition getDefinition(RegistryAccess registryAccess) {
+        return registryAccess.registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(definitionName);
     }
 
     public NpcDefinitionClient getDefinitionClient() {

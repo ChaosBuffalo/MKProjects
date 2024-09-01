@@ -10,8 +10,8 @@ import com.chaosbuffalo.mknpc.npc.options.WorldPermanentOption;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
-import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
-import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.block_entities.MKPoiBlockEntity;
+import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
@@ -40,11 +40,11 @@ public interface IWorldNpcData extends INBTSerializable<CompoundTag> {
     void addEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute,
                               UUID entityId, INpcOptionEntry entry);
 
-    void addSpawner(MKSpawnerTileEntity spawner);
+    void addSpawner(MKSpawnerBlockEntity spawner);
 
     void addChest(IChestNpcData chestData);
 
-    void addPointOfInterest(MKPoiTileEntity entry);
+    void addPointOfInterest(MKPoiBlockEntity entry);
 
     void update();
 

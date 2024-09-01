@@ -13,10 +13,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
@@ -60,11 +60,11 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
 
     @Override
     public List<Component> getDescription(IWorldNpcData worldData) {
-        return List.of(getDescriptionWithKillCount(0, worldData.getWorld().getServer()));
+        return List.of(getDescriptionWithKillCount(0, worldData.getWorld().registryAccess()));
     }
 
-    private MutableComponent getDescriptionWithKillCount(int count, MinecraftServer server) {
-        NpcDefinition def = server.registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(npcDefinition);
+    private MutableComponent getDescriptionWithKillCount(int count, RegistryAccess registryAccess) {
+        NpcDefinition def = registryAccess.registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(npcDefinition);
         return Component.translatable("mknpc.objective.kill_npc_def.desc", def.getDisplayName(),
                 count, requiredCount);
     }
@@ -83,8 +83,8 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
             int currentCount = objectiveData.getInt("killCount");
             currentCount++;
             objectiveData.putInt("killCount", currentCount);
-            objectiveData.setDescription(getDescriptionWithKillCount(currentCount, player.getServer()));
-            player.sendSystemMessage(getDescriptionWithKillCount(currentCount, player.getServer()).withStyle(ChatFormatting.GOLD));
+            objectiveData.setDescription(getDescriptionWithKillCount(currentCount, player.registryAccess()));
+            player.sendSystemMessage(getDescriptionWithKillCount(currentCount, player.registryAccess()).withStyle(ChatFormatting.GOLD));
             if (currentCount == requiredCount) {
                 signalCompleted(objectiveData);
             }
