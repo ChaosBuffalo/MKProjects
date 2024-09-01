@@ -125,6 +125,8 @@ public class ClientEventHandler {
     @SubscribeEvent
     public static void cancelHealth(RenderGuiLayerEvent.Pre event) {
         if (event.getName().equals(VanillaGuiLayers.PLAYER_HEALTH)) {
+            // Make room for our health and mana bars
+            Minecraft.getInstance().gui.leftHeight += 12;
             event.setCanceled(true);
         }
     }

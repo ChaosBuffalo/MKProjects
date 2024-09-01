@@ -371,12 +371,6 @@ public class MKOverlay implements LayeredDraw.Layer {
         return startingSlot + slotCount;
     }
 
-
-//    public static void skipHealth(ForgeGui gui, PoseStack poseStack, float partialTick, int width, int height) {
-//        // Make room for our health and mana bars
-//        gui.leftHeight += 12;
-//    }
-
     @Override
     public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         if (mc.player == null || mc.options.hideGui)
