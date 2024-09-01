@@ -2,12 +2,16 @@ package com.chaosbuffalo.mknpc.network;
 
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.network.packets.FinalizeMKSpawnerPacket;
+import com.chaosbuffalo.mknpc.network.packets.NpcDefinitionClientUpdatePacket;
+import com.chaosbuffalo.mknpc.network.packets.OpenMKSpawnerPacket;
+import com.chaosbuffalo.mknpc.network.packets.SetSpawnListPacket;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-@EventBusSubscriber(modid= MKNpc.MODID, bus= EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKNpc.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class PacketHandler {
 
     private static final String VERSION = "1.0";

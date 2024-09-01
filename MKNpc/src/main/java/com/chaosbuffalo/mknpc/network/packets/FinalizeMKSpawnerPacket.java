@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.network;
+package com.chaosbuffalo.mknpc.network.packets;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
@@ -7,8 +7,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -16,51 +14,52 @@ import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
+import javax.annotation.Nonnull;
+
 public class FinalizeMKSpawnerPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<FinalizeMKSpawnerPacket> TYPE = new CustomPacketPayload.Type<>(
-            ResourceLocation.fromNamespaceAndPath(MKNpc.MODID, "finalize_mk_spawner"));
+            MKNpc.id("finalize_mk_spawner"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, FinalizeMKSpawnerPacket> STREAM_CODEC = StreamCodec.ofMember(
             FinalizeMKSpawnerPacket::toBytes, FinalizeMKSpawnerPacket::new
     );
 
-    protected final BlockPos tileEntityLoc;
-
+    protected final BlockPos blockEntityPos;
 
     public FinalizeMKSpawnerPacket(MKSpawnerTileEntity entity) {
-        tileEntityLoc = entity.getBlockPos();
-    }
-
-    public void toBytes(FriendlyByteBuf buffer) {
-        buffer.writeBlockPos(tileEntityLoc);
+        blockEntityPos = entity.getBlockPos();
     }
 
     public FinalizeMKSpawnerPacket(FriendlyByteBuf buffer) {
-        tileEntityLoc = buffer.readBlockPos();
+        blockEntityPos = buffer.readBlockPos();
     }
 
+    @Nonnull
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
+    public void toBytes(FriendlyByteBuf buffer) {
+        buffer.writeBlockPos(blockEntityPos);
+    }
 
     public static void handle(final FinalizeMKSpawnerPacket packet, IPayloadContext context) {
         Player entity = context.player();
-        if (entity == null || !entity.isCreative()) {
+        if (!entity.isCreative()) {
             return;
         }
-        BlockEntity tileEntity = entity.level().getBlockEntity(packet.tileEntityLoc);
-        if (tileEntity instanceof MKSpawnerTileEntity spawner) {
+        BlockEntity blockEntity = entity.level().getBlockEntity(packet.blockEntityPos);
+        if (blockEntity instanceof MKSpawnerTileEntity spawner) {
             BlockState dataState = Blocks.STRUCTURE_BLOCK.getStateForPlacement(null);
             if (dataState != null) {
-                entity.level().setBlock(packet.tileEntityLoc.above(), dataState, 3);
-                BlockEntity other = entity.level().getBlockEntity(packet.tileEntityLoc.above());
+                entity.level().setBlock(packet.blockEntityPos.above(), dataState, 3);
+                BlockEntity other = entity.level().getBlockEntity(packet.blockEntityPos.above());
                 if (other instanceof StructureBlockEntity structureBlock) {
                     structureBlock.setMetaData("mkspawner");
                 }
             }
             spawner.clearSpawn();
         }
-    }
-
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
     }
 }

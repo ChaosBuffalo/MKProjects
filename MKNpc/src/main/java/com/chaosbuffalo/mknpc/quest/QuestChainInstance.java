@@ -154,7 +154,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
     }
 
     protected ResourceLocation getDialogueTreeName() {
-        return ResourceLocation.fromNamespaceAndPath(MKNpc.MODID, String.format("quest_dialogue.%s", questId.toString()));
+        return MKNpc.id(String.format("quest_dialogue.%s", questId.toString()));
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.mixins;
 
 import com.chaosbuffalo.mknpc.world.gen.StructureStartExtension;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.IMKPoolPiece;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -17,7 +18,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.UUID;
 
@@ -34,15 +34,15 @@ public abstract class StructureStartMixins implements StructureStartExtension {
     protected UUID mknpc$instanceId;
 
     @Inject(method = "<init>(Lnet/minecraft/world/level/levelgen/structure/Structure;Lnet/minecraft/world/level/ChunkPos;ILnet/minecraft/world/level/levelgen/structure/pieces/PiecesContainer;)V",
-            at = @At("RETURN"),
-            locals = LocalCapture.CAPTURE_FAILHARD)
+            at = @At("RETURN"))
     protected void proxyInit(Structure structure, ChunkPos chunkPos, int references,
                              PiecesContainer piecesContainer, CallbackInfo ci) {
         mknpc$instanceId = UUID.randomUUID();
-        setStartDataForPieces(piecesContainer);
+        mknpc_setStartDataForPieces(piecesContainer);
     }
 
-    private void setStartDataForPieces(PiecesContainer pieces) {
+    @Unique
+    private void mknpc_setStartDataForPieces(PiecesContainer pieces) {
         for (StructurePiece piece : pieces.pieces()) {
             if (piece instanceof IMKPoolPiece poolPiece) {
                 poolPiece.setContainingStructure(mknpc$instanceId, structure);
@@ -51,30 +51,28 @@ public abstract class StructureStartMixins implements StructureStartExtension {
     }
 
     @Inject(method = "createTag(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceSerializationContext;Lnet/minecraft/world/level/ChunkPos;)Lnet/minecraft/nbt/CompoundTag;",
-            at = @At(target = "Lnet/minecraft/nbt/CompoundTag;put(Ljava/lang/String;Lnet/minecraft/nbt/Tag;)Lnet/minecraft/nbt/Tag;", value = "INVOKE"),
-            locals = LocalCapture.CAPTURE_FAILHARD)
-    private void createTag(StructurePieceSerializationContext p_192661_, ChunkPos p_192662_, CallbackInfoReturnable<CompoundTag> cir, CompoundTag compoundtag) {
+            at = @At(target = "Lnet/minecraft/nbt/CompoundTag;put(Ljava/lang/String;Lnet/minecraft/nbt/Tag;)Lnet/minecraft/nbt/Tag;", value = "INVOKE"))
+    private void createTag(StructurePieceSerializationContext p_192661_, ChunkPos p_192662_, CallbackInfoReturnable<CompoundTag> cir, @Local CompoundTag compoundtag) {
         compoundtag.putUUID("instanceId", mknpc$instanceId);
     }
 
 
     @Inject(method = "loadStaticStart(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceSerializationContext;Lnet/minecraft/nbt/CompoundTag;J)Lnet/minecraft/world/level/levelgen/structure/StructureStart;",
-            at = @At("RETURN"),
-            locals = LocalCapture.CAPTURE_FAILHARD)
-    private static void loadStaticStart(StructurePieceSerializationContext piecescontainer, CompoundTag tag, long chunkpos, CallbackInfoReturnable<StructureStart> cir, String s) {
+            at = @At("RETURN"))
+    private static void loadStaticStart(StructurePieceSerializationContext piecescontainer, CompoundTag tag, long chunkpos, CallbackInfoReturnable<StructureStart> cir) {
         if (cir.getReturnValue() != null && cir.getReturnValue().isValid()) {
             StructureStartExtension.of(cir.getReturnValue()).mknpc_loadAdditional(tag);
         }
     }
 
     @Override
-    public UUID getInstanceId() {
+    public UUID mknpc_getInstanceId() {
         return mknpc$instanceId;
     }
 
     @Override
     public void mknpc_loadAdditional(CompoundTag tag) {
         mknpc$instanceId = tag.getUUID("instanceId");
-        setStartDataForPieces(pieceContainer);
+        mknpc_setStartDataForPieces(pieceContainer);
     }
 }

@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.npc;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.network.NpcDefinitionClientUpdatePacket;
+import com.chaosbuffalo.mknpc.network.packets.NpcDefinitionClientUpdatePacket;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;

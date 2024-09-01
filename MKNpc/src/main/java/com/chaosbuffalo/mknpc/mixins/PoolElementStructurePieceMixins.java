@@ -34,7 +34,9 @@ public abstract class PoolElementStructurePieceMixins implements IMKPoolPiece {
     @Shadow
     @Final
     protected Rotation rotation;
-    @Shadow @Final private LiquidSettings liquidSettings;
+    @Shadow
+    @Final
+    private LiquidSettings liquidSettings;
     @Unique
     protected UUID mknpc$instanceId;
     @Unique

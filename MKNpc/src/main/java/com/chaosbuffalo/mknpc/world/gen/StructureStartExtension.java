@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface StructureStartExtension {
 
-    UUID getInstanceId();
+    UUID mknpc_getInstanceId();
 
     void mknpc_loadAdditional(CompoundTag tag);
 
@@ -16,6 +16,6 @@ public interface StructureStartExtension {
     }
 
     static UUID getInstanceId(StructureStart start) {
-        return of(start).getInstanceId();
+        return of(start).mknpc_getInstanceId();
     }
 }

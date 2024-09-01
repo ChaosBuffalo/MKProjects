@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.blocks;
 
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
-import com.chaosbuffalo.mknpc.network.OpenMKSpawnerPacket;
+import com.chaosbuffalo.mknpc.network.packets.OpenMKSpawnerPacket;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
