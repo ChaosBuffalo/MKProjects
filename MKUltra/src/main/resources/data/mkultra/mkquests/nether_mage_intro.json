@@ -88,17 +88,15 @@
     ]
   },
   "questMode": 0,
-  "questName": "{\"text\":\"Helping the Nether Mage\"}",
+  "questName": "\"Helping the Nether Mage\"",
   "quests": [
     {
       "autoComplete": true,
-      "description": "{\"text\":\"The Nether Mage Initiate wants you to retrieve a staff from the library.\"}",
+      "description": "\"The Nether Mage Initiate wants you to retrieve a staff from the library.\"",
       "objectives": [
         {
           "type": "mknpc:quest_loot_notable",
-          "itemDescription": {
-            "text": "The Magic Staff"
-          },
+          "itemDescription": "The Magic Staff",
           "npcDefinition": "mkultra:imperial_magus",
           "objectiveName": "loot_staff",
           "structure": {
@@ -112,14 +110,12 @@
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"Return to the Initiate with the Magic Staff\"}",
+      "description": "\"Return to the Initiate with the Magic Staff\"",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Talk to the Initiate again."
-            }
+            "Talk to the Initiate again."
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.return_to_initiate",
@@ -181,9 +177,7 @@
           "description": {
             "translate": "mkultra.quest_reward.receive_item.name",
             "with": [
-              {
-                "text": "Burning Staff"
-              }
+              "Burning Staff"
             ]
           },
           "loot_slot": "mkweapons:main_hand",
@@ -197,15 +191,13 @@
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"Land Killing Blows with the Fireball Ability granted by the Initiate's Staff\"}",
+      "description": "\"Land Killing Blows with the Fireball Ability granted by the Initiate's Staff\"",
       "objectives": [
         {
           "type": "mknpc:kill_with_ability",
-          "value": {
-            "ability": "mkultra:fireball",
-            "count": 10,
-            "objectiveName": "test_staff"
-          }
+          "ability": "mkultra:fireball",
+          "count": 10,
+          "objectiveName": "test_staff"
         }
       ],
       "questName": "test_staff",
@@ -218,14 +210,12 @@
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"Return to the Initiate\"}",
+      "description": "\"Return to the Initiate\"",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Talk to the Initiate"
-            }
+            "Talk to the Initiate"
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.test_complete",
@@ -281,9 +271,7 @@
       "rewards": [
         {
           "type": "mknpc:entitlement",
-          "value": {
-            "entitlement": "mkultra:nether_mage.intro.tier_1"
-          }
+          "entitlement": "mkultra:nether_mage.intro.tier_1"
         },
         {
           "type": "mknpc:xp",

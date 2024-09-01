@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:furious_brooding",
           "chance": 1.0,
@@ -24,7 +24,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 180.0
@@ -41,16 +41,13 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:battleaxe_stone",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:battleaxe_stone"
             },
             "weight": 1.0
           }
@@ -59,7 +56,7 @@
     },
     "mknpc:experience": {
       "type": "mknpc:experience",
-      "value": 20
+      "experience": 20
     },
     "mknpc:extra_loot": {
       "type": "mknpc:extra_loot",
@@ -80,11 +77,11 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkultra:imperial_dead"
+      "factionId": "mkultra:imperial_dead"
     },
     "mknpc:lunge_speed": {
       "type": "mknpc:lunge_speed",
-      "value": 0.75
+      "lungeSpeed": 0.75
     },
     "mknpc:mk_combo": {
       "type": "mknpc:mk_combo",
@@ -92,19 +89,19 @@
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 1.0
+      "scale": 1.0
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Trooper Executioner"
+      "name": "Trooper Executioner"
     },
     "mknpc:notable": {
       "type": "mknpc:notable",
-      "value": true
+      "isNotable": true
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "destroyed_skeletal_trooper"
+      "renderGroup": "destroyed_skeletal_trooper"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

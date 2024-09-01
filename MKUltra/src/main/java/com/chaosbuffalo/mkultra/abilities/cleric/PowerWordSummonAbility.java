@@ -25,8 +25,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class PowerWordSummonAbility extends MKAbility {
-    protected final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "power_word_summon_casting");
-    protected final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "power_word_summon_cast");
+    protected final ResourceLocation CASTING_PARTICLES = MKUltra.id("power_word_summon_casting");
+    protected final ResourceLocation CAST_PARTICLES = MKUltra.id("power_word_summon_cast");
     protected final IntAttribute base = new IntAttribute("baseDuration", 4);
     protected final IntAttribute scale = new IntAttribute("scaleDuration", 1);
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
@@ -60,7 +60,7 @@ public class PowerWordSummonAbility extends MKAbility {
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_magic_whoosh_3.get();
+        return MKUSounds.spell_magic_whoosh_3.value();
     }
 
     @Override
@@ -85,7 +85,7 @@ public class PowerWordSummonAbility extends MKAbility {
                 targetEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, 100, false, false));
             }
 
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_magic_whoosh_4.get(), targetEntity.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_magic_whoosh_4.value(), targetEntity.getSoundSource());
             MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
         });
     }

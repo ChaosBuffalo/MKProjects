@@ -23,7 +23,7 @@ public class DrownEffect extends DamageTypeDotEffect {
 
 
     public DrownEffect() {
-        addAttribute(Attributes.ATTACK_SPEED, modUUID, -0.05, -0.05, AttributeModifier.Operation.MULTIPLY_TOTAL, MKAttributes.CONJURATION);
+        addAttribute(Attributes.ATTACK_SPEED, modUUID, -0.05, -0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, MKAttributes.CONJURATION);
     }
 
     public static MKEffectBuilder<?> from(LivingEntity source, float base, float scaling, float modifierScaling,
@@ -60,7 +60,7 @@ public class DrownEffect extends DamageTypeDotEffect {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
-            SoundUtils.serverPlaySoundAtEntity(targetData.getEntity(), MKUSounds.spell_water_4.get(), targetData.getEntity().getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetData.getEntity(), MKUSounds.spell_water_4.value(), targetData.getEntity().getSoundSource());
             sendEffectParticles(targetData.getEntity());
             return super.performEffect(targetData, activeEffect);
         }

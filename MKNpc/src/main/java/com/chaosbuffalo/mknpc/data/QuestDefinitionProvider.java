@@ -15,15 +15,20 @@ import java.util.concurrent.CompletableFuture;
 
 public abstract class QuestDefinitionProvider extends MKDataProvider {
 
-    public QuestDefinitionProvider(DataGenerator generator, String modId) {
+    CompletableFuture<HolderLookup.Provider> provider;
+
+    public QuestDefinitionProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> provider, String modId) {
         super(generator, modId, "Quest Definitions");
+        this.provider = provider;
     }
 
-    public CompletableFuture<?> writeDefinition(QuestDefinition definition, CachedOutput pOutput, HolderLookup.Provider provider) {
+    public CompletableFuture<?> writeDefinition(QuestDefinition definition, CachedOutput pOutput) {
         Path outputFolder = this.generator.getPackOutput().getOutputFolder();
         ResourceLocation key = definition.getName();
         Path path = outputFolder.resolve("data/" + key.getNamespace() + "/mkquests/" + key.getPath() + ".json");
-        JsonElement element = definition.serialize(JsonOps.INSTANCE, provider);
-        return DataProvider.saveStable(pOutput, element, path);
+        return provider.thenCompose(registries -> {
+            JsonElement element =  definition.serialize(JsonOps.INSTANCE, registries);
+            return DataProvider.saveStable(pOutput, element, path);
+        });
     }
 }

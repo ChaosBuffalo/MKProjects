@@ -11,38 +11,28 @@
               "effects": [
                 {
                   "type": "mkweapons:weapon_effect.on_hit_ability",
-                  "value": {
-                    "ability": "mkultra:seafury",
-                    "chance": 0.5,
-                    "skill_level": 10.0
-                  }
+                  "ability": "mkultra:seafury",
+                  "chance": 0.5,
+                  "skill_level": 10.0
                 }
               ]
             },
             {
               "type": "mkweapons:name",
-              "name": {
-                "text": "Seafury Blade"
-              }
+              "name": "Seafury Blade"
             }
           ],
           "potentialItems": [
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:katana_iron",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:katana_iron"
               }
             },
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:longsword_iron",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:longsword_iron"
               }
             }
           ],

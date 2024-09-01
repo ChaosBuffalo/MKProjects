@@ -7,28 +7,18 @@ import net.minecraft.resources.ResourceLocation;
 
 public class MKUOrcs {
 
-    public static final ResourceLocation BLUE_ORC = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/orcs/blue_orc.png");
-    public static final ResourceLocation GREEN_ORC = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/orcs/green_orc.png");
-    public static final ResourceLocation RED_ORC = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/orcs/red_orc.png");
+    public static final ResourceLocation BLUE_ORC = MKUltra.id("textures/entity/orcs/blue_orc.png");
+    public static final ResourceLocation GREEN_ORC = MKUltra.id("textures/entity/orcs/green_orc.png");
+    public static final ResourceLocation RED_ORC = MKUltra.id("textures/entity/orcs/red_orc.png");
 
-    public static final ResourceLocation GREEN_LADY_HAIR_1 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/orcs/green_lady_hair_1.png");
-    public static final ResourceLocation GREEN_LADY_HAIR_2 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/orcs/green_lady_hair_2.png");
+    public static final ResourceLocation GREEN_LADY_HAIR_1 = MKUltra.id("textures/entity/orcs/green_lady_hair_1.png");
+    public static final ResourceLocation GREEN_LADY_HAIR_2 = MKUltra.id("textures/entity/orcs/green_lady_hair_2.png");
 
-    public static final ResourceLocation ORC_HAIR_1 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/orcs/orc_hair_1.png");
-    public static final ResourceLocation ORC_HAIR_2 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/orcs/orc_hair_2.png");
-    public static final ResourceLocation ORC_LONG_HAIR_1_LAYER_2 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/orcs/orc_long_hair_1_layer_2.png");
-    public static final ResourceLocation ORC_LONG_HAIR_2_LAYER_2 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/orcs/orc_long_hair_2_layer_2.png");
-    public static final ResourceLocation ORC_LONG_HAIR_3_LAYER_2 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/orcs/orc_long_hair_3_layer_2.png");
+    public static final ResourceLocation ORC_HAIR_1 = MKUltra.id("textures/entity/orcs/orc_hair_1.png");
+    public static final ResourceLocation ORC_HAIR_2 = MKUltra.id("textures/entity/orcs/orc_hair_2.png");
+    public static final ResourceLocation ORC_LONG_HAIR_1_LAYER_2 = MKUltra.id("textures/entity/orcs/orc_long_hair_1_layer_2.png");
+    public static final ResourceLocation ORC_LONG_HAIR_2_LAYER_2 = MKUltra.id("textures/entity/orcs/orc_long_hair_2_layer_2.png");
+    public static final ResourceLocation ORC_LONG_HAIR_3_LAYER_2 = MKUltra.id("textures/entity/orcs/orc_long_hair_3_layer_2.png");
 
     public static ModelLook GREEN_LADY_LOOK = new ModelLook(ModelStyles.LONG_HAIR_STYLE, GREEN_ORC, GREEN_LADY_HAIR_1,
             MKUClothes.GREEN_LADY_CLOTHES, GREEN_LADY_HAIR_2);

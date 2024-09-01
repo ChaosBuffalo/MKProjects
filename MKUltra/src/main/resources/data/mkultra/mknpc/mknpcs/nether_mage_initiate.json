@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:ember",
           "chance": 1.0,
@@ -24,13 +24,13 @@
     },
     "mknpc:ability_trainings": {
       "type": "mknpc:ability_trainings",
-      "value": [
+      "abilities": [
         {
           "ability": "mkultra:ember",
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
-              "value": "mkultra:nether_mage.intro.tier_1"
+              "entitlement": "mkultra:nether_mage.intro.tier_1"
             }
           ]
         },
@@ -39,7 +39,7 @@
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
-              "value": "mkultra:nether_mage.intro.tier_1"
+              "entitlement": "mkultra:nether_mage.intro.tier_1"
             }
           ]
         }
@@ -47,7 +47,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 150.0
@@ -64,20 +64,17 @@
     },
     "mknpc:dialogue": {
       "type": "mknpc:dialogue",
-      "value": "mkultra:intro_nether_mage_initiate"
+      "dialogueId": "mkultra:intro_nether_mage_initiate"
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:staff_wood",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:staff_wood"
             },
             "weight": 1.0
           }
@@ -86,7 +83,7 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkultra:nether_mages"
+      "factionId": "mkultra:nether_mages"
     },
     "mknpc:faction_name": {
       "type": "mknpc:faction_name",
@@ -94,21 +91,21 @@
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 0.9
+      "scale": 0.9
     },
     "mknpc:notable": {
       "type": "mknpc:notable",
-      "value": true
+      "isNotable": true
     },
     "mknpc:offer_quests": {
       "type": "mknpc:offer_quests",
-      "value": [
+      "questIds": [
         "mkultra:nether_mage_intro"
       ]
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "nether_mage_1"
+      "renderGroup": "nether_mage_1"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

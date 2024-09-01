@@ -55,9 +55,7 @@
           "conditions": [
             {
               "type": "mknpc:has_entitlement",
-              "value": {
-                "entitlement": "mkultra:nether_mage.intro.tier_1"
-              }
+              "entitlement": "mkultra:nether_mage.intro.tier_1"
             }
           ],
           "responseNodeId": "hail"

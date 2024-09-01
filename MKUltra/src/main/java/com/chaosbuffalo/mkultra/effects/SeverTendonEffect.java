@@ -27,7 +27,7 @@ public class SeverTendonEffect extends MKEffect {
 
     public SeverTendonEffect() {
         super(MobEffectCategory.HARMFUL);
-        addAttribute(Attributes.MOVEMENT_SPEED, modUUID, -0.05, AttributeModifier.Operation.MULTIPLY_TOTAL);
+        addAttribute(Attributes.MOVEMENT_SPEED, modUUID, -0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
     }
 
     public static MKEffectBuilder<?> from(LivingEntity source, float baseDamage, float scaling, float modifierScaling) {
@@ -58,7 +58,7 @@ public class SeverTendonEffect extends MKEffect {
 
             float damage = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
             LivingEntity target = targetData.getEntity();
-            target.hurt(MKDamageSource.causeAbilityDamage(targetData.getEntity().getLevel(), CoreDamageTypes.BleedDamage.get(),
+            target.hurt(MKDamageSource.causeAbilityDamage(targetData.getEntity().level(), CoreDamageTypes.BleedDamage.get(),
                     activeEffect.getAbilityId(), activeEffect.getDirectEntity(), activeEffect.getSourceEntity(),
                     getModifierScale()), damage);
             PacketHandler.sendToTrackingAndSelf(

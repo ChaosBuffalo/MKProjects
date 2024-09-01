@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:frozen_grasp",
           "chance": 1.0,
@@ -14,7 +14,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 35.0
@@ -31,19 +31,19 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkfaction:undead"
+      "factionId": "mkfaction:undead"
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 0.92
+      "scale": 0.92
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "A Seawoven Wretch"
+      "name": "A Seawoven Wretch"
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "seawoven_wretch"
+      "renderGroup": "seawoven_wretch"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

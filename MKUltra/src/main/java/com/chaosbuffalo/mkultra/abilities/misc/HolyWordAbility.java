@@ -34,9 +34,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class HolyWordAbility extends ProjectileAbility {
 
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "holy_word_casting");
-    public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "holy_word_trail");
-    public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "holy_word_detonate");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("holy_word_casting");
+    public static final ResourceLocation TRAIL_PARTICLES = MKUltra.id("holy_word_trail");
+    public static final ResourceLocation DETONATE_PARTICLES = MKUltra.id("holy_word_detonate");
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 30);
     protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 10);
     protected final IntAttribute baseStunDuration = new IntAttribute("baseStunDuration", 3);
@@ -61,7 +61,7 @@ public class HolyWordAbility extends ProjectileAbility {
     @Override
     public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
-        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_holy_3.get(), cat);
+        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_holy_3.value(), cat);
         MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
         if (result.getType().equals(HitResult.Type.ENTITY)) {
             EntityHitResult entityTrace = (EntityHitResult) result;
@@ -101,13 +101,13 @@ public class HolyWordAbility extends ProjectileAbility {
     @Nullable
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.hostile_casting_holy.get();
+        return MKUSounds.hostile_casting_holy.value();
     }
 
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_holy_2.get();
+        return MKUSounds.spell_holy_2.value();
     }
 
     @Override
@@ -129,7 +129,7 @@ public class HolyWordAbility extends ProjectileAbility {
 
     @Override
     public AbilityProjectileEntity makeProjectile(IMKEntityData data, AbilityContext context) {
-        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level);
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level());
         projectile.setAbility(() -> this);
         projectile.setTrailAnimation(trailParticles.getValue());
         projectile.setItem(new ItemStack(MKUItems.holyWordProjectileItem.get()));

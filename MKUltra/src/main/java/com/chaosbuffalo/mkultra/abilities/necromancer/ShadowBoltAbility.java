@@ -29,9 +29,9 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class ShadowBoltAbility extends ProjectileAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_casting");
-    public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_trail");
-    public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_detonate");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("shadow_bolt_casting");
+    public static final ResourceLocation TRAIL_PARTICLES = MKUltra.id("shadow_bolt_trail");
+    public static final ResourceLocation DETONATE_PARTICLES = MKUltra.id("shadow_bolt_detonate");
 
     public ShadowBoltAbility() {
         super(MKAttributes.EVOCATION);
@@ -68,13 +68,13 @@ public class ShadowBoltAbility extends ProjectileAbility {
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_dark_3.get();
+        return MKUSounds.spell_dark_3.value();
     }
 
     @Override
     public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
-        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_dark_8.get(), cat);
+        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_dark_8.value(), cat);
         MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
 
         if (result.getType().equals(HitResult.Type.ENTITY)) {
@@ -96,7 +96,7 @@ public class ShadowBoltAbility extends ProjectileAbility {
 
     @Override
     public AbilityProjectileEntity makeProjectile(IMKEntityData data, AbilityContext context) {
-        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level);
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level());
         projectile.setAbility(() -> this);
         projectile.setTrailAnimation(trailParticles.getValue());
         projectile.setItem(new ItemStack(MKUItems.shadowBoltProjectileItem.get()));
@@ -105,7 +105,7 @@ public class ShadowBoltAbility extends ProjectileAbility {
     }
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_shadow.get();
+        return MKUSounds.casting_shadow.value();
     }
 
     @Override

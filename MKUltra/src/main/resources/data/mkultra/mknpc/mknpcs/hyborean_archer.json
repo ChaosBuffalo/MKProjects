@@ -4,7 +4,7 @@
   "options": {
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 25.0
@@ -21,27 +21,21 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:longbow_stone",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:longbow_stone"
             },
             "weight": 10.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:longbow_bronze",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:longbow_bronze"
             },
             "weight": 4.0
           }
@@ -50,19 +44,19 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkfaction:undead"
+      "factionId": "mkfaction:undead"
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 0.95
+      "scale": 0.95
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Decaying Archer"
+      "name": "Decaying Archer"
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "hyborean_archer"
+      "renderGroup": "hyborean_archer"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

@@ -15,23 +15,21 @@
                   "minValue": 0.05,
                   "modifier": {
                     "amount": 0.05,
-                    "name": "mkultra:ancient_king",
-                    "operation": 0
+                    "id": "mkultra:ancient_king",
+                    "operation": "add_value"
                   }
                 }
               ]
             },
             {
               "type": "mkweapons:name",
-              "name": {
-                "text": "Earring of Might"
-              }
+              "name": "Earring of Might"
             }
           ],
           "potentialItems": [
             {
               "item": {
-                "Count": 1,
+                "count": 1,
                 "id": "mkweapons:copper_earring"
               }
             }
@@ -66,23 +64,21 @@
                   "minValue": 0.02,
                   "modifier": {
                     "amount": 0.02,
-                    "name": "mkultra:ancient_king",
-                    "operation": 0
+                    "id": "mkultra:ancient_king",
+                    "operation": "add_value"
                   }
                 }
               ]
             },
             {
               "type": "mkweapons:name",
-              "name": {
-                "text": "Ring of Destruction"
-              }
+              "name": "Ring of Destruction"
             }
           ],
           "potentialItems": [
             {
               "item": {
-                "Count": 1,
+                "count": 1,
                 "id": "mkweapons:silver_ring"
               }
             }
@@ -115,23 +111,21 @@
                   "minValue": 0.02,
                   "modifier": {
                     "amount": 0.02,
-                    "name": "mkultra:ancient_king",
-                    "operation": 0
+                    "id": "mkultra:ancient_king",
+                    "operation": "add_value"
                   }
                 }
               ]
             },
             {
               "type": "mkweapons:name",
-              "name": {
-                "text": "Ring of Keen Edges"
-              }
+              "name": "Ring of Keen Edges"
             }
           ],
           "potentialItems": [
             {
               "item": {
-                "Count": 1,
+                "count": 1,
                 "id": "mkweapons:copper_ring"
               }
             }

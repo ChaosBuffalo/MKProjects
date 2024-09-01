@@ -9,14 +9,14 @@ import com.chaosbuffalo.mkultra.data.generators.tags.UltraStructureTagsProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import java.util.concurrent.CompletableFuture;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class MKUDataGenerators {
 
     @SubscribeEvent
@@ -37,10 +37,10 @@ public class MKUDataGenerators {
         generator.addProvider(event.includeServer(), new MKUDialogueProvider(generator));
         generator.addProvider(event.includeServer(), new MKULootTierProvider(generator));
         generator.addProvider(event.includeServer(), new MKUTalentTreeProvider(generator));
-        generator.addProvider(event.includeServer(), new MKUQuestProvider(generator));
-        generator.addProvider(event.includeServer(), new MKUNpcProvider(generator));
+        generator.addProvider(event.includeServer(), new MKUQuestProvider(generator, lookupProvider));
+        generator.addProvider(event.includeServer(), new MKUNpcProvider(generator, lookupProvider));
         generator.addProvider(event.includeServer(), new MKAbilityProvider.FromMod(generator, MKUltra.MODID));
-        generator.addProvider(event.includeServer(), new MKURecipeProvider(packOutput));
+        generator.addProvider(event.includeServer(), new MKURecipeProvider(packOutput, lookupProvider));
 
         generator.addProvider(event.includeClient(), new MKUItemModelProvider(packOutput, fileHelper));
         generator.addProvider(event.includeServer(), new UltraItemTagsProvider(generator,

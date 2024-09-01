@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:skin_like_wood",
           "chance": 1.0,
@@ -34,7 +34,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 150.0
@@ -51,16 +51,13 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "chest": [
           {
             "dropChance": 0.05,
             "item": {
-              "Count": 1,
-              "id": "mkultra:green_knight_chestplate",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:green_knight_chestplate"
             },
             "weight": 1.0
           }
@@ -69,11 +66,8 @@
           {
             "dropChance": 0.05,
             "item": {
-              "Count": 1,
-              "id": "mkultra:green_knight_boots",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:green_knight_boots"
             },
             "weight": 1.0
           }
@@ -82,11 +76,8 @@
           {
             "dropChance": 0.05,
             "item": {
-              "Count": 1,
-              "id": "mkultra:green_knight_helmet",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:green_knight_helmet"
             },
             "weight": 1.0
           }
@@ -95,11 +86,8 @@
           {
             "dropChance": 0.05,
             "item": {
-              "Count": 1,
-              "id": "mkultra:green_knight_leggings",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:green_knight_leggings"
             },
             "weight": 1.0
           }
@@ -108,11 +96,8 @@
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:battleaxe_stone",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:battleaxe_stone"
             },
             "weight": 1.0
           }
@@ -121,23 +106,23 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkultra:green_knights"
+      "factionId": "mkultra:green_knights"
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 1.1
+      "scale": 1.1
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Green Knight"
+      "name": "Green Knight"
     },
     "mknpc:notable": {
       "type": "mknpc:notable",
-      "value": true
+      "isNotable": true
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "green_lady_guard_1"
+      "renderGroup": "green_lady_guard_1"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

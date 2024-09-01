@@ -25,7 +25,7 @@ public class FuriousBroodingEffect extends MKEffect {
 
     public FuriousBroodingEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        addAttribute(Attributes.MOVEMENT_SPEED, modUUID, -0.60, 0.05, AttributeModifier.Operation.MULTIPLY_TOTAL, MKAttributes.PNEUMA);
+        addAttribute(Attributes.MOVEMENT_SPEED, modUUID, -0.60, 0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, MKAttributes.PNEUMA);
     }
 
     public static MKEffectBuilder<?> from(LivingEntity source, float baseHealing, float scaling, float modifierScaling,

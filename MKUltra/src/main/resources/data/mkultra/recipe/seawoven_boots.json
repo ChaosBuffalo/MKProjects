@@ -8,11 +8,10 @@
   },
   "pattern": [
     "I I",
-    "III",
-    "III"
+    "I I"
   ],
   "result": {
-    "item": "mkultra:seawoven_chestplate"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "mkultra:seawoven_boots"
+  }
 }

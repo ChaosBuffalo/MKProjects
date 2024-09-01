@@ -30,9 +30,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class IgniteAbility extends MKAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "ignite_casting");
-    public static final ResourceLocation CAST_1_PARTICLES = new ResourceLocation(MKUltra.MODID, "ignite_cast_1");
-    public static final ResourceLocation CAST_2_PARTICLES = new ResourceLocation(MKUltra.MODID, "ignite_cast_2");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("ignite_casting");
+    public static final ResourceLocation CAST_1_PARTICLES = MKUltra.id("ignite_cast_1");
+    public static final ResourceLocation CAST_2_PARTICLES = MKUltra.id("ignite_cast_2");
     protected final FloatAttribute base = new FloatAttribute("base", 8.0f);
     protected final FloatAttribute scale = new FloatAttribute("scale", 1.0f);
     protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
@@ -80,12 +80,12 @@ public class IgniteAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_fire.get();
+        return MKUSounds.casting_fire.value();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_dark_13.get();
+        return MKUSounds.spell_dark_13.value();
     }
 
     @Override
@@ -103,7 +103,7 @@ public class IgniteAbility extends MKAbility {
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> {
                 targetData.getEffects().addEffect(damage);
 
-                SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_4.get(), targetEntity.getSoundSource());
+                SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_4.value(), targetEntity.getSoundSource());
 
                 if (MKUAbilityUtils.isBurning(targetData)) {
                     MKEffectBuilder<?> ignite = IgniteEffect.from(entity, base.value(), scale.value(), modifierScaling.value())
@@ -112,7 +112,7 @@ public class IgniteAbility extends MKAbility {
                     MKEffectBuilder<?> particle = MKParticleEffect.from(entity, cast_2_particles.getValue(),
                                     true, new Vec3(0.0, 1.0, 0.0))
                             .ability(this);
-                    MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_fire_8.get(), entity.getSoundSource())
+                    MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_fire_8.value(), entity.getSoundSource())
                             .ability(this);
 
                     AreaEffectBuilder.createOnEntity(entity, targetEntity)

@@ -27,8 +27,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class InspireAbility extends MKAbility {
-    protected final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "inspire_casting");
-    protected final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "inspire_cast");
+    protected final ResourceLocation CASTING_PARTICLES = MKUltra.id("inspire_casting");
+    protected final ResourceLocation CAST_PARTICLES = MKUltra.id("inspire_cast");
     protected final IntAttribute base = new IntAttribute("baseDuration", 8);
     protected final IntAttribute scale = new IntAttribute("scaleDuration", 2);
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
@@ -67,12 +67,12 @@ public class InspireAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_holy.get();
+        return MKUSounds.casting_holy.value();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_cast_12.get();
+        return MKUSounds.spell_cast_12.value();
     }
 
     @Override
@@ -89,7 +89,7 @@ public class InspireAbility extends MKAbility {
 
         MobEffectInstance hasteEffect = new MobEffectInstance(MobEffects.DIG_SPEED, duration, oldAmp, false, false);
         MobEffectInstance regenEffect = new MobEffectInstance(MobEffects.REGENERATION, duration, oldAmp, false, false);
-        MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_holy_8.get(), castingEntity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_holy_8.value(), castingEntity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> particles = MKParticleEffect.from(castingEntity, cast_particles.getValue(), true, new Vec3(0.0, 1.0, 0.0))
                 .ability(this);

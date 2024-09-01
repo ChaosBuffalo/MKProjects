@@ -4,7 +4,7 @@
   "options": {
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 100.0
@@ -21,7 +21,7 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkultra:see_of_solang"
+      "factionId": "mkultra:see_of_solang"
     },
     "mknpc:ghost": {
       "type": "mknpc:ghost",
@@ -31,19 +31,19 @@
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 1.0
+      "scale": 1.0
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Forlorn Ghost"
+      "name": "Forlorn Ghost"
     },
     "mknpc:notable": {
       "type": "mknpc:notable",
-      "value": true
+      "isNotable": true
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "ghost_1"
+      "renderGroup": "ghost_1"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

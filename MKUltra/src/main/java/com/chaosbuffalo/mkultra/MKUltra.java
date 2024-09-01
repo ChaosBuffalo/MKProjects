@@ -3,11 +3,12 @@ package com.chaosbuffalo.mkultra;
 
 import com.chaosbuffalo.mkultra.extensions.MKUNpcExtensions;
 import com.chaosbuffalo.mkultra.init.*;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import com.chaosbuffalo.mkultra.item.MKUArmorMaterial;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,8 +18,7 @@ public class MKUltra {
     public static final String MODID = "mkultra";
     public static final Logger LOGGER = LogManager.getLogger();
 
-    public MKUltra() {
-        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+    public MKUltra(IEventBus modBus) {
         modBus.addListener(this::clientSetup);
         MKUEffects.register(modBus);
         MKUEntities.register(modBus);
@@ -29,6 +29,7 @@ public class MKUltra {
         MKUSounds.register(modBus);
         MKUFactions.register(modBus);
         MKUItems.register(modBus);
+        MKUArmorMaterial.register(modBus);
         modBus.addListener(this::enqueueIMC);
     }
 
@@ -38,5 +39,9 @@ public class MKUltra {
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
         MKUNpcExtensions.sendExtension();
+    }
+
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 }

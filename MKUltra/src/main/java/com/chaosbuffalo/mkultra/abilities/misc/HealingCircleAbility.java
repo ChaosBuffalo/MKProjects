@@ -25,9 +25,9 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class HealingCircleAbility extends WindUpPulseAbility {
-    private static final ResourceLocation PULSE_PARTICLES = new ResourceLocation(MKUltra.MODID, "healing_circle_detonate");
-    private static final ResourceLocation WAIT_PARTICLES = new ResourceLocation(MKUltra.MODID, "healing_circle_wait");
-    private static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "healing_circle_casting");
+    private static final ResourceLocation PULSE_PARTICLES = MKUltra.id("healing_circle_detonate");
+    private static final ResourceLocation WAIT_PARTICLES = MKUltra.id("healing_circle_wait");
+    private static final ResourceLocation CASTING_PARTICLES = MKUltra.id("healing_circle_casting");
     protected final FloatAttribute base = new FloatAttribute("base", 3.0f);
     protected final FloatAttribute scale = new FloatAttribute("scale", 1.0f);
     protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
@@ -75,13 +75,13 @@ public class HealingCircleAbility extends WindUpPulseAbility {
                         base.value(), scale.value(), modifierScaling.value())
                 .ability(this)
                 .skillLevel(level);
-        MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_holy_4.get(), castingEntity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_holy_4.value(), castingEntity.getSoundSource())
                 .ability(this);
 
         builder.effect(damage, getTargetContext())
                 .delayedEffect(damage, getTargetContext(), waitTime.value())
                 .delayedEffect(sound, getTargetContext(), waitTime.value());
-        SoundUtils.serverPlaySoundFromEntity(position.x(), position.y(), position.z(), MKUSounds.spell_holy_8.get(),
+        SoundUtils.serverPlaySoundFromEntity(position.x(), position.y(), position.z(), MKUSounds.spell_holy_8.value(),
                 castingEntity.getSoundSource(), 1.0f, 1.0f, castingEntity);
     }
 
@@ -103,7 +103,7 @@ public class HealingCircleAbility extends WindUpPulseAbility {
     @Nullable
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_holy.get();
+        return MKUSounds.casting_holy.value();
     }
 }
 

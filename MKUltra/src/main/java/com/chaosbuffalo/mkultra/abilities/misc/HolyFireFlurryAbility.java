@@ -16,7 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
 import javax.annotation.Nullable;
 
 public class HolyFireFlurryAbility extends PositionFlurryAbility {
-    private static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "holy_fire_casting");
+    private static final ResourceLocation CASTING_PARTICLES = MKUltra.id("holy_fire_casting");
 
     public HolyFireFlurryAbility() {
         super(MKUAbilities.HOLY_FIRE);
@@ -41,7 +41,7 @@ public class HolyFireFlurryAbility extends PositionFlurryAbility {
     @Nullable
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.hostile_casting_holy.get();
+        return MKUSounds.hostile_casting_holy.value();
     }
 
     @Nullable

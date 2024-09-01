@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:fire_armor",
           "chance": 1.0,
@@ -39,7 +39,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 110.0
@@ -56,27 +56,21 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:katana_iron",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:katana_iron"
             },
             "weight": 1.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:katana_bronze",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:katana_bronze"
             },
             "weight": 1.0
           }
@@ -102,7 +96,7 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkfaction:undead"
+      "factionId": "mkfaction:undead"
     },
     "mknpc:mk_combo": {
       "type": "mknpc:mk_combo",
@@ -111,15 +105,15 @@
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 1.1
+      "scale": 1.1
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Hyborean Sorcerer Queen"
+      "name": "Hyborean Sorcerer Queen"
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "sorcerer_queen"
+      "renderGroup": "sorcerer_queen"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

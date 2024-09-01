@@ -58,18 +58,16 @@
     ]
   },
   "questMode": 0,
-  "questName": "{\"text\":\"The Green Knights\"}",
+  "questName": "\"The Green Knights\"",
   "quests": [
     {
       "autoComplete": true,
-      "description": "{\"text\":\"The Green Lady wants you to go talk to the smith and equip yourself for an unknown task.\"}",
+      "description": "\"The Green Lady wants you to go talk to the smith and equip yourself for an unknown task.\"",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Talk to the smith"
-            }
+            "Talk to the smith"
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.talk_to_smith",
@@ -119,43 +117,41 @@
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"The Green Smith points you towards a chest in his workshop.\"}",
+      "description": "\"The Green Smith points you towards a chest in his workshop.\"",
       "objectives": [
         {
           "type": "mknpc:loot_chest",
           "chestTag": "intro_chest",
           "description": [
-            {
-              "text": "Loot the smith's chest"
-            }
+            "Loot the smith's chest"
           ],
           "items": [
             {
-              "Count": 20,
+              "count": 20,
               "id": "minecraft:cobblestone"
             },
             {
-              "Count": 20,
+              "count": 20,
               "id": "minecraft:oak_planks"
             },
             {
-              "Count": 10,
+              "count": 10,
               "id": "minecraft:string"
             },
             {
-              "Count": 40,
+              "count": 40,
               "id": "minecraft:leather"
             },
             {
-              "Count": 10,
+              "count": 10,
               "id": "minecraft:coal"
             },
             {
-              "Count": 10,
+              "count": 10,
               "id": "minecraft:flint"
             },
             {
-              "Count": 10,
+              "count": 10,
               "id": "minecraft:porkchop"
             }
           ],
@@ -176,14 +172,12 @@
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"Use the Green Smith's supplies to craft your desired weapon and perhaps some armor for the battle ahead.\"}",
+      "description": "\"Use the Green Smith's supplies to craft your desired weapon and perhaps some armor for the battle ahead.\"",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Talk to the Green Smith with a weapon in your hand."
-            }
+            "Talk to the Green Smith with a weapon in your hand."
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.return_to_smith",
@@ -245,14 +239,12 @@
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"Talk to the Green Lady to learn more about developing your magical abilities\"}",
+      "description": "\"Talk to the Green Lady to learn more about developing your magical abilities\"",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Talk to the Green Lady about the talent system."
-            }
+            "Talk to the Green Lady about the talent system."
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.green_lady_talent",
@@ -302,14 +294,12 @@
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"The Green Lady wants you to learn about spending talent points.\"}",
+      "description": "\"The Green Lady wants you to learn about spending talent points.\"",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Talk to the Green Lady after training a talent."
-            }
+            "Talk to the Green Lady after training a talent."
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.return_to_green_lady",
@@ -390,22 +380,18 @@
         },
         {
           "type": "mknpc:entitlement",
-          "value": {
-            "entitlement": "mkultra:green_knight.tier_1"
-          }
+          "entitlement": "mkultra:green_knight.tier_1"
         }
       ]
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"Talk to the Green Lady and learn your first ability, then speak to her again.\"}",
+      "description": "\"Talk to the Green Lady and learn your first ability, then speak to her again.\"",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Talk to the Green Lady after learning your first ability."
-            }
+            "Talk to the Green Lady after learning your first ability."
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.after_green_lady",
@@ -492,7 +478,7 @@
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"The Green Lady wants you to clear out some of the zombies on the first floor of the castle\"}",
+      "description": "\"The Green Lady wants you to clear out some of the zombies on the first floor of the castle\"",
       "objectives": [
         {
           "type": "mknpc:kill_npc_def",
@@ -509,9 +495,7 @@
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Talk to the Green Lady after completing the other objectives."
-            }
+            "Talk to the Green Lady after completing the other objectives."
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.after_kill",
@@ -578,7 +562,7 @@
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"The Green Lady wants you to find and kill the Piglin Captain\"}",
+      "description": "\"The Green Lady wants you to find and kill the Piglin Captain\"",
       "objectives": [
         {
           "type": "mknpc:kill_notable_npc",
@@ -592,9 +576,7 @@
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Talk to the Green Lady after completing the other objectives."
-            }
+            "Talk to the Green Lady after completing the other objectives."
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.after_kill_captain",
@@ -658,22 +640,18 @@
         },
         {
           "type": "mknpc:entitlement",
-          "value": {
-            "entitlement": "mkultra:green_knight.tier_2"
-          }
+          "entitlement": "mkultra:green_knight.tier_2"
         }
       ]
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"The Green Lady wants you to seek out a spirit in the depths.\"}",
+      "description": "\"The Green Lady wants you to seek out a spirit in the depths.\"",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Find the spirit in the castle."
-            }
+            "Find the spirit in the castle."
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.talk_to_ghost",
@@ -828,7 +806,7 @@
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"The Forlorn Ghost has asked you you to kill the Burning Revenant\"}",
+      "description": "\"The Forlorn Ghost has asked you you to kill the Burning Revenant\"",
       "objectives": [
         {
           "type": "mknpc:kill_notable_npc",
@@ -842,9 +820,7 @@
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Return to the Green Lady after completing the other objectives."
-            }
+            "Return to the Green Lady after completing the other objectives."
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.after_kill_burning",
@@ -908,9 +884,7 @@
         },
         {
           "type": "mknpc:entitlement",
-          "value": {
-            "entitlement": "mkultra:green_knight.tier_3"
-          }
+          "entitlement": "mkultra:green_knight.tier_3"
         },
         {
           "type": "mknpc:talent_tree",

@@ -5,6 +5,7 @@
         "bWaterLog": false,
         "element_type": "mknpc:mk_single_jigsaw",
         "location": "mkultra:desert_temple_village/cleric_temple_small",
+        "override_liquid_settings": "ignore_waterlogging",
         "processors": {
           "processors": []
         },

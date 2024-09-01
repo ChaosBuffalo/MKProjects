@@ -40,9 +40,7 @@
           "conditions": [
             {
               "type": "mknpc:has_entitlement",
-              "value": {
-                "entitlement": "mkultra:cleric.intro.tier_1"
-              }
+              "entitlement": "mkultra:cleric.intro.tier_1"
             }
           ],
           "responseNodeId": "hail_w"

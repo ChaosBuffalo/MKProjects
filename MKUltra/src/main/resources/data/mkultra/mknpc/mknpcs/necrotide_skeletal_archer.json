@@ -4,7 +4,7 @@
   "options": {
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 30.0
@@ -21,16 +21,13 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:longbow_iron",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:longbow_iron"
             },
             "weight": 1.0
           }
@@ -39,19 +36,19 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkultra:necrotide_cultists"
+      "factionId": "mkultra:necrotide_cultists"
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 0.95
+      "scale": 0.95
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Skeleton Archer"
+      "name": "Skeleton Archer"
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "hyborean_archer"
+      "renderGroup": "hyborean_archer"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkultra.extensions;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.IMKNpcExtension;
-import net.minecraftforge.fml.InterModComms;
+import net.neoforged.fml.InterModComms;
 
 public class MKUNpcExtensions implements IMKNpcExtension {
 

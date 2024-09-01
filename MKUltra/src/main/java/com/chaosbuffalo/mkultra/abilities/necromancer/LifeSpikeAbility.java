@@ -24,8 +24,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class LifeSpikeAbility extends MKAbility {
-    protected final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "lifespike_casting");
-    protected final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "lifespike_cast");
+    protected final ResourceLocation CASTING_PARTICLES = MKUltra.id("lifespike_casting");
+    protected final ResourceLocation CAST_PARTICLES = MKUltra.id("lifespike_cast");
     protected final FloatAttribute base = new FloatAttribute("base", 10.0f);
     protected final FloatAttribute scale = new FloatAttribute("scale", 2.0f);
     protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
@@ -77,12 +77,12 @@ public class LifeSpikeAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_shadow.get();
+        return MKUSounds.casting_shadow.value();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_magic_whoosh_4.get();
+        return MKUSounds.spell_magic_whoosh_4.value();
     }
 
     @Override
@@ -101,7 +101,7 @@ public class LifeSpikeAbility extends MKAbility {
                 targetData.getEffects().addEffect(damage);
             });
 
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_shadow_6.get(), targetEntity.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_shadow_6.value(), targetEntity.getSoundSource());
             MKParticles.spawn(targetEntity, new Vec3(0.0, 1.75, 0.0), cast_particles.getValue());
         });
     }

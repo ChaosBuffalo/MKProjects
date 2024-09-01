@@ -4,7 +4,7 @@
   "options": {
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 30.0
@@ -21,24 +21,17 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "chest": [
           {
             "dropChance": 0.0,
-            "item": {
-              "Count": 1,
-              "id": "minecraft:air"
-            },
             "weight": 20.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_bronze_chestplate",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_bronze_chestplate"
             },
             "weight": 1.0
           }
@@ -46,20 +39,13 @@
         "feet": [
           {
             "dropChance": 0.0,
-            "item": {
-              "Count": 1,
-              "id": "minecraft:air"
-            },
             "weight": 20.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_bronze_boots",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_bronze_boots"
             },
             "weight": 1.0
           }
@@ -67,20 +53,13 @@
         "head": [
           {
             "dropChance": 0.0,
-            "item": {
-              "Count": 1,
-              "id": "minecraft:air"
-            },
             "weight": 20.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_bronze_helmet",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_bronze_helmet"
             },
             "weight": 1.0
           }
@@ -88,20 +67,13 @@
         "legs": [
           {
             "dropChance": 0.0,
-            "item": {
-              "Count": 1,
-              "id": "minecraft:air"
-            },
             "weight": 20.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_bronze_leggings",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_bronze_leggings"
             },
             "weight": 1.0
           }
@@ -110,110 +82,80 @@
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:battleaxe_stone",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:battleaxe_stone"
             },
             "weight": 10.0
           },
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:spear_stone",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:spear_stone"
             },
             "weight": 10.0
           },
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:greatsword_stone",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:greatsword_stone"
             },
             "weight": 10.0
           },
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:longsword_stone",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:longsword_stone"
             },
             "weight": 10.0
           },
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:warhammer_stone",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:warhammer_stone"
             },
             "weight": 10.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:battleaxe_bronze",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:battleaxe_bronze"
             },
             "weight": 1.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:spear_bronze",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:spear_bronze"
             },
             "weight": 1.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:greatsword_bronze",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:greatsword_bronze"
             },
             "weight": 1.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:longsword_bronze",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:longsword_bronze"
             },
             "weight": 1.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:warhammer_bronze",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:warhammer_bronze"
             },
             "weight": 1.0
           }
@@ -222,19 +164,19 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkfaction:undead"
+      "factionId": "mkfaction:undead"
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 1.0
+      "scale": 1.0
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Hyborean Warrior"
+      "name": "Hyborean Warrior"
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "hyborean_warrior"
+      "renderGroup": "hyborean_warrior"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

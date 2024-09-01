@@ -10,8 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.common.data.BlockTagsProvider;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.common.data.BlockTagsProvider;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
@@ -49,6 +49,6 @@ public class UltraItemTagsProvider extends ItemTagsProvider {
     }
 
     private static TagKey<Item> accessory(String name) {
-        return ItemTags.create(new ResourceLocation("curios", name));
+        return ItemTags.create(ResourceLocation.fromNamespaceAndPath("curios", name));
     }
 }

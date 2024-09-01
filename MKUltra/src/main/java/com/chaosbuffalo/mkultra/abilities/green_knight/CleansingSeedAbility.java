@@ -35,9 +35,9 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class CleansingSeedAbility extends ProjectileAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "cleansing_seed_casting");
-    public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "cleansing_seed_trail");
-    public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "cleansing_seed_detonate");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("cleansing_seed_casting");
+    public static final ResourceLocation TRAIL_PARTICLES = MKUltra.id("cleansing_seed_trail");
+    public static final ResourceLocation DETONATE_PARTICLES = MKUltra.id("cleansing_seed_detonate");
 
 
     public CleansingSeedAbility() {
@@ -67,7 +67,7 @@ public class CleansingSeedAbility extends ProjectileAbility {
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_cast_6.get();
+        return MKUSounds.spell_cast_6.value();
     }
 
     @Override
@@ -79,7 +79,7 @@ public class CleansingSeedAbility extends ProjectileAbility {
     @Override
     public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
-        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_water_6.get(), cat);
+        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_water_6.value(), cat);
         if (result.getType() == HitResult.Type.ENTITY) {
             EntityHitResult entityTrace = (EntityHitResult) result;
             if (entityTrace.getEntity() instanceof LivingEntity target) {
@@ -94,14 +94,14 @@ public class CleansingSeedAbility extends ProjectileAbility {
 
                         MKCore.getEntityData(target).ifPresent(targetData -> targetData.getEffects().addEffect(cure));
 
-                        SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_water_2.get(), cat);
+                        SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_water_2.value(), cat);
                         break;
                     }
                     case ENEMY: {
-                        target.hurt(MKDamageSource.causeAbilityDamage(target.getLevel(), CoreDamageTypes.NatureDamage.get(),
+                        target.hurt(MKDamageSource.causeAbilityDamage(target.level(), CoreDamageTypes.NatureDamage.get(),
                                         getAbilityId(), projectile, caster,
                                         getModifierScaling()), getDamageForLevel(getSkillLevel(caster, skill)));
-                        SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_water_8.get(), cat);
+                        SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_water_8.value(), cat);
                         break;
                     }
                 }
@@ -113,7 +113,7 @@ public class CleansingSeedAbility extends ProjectileAbility {
 
     @Override
     public AbilityProjectileEntity makeProjectile(IMKEntityData data, AbilityContext context) {
-        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level);
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level());
         projectile.setAbility(() -> this);
         projectile.setTrailAnimation(trailParticles.getValue());
         projectile.setItem(new ItemStack(MKUItems.cleansingSeedProjectileItem.get()));
@@ -124,6 +124,6 @@ public class CleansingSeedAbility extends ProjectileAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_water.get();
+        return MKUSounds.casting_water.value();
     }
 }

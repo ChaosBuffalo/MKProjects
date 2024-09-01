@@ -4,9 +4,8 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.world.gen.feature.structure.StaticPlacement;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
@@ -23,17 +22,16 @@ public class UltraStructureSets {
     public static final ResourceKey<StructureSet> DECAYING_CHURCH = createKey("decaying_church");
 
     public static ResourceKey<StructureSet> createKey(String name) {
-        return ResourceKey.create(Registries.STRUCTURE_SET, new ResourceLocation(MKUltra.MODID, name));
+        return ResourceKey.create(Registries.STRUCTURE_SET, MKUltra.id(name));
     }
 
-    public static void bootstrap(BootstapContext<StructureSet> context) {
+    public static void bootstrap(BootstrapContext<StructureSet> context) {
         HolderGetter<Structure> structures = context.lookup(Registries.STRUCTURE);
         HolderGetter<StructureSet> sets = context.lookup(Registries.STRUCTURE_SET);
 
         context.register(INTRO_CASTLE,
                 new StructureSet(structures.getOrThrow(UltraStructures.INTRO_CASTLE),
-                        new StaticPlacement(0, 0,
-                                new StructurePlacement.ExclusionZone(sets.getOrThrow(INTRO_CASTLE), 0))));
+                        new StaticPlacement(0, 0)));
 
 
         context.register(DESERT_TEMPLE_VILLAGE,

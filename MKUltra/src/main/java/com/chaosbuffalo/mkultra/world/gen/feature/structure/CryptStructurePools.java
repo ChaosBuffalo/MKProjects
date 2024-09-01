@@ -8,25 +8,25 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.Pools;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public class CryptStructurePools {
-    private static final ResourceLocation CRYPT_CORNER_LEFT_1 = new ResourceLocation(MKUltra.MODID, "crypt/crypt_corner_left_1");
-    private static final ResourceLocation CRYPT_CORNER_RIGHT_1 = new ResourceLocation(MKUltra.MODID, "crypt/crypt_corner_right_1");
-    private static final ResourceLocation CRYPT_ENTRANCE = new ResourceLocation(MKUltra.MODID, "crypt/crypt_entrance");
-    private static final ResourceLocation CRYPT_FLAT_HALLWAY_LONG_1 = new ResourceLocation(MKUltra.MODID, "crypt/crypt_flat_hallway_long_1");
-    private static final ResourceLocation CRYPT_FLAT_HALLWAY_SHORT_1 = new ResourceLocation(MKUltra.MODID, "crypt/crypt_flat_hallway_short_1");
-    private static final ResourceLocation CRYPT_HALLWAY_1 = new ResourceLocation(MKUltra.MODID, "crypt/crypt_hallway_1");
-    private static final ResourceLocation CRYPT_ROOM_1 = new ResourceLocation(MKUltra.MODID, "crypt/crypt_room_1");
-    private static final ResourceLocation CRYPT_ROOM_2 = new ResourceLocation(MKUltra.MODID, "crypt/crypt_room_2");
-    private static final ResourceLocation CRYPT_ROOM_3 = new ResourceLocation(MKUltra.MODID, "crypt/crypt_room_3");
-    private static final ResourceLocation CRYPT_ROOM_DECAYING = new ResourceLocation(MKUltra.MODID, "crypt/crypt_room_decaying");
-    private static final ResourceLocation CRYPT_ROOM_REMEMBRANCE = new ResourceLocation(MKUltra.MODID, "crypt/crypt_room_remembrance_hall");
-    private static final ResourceLocation CRYPT_ROOM_TOMBS = new ResourceLocation(MKUltra.MODID, "crypt/crypt_room_tombs");
+    private static final ResourceLocation CRYPT_CORNER_LEFT_1 = MKUltra.id("crypt/crypt_corner_left_1");
+    private static final ResourceLocation CRYPT_CORNER_RIGHT_1 = MKUltra.id("crypt/crypt_corner_right_1");
+    private static final ResourceLocation CRYPT_ENTRANCE = MKUltra.id("crypt/crypt_entrance");
+    private static final ResourceLocation CRYPT_FLAT_HALLWAY_LONG_1 = MKUltra.id("crypt/crypt_flat_hallway_long_1");
+    private static final ResourceLocation CRYPT_FLAT_HALLWAY_SHORT_1 = MKUltra.id("crypt/crypt_flat_hallway_short_1");
+    private static final ResourceLocation CRYPT_HALLWAY_1 = MKUltra.id("crypt/crypt_hallway_1");
+    private static final ResourceLocation CRYPT_ROOM_1 = MKUltra.id("crypt/crypt_room_1");
+    private static final ResourceLocation CRYPT_ROOM_2 = MKUltra.id("crypt/crypt_room_2");
+    private static final ResourceLocation CRYPT_ROOM_3 = MKUltra.id("crypt/crypt_room_3");
+    private static final ResourceLocation CRYPT_ROOM_DECAYING = MKUltra.id("crypt/crypt_room_decaying");
+    private static final ResourceLocation CRYPT_ROOM_REMEMBRANCE = MKUltra.id("crypt/crypt_room_remembrance_hall");
+    private static final ResourceLocation CRYPT_ROOM_TOMBS = MKUltra.id("crypt/crypt_room_tombs");
 
 
     public static ResourceKey<StructureTemplatePool> BASE =
@@ -39,11 +39,11 @@ public class CryptStructurePools {
             UltraStructurePools.createKey("crypt_rooms");
     public static final int GEN_DEPTH = 7;
 
-    public static void register(BootstapContext<StructureTemplatePool> pContext, String pName, StructureTemplatePool pValue) {
+    public static void register(BootstrapContext<StructureTemplatePool> pContext, String pName, StructureTemplatePool pValue) {
         pContext.register(UltraStructurePools.createKey(pName), pValue);
     }
 
-    public static void registerPools(BootstapContext<StructureTemplatePool> pContext) {
+    public static void registerPools(BootstrapContext<StructureTemplatePool> pContext) {
         HolderGetter<StructureTemplatePool> holderGetter = pContext.lookup(Registries.TEMPLATE_POOL);
         Holder<StructureTemplatePool> empty = holderGetter.getOrThrow(Pools.EMPTY);
 
@@ -73,7 +73,7 @@ public class CryptStructurePools {
     }
 
 //    public static final StructureTemplatePool CRYPT_BASE = new StructureTemplatePool(
-//            new ResourceLocation(MKUltra.MODID, "crypt/crypt_base"),
+//            MKUltra.id("crypt/crypt_base"),
 //            new ResourceLocation("empty"),
 //            ImmutableList.of(
 //                    Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(CRYPT_ENTRANCE, false), 1)
@@ -81,7 +81,7 @@ public class CryptStructurePools {
 //            StructureTemplatePool.Projection.RIGID);
 
 //    public static final StructureTemplatePool CRYPT_HALLWAYS = new StructureTemplatePool(
-//            new ResourceLocation(MKUltra.MODID, "crypt_hallways"),
+//            MKUltra.id("crypt_hallways"),
 //            new ResourceLocation("empty"),
 //            ImmutableList.of(
 //                    Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(CRYPT_HALLWAY_1, false), 1),
@@ -93,7 +93,7 @@ public class CryptStructurePools {
 //            StructureTemplatePool.Projection.RIGID);
 //
 //    public static final StructureTemplatePool CRYPT_ROOMS = new StructureTemplatePool(
-//            new ResourceLocation(MKUltra.MODID, "crypt_rooms"),
+//            MKUltra.id("crypt_rooms"),
 //            new ResourceLocation("empty"),
 //            ImmutableList.of(
 //                    Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(CRYPT_ROOM_1, false), 2),

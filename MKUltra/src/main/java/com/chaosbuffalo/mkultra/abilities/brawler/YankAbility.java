@@ -21,7 +21,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class YankAbility extends MKAbility {
-    public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "yank_cast");
+    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("yank_cast");
     protected final FloatAttribute base = new FloatAttribute("base", 1.0f);
     protected final FloatAttribute scale = new FloatAttribute("scale", 0.75f);
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
@@ -60,7 +60,7 @@ public class YankAbility extends MKAbility {
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_grab_2.get();
+        return MKUSounds.spell_grab_2.value();
     }
 
     @Override

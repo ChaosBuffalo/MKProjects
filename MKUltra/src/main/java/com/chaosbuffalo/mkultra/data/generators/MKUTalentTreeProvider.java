@@ -32,7 +32,7 @@ public class MKUTalentTreeProvider extends TalentTreeProvider {
     }
 
     private CompletableFuture<?> generateGreenKnightTree(CachedOutput pOutput) {
-        TalentTreeDefinition tree = new TalentTreeDefinition(new ResourceLocation(MKUltra.MODID, "green_knight_talents"));
+        TalentTreeDefinition tree = new TalentTreeDefinition(MKUltra.id("green_knight_talents"));
         tree.setVersion(1);
         TalentLineDefinition line = new TalentLineDefinition(tree, "a");
         line.addNode(new AttributeTalentNode(CoreTalents.MAX_HEALTH_TALENT, 3, 4.0));
@@ -62,7 +62,7 @@ public class MKUTalentTreeProvider extends TalentTreeProvider {
 
 
     private CompletableFuture<?> generateCoreTree(CachedOutput pOutput) {
-        TalentTreeDefinition tree = new TalentTreeDefinition(new ResourceLocation(MKUltra.MODID, "core_talents"));
+        TalentTreeDefinition tree = new TalentTreeDefinition(MKUltra.id("core_talents"));
         tree.setVersion(2);
         tree.setDefault(true);
         TalentLineDefinition line = new TalentLineDefinition(tree, "a");

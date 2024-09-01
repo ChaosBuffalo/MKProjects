@@ -4,7 +4,7 @@
   "options": {
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 15.0
@@ -21,16 +21,13 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "minecraft:bow",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "minecraft:bow"
             },
             "weight": 1.0
           }
@@ -39,23 +36,23 @@
     },
     "mknpc:experience": {
       "type": "mknpc:experience",
-      "value": 5
+      "experience": 5
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkultra:imperial_dead"
+      "factionId": "mkultra:imperial_dead"
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 0.85
+      "scale": 0.85
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Shambling Archer"
+      "name": "Shambling Archer"
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "zombie_pig"
+      "renderGroup": "zombie_pig"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

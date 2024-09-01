@@ -11,16 +11,14 @@
               "effects": [
                 {
                   "type": "mkweapons:accessory_effect.on_hit_ability",
-                  "value": {
-                    "ability": "mkultra:engulfing_darkness",
-                    "proc_chance": {
-                      "max": 0.15,
-                      "min": 0.05
-                    },
-                    "skill_level": {
-                      "max": 100.0,
-                      "min": 0.0
-                    }
+                  "ability": "mkultra:engulfing_darkness",
+                  "proc_chance": {
+                    "max": 0.15,
+                    "min": 0.05
+                  },
+                  "skill_level": {
+                    "max": 100.0,
+                    "min": 0.0
                   }
                 }
               ]
@@ -34,8 +32,8 @@
                   "minValue": 6.0,
                   "modifier": {
                     "amount": 6.0,
-                    "name": "mkultra:necrotide_golem",
-                    "operation": 0
+                    "id": "mkultra:necrotide_golem",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -49,8 +47,8 @@
                   "minValue": 6.0,
                   "modifier": {
                     "amount": 6.0,
-                    "name": "mkultra:necrotide_golem",
-                    "operation": 0
+                    "id": "mkultra:necrotide_golem",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -64,8 +62,8 @@
                   "minValue": 0.5,
                   "modifier": {
                     "amount": 0.5,
-                    "name": "mkultra:necrotide_golem",
-                    "operation": 0
+                    "id": "mkultra:necrotide_golem",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -79,8 +77,8 @@
                   "minValue": 2.0,
                   "modifier": {
                     "amount": 2.0,
-                    "name": "mkultra:necrotide_golem",
-                    "operation": 0
+                    "id": "mkultra:necrotide_golem",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -94,8 +92,8 @@
                   "minValue": 2.0,
                   "modifier": {
                     "amount": 2.0,
-                    "name": "mkultra:necrotide_golem",
-                    "operation": 0
+                    "id": "mkultra:necrotide_golem",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -109,8 +107,8 @@
                   "minValue": 0.05,
                   "modifier": {
                     "amount": 0.05,
-                    "name": "mkultra:necrotide_golem",
-                    "operation": 0
+                    "id": "mkultra:necrotide_golem",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -119,13 +117,13 @@
           "potentialItems": [
             {
               "item": {
-                "Count": 1,
+                "count": 1,
                 "id": "mkultra:corrupted_gauntlets"
               }
             },
             {
               "item": {
-                "Count": 1,
+                "count": 1,
                 "id": "mkultra:necrotide_band"
               }
             }
@@ -186,8 +184,8 @@
                   "minValue": 6.0,
                   "modifier": {
                     "amount": 6.0,
-                    "name": "mkultra:necrotide_golem",
-                    "operation": 0
+                    "id": "mkultra:necrotide_golem",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -201,8 +199,8 @@
                   "minValue": 6.0,
                   "modifier": {
                     "amount": 6.0,
-                    "name": "mkultra:necrotide_golem",
-                    "operation": 0
+                    "id": "mkultra:necrotide_golem",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -216,8 +214,8 @@
                   "minValue": 0.5,
                   "modifier": {
                     "amount": 0.5,
-                    "name": "mkultra:necrotide_golem",
-                    "operation": 0
+                    "id": "mkultra:necrotide_golem",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -231,8 +229,8 @@
                   "minValue": 2.0,
                   "modifier": {
                     "amount": 2.0,
-                    "name": "mkultra:necrotide_golem",
-                    "operation": 0
+                    "id": "mkultra:necrotide_golem",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -246,8 +244,8 @@
                   "minValue": 2.0,
                   "modifier": {
                     "amount": 2.0,
-                    "name": "mkultra:necrotide_golem",
-                    "operation": 0
+                    "id": "mkultra:necrotide_golem",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -261,8 +259,8 @@
                   "minValue": 0.05,
                   "modifier": {
                     "amount": 0.05,
-                    "name": "mkultra:necrotide_golem",
-                    "operation": 0
+                    "id": "mkultra:necrotide_golem",
+                    "operation": "add_value"
                   }
                 }
               ]

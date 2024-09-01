@@ -64,7 +64,7 @@ public class FlameWaveEffect extends MKEffect {
                 targetData.getEntity().addEffect(witherEffect);
             }
 
-            targetData.getEntity().hurt(MKDamageSource.causeAbilityDamage(targetData.getEntity().getLevel(),
+            targetData.getEntity().hurt(MKDamageSource.causeAbilityDamage(targetData.getEntity().level(),
                     CoreDamageTypes.FireDamage.get(),
                     activeEffect.getAbilityId(), activeEffect.getDirectEntity(), activeEffect.getSourceEntity(), getModifierScale()), damage);
             return true;

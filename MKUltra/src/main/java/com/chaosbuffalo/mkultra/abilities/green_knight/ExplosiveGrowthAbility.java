@@ -38,9 +38,9 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class ExplosiveGrowthAbility extends MKAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "explosive_growth_casting");
-    public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "explosive_growth_cast");
-    public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "explosive_growth_detonate");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("explosive_growth_casting");
+    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("explosive_growth_cast");
+    public static final ResourceLocation DETONATE_PARTICLES = MKUltra.id("explosive_growth_detonate");
     protected final FloatAttribute baseDamage = new FloatAttribute("baseDamage", 10.0f);
     protected final FloatAttribute scaleDamage = new FloatAttribute("scaleDamage", 5.0f);
     protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
@@ -89,13 +89,13 @@ public class ExplosiveGrowthAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_shadow.get();
+        return MKUSounds.casting_shadow.value();
     }
 
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_earth_8.get();
+        return MKUSounds.spell_earth_8.value();
     }
 
     @Override
@@ -127,12 +127,12 @@ public class ExplosiveGrowthAbility extends MKAbility {
                         targetData.getEffects().addEffect(remedy);
                     });
 
-                    SoundUtils.serverPlaySoundAtEntity(entHit, MKUSounds.spell_earth_6.get(), cat);
+                    SoundUtils.serverPlaySoundAtEntity(entHit, MKUSounds.spell_earth_6.value(), cat);
                     break;
                 }
                 case ENEMY: {
-                    entHit.hurt(MKDamageSource.causeMeleeDamage(castingEntity.getLevel(), getAbilityId(), castingEntity, castingEntity), damage);
-                    SoundUtils.serverPlaySoundAtEntity(entHit, MKUSounds.spell_earth_1.get(), cat);
+                    entHit.hurt(MKDamageSource.causeMeleeDamage(castingEntity.level(), getAbilityId(), castingEntity, castingEntity), damage);
+                    SoundUtils.serverPlaySoundAtEntity(entHit, MKUSounds.spell_earth_1.value(), cat);
                     break;
                 }
             }

@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 import java.util.function.Function;
 
 public class FuriousBroodingAbility extends MKAbility {
-    public static final ResourceLocation TICK_PARTICLES = new ResourceLocation(MKUltra.MODID, "furious_brooding_pulse");
+    public static final ResourceLocation TICK_PARTICLES = MKUltra.id("furious_brooding_pulse");
     protected final ResourceLocationAttribute tick_particles = new ResourceLocationAttribute("cast_particles", TICK_PARTICLES);
     protected final FloatAttribute baseValue = new FloatAttribute("baseValue", 2.0f);
     protected final FloatAttribute scaleValue = new FloatAttribute("scaleValue", 1.0f);
@@ -67,7 +67,7 @@ public class FuriousBroodingAbility extends MKAbility {
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_negative_effect_7.get();
+        return MKUSounds.spell_negative_effect_7.value();
     }
 
     public MKEffectBuilder<?> createFuriousBroodingEffect(IMKEntityData casterData, float level) {

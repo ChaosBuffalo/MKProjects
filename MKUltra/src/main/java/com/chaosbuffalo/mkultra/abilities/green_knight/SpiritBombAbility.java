@@ -30,9 +30,9 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class SpiritBombAbility extends ProjectileAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_casting");
-    public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_trail");
-    public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "spirit_bomb_detonate");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("spirit_bomb_casting");
+    public static final ResourceLocation TRAIL_PARTICLES = MKUltra.id("spirit_bomb_trail");
+    public static final ResourceLocation DETONATE_PARTICLES = MKUltra.id("spirit_bomb_detonate");
 
     public SpiritBombAbility() {
         super(MKAttributes.EVOCATION);
@@ -49,13 +49,13 @@ public class SpiritBombAbility extends ProjectileAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_holy.get();
+        return MKUSounds.casting_holy.value();
     }
 
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_magic_whoosh_1.get();
+        return MKUSounds.spell_magic_whoosh_1.value();
     }
 
     @Override
@@ -86,7 +86,7 @@ public class SpiritBombAbility extends ProjectileAbility {
                 .disableParticle()
                 .spawn();
         SoundSource cat = caster.getSoundSource();
-        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_magic_explosion.get(), cat);
+        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_magic_explosion.value(), cat);
         MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
         return true;
     }
@@ -104,7 +104,7 @@ public class SpiritBombAbility extends ProjectileAbility {
     @Override
     public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
         SoundSource cat = caster.getSoundSource();
-        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_thunder_3.get(), cat);
+        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_thunder_3.value(), cat);
         switch (result.getType()) {
             case BLOCK, MISS:
                 break;
@@ -122,7 +122,7 @@ public class SpiritBombAbility extends ProjectileAbility {
 
     @Override
     public AbilityProjectileEntity makeProjectile(IMKEntityData data, AbilityContext context) {
-        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level);
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level());
         projectile.setAbility(() -> this);
         projectile.setTrailAnimation(trailParticles.getValue());
         projectile.setItem(new ItemStack(MKUItems.spiritBombProjectileItem.get()));

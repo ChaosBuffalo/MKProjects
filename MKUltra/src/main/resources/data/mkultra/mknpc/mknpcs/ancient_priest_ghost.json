@@ -4,7 +4,7 @@
   "options": {
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 100.0
@@ -21,16 +21,13 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "chest": [
           {
             "dropChance": 0.05,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_priest_chestplate",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_priest_chestplate"
             },
             "weight": 1.0
           }
@@ -39,11 +36,8 @@
           {
             "dropChance": 0.05,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_priest_boots",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_priest_boots"
             },
             "weight": 1.0
           }
@@ -52,11 +46,8 @@
           {
             "dropChance": 0.05,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_priest_helmet",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_priest_helmet"
             },
             "weight": 1.0
           }
@@ -65,11 +56,8 @@
           {
             "dropChance": 0.05,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_priest_leggings",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_priest_leggings"
             },
             "weight": 1.0
           }
@@ -78,7 +66,7 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkfaction:undead"
+      "factionId": "mkfaction:undead"
     },
     "mknpc:ghost": {
       "type": "mknpc:ghost",
@@ -88,15 +76,15 @@
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 1.0
+      "scale": 1.0
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "An Ancient Priest"
+      "name": "An Ancient Priest"
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "ghost_clean"
+      "renderGroup": "ghost_clean"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

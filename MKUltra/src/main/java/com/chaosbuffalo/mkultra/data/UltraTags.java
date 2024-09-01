@@ -20,7 +20,7 @@ public class UltraTags {
         public static final TagKey<Biome> HAS_DECAYING_CHURCH = tag("has_decaying_church");
 
         private static TagKey<Biome> tag(String name) {
-            return TagKey.create(Registries.BIOME, new ResourceLocation(MKUltra.MODID, name));
+            return TagKey.create(Registries.BIOME, MKUltra.id(name));
         }
     }
 
@@ -35,7 +35,7 @@ public class UltraTags {
         public static final TagKey<Structure> DECAYING_CHURCH = tag("decaying_church");
 
         private static TagKey<Structure> tag(String name) {
-            return TagKey.create(Registries.STRUCTURE, new ResourceLocation(MKUltra.MODID, name));
+            return TagKey.create(Registries.STRUCTURE, MKUltra.id(name));
         }
     }
 }

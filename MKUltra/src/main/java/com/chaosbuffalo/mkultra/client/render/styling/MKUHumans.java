@@ -9,26 +9,17 @@ import net.minecraft.resources.ResourceLocation;
 
 public class MKUHumans {
 
-    public static final ResourceLocation HUMAN_SKIN_1 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/humans/human_skin_1.png");
-    public static final ResourceLocation HUMAN_SKIN_2 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/humans/human_skin_2.png");
-    public static final ResourceLocation HUMAN_HAIR_1 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/humans/human_hair_1.png");
-    public static final ResourceLocation HUMAN_HAIR_2 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/humans/human_hair_2.png");
-    public static final ResourceLocation HUMAN_HAIR_3 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/humans/human_hair_3.png");
+    public static final ResourceLocation HUMAN_SKIN_1 = MKUltra.id("textures/entity/humans/human_skin_1.png");
+    public static final ResourceLocation HUMAN_SKIN_2 = MKUltra.id("textures/entity/humans/human_skin_2.png");
+    public static final ResourceLocation HUMAN_HAIR_1 = MKUltra.id("textures/entity/humans/human_hair_1.png");
+    public static final ResourceLocation HUMAN_HAIR_2 = MKUltra.id("textures/entity/humans/human_hair_2.png");
+    public static final ResourceLocation HUMAN_HAIR_3 = MKUltra.id("textures/entity/humans/human_hair_3.png");
 
-    public static final ResourceLocation PALE_HUMAN_SKIN_1 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/humans/pale_skin_1.png");
+    public static final ResourceLocation PALE_HUMAN_SKIN_1 = MKUltra.id("textures/entity/humans/pale_skin_1.png");
 
-    public static final ResourceLocation GHOST_SKIN_1 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/humans/ghost_skin_1.png");
-    public static final ResourceLocation GHOST_HAIR_1 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/humans/ghost_hair_1.png");
-    public static final ResourceLocation GHOST_HAIR_2 = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/humans/ghost_hair_2.png");
+    public static final ResourceLocation GHOST_SKIN_1 = MKUltra.id("textures/entity/humans/ghost_skin_1.png");
+    public static final ResourceLocation GHOST_HAIR_1 = MKUltra.id("textures/entity/humans/ghost_hair_1.png");
+    public static final ResourceLocation GHOST_HAIR_2 = MKUltra.id("textures/entity/humans/ghost_hair_2.png");
 
     public static final String TWO_LAYER_CLOTHES_SHORT_HAIR_NAME = "two_layer_clothes_short_hair";
     public static final ModelStyle TWO_LAYER_CLOTHES_SHORT_HAIR = new ModelStyle(TWO_LAYER_CLOTHES_SHORT_HAIR_NAME,

@@ -8,8 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class MKUGolems {
 
-    public static final ResourceLocation NECROTIDE_GOLEM = new ResourceLocation(MKUltra.MODID,
-            "textures/entity/golem/necrotide_golem.png");
+    public static final ResourceLocation NECROTIDE_GOLEM = MKUltra.id("textures/entity/golem/necrotide_golem.png");
 
     public static final String BASIC_GOLEM_NAME = "basic_golem";
     public static final ModelStyle GOLEM_STYLE = new ModelStyle(BASIC_GOLEM_NAME, false, false);

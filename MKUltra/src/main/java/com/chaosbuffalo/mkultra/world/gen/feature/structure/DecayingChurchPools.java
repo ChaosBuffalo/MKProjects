@@ -8,7 +8,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.Pools;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -16,13 +16,13 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public class DecayingChurchPools {
 
-    private static final ResourceLocation BASE_1 = new ResourceLocation(MKUltra.MODID, "decaying_church/base_1");
-    private static final ResourceLocation HALLWAY_1 = new ResourceLocation(MKUltra.MODID, "decaying_church/hallway_1");
-    private static final ResourceLocation HALLWAY_2 = new ResourceLocation(MKUltra.MODID, "decaying_church/hallway_2");
-    private static final ResourceLocation LANDING_1 = new ResourceLocation(MKUltra.MODID, "decaying_church/landing_1");
-    private static final ResourceLocation ROOM_CELLS = new ResourceLocation(MKUltra.MODID, "decaying_church/room_cells");
-    private static final ResourceLocation ROOM_LAVA = new ResourceLocation(MKUltra.MODID, "decaying_church/room_lava");
-    private static final ResourceLocation STAIRS_DOWN_1 = new ResourceLocation(MKUltra.MODID, "decaying_church/stairs_down_1");
+    private static final ResourceLocation BASE_1 = MKUltra.id("decaying_church/base_1");
+    private static final ResourceLocation HALLWAY_1 = MKUltra.id("decaying_church/hallway_1");
+    private static final ResourceLocation HALLWAY_2 = MKUltra.id("decaying_church/hallway_2");
+    private static final ResourceLocation LANDING_1 = MKUltra.id("decaying_church/landing_1");
+    private static final ResourceLocation ROOM_CELLS = MKUltra.id("decaying_church/room_cells");
+    private static final ResourceLocation ROOM_LAVA = MKUltra.id("decaying_church/room_lava");
+    private static final ResourceLocation STAIRS_DOWN_1 = MKUltra.id("decaying_church/stairs_down_1");
 
     public static ResourceKey<StructureTemplatePool> BASE =
             UltraStructurePools.createKey("decaying_church/base");
@@ -35,7 +35,7 @@ public class DecayingChurchPools {
     public static ResourceKey<StructureTemplatePool> STAIRS_LANDING =
             UltraStructurePools.createKey("decaying_church/stairs_landing");
 
-    public static void registerPools(BootstapContext<StructureTemplatePool> pContext) {
+    public static void registerPools(BootstrapContext<StructureTemplatePool> pContext) {
         HolderGetter<StructureTemplatePool> holderGetter = pContext.lookup(Registries.TEMPLATE_POOL);
         Holder<StructureTemplatePool> empty = holderGetter.getOrThrow(Pools.EMPTY);
         pContext.register(BASE, new StructureTemplatePool(empty,

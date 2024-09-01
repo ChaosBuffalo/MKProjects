@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 
 
 public class WhirlwindBladesAbility extends MKAbility {
-    public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "whirlwind_blades_pulse");
+    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("whirlwind_blades_pulse");
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
     protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
     protected final FloatAttribute base = new FloatAttribute("base", 2.0f);
@@ -96,7 +96,7 @@ public class WhirlwindBladesAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.spell_whirlwind_1.get();
+        return MKUSounds.spell_whirlwind_1.value();
     }
 
     @Nullable
@@ -123,7 +123,7 @@ public class WhirlwindBladesAbility extends MKAbility {
             MKEffectBuilder<?> particles = MKParticleEffect.from(castingEntity,
                             cast_particles.getValue(), true, new Vec3(0.0, 1.0, 0.0))
                     .ability(this);
-            MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_2.get(), castingEntity.getSoundSource())
+            MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_2.value(), castingEntity.getSoundSource())
                     .ability(this);
 
             AreaEffectBuilder.createOnCaster(castingEntity)

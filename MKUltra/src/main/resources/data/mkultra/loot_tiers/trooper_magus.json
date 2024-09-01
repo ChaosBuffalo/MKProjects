@@ -15,23 +15,21 @@
                   "minValue": 0.25,
                   "modifier": {
                     "amount": 0.25,
-                    "name": "mkultra:trooper_magus",
-                    "operation": 0
+                    "id": "mkultra:trooper_magus",
+                    "operation": "add_value"
                   }
                 }
               ]
             },
             {
               "type": "mkweapons:name",
-              "name": {
-                "text": "Earring of Quickening Thoughts"
-              }
+              "name": "Earring of Quickening Thoughts"
             }
           ],
           "potentialItems": [
             {
               "item": {
-                "Count": 1,
+                "count": 1,
                 "id": "mkweapons:silver_earring"
               }
             }
@@ -66,23 +64,21 @@
                   "minValue": 4.0,
                   "modifier": {
                     "amount": 4.0,
-                    "name": "mkultra:trooper_magus",
-                    "operation": 0
+                    "id": "mkultra:trooper_magus",
+                    "operation": "add_value"
                   }
                 }
               ]
             },
             {
               "type": "mkweapons:name",
-              "name": {
-                "text": "Ring of Minor Mana"
-              }
+              "name": "Ring of Minor Mana"
             }
           ],
           "potentialItems": [
             {
               "item": {
-                "Count": 1,
+                "count": 1,
                 "id": "mkweapons:silver_ring"
               }
             }

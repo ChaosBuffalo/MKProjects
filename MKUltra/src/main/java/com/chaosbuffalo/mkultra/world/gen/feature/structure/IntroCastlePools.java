@@ -8,7 +8,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.Pools;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -26,12 +26,12 @@ public class IntroCastlePools {
         private static final ResourceLocation CASTLE_BASE = template("intro_castle/castle_base");
 
         private static ResourceLocation template(String name) {
-            return new ResourceLocation(MKUltra.MODID, name);
+            return MKUltra.id(name);
         }
     }
 
 
-    public static void registerPools(BootstapContext<StructureTemplatePool> pContext) {
+    public static void registerPools(BootstrapContext<StructureTemplatePool> pContext) {
         HolderGetter<StructureTemplatePool> holderGetter = pContext.lookup(Registries.TEMPLATE_POOL);
         Holder<StructureTemplatePool> empty = holderGetter.getOrThrow(Pools.EMPTY);
 

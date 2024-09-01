@@ -24,8 +24,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class SmiteAbility extends MKAbility {
-    protected final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "smite_casting");
-    protected final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "smite_cast");
+    protected final ResourceLocation CASTING_PARTICLES = MKUltra.id("smite_casting");
+    protected final ResourceLocation CAST_PARTICLES = MKUltra.id("smite_cast");
     protected final FloatAttribute base = new FloatAttribute("base", 5.0f);
     protected final FloatAttribute scale = new FloatAttribute("scale", 5.0f);
     protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
@@ -67,12 +67,12 @@ public class SmiteAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_shadow.get();
+        return MKUSounds.casting_shadow.value();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_magic_whoosh_2.get();
+        return MKUSounds.spell_magic_whoosh_2.value();
     }
 
     @Override
@@ -95,7 +95,7 @@ public class SmiteAbility extends MKAbility {
                 targetData.getEffects().addEffect(damage);
                 targetData.getEffects().addEffect(stun);
             });
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_holy_2.get(), targetEntity.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_holy_2.value(), targetEntity.getSoundSource());
             MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
         });
     }

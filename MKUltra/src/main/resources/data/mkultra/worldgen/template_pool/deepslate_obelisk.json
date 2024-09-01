@@ -5,6 +5,7 @@
         "bWaterLog": true,
         "element_type": "mknpc:mk_single_jigsaw",
         "location": "mkultra:deepslate_obelisk",
+        "override_liquid_settings": "apply_waterlogging",
         "processors": {
           "processors": []
         },

@@ -16,7 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
 import javax.annotation.Nullable;
 
 public class WrathBeamFlurryAbility extends PositionFlurryAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "flame_wave_casting");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("flame_wave_casting");
 
     public WrathBeamFlurryAbility() {
         super(MKUAbilities.WRATH_BEAM);
@@ -41,7 +41,7 @@ public class WrathBeamFlurryAbility extends PositionFlurryAbility {
     @Nullable
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.hostile_casting_fire.get();
+        return MKUSounds.hostile_casting_fire.value();
     }
 
     @Nullable

@@ -8,7 +8,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.Pools;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -22,16 +22,16 @@ public class NecrotideAlterPools {
             UltraStructurePools.createKey("necrotide_alter/towers");
 
     private static class Templates {
-        private static final ResourceLocation BASE_NAME = new ResourceLocation(MKUltra.MODID, "necrotide_alter/base");
-        private static final ResourceLocation TOWER_LEFT = new ResourceLocation(MKUltra.MODID, "necrotide_alter/tower_left");
-        private static final ResourceLocation TOWER_RIGHT = new ResourceLocation(MKUltra.MODID, "necrotide_alter/tower_right");
+        private static final ResourceLocation BASE_NAME = MKUltra.id("necrotide_alter/base");
+        private static final ResourceLocation TOWER_LEFT = MKUltra.id("necrotide_alter/tower_left");
+        private static final ResourceLocation TOWER_RIGHT = MKUltra.id("necrotide_alter/tower_right");
     }
 
-    public static void register(BootstapContext<StructureTemplatePool> pContext, String pName, StructureTemplatePool pValue) {
+    public static void register(BootstrapContext<StructureTemplatePool> pContext, String pName, StructureTemplatePool pValue) {
         pContext.register(UltraStructurePools.createKey(pName), pValue);
     }
 
-    public static void registerPools(BootstapContext<StructureTemplatePool> pContext) {
+    public static void registerPools(BootstrapContext<StructureTemplatePool> pContext) {
         HolderGetter<StructureTemplatePool> holderGetter = pContext.lookup(Registries.TEMPLATE_POOL);
         Holder<StructureTemplatePool> empty = holderGetter.getOrThrow(Pools.EMPTY);
 

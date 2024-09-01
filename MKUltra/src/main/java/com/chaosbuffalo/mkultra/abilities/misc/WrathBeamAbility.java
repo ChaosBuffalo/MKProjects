@@ -29,9 +29,9 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class WrathBeamAbility extends PositionTargetingAbility {
-    private static final ResourceLocation PULSE_PARTICLES = new ResourceLocation(MKUltra.MODID, "wrath_beam_pulse");
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "flame_wave_casting");
-    private static final ResourceLocation WAIT_PARTICLES = new ResourceLocation(MKUltra.MODID, "wrath_beam_wait");
+    private static final ResourceLocation PULSE_PARTICLES = MKUltra.id("wrath_beam_pulse");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("flame_wave_casting");
+    private static final ResourceLocation WAIT_PARTICLES = MKUltra.id("wrath_beam_wait");
 
     protected final FloatAttribute base = new FloatAttribute("base", 5.0f);
     protected final FloatAttribute scale = new FloatAttribute("scale", 5.0f);
@@ -75,7 +75,7 @@ public class WrathBeamAbility extends PositionTargetingAbility {
     @Nullable
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.hostile_casting_fire.get();
+        return MKUSounds.hostile_casting_fire.value();
     }
 
     @Override
@@ -90,7 +90,7 @@ public class WrathBeamAbility extends PositionTargetingAbility {
                 .ability(this)
                 .timed(breakDuration.value())
                 .skillLevel(level);
-        MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_fire_7.get(), castingEntity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_fire_7.value(), castingEntity.getSoundSource())
                 .ability(this);
         EntityEffectBuilder.LineEffectBuilder lineBuilder = EntityEffectBuilder.createLineEffect(castingEntity,
                 position.subtract(0.0, 0.1, 0.0),
@@ -104,7 +104,7 @@ public class WrathBeamAbility extends PositionTargetingAbility {
                 .waitTime(duration.value() / 2)
                 .tickRate(tickRate.value());
         SoundUtils.serverPlaySoundFromEntity(position.x(), position.y(), position.z(),
-                MKUSounds.spell_dark_13.get(), castingEntity.getSoundSource(), 1.0f, 1.0f, castingEntity);
+                MKUSounds.spell_dark_13.value(), castingEntity.getSoundSource(), 1.0f, 1.0f, castingEntity);
         lineBuilder.spawn();
     }
 }

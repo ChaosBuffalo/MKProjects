@@ -5,6 +5,7 @@
         "bWaterLog": false,
         "element_type": "mknpc:mk_single_jigsaw",
         "location": "mkultra:decaying_church/room_cells",
+        "override_liquid_settings": "ignore_waterlogging",
         "processors": {
           "processors": []
         },
@@ -17,6 +18,7 @@
         "bWaterLog": false,
         "element_type": "mknpc:mk_single_jigsaw",
         "location": "mkultra:decaying_church/room_lava",
+        "override_liquid_settings": "ignore_waterlogging",
         "processors": {
           "processors": []
         },

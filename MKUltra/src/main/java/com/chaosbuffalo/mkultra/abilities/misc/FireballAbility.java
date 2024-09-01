@@ -31,10 +31,10 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class FireballAbility extends ProjectileAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_casting");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("fireball_casting");
     protected final FloatAttribute radius = new FloatAttribute("explosionRadius", 2.0f);
-    public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_detonate");
-    public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "fireball_trail");
+    public static final ResourceLocation DETONATE_PARTICLES = MKUltra.id("fireball_detonate");
+    public static final ResourceLocation TRAIL_PARTICLES = MKUltra.id("fireball_trail");
 
     public FireballAbility() {
         super(MKAttributes.EVOCATION);
@@ -64,7 +64,7 @@ public class FireballAbility extends ProjectileAbility {
     @Override
     public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
-        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_fire_4.get(), cat);
+        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_fire_4.value(), cat);
         MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
         MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(caster, CoreDamageTypes.FireDamage.get(),
                         getBaseDamage(),
@@ -95,7 +95,7 @@ public class FireballAbility extends ProjectileAbility {
 
     @Override
     public AbilityProjectileEntity makeProjectile(IMKEntityData data, AbilityContext context) {
-        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level);
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level());
         projectile.setAbility(() -> this);
         projectile.setTrailAnimation(trailParticles.getValue());
         projectile.setItem(new ItemStack(MKUItems.fireballProjectileItem.get()));
@@ -106,12 +106,12 @@ public class FireballAbility extends ProjectileAbility {
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_fire_2.get();
+        return MKUSounds.spell_fire_2.value();
     }
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.hostile_casting_fire.get();
+        return MKUSounds.hostile_casting_fire.value();
     }
 
 }

@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:shadow_bolt",
           "chance": 1.0,
@@ -29,7 +29,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 125.0
@@ -46,7 +46,7 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkultra:necrotide_cultists"
+      "factionId": "mkultra:necrotide_cultists"
     },
     "mknpc:faction_battlecry": {
       "type": "mknpc:faction_battlecry"
@@ -57,11 +57,11 @@
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 1.05
+      "scale": 1.05
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "necrotide_cultist_skull_1"
+      "renderGroup": "necrotide_cultist_skull_1"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

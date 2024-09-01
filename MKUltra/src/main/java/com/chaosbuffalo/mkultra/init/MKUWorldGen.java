@@ -6,9 +6,9 @@ import com.chaosbuffalo.mkultra.world.gen.feature.structure.StaticPlacement;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 
 public class MKUWorldGen {
@@ -19,7 +19,7 @@ public class MKUWorldGen {
     public static final DeferredRegister<StructurePlacementType<?>> STRUCTURE_PLACEMENT_REGISTRY = DeferredRegister.create(
             Registries.STRUCTURE_PLACEMENT, MKUltra.MODID);
 
-    public static final RegistryObject<StructurePlacementType<StaticPlacement>> STATIC_PLACEMENT =
+    public static final DeferredHolder<StructurePlacementType<?>, StructurePlacementType<StaticPlacement>> STATIC_PLACEMENT =
             STRUCTURE_PLACEMENT_REGISTRY.register("static_placement",
                     () -> () -> StaticPlacement.CODEC);
 

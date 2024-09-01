@@ -31,11 +31,11 @@ public class FrozenGraspEffect extends MKEffect {
     public FrozenGraspEffect() {
         super(MobEffectCategory.HARMFUL);
         addAttribute(Attributes.MOVEMENT_SPEED, moveUUID, -0.05, -0.05,
-                AttributeModifier.Operation.MULTIPLY_TOTAL, MKAttributes.NECROMANCY);
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, MKAttributes.NECROMANCY);
         addAttribute(MKAttributes.CASTING_SPEED, castingUUID, -0.05, -0.05,
-                AttributeModifier.Operation.ADDITION, MKAttributes.NECROMANCY);
+                AttributeModifier.Operation.ADD_VALUE, MKAttributes.NECROMANCY);
         addAttribute(Attributes.ATTACK_SPEED, attackUUID, -0.05, -0.05,
-                AttributeModifier.Operation.MULTIPLY_TOTAL, MKAttributes.NECROMANCY);
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, MKAttributes.NECROMANCY);
     }
 
     @Override

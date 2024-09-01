@@ -17,8 +17,8 @@ public class GreenSoulEffect extends MKEffect {
 
     public GreenSoulEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        addAttribute(Attributes.MAX_HEALTH, healthId, 40, AttributeModifier.Operation.ADDITION);
-        addAttribute(Attributes.ARMOR, armorId, 4, 2, AttributeModifier.Operation.ADDITION, MKAttributes.RESTORATION);
+        addAttribute(Attributes.MAX_HEALTH, healthId, 40, AttributeModifier.Operation.ADD_VALUE);
+        addAttribute(Attributes.ARMOR, armorId, 4, 2, AttributeModifier.Operation.ADD_VALUE, MKAttributes.RESTORATION);
     }
 
     @Override

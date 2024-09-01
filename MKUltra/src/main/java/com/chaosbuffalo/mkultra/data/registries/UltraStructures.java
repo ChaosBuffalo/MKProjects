@@ -10,7 +10,7 @@ import com.chaosbuffalo.mkultra.world.gen.feature.structure.*;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.random.WeightedRandomList;
@@ -39,10 +39,10 @@ public class UltraStructures {
     public static ResourceKey<Structure> DECAYING_CHURCH = createKey("decaying_church");
 
     public static ResourceKey<Structure> createKey(String name) {
-        return ResourceKey.create(Registries.STRUCTURE, new ResourceLocation(MKUltra.MODID, name));
+        return ResourceKey.create(Registries.STRUCTURE, MKUltra.id(name));
     }
 
-    public static void bootstrap(BootstapContext<Structure> context) {
+    public static void bootstrap(BootstrapContext<Structure> context) {
         HolderGetter<Biome> biomes = context.lookup(Registries.BIOME);
         HolderGetter<StructureTemplatePool> templates = context.lookup(Registries.TEMPLATE_POOL);
 
@@ -64,9 +64,9 @@ public class UltraStructures {
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE),
                         templates.getOrThrow(NecrotideAlterPools.BASE))
                         .addEvent(new SpawnNpcDefinitionEvent("summon_golem",
-                                new ResourceLocation(MKUltra.MODID, "necrotide_golem"),
+                                MKUltra.id("necrotide_golem"),
                                 "golem_spawn", "golem_look", MKEntity.NonCombatMoveType.STATIONARY)
-                                .addNotableDeadCondition(new ResourceLocation(MKUltra.MODID, "skeletal_lock"), true)
+                                .addNotableDeadCondition(MKUltra.id("skeletal_lock"), true)
                                 .addTrigger(StructureEvent.EventTrigger.ON_DEATH)
                                 .addTrigger(StructureEvent.EventTrigger.ON_ACTIVATE)
                         ).build());

@@ -11,40 +11,34 @@ import java.util.Map;
 
 public class MKUPiglins {
 
-    public static final ResourceLocation VANILLA_ZOMBIFIED_PIGLIN_TEXTURE = new ResourceLocation(
+    public static final ResourceLocation VANILLA_ZOMBIFIED_PIGLIN_TEXTURE = ResourceLocation.withDefaultNamespace(
             "textures/entity/piglin/zombified_piglin.png");
 
-    public static final ResourceLocation SKELETAL_ZOMBIFIED_PIGLIN_TEXTURE = new ResourceLocation(MKUltra.MODID,
+    public static final ResourceLocation SKELETAL_ZOMBIFIED_PIGLIN_TEXTURE = MKUltra.id(
             "textures/entity/piglin/zombified_piglin_skeletal_face.png");
 
-    public static final ResourceLocation IMPERIAL_TROOPER_ARMOR = new ResourceLocation(
-            MKUltra.MODID,
+    public static final ResourceLocation IMPERIAL_TROOPER_ARMOR = MKUltra.id(
             "textures/entity/piglin/imperial_armor.png"
     );
 
-    public static final ResourceLocation IMPERIAL_TROOPER_ARMOR_NO_HELMET = new ResourceLocation(
-            MKUltra.MODID,
+    public static final ResourceLocation IMPERIAL_TROOPER_ARMOR_NO_HELMET = MKUltra.id(
             "textures/entity/piglin/imperial_armor_no_helmet.png"
     );
 
-    public static final ResourceLocation IMPERIAL_TROOPER_ARMOR_DAMAGED = new ResourceLocation(
-            MKUltra.MODID,
+    public static final ResourceLocation IMPERIAL_TROOPER_ARMOR_DAMAGED = MKUltra.id(
             "textures/entity/piglin/imperial_trooper_damaged.png"
     );
 
-    public static final ResourceLocation IMPERIAL_MAGUS_ARMOR_NO_HELMET = new ResourceLocation(
-            MKUltra.MODID,
+    public static final ResourceLocation IMPERIAL_MAGUS_ARMOR_NO_HELMET = MKUltra.id(
             "textures/entity/piglin/imperial_magus_armor.png"
     );
 
 
-    public static final ResourceLocation IMPERIAL_MAGUS_ARMOR = new ResourceLocation(
-            MKUltra.MODID,
+    public static final ResourceLocation IMPERIAL_MAGUS_ARMOR = MKUltra.id(
             "textures/entity/piglin/imperial_magus_armor_no_helmet.png"
     );
 
-    public static final ResourceLocation IMPERIAL_MAGUS_ARMOR_DAMAGED = new ResourceLocation(
-            MKUltra.MODID,
+    public static final ResourceLocation IMPERIAL_MAGUS_ARMOR_DAMAGED = MKUltra.id(
             "textures/entity/piglin/imperial_magus_armor_damaged.png"
     );
 

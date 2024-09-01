@@ -15,23 +15,21 @@
                   "minValue": 0.05,
                   "modifier": {
                     "amount": 0.05,
-                    "name": "mkultra:hyborean_sorcerer_queen",
-                    "operation": 0
+                    "id": "mkultra:hyborean_sorcerer_queen",
+                    "operation": "add_value"
                   }
                 }
               ]
             },
             {
               "type": "mkweapons:name",
-              "name": {
-                "text": "Earring of Power"
-              }
+              "name": "Earring of Power"
             }
           ],
           "potentialItems": [
             {
               "item": {
-                "Count": 1,
+                "count": 1,
                 "id": "mkweapons:silver_earring"
               }
             }
@@ -59,15 +57,11 @@
           "options": [
             {
               "type": "mkweapons:option.ability",
-              "value": {
-                "ability": "mkultra:flame_wave"
-              }
+              "ability": "mkultra:flame_wave"
             },
             {
               "type": "mkweapons:name",
-              "name": {
-                "text": "Staff of Flames"
-              }
+              "name": "Staff of Flames"
             },
             {
               "type": "mkweapons:attributes",
@@ -78,8 +72,8 @@
                   "minValue": 5.0,
                   "modifier": {
                     "amount": 5.0,
-                    "name": "mkultra:hyborean_sorcerer_queen",
-                    "operation": 0
+                    "id": "mkultra:hyborean_sorcerer_queen",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -93,8 +87,8 @@
                   "minValue": 5.0,
                   "modifier": {
                     "amount": 5.0,
-                    "name": "mkultra:hyborean_sorcerer_queen",
-                    "operation": 0
+                    "id": "mkultra:hyborean_sorcerer_queen",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -108,8 +102,8 @@
                   "minValue": 0.5,
                   "modifier": {
                     "amount": 0.5,
-                    "name": "mkultra:hyborean_sorcerer_queen",
-                    "operation": 0
+                    "id": "mkultra:hyborean_sorcerer_queen",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -123,8 +117,8 @@
                   "minValue": 2.0,
                   "modifier": {
                     "amount": 2.0,
-                    "name": "mkultra:hyborean_sorcerer_queen",
-                    "operation": 0
+                    "id": "mkultra:hyborean_sorcerer_queen",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -138,8 +132,8 @@
                   "minValue": 2.0,
                   "modifier": {
                     "amount": 2.0,
-                    "name": "mkultra:hyborean_sorcerer_queen",
-                    "operation": 0
+                    "id": "mkultra:hyborean_sorcerer_queen",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -153,8 +147,8 @@
                   "minValue": 2.0,
                   "modifier": {
                     "amount": 2.0,
-                    "name": "mkultra:hyborean_sorcerer_queen",
-                    "operation": 0
+                    "id": "mkultra:hyborean_sorcerer_queen",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -163,11 +157,8 @@
           "potentialItems": [
             {
               "item": {
-                "Count": 1,
-                "id": "mkultra:staff_bronze",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkultra:staff_bronze"
               }
             }
           ],

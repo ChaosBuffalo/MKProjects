@@ -30,10 +30,10 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class DrownAbility extends ProjectileAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "drown_casting");
-    public static final ResourceLocation TICK_PARTICLES = new ResourceLocation(MKUltra.MODID, "drown_effect");
-    public static final ResourceLocation TRAIL_PARTICLES = new ResourceLocation(MKUltra.MODID, "drown_trail");
-    public static final ResourceLocation DETONATE_PARTICLES = new ResourceLocation(MKUltra.MODID, "drown_detonate");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("drown_casting");
+    public static final ResourceLocation TICK_PARTICLES = MKUltra.id("drown_effect");
+    public static final ResourceLocation TRAIL_PARTICLES = MKUltra.id("drown_trail");
+    public static final ResourceLocation DETONATE_PARTICLES = MKUltra.id("drown_detonate");
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 10);
     protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 2);
     protected final ResourceLocationAttribute tick_particles = new ResourceLocationAttribute("tick_particles", TICK_PARTICLES);
@@ -77,7 +77,7 @@ public class DrownAbility extends ProjectileAbility {
     @Override
     public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
-        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_water_5.get(), cat);
+        SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_water_5.value(), cat);
         MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
         if (result.getType().equals(HitResult.Type.ENTITY)) {
             EntityHitResult entityTrace = (EntityHitResult) result;
@@ -93,7 +93,7 @@ public class DrownAbility extends ProjectileAbility {
 
     @Override
     public AbilityProjectileEntity makeProjectile(IMKEntityData data, AbilityContext context) {
-        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level);
+        AbilityProjectileEntity projectile = new AbilityProjectileEntity(CoreEntities.ABILITY_PROJECTILE_TYPE.get(), data.getEntity().level());
         projectile.setAbility(() -> this);
         projectile.setTrailAnimation(trailParticles.getValue());
         projectile.setItem(new ItemStack(MKUItems.drownProjectileItem.get()));
@@ -103,11 +103,11 @@ public class DrownAbility extends ProjectileAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_water.get();
+        return MKUSounds.casting_water.value();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_water_7.get();
+        return MKUSounds.spell_water_7.value();
     }
 }

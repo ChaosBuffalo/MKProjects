@@ -7,11 +7,12 @@
     }
   },
   "pattern": [
+    "I I",
     "III",
-    "I I"
+    "III"
   ],
   "result": {
-    "item": "mkultra:seawoven_helmet"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "mkultra:seawoven_chestplate"
+  }
 }

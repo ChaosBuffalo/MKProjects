@@ -7,11 +7,12 @@
     }
   },
   "pattern": [
+    "III",
     "I I",
     "I I"
   ],
   "result": {
-    "item": "mkultra:seawoven_boots"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "mkultra:seawoven_leggings"
+  }
 }

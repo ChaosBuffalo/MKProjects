@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:sever_tendon",
           "chance": 1.0,
@@ -19,7 +19,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 50.0
@@ -36,38 +36,29 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:longsword_stone",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:longsword_stone"
             },
             "weight": 1.0
           },
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:warhammer_stone",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:warhammer_stone"
             },
             "weight": 1.0
           },
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:mace_stone",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:mace_stone"
             },
             "weight": 1.0
           }
@@ -76,7 +67,7 @@
     },
     "mknpc:experience": {
       "type": "mknpc:experience",
-      "value": 10
+      "experience": 10
     },
     "mknpc:extra_loot": {
       "type": "mknpc:extra_loot",
@@ -92,23 +83,23 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkultra:imperial_dead"
+      "factionId": "mkultra:imperial_dead"
     },
     "mknpc:lunge_speed": {
       "type": "mknpc:lunge_speed",
-      "value": 0.35
+      "lungeSpeed": 0.35
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 1.1
+      "scale": 1.1
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Crumbling Trooper"
+      "name": "Crumbling Trooper"
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "zombie_pig_trooper"
+      "renderGroup": "zombie_pig_trooper"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

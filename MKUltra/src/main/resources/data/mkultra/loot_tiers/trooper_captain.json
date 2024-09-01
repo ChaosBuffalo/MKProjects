@@ -15,23 +15,21 @@
                   "minValue": 4.0,
                   "modifier": {
                     "amount": 4.0,
-                    "name": "mkultra:trooper_captain",
-                    "operation": 0
+                    "id": "mkultra:trooper_captain",
+                    "operation": "add_value"
                   }
                 }
               ]
             },
             {
               "type": "mkweapons:name",
-              "name": {
-                "text": "Earring of Minor Health"
-              }
+              "name": "Earring of Minor Health"
             }
           ],
           "potentialItems": [
             {
               "item": {
-                "Count": 1,
+                "count": 1,
                 "id": "mkweapons:gold_earring"
               }
             }
@@ -62,15 +60,13 @@
               "effects": [
                 {
                   "type": "mkweapons:weapon_effect.undead_damage",
-                  "value": 1.25
+                  "multiplier": 1.25
                 }
               ]
             },
             {
               "type": "mkweapons:name",
-              "name": {
-                "text": "Stinging Blade"
-              }
+              "name": "Stinging Blade"
             },
             {
               "type": "mkweapons:attributes",
@@ -81,8 +77,8 @@
                   "minValue": 2.0,
                   "modifier": {
                     "amount": 2.0,
-                    "name": "mkultra:trooper_captain",
-                    "operation": 0
+                    "id": "mkultra:trooper_captain",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -96,8 +92,8 @@
                   "minValue": 2.0,
                   "modifier": {
                     "amount": 2.0,
-                    "name": "mkultra:trooper_captain",
-                    "operation": 0
+                    "id": "mkultra:trooper_captain",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -111,8 +107,8 @@
                   "minValue": 0.25,
                   "modifier": {
                     "amount": 0.25,
-                    "name": "mkultra:trooper_captain",
-                    "operation": 0
+                    "id": "mkultra:trooper_captain",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -126,8 +122,8 @@
                   "minValue": 0.05,
                   "modifier": {
                     "amount": 0.05,
-                    "name": "mkultra:trooper_captain",
-                    "operation": 2
+                    "id": "mkultra:trooper_captain",
+                    "operation": "add_multiplied_total"
                   }
                 }
               ]
@@ -141,8 +137,8 @@
                   "minValue": 1.0,
                   "modifier": {
                     "amount": 1.0,
-                    "name": "mkultra:trooper_captain",
-                    "operation": 0
+                    "id": "mkultra:trooper_captain",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -156,8 +152,8 @@
                   "minValue": 1.0,
                   "modifier": {
                     "amount": 1.0,
-                    "name": "mkultra:trooper_captain",
-                    "operation": 0
+                    "id": "mkultra:trooper_captain",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -171,8 +167,8 @@
                   "minValue": 1.0,
                   "modifier": {
                     "amount": 1.0,
-                    "name": "mkultra:trooper_captain",
-                    "operation": 0
+                    "id": "mkultra:trooper_captain",
+                    "operation": "add_value"
                   }
                 }
               ]
@@ -181,11 +177,8 @@
           "potentialItems": [
             {
               "item": {
-                "Count": 1,
-                "id": "mkweapons:katana_iron",
-                "tag": {
-                  "Damage": 0
-                }
+                "count": 1,
+                "id": "mkweapons:katana_iron"
               }
             }
           ],

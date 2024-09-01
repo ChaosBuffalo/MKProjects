@@ -25,9 +25,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class EmberAbility extends MKAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "ember_casting");
-    public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "ember_cast");
-    public static final ResourceLocation BURN_PARTICLES = new ResourceLocation(MKUltra.MODID, "burn_tick");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("ember_casting");
+    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("ember_cast");
+    public static final ResourceLocation BURN_PARTICLES = MKUltra.id("burn_tick");
     protected final FloatAttribute base = new FloatAttribute("base", 8.0f);
     protected final FloatAttribute scale = new FloatAttribute("scale", 3.0f);
     protected final FloatAttribute baseDot = new FloatAttribute("baseBurnDamage", 2.0f);
@@ -88,12 +88,12 @@ public class EmberAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_fire.get();
+        return MKUSounds.casting_fire.value();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_cast_7.get();
+        return MKUSounds.spell_cast_7.value();
     }
 
     @Override
@@ -115,7 +115,7 @@ public class EmberAbility extends MKAbility {
             });
 
 
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_6.get(), targetEntity.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_6.value(), targetEntity.getSoundSource());
             MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
         });
     }

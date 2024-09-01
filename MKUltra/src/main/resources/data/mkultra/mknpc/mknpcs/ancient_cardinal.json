@@ -4,7 +4,7 @@
   "options": {
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 350.0
@@ -33,12 +33,12 @@
     },
     "mknpc:boss_stage": {
       "type": "mknpc:boss_stage",
-      "value": [
+      "stages": [
         {
           "options": [
             {
               "type": "mknpc:temp_abilities",
-              "value": [
+              "abilities": [
                 {
                   "abilityId": "mkultra:ability.holy_fire",
                   "chance": 1.0,
@@ -62,7 +62,7 @@
           "options": [
             {
               "type": "mknpc:temp_abilities",
-              "value": [
+              "abilities": [
                 {
                   "abilityId": "mkultra:ability.holy_fire_flurry",
                   "chance": 1.0,
@@ -99,16 +99,13 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "chest": [
           {
             "dropChance": 0.05,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_cardinal_chestplate",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_cardinal_chestplate"
             },
             "weight": 1.0
           }
@@ -117,11 +114,8 @@
           {
             "dropChance": 0.05,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_cardinal_boots",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_cardinal_boots"
             },
             "weight": 1.0
           }
@@ -130,11 +124,8 @@
           {
             "dropChance": 0.05,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_cardinal_helmet",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_cardinal_helmet"
             },
             "weight": 1.0
           }
@@ -143,11 +134,8 @@
           {
             "dropChance": 0.05,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_cardinal_leggings",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_cardinal_leggings"
             },
             "weight": 1.0
           }
@@ -156,11 +144,8 @@
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:warhammer_gold",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:warhammer_gold"
             },
             "weight": 1.0
           }
@@ -169,27 +154,27 @@
     },
     "mknpc:experience": {
       "type": "mknpc:experience",
-      "value": 75
+      "experience": 75
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkfaction:undead"
+      "factionId": "mkfaction:undead"
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 1.2
+      "scale": 1.2
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Ancient Cardinal"
+      "name": "Ancient Cardinal"
     },
     "mknpc:notable": {
       "type": "mknpc:notable",
-      "value": true
+      "isNotable": true
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "ghost_clean"
+      "renderGroup": "ghost_clean"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

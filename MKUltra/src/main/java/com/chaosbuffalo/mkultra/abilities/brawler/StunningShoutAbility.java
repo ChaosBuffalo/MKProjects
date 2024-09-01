@@ -35,8 +35,8 @@ import java.util.List;
 import java.util.function.Function;
 
 public class StunningShoutAbility extends MKAbility {
-    public static final ResourceLocation TICK_PARTICLES = new ResourceLocation(MKUltra.MODID, "stunning_shout_tick");
-    public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "stunning_shout_cast");
+    public static final ResourceLocation TICK_PARTICLES = MKUltra.id("stunning_shout_tick");
+    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("stunning_shout_cast");
     protected final FloatAttribute baseDamage = new FloatAttribute("baseDamage", 4.0f);
     protected final FloatAttribute scaleDamage = new FloatAttribute("scaleDamage", 2.0f);
     protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
@@ -85,7 +85,7 @@ public class StunningShoutAbility extends MKAbility {
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_shout_1.get();
+        return MKUSounds.spell_shout_1.value();
     }
 
     @Override

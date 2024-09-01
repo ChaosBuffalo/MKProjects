@@ -27,9 +27,9 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public class SeafuryAbility extends PositionTargetingAbility {
-    private static final ResourceLocation WAIT_PARTICLES = new ResourceLocation(MKUltra.MODID, "seafury_wait");
-    private static final ResourceLocation PULSE_PARTICLES = new ResourceLocation(MKUltra.MODID, "seafury_pulse");
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "seafury_casting");
+    private static final ResourceLocation WAIT_PARTICLES = MKUltra.id("seafury_wait");
+    private static final ResourceLocation PULSE_PARTICLES = MKUltra.id("seafury_pulse");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("seafury_casting");
 
     protected final ResourceLocationAttribute pulse_particles = new ResourceLocationAttribute("pulse_particles", PULSE_PARTICLES);
     protected final ResourceLocationAttribute wait_particles = new ResourceLocationAttribute("wait_particles", WAIT_PARTICLES);
@@ -97,10 +97,10 @@ public class SeafuryAbility extends PositionTargetingAbility {
                     .setPreDelay(delay)
                     .instant()
                     .waitTime(wait_time.value())
-                    .tickSound(MKUSounds.spell_water_1.get())
+                    .tickSound(MKUSounds.spell_water_1.value())
                     .tickRate(tickRate.value());
             SoundUtils.serverPlaySoundFromEntity(position.x(), position.y(), position.z(),
-                    MKUSounds.spell_water_2.get(),
+                    MKUSounds.spell_water_2.value(),
                     castingEntity.getSoundSource(), 1.0f, 1.0f, castingEntity);
             builder.spawn();
 
@@ -112,7 +112,7 @@ public class SeafuryAbility extends PositionTargetingAbility {
     @Nullable
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_shadow.get();
+        return MKUSounds.casting_shadow.value();
     }
 
     @Override

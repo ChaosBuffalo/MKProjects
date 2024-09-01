@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:heal",
           "chance": 1.0,
@@ -34,13 +34,13 @@
     },
     "mknpc:ability_trainings": {
       "type": "mknpc:ability_trainings",
-      "value": [
+      "abilities": [
         {
           "ability": "mkultra:heal",
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
-              "value": "mkultra:cleric.tier_1"
+              "entitlement": "mkultra:cleric.tier_1"
             }
           ]
         },
@@ -49,7 +49,7 @@
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
-              "value": "mkultra:cleric.tier_1"
+              "entitlement": "mkultra:cleric.tier_1"
             }
           ]
         },
@@ -58,7 +58,7 @@
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
-              "value": "mkultra:cleric.tier_2"
+              "entitlement": "mkultra:cleric.tier_2"
             }
           ]
         },
@@ -67,7 +67,7 @@
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
-              "value": "mkultra:cleric.tier_2"
+              "entitlement": "mkultra:cleric.tier_2"
             }
           ]
         },
@@ -76,7 +76,7 @@
           "requirements": [
             {
               "type": "mkcore:training_req.has_entitlement",
-              "value": "mkultra:cleric.tier_3"
+              "entitlement": "mkultra:cleric.tier_3"
             }
           ]
         }
@@ -84,7 +84,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 500.0
@@ -101,16 +101,13 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:mace_gold",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:mace_gold"
             },
             "weight": 1.0
           }
@@ -119,7 +116,7 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkultra:see_of_solang"
+      "factionId": "mkultra:see_of_solang"
     },
     "mknpc:faction_name": {
       "type": "mknpc:faction_name",
@@ -127,15 +124,15 @@
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 1.05
+      "scale": 1.05
     },
     "mknpc:notable": {
       "type": "mknpc:notable",
-      "value": true
+      "isNotable": true
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "cleric_1"
+      "renderGroup": "cleric_1"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

@@ -14,7 +14,7 @@ import com.chaosbuffalo.mkultra.init.MKUSounds;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 public class LifeSiphonEffect extends MKEffect {
 
@@ -25,7 +25,7 @@ public class LifeSiphonEffect extends MKEffect {
 
     public void onLivingKillEntity(LivingDeathEvent event, DamageSource source, IMKEntityData killerData) {
         LivingEntity living = killerData.getEntity();
-        SoundUtils.serverPlaySoundAtEntity(living, MKUSounds.spell_dark_5.get(), living.getSoundSource());
+        SoundUtils.serverPlaySoundAtEntity(living, MKUSounds.spell_dark_5.value(), living.getSoundSource());
         MKHealSource healSource = new MKHealSource(MKUAbilities.LIFE_SIPHON.getId(), living, living,
                 CoreDamageTypes.ShadowDamage.get(), MKUAbilities.LIFE_SIPHON.get().getModifierScaling());
         float amount = MKUAbilities.LIFE_SIPHON.get().getHealingValue(living);

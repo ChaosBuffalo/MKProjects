@@ -30,8 +30,8 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class FireArmorAbility extends MKAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "fire_armor_casting");
-    public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "fire_armor_cast");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("fire_armor_casting");
+    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("fire_armor_cast");
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 60);
     protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 15);
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
@@ -63,7 +63,7 @@ public class FireArmorAbility extends MKAbility {
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_buff_5.get();
+        return MKUSounds.spell_buff_5.value();
     }
 
     @Override
@@ -79,7 +79,7 @@ public class FireArmorAbility extends MKAbility {
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, cast_particles.getValue(), true, new Vec3(0.0, 1.0, 0.0))
                 .ability(this);
 
-        MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_fire_2.get(), entity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_fire_2.value(), entity.getSoundSource())
                 .ability(this);
 
         MKEffectBuilder<?> fireArmor = MKUEffects.FIRE_ARMOR.get().builder(entity)

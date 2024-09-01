@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 public class NpcItemChoice {
     public static final Codec<NpcItemChoice> CODEC = RecordCodecBuilder.<NpcItemChoice>mapCodec(builder -> {
         return builder.group(
-                CommonCodecs.ITEM_STACK.fieldOf("item").forGetter(i -> i.item),
+                ItemStack.CODEC.optionalFieldOf("item", ItemStack.EMPTY).forGetter(i -> i.item),
                 Codec.DOUBLE.fieldOf("weight").forGetter(i -> i.weight),
                 Codec.FLOAT.fieldOf("dropChance").forGetter(i -> i.dropChance)
         ).apply(builder, NpcItemChoice::new);
@@ -30,8 +30,9 @@ public class NpcItemChoice {
     }
 
     public void equip(LivingEntity entity, EquipmentSlot slot) {
-        entity.setItemSlot(slot, item.copy());
-        if (entity instanceof Mob mobEntity) {
+        ItemStack newItem = item.copy();
+        entity.setItemSlot(slot, newItem);
+        if (!newItem.isEmpty() && entity instanceof Mob mobEntity) {
             mobEntity.setDropChance(slot, dropChance);
         }
     }

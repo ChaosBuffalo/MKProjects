@@ -7,60 +7,59 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.entities.humans.HumanEntity;
 import com.chaosbuffalo.mkultra.entities.humans.HumanGhostEntity;
 import com.chaosbuffalo.mkultra.entities.orcs.OrcEntity;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 
-@Mod.EventBusSubscriber(modid = MKUltra.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKUltra.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class MKUEntities {
 
-    public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MKUltra.MODID);
+    public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, MKUltra.MODID);
 
-    public static final RegistryObject<EntityType<MKGolemEntity>> GOLEM_TYPE = REGISTRY.register("golem",
+    public static final DeferredHolder<EntityType<?>, EntityType<MKGolemEntity>> GOLEM_TYPE = REGISTRY.register("golem",
             () -> EntityType.Builder.of(MKGolemEntity::new, MobCategory.MONSTER)
                     .sized(EntityType.IRON_GOLEM.getWidth(), EntityType.IRON_GOLEM.getHeight())
-                    .build(new ResourceLocation(MKUltra.MODID, "golem").toString()));
+                    .build(MKUltra.id("golem").toString()));
 
 
     public static final String ORC_NAME = "orc";
-    public static final RegistryObject<EntityType<OrcEntity>> ORC_TYPE = REGISTRY.register(ORC_NAME,
+    public static final DeferredHolder<EntityType<?>, EntityType<OrcEntity>> ORC_TYPE = REGISTRY.register(ORC_NAME,
             () -> EntityType.Builder.of(OrcEntity::new, MobCategory.CREATURE)
                     .sized(EntityType.ZOMBIE.getWidth(), EntityType.ZOMBIE.getHeight())
-                    .build(new ResourceLocation(MKUltra.MODID, ORC_NAME).toString()));
+                    .build(MKUltra.id(ORC_NAME).toString()));
 
     public static final String HYBOREAN_SKELETON_NAME = "hyborean_skeleton";
-    public static RegistryObject<EntityType<MKSkeletonEntity>> HYBOREAN_SKELETON_TYPE = REGISTRY.register(HYBOREAN_SKELETON_NAME,
+    public static DeferredHolder<EntityType<?>, EntityType<MKSkeletonEntity>> HYBOREAN_SKELETON_TYPE = REGISTRY.register(HYBOREAN_SKELETON_NAME,
             () -> EntityType.Builder.of(MKSkeletonEntity::new, MobCategory.MONSTER)
                     .sized(EntityType.SKELETON.getWidth(), EntityType.SKELETON.getHeight())
-                    .build(new ResourceLocation(MKUltra.MODID, HYBOREAN_SKELETON_NAME).toString()));
+                    .build(MKUltra.id(HYBOREAN_SKELETON_NAME).toString()));
 
 
     public static final String ZOMBIFIED_PIGLIN_NAME = "zombified_piglin";
-    public static net.minecraftforge.registries.RegistryObject<EntityType<MKZombifiedPiglinEntity>> ZOMBIFIED_PIGLIN_TYPE = REGISTRY.register(ZOMBIFIED_PIGLIN_NAME,
+    public static DeferredHolder<EntityType<?>, EntityType<MKZombifiedPiglinEntity>> ZOMBIFIED_PIGLIN_TYPE = REGISTRY.register(ZOMBIFIED_PIGLIN_NAME,
             () -> EntityType.Builder.of(MKZombifiedPiglinEntity::new, MobCategory.MONSTER)
                     .sized(EntityType.ZOMBIFIED_PIGLIN.getWidth(), EntityType.ZOMBIFIED_PIGLIN.getHeight())
-                    .build(new ResourceLocation(MKUltra.MODID, ZOMBIFIED_PIGLIN_NAME).toString()));
+                    .build(MKUltra.id(ZOMBIFIED_PIGLIN_NAME).toString()));
 
     public static final String HUMAN_NAME = "human";
-    public static RegistryObject<EntityType<HumanEntity>> HUMAN_TYPE = REGISTRY.register(HUMAN_NAME,
+    public static DeferredHolder<EntityType<?>, EntityType<HumanEntity>> HUMAN_TYPE = REGISTRY.register(HUMAN_NAME,
             () -> EntityType.Builder.of(HumanEntity::new, MobCategory.CREATURE)
                     .sized(EntityType.ZOMBIE.getWidth(), EntityType.ZOMBIE.getHeight())
-                    .build(new ResourceLocation(MKUltra.MODID, HUMAN_NAME).toString()));
+                    .build(MKUltra.id(HUMAN_NAME).toString()));
 
     public static final String HUMAN_GHOST_NAME = "human_ghost";
-    public static RegistryObject<EntityType<HumanGhostEntity>> HUMAN_GHOST_TYPE = REGISTRY.register(HUMAN_GHOST_NAME,
+    public static DeferredHolder<EntityType<?>, EntityType<HumanGhostEntity>> HUMAN_GHOST_TYPE = REGISTRY.register(HUMAN_GHOST_NAME,
             () -> EntityType.Builder.of(HumanGhostEntity::new, MobCategory.MONSTER)
                     .sized(EntityType.ZOMBIE.getWidth(), EntityType.ZOMBIE.getHeight())
-                    .build(new ResourceLocation(MKUltra.MODID, HUMAN_GHOST_NAME).toString()));
+                    .build(MKUltra.id(HUMAN_GHOST_NAME).toString()));
 
 
 

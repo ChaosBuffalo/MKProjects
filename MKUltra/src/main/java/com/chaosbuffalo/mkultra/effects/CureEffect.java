@@ -37,7 +37,7 @@ public class CureEffect extends MKEffect {
                 if (count > activeEffect.getStackCount()) {
                     break;
                 }
-                if (!effect.getEffect().isBeneficial()) {
+                if (!effect.getEffect().value().isBeneficial()) {
                     toRemove.add(effect);
                     count++;
                 }

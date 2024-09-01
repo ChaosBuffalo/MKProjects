@@ -26,9 +26,9 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class NaturesRemedyAbility extends MKAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "natures_remedy_casting");
-    public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "natures_remedy_cast");
-    public static final ResourceLocation TICK_PARTICLES = new ResourceLocation(MKUltra.MODID, "natures_remedy_tick");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("natures_remedy_casting");
+    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("natures_remedy_cast");
+    public static final ResourceLocation TICK_PARTICLES = MKUltra.id("natures_remedy_tick");
     protected final FloatAttribute baseValue = new FloatAttribute("baseValue", 2.0f);
     protected final FloatAttribute scaleValue = new FloatAttribute("scaleValue", 1.0f);
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 4);
@@ -70,7 +70,7 @@ public class NaturesRemedyAbility extends MKAbility {
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_cast_5.get();
+        return MKUSounds.spell_cast_5.value();
     }
 
     public MKEffectBuilder<?> createNaturesRemedyEffect(IMKEntityData casterData, float level) {
@@ -91,7 +91,7 @@ public class NaturesRemedyAbility extends MKAbility {
 
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> targetData.getEffects().addEffect(heal));
 
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_heal_8.get(), targetEntity.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_heal_8.value(), targetEntity.getSoundSource());
             MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
         });
     }

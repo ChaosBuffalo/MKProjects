@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:skin_like_wood",
           "chance": 1.0,
@@ -19,7 +19,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 400.0
@@ -36,16 +36,13 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:warhammer_iron",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:warhammer_iron"
             },
             "weight": 1.0
           }
@@ -54,29 +51,29 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkultra:green_knights"
+      "factionId": "mkultra:green_knights"
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 1.5
+      "scale": 1.5
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Green Smith"
+      "name": "Green Smith"
     },
     "mknpc:notable": {
       "type": "mknpc:notable",
-      "value": true
+      "isNotable": true
     },
     "mknpc:offer_quests": {
       "type": "mknpc:offer_quests",
-      "value": [
+      "questIds": [
         "mkultra:trooper_armor"
       ]
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "green_smith"
+      "renderGroup": "green_smith"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

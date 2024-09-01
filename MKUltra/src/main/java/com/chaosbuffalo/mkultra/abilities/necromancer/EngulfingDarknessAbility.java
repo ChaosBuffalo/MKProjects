@@ -29,9 +29,9 @@ import net.minecraft.world.phys.Vec3;
 import java.util.function.Consumer;
 
 public class EngulfingDarknessAbility extends EntityTargetingAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_casting");
-    public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "engulfing_darkness_cast");
-    public static final ResourceLocation TICK_PARTICLES = new ResourceLocation(MKUltra.MODID, "engulfing_darkness_tick");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("shadow_bolt_casting");
+    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("engulfing_darkness_cast");
+    public static final ResourceLocation TICK_PARTICLES = MKUltra.id("engulfing_darkness_tick");
     protected final FloatAttribute baseDot = new FloatAttribute("base_dot_damage", 2.0f);
     protected final FloatAttribute scaleDot = new FloatAttribute("scale_dot_damage", 2.0f);
     protected final IntAttribute baseDuration = new IntAttribute("base_duration", 10);
@@ -100,12 +100,12 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.hostile_casting_shadow.get();
+        return MKUSounds.hostile_casting_shadow.value();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_dark_9.get();
+        return MKUSounds.spell_dark_9.value();
     }
 
     @Override
@@ -118,7 +118,7 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
         MKCore.getEntityData(target).ifPresent(targetData -> {
             targetData.getEffects().addEffect(dot);
         });
-        SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_dark_7.get(), target.getSoundSource());
+        SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_dark_7.value(), target.getSoundSource());
         MKParticles.spawn(target, new Vec3(0.0, 1.0, 0.0), castParticles.getValue());
     }
 }

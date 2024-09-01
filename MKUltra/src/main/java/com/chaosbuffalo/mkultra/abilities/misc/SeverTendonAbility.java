@@ -77,7 +77,7 @@ public class SeverTendonAbility extends MKAbility {
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_magic_whoosh_4.get();
+        return MKUSounds.spell_magic_whoosh_4.value();
     }
 
     @Override
@@ -102,7 +102,7 @@ public class SeverTendonAbility extends MKAbility {
                 targetData.getEffects().addEffect(severTendon);
             });
 
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_punch_6.get(), targetEntity.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_punch_6.value(), targetEntity.getSoundSource());
             Vec3 lookVec = entity.getLookAngle();
             PacketHandler.sendToTrackingAndSelf(
                     new ParticleEffectSpawnPacket(

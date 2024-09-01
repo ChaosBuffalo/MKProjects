@@ -34,8 +34,8 @@ public class FrozenGraspAbility extends MKAbility {
     protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 2);
     protected final IntAttribute maxStacks = new IntAttribute("maxStacks", 2);
     protected final IntAttribute selfDuration = new IntAttribute("selfDuration", 20);
-    public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "frozen_grasp_cast");
-    public static final ResourceLocation HIT_PARTICLES = new ResourceLocation(MKUltra.MODID, "frozen_grasp_hit");
+    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("frozen_grasp_cast");
+    public static final ResourceLocation HIT_PARTICLES = MKUltra.id("frozen_grasp_hit");
 
     protected final ResourceLocationAttribute hitParticles = new ResourceLocationAttribute("hit_particles", HIT_PARTICLES);
 
@@ -64,13 +64,13 @@ public class FrozenGraspAbility extends MKAbility {
     @Nullable
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_water.get();
+        return MKUSounds.casting_water.value();
     }
 
     @Nullable
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_dark_4.get();
+        return MKUSounds.spell_dark_4.value();
     }
 
 

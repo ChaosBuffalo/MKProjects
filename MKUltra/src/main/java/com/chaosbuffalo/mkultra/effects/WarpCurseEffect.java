@@ -56,11 +56,11 @@ public class WarpCurseEffect extends MKEffect {
             LivingEntity target = targetData.getEntity();
 
             float damage = getScaledValue(activeEffect.getStackCount(), activeEffect.getSkillLevel());
-            target.hurt(MKDamageSource.causeAbilityDamage(targetData.getEntity().getLevel(), CoreDamageTypes.ShadowDamage.get(),
+            target.hurt(MKDamageSource.causeAbilityDamage(targetData.getEntity().level(), CoreDamageTypes.ShadowDamage.get(),
                     activeEffect.getAbilityId(), activeEffect.getDirectEntity(), activeEffect.getSourceEntity(),
                     getModifierScale()), damage);
 
-            SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_fire_5.get(), target.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_fire_5.value(), target.getSoundSource());
             boolean hasTeleported = false;
             int attempts = 5;
             while (!hasTeleported && attempts > 0) {

@@ -31,8 +31,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class NecrotideGolemBeam extends StructureAbility {
 
-    private static final ResourceLocation PULSE_PARTICLES = new ResourceLocation(MKUltra.MODID, "necrotide_golem_beam");
-    private static final ResourceLocation WAIT_PARTICLES = new ResourceLocation(MKUltra.MODID, "necrotide_golem_beam_wait");
+    private static final ResourceLocation PULSE_PARTICLES = MKUltra.id("necrotide_golem_beam");
+    private static final ResourceLocation WAIT_PARTICLES = MKUltra.id("necrotide_golem_beam_wait");
 
     protected final ResourceLocationAttribute pulse_particles = new ResourceLocationAttribute("pulse_particles", PULSE_PARTICLES);
     protected final ResourceLocationAttribute wait_particles = new ResourceLocationAttribute("wait_particles", WAIT_PARTICLES);
@@ -76,7 +76,7 @@ public class NecrotideGolemBeam extends StructureAbility {
     protected void onEffectDie(BaseEffectEntity.DeathReason deathReason, BaseEffectEntity entity) {
         LivingEntity owner = entity.getOwner();
         if (owner != null && deathReason == BaseEffectEntity.DeathReason.KILLED) {
-            owner.hurt(MKDamageSource.causeAbilityDamage(entity.getLevel(), CoreDamageTypes.ArcaneDamage.get(),
+            owner.hurt(MKDamageSource.causeAbilityDamage(entity.level(), CoreDamageTypes.ArcaneDamage.get(),
                     getAbilityId(), entity, entity, 0.0f), beamDeathSelfDamage.value());
         }
     }
@@ -90,14 +90,14 @@ public class NecrotideGolemBeam extends StructureAbility {
                     BlockPos pos = poi.getLocation().pos().below(2);
                     var builder = EntityEffectBuilder.createBlockAnchoredEffect(castingEntity, Vec3.atCenterOf(pos));
                     builder.setBlock(Blocks.SOUL_LANTERN);
-                    MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_dark_1.get(),
+                    MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_dark_1.value(),
                                     castingEntity.getSoundSource())
                             .ability(this);
                     MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
                                     base.value(), scale.value(), modifierScaling.value())
                             .ability(this)
                             .skillLevel(skillLevel);
-                    castingEntity.getLevel().setBlockAndUpdate(pos, Blocks.SOUL_LANTERN.defaultBlockState());
+                    castingEntity.level().setBlockAndUpdate(pos, Blocks.SOUL_LANTERN.defaultBlockState());
                     builder.setRange(10.0f)
                             .setTargetContext(TargetingContexts.ENEMY)
                             .setBeamSpeed(beamSpeed.value() + beamSpeedScale.value() * skillLevel)

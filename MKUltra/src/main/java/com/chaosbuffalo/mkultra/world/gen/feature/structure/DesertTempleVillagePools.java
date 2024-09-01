@@ -8,7 +8,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.Pools;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -26,16 +26,16 @@ public class DesertTempleVillagePools {
             UltraStructurePools.createKey("desert_temples");
 
     private static class Templates {
-        private static final ResourceLocation DESERT_TEMPLE_VILLAGE_WELL = new ResourceLocation(MKUltra.MODID, "desert_temple_village/desert_well");
-        private static final ResourceLocation DESERT_TEMPLE_STREET_1 = new ResourceLocation(MKUltra.MODID, "desert_temple_village/desert_temple_road_1");
-        private static final ResourceLocation DESERT_TEMPLE_SMALL = new ResourceLocation(MKUltra.MODID, "desert_temple_village/cleric_temple_small");
+        private static final ResourceLocation DESERT_TEMPLE_VILLAGE_WELL = MKUltra.id("desert_temple_village/desert_well");
+        private static final ResourceLocation DESERT_TEMPLE_STREET_1 = MKUltra.id("desert_temple_village/desert_temple_road_1");
+        private static final ResourceLocation DESERT_TEMPLE_SMALL = MKUltra.id("desert_temple_village/cleric_temple_small");
     }
 
-    public static void register(BootstapContext<StructureTemplatePool> pContext, String pName, StructureTemplatePool pValue) {
+    public static void register(BootstrapContext<StructureTemplatePool> pContext, String pName, StructureTemplatePool pValue) {
         pContext.register(UltraStructurePools.createKey(pName), pValue);
     }
 
-    public static void registerPools(BootstapContext<StructureTemplatePool> pContext) {
+    public static void registerPools(BootstrapContext<StructureTemplatePool> pContext) {
         HolderGetter<StructureTemplatePool> holderGetter = pContext.lookup(Registries.TEMPLATE_POOL);
         Holder<StructureTemplatePool> empty = holderGetter.getOrThrow(Pools.EMPTY);
 

@@ -11,7 +11,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import java.util.UUID;
 
@@ -20,7 +20,7 @@ public class SkinLikeWoodEffect extends MKEffect {
 
     public SkinLikeWoodEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        addAttribute(Attributes.ARMOR, MODIFIER_ID, 4, 1, AttributeModifier.Operation.ADDITION,
+        addAttribute(Attributes.ARMOR, MODIFIER_ID, 4, 1, AttributeModifier.Operation.ADD_VALUE,
                 MKAttributes.ABJURATION);
         SpellTriggers.ENTITY_HURT.registerPreScale(this::onEntityHurt);
     }
@@ -30,7 +30,7 @@ public class SkinLikeWoodEffect extends MKEffect {
         return MKSimplePassiveState.INSTANCE;
     }
 
-    private void onEntityHurt(LivingHurtEvent event, DamageSource source, IMKEntityData targetData) {
+    private void onEntityHurt(LivingDamageEvent.Pre event, DamageSource source, IMKEntityData targetData) {
         if (targetData.getEffects().isEffectActive(this)) {
             if (targetData instanceof MKPlayerData playerData) {
                 if (!playerData.getStats().consumeMana(1)) {

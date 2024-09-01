@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:shadow_bolt",
           "chance": 1.0,
@@ -19,7 +19,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 50.0
@@ -36,23 +36,23 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkultra:necrotide_cultists"
+      "factionId": "mkultra:necrotide_cultists"
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 1.0
+      "scale": 1.0
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "A Skeletal Lock"
+      "name": "A Skeletal Lock"
     },
     "mknpc:notable": {
       "type": "mknpc:notable",
-      "value": true
+      "isNotable": true
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "basic"
+      "renderGroup": "basic"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

@@ -103,18 +103,16 @@
     ]
   },
   "questMode": 0,
-  "questName": "{\"text\":\"A Missing Apprentice\"}",
+  "questName": "\"A Missing Apprentice\"",
   "quests": [
     {
       "autoComplete": true,
-      "description": "{\"text\":\"You need to find the Apprentice somewhere in the castle. Perhaps near the library..\"}",
+      "description": "\"You need to find the Apprentice somewhere in the castle. Perhaps near the library..\"",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Talk to the apprentice"
-            }
+            "Talk to the apprentice"
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.talk_to_apprentice",
@@ -179,13 +177,11 @@
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"The Apprentice wants you to retrieve their necklace from a zombie in the library.\"}",
+      "description": "\"The Apprentice wants you to retrieve their necklace from a zombie in the library.\"",
       "objectives": [
         {
           "type": "mknpc:quest_loot_notable",
-          "itemDescription": {
-            "text": "The Apprentice's Necklace"
-          },
+          "itemDescription": "The Apprentice's Necklace",
           "npcDefinition": "mkultra:imperial_magus",
           "objectiveName": "loot_necklace",
           "structure": {
@@ -204,14 +200,12 @@
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"Return the necklace to the Apprentice\"}",
+      "description": "\"Return the necklace to the Apprentice\"",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Talk to the apprentice"
-            }
+            "Talk to the apprentice"
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.return_to_apprentice",
@@ -261,14 +255,12 @@
     },
     {
       "autoComplete": true,
-      "description": "{\"text\":\"Return to the Acolyte and let them know the Apprentice is safe.\"}",
+      "description": "\"Return to the Acolyte and let them know the Apprentice is safe.\"",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
           "description": [
-            {
-              "text": "Return to the Acolyte"
-            }
+            "Return to the Acolyte"
           ],
           "dialogue": {
             "dialogueId": "mknpc:quest.dialogue.return_to_acolyte",
@@ -316,9 +308,7 @@
         },
         {
           "type": "mknpc:entitlement",
-          "value": {
-            "entitlement": "mkultra:cleric.intro.tier_1"
-          }
+          "entitlement": "mkultra:cleric.intro.tier_1"
         }
       ]
     }

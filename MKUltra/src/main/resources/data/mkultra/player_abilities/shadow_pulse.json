@@ -7,13 +7,19 @@
     "detonateScale": 5.0,
     "duration": 20,
     "modifierScaling": 1.0,
+    "offset": {
+      "x": 0.0,
+      "y": 0.5,
+      "z": 0.0
+    },
     "pulse_particles": "mkultra:shadow_pulse_detonate",
     "radius": 1.5,
     "scale": 0.25,
     "scaleGravity": 0.0,
-    "tickRate": 4,
-    "waitTime": 12,
-    "wait_particles": "mkultra:shadow_pulse_wait"
+    "tick_rate": 4,
+    "wait_particles": "mkultra:shadow_pulse_wait",
+    "wait_tick_rate": 4,
+    "wait_time": 12
   },
   "castTime": 20,
   "cooldown": 200,

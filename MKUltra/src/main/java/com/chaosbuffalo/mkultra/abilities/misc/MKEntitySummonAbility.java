@@ -10,7 +10,7 @@ import com.chaosbuffalo.mkcore.core.pets.PetNonCombatBehavior;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
-import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
+import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
@@ -23,6 +23,7 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -36,10 +37,10 @@ import java.util.function.Function;
 
 public class MKEntitySummonAbility extends MKAbility {
     protected final ResourceLocationAttribute npcDefintion = new ResourceLocationAttribute("npc", NpcDefinitionManager.INVALID_NPC_DEF);
-    protected final Attribute summoningSkill;
+    protected final Holder<Attribute> summoningSkill;
 
 
-    public MKEntitySummonAbility(ResourceLocation npcDef, Attribute skillAttribute) {
+    public MKEntitySummonAbility(ResourceLocation npcDef, Holder<Attribute> skillAttribute) {
         super();
         npcDefintion.setDefaultValue(npcDef);
         addAttribute(npcDefintion);
@@ -95,7 +96,7 @@ public class MKEntitySummonAbility extends MKAbility {
                     pet.getEntity().setNoncombatBehavior(new PetNonCombatBehavior(castingEntity));
                     pet.getEntity().setNonCombatMoveType(MKEntity.NonCombatMoveType.STATIONARY);
                     MKNpc.getNpcData(pet.getEntity()).ifPresent(x -> x.setMKSpawned(true));
-                    pet.getEntity().getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY).ifPresent(x -> x.setFactionName(MKFaction.INVALID_FACTION));
+                    IMobFaction.get(pet.getEntity()).ifPresent(x -> x.setFactionName(MKFaction.INVALID_FACTION));
                     Component newName = Component.translatable("mkultra.pet_name_format", castingEntity.getName(), pet.getEntity().getName());
                     pet.getEntity().setCustomName(newName);
                 } else {

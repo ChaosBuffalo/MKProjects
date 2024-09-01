@@ -5,6 +5,7 @@
         "bWaterLog": true,
         "element_type": "mknpc:mk_single_jigsaw",
         "location": "mkultra:desert_temple_village/desert_temple_road_1",
+        "override_liquid_settings": "apply_waterlogging",
         "processors": {
           "processors": []
         },

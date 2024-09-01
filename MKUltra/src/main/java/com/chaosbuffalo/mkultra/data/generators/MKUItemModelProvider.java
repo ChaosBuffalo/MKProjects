@@ -6,13 +6,13 @@ import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkweapons.data.MKWeaponModelProvider;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.client.model.generators.ItemModelBuilder;
-import net.minecraftforge.client.model.generators.ModelFile;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
+import net.neoforged.neoforge.client.model.generators.ModelFile;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 import java.util.Objects;
 
@@ -67,11 +67,11 @@ public class MKUItemModelProvider extends MKWeaponModelProvider {
     }
 
     public ItemModelBuilder projectileItem(Item item) {
-        return projectileItem(Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(item)));
+        return projectileItem(Objects.requireNonNull(BuiltInRegistries.ITEM.getKey(item)));
     }
     public ItemModelBuilder projectileItem(ResourceLocation item) {
         return this.getBuilder(item.toString())
                 .parent(new ModelFile.UncheckedModelFile("mkultra:item/standarditem"))
-                .texture("layer0", new ResourceLocation(item.getNamespace(), "item/" + item.getPath()));
+                .texture("layer0", ResourceLocation.fromNamespaceAndPath(item.getNamespace(), "item/" + item.getPath()));
     }
 }

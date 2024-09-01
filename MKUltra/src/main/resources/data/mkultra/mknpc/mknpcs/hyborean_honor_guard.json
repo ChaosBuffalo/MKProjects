@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:natures_remedy",
           "chance": 1.0,
@@ -19,7 +19,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 65.0
@@ -36,24 +36,17 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "feet": [
           {
             "dropChance": 0.0,
-            "item": {
-              "Count": 1,
-              "id": "minecraft:air"
-            },
             "weight": 2.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_bronze_boots",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_bronze_boots"
             },
             "weight": 1.0
           }
@@ -61,20 +54,13 @@
         "head": [
           {
             "dropChance": 0.0,
-            "item": {
-              "Count": 1,
-              "id": "minecraft:air"
-            },
             "weight": 2.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:ancient_bronze_helmet",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:ancient_bronze_helmet"
             },
             "weight": 1.0
           }
@@ -83,66 +69,48 @@
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:battleaxe_iron",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:battleaxe_iron"
             },
             "weight": 10.0
           },
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:greatsword_iron",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:greatsword_iron"
             },
             "weight": 10.0
           },
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:warhammer_iron",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:warhammer_iron"
             },
             "weight": 10.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:battleaxe_bronze",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:battleaxe_bronze"
             },
             "weight": 1.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:greatsword_bronze",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:greatsword_bronze"
             },
             "weight": 1.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:warhammer_bronze",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:warhammer_bronze"
             },
             "weight": 1.0
           }
@@ -151,7 +119,7 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkfaction:undead"
+      "factionId": "mkfaction:undead"
     },
     "mknpc:mk_combo": {
       "type": "mknpc:mk_combo",
@@ -160,15 +128,15 @@
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 1.0
+      "scale": 1.0
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Undying Honor Guard"
+      "name": "Undying Honor Guard"
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "honor_guard"
+      "renderGroup": "honor_guard"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

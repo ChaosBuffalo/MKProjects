@@ -25,8 +25,8 @@ public class YaupEffect extends MKEffect {
 
     public YaupEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        addAttribute(Attributes.ATTACK_SPEED, hasteUUID, 0.1, 0.02, AttributeModifier.Operation.MULTIPLY_TOTAL, MKAttributes.ARETE);
-        addAttribute(Attributes.ATTACK_DAMAGE, dmgUUID, 0.2, 0.01, AttributeModifier.Operation.MULTIPLY_TOTAL, MKAttributes.ARETE);
+        addAttribute(Attributes.ATTACK_SPEED, hasteUUID, 0.1, 0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, MKAttributes.ARETE);
+        addAttribute(Attributes.ATTACK_DAMAGE, dmgUUID, 0.2, 0.01, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, MKAttributes.ARETE);
     }
 
 

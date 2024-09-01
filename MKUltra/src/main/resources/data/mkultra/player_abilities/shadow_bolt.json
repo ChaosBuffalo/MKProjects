@@ -1,8 +1,9 @@
 {
   "attributes": {
-    "baseDamage": 8.0,
-    "castBehavior": {
-      "type": "mkcore:single",
+    "base_damage": 8.0,
+    "cast_behavior": {
+      "type": "mkcore:simple",
+      "doPitch": true,
       "location": {
         "type": "mkcore:single_location",
         "offset": [
@@ -10,19 +11,19 @@
           0.0,
           0.5
         ],
-        "percentEyeHeight": 0.75
+        "percentEyeHeight": 0.6
       }
     },
     "casting_particles": "mkultra:shadow_bolt_casting",
     "detonate_particles": "mkultra:shadow_bolt_detonate",
-    "modifierScaling": 1.0,
-    "npc_solve_ballistics": true,
-    "projectileInaccuracy": 0.2,
-    "projectileSpeed": 1.25,
-    "scaleDamage": 4.0,
+    "modifier_scaling": 1.0,
+    "npc_solve_ballistics": 2,
+    "projectile_inaccuracy": 0.2,
+    "projectile_speed": 1.25,
+    "scale_damage": 4.0,
     "trail_particles": "mkultra:shadow_bolt_trail"
   },
-  "castTime": 80,
+  "castTime": 20,
   "cooldown": 160,
   "manaCost": 7.0
 }

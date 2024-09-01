@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:heal",
           "chance": 1.0,
@@ -19,7 +19,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 100.0
@@ -36,16 +36,13 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:mace_iron",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:mace_iron"
             },
             "weight": 1.0
           }
@@ -54,7 +51,7 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkultra:see_of_solang"
+      "factionId": "mkultra:see_of_solang"
     },
     "mknpc:faction_name": {
       "type": "mknpc:faction_name",
@@ -62,15 +59,15 @@
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 0.85
+      "scale": 0.85
     },
     "mknpc:notable": {
       "type": "mknpc:notable",
-      "value": true
+      "isNotable": true
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "cleric_2"
+      "renderGroup": "cleric_2"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

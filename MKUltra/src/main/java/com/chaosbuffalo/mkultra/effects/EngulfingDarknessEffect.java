@@ -24,7 +24,7 @@ public class EngulfingDarknessEffect extends DamageTypeDotEffect {
     private static final UUID modUUID = UUID.fromString("b349fa30-5995-42c0-8fff-19b5c181cc75");
 
     public EngulfingDarknessEffect() {
-        addAttribute(Attributes.MOVEMENT_SPEED, modUUID, -0.10, -0.05, AttributeModifier.Operation.MULTIPLY_TOTAL, MKAttributes.CONJURATION);
+        addAttribute(Attributes.MOVEMENT_SPEED, modUUID, -0.10, -0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, MKAttributes.CONJURATION);
     }
 
     public static MKEffectBuilder<?> from(LivingEntity source, float base, float scaling, float modifierScaling,
@@ -82,7 +82,7 @@ public class EngulfingDarknessEffect extends DamageTypeDotEffect {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
-            SoundUtils.serverPlaySoundAtEntity(targetData.getEntity(), MKUSounds.spell_dark_1.get(),
+            SoundUtils.serverPlaySoundAtEntity(targetData.getEntity(), MKUSounds.spell_dark_1.value(),
                     targetData.getEntity().getSoundSource());
             sendEffectParticles(targetData.getEntity());
             LivingEntity source = activeEffect.getSourceEntity();
@@ -90,7 +90,7 @@ public class EngulfingDarknessEffect extends DamageTypeDotEffect {
                 MKCore.getEntityData(source).ifPresent(
                         x -> {
                             x.getEffects().addEffect(ShadowbringerEffect.from(source, getTriggerTime()));
-                            SoundUtils.serverPlaySoundAtEntity(source, MKUSounds.spell_dark_9.get(),
+                            SoundUtils.serverPlaySoundAtEntity(source, MKUSounds.spell_dark_9.value(),
                                     source.getSoundSource());
                         });
             }

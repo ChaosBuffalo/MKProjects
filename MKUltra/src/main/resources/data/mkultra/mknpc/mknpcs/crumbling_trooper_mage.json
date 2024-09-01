@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:fireball",
           "chance": 1.0,
@@ -19,7 +19,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 30.0
@@ -36,16 +36,13 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:dagger_stone",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:dagger_stone"
             },
             "weight": 1.0
           }
@@ -54,7 +51,7 @@
     },
     "mknpc:experience": {
       "type": "mknpc:experience",
-      "value": 10
+      "experience": 10
     },
     "mknpc:extra_loot": {
       "type": "mknpc:extra_loot",
@@ -70,19 +67,19 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkultra:imperial_dead"
+      "factionId": "mkultra:imperial_dead"
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 0.95
+      "scale": 0.95
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Crumbling Trooper Mage"
+      "name": "Crumbling Trooper Mage"
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "zombie_pig_magus"
+      "renderGroup": "zombie_pig_magus"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

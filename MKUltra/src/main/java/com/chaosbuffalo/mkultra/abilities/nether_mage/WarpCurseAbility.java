@@ -26,8 +26,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class WarpCurseAbility extends MKAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "warp_curse_casting");
-    public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "warp_curse_cast");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("warp_curse_casting");
+    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("warp_curse_cast");
     protected final FloatAttribute base = new FloatAttribute("base", 4.0f);
     protected final FloatAttribute scale = new FloatAttribute("scale", 2.0f);
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 4);
@@ -73,12 +73,12 @@ public class WarpCurseAbility extends MKAbility {
 
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_shadow.get();
+        return MKUSounds.casting_shadow.value();
     }
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_dark_15.get();
+        return MKUSounds.spell_dark_15.value();
     }
 
     @Override
@@ -97,7 +97,7 @@ public class WarpCurseAbility extends MKAbility {
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> targetData.getEffects().addEffect(warpCast));
             targetEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, oldAmp, false, false, true));
 
-            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_5.get(), targetEntity.getSoundSource());
+            SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_5.value(), targetEntity.getSoundSource());
             MKParticles.spawn(castingEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
         });
     }

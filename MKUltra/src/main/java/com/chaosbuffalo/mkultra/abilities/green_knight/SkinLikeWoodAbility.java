@@ -25,8 +25,8 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class SkinLikeWoodAbility extends MKToggleAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "skin_like_wood_casting");
-    public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "skin_like_wood_cast");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("skin_like_wood_casting");
+    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("skin_like_wood_cast");
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
 
     public SkinLikeWoodAbility() {
@@ -64,7 +64,7 @@ public class SkinLikeWoodAbility extends MKToggleAbility {
     public void applyEffect(LivingEntity entity, IMKEntityData entityData, AbilityContext context) {
         super.applyEffect(entity, entityData, context);
         float level = context.getSkill(MKAttributes.ABJURATION);
-        SoundUtils.serverPlaySoundAtEntity(entity, MKUSounds.spell_earth_7.get(), entity.getSoundSource());
+        SoundUtils.serverPlaySoundAtEntity(entity, MKUSounds.spell_earth_7.value(), entity.getSoundSource());
 
         MKEffectBuilder<?> instance = getToggleEffect().builder(entity)
                 .ability(this)

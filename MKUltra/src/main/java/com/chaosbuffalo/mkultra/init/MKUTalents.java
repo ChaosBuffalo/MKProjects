@@ -4,22 +4,22 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.talents.MKTalent;
 import com.chaosbuffalo.mkcore.core.talents.talent_types.PassiveTalent;
 import com.chaosbuffalo.mkultra.MKUltra;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class MKUTalents {
 
     public static DeferredRegister<MKTalent> TALENTS =
-            DeferredRegister.create(MKCoreRegistry.TALENT_REGISTRY_NAME, MKUltra.MODID);
+            DeferredRegister.create(MKCoreRegistry.TALENTS, MKUltra.MODID);
 
-    public static RegistryObject<PassiveTalent> SOUL_DRAIN_TALENT = TALENTS.register("soul_drain",
+    public static DeferredHolder<MKTalent, PassiveTalent> SOUL_DRAIN_TALENT = TALENTS.register("soul_drain",
             () -> new PassiveTalent(MKUAbilities.SOUL_DRAIN));
 
-    public static RegistryObject<PassiveTalent> LIFE_SIPHON_TALENT = TALENTS.register("life_siphon",
+    public static DeferredHolder<MKTalent, PassiveTalent> LIFE_SIPHON_TALENT = TALENTS.register("life_siphon",
             () -> new PassiveTalent(MKUAbilities.LIFE_SIPHON));
 
-    public static RegistryObject<PassiveTalent> GREEN_SOUL_TALENT = TALENTS.register("green_soul",
+    public static DeferredHolder<MKTalent, PassiveTalent> GREEN_SOUL_TALENT = TALENTS.register("green_soul",
             () -> new PassiveTalent(MKUAbilities.GREEN_SOUL));
 
 

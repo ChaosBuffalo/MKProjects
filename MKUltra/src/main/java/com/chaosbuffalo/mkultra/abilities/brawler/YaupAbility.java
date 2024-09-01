@@ -31,8 +31,8 @@ import net.minecraft.world.phys.Vec3;
 import java.util.function.Consumer;
 
 public class YaupAbility extends MKAbility {
-    public static final ResourceLocation CAST_PARTICLES = new ResourceLocation(MKUltra.MODID, "yaup_cast");
-    public static final ResourceLocation TICK_PARTICLES = new ResourceLocation(MKUltra.MODID, "yaup_tick");
+    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("yaup_cast");
+    public static final ResourceLocation TICK_PARTICLES = MKUltra.id("yaup_tick");
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
     protected final ResourceLocationAttribute tick_particles = new ResourceLocationAttribute("tick_particles", TICK_PARTICLES);
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 15);
@@ -78,7 +78,7 @@ public class YaupAbility extends MKAbility {
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_holy_2.get();
+        return MKUSounds.spell_holy_2.value();
     }
 
     @Override
@@ -86,7 +86,7 @@ public class YaupAbility extends MKAbility {
         super.endCast(entity, data, context);
         float level = context.getSkill(MKAttributes.ARETE);
         MKEffectBuilder<?> yaup = YaupEffect.from(entity, level, getBuffDuration(data, level, baseDuration.value(), scaleDuration.value()));
-        MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_buff_attack_4.get(), entity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_buff_attack_4.value(), entity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, tick_particles.getValue(),
                         true, new Vec3(0.0, 1.0, 0.0))

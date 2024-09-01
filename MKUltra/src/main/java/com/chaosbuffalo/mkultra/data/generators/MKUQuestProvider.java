@@ -23,6 +23,7 @@ import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUEntitlements;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.network.chat.Component;
@@ -39,8 +40,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class MKUQuestProvider extends QuestDefinitionProvider {
 
-    public MKUQuestProvider(DataGenerator generator) {
-        super(generator, MKUltra.MODID);
+    public MKUQuestProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> provider) {
+        super(generator, provider, MKUltra.MODID);
     }
 
     @Override
@@ -55,10 +56,10 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
 
     private QuestDefinition generateIntroMageQuest() {
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), 0);
-        QuestBuilder.QuestNpc initiate = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "nether_mage_initiate"));
-        QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "imperial_magus"));
+        QuestBuilder.QuestNpc initiate = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("nether_mage_initiate"));
+        QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("imperial_magus"));
 
-        QuestDefinition def = new QuestDefinition(new ResourceLocation(MKUltra.MODID, "nether_mage_intro"));
+        QuestDefinition def = new QuestDefinition(MKUltra.id("nether_mage_intro"));
         def.setRepeatable(false);
         def.setQuestName(Component.literal("Helping the Nether Mage"));
 
@@ -113,7 +114,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                                 .withAdditionalNode(killZombiesNode)
                                 .withAdditionalPrompts(killZombiesPrompt)
                 )
-                .reward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "burning_staff"),
+                .reward(new MKLootReward(MKUltra.id("burning_staff"),
                         LootSlotManager.MAIN_HAND,
                         Component.translatable("mkultra.quest_reward.receive_item.name", Component.literal("Burning Staff"))))
                 .reward(new XpReward(25))
@@ -143,7 +144,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                             obj.withAdditionalPrompts(openTraining);
                             obj.withAdditionalPrompts(guildPrompt);
                         })
-                .reward(new GrantEntitlementReward(MKUEntitlements.IntroNetherMageTier1.get()))
+                .reward(new GrantEntitlementReward(MKUEntitlements.IntroNetherMageTier1))
                 .reward(new XpReward(50))
                 .quest();
         def.addQuest(finalReturn);
@@ -157,11 +158,11 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
 
     private QuestDefinition generateIntroClericQuest() {
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), 0);
-        QuestBuilder.QuestNpc acolyte = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "solangian_acolyte"));
-        QuestBuilder.QuestNpc apprentice = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "solangian_apprentice"));
-        QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "imperial_magus"));
+        QuestBuilder.QuestNpc acolyte = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("solangian_acolyte"));
+        QuestBuilder.QuestNpc apprentice = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("solangian_apprentice"));
+        QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("imperial_magus"));
 
-        QuestDefinition def = new QuestDefinition(new ResourceLocation(MKUltra.MODID, "cleric_intro"));
+        QuestDefinition def = new QuestDefinition(MKUltra.id("cleric_intro"));
         def.setRepeatable(false);
         def.setQuestName(Component.literal("A Missing Apprentice"));
 
@@ -264,7 +265,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                         null
                 )
                 .reward(new XpReward(25))
-                .reward(new GrantEntitlementReward(MKUEntitlements.IntroClericTier1.get()))
+                .reward(new GrantEntitlementReward(MKUEntitlements.IntroClericTier1))
                 .quest();
         def.addQuest(returnToAcolyte);
 
@@ -273,10 +274,10 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
 
     private QuestDefinition generateTrooperArmorQuest() {
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), 0);
-        ResourceLocation greenSmith = new ResourceLocation(MKUltra.MODID, "green_smith");
+        ResourceLocation greenSmith = MKUltra.id("green_smith");
 
-        QuestDefinition def = new QuestDefinition(new ResourceLocation(MKUltra.MODID, "trooper_armor"));
-        def.addRequirement(new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier1.get()));
+        QuestDefinition def = new QuestDefinition(MKUltra.id("trooper_armor"));
+        def.addRequirement(new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier1));
         def.setRepeatable(true);
         def.setQuestName(text("Salvaged Trooper Armor"));
         def.setMode(QuestDefinition.QuestMode.UNSORTED);
@@ -308,7 +309,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 ));
         helmet.addObjective(helmetTrade);
         helmet.addReward(new XpReward(25));
-        helmet.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"),
+        helmet.addReward(new MKLootReward(MKUltra.id("trooper_knight_armor"),
                 LootSlotManager.HEAD,
                 Component.translatable("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightHelmet.get().getDescription())));
         def.addQuest(helmet);
@@ -326,7 +327,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 ));
         leggings.addObjective(leggingsTrade);
         leggings.addReward(new XpReward(25));
-        leggings.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"),
+        leggings.addReward(new MKLootReward(MKUltra.id("trooper_knight_armor"),
                 LootSlotManager.LEGS,
                 Component.translatable("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightLeggings.get().getDescription())));
         def.addQuest(leggings);
@@ -344,7 +345,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 ));
         boots.addObjective(bootTrade);
         boots.addReward(new XpReward(25));
-        boots.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"),
+        boots.addReward(new MKLootReward(MKUltra.id("trooper_knight_armor"),
                 LootSlotManager.FEET,
                 Component.translatable("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightBoots.get().getDescription())));
         def.addQuest(boots);
@@ -362,7 +363,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 ));
         chestplate.addObjective(chestplateTrade);
         chestplate.addReward(new XpReward(25));
-        chestplate.addReward(new MKLootReward(new ResourceLocation(MKUltra.MODID, "trooper_knight_armor"),
+        chestplate.addReward(new MKLootReward(MKUltra.id("trooper_knight_armor"),
                 LootSlotManager.CHEST,
                 Component.translatable("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightChestplate.get().getDescription())));
         def.addQuest(chestplate);
@@ -373,13 +374,13 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
     private QuestDefinition generateIntroQuest() {
 
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), 0);
-        QuestBuilder.QuestNpc greenLady = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "green_lady"));
-        QuestBuilder.QuestNpc piglinCaptain = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "trooper_captain"));
-        QuestBuilder.QuestNpc greenSmith = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "green_smith"));
-        QuestBuilder.QuestNpc forlornGhost = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "forlorn_ghost"));
-        QuestBuilder.QuestNpc burningRevenant = new QuestBuilder.QuestNpc(introCastle, new ResourceLocation(MKUltra.MODID, "burning_skeleton"));
+        QuestBuilder.QuestNpc greenLady = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("green_lady"));
+        QuestBuilder.QuestNpc piglinCaptain = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("trooper_captain"));
+        QuestBuilder.QuestNpc greenSmith = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("green_smith"));
+        QuestBuilder.QuestNpc forlornGhost = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("forlorn_ghost"));
+        QuestBuilder.QuestNpc burningRevenant = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("burning_skeleton"));
 
-        QuestDefinition def = new QuestDefinition(new ResourceLocation(MKUltra.MODID, "intro_quest"));
+        QuestDefinition def = new QuestDefinition(MKUltra.id("intro_quest"));
         def.setQuestName(text("The Green Knights"));
         DialoguePrompt startQuestPrompt = new DialoguePrompt("start_quest", "don't know",
                 "I don't know", "What are you doing");
@@ -482,7 +483,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                         }
                 )
                 .reward(new XpReward(50))
-                .reward(new GrantEntitlementReward(MKUEntitlements.GreenKnightTier1.get()))
+                .reward(new GrantEntitlementReward(MKUEntitlements.GreenKnightTier1))
                 .quest();
         def.addQuest(returnToGreenLady);
 
@@ -515,8 +516,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         Quest killQuest = new QuestBuilder("first_kill",
                 text("The Green Lady wants you to clear out some of the zombies on the first floor of the castle"))
                 .autoComplete(true)
-                .killNpc("kill_zombies", new ResourceLocation(MKUltra.MODID, "decaying_piglin"), 4)
-                .killNpc("kill_archers", new ResourceLocation(MKUltra.MODID, "decaying_piglin_archer"), 4)
+                .killNpc("kill_zombies", MKUltra.id("decaying_piglin"), 4)
+                .killNpc("kill_archers", MKUltra.id("decaying_piglin_archer"), 4)
                 .hailWithObjectives("after_kill",
                         text("Talk to the Green Lady after completing the other objectives."),
                         greenLady,
@@ -545,7 +546,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                         null
                 )
                 .reward(new XpReward(100))
-                .reward(new GrantEntitlementReward(MKUEntitlements.GreenKnightTier2.get()))
+                .reward(new GrantEntitlementReward(MKUEntitlements.GreenKnightTier2))
                 .quest();
         def.addQuest(killCaptain);
 
@@ -624,8 +625,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                         null
                 )
                 .reward(new XpReward(100))
-                .reward(new GrantEntitlementReward(MKUEntitlements.GreenKnightTier3.get()))
-                .reward(new TalentTreeReward(new ResourceLocation(MKUltra.MODID, "green_knight_talents")))
+                .reward(new GrantEntitlementReward(MKUEntitlements.GreenKnightTier3))
+                .reward(new TalentTreeReward(MKUltra.id("green_knight_talents")))
                 .quest();
         def.addQuest(killBurning);
 

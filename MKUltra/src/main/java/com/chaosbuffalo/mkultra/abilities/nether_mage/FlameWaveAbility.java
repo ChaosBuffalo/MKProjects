@@ -30,9 +30,9 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class FlameWaveAbility extends MKAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "flame_wave_casting");
-    public static final ResourceLocation CAST_1_PARTICLES = new ResourceLocation(MKUltra.MODID, "flame_wave_cast_1");
-    public static final ResourceLocation CAST_2_PARTICLES = new ResourceLocation(MKUltra.MODID, "flame_wave_cast_2");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("flame_wave_casting");
+    public static final ResourceLocation CAST_1_PARTICLES = MKUltra.id("flame_wave_cast_1");
+    public static final ResourceLocation CAST_2_PARTICLES = MKUltra.id("flame_wave_cast_2");
     protected final FloatAttribute base = new FloatAttribute("base", 6.0f);
     protected final FloatAttribute scale = new FloatAttribute("scale", 3.0f);
     protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
@@ -81,13 +81,13 @@ public class FlameWaveAbility extends MKAbility {
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_fire_7.get();
+        return MKUSounds.spell_fire_7.value();
     }
 
     @Nullable
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.casting_fire.get();
+        return MKUSounds.casting_fire.value();
     }
 
     @Override
@@ -103,7 +103,7 @@ public class FlameWaveAbility extends MKAbility {
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, cast_2_particles.getValue(), false, new Vec3(0.0, 1.0, 0.0))
                 .ability(this);
 
-        MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_fire_1.get(), entity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_fire_1.value(), entity.getSoundSource())
                 .ability(this);
 
         AreaEffectBuilder.createOnCaster(entity)

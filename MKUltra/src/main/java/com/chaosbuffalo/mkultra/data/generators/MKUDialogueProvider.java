@@ -29,7 +29,7 @@ public class MKUDialogueProvider extends DialogueProvider {
     }
 
     private DialogueTree getAlphaMovePrompt() {
-        var treeBuilder = DialogueTree.builder(new ResourceLocation(MKUltra.MODID, "open_abilities"));
+        var treeBuilder = DialogueTree.builder(MKUltra.id("open_abilities"));
 
         DialogueNode open = treeBuilder.newNode("open_training")
                 .text("Let me see what I can teach you.")
@@ -57,13 +57,13 @@ public class MKUDialogueProvider extends DialogueProvider {
     }
 
     private DialogueTree getNetherMageInitiateDefault() {
-        DialogueTree tree = new DialogueTree(new ResourceLocation(MKUltra.MODID, "intro_nether_mage_initiate"));
+        DialogueTree tree = new DialogueTree(MKUltra.id("intro_nether_mage_initiate"));
 
         DialogueNode open_training = new DialogueNode("open_training", "Let me see what I can teach you.");
         open_training.addEffect(new OpenLearnAbilitiesEffect());
         DialoguePrompt openTraining = new DialoguePrompt("open_training", "teach me", "Will you teach me?", "teach you");
         DialogueResponse resp = new DialogueResponse(open_training);
-        resp.addCondition(new HasEntitlementCondition(MKUEntitlements.IntroNetherMageTier1.get()));
+        resp.addCondition(new HasEntitlementCondition(MKUEntitlements.IntroNetherMageTier1));
         openTraining.addResponse(new DialogueResponse(open_training));
 
 
@@ -83,7 +83,7 @@ public class MKUDialogueProvider extends DialogueProvider {
         DialogueResponse hailWoResp = new DialogueResponse(hail_wo_ability);
 
         DialogueResponse hailWResp = new DialogueResponse(hail_w_ability);
-        hailWResp.addCondition(new HasEntitlementCondition(MKUEntitlements.IntroNetherMageTier1.get()));
+        hailWResp.addCondition(new HasEntitlementCondition(MKUEntitlements.IntroNetherMageTier1));
 
         hailPrompt.addResponse(hailWResp);
         hailPrompt.addResponse(hailWoResp);
@@ -100,7 +100,7 @@ public class MKUDialogueProvider extends DialogueProvider {
     }
 
     private DialogueTree getClericAcolyteDefault() {
-        var treeBuilder = DialogueTree.builder(new ResourceLocation(MKUltra.MODID, "intro_cleric_acolyte"));
+        var treeBuilder = DialogueTree.builder(MKUltra.id("intro_cleric_acolyte"));
 
         var openN = treeBuilder.newNode("open_training")
                 .text("Let me see what I can teach you.")
@@ -125,7 +125,7 @@ public class MKUDialogueProvider extends DialogueProvider {
 
         var hailP = treeBuilder.newPrompt("hail")
                 .respondWith(new DialogueResponse(hailW)
-                        .addCondition(new HasEntitlementCondition(MKUEntitlements.IntroClericTier1.get())))
+                        .addCondition(new HasEntitlementCondition(MKUEntitlements.IntroClericTier1)))
                 .respondWith(hailWO)
                 .build();
 

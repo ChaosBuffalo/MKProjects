@@ -28,9 +28,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class GalvanizeAbility extends MKAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "galvanize_casting");
-    public static final ResourceLocation CAST_1_PARTICLES = new ResourceLocation(MKUltra.MODID, "galvanize_cast_1");
-    public static final ResourceLocation CAST_2_PARTICLES = new ResourceLocation(MKUltra.MODID, "galvanize_cast_2");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("galvanize_casting");
+    public static final ResourceLocation CAST_1_PARTICLES = MKUltra.id("galvanize_cast_1");
+    public static final ResourceLocation CAST_2_PARTICLES = MKUltra.id("galvanize_cast_2");
     protected final IntAttribute base = new IntAttribute("baseDuration", 5);
     protected final IntAttribute scale = new IntAttribute("scaleDuration", 2);
     protected final ResourceLocationAttribute cast_1_particles = new ResourceLocationAttribute("cast_1_particles", CAST_1_PARTICLES);
@@ -70,7 +70,7 @@ public class GalvanizeAbility extends MKAbility {
 
     @Override
     public SoundEvent getSpellCompleteSoundEvent() {
-        return MKUSounds.spell_heal_1.get();
+        return MKUSounds.spell_heal_1.value();
     }
 
     @Override
@@ -84,7 +84,7 @@ public class GalvanizeAbility extends MKAbility {
         MKEffectBuilder<?> cure = CureEffect.from(entity)
                 .ability(this)
                 .skillLevel(level);
-        MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_buff_5.get(), entity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(entity, MKUSounds.spell_buff_5.value(), entity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> particles = MKParticleEffect.from(entity, cast_2_particles.getValue(), false, new Vec3(0.0, 1.0, 0.0))
                 .ability(this);

@@ -26,9 +26,9 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class ShadowPulseAbility extends WindUpPulseAbility {
-    private static final ResourceLocation PULSE_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_pulse_detonate");
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_casting");
-    private static final ResourceLocation WAIT_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_pulse_wait");
+    private static final ResourceLocation PULSE_PARTICLES = MKUltra.id("shadow_pulse_detonate");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("shadow_bolt_casting");
+    private static final ResourceLocation WAIT_PARTICLES = MKUltra.id("shadow_pulse_wait");
     protected final FloatAttribute base = new FloatAttribute("base", 1.0f);
     protected final FloatAttribute scale = new FloatAttribute("scale", 0.25f);
     protected final FloatAttribute baseGravity = new FloatAttribute("baseGravity", 0.25f);
@@ -61,20 +61,20 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
         MKEffectBuilder<?> pull = PullEffect.from(castingEntity, baseGravity.value(), scaleGravity.value(), position)
                 .ability(this)
                 .skillLevel(level);
-        MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_10.get(), castingEntity.getSoundSource())
+        MKEffectBuilder<?> sound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_10.value(), castingEntity.getSoundSource())
                 .ability(this);
         MKEffectBuilder<?> detonateDamage = MKAbilityDamageEffect.from(castingEntity, CoreDamageTypes.ShadowDamage.get(),
                         detonateBase.value(), detonateScale.value(), modifierScaling.value())
                 .ability(this)
                 .skillLevel(level);
-        MKEffectBuilder<?> detonateSound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_9.get(), castingEntity.getSoundSource())
+        MKEffectBuilder<?> detonateSound = SoundEffect.from(castingEntity, MKUSounds.spell_shadow_9.value(), castingEntity.getSoundSource())
                 .ability(this);
         builder.effect(damage, getTargetContext())
                 .effect(sound, getTargetContext())
                 .effect(pull, getTargetContext())
                 .delayedEffect(detonateSound, getTargetContext(), duration.value())
                 .delayedEffect(detonateDamage, getTargetContext(), duration.value());
-        SoundUtils.serverPlaySoundFromEntity(position.x(), position.y(), position.z(), MKUSounds.spell_dark_13.get(),
+        SoundUtils.serverPlaySoundFromEntity(position.x(), position.y(), position.z(), MKUSounds.spell_dark_13.value(),
                 castingEntity.getSoundSource(), 1.0f, 1.0f, castingEntity);
     }
 
@@ -105,7 +105,7 @@ public class ShadowPulseAbility extends WindUpPulseAbility {
     @Nullable
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.hostile_casting_shadow.get();
+        return MKUSounds.hostile_casting_shadow.value();
     }
 
 }

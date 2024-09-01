@@ -4,7 +4,7 @@
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
-      "value": [
+      "abilities": [
         {
           "abilityId": "mkultra:fire_armor",
           "chance": 0.5,
@@ -24,7 +24,7 @@
     },
     "mknpc:attributes": {
       "type": "mknpc:attributes",
-      "value": [
+      "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
           "value": 40.0
@@ -41,27 +41,21 @@
     },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
-      "value": {
+      "equipment": {
         "mainhand": [
           {
             "dropChance": 0.0,
             "item": {
-              "Count": 1,
-              "id": "mkweapons:dagger_stone",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkweapons:dagger_stone"
             },
             "weight": 5.0
           },
           {
             "dropChance": 1.1,
             "item": {
-              "Count": 1,
-              "id": "mkultra:dagger_bronze",
-              "tag": {
-                "Damage": 0
-              }
+              "count": 1,
+              "id": "mkultra:dagger_bronze"
             },
             "weight": 3.0
           }
@@ -70,19 +64,19 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "value": "mkfaction:undead"
+      "factionId": "mkfaction:undead"
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "value": 0.9
+      "scale": 0.9
     },
     "mknpc:name": {
       "type": "mknpc:name",
-      "value": "Hyborean Sorcerer"
+      "name": "Hyborean Sorcerer"
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "value": "sorcerer"
+      "renderGroup": "sorcerer"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",

@@ -16,7 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
 import javax.annotation.Nullable;
 
 public class ShadowPulseFlurryAbility extends PositionFlurryAbility {
-    public static final ResourceLocation CASTING_PARTICLES = new ResourceLocation(MKUltra.MODID, "shadow_bolt_casting");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("shadow_bolt_casting");
 
     public ShadowPulseFlurryAbility() {
         super(MKUAbilities.SHADOW_PULSE);
@@ -43,7 +43,7 @@ public class ShadowPulseFlurryAbility extends PositionFlurryAbility {
     @Nullable
     @Override
     public SoundEvent getCastingSoundEvent() {
-        return MKUSounds.hostile_casting_fire.get();
+        return MKUSounds.hostile_casting_fire.value();
     }
 
     @Nullable
