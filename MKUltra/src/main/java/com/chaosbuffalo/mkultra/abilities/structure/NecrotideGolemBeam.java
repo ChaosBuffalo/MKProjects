@@ -29,6 +29,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
+import static net.minecraft.world.level.block.LanternBlock.HANGING;
+
 public class NecrotideGolemBeam extends StructureAbility {
 
     private static final ResourceLocation PULSE_PARTICLES = MKUltra.id("necrotide_golem_beam");
@@ -97,7 +99,7 @@ public class NecrotideGolemBeam extends StructureAbility {
                                     base.value(), scale.value(), modifierScaling.value())
                             .ability(this)
                             .skillLevel(skillLevel);
-                    castingEntity.level().setBlockAndUpdate(pos, Blocks.SOUL_LANTERN.defaultBlockState());
+                    castingEntity.level().setBlockAndUpdate(pos, Blocks.SOUL_LANTERN.defaultBlockState().setValue(HANGING, true));
                     builder.setRange(10.0f)
                             .setTargetContext(TargetingContexts.ENEMY)
                             .setBeamSpeed(beamSpeed.value() + beamSpeedScale.value() * skillLevel)

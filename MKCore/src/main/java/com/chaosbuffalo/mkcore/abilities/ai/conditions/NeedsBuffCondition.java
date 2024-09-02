@@ -18,6 +18,7 @@ public class NeedsBuffCondition extends AbilityUseCondition {
     private final Supplier<? extends MKEffect> buffMKEffect;
     private final AbilityTargetingDecision.MovementSuggestion movementSuggestion;
     private boolean selfOnly;
+    private boolean combatOnly;
 
 
     public NeedsBuffCondition(MKAbility ability, Holder<MobEffect> buffEffect) {
@@ -26,6 +27,7 @@ public class NeedsBuffCondition extends AbilityUseCondition {
         buffMKEffect = null;
         this.movementSuggestion = AbilityTargetingDecision.MovementSuggestion.FOLLOW;
         selfOnly = false;
+        combatOnly = false;
     }
 
     public NeedsBuffCondition(MKAbility ability, Supplier<? extends MKEffect> buffEffect) {
@@ -34,10 +36,16 @@ public class NeedsBuffCondition extends AbilityUseCondition {
         buffMKEffect = buffEffect;
         this.movementSuggestion = AbilityTargetingDecision.MovementSuggestion.FOLLOW;
         selfOnly = false;
+        combatOnly = false;
     }
 
     public NeedsBuffCondition setSelfOnly(boolean selfOnly) {
         this.selfOnly = selfOnly;
+        return this;
+    }
+
+    public NeedsBuffCondition setCombatOnly(boolean combatOnly) {
+        this.combatOnly = combatOnly;
         return this;
     }
 
@@ -55,9 +63,13 @@ public class NeedsBuffCondition extends AbilityUseCondition {
     @Nonnull
     @Override
     public AbilityTargetingDecision getDecision(AbilityDecisionContext context) {
+        if (combatOnly && context.getEnemies().isEmpty()) {
+            return AbilityTargetingDecision.UNDECIDED;
+        }
         if (getAbility().getTargetContext().canTargetCaster() && needsBuff(context.getCaster())) {
             return new AbilityTargetingDecision(context.getCaster(), getAbility());
         }
+
         if (!selfOnly) {
             for (LivingEntity friendly : context.getFriendlies()) {
                 if (needsBuff(friendly)) {

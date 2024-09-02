@@ -47,7 +47,7 @@ public class FrozenGraspAbility extends MKAbility {
         setCastTime(GameConstants.TICKS_PER_SECOND);
         castingParticles.setDefaultValue(CAST_PARTICLES);
         addAttributes(baseDuration, scaleDuration, selfDuration, hitParticles);
-        setUseCondition(new NeedsBuffCondition(this, MKUEffects.FROZEN_GRASP_APPLIER));
+        setUseCondition(new NeedsBuffCondition(this, MKUEffects.FROZEN_GRASP_APPLIER).setCombatOnly(true));
     }
 
 
