@@ -74,7 +74,8 @@
                     "amount": 5.0,
                     "id": "mkultra:hyborean_sorcerer_queen",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "mainhand"
                 }
               ]
             },
@@ -89,7 +90,8 @@
                     "amount": 5.0,
                     "id": "mkultra:hyborean_sorcerer_queen",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "mainhand"
                 }
               ]
             },
@@ -104,7 +106,8 @@
                     "amount": 0.5,
                     "id": "mkultra:hyborean_sorcerer_queen",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "mainhand"
                 }
               ]
             },
@@ -119,7 +122,8 @@
                     "amount": 2.0,
                     "id": "mkultra:hyborean_sorcerer_queen",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "mainhand"
                 }
               ]
             },
@@ -134,7 +138,8 @@
                     "amount": 2.0,
                     "id": "mkultra:hyborean_sorcerer_queen",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "mainhand"
                 }
               ]
             },
@@ -149,7 +154,24 @@
                     "amount": 2.0,
                     "id": "mkultra:hyborean_sorcerer_queen",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "mainhand"
+                }
+              ]
+            },
+            {
+              "type": "mkweapons:attributes",
+              "modifiers": [
+                {
+                  "attribute": "mkcore:fire_resistance",
+                  "maxValue": 0.15,
+                  "minValue": 0.05,
+                  "modifier": {
+                    "amount": 0.05,
+                    "id": "mkultra:hyborean_sorcerer_queen",
+                    "operation": "add_value"
+                  },
+                  "slot": "mainhand"
                 }
               ]
             }

@@ -30,6 +30,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
+import top.theillusivec4.curios.api.event.CurioAttributeModifierEvent;
 
 import java.util.List;
 
@@ -56,8 +57,31 @@ public class MKWeaponsEventHandler {
             case IMKMeleeWeapon meleeWeapon -> addModifierEffects(event, meleeWeapon.getWeaponEffects(stack));
             case IMKRangedWeapon rangedWeapon -> addModifierEffects(event, rangedWeapon.getWeaponEffects(stack));
             case IMKArmor armor -> addModifierEffects(event, armor.getArmorEffects(stack));
+            // This is only for tooltip display
             case IMKAccessory accessory -> addModifierEffects(event, accessory.getAccessoryEffects(stack));
             default -> {
+            }
+        }
+    }
+
+    // This event is needed to apply the attribute values from the curio, but due to how we use the effects for
+    // attributes we also need ItemAttributeModifierEvent in order to display the tooltip
+    @SubscribeEvent
+    public static void onCurioAttributeModifierEvent(CurioAttributeModifierEvent event) {
+        ItemStack stack = event.getItemStack();
+        if (stack.getItem() instanceof IMKAccessory accessory) {
+            addCurioModifierEffects(event, accessory.getAccessoryEffects(stack));
+        }
+    }
+
+    private static void addCurioModifierEffects(CurioAttributeModifierEvent event, List<? extends IItemEffect> effects) {
+        if (effects.isEmpty())
+            return;
+        for (var effect : effects) {
+            if (effect instanceof ItemModifierEffect modifierEffect) {
+                for (AttributeOptionEntry m : modifierEffect.getModifiers()) {
+                    event.addModifier(m.getAttribute(), m.getModifier());
+                }
             }
         }
     }

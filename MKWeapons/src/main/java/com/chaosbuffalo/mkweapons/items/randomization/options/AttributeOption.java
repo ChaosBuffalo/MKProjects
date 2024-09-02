@@ -67,9 +67,19 @@ public class AttributeOption extends BaseRandomizationOption {
         return withModifier(RandomizationSlotManager.ATTRIBUTE_SLOT, attribute, name, minAmount, maxAmount, op);
     }
 
+    public static AttributeOption withModifier(Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op, EquipmentSlotGroup slotGroup) {
+        return withModifier(RandomizationSlotManager.ATTRIBUTE_SLOT, attribute, name, minAmount, maxAmount, op, slotGroup);
+    }
+
     public static AttributeOption withModifier(IRandomizationSlot slot, Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
         AttributeOption opt = new AttributeOption(slot);
         opt.addAttributeModifier(attribute, name, minAmount, maxAmount, op);
+        return opt;
+    }
+
+    public static AttributeOption withModifier(IRandomizationSlot slot, Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op, EquipmentSlotGroup slotGroup) {
+        AttributeOption opt = new AttributeOption(slot);
+        opt.addAttributeModifier(attribute, name, minAmount, maxAmount, op, slotGroup);
         return opt;
     }
 

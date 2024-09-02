@@ -25,7 +25,8 @@
                     "amount": 2.0,
                     "id": "mkultra:burning_staff",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "mainhand"
                 }
               ]
             },
@@ -40,7 +41,8 @@
                     "amount": 2.0,
                     "id": "mkultra:burning_staff",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "mainhand"
                 }
               ]
             },
@@ -55,7 +57,8 @@
                     "amount": 0.25,
                     "id": "mkultra:burning_staff",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "mainhand"
                 }
               ]
             },
@@ -70,7 +73,8 @@
                     "amount": 0.05,
                     "id": "mkultra:burning_staff",
                     "operation": "add_multiplied_total"
-                  }
+                  },
+                  "slot": "mainhand"
                 }
               ]
             },
@@ -85,7 +89,8 @@
                     "amount": 1.0,
                     "id": "mkultra:burning_staff",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "mainhand"
                 }
               ]
             },
@@ -100,7 +105,8 @@
                     "amount": 1.0,
                     "id": "mkultra:burning_staff",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "mainhand"
                 }
               ]
             },
@@ -115,7 +121,8 @@
                     "amount": 1.0,
                     "id": "mkultra:burning_staff",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "mainhand"
                 }
               ]
             }

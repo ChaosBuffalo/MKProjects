@@ -21,6 +21,7 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
@@ -59,7 +60,7 @@ public class MKULootTierProvider extends LootTierProvider {
         weaponTemplate.addItem(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.LONGSWORD_TYPE));
         var meleeEffects = new MeleeEffectOption();
         var weaponEffect = new OnHitAbilityEffect(0.5, 10.0f, MKUAbilities.SEAFURY);
-        ;
+
         meleeEffects.addEffect(weaponEffect);
         weaponTemplate.addRandomizationOption(meleeEffects);
         NameOption name = new NameOption(Component.literal("Seafury Blade"));
@@ -70,20 +71,20 @@ public class MKULootTierProvider extends LootTierProvider {
         return tier;
     }
 
-    private void necrotideGolemAttrs(LootTier tier, LootItemTemplate template) {
+    private void necrotideGolemAttrs(LootTier tier, LootItemTemplate template, EquipmentSlotGroup slotGroup) {
         ResourceLocation modifierId = tier.getName();
         template.addRandomizationOption(AttributeOption.withModifier(Attributes.MAX_HEALTH, modifierId,
-                6.0, 30.0, AttributeModifier.Operation.ADD_VALUE));
+                6.0, 30.0, AttributeModifier.Operation.ADD_VALUE, slotGroup));
         template.addRandomizationOption(AttributeOption.withModifier(MKAttributes.MAX_MANA, modifierId,
-                6.0, 30.0, AttributeModifier.Operation.ADD_VALUE));
+                6.0, 30.0, AttributeModifier.Operation.ADD_VALUE, slotGroup));
         template.addRandomizationOption(AttributeOption.withModifier(MKAttributes.MANA_REGEN, modifierId,
-                0.5, 4.0, AttributeModifier.Operation.ADD_VALUE));
+                0.5, 4.0, AttributeModifier.Operation.ADD_VALUE, slotGroup));
         template.addRandomizationOption(AttributeOption.withModifier(MKAttributes.NECROMANCY, modifierId,
-                2, 10, AttributeModifier.Operation.ADD_VALUE));
+                2, 10, AttributeModifier.Operation.ADD_VALUE, slotGroup));
         template.addRandomizationOption(AttributeOption.withModifier(MKAttributes.SHADOW_DAMAGE, modifierId,
-                2.0, 8.0, AttributeModifier.Operation.ADD_VALUE));
+                2.0, 8.0, AttributeModifier.Operation.ADD_VALUE, slotGroup));
         template.addRandomizationOption(AttributeOption.withModifier(MKAttributes.SHADOW_RESISTANCE, modifierId,
-                0.05, 0.20, AttributeModifier.Operation.ADD_VALUE));
+                0.05, 0.20, AttributeModifier.Operation.ADD_VALUE, slotGroup));
     }
 
 
@@ -100,7 +101,7 @@ public class MKULootTierProvider extends LootTierProvider {
         template.addTemplate(new RandomizationTemplate(MKUltra.id("corrupted_gauntlets_crit"),
                 RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT), 1);
         tier.addItemTemplate(template, 10);
-        necrotideGolemAttrs(tier, template);
+        necrotideGolemAttrs(tier, template, EquipmentSlotGroup.ANY);
         LootItemTemplate ringTemplate = new LootItemTemplate(LootSlotManager.RINGS);
         template.addItem(MKUItems.necrotideBand.get());
         var restoreMana = new RestoreManaOnCastEffect(0.05, 0.25, 0.1f, 1.0f);
@@ -112,7 +113,7 @@ public class MKULootTierProvider extends LootTierProvider {
         ringTemplate.addTemplate(new RandomizationTemplate(MKUltra.id("necrotide_band_crit"),
                 RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT), 1);
         tier.addItemTemplate(ringTemplate, 20);
-        necrotideGolemAttrs(tier, ringTemplate);
+        necrotideGolemAttrs(tier, ringTemplate, EquipmentSlotGroup.ANY);
         return tier;
 
     }
@@ -188,10 +189,10 @@ public class MKULootTierProvider extends LootTierProvider {
         feetTemp.addItem(MKUItems.trooperKnightBoots.get());
         LootItemTemplate legsTemp = new LootItemTemplate(LootSlotManager.LEGS);
         legsTemp.addItem(MKUItems.trooperKnightLeggings.get());
-        introCastleAttrs(tier, headTemp);
-        introCastleAttrs(tier, feetTemp);
-        introCastleAttrs(tier, chestTemp);
-        introCastleAttrs(tier, legsTemp);
+        introCastleAttrs(tier, headTemp, EquipmentSlotGroup.HEAD);
+        introCastleAttrs(tier, feetTemp, EquipmentSlotGroup.FEET);
+        introCastleAttrs(tier, chestTemp, EquipmentSlotGroup.CHEST);
+        introCastleAttrs(tier, legsTemp, EquipmentSlotGroup.LEGS);
         addTemplateTrooperKnight(headTemp);
         addTemplateTrooperKnight(chestTemp);
         addTemplateTrooperKnight(legsTemp);
@@ -332,35 +333,36 @@ public class MKULootTierProvider extends LootTierProvider {
         tier.addItemTemplate(template, weight);
     }
 
-    private void cryptAttrs(LootTier tier, LootItemTemplate template) {
+    private void cryptAttrs(LootTier tier, LootItemTemplate template, EquipmentSlotGroup slotGroup) {
         ResourceLocation modifierId = tier.getName();
         AttributeOption healthAttribute = new AttributeOption();
         healthAttribute.addAttributeModifier(Attributes.MAX_HEALTH, modifierId,
-                5, 20.0, AttributeModifier.Operation.ADD_VALUE);
+                5, 20.0, AttributeModifier.Operation.ADD_VALUE, slotGroup);
         template.addRandomizationOption(healthAttribute);
         AttributeOption manaAttribute = new AttributeOption();
         manaAttribute.addAttributeModifier(MKAttributes.MAX_MANA, modifierId,
-                5, 20.0, AttributeModifier.Operation.ADD_VALUE);
+                5, 20.0, AttributeModifier.Operation.ADD_VALUE, slotGroup);
         template.addRandomizationOption(manaAttribute);
         AttributeOption manaRegen = new AttributeOption();
         manaRegen.addAttributeModifier(MKAttributes.MANA_REGEN, modifierId,
-                0.5, 4.0, AttributeModifier.Operation.ADD_VALUE);
+                0.5, 4.0, AttributeModifier.Operation.ADD_VALUE, slotGroup);
         template.addRandomizationOption(manaRegen);
         AttributeOption atkDamage = new AttributeOption();
         atkDamage.addAttributeModifier(Attributes.ATTACK_DAMAGE, modifierId,
-                2.0, 6.0, AttributeModifier.Operation.ADD_VALUE);
+                2.0, 6.0, AttributeModifier.Operation.ADD_VALUE, slotGroup);
         template.addRandomizationOption(atkDamage);
         AttributeOption armor = new AttributeOption();
         armor.addAttributeModifier(Attributes.ARMOR, modifierId,
-                2.0, 8.0, AttributeModifier.Operation.ADD_VALUE);
+                2.0, 8.0, AttributeModifier.Operation.ADD_VALUE, slotGroup);
         template.addRandomizationOption(armor);
         AttributeOption eleDamage = new AttributeOption();
         eleDamage.addAttributeModifier(MKAttributes.FIRE_DAMAGE, modifierId,
-                2.0, 6.0, AttributeModifier.Operation.ADD_VALUE);
+                2.0, 6.0, AttributeModifier.Operation.ADD_VALUE, slotGroup);
         template.addRandomizationOption(eleDamage);
         AttributeOption eleResistance = new AttributeOption();
         eleResistance.addAttributeModifier(MKAttributes.FIRE_RESISTANCE, modifierId,
-                0.05, 0.15, AttributeModifier.Operation.ADD_VALUE);
+                0.05, 0.15, AttributeModifier.Operation.ADD_VALUE, slotGroup);
+        template.addRandomizationOption(eleResistance);
     }
 
     private void addFlameWaveStaff(LootTier tier, double weight) {
@@ -370,7 +372,7 @@ public class MKULootTierProvider extends LootTierProvider {
         staff.addRandomizationOption(abilityOption);
         NameOption name = new NameOption(Component.literal("Staff of Flames"));
         staff.addRandomizationOption(name);
-        cryptAttrs(tier, staff);
+        cryptAttrs(tier, staff, EquipmentSlotGroup.MAINHAND);
         staff.addTemplate(new RandomizationTemplate(MKUltra.id("staff"),
                 RandomizationSlotManager.ABILITY_SLOT, RandomizationSlotManager.NAME_SLOT), 10);
         staff.addTemplate(new RandomizationTemplate(MKUltra.id("staff_crit"),
@@ -402,7 +404,7 @@ public class MKULootTierProvider extends LootTierProvider {
         katana.addRandomizationOption(meleeEffect);
         NameOption name = new NameOption(Component.literal("Stinging Blade"));
         katana.addRandomizationOption(name);
-        introCastleAttrs(tier, katana);
+        introCastleAttrs(tier, katana, EquipmentSlotGroup.MAINHAND);
         katana.addTemplate(new RandomizationTemplate(MKUltra.id("blade"),
                 RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.NAME_SLOT), 10);
         katana.addTemplate(new RandomizationTemplate(MKUltra.id("blade_crit"),
@@ -420,7 +422,7 @@ public class MKULootTierProvider extends LootTierProvider {
         staff.addRandomizationOption(abilityOption);
         NameOption name = new NameOption(Component.literal("Burning Staff"));
         staff.addRandomizationOption(name);
-        introCastleAttrs(tier, staff);
+        introCastleAttrs(tier, staff, EquipmentSlotGroup.MAINHAND);
         staff.addTemplate(new RandomizationTemplate(MKUltra.id("blade"),
                 RandomizationSlotManager.ABILITY_SLOT, RandomizationSlotManager.NAME_SLOT), 10);
         staff.addTemplate(new RandomizationTemplate(MKUltra.id("blade_crit"),
@@ -446,7 +448,7 @@ public class MKULootTierProvider extends LootTierProvider {
         executionersBlade.addRandomizationOption(abilityOption);
         PrefixNameOption name = new PrefixNameOption(Component.literal("Executioner's"));
         executionersBlade.addRandomizationOption(name);
-        introCastleAttrs(tier, executionersBlade);
+        introCastleAttrs(tier, executionersBlade, EquipmentSlotGroup.MAINHAND);
         executionersBlade.addTemplate(new RandomizationTemplate(MKUltra.id("blade"),
                 RandomizationSlotManager.ABILITY_SLOT, RandomizationSlotManager.NAME_SLOT), 10);
         executionersBlade.addTemplate(new RandomizationTemplate(MKUltra.id("blade_crit"),
@@ -480,35 +482,35 @@ public class MKULootTierProvider extends LootTierProvider {
 
     }
 
-    private void introCastleAttrs(LootTier tier, LootItemTemplate template) {
+    private void introCastleAttrs(LootTier tier, LootItemTemplate template, EquipmentSlotGroup slotGroup) {
         ResourceLocation modifierId = tier.getName();
         AttributeOption healthAttribute = new AttributeOption();
         healthAttribute.addAttributeModifier(Attributes.MAX_HEALTH, modifierId,
-                2, 10.0, AttributeModifier.Operation.ADD_VALUE);
+                2, 10.0, AttributeModifier.Operation.ADD_VALUE, slotGroup);
         template.addRandomizationOption(healthAttribute);
         AttributeOption manaAttribute = new AttributeOption();
         manaAttribute.addAttributeModifier(MKAttributes.MAX_MANA, modifierId,
-                2, 10.0, AttributeModifier.Operation.ADD_VALUE);
+                2, 10.0, AttributeModifier.Operation.ADD_VALUE, slotGroup);
         template.addRandomizationOption(manaAttribute);
         AttributeOption manaRegen = new AttributeOption();
         manaRegen.addAttributeModifier(MKAttributes.MANA_REGEN, modifierId,
-                0.25, 2.0, AttributeModifier.Operation.ADD_VALUE);
+                0.25, 2.0, AttributeModifier.Operation.ADD_VALUE, slotGroup);
         template.addRandomizationOption(manaRegen);
         AttributeOption runSpeed = new AttributeOption();
         runSpeed.addAttributeModifier(Attributes.MOVEMENT_SPEED, modifierId,
-                0.05, 0.15, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+                0.05, 0.15, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, slotGroup);
         template.addRandomizationOption(runSpeed);
         AttributeOption atkDamage = new AttributeOption();
         atkDamage.addAttributeModifier(Attributes.ATTACK_DAMAGE, modifierId,
-                1.0, 4.0, AttributeModifier.Operation.ADD_VALUE);
+                1.0, 4.0, AttributeModifier.Operation.ADD_VALUE, slotGroup);
         template.addRandomizationOption(atkDamage);
         AttributeOption armor = new AttributeOption();
         armor.addAttributeModifier(Attributes.ARMOR, modifierId,
-                1.0, 4.0, AttributeModifier.Operation.ADD_VALUE);
+                1.0, 4.0, AttributeModifier.Operation.ADD_VALUE, slotGroup);
         template.addRandomizationOption(armor);
         AttributeOption natureDamage = new AttributeOption();
         natureDamage.addAttributeModifier(MKAttributes.NATURE_DAMAGE, modifierId,
-                1, 4.0, AttributeModifier.Operation.ADD_VALUE);
+                1, 4.0, AttributeModifier.Operation.ADD_VALUE, slotGroup);
         template.addRandomizationOption(natureDamage);
     }
 }
