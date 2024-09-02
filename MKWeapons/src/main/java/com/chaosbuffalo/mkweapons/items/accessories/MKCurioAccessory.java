@@ -1,8 +1,17 @@
 package com.chaosbuffalo.mkweapons.items.accessories;
 
 import com.chaosbuffalo.mkweapons.components.WeaponsComponents;
+import com.chaosbuffalo.mkweapons.items.effects.ItemModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
+import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -17,6 +26,7 @@ import java.util.List;
 
 
 public class MKCurioAccessory extends Item implements ICurioItem, IMKAccessory {
+    private static final Multimap<Holder<Attribute>, AttributeModifier> EMPTY_MODIFIERS = ImmutableMultimap.of();
 
     private final List<IAccessoryEffect> effects;
 
@@ -37,6 +47,30 @@ public class MKCurioAccessory extends Item implements ICurioItem, IMKAccessory {
         } else {
             return effects;
         }
+    }
+
+    // This is needed to apply the attribute values from the curio, but due to how we use the effects for
+    // attributes we also need ItemAttributeModifierEvent in order to display the tooltip
+    @Override
+    public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, ResourceLocation id, ItemStack stack) {
+        var stackEffects = getAccessoryEffects(stack);
+        if (stackEffects.isEmpty())
+            return EMPTY_MODIFIERS;
+
+        Multimap<Holder<Attribute>, AttributeModifier> map = HashMultimap.create();
+        for (var effect : stackEffects) {
+            if (effect instanceof ItemModifierEffect modifierEffect) {
+                for (AttributeOptionEntry m : modifierEffect.getModifiers()) {
+                    map.put(m.getAttribute(), m.getModifier());
+                }
+            }
+        }
+        return map;
+    }
+
+    @Override
+    public boolean needsAttributesEventSupport() {
+        return true;
     }
 
     @Override
