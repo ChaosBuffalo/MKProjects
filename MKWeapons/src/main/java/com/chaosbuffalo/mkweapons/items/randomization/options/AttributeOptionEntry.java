@@ -63,7 +63,11 @@ public class AttributeOptionEntry {
     }
 
     public AttributeOptionEntry(Holder<Attribute> attribute, AttributeModifier modifier) {
-        this(attribute, modifier, modifier.amount(), modifier.amount());
+        this(attribute, modifier, EquipmentSlotGroup.ANY, modifier.amount(), modifier.amount());
+    }
+
+    public AttributeOptionEntry(Holder<Attribute> attribute, AttributeModifier modifier, EquipmentSlotGroup slotGroup) {
+        this(attribute, modifier, slotGroup, modifier.amount(), modifier.amount());
     }
 
     public AttributeModifier getModifier() {

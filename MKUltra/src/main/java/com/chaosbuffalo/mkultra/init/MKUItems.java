@@ -19,12 +19,12 @@ import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.MKTier;
 import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
-import com.google.common.collect.Lists;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ArmorItem;
@@ -85,201 +85,259 @@ public final class MKUItems {
     public static DeferredHolder<Item, Item> necrotideBand = REGISTRY.register("necrotide_band",
             () -> new MKCurioAccessory(new Item.Properties().stacksTo(1)));
 
-    static List<AttributeOptionEntry> gkHelmetAttrs = Lists.newArrayList(
+    static List<AttributeOptionEntry> gkHelmetAttrs = List.of(
             new AttributeOptionEntry(MKAttributes.COOLDOWN,
                     createTransitionalModifier(UUID.fromString("2013a410-ca6d-48a9-a12d-a70a65ec8190"),
-                            "Bonus", 0.25, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)));
+                            "Bonus", 0.25, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                    EquipmentSlotGroup.HEAD));
 
-    static List<AttributeOptionEntry> gkLegsAttrs = Lists.newArrayList(
+    static List<AttributeOptionEntry> gkLegsAttrs = List.of(
             new AttributeOptionEntry(MKAttributes.MAX_MANA,
                     createTransitionalModifier(UUID.fromString("9b184106-1a7b-444c-8bbe-538bff1f66cd"),
-                            "Bonus", 6, AttributeModifier.Operation.ADD_VALUE)),
+                            "Bonus", 6, AttributeModifier.Operation.ADD_VALUE),
+                    EquipmentSlotGroup.LEGS),
             new AttributeOptionEntry(MKAttributes.MANA_REGEN,
                     createTransitionalModifier(UUID.fromString("25f12c51-a841-4ac9-8fbb-02000a19e563"),
-                            "Bonus", 1.0, AttributeModifier.Operation.ADD_VALUE)));
+                            "Bonus", 1.0, AttributeModifier.Operation.ADD_VALUE),
+                    EquipmentSlotGroup.LEGS));
 
-    static List<AttributeOptionEntry> gkChestAttrs = Lists.newArrayList(
+    static List<AttributeOptionEntry> gkChestAttrs = List.of(
             new AttributeOptionEntry(Attributes.MAX_HEALTH,
                     createTransitionalModifier(UUID.fromString("ea84d132-3e14-40d7-acda-2f8ab0d5f3ad"),
-                            "Bonus", 10, AttributeModifier.Operation.ADD_VALUE)),
+                            "Bonus", 10, AttributeModifier.Operation.ADD_VALUE),
+                    EquipmentSlotGroup.CHEST),
             new AttributeOptionEntry(MKAttributes.HEAL_BONUS,
                     createTransitionalModifier(UUID.fromString("c6359e08-8e0c-4721-b8aa-d55d978f4798"),
-                            "Bonus", 2, AttributeModifier.Operation.ADD_VALUE)));
+                            "Bonus", 2, AttributeModifier.Operation.ADD_VALUE),
+                    EquipmentSlotGroup.CHEST));
 
-    static List<AttributeOptionEntry> gkBootsAttrs = Lists.newArrayList(
+    static List<AttributeOptionEntry> gkBootsAttrs = List.of(
             new AttributeOptionEntry(Attributes.ATTACK_SPEED,
                     createTransitionalModifier(UUID.fromString("f0d94451-5a80-4669-954d-bc6f6c39ccd0"),
-                            "Bonus", 0.10, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)));
+                            "Bonus", 0.10, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                    EquipmentSlotGroup.FEET));
 
     public static DeferredHolder<Item, MKArmorItem> greenKnightHelmet = REGISTRY.register("green_knight_helmet",
             () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.HELMET,
-                    (new Item.Properties()), new ArmorModifierEffect(gkHelmetAttrs)));
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.HELMET.getDurability(MKUArmorMaterial.GREEN_KNOX_ARMOR_DURABILITY)),
+                    new ArmorModifierEffect(gkHelmetAttrs)));
 
     public static DeferredHolder<Item, MKArmorItem> greenKnightLeggings = REGISTRY.register("green_knight_leggings",
             () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.LEGGINGS,
-                    (new Item.Properties()), new ArmorModifierEffect(gkLegsAttrs)));
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.LEGGINGS.getDurability(MKUArmorMaterial.GREEN_KNOX_ARMOR_DURABILITY)),
+                    new ArmorModifierEffect(gkLegsAttrs)));
 
     public static DeferredHolder<Item, MKArmorItem> greenKnightChestplate = REGISTRY.register("green_knight_chestplate",
             () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.CHESTPLATE,
-                    (new Item.Properties()), new ArmorModifierEffect(gkChestAttrs)));
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.CHESTPLATE.getDurability(MKUArmorMaterial.GREEN_KNOX_ARMOR_DURABILITY)),
+                    new ArmorModifierEffect(gkChestAttrs)));
 
     public static DeferredHolder<Item, MKArmorItem> greenKnightBoots = REGISTRY.register("green_knight_boots",
             () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.BOOTS,
-                    (new Item.Properties()), new ArmorModifierEffect(gkBootsAttrs)));
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.BOOTS.getDurability(MKUArmorMaterial.GREEN_KNOX_ARMOR_DURABILITY)),
+                    new ArmorModifierEffect(gkBootsAttrs)));
 
     public static DeferredHolder<Item, Item> corruptedPigIronPlate = REGISTRY.register("corrupted_pig_iron_plate",
             () -> new Item(new Item.Properties()));
 
     public static DeferredHolder<Item, MKArmorItem> trooperKnightHelmet = REGISTRY.register("trooper_knight_helmet",
             () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, ArmorItem.Type.HELMET,
-                    (new Item.Properties())));
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.HELMET.getDurability(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR_DURABILITY))
+            ));
 
     public static DeferredHolder<Item, MKArmorItem> trooperKnightLeggings = REGISTRY.register("trooper_knight_leggings",
             () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, ArmorItem.Type.LEGGINGS,
-                    (new Item.Properties())));
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.LEGGINGS.getDurability(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR_DURABILITY))
+            ));
 
     public static DeferredHolder<Item, MKArmorItem> trooperKnightChestplate = REGISTRY.register("trooper_knight_chestplate",
             () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, ArmorItem.Type.CHESTPLATE,
-                    (new Item.Properties())));
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.CHESTPLATE.getDurability(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR_DURABILITY))
+            ));
 
     public static DeferredHolder<Item, MKArmorItem> trooperKnightBoots = REGISTRY.register("trooper_knight_boots",
             () -> new MKArmorItem(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR, ArmorItem.Type.BOOTS,
-                    (new Item.Properties())));
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.BOOTS.getDurability(MKUArmorMaterial.TROOPER_KNIGHT_ARMOR_DURABILITY))
+            ));
 
     public static DeferredHolder<Item, MKArmorItem> seawovenHelmet = REGISTRY.register("seawoven_helmet",
             () -> new MKArmorItem(MKUArmorMaterial.SEAWOVEN_ARMOR, ArmorItem.Type.HELMET,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.HELMET.getDurability(MKUArmorMaterial.SEAWOVEN_ARMOR_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MANA_REGEN,
-                                    createTransitionalModifier(HELMET_UUID, "seawoven", 1.0, AttributeModifier.Operation.ADD_VALUE))
+                                    createTransitionalModifier(HELMET_UUID, "seawoven", 1.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.HEAD)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> seawovenLeggings = REGISTRY.register("seawoven_leggings",
             () -> new MKArmorItem(MKUArmorMaterial.SEAWOVEN_ARMOR, ArmorItem.Type.LEGGINGS,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.LEGGINGS.getDurability(MKUArmorMaterial.SEAWOVEN_ARMOR_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                                    createTransitionalModifier(LEGGINGS_UUID, "seawoven", 6.0, AttributeModifier.Operation.ADD_VALUE))
+                                    createTransitionalModifier(LEGGINGS_UUID, "seawoven", 6.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.LEGS)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> seawovenChestplate = REGISTRY.register("seawoven_chestplate",
             () -> new MKArmorItem(MKUArmorMaterial.SEAWOVEN_ARMOR, ArmorItem.Type.CHESTPLATE,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.CHESTPLATE.getDurability(MKUArmorMaterial.SEAWOVEN_ARMOR_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                                    createTransitionalModifier(CHEST_UUID, "seawoven", 6.0, AttributeModifier.Operation.ADD_VALUE)),
+                                    createTransitionalModifier(CHEST_UUID, "seawoven", 6.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.CHEST),
                             new AttributeOptionEntry(MKAttributes.MANA_REGEN,
-                                    createTransitionalModifier(CHEST_UUID, "seawoven", 1.0, AttributeModifier.Operation.ADD_VALUE))
+                                    createTransitionalModifier(CHEST_UUID, "seawoven", 1.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.CHEST)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> seawovenBoots = REGISTRY.register("seawoven_boots",
             () -> new MKArmorItem(MKUArmorMaterial.SEAWOVEN_ARMOR, ArmorItem.Type.BOOTS,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.BOOTS.getDurability(MKUArmorMaterial.SEAWOVEN_ARMOR_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                                    createTransitionalModifier(FEET_UUID, "seawoven", 4.0, AttributeModifier.Operation.ADD_VALUE))
+                                    createTransitionalModifier(FEET_UUID, "seawoven", 4.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.FEET)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> ancientBronzeHelmet = REGISTRY.register("ancient_bronze_helmet",
             () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_BRONZE_CHAINMAIL, ArmorItem.Type.HELMET,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.HELMET.getDurability(MKUArmorMaterial.ANCIENT_BRONZE_CHAINMAIL_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.ARETE,
-                                    createTransitionalModifier(HELMET_UUID, "ancient_bronze", 0.1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL))
+                                    createTransitionalModifier(HELMET_UUID, "ancient_bronze", 0.1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                                    EquipmentSlotGroup.HEAD)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> ancientBronzeLeggings = REGISTRY.register("ancient_bronze_leggings",
             () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_BRONZE_CHAINMAIL, ArmorItem.Type.LEGGINGS,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.LEGGINGS.getDurability(MKUArmorMaterial.ANCIENT_BRONZE_CHAINMAIL_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(Attributes.MOVEMENT_SPEED,
-                                    createTransitionalModifier(LEGGINGS_UUID, "ancient_bronze", 0.15, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL))
+                                    createTransitionalModifier(LEGGINGS_UUID, "ancient_bronze", 0.15, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                                    EquipmentSlotGroup.LEGS)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> ancientBronzeChestplate = REGISTRY.register("ancient_bronze_chestplate",
             () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_BRONZE_CHAINMAIL, ArmorItem.Type.CHESTPLATE,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.CHESTPLATE.getDurability(MKUArmorMaterial.ANCIENT_BRONZE_CHAINMAIL_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(Attributes.MAX_HEALTH,
-                                    createTransitionalModifier(CHEST_UUID, "ancient_bronze", 10.0, AttributeModifier.Operation.ADD_VALUE)),
+                                    createTransitionalModifier(CHEST_UUID, "ancient_bronze", 10.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.CHEST),
                             new AttributeOptionEntry(Attributes.ATTACK_DAMAGE,
-                                    createTransitionalModifier(CHEST_UUID, "ancient_bronze", 2.0, AttributeModifier.Operation.ADD_VALUE))
+                                    createTransitionalModifier(CHEST_UUID, "ancient_bronze", 2.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.CHEST)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> ancientBronzeBoots = REGISTRY.register("ancient_bronze_boots",
             () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_BRONZE_CHAINMAIL, ArmorItem.Type.BOOTS,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.BOOTS.getDurability(MKUArmorMaterial.ANCIENT_BRONZE_CHAINMAIL_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(Attributes.ATTACK_SPEED,
-                                    createTransitionalModifier(FEET_UUID, "ancient_bronze", 0.12, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL))
+                                    createTransitionalModifier(FEET_UUID, "ancient_bronze", 0.12, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                                    EquipmentSlotGroup.FEET)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> ancientPriestHelmet = REGISTRY.register("ancient_priest_helmet",
             () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_PRIEST_ROBES, ArmorItem.Type.HELMET,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.HELMET.getDurability(MKUArmorMaterial.ANCIENT_PRIEST_ROBES_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MANA_REGEN,
-                                    createTransitionalModifier(HELMET_UUID, "ancient_priest", 2.0, AttributeModifier.Operation.ADD_VALUE))
+                                    createTransitionalModifier(HELMET_UUID, "ancient_priest", 2.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.HEAD)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> ancientPriestLeggings = REGISTRY.register("ancient_priest_leggings",
             () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_PRIEST_ROBES, ArmorItem.Type.LEGGINGS,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.LEGGINGS.getDurability(MKUArmorMaterial.ANCIENT_PRIEST_ROBES_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                                    createTransitionalModifier(LEGGINGS_UUID, "ancient_priest", 10.0, AttributeModifier.Operation.ADD_VALUE))
+                                    createTransitionalModifier(LEGGINGS_UUID, "ancient_priest", 10.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.LEGS)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> ancientPriestChestplate = REGISTRY.register("ancient_priest_chestplate",
             () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_PRIEST_ROBES, ArmorItem.Type.CHESTPLATE,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.CHESTPLATE.getDurability(MKUArmorMaterial.ANCIENT_PRIEST_ROBES_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                                    createTransitionalModifier(CHEST_UUID, "ancient_priest", 10.0, AttributeModifier.Operation.ADD_VALUE)),
+                                    createTransitionalModifier(CHEST_UUID, "ancient_priest", 10.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.CHEST),
                             new AttributeOptionEntry(MKAttributes.MANA_REGEN,
-                                    createTransitionalModifier(CHEST_UUID, "ancient_priest", 1.5, AttributeModifier.Operation.ADD_VALUE))
+                                    createTransitionalModifier(CHEST_UUID, "ancient_priest", 1.5, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.CHEST)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> ancientPriestBoots = REGISTRY.register("ancient_priest_boots",
             () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_PRIEST_ROBES, ArmorItem.Type.BOOTS,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.BOOTS.getDurability(MKUArmorMaterial.ANCIENT_PRIEST_ROBES_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.SPELL_CRIT_MULTIPLIER,
-                                    createTransitionalModifier(FEET_UUID, "ancient_priest", 0.25, AttributeModifier.Operation.ADD_VALUE))
+                                    createTransitionalModifier(FEET_UUID, "ancient_priest", 0.25, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.FEET)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> ancientCardinalHelmet = REGISTRY.register("ancient_cardinal_helmet",
             () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_CARDINAL_ROBES, ArmorItem.Type.HELMET,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.HELMET.getDurability(MKUArmorMaterial.ANCIENT_CARDINAL_ROBES_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MANA_REGEN,
-                                    createTransitionalModifier(HELMET_UUID, "ancient_cardinal", 3.0, AttributeModifier.Operation.ADD_VALUE))
+                                    createTransitionalModifier(HELMET_UUID, "ancient_cardinal", 3.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.HEAD)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> ancientCardinalLeggings = REGISTRY.register("ancient_cardinal_leggings",
             () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_CARDINAL_ROBES, ArmorItem.Type.LEGGINGS,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.LEGGINGS.getDurability(MKUArmorMaterial.ANCIENT_CARDINAL_ROBES_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                                    createTransitionalModifier(LEGGINGS_UUID, "ancient_cardinal", 15.0, AttributeModifier.Operation.ADD_VALUE))
+                                    createTransitionalModifier(LEGGINGS_UUID, "ancient_cardinal", 15.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.LEGS)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> ancientCardinalChestplate = REGISTRY.register("ancient_cardinal_chestplate",
             () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_CARDINAL_ROBES, ArmorItem.Type.CHESTPLATE,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.CHESTPLATE.getDurability(MKUArmorMaterial.ANCIENT_CARDINAL_ROBES_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.MAX_MANA,
-                                    createTransitionalModifier(CHEST_UUID, "ancient_cardinal", 15.0, AttributeModifier.Operation.ADD_VALUE)),
+                                    createTransitionalModifier(CHEST_UUID, "ancient_cardinal", 15.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.CHEST),
                             new AttributeOptionEntry(MKAttributes.MANA_REGEN,
-                                    createTransitionalModifier(CHEST_UUID, "ancient_cardinal", 2.25, AttributeModifier.Operation.ADD_VALUE))
+                                    createTransitionalModifier(CHEST_UUID, "ancient_cardinal", 2.25, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.CHEST)
                     ))));
 
     public static DeferredHolder<Item, MKArmorItem> ancientCardinalBoots = REGISTRY.register("ancient_cardinal_boots",
             () -> new MKArmorItem(MKUArmorMaterial.ANCIENT_CARDINAL_ROBES, ArmorItem.Type.BOOTS,
-                    (new Item.Properties()),
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.HELMET.getDurability(MKUArmorMaterial.ANCIENT_CARDINAL_ROBES_DURABILITY)),
                     new ArmorModifierEffect(List.of(
                             new AttributeOptionEntry(MKAttributes.SPELL_CRIT_MULTIPLIER,
-                                    createTransitionalModifier(FEET_UUID, "ancient_cardinal", 0.35, AttributeModifier.Operation.ADD_VALUE))
+                                    createTransitionalModifier(FEET_UUID, "ancient_cardinal", 0.35, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.FEET)
                     ))));
 
     public static DeferredHolder<Item, Item> destroyedTrooperHelmet = REGISTRY.register("destroyed_trooper_helmet",
