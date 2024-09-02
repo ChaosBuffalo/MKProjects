@@ -110,17 +110,16 @@ public class ClientEventHandler {
         handleInputEvent();
     }
 
-    // FIXME: Stun maybe needs to be done differently raw mouse event seems gone
-//    @SubscribeEvent
-//    public static void onRawMouseEvent(InputEvent.RawMouseEvent event) {
-//        Minecraft minecraft = Minecraft.getInstance();
-//        MKCore.getEntityData(minecraft.player).ifPresent(playerData -> {
-//            if (playerData.getEffects().isEffectActive(CoreEffects.STUN.get()) &&
-//                    minecraft.screen == null) {
-//                event.setCanceled(true);
-//            }
-//        });
-//    }
+    @SubscribeEvent
+    public static void onPreMouseEvent(InputEvent.MouseButton.Pre event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        MKCore.getEntityData(minecraft.player).ifPresent(playerData -> {
+            if (playerData.getEffects().isEffectActive(CoreEffects.STUN.get()) &&
+                    minecraft.screen == null) {
+                event.setCanceled(true);
+            }
+        });
+    }
 
     @SubscribeEvent
     public static void cancelHealth(RenderGuiLayerEvent.Pre event) {
