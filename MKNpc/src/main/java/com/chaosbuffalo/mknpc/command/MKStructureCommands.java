@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.command;
 
+import com.chaosbuffalo.mkcore.utils.ChatUtils;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.PointOfInterestEntry;
 import com.chaosbuffalo.mknpc.content.ContentDB;
@@ -51,7 +52,7 @@ public class MKStructureCommands {
             Registry<Structure> registry = ctx.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE);
             starts.forEach(start -> {
                 ResourceLocation structureId = registry.getKey(start.getStructure());
-                player.sendSystemMessage(Component.translatable("mknpc.command.in_struct",
+                player.sendSystemMessage(ChatUtils.translatable("mknpc.command.in_struct",
                         structureId, StructureStartExtension.getInstanceId(start)));
             });
         }
@@ -76,7 +77,7 @@ public class MKStructureCommands {
                 UUID instanceId = StructureStartExtension.getInstanceId(start);
 
                 ContentDB.getPrimaryData().getStructureData(instanceId).ifPresent(MKStructureEntry::reset);
-                player.sendSystemMessage(Component.translatable("mknpc.command.reset_struct",
+                player.sendSystemMessage(ChatUtils.translatable("mknpc.command.reset_struct",
                         structureId, StructureStartExtension.getInstanceId(start)));
             });
         }
@@ -103,11 +104,11 @@ public class MKStructureCommands {
                 if (entry.isPresent()) {
                     Map<String, List<PointOfInterestEntry>> pois = entry.get().getPointsOfInterest();
                     if (pois.entrySet().stream().allMatch(m -> m.getValue().isEmpty())) {
-                        player.sendSystemMessage(Component.translatable(
+                        player.sendSystemMessage(ChatUtils.translatable(
                                 "mknpc.command.pois_struct_no_poi",
                                 structureId, startId));
                     } else {
-                        player.sendSystemMessage(Component.translatable("mknpc.command.pois_for_struct",
+                        player.sendSystemMessage(ChatUtils.translatable("mknpc.command.pois_for_struct",
                                 structureId, startId));
                         pois.forEach((key, value) -> value.forEach(
                                 poi -> player.sendSystemMessage(Component.translatable(
@@ -115,7 +116,7 @@ public class MKStructureCommands {
                                         key, poi.getLocation().toString()))));
                     }
                 } else {
-                    player.sendSystemMessage(Component.translatable(
+                    player.sendSystemMessage(ChatUtils.translatable(
                             "mknpc.command.pois_struct_not_found",
                             structureId, startId));
                 }
