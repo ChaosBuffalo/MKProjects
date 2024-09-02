@@ -2,8 +2,7 @@
   "placement": {
     "type": "mkultra:static_placement",
     "chunkX": 0,
-    "chunkZ": 0,
-    "salt": 0
+    "chunkZ": 0
   },
   "structures": [
     {

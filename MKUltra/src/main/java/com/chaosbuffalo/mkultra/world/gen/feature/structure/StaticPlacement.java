@@ -5,40 +5,28 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class StaticPlacement extends StructurePlacement {
-    public static final MapCodec<StaticPlacement> CODEC = RecordCodecBuilder.mapCodec(builder ->
-            placementCodec(builder).and(builder.group(
-                            Codec.INT.fieldOf("chunkX").forGetter(s -> s.chunkPos.x),
-                            Codec.INT.fieldOf("chunkZ").forGetter(s -> s.chunkPos.z)
-                    ))
-                    .apply(builder, StaticPlacement::new));
+    public static final MapCodec<StaticPlacement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.INT.fieldOf("chunkX").forGetter(s -> s.chunkPos.x),
+            Codec.INT.fieldOf("chunkZ").forGetter(s -> s.chunkPos.z)
+    ).apply(builder, StaticPlacement::new));
 
     private final BlockPos blockPos;
     private final ChunkPos chunkPos;
 
-    public StaticPlacement(Vec3i pLocateOffset, StructurePlacement.FrequencyReductionMethod pFrequencyReductionMethod, float pFrequency, int pSalt, Optional<StructurePlacement.ExclusionZone> pExclusionZone, int chunkX, int chunkZ) {
-        super(pLocateOffset, pFrequencyReductionMethod, pFrequency, pSalt, pExclusionZone);
-        this.chunkPos = new ChunkPos(chunkX, chunkZ);
-        blockPos = new BlockPos(chunkX, 0, chunkZ);
-    }
-
     public StaticPlacement(int chunkX, int chunkZ) {
-        this(chunkX, chunkZ, null);
-    }
-
-    public StaticPlacement(int chunkX, int chunkZ, @Nullable ExclusionZone zone) {
-        super(Vec3i.ZERO, FrequencyReductionMethod.DEFAULT, 1f, 0, Optional.ofNullable(zone));
+        super(Vec3i.ZERO, FrequencyReductionMethod.DEFAULT, 1f, 0, Optional.empty());
         this.chunkPos = new ChunkPos(chunkX, chunkZ);
-        blockPos = new BlockPos(chunkX, 0, chunkZ);
+        blockPos = new BlockPos(SectionPos.sectionToBlockCoord(chunkX), 0, SectionPos.sectionToBlockCoord(chunkZ));
     }
 
     @Override
