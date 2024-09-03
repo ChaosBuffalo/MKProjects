@@ -1,0 +1,6 @@
+// 1.21.1	2024-09-02T19:06:19.9274116	Registries
+b1d2aa2edf1e3cb9f74ba8f981a3e0ff97c7aa21 data/mknpc/worldgen/structure/test_jigsaw.json
+be18e4bcdd225957d395a67141c44634856fdce8 data/mknpc/worldgen/structure_set/test_structures.json
+c53eb36b2fec0ace9d70097b94825dfde130121f data/mknpc/worldgen/template_pool/digger/diggerbase.json
+3470e006876121c9a39b81056b9c860529499559 data/mknpc/worldgen/template_pool/digger/diggercamp.json
+e8263a0eb65c52f3271d8c9b76e456f03da15d01 data/mknpc/worldgen/template_pool/digger/diggerroad.json

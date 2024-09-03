@@ -32,11 +32,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class MKNpcGenerator {
@@ -47,10 +44,12 @@ public class MKNpcGenerator {
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
         PackOutput packOutput = generator.getPackOutput();
 
-        generator.addProvider(event.includeServer(), new NpcRegistrySets(packOutput, lookupProvider));
-        generator.addProvider(event.includeServer(), new NpcBiomeTagsProvider(packOutput, lookupProvider, fileHelper));
-        generator.addProvider(event.includeServer(), new NpcStructureTagsProvider(packOutput, lookupProvider, fileHelper));
-        generator.addProvider(event.includeServer(), new MKNpcDefinitionProvider(generator, lookupProvider));
+        NpcRegistrySets datapackRegistrySets = new NpcRegistrySets(packOutput, lookupProvider);
+        generator.addProvider(event.includeServer(), datapackRegistrySets);
+        var datapackLookup = datapackRegistrySets.getRegistryProvider();
+        generator.addProvider(event.includeServer(), new NpcBiomeTagsProvider(packOutput, datapackLookup, fileHelper));
+        generator.addProvider(event.includeServer(), new NpcStructureTagsProvider(packOutput, datapackLookup, fileHelper));
+        generator.addProvider(event.includeServer(), new MKNpcDefinitionProvider(generator, datapackLookup));
 
 
         // pack.mcmeta
