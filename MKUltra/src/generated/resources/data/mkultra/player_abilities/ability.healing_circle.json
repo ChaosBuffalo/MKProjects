@@ -1,0 +1,23 @@
+{
+  "attributes": {
+    "base": 3.0,
+    "casting_particles": "mkultra:healing_circle_casting",
+    "duration": 80,
+    "modifierScaling": 1.0,
+    "offset": {
+      "x": 0.0,
+      "y": 0.5,
+      "z": 0.0
+    },
+    "pulse_particles": "mkultra:healing_circle_detonate",
+    "radius": 1.6,
+    "scale": 1.0,
+    "tick_rate": 10,
+    "wait_particles": "mkultra:healing_circle_wait",
+    "wait_tick_rate": 5,
+    "wait_time": 20
+  },
+  "castTime": 10,
+  "cooldown": 400,
+  "manaCost": 8.0
+}

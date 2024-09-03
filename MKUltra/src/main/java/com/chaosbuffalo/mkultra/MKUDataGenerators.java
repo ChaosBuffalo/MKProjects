@@ -25,25 +25,28 @@ public class MKUDataGenerators {
         ExistingFileHelper fileHelper = event.getExistingFileHelper();
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
         PackOutput packOutput = generator.getPackOutput();
-        MKCoreGenerators.MKBlockTagsProvider blockTagsProvider = new MKCoreGenerators.MKBlockTagsProvider(generator.getPackOutput(),
-                event.getLookupProvider(), MKUltra.MODID, event.getExistingFileHelper());
+
+        var datapackRegistrySets = new MKURegistrySets(packOutput, lookupProvider);
+        generator.addProvider(event.includeServer(), datapackRegistrySets);
+        var datapackLookup = datapackRegistrySets.getRegistryProvider();
+
+        MKCoreGenerators.MKBlockTagsProvider blockTagsProvider = new MKCoreGenerators.MKBlockTagsProvider(packOutput,
+                datapackLookup, MKUltra.MODID, fileHelper);
         generator.addProvider(event.includeServer(), blockTagsProvider);
 
-        generator.addProvider(event.includeServer(), new MKURegistrySets(packOutput, lookupProvider));
-        generator.addProvider(event.includeServer(), new UltraBiomeTagsProvider(packOutput, lookupProvider, fileHelper));
-        generator.addProvider(event.includeServer(), new UltraStructureTagsProvider(packOutput, lookupProvider, fileHelper));
+        generator.addProvider(event.includeServer(), new UltraBiomeTagsProvider(packOutput, datapackLookup, fileHelper));
+        generator.addProvider(event.includeServer(), new UltraStructureTagsProvider(packOutput, datapackLookup, fileHelper));
 
         generator.addProvider(event.includeServer(), new MKUFactionProvider(generator));
         generator.addProvider(event.includeServer(), new MKUDialogueProvider(generator));
         generator.addProvider(event.includeServer(), new MKULootTierProvider(generator));
         generator.addProvider(event.includeServer(), new MKUTalentTreeProvider(generator));
-        generator.addProvider(event.includeServer(), new MKUQuestProvider(generator, lookupProvider));
-        generator.addProvider(event.includeServer(), new MKUNpcProvider(generator, lookupProvider));
+        generator.addProvider(event.includeServer(), new MKUQuestProvider(generator, datapackLookup));
+        generator.addProvider(event.includeServer(), new MKUNpcProvider(generator, datapackLookup));
         generator.addProvider(event.includeServer(), new MKAbilityProvider.FromMod(generator, MKUltra.MODID));
-        generator.addProvider(event.includeServer(), new MKURecipeProvider(packOutput, lookupProvider));
+        generator.addProvider(event.includeServer(), new MKURecipeProvider(packOutput, datapackLookup));
 
         generator.addProvider(event.includeClient(), new MKUItemModelProvider(packOutput, fileHelper));
-        generator.addProvider(event.includeServer(), new UltraItemTagsProvider(generator,
-                event.getLookupProvider(), blockTagsProvider, event.getExistingFileHelper()));
+        generator.addProvider(event.includeServer(), new UltraItemTagsProvider(generator, datapackLookup, blockTagsProvider, fileHelper));
     }
 }

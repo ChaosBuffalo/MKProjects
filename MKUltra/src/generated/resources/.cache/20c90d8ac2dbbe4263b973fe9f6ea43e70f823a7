@@ -1,0 +1,6 @@
+// 1.21.1	2024-09-02T19:47:42.3025817	MKUltra armor class item tags
+455dc022a7ee69295bad64faf6476596f15df448 data/curios/tags/item/hands.json
+45a8f26ad48e9065695c3e1fedd548a7d693d63d data/curios/tags/item/ring.json
+e7e8466d2ece419231eeecec31a6c554a59e5d27 data/mkcore/tags/item/armor/heavy.json
+b1b289fb0adaf9778634c942e7257fe9478ef9d3 data/mkcore/tags/item/armor/medium.json
+b42fcb6e7988c6c3d00abf096efae057799cb733 data/mkcore/tags/item/armor/robes.json
