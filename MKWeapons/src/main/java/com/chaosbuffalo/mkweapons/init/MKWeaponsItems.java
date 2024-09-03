@@ -10,18 +10,23 @@ import com.chaosbuffalo.mkweapons.items.TestNBTWeaponEffectItem;
 import com.chaosbuffalo.mkweapons.items.accessories.MKCurioAccessory;
 import com.chaosbuffalo.mkweapons.items.effects.melee.LivingDamageMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RapidFireRangedWeaponEffect;
+import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
+import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.MKWrapperTier;
 import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import com.chaosbuffalo.mkweapons.items.weapon.types.WeaponTypeManager;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.neoforged.bus.api.IEventBus;
@@ -159,26 +164,40 @@ public class MKWeaponsItems {
     }
 
     public static void registerItemProperties() {
-        for (MKBow bow : BOWS) {
-            ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("pull"), (itemStack, world, entity, seed) -> {
-                if (entity == null) {
-                    return 0.0F;
-                } else {
-                    return !(entity.getUseItem().getItem() instanceof MKBow mkBow) ? 0.0F :
-                            (float) (itemStack.getUseDuration(entity) - entity.getUseItemRemainingTicks()) / mkBow.getDrawTime(itemStack, entity);
-                }
-            });
-            ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("pulling"), (itemStack, world, entity, seed) -> {
-                return entity != null && entity.isUsingItem() && entity.getUseItem() == itemStack ? 1.0F : 0.0F;
-            });
-        }
-        for (MKMeleeWeapon weapon : WEAPONS) {
-            if (weapon.getWeaponType().canBlock()) {
-                ItemProperties.register(weapon, ResourceLocation.withDefaultNamespace("blocking"),
-                        (itemStack, world, entity, seed) -> entity != null && entity.isUsingItem()
-                                && entity.getUseItem() == itemStack ? 1.0F : 0.0F);
-            }
+        registerDefaultRangedWeaponItemProperties(BOWS);
+        registerDefaultMeleeWeaponItemProperties(WEAPONS);
+    }
 
+    public static <TItem extends Item & IMKMeleeWeapon> void registerDefaultMeleeWeaponItemProperties(Collection<? extends TItem> weapons) {
+        for (TItem weapon : weapons) {
+            if (weapon.getWeaponType().canBlock()) {
+                ItemProperties.register(weapon, ResourceLocation.withDefaultNamespace("blocking"), MKWeaponsItems::defaultMeleeBlockingProperty);
+            }
         }
+    }
+
+    public static <TItem extends Item & IMKRangedWeapon> void registerDefaultRangedWeaponItemProperties(Collection<? extends TItem> weapons) {
+        for (TItem bow : weapons) {
+            ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("pull"), MKWeaponsItems::defaultRangedPullProperty);
+            ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("pulling"), MKWeaponsItems::defaultRangedPullingProperty);
+        }
+    }
+
+    private static float defaultRangedPullProperty(ItemStack itemStack, ClientLevel world, LivingEntity entity, int seed) {
+        if (entity == null) {
+            return 0.0F;
+        } else {
+            return !(entity.getUseItem().getItem() instanceof MKBow mkBow) ? 0.0F :
+                    (float) (itemStack.getUseDuration(entity) - entity.getUseItemRemainingTicks()) / mkBow.getDrawTime(itemStack, entity);
+        }
+    }
+
+    private static float defaultRangedPullingProperty(ItemStack itemStack, ClientLevel world, LivingEntity entity, int seed) {
+        return entity != null && entity.isUsingItem() && entity.getUseItem() == itemStack ? 1.0F : 0.0F;
+    }
+
+    private static float defaultMeleeBlockingProperty(ItemStack itemStack, ClientLevel world, LivingEntity entity, int seed) {
+        return entity != null && entity.isUsingItem()
+                && entity.getUseItem() == itemStack ? 1.0F : 0.0F;
     }
 }

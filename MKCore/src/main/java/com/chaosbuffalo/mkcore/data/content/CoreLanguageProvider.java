@@ -182,6 +182,24 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("talent.mkcore.heal_efficiency.description", "Increases your healing efficiency by %s");
         add("talent.mkcore.nature_damage.name", "Nature Damage");
         add("talent.mkcore.nature_damage.description", "Increases your nature damage by %s");
+        add("mkcore.talent.max_poise.name", "Max Poise");
+        add("mkcore.talent.max_poise.description", "Increases your max poise by %s");
+        add("mkcore.talent.poise_regen.name", "Poise Regen");
+        add("mkcore.talent.poise_regen.description", "Increases your poise regeneration by %s");
+        add("mkcore.talent.block_efficiency.name", "Block Efficiency");
+        add("mkcore.talent.block_efficiency.description", "Increases your block efficiency by %s");
+        add("mkcore.talent.poise_break_cd.name", "Poise Break Cooldown");
+        add("mkcore.talent.poise_break_cd.description", "Decreases your poise break cooldown by %s seconds");
+        add("mkcore.talent.heal_efficiency.name", "Heal Efficiency");
+        add("mkcore.talent.heal_efficiency.description", "Increases your healing efficiency by %s");
+        add("mkcore.talent.nature_damage.name", "Nature Damage");
+        add("mkcore.talent.nature_damage.description", "Increases your nature damage by %s");
+        add("mkcore.ability.projectile.desc", "Behavior: %s");
+        add("location_provider.single.desc", "a single projectile");
+        add("projectile_behavior.simple", "Fires %s at end of cast.");
+        add("location_provider.perpendicular_line", "%d projectiles in a perpendicular line");
+        add("location_provider.circular", "%d projectiles in an arc from %s° to %s°");
+        add("projectile_behavior.burst", "Fires %s, one after another over %s seconds.");
     }
 
 

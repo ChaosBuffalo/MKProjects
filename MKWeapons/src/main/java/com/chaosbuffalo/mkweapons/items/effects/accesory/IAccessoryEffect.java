@@ -44,4 +44,8 @@ public interface IAccessoryEffect extends IItemEffect {
         Tag tag = serialize(NbtOps.INSTANCE);
         return deserialize(new Dynamic<>(NbtOps.INSTANCE, tag));
     }
+
+    default IAccessoryEffect createTunedEffect(double difficultyPercentage) {
+        return this;
+    }
 }

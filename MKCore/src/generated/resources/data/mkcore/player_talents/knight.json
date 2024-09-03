@@ -1,0 +1,16 @@
+{
+  "isDefault": false,
+  "lines": [
+    {
+      "name": "knight_1",
+      "talents": [
+        {
+          "max_points": 1,
+          "name": "mkcore:max_health",
+          "value": 1.0
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

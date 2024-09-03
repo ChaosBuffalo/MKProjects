@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkweapons.items.randomization.options;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.components.ArmorEffectsComponent;
-import com.chaosbuffalo.mkweapons.items.effects.IDifficultyAwareEffect;
 import com.chaosbuffalo.mkweapons.items.effects.armor.IArmorEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.IRandomizationSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
@@ -18,12 +17,10 @@ import java.util.List;
 
 public class ArmorEffectOption extends EffectOption<IArmorEffect> {
     public static final ResourceLocation NAME = MKWeapons.id("armor_effect");
-    public static final MapCodec<ArmorEffectOption> MAP_CODEC = RecordCodecBuilder.<ArmorEffectOption>mapCodec(builder -> {
-        return builder.group(
-                IRandomizationSlot.CODEC.optionalFieldOf("slot", RandomizationSlotManager.EFFECT_SLOT).forGetter(BaseRandomizationOption::getSlot),
-                IArmorEffect.DISPATCH_CODEC.listOf().fieldOf("effects").forGetter(EffectOption::getItemEffects)
-        ).apply(builder, ArmorEffectOption::new);
-    });
+    public static final MapCodec<ArmorEffectOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            IRandomizationSlot.CODEC.optionalFieldOf("slot", RandomizationSlotManager.EFFECT_SLOT).forGetter(BaseRandomizationOption::getSlot),
+            IArmorEffect.DISPATCH_CODEC.listOf().fieldOf("effects").forGetter(EffectOption::getItemEffects)
+    ).apply(builder, ArmorEffectOption::new));
     public static final Codec<ArmorEffectOption> CODEC = MAP_CODEC.codec();
 
     private ArmorEffectOption(IRandomizationSlot slot, List<IArmorEffect> effects) {
@@ -41,11 +38,8 @@ public class ArmorEffectOption extends EffectOption<IArmorEffect> {
     @Override
     public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
         getItemEffects().forEach(eff -> {
-            IArmorEffect copied = eff.copy();
-            if (copied instanceof IDifficultyAwareEffect tunable) {
-                tunable.tuneEffect(difficulty / GameConstants.MAX_DIFFICULTY);
-            }
-            ArmorEffectsComponent.addEffect(stack, copied);
+            IArmorEffect newEffect = eff.createTunedEffect(difficulty / GameConstants.MAX_DIFFICULTY);
+            ArmorEffectsComponent.addEffect(stack, newEffect);
         });
     }
 }

@@ -19,7 +19,6 @@ import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.MKTier;
 import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
-import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
@@ -383,24 +382,33 @@ public final class MKUItems {
         BOWS.clear();
         WEAPON_LOOKUP.clear();
         for (Tuple<String, IMKTier> mat : materials) {
+            IMKTier tier = mat.getB();
             for (IMeleeWeaponType weaponType : MeleeWeaponTypes.WEAPON_TYPES.values()) {
-                MKMeleeWeapon weapon = new MKMeleeWeapon(mat.getB(), weaponType,
-                        (new Item.Properties()));
+                MKMeleeWeapon weapon = new MKMeleeWeapon(tier, weaponType,
+                        new Item.Properties()
+                                .attributes(MKMeleeWeapon.createAttributes(tier, weaponType)));
                 WEAPONS.add(weapon);
-                putWeaponForLookup(mat.getB(), weaponType, weapon);
+                putWeaponForLookup(tier, weaponType, weapon);
                 event.register(Registries.ITEM, MKUltra.id(
                         String.format("%s_%s", weaponType.getName().getPath(), mat.getA())), () -> weapon);
             }
-            RangedModifierEffect rangedMods = new RangedModifierEffect();
-            rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT,
-                    createTransitionalModifier(MKWeaponsItems.RANGED_WEP_UUID, "Bow Crit", 0.05, AttributeModifier.Operation.ADD_VALUE));
-            rangedMods.addAttributeModifier(MKAttributes.RANGED_CRIT_MULTIPLIER,
-                    createTransitionalModifier(MKWeaponsItems.RANGED_WEP_UUID, "Bow Crit", 0.25, AttributeModifier.Operation.ADD_VALUE));
+
+            ResourceLocation modifierId = MKUltra.id("base." + tier.getName());
+            RangedModifierEffect attributeMods = new RangedModifierEffect(List.of(
+                    new AttributeOptionEntry(MKAttributes.RANGED_CRIT,
+                            new AttributeModifier(modifierId, 0.05, AttributeModifier.Operation.ADD_VALUE),
+                            EquipmentSlotGroup.MAINHAND),
+                    new AttributeOptionEntry(MKAttributes.RANGED_CRIT_MULTIPLIER,
+                            new AttributeModifier(modifierId, 0.25, AttributeModifier.Operation.ADD_VALUE),
+                            EquipmentSlotGroup.MAINHAND)
+            ));
             MKBow bow = new MKBow(
-                    new Item.Properties().durability(mat.getB().getUses() * 3), mat.getB(),
+                    new Item.Properties()
+                            .durability(mat.getB().getUses() * 3),
+                    tier,
                     GameConstants.TICKS_PER_SECOND * 2.5f, 4.0f,
                     new RapidFireRangedWeaponEffect(7, .10f),
-                    rangedMods,
+                    attributeMods,
                     new RangedManaDrainEffect(0.5f, 0.5f)
             );
             BOWS.add(bow);
@@ -410,29 +418,8 @@ public final class MKUItems {
     }
 
     public static void registerItemProperties() {
-        for (MKBow bow : BOWS) {
-            ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("pull"), (itemStack, world, entity, seed) -> {
-                if (entity == null) {
-                    return 0.0F;
-                } else {
-                    return !(entity.getUseItem().getItem() instanceof MKBow mkBow) ? 0.0F :
-                            (float) (itemStack.getUseDuration(entity) - entity.getUseItemRemainingTicks()) / mkBow.getDrawTime(itemStack, entity);
-                }
-            });
-            ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("pulling"), (itemStack, world, entity, seed) -> {
-                return entity != null && entity.isUsingItem() && entity.getUseItem() == itemStack ? 1.0F : 0.0F;
-            });
-        }
-        for (MKMeleeWeapon weapon : WEAPONS) {
-            if (weapon.getWeaponType().canBlock()) {
-                ItemProperties.register(weapon, ResourceLocation.withDefaultNamespace("blocking"),
-                        (itemStack, world, entity, seed) -> entity != null && entity.isUsingItem()
-                                && entity.getUseItem() == itemStack ? 1.0F : 0.0F);
-            }
-
-        }
-
-
+        MKWeaponsItems.registerDefaultRangedWeaponItemProperties(BOWS);
+        MKWeaponsItems.registerDefaultMeleeWeaponItemProperties(WEAPONS);
     }
 
 }

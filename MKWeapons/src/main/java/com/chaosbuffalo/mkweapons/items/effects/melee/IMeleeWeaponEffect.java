@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkweapons.items.effects.melee;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ItemEffects;
+import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
@@ -38,6 +39,10 @@ public interface IMeleeWeaponEffect extends IItemEffect {
     default IMeleeWeaponEffect copy() {
         Tag tag = serialize(NbtOps.INSTANCE);
         return deserialize(new Dynamic<>(NbtOps.INSTANCE, tag));
+    }
+
+    default IMeleeWeaponEffect createTunedEffect(double difficultyPercentage) {
+        return this;
     }
 
     default <D> D serialize(DynamicOps<D> ops) {

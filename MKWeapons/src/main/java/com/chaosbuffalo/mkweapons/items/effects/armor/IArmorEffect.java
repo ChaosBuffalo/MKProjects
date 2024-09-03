@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkweapons.items.effects.armor;
 
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ItemEffects;
+import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
@@ -16,6 +17,10 @@ public interface IArmorEffect extends IItemEffect {
     default IArmorEffect copy() {
         Tag tag = serialize(NbtOps.INSTANCE);
         return deserialize(new Dynamic<>(NbtOps.INSTANCE, tag));
+    }
+
+    default IArmorEffect createTunedEffect(double difficultyPercentage) {
+        return this;
     }
 
     default <D> D serialize(DynamicOps<D> ops) {

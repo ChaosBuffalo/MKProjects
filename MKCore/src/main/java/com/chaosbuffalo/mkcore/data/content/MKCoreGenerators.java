@@ -3,9 +3,15 @@ package com.chaosbuffalo.mkcore.data.content;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.data.providers.MKAbilityProvider;
 import com.chaosbuffalo.mkcore.test.MKTestAbilities;
+import net.minecraft.DetectedVersion;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
+import net.minecraft.data.metadata.PackMetadataGenerator;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
+import net.minecraft.util.InclusiveRange;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
@@ -14,6 +20,7 @@ import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
@@ -40,6 +47,15 @@ public class MKCoreGenerators {
 
         generator.addProvider(event.includeClient(), new CoreSoundProvider(generator.getPackOutput(), event.getExistingFileHelper()));
         generator.addProvider(true, languageProvider);
+
+        // pack.mcmeta
+        generator.addProvider(true, new PackMetadataGenerator(generator.getPackOutput())
+                .add(PackMetadataSection.TYPE, new PackMetadataSection(
+                        Component.literal("MKCore resources"),
+                        DetectedVersion.BUILT_IN.getPackVersion(PackType.SERVER_DATA),
+                        Optional.of(new InclusiveRange<>(0, Integer.MAX_VALUE))
+                ))
+        );
     }
 
     public static class CoreAbilityLanguageProvider extends MKAbilityProvider.AbilityLanguageProvider {

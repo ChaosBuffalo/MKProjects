@@ -1,0 +1,23 @@
+{
+  "attributes": {
+    "base": 4.0,
+    "casting_particles": "mkultra:holy_fire_casting",
+    "duration": 60,
+    "modifierScaling": 1.0,
+    "offset": {
+      "x": 0.0,
+      "y": 0.5,
+      "z": 0.0
+    },
+    "pulse_particles": "mkultra:holy_fire_detonate",
+    "radius": 1.6,
+    "scale": 1.0,
+    "tick_rate": 6,
+    "wait_particles": "mkultra:holy_fire_wait",
+    "wait_tick_rate": 5,
+    "wait_time": 40
+  },
+  "castTime": 10,
+  "cooldown": 200,
+  "manaCost": 6.0
+}

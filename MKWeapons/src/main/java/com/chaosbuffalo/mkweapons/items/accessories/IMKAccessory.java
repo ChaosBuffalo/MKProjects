@@ -12,4 +12,8 @@ public interface IMKAccessory {
     List<? extends IAccessoryEffect> getAccessoryEffects(ItemStack item);
 
     void addToTooltip(ItemStack stack, @Nullable Player player, List<Component> tooltip);
+
+    default boolean needsAttributesEventSupport() {
+        return true;
+    }
 }

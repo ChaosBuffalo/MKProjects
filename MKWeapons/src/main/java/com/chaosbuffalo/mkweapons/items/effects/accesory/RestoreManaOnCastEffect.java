@@ -7,8 +7,6 @@ import com.chaosbuffalo.mkcore.serialization.attributes.ScalableDouble;
 import com.chaosbuffalo.mkcore.serialization.attributes.ScalableFloat;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.accessories.IMKAccessory;
-import com.chaosbuffalo.mkweapons.items.effects.IDifficultyAwareEffect;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
@@ -21,15 +19,12 @@ import net.minecraft.world.item.ItemStack;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class RestoreManaOnCastEffect extends BaseAccessoryEffect implements IDifficultyAwareEffect {
+public class RestoreManaOnCastEffect extends BaseAccessoryEffect {
     public static final ResourceLocation NAME = MKWeapons.id("accessory_effect.restore_mana");
-    public static final MapCodec<RestoreManaOnCastEffect> MAP_CODEC = RecordCodecBuilder.<RestoreManaOnCastEffect>mapCodec(builder -> {
-        return builder.group(
-                ScalableDouble.CODEC.fieldOf("chance").forGetter(i -> i.chance),
-                ScalableFloat.CODEC.fieldOf("percentage").forGetter(i -> i.percentage)
-        ).apply(builder, RestoreManaOnCastEffect::new);
-    });
-    public static final Codec<RestoreManaOnCastEffect> CODEC = MAP_CODEC.codec();
+    public static final MapCodec<RestoreManaOnCastEffect> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            ScalableDouble.MAP_CODEC.fieldOf("chance").forGetter(i -> i.chance),
+            ScalableFloat.MAP_CODEC.fieldOf("percentage").forGetter(i -> i.percentage)
+    ).apply(builder, RestoreManaOnCastEffect::new));
 
     protected final ScalableDouble chance;
     protected final ScalableFloat percentage;
@@ -79,8 +74,9 @@ public class RestoreManaOnCastEffect extends BaseAccessoryEffect implements IDif
     }
 
     @Override
-    public void tuneEffect(double difficultyPercentage) {
-        chance.scale(difficultyPercentage);
-        percentage.scale(difficultyPercentage);
+    public RestoreManaOnCastEffect createTunedEffect(double difficultyPercentage) {
+        var newProc = chance.copyScaled(difficultyPercentage);
+        var newSkill = percentage.copyScaled(difficultyPercentage);
+        return new RestoreManaOnCastEffect(newProc, newSkill);
     }
 }
