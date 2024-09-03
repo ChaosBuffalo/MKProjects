@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkweapons.items.effects.ranged;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ItemEffects;
+import com.chaosbuffalo.mkweapons.items.effects.armor.IArmorEffect;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
@@ -37,6 +38,10 @@ public interface IRangedWeaponEffect extends IItemEffect {
     default IRangedWeaponEffect copy() {
         Tag tag = serialize(NbtOps.INSTANCE);
         return deserialize(new Dynamic<>(NbtOps.INSTANCE, tag));
+    }
+
+    default IRangedWeaponEffect createTunedEffect(double difficultyPercentage) {
+        return this;
     }
 
     default <D> D serialize(DynamicOps<D> ops) {

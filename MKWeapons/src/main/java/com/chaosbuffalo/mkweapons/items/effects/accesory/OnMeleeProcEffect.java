@@ -9,9 +9,7 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.serialization.attributes.ScalableDouble;
 import com.chaosbuffalo.mkcore.serialization.attributes.ScalableFloat;
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.items.effects.IDifficultyAwareEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -29,20 +27,18 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class OnMeleeProcEffect extends BaseAccessoryEffect implements IDifficultyAwareEffect {
+public class OnMeleeProcEffect extends BaseAccessoryEffect {
     public static final ResourceLocation NAME = MKWeapons.id("accessory_effect.on_hit_ability");
-    public static final MapCodec<OnMeleeProcEffect> MAP_CODEC =
-            RecordCodecBuilder.mapCodec(builder -> builder.group(
-                    ScalableDouble.CODEC.fieldOf("proc_chance").forGetter(i -> i.procChance),
-                    ScalableFloat.CODEC.fieldOf("skill_level").forGetter(i -> i.skillLevel),
-                    MKCoreRegistry.ABILITIES.byNameCodec().comapFlatMap(ability -> {
-                        if (ability instanceof EntityTargetingAbility targetingAbility) {
-                            return DataResult.success(targetingAbility);
-                        }
-                        return DataResult.error(() -> "Ability " + ability + " is not an EntityTargetingAbility");
-                    }, Function.identity()).fieldOf("ability").forGetter(i -> i.abilitySupplier.get())
-            ).apply(builder, OnMeleeProcEffect::new));
-    public static final Codec<OnMeleeProcEffect> CODEC = MAP_CODEC.codec();
+    public static final MapCodec<OnMeleeProcEffect> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            ScalableDouble.MAP_CODEC.fieldOf("proc_chance").forGetter(i -> i.procChance),
+            ScalableFloat.MAP_CODEC.fieldOf("skill_level").forGetter(i -> i.skillLevel),
+            MKCoreRegistry.ABILITIES.byNameCodec().comapFlatMap(ability -> {
+                if (ability instanceof EntityTargetingAbility targetingAbility) {
+                    return DataResult.success(targetingAbility);
+                }
+                return DataResult.error(() -> "Ability " + ability + " is not an EntityTargetingAbility");
+            }, Function.identity()).fieldOf("ability").forGetter(i -> i.abilitySupplier.get())
+    ).apply(builder, OnMeleeProcEffect::new));
 
 
     protected final ScalableDouble procChance;
@@ -102,8 +98,9 @@ public class OnMeleeProcEffect extends BaseAccessoryEffect implements IDifficult
     }
 
     @Override
-    public void tuneEffect(double difficultyPercentage) {
-        procChance.scale(difficultyPercentage);
-        skillLevel.scale(difficultyPercentage);
+    public OnMeleeProcEffect createTunedEffect(double difficultyPercentage) {
+        ScalableDouble newProc = procChance.copyScaled(difficultyPercentage);
+        ScalableFloat newSkill = skillLevel.copyScaled(difficultyPercentage);
+        return new OnMeleeProcEffect(newProc, newSkill, abilitySupplier.get());
     }
 }
