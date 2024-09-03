@@ -129,20 +129,21 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     protected Component getCooldownDescription(IMKEntityData casterData) {
         float seconds = (float) casterData.getStats().getAbilityCooldown(this) / GameConstants.TICKS_PER_SECOND;
-        return Component.translatable("mkcore.ability.description.cooldown", seconds);
+        return Component.translatable("mkcore.ability.description.cooldown", NUMBER_FORMATTER.format(seconds));
     }
 
     protected Component getCastTimeDescription(IMKEntityData casterData) {
         int castTicks = casterData.getStats().getAbilityCastTime(this);
         float seconds = (float) castTicks / GameConstants.TICKS_PER_SECOND;
         Component time = castTicks > 0 ?
-                Component.translatable("mkcore.ability.description.seconds", seconds) :
+                Component.translatable("mkcore.ability.description.seconds", NUMBER_FORMATTER.format(seconds)) :
                 Component.translatable("mkcore.ability.description.instant");
         return Component.translatable("mkcore.ability.description.cast_time", time);
     }
 
     protected Component getManaCostDescription(IMKEntityData casterData) {
-        return Component.translatable("mkcore.ability.description.mana_cost", getManaCost(casterData));
+        String cost = NUMBER_FORMATTER.format(getManaCost(casterData));
+        return Component.translatable("mkcore.ability.description.mana_cost", cost);
     }
 
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {

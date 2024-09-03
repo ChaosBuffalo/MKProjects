@@ -59,12 +59,12 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.talent_type.tooltip_name", "%s Talent");
         add("mkcore.talent_tree.knight.name", "Knight Tree");
         add("mkcore.ability.description.cast_time", "Cast Time: %s");
-        add("mkcore.ability.description.cooldown", "Cooldown: {0,number,0.#} seconds");
-        add("mkcore.ability.description.mana_cost", "Mana Cost: {0,number,0.#}");
+        add("mkcore.ability.description.cooldown", "Cooldown: %s seconds");
+        add("mkcore.ability.description.mana_cost", "Mana Cost: %s");
         add("mkcore.ability.description.instant", "Instant");
-        add("mkcore.ability.description.seconds", "{0,number,0.#} seconds");
+        add("mkcore.ability.description.seconds", "%s seconds");
         add("mkcore.ability.description.passive", "Passive");
-        add("mkcore.ability.description.range", "Range: {0,number}");
+        add("mkcore.ability.description.range", "Range: %s");
         add("mkcore.ability_target.single_target", "Single Target");
         add("mkcore.ability_target.single_target_self", "Single Target or Self");
         add("mkcore.ability_target.self", "Self");

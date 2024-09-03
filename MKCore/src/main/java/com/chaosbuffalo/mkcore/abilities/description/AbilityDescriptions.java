@@ -20,7 +20,8 @@ import java.util.function.Consumer;
 public class AbilityDescriptions {
 
     public static Component getRangeDescription(MKAbility ability, IMKEntityData casterData) {
-        return Component.translatable("mkcore.ability.description.range", ability.getDistance(casterData.getEntity()));
+        String formatted = MKAbility.NUMBER_FORMATTER.format(ability.getDistance(casterData.getEntity()));
+        return Component.translatable("mkcore.ability.description.range", formatted);
     }
 
     public static List<Component> getEffectModifiers(MobEffect effect, IMKEntityData casterData, boolean showName) {
