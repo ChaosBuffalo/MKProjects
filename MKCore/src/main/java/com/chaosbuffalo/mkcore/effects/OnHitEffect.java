@@ -57,7 +57,7 @@ public class OnHitEffect extends MKEffect {
             }
             instance.modifyStackCount(-1);
             if (instance.getStackCount() <= 0) {
-                sourceData.getEffects().removeEffect(instance.getSourceId(), this);
+                sourceData.getEffects().removeEffect(this, instance.getSourceId());
             }
         });
     }

@@ -19,7 +19,7 @@ public final class MKServerPlayerData extends MKPlayerData {
     @Override
     public void onJoinWorld() {
         super.onJoinWorld();
-        events().trigger(PlayerEvents.SERVER_JOIN_WORLD, new PlayerEvents.JoinWorldServerEvent(this));
+        events().trigger(PlayerEvents.SERVER_JOIN_LEVEL, new PlayerEvents.JoinLevelServerEvent(this));
         initialSync();
     }
 
@@ -32,5 +32,6 @@ public final class MKServerPlayerData extends MKPlayerData {
     public void initialSync() {
         MKCore.LOGGER.debug("Sending initial sync for {}", player);
         syncController.sendFullSync(getEntity());
+        getEffects().sendAllEffectsToPlayer(getEntity());
     }
 }

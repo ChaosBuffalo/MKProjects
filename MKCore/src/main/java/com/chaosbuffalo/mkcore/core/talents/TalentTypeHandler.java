@@ -1,14 +1,14 @@
 package com.chaosbuffalo.mkcore.core.talents;
 
-import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.records.IRecordTypeHandler;
 
 public abstract class TalentTypeHandler implements IRecordTypeHandler<TalentRecord> {
 
-    protected final MKPlayerData playerData;
+    protected final Persona persona;
 
-    public TalentTypeHandler(MKPlayerData playerData) {
-        this.playerData = playerData;
+    public TalentTypeHandler(Persona persona) {
+        this.persona = persona;
     }
 
 }

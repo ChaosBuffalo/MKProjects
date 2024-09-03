@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKToggleAbility;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.sync.adapters.ResourceListUpdater;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncListUpdater;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
@@ -22,9 +23,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class AbilityGroup implements IPlayerSyncComponentProvider {
+    protected final Persona persona;
     protected final MKPlayerData playerData;
     protected final PlayerSyncComponent sync;
     protected final String name;
@@ -33,9 +38,10 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     private final SyncInt slots;
     protected final AbilityGroupId groupId;
 
-    public AbilityGroup(MKPlayerData playerData, String name, AbilityGroupId groupId) {
+    public AbilityGroup(Persona persona, String name, AbilityGroupId groupId) {
         sync = new PlayerSyncComponent(name);
-        this.playerData = playerData;
+        this.persona = persona;
+        this.playerData = persona.getPlayerData();
         this.name = name;
         this.groupId = groupId;
         activeAbilities = NonNullList.withSize(groupId.getMaxSlots(), MKCoreRegistry.INVALID_ABILITY);
@@ -54,12 +60,16 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         return Collections.unmodifiableList(activeAbilities);
     }
 
+    protected Stream<MKAbilityInfo> getAbilityInfoStream() {
+        return IntStream.range(0, getCurrentSlotCount()).mapToObj(this::getAbilityInfo).filter(Objects::nonNull);
+    }
+
     public int getCurrentSlotCount() {
         return slots.get();
     }
 
     public int getMaximumSlotCount() {
-        return activeAbilities.size();
+        return groupId.getMaxSlots();
     }
 
     protected boolean requiresAbilityKnown() {
@@ -68,6 +78,10 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
 
     public boolean containsActiveAbilities() {
         return true;
+    }
+
+    public boolean setBonusSlots(int slots) {
+        return setSlots(groupId.getDefaultSlots() + slots);
     }
 
     public boolean setSlots(int newSlotCount) {
@@ -133,14 +147,13 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         return MKCoreRegistry.INVALID_ABILITY;
     }
 
-    protected void onAbilityAdded(ResourceLocation abilityId) {
-        MKCore.LOGGER.debug("onAbilityAdded({})", abilityId);
+    protected void onAbilityAdded(MKAbilityInfo abilityInfo) {
+        MKCore.LOGGER.debug("onAbilityAdded({})", abilityInfo);
     }
 
-    protected void onAbilityRemoved(ResourceLocation abilityId) {
-        MKCore.LOGGER.debug("onAbilityRemoved({})", abilityId);
-        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-        if (ability instanceof MKToggleAbility toggleAbility) {
+    protected void onAbilityRemoved(MKAbilityInfo abilityInfo) {
+        MKCore.LOGGER.debug("onAbilityRemoved({})", abilityInfo);
+        if (abilityInfo.getAbility() instanceof MKToggleAbility toggleAbility) {
             toggleAbility.removeEffect(playerData);
         }
     }
@@ -161,8 +174,9 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         // Clearing slot - no validity checks required
         if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
 //            MKCore.LOGGER.info("setSlot - clearing {} from {}", index, currentAbilityId);
+            MKAbilityInfo oldInfo = getAbilityInfo(index);
             setIndex(index, abilityId);
-            onAbilityRemoved(currentAbilityId);
+            onAbilityRemoved(oldInfo);
             return;
         }
 
@@ -183,14 +197,17 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         // abilityId was not slotted and is being inserted into an empty slot
         if (currentAbilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
             setIndex(index, abilityId);
-            onAbilityAdded(abilityId);
+            MKAbilityInfo newInfo = getAbilityInfo(index);
+            onAbilityAdded(newInfo);
             return;
         }
 
         // New ability is not current slotted and is replacing an existing ability
+        MKAbilityInfo oldInfo = getAbilityInfo(index);
         setIndex(index, abilityId);
-        onAbilityRemoved(currentAbilityId);
-        onAbilityAdded(abilityId);
+        onAbilityRemoved(oldInfo);
+        MKAbilityInfo newInfo = getAbilityInfo(index);
+        onAbilityAdded(newInfo);
     }
 
     private boolean validateAbilityForSlot(int index, ResourceLocation abilityId) {
@@ -200,7 +217,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
             return false;
         }
 
-        if (requiresAbilityKnown() && !playerData.getAbilities().knowsAbility(abilityId)) {
+        if (requiresAbilityKnown() && !persona.getAbilities().knowsAbility(abilityId)) {
             MKCore.LOGGER.error("setSlot({}, {}, {}) - player does not know ability!", groupId, index, abilityId);
             return false;
         }
@@ -235,7 +252,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY))
             return null;
 
-        return playerData.getAbilities().getAbilityInfo(abilityId);
+        return persona.getAbilities().getAbilityInfo(abilityId);
     }
 
     public void executeSlot(int index) {
@@ -254,46 +271,48 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         clearAbility(info.getId());
     }
 
-    private void ensureValidAbility(ResourceLocation abilityId) {
-        if (abilityId.equals(MKCoreRegistry.INVALID_ABILITY))
-            return;
-
-        if (!requiresAbilityKnown() || playerData.getAbilities().knowsAbility(abilityId))
-            return;
-
-        MKCore.LOGGER.debug("ensureValidAbility({}, {}) - bad", groupId, abilityId);
-        clearAbility(abilityId);
-    }
-
-    private void rebuildActiveToggleMap() {
-        // Inspect the player's action bar and see if there are any toggle abilities slotted.
-        // If there are, and the corresponding toggle effect is active on the player, set the toggle exclusive group
-        for (int i = 0; i < getMaximumSlotCount(); i++) {
-            MKAbilityInfo abilityInfo = getAbilityInfo(i);
-            if (abilityInfo != null && abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
-                if (toggle.isEffectActive(playerData)) {
-                    playerData.getAbilityExecutor().setToggleGroupAbility(toggle.getToggleGroupId(), toggle);
-                }
+    protected void onPersonaActivatedAbility(@Nonnull MKAbilityInfo abilityInfo) {
+        if (abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
+            if (toggle.isEffectActive(playerData)) {
+                playerData.getAbilityExecutor().setToggleGroupAbility(toggle.getToggleGroupId(), toggle);
             }
         }
     }
 
-    private void deactivateCurrentToggleAbilities() {
+    protected void onPersonaDeactivatedAbility(@Nonnull MKAbilityInfo abilityInfo) {
+        if (abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
+            toggle.removeEffect(playerData);
+        }
+    }
+
+    private void validateActiveAbilities() {
+        int current = getCurrentSlotCount();
         for (int i = 0; i < getMaximumSlotCount(); i++) {
+            if (i >= current) {
+                clearSlot(i);
+                continue;
+            }
+
             MKAbilityInfo abilityInfo = getAbilityInfo(i);
-            if (abilityInfo != null && abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
-                toggle.removeEffect(playerData);
+            if (abilityInfo == null) {
+                clearSlot(i);
+            } else {
+                onPersonaActivatedAbility(abilityInfo);
             }
         }
     }
 
     public void onPersonaActivated() {
-        activeAbilities.forEach(this::ensureValidAbility);
-        rebuildActiveToggleMap();
+        validateActiveAbilities();
     }
 
     public void onPersonaDeactivated() {
-        deactivateCurrentToggleAbilities();
+        for (int i = 0; i < getMaximumSlotCount(); i++) {
+            MKAbilityInfo abilityInfo = getAbilityInfo(i);
+            if (abilityInfo != null) {
+                onPersonaDeactivatedAbility(abilityInfo);
+            }
+        }
     }
 
     protected <T> T serialize(DynamicOps<T> ops) {
@@ -321,10 +340,10 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     }
 
     private <T> void deserializeAbilityList(Dynamic<T> dynamic, BiConsumer<Integer, ResourceLocation> consumer) {
-        List<DataResult<String>> passives = dynamic.asList(Dynamic::asString);
-        for (int i = 0; i < passives.size(); i++) {
+        List<DataResult<String>> abilities = dynamic.asList(Dynamic::asString);
+        for (int i = 0; i < abilities.size(); i++) {
             int index = i;
-            passives.get(i).resultOrPartial(MKCore.LOGGER::error).ifPresent(idString -> {
+            abilities.get(i).resultOrPartial(MKCore.LOGGER::error).ifPresent(idString -> {
                 ResourceLocation abilityId = ResourceLocation.parse(idString);
                 MKAbility ability = MKCoreRegistry.getAbility(abilityId);
                 if (ability != null) {

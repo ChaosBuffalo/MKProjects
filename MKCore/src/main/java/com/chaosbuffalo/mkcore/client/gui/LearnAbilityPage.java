@@ -23,7 +23,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -53,7 +52,7 @@ public class LearnAbilityPage extends AbilityPageBase {
     }
 
     @Override
-    protected Collection<MKAbility> getSortedAbilityList() {
+    protected List<MKAbility> getSortedAbilityList() {
         return offeredAbilities.stream().map(AbilityTrainingEvaluation::getAbility).collect(Collectors.toList());
     }
 

@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
@@ -24,7 +25,6 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.util.strategy.IdentityStrategy;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.DoubleUnaryOperator;
 
 public class PlayerSkills implements IMKSerializable<CompoundTag> {
@@ -33,10 +33,9 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         void onSkillChange(MKPlayerData playerData, double value);
     }
 
-    private final MKPlayerData playerData;
+    private final Persona persona;
     private final Object2DoubleMap<Holder<Attribute>> skillValues = new Object2DoubleOpenCustomHashMap<>(IdentityStrategy.IDENTITY);
 
-    private final List<Consumer<Holder<Attribute>>> skillChangeCallbacks = new ArrayList<>();
     private static final Map<Holder<Attribute>, SkillChangeHandler> skillChangeHandlers = Util.make(() -> {
         Map<Holder<Attribute>, SkillChangeHandler> map = new HashMap<>(8);
         map.put(MKAttributes.ONE_HAND_BLUNT, PlayerSkills::onWeaponSkillChange);
@@ -50,12 +49,8 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         return map;
     });
 
-    public PlayerSkills(MKPlayerData playerData) {
-        this.playerData = playerData;
-    }
-
-    public void addCallback(Consumer<Holder<Attribute>> cb) {
-        skillChangeCallbacks.add(cb);
+    public PlayerSkills(Persona persona) {
+        this.persona = persona;
     }
 
     private static void onWeaponSkillChange(MKPlayerData playerData, double value) {
@@ -69,7 +64,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         ItemStack mainHand = playerData.getEntity().getItemBySlot(EquipmentSlot.MAINHAND);
         if (mainHand.getItem() instanceof IReceivesSkillChange receiver) {
             receiver.onSkillChange(mainHand, playerData.getEntity());
-        } else if (mainHand == ItemStack.EMPTY) {
+        } else if (mainHand.isEmpty()) {
             playerData.getEquipment().removeUnarmedModifier();
             playerData.getEquipment().addUnarmedModifier();
         }
@@ -98,7 +93,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
     }
 
     private void setSkill(Holder<Attribute> attribute, double skillLevel, boolean updateMapValue) {
-        AttributeInstance attrInst = playerData.getEntity().getAttribute(attribute);
+        AttributeInstance attrInst = persona.getEntity().getAttribute(attribute);
         if (attrInst == null) {
             return;
         }
@@ -108,11 +103,12 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
             skillValues.put(attribute, skillLevel);
         }
 
+        MKPlayerData playerData = persona.getPlayerData();
         SkillChangeHandler handler = skillChangeHandlers.get(attribute);
         if (handler != null) {
             handler.onSkillChange(playerData, skillLevel);
         }
-        skillChangeCallbacks.forEach(x -> x.accept(attribute));
+        playerData.events().tryTrigger(PlayerEvents.SKILL_LEVEL_CHANGE, () -> new PlayerEvents.SkillEvent(persona.getPlayerData(), attrInst));
     }
 
     private double getSkillValue(Holder<Attribute> attribute) {
@@ -130,7 +126,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
     public void tryIncreaseSkill(Holder<Attribute> attribute, DoubleUnaryOperator chanceFormula) {
         double currentSkill = getSkillValue(attribute);
         if (currentSkill < GameConstants.NATURAL_SKILL_MAX) {
-            Player player = playerData.getEntity();
+            Player player = persona.getEntity();
             if (player.getRandom().nextDouble() <= chanceFormula.applyAsDouble(currentSkill)) {
                 player.sendSystemMessage(Component.translatable("mkcore.skill.increase",
                                 Component.translatable(attribute.value().getDescriptionId()), currentSkill + 1.0)

@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mkcore.core.player;
 
+import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKCombatFormulas;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -25,18 +27,19 @@ public class PlayerStats extends EntityStats {
     public PlayerStats(MKPlayerData playerData) {
         super(playerData);
         playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated, EventPriorities.CONSUMER_PERSONA);
-        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_WORLD, EV_ID, this::onJoinWorld, EventPriorities.PROVIDER_PERSONA);
     }
 
-    private Player getPlayer() {
-        return (Player) getEntity();
+    @Override
+    public Player getEntity() {
+        return (Player) super.getEntity();
     }
 
     private MKPlayerData getPlayerData() {
         return (MKPlayerData) entityData;
     }
 
-    private void onJoinWorld(PlayerEvents.JoinWorldServerEvent event) {
+    public void onJoinLevel() {
+        // This needs to be done on both sides so the client has the correct base value before first tick
         setupBaseStats();
     }
 
@@ -56,10 +59,10 @@ public class PlayerStats extends EntityStats {
     }
 
     @Override
-    public float getAbilityManaCost(MKAbility ability) {
+    public float getAbilityManaCost(MKAbilityInfo abilityInfo) {
         if (getPlayerData().getEntity().isCreative())
             return 0f;
-        float manaCost = ability.getManaCost(entityData);
+        float manaCost = abilityInfo.getAbility().getManaCost(entityData);
         return MKCombatFormulas.applyManaCostReduction(entityData, manaCost);
     }
 
@@ -71,11 +74,11 @@ public class PlayerStats extends EntityStats {
     }
 
     public void printActiveCooldowns() {
-        ChatUtils.sendMessageWithBrackets(getPlayer(), "All Active Cooldowns");
+        ChatUtils.sendMessageWithBrackets(getEntity(), "All Active Cooldowns");
         abilityTracker.iterateActive((abilityId, current) -> {
             String name = abilityId.toString();
             int max = abilityTracker.getTimerMaxTicks(abilityId);
-            ChatUtils.sendMessage(getPlayer(), "%s: %d / %d", name, current, max);
+            ChatUtils.sendMessage(getEntity(), "%s: %d / %d", name, current, max);
         });
     }
 
@@ -89,6 +92,27 @@ public class PlayerStats extends EntityStats {
         if (getPoise() > getMaxPoise()) {
             setPoise(getPoise());
         }
+    }
+
+    // For now, this is the same formula as MobStats.doManaRegen but rises smoother for a better visual
+    @Override
+    protected void doManaRegen(float current, float max, float regenRate) {
+        // if getManaRegenRate == 1, this is 1 mana per 3 seconds
+        final float manaTickPeriod = 3.0f;
+        final float manaPerTick = (regenRate / manaTickPeriod / GameConstants.TICKS_PER_SECOND);
+
+        float newMana = Math.min(current + manaPerTick, max);
+        setMana(newMana, newMana >= max);
+    }
+
+    @Override
+    protected void doPoiseRegen(float current, float max, float regenRate) {
+        // if getPoiseRegenRate == 1, this is 1 poise per 1 seconds
+        final float poiseTickPeriod = 1.0f;
+        final float poisePerTick = (regenRate / poiseTickPeriod / GameConstants.TICKS_PER_SECOND);
+
+        float newPoise = Math.min(current + poisePerTick, max);
+        setPoise(newPoise, newPoise >= max);
     }
 
     private void onPersonaActivated(PlayerEvents.PersonaEvent event) {

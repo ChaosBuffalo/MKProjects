@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.network;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
+import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientState;
@@ -35,7 +36,7 @@ public class EntityCastPacket implements CustomPacketPayload {
         return TYPE;
     }
 
-    enum CastAction {
+    public enum CastAction {
         START,
         INTERRUPT
     }
@@ -59,8 +60,8 @@ public class EntityCastPacket implements CustomPacketPayload {
         clientState = null;
     }
 
-    public static EntityCastPacket start(IMKEntityData entityData, ResourceLocation abilityId, int castTicks, AbilityContext context) {
-        return new EntityCastPacket(entityData, abilityId, castTicks, context.getClientState());
+    public static EntityCastPacket start(IMKEntityData entityData, MKAbilityInfo abilityInfo, int castTicks, AbilityContext context) {
+        return new EntityCastPacket(entityData, abilityInfo.getId(), castTicks, context.getClientState());
     }
 
     public static EntityCastPacket interrupt(IMKEntityData entityData, CastInterruptReason reason) {

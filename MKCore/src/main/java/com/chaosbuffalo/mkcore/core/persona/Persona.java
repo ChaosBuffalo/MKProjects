@@ -3,6 +3,10 @@ package com.chaosbuffalo.mkcore.core.persona;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.*;
+import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
+import com.chaosbuffalo.mkcore.core.player.events.EventType;
+import com.chaosbuffalo.mkcore.core.player.events.PersonaEventSubscription;
+import com.chaosbuffalo.mkcore.core.player.events.PlayerEvent;
 import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import net.minecraft.core.HolderLookup;
@@ -12,32 +16,32 @@ import net.minecraft.world.entity.player.Player;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncComponentProvider {
     private final String name;
     private final PlayerSyncComponent sync = new PlayerSyncComponent("knowledge");
     private final PlayerAbilityKnowledge abilities;
     private final PlayerTalentKnowledge talents;
-    private final PlayerEntitlementKnowledge entitlements;
+    private final PlayerEntitlements entitlements;
     private final PlayerAbilityLoadout loadout;
     private final PlayerSkills skills;
-    private final MKPlayerData data;
+    private final MKPlayerData playerData;
     private final Map<Class<? extends IPersonaExtension>, IPersonaExtension> extensions = new IdentityHashMap<>();
     private UUID personaId;
 
     public Persona(MKPlayerData playerData, String name) {
         this.name = name;
-        data = playerData;
+        this.playerData = playerData;
         personaId = UUID.randomUUID();
-        abilities = new PlayerAbilityKnowledge(playerData);
-        talents = new PlayerTalentKnowledge(playerData);
-        loadout = new PlayerAbilityLoadout(playerData);
-        entitlements = new PlayerEntitlementKnowledge(playerData);
+        abilities = new PlayerAbilityKnowledge(this);
+        talents = new PlayerTalentKnowledge(this);
+        loadout = new PlayerAbilityLoadout(this);
+        entitlements = new PlayerEntitlements(this);
         addSyncChild(abilities);
         addSyncChild(talents);
         addSyncChild(loadout);
-        skills = new PlayerSkills(playerData);
-        skills.addCallback(loadout.getPassiveAbilityGroup()::onSkillUpdate);
+        skills = new PlayerSkills(this);
     }
 
     public String getName() {
@@ -45,11 +49,11 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     }
 
     public MKPlayerData getPlayerData() {
-        return data;
+        return playerData;
     }
 
     public Player getEntity() {
-        return data.getEntity();
+        return playerData.getEntity();
     }
 
     public UUID getPersonaId() {
@@ -77,7 +81,7 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         return talents;
     }
 
-    public PlayerEntitlementKnowledge getEntitlements() {
+    public PlayerEntitlements getEntitlements() {
         return entitlements;
     }
 
@@ -90,28 +94,32 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         return extension == null ? null : clazz.cast(extension);
     }
 
-    public void onPersonaActivated() {
-        MKCore.LOGGER.debug("PlayerKnowledge.onPersonaActivated");
+    public void activate() {
+        sync.attach(playerData.getSyncController());
+        MKCore.LOGGER.debug("Persona.activate");
         entitlements.onPersonaActivated();
         talents.onPersonaActivated();
         skills.onPersonaActivated();
         loadout.onPersonaActivated();
     }
 
-    public void onPersonaDeactivated() {
-        MKCore.LOGGER.debug("PlayerKnowledge.onPersonaDeactivated");
+    public void deactivate() {
+        sync.detach(playerData.getSyncController());
+        MKCore.LOGGER.debug("Persona.deactivate");
         skills.onPersonaDeactivated();
         loadout.onPersonaDeactivated();
     }
 
-    public void activate() {
-        sync.attach(data.getSyncController());
-        onPersonaActivated();
+    public boolean isActive() {
+        return playerData.getPersonaManager().getActivePersona() == this;
     }
 
-    public void deactivate() {
-        sync.detach(data.getSyncController());
-        onPersonaDeactivated();
+    public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, UUID uuid, Consumer<T> function) {
+        subscribe(eventType, uuid, function, EventPriorities.CONSUMER);
+    }
+
+    public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, UUID uuid, Consumer<T> function, int priority) {
+        getPlayerData().events().subscribe(eventType, () -> new PersonaEventSubscription<>(this, uuid, function, priority));
     }
 
     private CompoundTag serializeExtensions(HolderLookup.Provider provider) {
@@ -160,5 +168,13 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         loadout.deserializeNBT(tag.getCompound("loadout"));
         deserializeExtensions(provider, tag.getCompound("extensions"));
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Persona{" +
+                "name='" + name + '\'' +
+                ", personaId=" + personaId +
+                '}';
     }
 }

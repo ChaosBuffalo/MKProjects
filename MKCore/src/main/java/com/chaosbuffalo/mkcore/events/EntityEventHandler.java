@@ -41,11 +41,8 @@ public class EntityEventHandler {
 
     @SubscribeEvent
     public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
-        if (event.getEntity().level().isClientSide())
-            return;
-
-        if (event.getEntity() instanceof LivingEntity) {
-            MKCore.getEntityData(event.getEntity()).ifPresent(IMKEntityData::onJoinWorld);
+        if (event.getEntity() instanceof LivingEntity living) {
+            MKCore.getEntityData(living).ifPresent(IMKEntityData::onJoinWorld);
         }
     }
 

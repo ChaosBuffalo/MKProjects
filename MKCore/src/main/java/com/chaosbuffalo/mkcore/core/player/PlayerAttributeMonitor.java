@@ -38,14 +38,14 @@ public class PlayerAttributeMonitor {
     public PlayerAttributeMonitor(MKPlayerData playerData, Consumer<BooleanSupplier> tickRequest) {
         this.playerData = playerData;
         this.tickRequest = tickRequest;
-        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_WORLD, EV_ID, this::onJoinWorld);
+        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_LEVEL, EV_ID, this::onJoinLevel);
     }
 
     public void monitor(Holder<Attribute> attribute, AttributeChangeHandler handler) {
         handlerMap.put(attribute, handler);
     }
 
-    private void onJoinWorld(PlayerEvents.JoinWorldServerEvent event) {
+    private void onJoinLevel(PlayerEvents.JoinLevelServerEvent event) {
         ServerPlayer serverPlayer = event.getPlayerData().getEntity();
 
         // This setup is deferred until now because the entity is not fully constructed during the ctor.

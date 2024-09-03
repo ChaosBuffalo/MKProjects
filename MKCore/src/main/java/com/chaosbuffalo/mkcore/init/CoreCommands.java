@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.init;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.command.HotBarCommand;
+import com.chaosbuffalo.mkcore.command.LoadoutCommand;
 import com.chaosbuffalo.mkcore.command.arguments.*;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
@@ -21,8 +21,8 @@ public class CoreCommands {
                     SingletonArgumentInfo.contextFree(AbilityIdArgument::ability)));
 
     public static final Holder<ArgumentTypeInfo<?, ?>> ABILITY_GROUP = ARGUMENT_TYPES.register("ability_group",
-            () -> ArgumentTypeInfos.registerByClass(HotBarCommand.AbilityGroupArgument.class,
-                    SingletonArgumentInfo.contextFree(HotBarCommand.AbilityGroupArgument::abilityGroup)));
+            () -> ArgumentTypeInfos.registerByClass(LoadoutCommand.AbilityGroupArgument.class,
+                    SingletonArgumentInfo.contextFree(LoadoutCommand.AbilityGroupArgument::abilityGroup)));
 
     public static final Holder<ArgumentTypeInfo<?, ?>> TALENT_ID = ARGUMENT_TYPES.register("talent_id",
             () -> ArgumentTypeInfos.registerByClass(TalentIdArgument.class,

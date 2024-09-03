@@ -144,7 +144,7 @@ public class PersonalAbilityPage extends AbilityPageBase implements IAbilityScre
     }
 
     @Override
-    protected Collection<MKAbility> getSortedAbilityList() {
+    protected List<MKAbility> getSortedAbilityList() {
         return currentAbilityList().stream()
                 .sorted(Comparator.comparing(a -> a.getAbilityName().getString()))
                 .collect(Collectors.toList());

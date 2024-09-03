@@ -76,24 +76,19 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType, float damage,
                                           float scale, float level, float modifierScaling) {
-        float bonus = casterData.getStats().getDamageTypeBonus(damageType) * modifierScaling;
-        float abilityDamage = damage + (scale * level) + bonus;
-        MutableComponent damageStr = Component.literal("");
-        damageStr.append(Component.literal(NUMBER_FORMATTER.format(abilityDamage)).withStyle(ChatFormatting.BOLD));
-        if (bonus != 0) {
-            damageStr.append(Component.literal(String.format(" (+%s)", NUMBER_FORMATTER.format(bonus))).withStyle(ChatFormatting.BOLD));
-        }
-        damageStr.append(" ").append(damageType.getFormattedDisplayName());
-        return damageStr;
+        float rawBonus = casterData.getStats().getDamageTypeBonus(damageType);
+        MutableComponent desc = formatEffectValue(damage, scale, level, rawBonus, modifierScaling);
+        desc.append(" ").append(damageType.getFormattedDisplayName());
+        return desc;
     }
 
-
     protected MutableComponent formatEffectValue(float damage, float levelScale, float level, float bonus, float scaleMod) {
-        float value = damage + (levelScale * level) + (bonus * scaleMod);
-        MutableComponent damageStr = Component.literal("");
+        float effectiveBonus = bonus * scaleMod;
+        float value = damage + (levelScale * level) + effectiveBonus;
+        MutableComponent damageStr = Component.empty();
         damageStr.append(Component.literal(NUMBER_FORMATTER.format(value)).withStyle(ChatFormatting.BOLD));
-        if (bonus != 0) {
-            damageStr.append(Component.literal(String.format(" (+%s)", NUMBER_FORMATTER.format(bonus))).withStyle(ChatFormatting.BOLD));
+        if (effectiveBonus != 0) {
+            damageStr.append(Component.literal(String.format(" (+%s)", NUMBER_FORMATTER.format(effectiveBonus))).withStyle(ChatFormatting.BOLD));
         }
         return damageStr;
     }
@@ -134,20 +129,21 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     protected Component getCooldownDescription(IMKEntityData casterData) {
         float seconds = (float) casterData.getStats().getAbilityCooldown(this) / GameConstants.TICKS_PER_SECOND;
-        return Component.translatable("mkcore.ability.description.cooldown", seconds);
+        return Component.translatable("mkcore.ability.description.cooldown", NUMBER_FORMATTER.format(seconds));
     }
 
     protected Component getCastTimeDescription(IMKEntityData casterData) {
         int castTicks = casterData.getStats().getAbilityCastTime(this);
         float seconds = (float) castTicks / GameConstants.TICKS_PER_SECOND;
         Component time = castTicks > 0 ?
-                Component.translatable("mkcore.ability.description.seconds", seconds) :
+                Component.translatable("mkcore.ability.description.seconds", NUMBER_FORMATTER.format(seconds)) :
                 Component.translatable("mkcore.ability.description.instant");
         return Component.translatable("mkcore.ability.description.cast_time", time);
     }
 
     protected Component getManaCostDescription(IMKEntityData casterData) {
-        return Component.translatable("mkcore.ability.description.mana_cost", getManaCost(casterData));
+        String cost = NUMBER_FORMATTER.format(getManaCost(casterData));
+        return Component.translatable("mkcore.ability.description.mana_cost", cost);
     }
 
     public Component getAbilityDescription(IMKEntityData casterData, AbilityContext context) {
@@ -284,9 +280,9 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         manaCost = cost;
     }
 
-    public boolean meetsCastingRequirements(IMKEntityData casterData, MKAbilityInfo info) {
-        return casterData.getAbilityExecutor().canActivateAbility(info) &&
-                casterData.getStats().canActivateAbility(this);
+    public boolean meetsCastingRequirements(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
+        return casterData.getAbilityExecutor().canActivateAbility(abilityInfo) &&
+                casterData.getStats().canActivateAbility(abilityInfo);
     }
 
     public <T> T serializeDynamic(DynamicOps<T> ops) {
@@ -319,10 +315,6 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     @Nullable
     public SoundEvent getSpellCompleteSoundEvent() {
         return CoreSounds.spell_cast_default.value();
-    }
-
-    public void executeWithContext(IMKEntityData casterData, AbilityContext context, MKAbilityInfo abilityInfo) {
-        casterData.getAbilityExecutor().startAbility(context, abilityInfo);
     }
 
     public Component getTargetContextLocalization() {

@@ -36,7 +36,7 @@ public class ExecuteActiveAbilityPacket implements CustomPacketPayload {
     }
 
     public static void handle(final ExecuteActiveAbilityPacket packet, IPayloadContext context) {
-        MKCore.getPlayer(context.player()).ifPresent(data -> data.getAbilityExecutor().executeHotBarAbility(packet.group, packet.slot));
+        MKCore.getPlayer(context.player()).ifPresent(data -> data.getAbilityExecutor().executeLoadoutAbility(packet.group, packet.slot));
     }
 
     @Override

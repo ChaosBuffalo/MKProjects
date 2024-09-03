@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core.talents;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
 import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.core.records.PlayerRecordDispatcher;
@@ -34,9 +35,9 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     private final PlayerRecordDispatcher<TalentRecord> dispatcher;
     private final TreeSyncGroup treeGroup;
 
-    public PlayerTalentKnowledge(MKPlayerData playerData) {
-        this.playerData = playerData;
-        dispatcher = new PlayerRecordDispatcher<>(playerData, this::getKnownTalentsStream);
+    public PlayerTalentKnowledge(Persona persona) {
+        this.playerData = persona.getPlayerData();
+        dispatcher = new PlayerRecordDispatcher<>(persona, this::getKnownTalentsStream);
         addSyncPrivate(talentPoints);
         addSyncPrivate(totalTalentPoints);
         addSyncPrivate(talentXp);

@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKAbilityKnowledge;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
 import net.minecraft.core.HolderLookup;
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
 
 
 public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncComponentProvider {
+    private final Persona persona;
     private final MKPlayerData playerData;
     private final PlayerSyncComponent sync = new PlayerSyncComponent("abilities");
     private final Map<ResourceLocation, PlayerKnownAbility> knownAbilities = new HashMap<>();
@@ -33,8 +35,9 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
                     PlayerAbilityKnowledge::createKnownAbility
             );
 
-    public PlayerAbilityKnowledge(MKPlayerData playerData) {
-        this.playerData = playerData;
+    public PlayerAbilityKnowledge(Persona persona) {
+        this.persona = persona;
+        this.playerData = persona.getPlayerData();
         addSyncPrivate(knownAbilityUpdater);
         addSyncPrivate(poolSize);
     }
@@ -60,8 +63,12 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         return 0;
     }
 
-    public void setAbilityPoolSize(int count) {
+    private void setAbilityPoolSize(int count) {
         poolSize.set(Mth.clamp(count, GameConstants.DEFAULT_ABILITY_POOL_SIZE, GameConstants.MAX_ABILITY_POOL_SIZE));
+    }
+
+    public void setAbilityPoolAddedSlots(int count) {
+        setAbilityPoolSize(GameConstants.DEFAULT_ABILITY_POOL_SIZE + count);
     }
 
     private Stream<PlayerKnownAbility> getPoolAbilityStream() {
@@ -122,6 +129,7 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         knownAbility.addSource(source);
         markDirty(knownAbility);
 
+        persona.getLoadout().onAbilityLearned(knownAbility.getAbilityInfo(), source);
         playerData.events().trigger(PlayerEvents.ABILITY_LEARNED, new PlayerEvents.AbilityLearnEvent(playerData, knownAbility.getAbilityInfo(), source));
         return true;
     }
@@ -138,6 +146,7 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
         markDirty(knownAbility);
 
         if (!knownAbility.isCurrentlyKnown()) {
+            persona.getLoadout().onAbilityUnlearned(knownAbility.getAbilityInfo());
             playerData.events().trigger(PlayerEvents.ABILITY_UNLEARNED, new PlayerEvents.AbilityUnlearnEvent(playerData, knownAbility.getAbilityInfo()));
             knownAbilities.remove(abilityId);
         }

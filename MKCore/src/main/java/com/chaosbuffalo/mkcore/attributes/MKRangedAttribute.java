@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.attributes;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 
 
@@ -21,15 +20,6 @@ public class MKRangedAttribute extends RangedAttribute {
         return additionIsPercentage;
     }
 
-//    public MKRangedAttribute setName(ResourceLocation name) {
-//        this.name = name;
-//        return this;
-//    }
-//
-//    public ResourceLocation getName() {
-//        return name;
-//    }
-
     @Override
     public boolean isClientSyncable() {
         return super.isClientSyncable() || syncType.syncToAll();
@@ -42,5 +32,13 @@ public class MKRangedAttribute extends RangedAttribute {
 
     public AttributeSyncType getSyncType() {
         return syncType;
+    }
+
+    @Override
+    public String toString() {
+        return "MKRangedAttribute{" +
+                "name=" + getDescriptionId() +
+                ", syncType=" + syncType +
+                '}';
     }
 }
