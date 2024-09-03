@@ -43,7 +43,8 @@ public class DialogueBuilder {
         }
 
         public void populateTalkObjective(TalkToNpcObjective objective, boolean immediateComplete, Quest quest) {
-            DialogueNode hailNode = nodes.get("hail");
+            DialogueNode hailNode = nodes.get("hail").copyWithId(String.format("%s.hail", objective.getObjectiveName()));
+
             if (immediateComplete) {
                 hailNode.addEffect(new ObjectiveCompleteEffect(objective.getObjectiveName(), quest.getQuestName()));
             }
@@ -83,25 +84,26 @@ public class DialogueBuilder {
                 String promptId;
                 if (parts.length == 1) {
                     promptId = parts[0];
-                    prompt = new DialoguePrompt(parts[0], parts[0], parts[0], parts[0]);
+                    prompt = new DialoguePrompt(parts[0].replaceAll(" ", "_"), parts[0], parts[0], parts[0]);
                 } else if (parts.length == 2) {
                     promptId = parts[0];
-                    prompt = new DialoguePrompt(parts[0], parts[0], parts[1], parts[0]);
+                    prompt = new DialoguePrompt(parts[0].replaceAll(" ", "_"), parts[0], parts[1], parts[0]);
                 } else if (parts.length == 3) {
                     promptId = parts[1];
-                    prompt = new DialoguePrompt(parts[1], parts[1], parts[2], parts[0]);
+                    prompt = new DialoguePrompt(parts[1].replaceAll(" ", "_"), parts[1], parts[2], parts[0]);
                 } else {
                     throw new IllegalArgumentException("Invalid prompt format: " + promptContent);
                 }
+                promptId = promptId.replaceAll(" ", "_");
                 prompt.addResponse(new DialogueResponse(promptId));
                 prompts.put(promptId, prompt);
             }
             String nodeText = m.replaceAll((res) -> {
                 var parts = res.group(1).split("\\|");
                 if (parts.length == 2 || parts.length == 1) {
-                    return String.format("{prompt:%s}", parts[0]);
+                    return String.format("{prompt:%s}", parts[0].replaceAll(" ", "_"));
                 } else if (parts.length == 3) {
-                    return String.format("{prompt:%s}", parts[1]);
+                    return String.format("{prompt:%s}", parts[1].replaceAll(" ", "_"));
                 } else {
                     throw new IllegalArgumentException("Invalid prompt format: " + res.group(1));
                 }
@@ -118,13 +120,13 @@ public class DialogueBuilder {
     }
 
     public DialogueBuilder node(String key, String nodeText) {
-        nodeTemplates.put(key, nodeText);
+        nodeTemplates.put(key.replaceAll(" ", "_"), nodeText);
         return this;
     }
 
     public DialogueBuilder effectNode(String key, String nodeText, DialogueEffect... effects) {
-        node(key, nodeText);
-        nodeEffects.put(key, Arrays.asList(effects));
+        node(key.replaceAll(" ", "_"), nodeText);
+        nodeEffects.put(key.replaceAll(" ", "_"), Arrays.asList(effects));
         return this;
     }
 
@@ -137,8 +139,4 @@ public class DialogueBuilder {
         DialogueBuilder builder = new DialogueBuilder();
         return builder.node("hail", hail);
     }
-
-
-
-
 }

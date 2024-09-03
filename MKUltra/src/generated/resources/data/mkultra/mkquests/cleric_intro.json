@@ -8,7 +8,11 @@
         "nodeId": "task"
       },
       {
-        "message": "I am {context:entity_name}, sent here under the authority of {prompt:the Holy See} to investigate the appearance of this castle. I hear you are going into the castle; if you're interested,I have a {prompt:task} for you.",
+        "message": "Our order is dedicated to the worship of the Sun God, Solang. We work to preserve order and prosperity in the realm. This plague of undeath is of great concern to the {prompt:Council} and we believe that this castle is somehow connected.",
+        "nodeId": "the_Holy_See"
+      },
+      {
+        "message": "I am {context:entity_name}, sent here under the authority of {prompt:the_Holy_See} to investigate the appearance of this castle. I hear you are going into the castle; if you're interested,I have a {prompt:task} for you.",
         "nodeId": "hail"
       },
       {
@@ -19,10 +23,6 @@
         ],
         "message": "I last saw {mk_quest_notable:mkultra:intro_castle#0#mkultra:solangian_apprentice} in the library on the upper floors of the castle.",
         "nodeId": "apprentice"
-      },
-      {
-        "message": "Our order is dedicated to the worship of the Sun God, Solang. We work to preserve order and prosperity in the realm. This plague of undeath is of great concern to the {prompt:Council} and we believe that this castle is somehow connected.",
-        "nodeId": "the Holy See"
       },
       {
         "message": "The leadership of my order is called the Council of the Nine. They are tasked with overseeing all affairs of the church.",
@@ -40,6 +40,17 @@
         ],
         "suggestionFillText": "What task?",
         "triggerPhrase": "task"
+      },
+      {
+        "highlightedText": "Holy See of Solang",
+        "promptId": "the_Holy_See",
+        "responses": [
+          {
+            "responseNodeId": "the_Holy_See"
+          }
+        ],
+        "suggestionFillText": "Who are the Holy See?",
+        "triggerPhrase": "the Holy See"
       },
       {
         "highlightedText": "",
@@ -79,17 +90,6 @@
         "triggerPhrase": "apprentice"
       },
       {
-        "highlightedText": "Holy See of Solang",
-        "promptId": "the Holy See",
-        "responses": [
-          {
-            "responseNodeId": "the Holy See"
-          }
-        ],
-        "suggestionFillText": "Who are the Holy See?",
-        "triggerPhrase": "the Holy See"
-      },
-      {
         "highlightedText": "Council",
         "promptId": "Council",
         "responses": [
@@ -119,6 +119,10 @@
             "hailPromptId": "hail",
             "nodes": [
               {
+                "message": "Oh thank goodness, it is good to see a friendly face. One of the zombies chased me into here and I wasn't certain if I'd ever get out. Can you do me {prompt:favor}",
+                "nodeId": "talk_to_apprentice.hail"
+              },
+              {
                 "effects": [
                   {
                     "type": "mknpc:objective_completion",
@@ -128,10 +132,6 @@
                 ],
                 "message": "When we were escaping from the library I accidentally dropped a necklace of sentimental value.  I think the {mk_quest_notable:mkultra:intro_castle#0#mkultra:imperial_magus} has it. Will you retrieve it for me?",
                 "nodeId": "favor"
-              },
-              {
-                "message": "Oh thank goodness, it is good to see a friendly face. One of the zombies chased me into here and I wasn't certain if I'd ever get out. Can you do me {prompt:favor}",
-                "nodeId": "hail"
               }
             ],
             "prompts": [
@@ -151,7 +151,7 @@
                 "promptId": "hail",
                 "responses": [
                   {
-                    "responseNodeId": "hail"
+                    "responseNodeId": "talk_to_apprentice.hail"
                   }
                 ],
                 "suggestionFillText": "",

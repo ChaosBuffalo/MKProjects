@@ -4,16 +4,12 @@
     "hailPromptId": "hail",
     "nodes": [
       {
+        "message": "The Nether Mage's Guild studies the Fire and Shadow Magics associated with the Nether dimension. We have guild halls all over the place, I'm surprised you haven't heard of us!",
+        "nodeId": "guild"
+      },
+      {
         "message": "I was sent here to test a new magical staff my master has been working on, but I dropped it when I was {prompt:ambushed} in the library.",
         "nodeId": "assignment"
-      },
-      {
-        "message": "The Nether Mage's Guild studies the Fire and Shadow Magics associated with the Nether dimension. We have guild halls all over the place, I'm surprised you haven't heard of us!",
-        "nodeId": "nether_mage_guild"
-      },
-      {
-        "message": "Hello, I'm {context:entity_name}. The {prompt:nether_mage_guild} sent me out here to research the appearance of this castle. However, I was overwhelmed by zombies and found shelter in this cave. Perhaps you can help me finish {prompt:assignment}.",
-        "nodeId": "intro"
       },
       {
         "effects": [
@@ -21,11 +17,26 @@
             "type": "mknpc:start_quest_chain"
           }
         ],
-        "message": "{context:player_name} will you retrieve my staff from {mk_quest_notable:mkultra:intro_castle#0#mkultra:imperial_magus}?",
+        "message": "{context:player_name} will you retrieve my staff from {mk_quest_notable:mkultra:intro_castle#0#mkultra:imperial_magus}",
         "nodeId": "ambushed"
+      },
+      {
+        "message": "Hello, I'm {context:entity_name}. The {prompt:guild} sent me out here to research the appearance of this castle. However, I was overwhelmed by zombies and found shelter in this cave. Perhaps you can help me finish {prompt:assignment}.",
+        "nodeId": "hail"
       }
     ],
     "prompts": [
+      {
+        "highlightedText": "guild",
+        "promptId": "guild",
+        "responses": [
+          {
+            "responseNodeId": "guild"
+          }
+        ],
+        "suggestionFillText": "What guild?",
+        "triggerPhrase": "guild"
+      },
       {
         "highlightedText": "my assignment",
         "promptId": "assignment",
@@ -36,17 +47,6 @@
         ],
         "suggestionFillText": "I will help with your assignment.",
         "triggerPhrase": "assignment"
-      },
-      {
-        "highlightedText": "guild",
-        "promptId": "nether_mage_guild",
-        "responses": [
-          {
-            "responseNodeId": "nether_mage_guild"
-          }
-        ],
-        "suggestionFillText": "What guild?",
-        "triggerPhrase": "guild"
       },
       {
         "highlightedText": "ambushed",
@@ -79,7 +79,7 @@
                 "allowRepeat": false
               }
             ],
-            "responseNodeId": "intro"
+            "responseNodeId": "hail"
           }
         ],
         "suggestionFillText": "",
@@ -130,20 +130,20 @@
                   }
                 ],
                 "message": "Great, return to me when you've delivered 10 killing blows with the fireball from the staff.",
-                "nodeId": "kill_zombies"
+                "nodeId": "kill_some_of_the_zombies"
               },
               {
-                "message": "Thanks for retrieving this staff, you really saved my ass. Will you do one more thing for me? My assignment was to use this staff to {prompt:kill_zombies} here to test its efficacy.",
-                "nodeId": "return_to_initiate_hail"
+                "message": "Thanks for retrieving this staff, you really saved my ass. Will you do one more thing for me? My assignment was to use this staff to {prompt:kill_some_of_the_zombies} here to test its efficacy.",
+                "nodeId": "return_to_initiate.hail"
               }
             ],
             "prompts": [
               {
                 "highlightedText": "kill some of the zombies",
-                "promptId": "kill_zombies",
+                "promptId": "kill_some_of_the_zombies",
                 "responses": [
                   {
-                    "responseNodeId": "kill_zombies"
+                    "responseNodeId": "kill_some_of_the_zombies"
                   }
                 ],
                 "suggestionFillText": "I will kill some of the zombies.",
@@ -154,7 +154,7 @@
                 "promptId": "hail",
                 "responses": [
                   {
-                    "responseNodeId": "return_to_initiate_hail"
+                    "responseNodeId": "return_to_initiate.hail"
                   }
                 ],
                 "suggestionFillText": "",
@@ -229,20 +229,30 @@
                     "questName": "test_complete"
                   }
                 ],
-                "message": "Looks like the staff is in working order. You know you weren't half bad at this, you should consider joining {prompt:nether_mage_guild}. In the meantime, I can {prompt:open_training} a few spells. ",
-                "nodeId": "test_complete_hail"
+                "message": "Looks like the staff is in working order. You know you weren't half bad at this, you should consider joining {prompt:guild}. In the meantime, I can {prompt:teach_me} a few spells.",
+                "nodeId": "test_complete.hail"
               }
             ],
             "prompts": [
               {
                 "highlightedText": "the Guild",
-                "promptId": "nether_mage_guild",
+                "promptId": "guild",
+                "responses": [
+                  {
+                    "responseNodeId": "guild"
+                  }
+                ],
                 "suggestionFillText": "What guild?",
                 "triggerPhrase": "guild"
               },
               {
                 "highlightedText": "teach you",
-                "promptId": "open_training",
+                "promptId": "teach_me",
+                "responses": [
+                  {
+                    "responseNodeId": "teach_me"
+                  }
+                ],
                 "suggestionFillText": "Will you teach me?",
                 "triggerPhrase": "teach me"
               },
@@ -251,7 +261,7 @@
                 "promptId": "hail",
                 "responses": [
                   {
-                    "responseNodeId": "test_complete_hail"
+                    "responseNodeId": "test_complete.hail"
                   }
                 ],
                 "suggestionFillText": "",

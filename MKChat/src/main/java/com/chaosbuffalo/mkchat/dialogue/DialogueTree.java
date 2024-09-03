@@ -82,9 +82,9 @@ public class DialogueTree {
         prompt.setDialogueTree(this);
         prompt.getRequiredNodes().forEach(nodeId -> {
             DialogueNode node = getNode(nodeId);
-            if (node == null) {
-                throw new DialogueElementMissingException("Dialogue node '%s' needed by prompt '%s' was missing from tree '%s'", nodeId, prompt.getId(), getDialogueName());
-            }
+//            if (node == null) {
+//                throw new DialogueElementMissingException("Dialogue node '%s' needed by prompt '%s' was missing from tree '%s'", nodeId, prompt.getId(), getDialogueName());
+//            }
         });
         prompts.put(prompt.getId(), prompt);
     }
