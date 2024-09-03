@@ -6,13 +6,20 @@ import com.chaosbuffalo.mkchat.dialogue.conditions.HasFlagCondition;
 import com.chaosbuffalo.mkchat.dialogue.conditions.InvertCondition;
 import com.chaosbuffalo.mkchat.dialogue.effects.AddFlagEffect;
 import com.chaosbuffalo.mkchat.dialogue.effects.AddLevelEffect;
+import net.minecraft.DetectedVersion;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.data.metadata.PackMetadataGenerator;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
+import net.minecraft.util.InclusiveRange;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
@@ -21,6 +28,15 @@ public class MKChatGenerator {
     public static void gatherData(GatherDataEvent event) {
         DataGenerator gen = event.getGenerator();
         gen.addProvider(event.includeServer(), new MKChatDialogueProvider(gen));
+
+        // pack.mcmeta
+        gen.addProvider(true, new PackMetadataGenerator(gen.getPackOutput())
+                .add(PackMetadataSection.TYPE, new PackMetadataSection(
+                        Component.literal("MKChat resources"),
+                        DetectedVersion.BUILT_IN.getPackVersion(PackType.SERVER_DATA),
+                        Optional.of(new InclusiveRange<>(0, Integer.MAX_VALUE))
+                ))
+        );
     }
 
     public static class MKChatDialogueProvider extends DialogueProvider {
