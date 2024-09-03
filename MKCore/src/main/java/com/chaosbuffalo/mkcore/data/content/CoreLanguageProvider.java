@@ -142,11 +142,11 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("talent.mkcore.heal_bonus.name", "Heal Bonus");
         add("talent.mkcore.heal_bonus.description", "Increases your healing bonus by %s");
         add("talent.mkcore.ability_slot.name", "Ability Slot");
-        add("talent.mkcore.ability_slot.description", "Adds a basic ability slot to your hotbar");
+        add("talent.mkcore.ability_slot.description", "Adds a basic ability slot to your loadout");
         add("talent.mkcore.passive_ability_slot.name", "Passive Ability Slot");
         add("talent.mkcore.passive_ability_slot.description", "Adds a passive ability slot to your character");
         add("talent.mkcore.ultimate_ability_slot.name", "Ultimate Ability Slot");
-        add("talent.mkcore.ultimate_ability_slot.description", "Adds an ultimate ability slot to your hotbar");
+        add("talent.mkcore.ultimate_ability_slot.description", "Adds an ultimate ability slot to your loadout");
         add("mkcore.talent_type.ultimate_slot.name", "Ultimate Slot");
         add("mkcore.talent_type.passive_slot.name", "Passive Slot");
         add("mkcore.talent_type.basic_slot.name", "Basic Slot");

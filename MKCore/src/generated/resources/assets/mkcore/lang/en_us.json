@@ -203,7 +203,7 @@
   "mkcore.talent_type.ultimate_slot.name": "Ultimate Slot",
   "projectile_behavior.burst": "Fires %s, one after another over %s seconds.",
   "projectile_behavior.simple": "Fires %s at end of cast.",
-  "talent.mkcore.ability_slot.description": "Adds a basic ability slot to your hotbar",
+  "talent.mkcore.ability_slot.description": "Adds a basic ability slot to your loadout",
   "talent.mkcore.ability_slot.name": "Ability Slot",
   "talent.mkcore.armor.description": "Increases your armor by %s",
   "talent.mkcore.armor.name": "Armor",
@@ -247,6 +247,6 @@
   "talent.mkcore.spell_crit.name": "Spell Critical Chance",
   "talent.mkcore.spell_crit_multiplier.description": "Increases your spell critical damage by %s",
   "talent.mkcore.spell_crit_multiplier.name": "Spell Critical Damage",
-  "talent.mkcore.ultimate_ability_slot.description": "Adds an ultimate ability slot to your hotbar",
+  "talent.mkcore.ultimate_ability_slot.description": "Adds an ultimate ability slot to your loadout",
   "talent.mkcore.ultimate_ability_slot.name": "Ultimate Ability Slot"
 }

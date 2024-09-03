@@ -27,35 +27,35 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-public class HotBarCommand {
+public class LoadoutCommand {
 
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
-        return Commands.literal("hotbar")
+        return Commands.literal("loadout")
                 .then(Commands.literal("show")
                         .then(Commands.argument("group", AbilityGroupArgument.abilityGroup())
-                                .executes(HotBarCommand::showActionBar)))
+                                .executes(LoadoutCommand::showActionBar)))
                 .then(Commands.literal("set")
                         .then(Commands.argument("group", AbilityGroupArgument.abilityGroup())
                                 .then(Commands.argument("slot", IntegerArgumentType.integer(0, GameConstants.ACTION_BAR_SIZE))
                                         .then(Commands.argument("abilityId", AbilityIdArgument.ability())
-                                                .suggests(HotBarCommand::suggestKnownAbilities)
-                                                .executes(HotBarCommand::setActionBar)))))
+                                                .suggests(LoadoutCommand::suggestKnownAbilities)
+                                                .executes(LoadoutCommand::setActionBar)))))
                 .then(Commands.literal("clear")
                         .then(Commands.argument("group", AbilityGroupArgument.abilityGroup())
                                 .then(Commands.argument("slot", IntegerArgumentType.integer(0, GameConstants.ACTION_BAR_SIZE))
-                                        .executes(HotBarCommand::clearActionBar))))
+                                        .executes(LoadoutCommand::clearActionBar))))
                 .then(Commands.literal("reset")
                         .then(Commands.argument("group", AbilityGroupArgument.abilityGroup())
-                                .executes(HotBarCommand::resetActionBar)))
+                                .executes(LoadoutCommand::resetActionBar)))
                 .then(Commands.literal("add")
                         .then(Commands.argument("group", AbilityGroupArgument.abilityGroup())
                                 .then(Commands.argument("abilityId", AbilityIdArgument.ability())
-                                        .suggests(HotBarCommand::suggestKnownAbilities)
-                                        .executes(HotBarCommand::addActionBar))))
+                                        .suggests(LoadoutCommand::suggestKnownAbilities)
+                                        .executes(LoadoutCommand::addActionBar))))
                 .then(Commands.literal("slots")
                         .then(Commands.argument("group", AbilityGroupArgument.abilityGroup())
                                 .then(Commands.argument("count", IntegerArgumentType.integer())
-                                        .executes(HotBarCommand::setSlots))))
+                                        .executes(LoadoutCommand::setSlots))))
                 ;
     }
 

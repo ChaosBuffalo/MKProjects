@@ -16,7 +16,7 @@ public class PlayerAbilityExecutor extends AbilityExecutor {
         return (MKPlayerData) entityData;
     }
 
-    public void executeHotBarAbility(AbilityGroupId group, int slot) {
+    public void executeLoadoutAbility(AbilityGroupId group, int slot) {
         getPlayerData().getLoadout().getAbilityGroup(group).executeSlot(slot);
     }
 
