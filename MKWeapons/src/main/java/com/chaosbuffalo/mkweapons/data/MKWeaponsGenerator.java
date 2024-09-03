@@ -12,10 +12,16 @@ import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotManager;
 import com.chaosbuffalo.mkweapons.items.randomization.templates.RandomizationTemplate;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
+import net.minecraft.DetectedVersion;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.data.metadata.PackMetadataGenerator;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
+import net.minecraft.util.InclusiveRange;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -24,10 +30,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
@@ -47,6 +50,14 @@ public class MKWeaponsGenerator {
         gen.addProvider(event.includeClient(), new MKWeaponModelProvider(gen.getPackOutput(), helper, MKWeapons.MODID));
         gen.addProvider(event.includeServer(), new MKWeaponCurioGenerator(MKWeapons.MODID, gen.getPackOutput(), event.getExistingFileHelper(), event.getLookupProvider()));
 
+        // pack.mcmeta
+        gen.addProvider(true, new PackMetadataGenerator(gen.getPackOutput())
+                .add(PackMetadataSection.TYPE, new PackMetadataSection(
+                        Component.literal("MKWeapons resources"),
+                        DetectedVersion.BUILT_IN.getPackVersion(PackType.SERVER_DATA),
+                        Optional.of(new InclusiveRange<>(0, Integer.MAX_VALUE))
+                ))
+        );
     }
 
     public static class MKWeaponsLootTierProvider extends LootTierProvider {
