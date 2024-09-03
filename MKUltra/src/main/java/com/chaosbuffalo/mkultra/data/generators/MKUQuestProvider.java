@@ -3,10 +3,7 @@ package com.chaosbuffalo.mkultra.data.generators;
 import com.chaosbuffalo.mkchat.dialogue.*;
 import com.chaosbuffalo.mknpc.data.QuestDefinitionProvider;
 import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
-import com.chaosbuffalo.mknpc.quest.Quest;
-import com.chaosbuffalo.mknpc.quest.QuestBuilder;
-import com.chaosbuffalo.mknpc.quest.QuestDefinition;
-import com.chaosbuffalo.mknpc.quest.QuestStructureLocation;
+import com.chaosbuffalo.mknpc.quest.*;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasSpentTalentPointsCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasTrainedAbilitiesCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasWeaponInHandCondition;
@@ -52,6 +49,22 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 writeDefinition(generateIntroClericQuest(), cache),
                 writeDefinition(generateIntroMageQuest(), cache)
         );
+    }
+
+    private QuestDefinition generateClericQuestChain() {
+        QuestStructureLocation temple = new QuestStructureLocation(UltraStructures.DESERT_TEMPLE_VILLAGE.location(), 0);
+        QuestBuilder.QuestNpc cleric = new QuestBuilder.QuestNpc(temple, MKUltra.id("solangian_cleric"));
+
+        QuestDefinition def = new QuestDefinition(MKUltra.id("cleric_unlock_chain"));
+        def.setRepeatable(false);
+        def.setQuestName(Component.literal("Seeking the Light"));
+
+
+
+
+//        def.setupStartQuestResponse(apprenticeNode, apprenticePrompt);
+
+        return def;
     }
 
     private QuestDefinition generateIntroMageQuest() {
@@ -166,51 +179,34 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         def.setRepeatable(false);
         def.setQuestName(Component.literal("A Missing Apprentice"));
 
-        DialogueNode councilNode = new DialogueNode("council",
-                "The leadership of my order is called the Council of the Nine. " +
-                        "They are tasked with overseeing all affairs of the church.");
-        DialoguePrompt councilPrompt = new DialoguePrompt("council", "Council", "the Council?", "Council");
-        councilPrompt.addResponse(new DialogueResponse(councilNode));
 
-        DialogueNode holySeeNode = new DialogueNode("holySee", String.format(
-                "Our order is dedicated to the worship of the Sun God, Solang. We work to preserve order and prosperity in the realm. " +
-                        "This plague of undeath is of great concern to the %s and we believe that this castle is somehow connected.", councilPrompt.getPromptEmbed()));
-        DialoguePrompt holySeePrompt = new DialoguePrompt("holySee", "the Holy See", "Who are the Holy See?", "Holy See of Solang");
-        holySeePrompt.addResponse(new DialogueResponse(holySeeNode));
+        var builder = DialogueBuilder.hail(
+                        "I am {name}, sent here under the authority of [Holy See of Solang|the Holy See|Who are the Holy See?] " +
+                                "to investigate the appearance of this castle. I hear you are going into the castle; " +
+                                "if you're interested,I have a [task|What task?] for you."
+                )
+                .node("the Holy See", "Our order is dedicated to the worship of the Sun God, Solang. We work to " +
+                        "preserve order and prosperity in the realm. This plague of undeath is of great " +
+                        "concern to the [Council|the Council?] and we believe that this castle " +
+                        "is somehow connected.")
+                .node("Council", "The leadership of my order is called the Council of the Nine. They are tasked with overseeing all affairs of the church.")
+                .node("task", "While you are exploring the castle, could you search for [my apprentice|apprentice|Where did you last see your apprentice?]?" +
+                        "We were ambushed by zombies while investigating the library and had to split up. I made it back but {apprentice} has yet to return.")
+                .node("apprentice", "I last saw {apprentice} in the library on the upper floors of the castle.")
+                .context("name", DialogueContexts.ENTITY_NAME_CONTEXT)
+                .context("apprentice", apprentice.getDialogueLink());
+        var result = builder.build();
+        result.populateStart(def, "apprentice");
 
-        DialoguePrompt startQuestPrompt = new DialoguePrompt("start_quest", "task",
-                "What task?", "task");
-        DialogueNode hailNode = new DialogueNode("hail", String.format(
-                "I am %s, sent here under the authority of the %s " +
-                        "to investigate the appearance of this castle. I hear you are going into the castle; " +
-                        "if you're interested, I have a %s for you.", DialogueContexts.ENTITY_NAME_CONTEXT, holySeePrompt.getPromptEmbed(), startQuestPrompt.getPromptEmbed()));
+        var apprenticeBuilder = DialogueBuilder.hail(
+                "Oh thank goodness, it is good to see a friendly face. One of the zombies chased me into " +
+                        "here and I wasn't certain if I'd ever get out. Can you do me [a favor|favor|What favor?]"
+        ).effectNode("favor",
+                "When we were escaping from the library I accidentally dropped a necklace " +
+                "of sentimental value.  I think the {magus} has it. Will you retrieve it for me?",
+                new ObjectiveCompleteEffect("talk_to_apprentice", "talk_to_apprentice")
+        ).context("magus", magus.getDialogueLink());
 
-
-        DialoguePrompt apprenticePrompt = new DialoguePrompt("apprentice", "apprentice", "Where did you last see your apprentice?", "my apprentice");
-        DialogueNode apprenticeNode = new DialogueNode("apprentice", String.format("I last saw %s in the library on the upper floors of the castle.", apprentice.getDialogueLink()));
-        apprenticePrompt.addResponse(new DialogueResponse(apprenticeNode));
-
-        DialogueNode findMyApprentice = new DialogueNode("start_quest",
-                String.format("While you are exploring the castle, could you search for %s?" +
-                        " We were ambushed by zombies while investigating the library and had to split up. " +
-                        "I made it back but %s has yet to return.", apprenticePrompt.getPromptEmbed(), apprentice.getDialogueLink()));
-        startQuestPrompt.addResponse(new DialogueResponse(findMyApprentice));
-
-        def.setupStartQuestResponse(apprenticeNode, apprenticePrompt);
-        def.addHailResponse(hailNode);
-        def.addStartNode(councilNode);
-        def.addStartNode(holySeeNode);
-        def.addStartNode(findMyApprentice);
-        def.addStartPrompt(councilPrompt);
-        def.addStartPrompt(holySeePrompt);
-        def.addStartPrompt(startQuestPrompt);
-
-        DialogueNode withFavor = new DialogueNode("favor",
-                String.format("When we were escaping from the library I accidentally dropped a necklace of sentimental value. " +
-                        "I think the %s has it. Will you retrieve it for me?", magus.getDialogueLink()));
-        DialoguePrompt favorPrompt = new DialoguePrompt("favor", "favor", "What favor?", "a favor");
-        favorPrompt.addResponse(new DialogueResponse(withFavor));
-        withFavor.addEffect(new ObjectiveCompleteEffect("talk_to_apprentice", "talk_to_apprentice"));
 
         Quest talkToApprentice = new QuestBuilder("talk_to_apprentice",
                 Component.literal("You need to find the Apprentice somewhere in the castle. Perhaps near the library.."))
@@ -218,13 +214,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 .simpleHail("talk_to_apprentice",
                         Component.literal("Talk to the apprentice"),
                         apprentice,
-                        String.format("Oh thank goodness, it is good to see a friendly face. One of the zombies chased me into " +
-                                "here and I wasn't certain if I'd ever get out. Can you do me %s?", favorPrompt.getPromptEmbed()),
+                        apprenticeBuilder,
                         false,
-                        (obj) -> {
-                            obj.withAdditionalNode(withFavor);
-                            obj.withAdditionalPrompts(favorPrompt);
-                        }
+                        null
                 )
                 .reward(new XpReward(25))
                 .quest();
