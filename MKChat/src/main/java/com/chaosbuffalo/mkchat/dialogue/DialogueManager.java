@@ -55,8 +55,8 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
         }
     }
 
-    // Matches {namespace:target}, allowed chars [a-zA-Z0-9_-]
-    private static final Pattern FORMAT_PATTERN = Pattern.compile("\\{(?<namespace>[\\w-]+):(?<target>[\\w-]+)}");
+    // Matches {namespace:target}, allowed chars [a-zA-Z0-9_-.]
+    private static final Pattern FORMAT_PATTERN = Pattern.compile("\\{(?<namespace>[\\w-.]+):(?<target>[\\w-.]+)}");
 
     private static void decomposeString(String rawString,
                                         BiFunction<String, String, Component> valueProvider,

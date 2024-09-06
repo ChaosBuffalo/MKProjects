@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.quest;
 
-import com.chaosbuffalo.mkchat.dialogue.DialogueContexts;
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.DialogueResponse;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
@@ -16,9 +15,7 @@ import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 public class QuestBuilder {
@@ -124,11 +121,11 @@ public class QuestBuilder {
         objective(talkObj);
         return this;
     }
-    public QuestBuilder simpleHail(String objectiveName, Component description,
-                                   QuestNpc talkTo, DialogueBuilder builder,
-                                   boolean immediateComplete, @Nullable Consumer<TalkToNpcObjective> additionalLogic) {
+    public QuestBuilder builderHail(String objectiveName, Component description,
+                                    QuestNpc talkTo, DialogueBuilder builder,
+                                    @Nullable Consumer<TalkToNpcObjective> additionalLogic) {
         TalkToNpcObjective talkObj = new TalkToNpcObjective(objectiveName, talkTo.location, talkTo.npcDef, description);
-        builder.build().populateTalkObjective(talkObj, immediateComplete, quest);
+        builder.build().populateTalkObjective(talkObj, quest);
         if (additionalLogic != null) {
             additionalLogic.accept(talkObj);
         }
