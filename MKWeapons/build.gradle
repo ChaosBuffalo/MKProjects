@@ -10,6 +10,9 @@ project.ext.dependentProjects = [
         project(":MKWidgets"),
         project(":MKCore")
 ]
+project.ext.extra_properties = [
+        curios_version: curios_version
+]
 
 apply from: '../common.gradle'
 
