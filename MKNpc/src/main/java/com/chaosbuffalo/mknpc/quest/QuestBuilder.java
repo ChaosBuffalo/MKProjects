@@ -11,6 +11,8 @@ import com.chaosbuffalo.mknpc.quest.objectives.*;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
@@ -42,6 +44,12 @@ public class QuestBuilder {
 
     public QuestBuilder killNotable(String objectiveName, QuestNpc npc) {
         KillNotableNpcObjective kill = new KillNotableNpcObjective(objectiveName, npc.location, npc.npcDef);
+        objective(kill);
+        return this;
+    }
+
+    public QuestBuilder killType(String objectiveName, TagKey<EntityType<?>> tag, String tagDesc, int count) {
+        KillTypeTagObjective kill = new KillTypeTagObjective(objectiveName, tag, tagDesc, count);
         objective(kill);
         return this;
     }

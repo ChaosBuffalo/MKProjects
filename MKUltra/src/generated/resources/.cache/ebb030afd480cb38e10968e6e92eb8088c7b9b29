@@ -1,4 +1,4 @@
-// 1.21.1	2024-09-02T19:47:42.3055812	MKU NPC GEN
+// 1.21.1	2024-09-08T20:53:11.717479	MKU NPC GEN
 0b9f59b5197094a42a6a8dca3bcccf0efdb13cc4 data/mkultra/mknpc/mknpcs/ancient_cardinal.json
 abf65ff842e073144e2d904e4c9cad671aac8e09 data/mkultra/mknpc/mknpcs/ancient_priest_ghost.json
 a6279df75685b079c7f7d1da33ae65e484801641 data/mkultra/mknpc/mknpcs/an_ancient_king.json
@@ -30,7 +30,7 @@ ac5eebf02e661f1d085ab5ce4ccbd1315292ab91 data/mkultra/mknpc/mknpcs/seawoven_wret
 86befcdddc215ecf02fb6d1f9c3e968558418067 data/mkultra/mknpc/mknpcs/skeletal_trooper_mage.json
 93484efcea089bda8e68dca813b1bf81fdc8b100 data/mkultra/mknpc/mknpcs/solangian_acolyte.json
 8907cc633917cebb7424ed752a827fc1f3246855 data/mkultra/mknpc/mknpcs/solangian_apprentice.json
-9143c3ab8da5fed399debf72e4424eed9d4f1e4e data/mkultra/mknpc/mknpcs/solangian_cleric.json
+11d14b666de85e88af20d14966999852ee0e4602 data/mkultra/mknpc/mknpcs/solangian_cleric.json
 a69d7e3deab72969cf39fe422b146c01e8c48d52 data/mkultra/mknpc/mknpcs/solangian_temple_guard.json
 ddbddb93689af9abdfd800b8df47361325c48e3e data/mkultra/mknpc/mknpcs/solangian_temple_guard_2.json
 e23c8a7f84a75310783ca795bf79ebd96c4c3047 data/mkultra/mknpc/mknpcs/trooper_captain.json

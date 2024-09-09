@@ -130,6 +130,12 @@
       "type": "mknpc:notable",
       "isNotable": true
     },
+    "mknpc:offer_quests": {
+      "type": "mknpc:offer_quests",
+      "questIds": [
+        "mkultra:cleric_unlock_chain"
+      ]
+    },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
       "renderGroup": "cleric_1"

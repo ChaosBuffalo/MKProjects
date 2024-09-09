@@ -17,4 +17,6 @@ public class QuestRewardTypes {
     public static final Supplier<QuestRewardType<MKLootReward>> MK_LOOT_REWARD = REGISTRY.register("mk_loot", () -> () -> MKLootReward.MAP_CODEC);
 
     public static final Supplier<QuestRewardType<GrantEntitlementReward>> ENTITLEMENT_REWARD = REGISTRY.register("entitlement", () -> () -> GrantEntitlementReward.MAP_CODEC);
+
+    public static final Supplier<QuestRewardType<FactionReward>> FACTION_REWARD = REGISTRY.register("faction", () -> () -> FactionReward.MAP_CODEC);
 }

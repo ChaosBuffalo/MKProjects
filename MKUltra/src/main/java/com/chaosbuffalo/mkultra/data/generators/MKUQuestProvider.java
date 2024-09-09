@@ -10,14 +10,12 @@ import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasWeaponInHandCondition
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.objectives.TradeItemsObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.HasEntitlementRequirement;
-import com.chaosbuffalo.mknpc.quest.rewards.GrantEntitlementReward;
-import com.chaosbuffalo.mknpc.quest.rewards.MKLootReward;
-import com.chaosbuffalo.mknpc.quest.rewards.TalentTreeReward;
-import com.chaosbuffalo.mknpc.quest.rewards.XpReward;
+import com.chaosbuffalo.mknpc.quest.rewards.*;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructures;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUEntitlements;
+import com.chaosbuffalo.mkultra.init.MKUFactions;
 import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import net.minecraft.core.HolderLookup;
@@ -26,6 +24,7 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -47,7 +46,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 writeDefinition(generateIntroQuest(), cache),
                 writeDefinition(generateTrooperArmorQuest(), cache),
                 writeDefinition(generateIntroClericQuest(), cache),
-                writeDefinition(generateIntroMageQuest(), cache)
+                writeDefinition(generateIntroMageQuest(), cache),
+                writeDefinition(generateClericQuestChain(), cache)
         );
     }
 
@@ -59,6 +59,63 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         def.setRepeatable(false);
         def.setQuestName(Component.literal("Seeking the Light"));
 
+
+        DialogueBuilder start = DialogueBuilder.hail(
+                "Hail and well met traveler. I'm {name} and I welcome you to our humble [temple|Tell me about this temple.].")
+                .node("temple", "This temple is dedicated to the worship of His Holy Radiance: Solang, " +
+                        "God of the Sun, Bringer of the Morning Light, Banisher of the Dead. According to our records it doesn't look" +
+                        "like you've ever [tithed|What do you mean by tithed?].")
+                .node("tithed", "There are many expenses in the pursuit of our mission to rid this world of the restless dead. Perhaps you would like to [contribute|I can contribute]?")
+                .node("contribute", "A donation of {10 gold bars} would allow us to continue arming the templars and supporting the community here.")
+                .context("name", DialogueContexts.ENTITY_NAME_CONTEXT)
+                .context("10 gold bars", DialogueUtils.getStackCountItemProvider(new ItemStack(Items.GOLD_INGOT, 10)));
+
+        start.build().populateStart(def, "contribute");
+
+        Quest goldBars = new Quest("gold_bars", text("The Temple of Solang desires a donation of gold."));
+        goldBars.setAutoComplete(true);
+        TradeItemsObjective tradeGold = new TradeItemsObjective(
+                "trade_gold_bars",
+                temple,
+                cleric.npcDef,
+                List.of(
+                        new ItemStack(Items.GOLD_INGOT, 10)
+                ));
+        goldBars.addObjective(tradeGold);
+        goldBars.addReward(new XpReward(100));
+        goldBars.addReward(new GrantEntitlementReward(MKUEntitlements.ClericTier1));
+        def.addQuest(goldBars);
+
+        DialogueBuilder killDead = DialogueBuilder.hail(
+                        "Now that you have joined our efforts, perhaps you would like to [learn|want to learn|I want to learn.] some of " +
+                                "our spells, and maybe you can use one of those to help us with a [task].")
+                .effectNode("task", "We need someone to go out and cull the dead that walk amongst the living still. Return to me when you've completed",
+                        new ObjectiveCompleteEffect("return_to_cleric", "return_to_cleric"))
+                .effectNode("want to learn", "Let me see what I can teach you. Talk to me again when you're done.", new OpenLearnAbilitiesEffect());
+
+
+        Quest return1 = new QuestBuilder("return_to_cleric",
+                Component.literal("Return to the Cleric"))
+                .autoComplete(true)
+                .builderHail("return_to_cleric", Component.literal("Talk to the Cleric again."),
+                        cleric,
+                        killDead,
+                        null
+                )
+                .reward(new XpReward(50))
+                .reward(new FactionReward(50, MKUFactions.SEE_OF_SOLANG_NAME))
+                .quest();
+        def.addQuest(return1);
+
+        Quest killDeadObj = new QuestBuilder("kill_dead",
+                Component.literal("Cull the dead that walk amongst the living."))
+                .autoComplete(true)
+                .killType("kill_dead", EntityTypeTags.UNDEAD, "Undead", 20)
+                .reward(new XpReward(500))
+                .reward(new GrantEntitlementReward(MKUEntitlements.ClericTier2))
+                .reward(new FactionReward(50, MKUFactions.SEE_OF_SOLANG_NAME))
+                .quest();
+        def.addQuest(killDeadObj);
 
 
 

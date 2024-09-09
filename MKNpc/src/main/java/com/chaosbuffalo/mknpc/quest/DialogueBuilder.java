@@ -21,7 +21,7 @@ public class DialogueBuilder {
     private final List<String> hailNodes;
 
     private static String sanitize_id(String id) {
-        return id.replaceAll(" ", "_").replaceAll("[^\\w-.]", "");
+        return id.replaceAll(" ", "_").replaceAll("[^\\w-.:]", "");
     }
 
     public static class DialogueBuilderResult {

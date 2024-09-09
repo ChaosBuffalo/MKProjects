@@ -327,7 +327,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(
                         ResourceLocation.parse("mkweapons:mace_gold"))), 1.0, 0.0f));
-//        def.addOption(new QuestOfferingOption(new ResourceLocation("mkultra", "cleric_intro")));
+        def.addOption(new QuestOfferingOption(MKUltra.id("cleric_unlock_chain")));
         def.addOption(new AbilityTrainingOption()
                 .withTrainingOption(MKUAbilities.HEAL, new HasEntitlementRequirement(MKUEntitlements.ClericTier1.get()))
                 .withTrainingOption(MKUAbilities.SMITE, new HasEntitlementRequirement(MKUEntitlements.ClericTier1.get()))
