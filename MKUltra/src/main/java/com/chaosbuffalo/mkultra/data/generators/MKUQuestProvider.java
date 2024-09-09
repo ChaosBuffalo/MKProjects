@@ -88,7 +88,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
 
         DialogueBuilder killDead = DialogueBuilder.hail(
                         "Now that you have joined our efforts, perhaps you would like to [learn|want to learn|I want to learn.] some of " +
-                                "our spells, and maybe you can use one of those to help us with a [task].")
+                                "our spells, and maybe you can use one of those to help us with a [task|I will assist with your task.].")
                 .effectNode("task", "We need someone to go out and cull the dead that walk amongst the living still. Return to me when you've completed",
                         new ObjectiveCompleteEffect("return_to_cleric", "return_to_cleric"))
                 .effectNode("want to learn", "Let me see what I can teach you. Talk to me again when you're done.", new OpenLearnAbilitiesEffect());

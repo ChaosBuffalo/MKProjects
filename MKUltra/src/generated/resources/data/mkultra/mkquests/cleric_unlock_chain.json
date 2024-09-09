@@ -169,7 +169,7 @@
                     "responseNodeId": "task"
                   }
                 ],
-                "suggestionFillText": "task",
+                "suggestionFillText": "I will assist with your task.",
                 "triggerPhrase": "task"
               },
               {

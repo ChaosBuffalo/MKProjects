@@ -168,9 +168,6 @@ public class EntityHandler {
     }
 
     private static void handleKillEntityForPlayer(Player player, LivingDeathEvent event, IEntityNpcData npcData) {
-        if (npcData.getDefinition() == null) {
-            return;
-        }
         NpcDefinition def = npcData.getDefinition();
         MKNpc.getPlayerQuestData(player).ifPresent(pData -> pData.getQuestChains().forEach(
                 pQuestChain -> {

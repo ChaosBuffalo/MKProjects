@@ -1,6 +1,6 @@
-// 1.21.1	2024-09-08T21:14:33.7477008	Quest Definitions: mkultra
+// 1.21.1	2024-09-08T21:26:44.2791096	Quest Definitions: mkultra
 6db9b7dca931f9a838ad68742b90d9f68f25eb25 data/mkultra/mkquests/cleric_intro.json
-f83e92c0b1659dfbe1a9c998813cc71994d701eb data/mkultra/mkquests/cleric_unlock_chain.json
+4520b8b830f131f64a4f9332ae9187cb24f8eb7a data/mkultra/mkquests/cleric_unlock_chain.json
 2646d05a6475d6d3f991da7a4c61864a60fdeca4 data/mkultra/mkquests/intro_quest.json
 4084437363839f9ab08cde8c293dc238c3feb3b1 data/mkultra/mkquests/nether_mage_intro.json
 8d0d68dc838c5f5ce166aea11ddb5a93d557efca data/mkultra/mkquests/trooper_armor.json
