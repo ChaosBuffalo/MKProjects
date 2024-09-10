@@ -322,7 +322,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 .withAbilityOption(MKUAbilities.POWER_WORD_SUMMON.get(), 4, 1.0)
                 .withAbilityOption(MKUAbilities.INSPIRE.get(), 5, 1.0)
         );
-//        def.addOption(new DialogueOption().setValue(MKUltra.id("intro_cleric_acolyte")));
+        def.addOption(new DialogueOption(MKUltra.id("cleric_default")));
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.MAINHAND,
                 new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(

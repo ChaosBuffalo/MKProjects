@@ -99,6 +99,10 @@
         }
       ]
     },
+    "mknpc:dialogue": {
+      "type": "mknpc:dialogue",
+      "dialogueId": "mkultra:cleric_default"
+    },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
       "equipment": {

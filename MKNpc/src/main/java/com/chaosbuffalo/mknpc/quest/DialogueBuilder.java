@@ -3,10 +3,12 @@ package com.chaosbuffalo.mknpc.quest;
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
 import com.chaosbuffalo.mkchat.dialogue.DialogueResponse;
+import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -39,6 +41,41 @@ public class DialogueBuilder {
             this.shouldCompletes = shouldCompletes;
             this.hailResponses = hailResponses;
         }
+
+        public DialogueTree buildStandalone(ResourceLocation id) {
+            DialogueTree tree = new DialogueTree(id);
+            DialoguePrompt hailResp = new DialoguePrompt("hail");
+            for (var hail : hailNodes) {
+                DialogueNode hailNode = nodes.get(hail);
+                tree.addNode(hailNode);
+                DialogueResponse resp;
+                if (hailResponses.containsKey(hail)) {
+                    DialogueResponse existing = hailResponses.get(hail);
+                    resp = new DialogueResponse(hailNode.getId());
+                    for (var cond : existing.getConditions()) {
+                        resp.addCondition(cond.copy());
+                    }
+                } else {
+                    resp = new DialogueResponse(hailNode.getId());
+                }
+                hailResp.addResponse(resp);
+            }
+            tree.addPrompt(hailResp);
+            tree.setHailPrompt(hailResp);
+            for (var node : nodes.values()) {
+                if (!hailNodes.contains(node.getId())) {
+                    tree.addNode(node);
+                }
+            }
+            for (var prompt : prompts.values()) {
+                if (!hailNodes.contains(prompt.getId())) {
+                    tree.addPrompt(prompt);
+                }
+            }
+
+            return tree;
+        }
+
         public void populateStart(QuestDefinition def, String startResponse) {
             def.setupStartQuestResponse(nodes.get(sanitize_id(startResponse)), prompts.get(sanitize_id(startResponse)));
             for (var hail : hailNodes) {

@@ -53,7 +53,10 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
 
     private QuestDefinition generateClericQuestChain() {
         QuestStructureLocation temple = new QuestStructureLocation(UltraStructures.DESERT_TEMPLE_VILLAGE.location(), 0);
+        QuestStructureLocation tomb = new QuestStructureLocation(UltraStructures.HYBOREAN_CRYPT.location(), 0);
         QuestBuilder.QuestNpc cleric = new QuestBuilder.QuestNpc(temple, MKUltra.id("solangian_cleric"));
+        QuestBuilder.QuestNpc sorcerer_queen = new QuestBuilder.QuestNpc(tomb, MKUltra.id("hyborean_sorcerer_queen"));
+        QuestBuilder.QuestNpc ancient_king = new QuestBuilder.QuestNpc(tomb, MKUltra.id("an_ancient_king"));
 
         QuestDefinition def = new QuestDefinition(MKUltra.id("cleric_unlock_chain"));
         def.setRepeatable(false);
@@ -107,15 +110,37 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 .quest();
         def.addQuest(return1);
 
-        Quest killDeadObj = new QuestBuilder("kill_dead",
+        Quest killDeadObj = new QuestBuilder("kill_dead_1",
                 Component.literal("Cull the dead that walk amongst the living."))
                 .autoComplete(true)
-                .killType("kill_dead", EntityTypeTags.UNDEAD, "Undead", 20)
-                .reward(new XpReward(500))
-                .reward(new GrantEntitlementReward(MKUEntitlements.ClericTier2))
-                .reward(new FactionReward(50, MKUFactions.SEE_OF_SOLANG_NAME))
+                .killType("kill_dead_1", EntityTypeTags.UNDEAD, "Undead", 20)
+                .reward(new XpReward(250))
                 .quest();
         def.addQuest(killDeadObj);
+
+        DialogueBuilder postKillDead = DialogueBuilder.hail("It seems you have a talent for this type of work. " +
+                "Those with the strength to [purify the land|How can I help purify the land?] are needed around these parts.")
+                .node("purify the land", "The dead walk everywhere, but some places call to the fel spirits that drive them. " +
+                        "Not far from here lies such a place: a [tomb|What must I do at this tomb?] built by the [ancients|Who were the ancients?] many, many years ago.")
+                .node("ancients", "The Hyborean Empire used to extend to the furthest reaches of these lands. Now only shattered remains of their " +
+                        "tombs and cities can be found. Few have ever stepped foot in these ruins as vengeful spirits still haunt them.")
+                .effectNode("tomb", "You must go to the tomb and destroy the greater spirits found within. " +
+                        "Be cautious for your targets still retain some of the vitality they possessed in life.",
+                        new ObjectiveCompleteEffect("return_after_kill_dead_1", "return_after_kill_dead_1"));
+
+        Quest returnAfterKill = new QuestBuilder("return_after_kill_dead_1",
+                Component.literal("Return to the Cleric"))
+                .autoComplete(true)
+                .builderHail("return_after_kill_dead_1", Component.literal("Talk to the Cleric again."),
+                        cleric,
+                        postKillDead,
+                        null
+                )
+                .reward(new FactionReward(100, MKUFactions.SEE_OF_SOLANG_NAME))
+                .reward(new GrantEntitlementReward(MKUEntitlements.ClericTier2))
+                .reward(new XpReward(250))
+                .quest();
+        def.addQuest(returnAfterKill);
 
 
 

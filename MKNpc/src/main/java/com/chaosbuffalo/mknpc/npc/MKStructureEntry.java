@@ -113,6 +113,25 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         }).findFirst();
     }
 
+    public boolean hasAnyNotableOfTypes(Set<ResourceLocation> defs, RegistryAccess registryAccess) {
+        return notables.stream().anyMatch(x -> {
+            var definition = x.getDefinition(registryAccess);
+            return definition != null && defs.contains(definition.getDefinitionName());
+        });
+    }
+
+    public List<NotableNpcEntry> getNotablesOfTypes(Set<ResourceLocation> defs, RegistryAccess registryAccess) {
+        return notables.stream().filter(x -> {
+            var definition = x.getDefinition(registryAccess);
+            return definition != null && defs.contains(definition.getDefinitionName());
+        }).collect(Collectors.toList());
+    }
+
+    public Optional<NotableNpcEntry> getRandomNotableFromTypes(Set<ResourceLocation> defs, RegistryAccess registryAccess) {
+        var matches = getNotablesOfTypes(defs, registryAccess);
+        return matches.isEmpty() ? Optional.empty() : Optional.of(matches.get(getWorldData().getWorld().getRandom().nextInt(matches.size())));
+    }
+
     public List<NotableNpcEntry> getAllNotablesOfType(ResourceLocation npcDef, RegistryAccess registryAccess) {
         return notables.stream().filter(x -> {
             var definition = x.getDefinition(registryAccess);
