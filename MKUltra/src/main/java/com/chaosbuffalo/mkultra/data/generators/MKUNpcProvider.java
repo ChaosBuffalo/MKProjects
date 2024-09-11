@@ -1052,6 +1052,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         );
         def.addOption(new MKComboSettingsOption().setComboCount(5).setComboDelay(60));
         def.addOption(MKUNpcGenUtils.getSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.MAGE));
+        def.addOption(new NotableOption());
         return def;
     }
 
@@ -1114,6 +1115,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 .withNoLootChance(0.2)
                 .withNoLootIncrease(0.25)
         );
+        def.addOption(new NotableOption());
         def.addOption(new MKComboSettingsOption().setComboCount(2).setComboDelay(10));
         def.addOption(MKUNpcGenUtils.getSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.PALADIN));
         return def;

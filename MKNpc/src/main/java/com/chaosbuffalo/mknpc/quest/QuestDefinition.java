@@ -9,6 +9,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.CanStartQuestCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
+import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
@@ -221,7 +222,22 @@ public class QuestDefinition {
         if (entry == null) {
             return false;
         }
-        return questChain.stream().allMatch(x -> x.isStructureRelevant(entry));
+        var objectivesByLocation = questChain.stream().flatMap(x -> x.getObjectives().stream()).filter(x -> x.getLocation() != null)
+                .collect(Collectors.groupingBy(QuestObjective::getLocation));
+        for (var objectiveGroup : objectivesByLocation.entrySet()) {
+            if (objectiveGroup.getKey().getStructureId().equals(entry.getStructureName())) {
+                boolean allRelevant = true;
+                for (var objective : objectiveGroup.getValue()) {
+                    if (!objective.isStructureRelevant(entry)) {
+                        allRelevant = false;
+                    }
+                }
+                if (allRelevant) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public QuestChainInstance generate(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {

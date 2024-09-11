@@ -48,7 +48,7 @@ public class UltraStructureSets {
 
         context.register(HYBOREAN_CRYPT,
                 new StructureSet(structures.getOrThrow(UltraStructures.HYBOREAN_CRYPT),
-                        new RandomSpreadStructurePlacement(75, 25, RandomSpreadType.LINEAR, 222222)));
+                        new RandomSpreadStructurePlacement(50, 20, RandomSpreadType.LINEAR, 222222)));
 
         context.register(DECAYING_CHURCH,
                 new StructureSet(structures.getOrThrow(UltraStructures.DECAYING_CHURCH),

@@ -67,7 +67,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 "Hail and well met traveler. I'm {name} and I welcome you to our humble [temple|Tell me about this temple.].")
                 .node("temple", "This temple is dedicated to the worship of His Holy Radiance: Solang, " +
                         "God of the Sun, Bringer of the Morning Light, Banisher of the Dead. According to our records it doesn't look" +
-                        "like you've ever [tithed|What do you mean by tithed?].")
+                        " like you've ever [tithed|What do you mean by tithed?].")
                 .node("tithed", "There are many expenses in the pursuit of our mission to rid this world of the restless dead. Perhaps you would like to [contribute|I can contribute]?")
                 .node("contribute", "A donation of {10 gold bars} would allow us to continue arming the templars and supporting the community here.")
                 .context("name", DialogueContexts.ENTITY_NAME_CONTEXT)
@@ -142,9 +142,33 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 .quest();
         def.addQuest(returnAfterKill);
 
+        Quest killDead2 = new QuestBuilder("kill_dead_2",
+                Component.literal("Destroy the Greater Dead"))
+                .autoComplete(true)
+                .killOneOfNotables("kill_greater", tomb, List.of(ancient_king.npcDef, sorcerer_queen.npcDef))
+                .killNpc("kill_warriors", MKUltra.id("hyborean_warrior"), 8)
+                .killNpc("kill_honor_guard", MKUltra.id("hyborean_honor_guard"), 4)
+                .killNpc("kill_sorcerers", MKUltra.id("hyborean_sorcerer"), 4)
+                .reward(new XpReward(100))
+                .quest();
 
+        def.addQuest(killDead2);
 
-//        def.setupStartQuestResponse(apprenticeNode, apprenticePrompt);
+        DialogueBuilder postKill2 = DialogueBuilder
+                .hail("It is the solumn duty of a Cleric of Solang to bring His Light into the Dark and drive back the dead with it. " +
+                        "You have shown great talent at this task. I hope you will continue to act with faith and fortune.", true);
+
+        Quest afterKill2 = new QuestBuilder("after_kill_2",
+                Component.literal("Return to the Cleric"))
+                .autoComplete(true)
+                .builderHail("return_after_kill_2", Component.literal("Talk to the Cleric again."),
+                        cleric, postKill2, null)
+                .reward(new FactionReward(200, MKUFactions.SEE_OF_SOLANG_NAME))
+                .reward(new GrantEntitlementReward(MKUEntitlements.ClericTier3))
+                .reward(new XpReward(400))
+                .quest();
+
+        def.addQuest(afterKill2);
 
         return def;
     }

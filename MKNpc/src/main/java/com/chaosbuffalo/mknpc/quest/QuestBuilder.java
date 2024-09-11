@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -44,6 +45,13 @@ public class QuestBuilder {
 
     public QuestBuilder killNotable(String objectiveName, QuestNpc npc) {
         KillNotableNpcObjective kill = new KillNotableNpcObjective(objectiveName, npc.location, npc.npcDef);
+        objective(kill);
+        return this;
+    }
+
+    public QuestBuilder killOneOfNotables(String objectiveName, QuestStructureLocation location, List<ResourceLocation> npcDefs) {
+
+        KillOneOfNotablesObjective kill = new KillOneOfNotablesObjective(objectiveName, location, new HashSet<>(npcDefs));
         objective(kill);
         return this;
     }
