@@ -100,7 +100,7 @@
           "npcDefinition": "mkultra:imperial_magus",
           "objectiveName": "loot_staff",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -165,7 +165,7 @@
           "npcDefinition": "mkultra:nether_mage_initiate",
           "objectiveName": "return_to_initiate",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -272,7 +272,7 @@
           "npcDefinition": "mkultra:nether_mage_initiate",
           "objectiveName": "test_complete",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }

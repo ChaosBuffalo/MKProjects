@@ -17,7 +17,7 @@
         "nodeId": "tithed"
       },
       {
-        "message": "This temple is dedicated to the worship of His Holy Radiance: Solang, God of the Sun, Bringer of the Morning Light, Banisher of the Dead. According to our records it doesn't looklike you've ever {prompt:tithed}.",
+        "message": "This temple is dedicated to the worship of His Holy Radiance: Solang, God of the Sun, Bringer of the Morning Light, Banisher of the Dead. According to our records it doesn't look like you've ever {prompt:tithed}.",
         "nodeId": "temple"
       },
       {
@@ -105,7 +105,7 @@
           "npcDefinition": "mkultra:solangian_cleric",
           "objectiveName": "trade_gold_bars",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:desert_temple_village"
           }
         }
@@ -199,7 +199,7 @@
           "npcDefinition": "mkultra:solangian_cleric",
           "objectiveName": "return_to_cleric",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:desert_temple_village"
           }
         }
@@ -324,7 +324,7 @@
           "npcDefinition": "mkultra:solangian_cleric",
           "objectiveName": "return_after_kill_dead_1",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:desert_temple_village"
           }
         }
@@ -358,7 +358,7 @@
           ],
           "objectiveName": "kill_greater",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:hyborean_crypt"
           }
         },
@@ -431,7 +431,7 @@
           "npcDefinition": "mkultra:solangian_cleric",
           "objectiveName": "return_after_kill_2",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:desert_temple_village"
           }
         }

@@ -170,7 +170,7 @@ public class QuestBuilder {
         }
 
         public String getDialogueLink() {
-            return NpcDialogueUtils.getNotableNpcRaw(location.getStructureId(), location.getIndex(), npcDef);
+            return NpcDialogueUtils.getNotableNpcRaw(location.getStructureId(), location.getName(), npcDef);
         }
     }
 }

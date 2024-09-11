@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.quest.dialogue;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
+import com.chaosbuffalo.mknpc.quest.QuestStructureLocation;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
@@ -15,10 +16,10 @@ public class NpcDialogueUtils {
 
     public static class QuestDialogueParse {
         public final String args;
-        public final Map<ResourceLocation, List<MKStructureEntry>> questStructures;
+        public final Map<QuestStructureLocation, MKStructureEntry> questStructures;
         public final QuestChainInstance questChain;
 
-        public QuestDialogueParse(String args, Map<ResourceLocation, List<MKStructureEntry>> questStructures, QuestChainInstance instance) {
+        public QuestDialogueParse(String args, Map<QuestStructureLocation, MKStructureEntry> questStructures, QuestChainInstance instance) {
             this.args = args;
             this.questStructures = questStructures;
             this.questChain = instance;
@@ -34,9 +35,9 @@ public class NpcDialogueUtils {
     public static String notableHandler(QuestDialogueParse parseData) {
         String[] splitArgs = parseData.args.split("#");
         ResourceLocation structureName = ResourceLocation.parse(splitArgs[0]);
-        int index = Integer.parseInt(splitArgs[1]);
+        String name = splitArgs[1];
         ResourceLocation defName = ResourceLocation.parse(splitArgs[2]);
-        Optional<NotableNpcEntry> npc = parseData.questStructures.get(structureName).get(index)
+        Optional<NotableNpcEntry> npc = parseData.questStructures.get(new QuestStructureLocation(structureName, name))
                 .getFirstNotableOfType(defName, parseData.questChain.getLevel().registryAccess());
         return npc.map(x -> String.format("{notable:%s}", x.getNotableId())).orElse("#notable.not_found#");
     }
@@ -45,12 +46,12 @@ public class NpcDialogueUtils {
         putDialogueHandler("mk_quest_notable", NpcDialogueUtils::notableHandler);
     }
 
-    public static String getNotableNpcRaw(ResourceLocation structureName, int index, ResourceLocation defName) {
-        return String.format("{mk_quest_notable:%s#%s#%s}", structureName.toString(), index, defName.toString());
+    public static String getNotableNpcRaw(ResourceLocation structureName, String name, ResourceLocation defName) {
+        return String.format("{mk_quest_notable:%s#%s#%s}", structureName.toString(), name, defName.toString());
     }
 
     public static String parseQuestDialogueMessage(String text,
-                                                   Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                                   Map<QuestStructureLocation, MKStructureEntry> questStructures,
                                                    QuestChainInstance questChain) {
         String parsing = text;
         StringBuilder ret = new StringBuilder();
@@ -76,7 +77,7 @@ public class NpcDialogueUtils {
 
 
     public static String handleMKQuestEntry(String parsee,
-                                            Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                            Map<QuestStructureLocation, MKStructureEntry> questStructures,
                                             QuestChainInstance questChain) {
         String request = parsee.replace("{", "").replace("}", "");
         if (request.contains(":")) {

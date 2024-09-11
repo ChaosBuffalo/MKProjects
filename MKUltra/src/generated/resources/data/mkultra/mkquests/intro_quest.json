@@ -102,7 +102,7 @@
           "npcDefinition": "mkultra:green_smith",
           "objectiveName": "talk_to_smith",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -157,7 +157,7 @@
           ],
           "objectiveName": "loot_chest",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -224,7 +224,7 @@
           "npcDefinition": "mkultra:green_smith",
           "objectiveName": "return_to_smith",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -279,7 +279,7 @@
           "npcDefinition": "mkultra:green_lady",
           "objectiveName": "green_lady_talent",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -367,7 +367,7 @@
           "npcDefinition": "mkultra:green_lady",
           "objectiveName": "return_to_green_lady",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -463,7 +463,7 @@
           "npcDefinition": "mkultra:green_lady",
           "objectiveName": "after_green_lady",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -547,7 +547,7 @@
           "npcDefinition": "mkultra:green_lady",
           "objectiveName": "after_kill",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -569,7 +569,7 @@
           "npcDefinition": "mkultra:trooper_captain",
           "objectiveName": "kill_captain",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         },
@@ -627,7 +627,7 @@
           "npcDefinition": "mkultra:green_lady",
           "objectiveName": "after_kill_captain",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -791,7 +791,7 @@
           "npcDefinition": "mkultra:forlorn_ghost",
           "objectiveName": "talk_to_ghost",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -813,7 +813,7 @@
           "npcDefinition": "mkultra:burning_skeleton",
           "objectiveName": "kill_burning",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         },
@@ -871,7 +871,7 @@
           "npcDefinition": "mkultra:green_lady",
           "objectiveName": "after_kill_burning",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }

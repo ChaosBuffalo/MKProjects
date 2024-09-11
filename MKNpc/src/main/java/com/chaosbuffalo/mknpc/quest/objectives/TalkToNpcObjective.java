@@ -82,8 +82,8 @@ public class TalkToNpcObjective extends QuestObjective<UUIDInstanceData> {
     }
 
     @Override
-    public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {
-        MKStructureEntry entry = questStructures.get(location.getStructureId()).get(location.getIndex());
+    public UUIDInstanceData generateInstanceData(Map<QuestStructureLocation, MKStructureEntry> questStructures, Level level) {
+        MKStructureEntry entry = questStructures.get(location);
         Optional<NotableNpcEntry> npcOpt = entry.getFirstNotableOfType(npcDefinition, level.registryAccess());
         return npcOpt.map(x -> new UUIDInstanceData(x.getNotableId())).orElse(new UUIDInstanceData());
     }
@@ -109,14 +109,14 @@ public class TalkToNpcObjective extends QuestObjective<UUIDInstanceData> {
     }
 
     public static void handleQuestRawMessageManipulation(DialogueObject dialogueObj,
-                                                         Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                                         Map<QuestStructureLocation, MKStructureEntry> questStructures,
                                                          QuestChainInstance questChain) {
         String rawMsg = dialogueObj.getRawMessage();
         String newMsg = NpcDialogueUtils.parseQuestDialogueMessage(rawMsg, questStructures, questChain);
         dialogueObj.setRawMessage(newMsg);
     }
 
-    private DialogueTree specializeTree(Quest quest, QuestChainInstance questChain, Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
+    private DialogueTree specializeTree(Quest quest, QuestChainInstance questChain, Map<QuestStructureLocation, MKStructureEntry> questStructures) {
         DialogueTree specializedTree = tree.copy();
         for (DialogueNode node : specializedTree.getNodes().values()) {
             for (DialogueEffect effect : node.getEffects()) {
@@ -141,7 +141,7 @@ public class TalkToNpcObjective extends QuestObjective<UUIDInstanceData> {
 
     public DialogueTree generateDialogueForNpc(Quest quest, QuestChainInstance questChain, ResourceLocation npcDefinitionName,
                                                UUID npcId, DialogueTree tree,
-                                               Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                               Map<QuestStructureLocation, MKStructureEntry> questStructures,
                                                QuestDefinition definition) {
         return tree.merge(specializeTree(quest, questChain, questStructures));
     }

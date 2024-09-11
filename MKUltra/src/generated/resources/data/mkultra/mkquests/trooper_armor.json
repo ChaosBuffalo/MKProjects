@@ -79,7 +79,7 @@
           "npcDefinition": "mkultra:green_smith",
           "objectiveName": "tradeHelmetObj",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -124,7 +124,7 @@
           "npcDefinition": "mkultra:green_smith",
           "objectiveName": "tradeHelmetObj",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -169,7 +169,7 @@
           "npcDefinition": "mkultra:green_smith",
           "objectiveName": "tradeLeggingsObj",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -214,7 +214,7 @@
           "npcDefinition": "mkultra:green_smith",
           "objectiveName": "tradeChestObj",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }

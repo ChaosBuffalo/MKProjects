@@ -110,8 +110,8 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
     }
 
     @Override
-    public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {
-        MKStructureEntry entry = questStructures.get(location.getStructureId()).get(location.getIndex());
+    public UUIDInstanceData generateInstanceData(Map<QuestStructureLocation, MKStructureEntry> questStructures, Level level) {
+        MKStructureEntry entry = questStructures.get(location);
         return new UUIDInstanceData(entry.getStructureId());
     }
 

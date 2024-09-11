@@ -9,10 +9,8 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.CanStartQuestCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
-import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.google.common.collect.ImmutableMap;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.Util;
@@ -202,45 +200,25 @@ public class QuestDefinition {
                         "QuestDefinition: %s missing start quest dialogue", getName().toString()))));
     }
 
-    public Map<ResourceLocation, Integer> getStructuresNeeded() {
-
-        List<Pair<ResourceLocation, Integer>> allObjectives = questChain
+    public Set<QuestStructureLocation> getStructuresNeeded() {
+        return questChain
                 .stream()
-                .map(Quest::getStructuresNeeded)
-                .flatMap(Collection::stream).collect(Collectors.toList());
-
-        Map<ResourceLocation, Integer> finals = new HashMap<>();
-        for (Pair<ResourceLocation, Integer> pair : allObjectives) {
-            if (!finals.containsKey(pair.getFirst()) || finals.get(pair.getFirst()) < pair.getSecond()) {
-                finals.put(pair.getFirst(), pair.getSecond());
-            }
-        }
-        return finals;
+                .flatMap(x -> x.getStructuresNeeded().stream())
+                .collect(Collectors.toSet());
     }
 
-    public boolean doesStructureMeetRequirements(MKStructureEntry entry) {
+    public boolean doesStructureMeetRequirements(QuestStructureLocation location, MKStructureEntry entry) {
         if (entry == null) {
             return false;
         }
-        var objectivesByLocation = questChain.stream().flatMap(x -> x.getObjectives().stream()).filter(x -> x.getLocation() != null)
-                .collect(Collectors.groupingBy(QuestObjective::getLocation));
-        for (var objectiveGroup : objectivesByLocation.entrySet()) {
-            if (objectiveGroup.getKey().getStructureId().equals(entry.getStructureName())) {
-                boolean allRelevant = true;
-                for (var objective : objectiveGroup.getValue()) {
-                    if (!objective.isStructureRelevant(entry)) {
-                        allRelevant = false;
-                    }
-                }
-                if (allRelevant) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return questChain.stream()
+                .flatMap(x -> x.getObjectives().stream())
+                .filter(x -> x.getLocation() != null && x.getLocation().equals(location))
+                .allMatch(x -> x.isStructureRelevant(entry));
+
     }
 
-    public QuestChainInstance generate(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {
+    public QuestChainInstance generate(Map<QuestStructureLocation, MKStructureEntry> questStructures, Level level) {
         QuestChainInstance instance = new QuestChainInstance(this, questStructures, level);
         return instance;
     }

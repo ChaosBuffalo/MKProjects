@@ -162,7 +162,7 @@
           "npcDefinition": "mkultra:solangian_apprentice",
           "objectiveName": "talk_to_apprentice",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -185,7 +185,7 @@
           "npcDefinition": "mkultra:imperial_magus",
           "objectiveName": "loot_necklace",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -240,7 +240,7 @@
           "npcDefinition": "mkultra:solangian_apprentice",
           "objectiveName": "return_to_apprentice",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -295,7 +295,7 @@
           "npcDefinition": "mkultra:solangian_acolyte",
           "objectiveName": "return_to_acolyte",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }

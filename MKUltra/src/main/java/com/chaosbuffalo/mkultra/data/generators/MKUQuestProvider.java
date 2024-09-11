@@ -52,8 +52,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
     }
 
     private QuestDefinition generateClericQuestChain() {
-        QuestStructureLocation temple = new QuestStructureLocation(UltraStructures.DESERT_TEMPLE_VILLAGE.location(), 0);
-        QuestStructureLocation tomb = new QuestStructureLocation(UltraStructures.HYBOREAN_CRYPT.location(), 0);
+        QuestStructureLocation temple = new QuestStructureLocation(UltraStructures.DESERT_TEMPLE_VILLAGE.location(), "0");
+        QuestStructureLocation tomb = new QuestStructureLocation(UltraStructures.HYBOREAN_CRYPT.location(), "0");
         QuestBuilder.QuestNpc cleric = new QuestBuilder.QuestNpc(temple, MKUltra.id("solangian_cleric"));
         QuestBuilder.QuestNpc sorcerer_queen = new QuestBuilder.QuestNpc(tomb, MKUltra.id("hyborean_sorcerer_queen"));
         QuestBuilder.QuestNpc ancient_king = new QuestBuilder.QuestNpc(tomb, MKUltra.id("an_ancient_king"));
@@ -174,7 +174,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
     }
 
     private QuestDefinition generateIntroMageQuest() {
-        QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), 0);
+        QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         QuestBuilder.QuestNpc initiate = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("nether_mage_initiate"));
         QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("imperial_magus"));
 
@@ -261,7 +261,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
     }
 
     private QuestDefinition generateIntroClericQuest() {
-        QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), 0);
+        QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         QuestBuilder.QuestNpc acolyte = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("solangian_acolyte"));
         QuestBuilder.QuestNpc apprentice = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("solangian_apprentice"));
         QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("imperial_magus"));
@@ -355,7 +355,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
     }
 
     private QuestDefinition generateTrooperArmorQuest() {
-        QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), 0);
+        QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         ResourceLocation greenSmith = MKUltra.id("green_smith");
 
         QuestDefinition def = new QuestDefinition(MKUltra.id("trooper_armor"));
@@ -455,7 +455,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
 
     private QuestDefinition generateIntroQuest() {
 
-        QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), 0);
+        QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         QuestBuilder.QuestNpc greenLady = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("green_lady"));
         QuestBuilder.QuestNpc piglinCaptain = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("trooper_captain"));
         QuestBuilder.QuestNpc greenSmith = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("green_smith"));

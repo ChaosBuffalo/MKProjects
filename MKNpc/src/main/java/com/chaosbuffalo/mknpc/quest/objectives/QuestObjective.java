@@ -11,8 +11,6 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
@@ -61,7 +59,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> {
         return Optional.ofNullable(location);
     }
 
-    public abstract T generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level);
+    public abstract T generateInstanceData(Map<QuestStructureLocation, MKStructureEntry> questStructures, Level level);
 
     public abstract T instanceDataFactory();
 
