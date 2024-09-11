@@ -281,7 +281,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                         "concern to the [Council|the Council?] and we believe that this castle " +
                         "is somehow connected.")
                 .node("Council", "The leadership of my order is called the Council of the Nine. They are tasked with overseeing all affairs of the church.")
-                .node("task", "While you are exploring the castle, could you search for [my apprentice|apprentice|Where did you last see your apprentice?]?" +
+                .node("task", "While you are exploring the castle, could you search for [my apprentice|apprentice|Where did you last see your apprentice?]? " +
                         "We were ambushed by zombies while investigating the library and had to split up. I made it back but {apprentice} has yet to return.")
                 .node("apprentice", "I last saw {apprentice} in the library on the upper floors of the castle.")
                 .context("name", DialogueContexts.ENTITY_NAME_CONTEXT)

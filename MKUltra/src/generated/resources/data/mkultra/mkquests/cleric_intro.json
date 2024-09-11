@@ -4,7 +4,7 @@
     "hailPromptId": "hail",
     "nodes": [
       {
-        "message": "While you are exploring the castle, could you search for {prompt:apprentice}?We were ambushed by zombies while investigating the library and had to split up. I made it back but {mk_quest_notable:mkultra:intro_castle#0#mkultra:solangian_apprentice} has yet to return.",
+        "message": "While you are exploring the castle, could you search for {prompt:apprentice}? We were ambushed by zombies while investigating the library and had to split up. I made it back but {mk_quest_notable:mkultra:intro_castle#0#mkultra:solangian_apprentice} has yet to return.",
         "nodeId": "task"
       },
       {
