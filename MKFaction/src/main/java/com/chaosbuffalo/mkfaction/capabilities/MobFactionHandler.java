@@ -4,28 +4,33 @@ import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.network.MobFactionAssignmentPacket;
 import com.chaosbuffalo.targeting_api.Targeting;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class MobFactionHandler implements IMobFaction {
     private final LivingEntity entity;
-    private ResourceLocation factionName;
-    private MKFaction faction;
-    private ResourceLocation battlecryName;
-
     @Nullable
-    private Component battlecry;
+    private Holder<MKFaction> faction;
 
     public MobFactionHandler(LivingEntity entity) {
         this.entity = entity;
-        setFactionNameInternal(MKFaction.INVALID_FACTION);
+        this.faction = null;
+    }
+
+    @Nonnull
+    @Override
+    public LivingEntity getEntity() {
+        return entity;
     }
 
     @Override
@@ -35,31 +40,41 @@ public class MobFactionHandler implements IMobFaction {
 
     @Nullable
     @Override
-    public MKFaction getFaction() {
+    public Holder<MKFaction> getFaction() {
         return faction;
     }
 
     @Override
     public ResourceLocation getFactionName() {
-        return factionName;
+        if (faction != null) {
+            return faction.unwrapKey().map(ResourceKey::location).orElse(MKFaction.INVALID_FACTION);
+        }
+        return MKFaction.INVALID_FACTION;
+    }
+
+    @Override
+    public boolean isMember(MKFaction otherFaction) {
+        if (faction != null) {
+            return faction.value() == otherFaction;
+        }
+        return false;
     }
 
     @Override
     public ResourceLocation getBattlecryName() {
-        return battlecryName;
+        return getFactionName().withPrefix("battlecry.");
     }
 
-    private void setFactionNameInternal(ResourceLocation factionName) {
-        this.factionName = factionName;
-        this.faction = MKFactionRegistry.getFaction(factionName);
-        this.battlecryName = ResourceLocation.fromNamespaceAndPath(factionName.getNamespace(), String.format("battlecry.%s", factionName.getPath()));
-        if (!factionName.equals(MKFaction.INVALID_FACTION) && faction == null) {
-            throw new IllegalStateException(String.format("Entity %s was switched to unregistered faction '%s'", entity, factionName));
-        }
-    }
-
+    @Override
     public void setFactionName(ResourceLocation factionName) {
-        setFactionNameInternal(factionName);
+        Holder<MKFaction> faction = MKFactionRegistry.getFactionHolder(entity.registryAccess(), factionName).orElse(null);
+
+        setFaction(faction);
+    }
+
+    @Override
+    public void setFaction(@Nullable Holder<MKFaction> faction) {
+        this.faction = faction;
         if (!getEntity().getCommandSenderWorld().isClientSide) {
             syncToAllTracking();
         }
@@ -71,40 +86,34 @@ public class MobFactionHandler implements IMobFaction {
     }
 
     @Override
-    public LivingEntity getEntity() {
-        return entity;
-    }
-
-    @Override
     public Targeting.TargetRelation getRelationToEntity(LivingEntity otherEntity) {
-        MKFaction faction = getFaction();
         if (faction == null) {
             return Targeting.TargetRelation.UNHANDLED;
         }
 
         if (otherEntity instanceof Player player) {
-            return IPlayerFaction.get(player)
-                    .map(playerFaction -> playerFaction.getFactionRelation(factionName))
-                    .orElse(Targeting.TargetRelation.UNHANDLED);
+            IPlayerFaction playerFaction = IPlayerFaction.getOrThrow(player);
+            return playerFaction.getFactionRelation(this);
         }
-        return IMobFaction.get(otherEntity)
-                .map(mobFaction -> faction.getNonPlayerEntityRelationship(otherEntity, mobFaction.getFactionName(), mobFaction.getFaction()))
-                .orElse(Targeting.TargetRelation.UNHANDLED);
+        IMobFaction targetFaction = IMobFaction.getMobOrThrow(otherEntity);
+        return faction.value().getNonPlayerEntityRelationship(otherEntity, targetFaction.getFaction());
     }
 
     @Override
-    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
+    public CompoundTag serializeNBT(@Nonnull HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-        tag.putString("factionName", getFactionName().toString());
+        if (faction != null) {
+            var ops = provider.createSerializationContext(NbtOps.INSTANCE);
+            tag.put("factionId", MKFaction.REFERENCE_CODEC.encodeStart(ops, faction).getOrThrow());
+        }
         return tag;
     }
 
     @Override
-    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
-        if (nbt.contains("factionName")) {
-            setFactionNameInternal(ResourceLocation.parse(nbt.getString("factionName")));
-        } else {
-            setFactionNameInternal(MKFaction.INVALID_FACTION);
+    public void deserializeNBT(@Nonnull HolderLookup.Provider provider, CompoundTag nbt) {
+        if (nbt.contains("factionId")) {
+            var ops = provider.createSerializationContext(NbtOps.INSTANCE);
+            faction = MKFaction.REFERENCE_CODEC.parse(ops, nbt.get("factionId")).getOrThrow();
         }
     }
 }

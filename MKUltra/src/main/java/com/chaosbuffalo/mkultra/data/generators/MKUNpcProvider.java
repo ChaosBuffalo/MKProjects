@@ -371,7 +371,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateGhostApprentice() {
         NpcDefinition def = new NpcDefinition(MKUltra.id("ancient_apprentice_ghost"),
                 MKUEntities.HUMAN_GHOST_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKUFactions.GHOSTS_OF_HYBORIA.getId()));
+        def.addOption(new FactionOption(MKUFactions.GHOSTS_OF_HYBORIA_NAME));
         def.addOption(new RenderGroupOption(MKUHumans.GHOST_LOOK_CLEAN_SHORT_NAME));
         def.addOption(new MKSizeOption(0.92f));
         def.addOption(new AttributesOption()

@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkfaction.faction.FactionDefaultManager;
 import com.chaosbuffalo.mkfaction.network.MobFactionAssignmentPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -29,12 +30,11 @@ public class MobHandlers {
         if (event.getLevel().isClientSide)
             return;
 
-        if (event.getEntity() instanceof LivingEntity living && !(event.getEntity() instanceof ServerPlayer)) {
-            IMobFaction.get(living).ifPresent(mobFaction -> {
-                if (!mobFaction.hasFaction()) {
-                    FactionDefaultManager.getDefaultFaction(event.getEntity()).ifPresent(mobFaction::setFactionName);
-                }
-            });
+        if (event.getEntity() instanceof LivingEntity living && !(event.getEntity() instanceof Player)) {
+            IMobFaction mobFaction = IMobFaction.getMobOrThrow(living);
+            if (!mobFaction.hasFaction()) {
+                FactionDefaultManager.getDefaultFaction(living).ifPresent(mobFaction::setFaction);
+            }
         }
     }
 }

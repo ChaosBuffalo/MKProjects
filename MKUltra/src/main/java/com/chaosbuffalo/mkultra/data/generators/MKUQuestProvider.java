@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkultra.data.generators;
 
 import com.chaosbuffalo.mkchat.dialogue.*;
+import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mknpc.data.QuestDefinitionProvider;
 import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
 import com.chaosbuffalo.mknpc.quest.*;
@@ -47,11 +48,13 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 writeDefinition(generateTrooperArmorQuest(), cache),
                 writeDefinition(generateIntroClericQuest(), cache),
                 writeDefinition(generateIntroMageQuest(), cache),
-                writeDefinition(generateClericQuestChain(), cache)
+                writeDefinition(this::generateClericQuestChain, cache)
         );
     }
 
-    private QuestDefinition generateClericQuestChain() {
+    private QuestDefinition generateClericQuestChain(HolderLookup.Provider provider) {
+        var factionReg = provider.lookupOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY);
+
         QuestStructureLocation temple = new QuestStructureLocation(UltraStructures.DESERT_TEMPLE_VILLAGE.location(), "0");
         QuestStructureLocation tomb = new QuestStructureLocation(UltraStructures.HYBOREAN_CRYPT.location(), "0");
         QuestBuilder.QuestNpc cleric = new QuestBuilder.QuestNpc(temple, MKUltra.id("solangian_cleric"));
@@ -106,7 +109,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                         null
                 )
                 .reward(new XpReward(50))
-                .reward(new FactionReward(50, MKUFactions.SEE_OF_SOLANG_NAME))
+                .reward(new FactionReward(50, factionReg.getOrThrow(MKUFactions.SEE_OF_SOLANG_NAME)))
                 .quest();
         def.addQuest(return1);
 
@@ -136,7 +139,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                         postKillDead,
                         null
                 )
-                .reward(new FactionReward(100, MKUFactions.SEE_OF_SOLANG_NAME))
+                .reward(new FactionReward(100, factionReg.getOrThrow(MKUFactions.SEE_OF_SOLANG_NAME)))
                 .reward(new GrantEntitlementReward(MKUEntitlements.ClericTier2))
                 .reward(new XpReward(250))
                 .quest();
@@ -163,7 +166,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 .autoComplete(true)
                 .builderHail("return_after_kill_2", Component.literal("Talk to the Cleric again."),
                         cleric, postKill2, null)
-                .reward(new FactionReward(200, MKUFactions.SEE_OF_SOLANG_NAME))
+                .reward(new FactionReward(200, factionReg.getOrThrow(MKUFactions.SEE_OF_SOLANG_NAME)))
                 .reward(new GrantEntitlementReward(MKUEntitlements.ClericTier3))
                 .reward(new XpReward(400))
                 .quest();

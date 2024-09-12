@@ -2,33 +2,29 @@ package com.chaosbuffalo.mkfaction.faction;
 
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.targeting_api.Targeting;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.function.Consumer;
 
 
 public class PlayerFactionEntry implements IMKSerializable<CompoundTag> {
 
-    private final MKFaction faction;
+    private final Holder<MKFaction> faction;
     private final Consumer<PlayerFactionEntry> dirtyNotifier;
     private int factionScore;
     private PlayerFactionStatus factionStatus;
 
-    public PlayerFactionEntry(MKFaction faction, Consumer<PlayerFactionEntry> dirtyNotifier) {
+    public PlayerFactionEntry(Holder<MKFaction> faction, Consumer<PlayerFactionEntry> dirtyNotifier) {
         this.faction = faction;
         this.dirtyNotifier = dirtyNotifier;
         reset();
     }
 
     public MKFaction getFaction() {
-        return faction;
-    }
-
-    public ResourceLocation getFactionName() {
-        return faction.getId();
+        return faction.value();
     }
 
     public int getFactionScore() {
@@ -41,8 +37,12 @@ public class PlayerFactionEntry implements IMKSerializable<CompoundTag> {
         markDirty();
     }
 
+    public MutableComponent getDisplayName() {
+        return MKFaction.getDisplayName(faction.getKey());
+    }
+
     public void reset() {
-        setFactionScore(faction.getDefaultPlayerScore());
+        setFactionScore(faction.value().getDefaultPlayerScore());
     }
 
     public void incrementFaction(int toAdd) {
@@ -62,7 +62,7 @@ public class PlayerFactionEntry implements IMKSerializable<CompoundTag> {
     }
 
     public MutableComponent getStatusDisplayName() {
-        return faction.getStatusName(factionStatus);
+        return faction.value().getStatusName(factionStatus);
     }
 
     @Override

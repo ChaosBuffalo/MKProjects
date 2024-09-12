@@ -52,7 +52,7 @@ public class FactionPage extends PlayerPageBase {
         MKLayout entryLayout = new MKLayout(0, 0, width, font.lineHeight + 10);
         entryLayout.setMargins(5, 5, 5, 5);
 
-        Component nameText = faction.getDisplayName();
+        Component nameText = entry.getDisplayName();
         MKText factionName = new MKText(font, nameText);
         factionName.setColor(0xffffffff);
         factionName.setWidth(font.width(nameText));
@@ -73,13 +73,14 @@ public class FactionPage extends PlayerPageBase {
         stackLayout.setPaddingTop(2).setPaddingBot(2);
         stackLayout.doSetChildWidth(true);
 
-        IPlayerFaction.get(pData.getEntity()).ifPresent(playerFaction -> {
-            List<PlayerFactionEntry> factions = ImmutableList.copyOf(playerFaction.getFactionMap().values());
-            factions.stream()
-                    .sorted(Comparator.comparing(entry -> entry.getFaction().getDisplayName().getString()))
-                    .map(entry -> getFactionEntryLayout(entry, panelWidth - 10))
-                    .forEach(stackLayout::addWidget);
-        });
+        IPlayerFaction playerFaction = IPlayerFaction.getOrThrow(pData.getEntity());
+
+        List<PlayerFactionEntry> factions = ImmutableList.copyOf(playerFaction.getFactionMap().values());
+        factions.stream()
+                .sorted(Comparator.comparing(entry -> entry.getDisplayName().getString()))
+                .map(entry -> getFactionEntryLayout(entry, panelWidth - 10))
+                .forEach(stackLayout::addWidget);
+
         return stackLayout;
     }
 

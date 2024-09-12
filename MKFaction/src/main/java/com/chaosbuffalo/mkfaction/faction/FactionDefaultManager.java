@@ -2,7 +2,9 @@ package com.chaosbuffalo.mkfaction.faction;
 
 import com.chaosbuffalo.mkcore.utils.SingleJsonFileReloadListener;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
+import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.google.gson.*;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -29,8 +31,9 @@ public class FactionDefaultManager extends SingleJsonFileReloadListener {
         return Optional.ofNullable(factionDefaults.get(entityType));
     }
 
-    public static Optional<ResourceLocation> getDefaultFaction(Entity entity) {
-        return getDefaultFaction(BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()));
+    public static Optional<Holder<MKFaction>> getDefaultFaction(Entity entity) {
+        return getDefaultFaction(BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()))
+                .flatMap(factionId -> MKFactionRegistry.getFactionHolder(entity.registryAccess(), factionId));
     }
 
     private void addReloadListener(AddReloadListenerEvent event) {

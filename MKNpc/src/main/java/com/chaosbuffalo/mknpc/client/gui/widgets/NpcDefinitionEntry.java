@@ -7,11 +7,10 @@ import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
 
 import java.util.function.Consumer;
 
@@ -24,14 +23,17 @@ public class NpcDefinitionEntry extends MKLayout {
         super(0, 0, width, 18);
         this.npcDefinitionClient = definition;
         this.callback = callback;
-        MKFaction faction = MKFactionRegistry.getFaction(definition.getFaction());
-        String text;
+        MKFaction faction = MKFactionRegistry.getFaction(Minecraft.getInstance().level.registryAccess(), definition.getFaction());
+        Component text;
         if (faction != null) {
-            text = String.format("%s (%s) %s", definition.getName(),
-                    faction.getTranslationKey() != null ? I18n.get(faction.getTranslationKey()) :
-                            definition.getFaction().toString(), definition.getDefinitionName().toString());
+            text = Component.empty()
+                    .append(definition.getName())
+                    .append(" (")
+                    .append(MKFaction.getDisplayName(definition.getFaction()))
+                    .append(") ")
+                    .append(definition.getDefinitionName().toString());
         } else {
-            text = definition.getName();
+            text = Component.literal(definition.getName());
         }
 
         MKText nameText = new MKText(font, text);

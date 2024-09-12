@@ -11,11 +11,6 @@ public class PacketHandler {
         final PayloadRegistrar registrar = event.registrar(VERSION);
 
         registrar.playToClient(
-                MKFactionDefinitionUpdatePacket.TYPE,
-                MKFactionDefinitionUpdatePacket.STREAM_CODEC,
-                MKFactionDefinitionUpdatePacket::handle
-        );
-        registrar.playToClient(
                 MobFactionAssignmentPacket.TYPE,
                 MobFactionAssignmentPacket.STREAM_CODEC,
                 MobFactionAssignmentPacket::handle

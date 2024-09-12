@@ -264,11 +264,11 @@
     "Yisun-te'e",
     "Yisungge"
   ],
-  "greetings": {
+  "lastNames": [],
+  "messages": {
     "battlecries": [],
     "friendly_greetings": [],
     "member_greetings": [],
     "outsider_greetings": []
-  },
-  "lastNames": []
+  }
 }

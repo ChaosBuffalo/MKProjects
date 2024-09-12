@@ -258,7 +258,8 @@
     "Yisun-te'e",
     "Yisungge"
   ],
-  "greetings": {
+  "lastNames": [],
+  "messages": {
     "battlecries": [
       "All was once water, all will return to water in.. the… end…",
       "Where we are standing right now was once the sea floor, show some respect!",
@@ -283,6 +284,5 @@
     "outsider_greetings": [
       "My time is limited, the ocean calls, what business do you have with me?"
     ]
-  },
-  "lastNames": []
+  }
 }

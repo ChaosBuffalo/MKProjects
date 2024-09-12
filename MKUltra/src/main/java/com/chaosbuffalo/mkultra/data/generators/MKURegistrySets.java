@@ -1,9 +1,11 @@
 package com.chaosbuffalo.mkultra.data.generators;
 
+import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructurePools;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructureSets;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructures;
+import com.chaosbuffalo.mkultra.init.MKUFactions;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.core.registries.Registries;
@@ -17,7 +19,8 @@ public class MKURegistrySets extends DatapackBuiltinEntriesProvider {
     public static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
             .add(Registries.STRUCTURE, UltraStructures::bootstrap)
             .add(Registries.STRUCTURE_SET, UltraStructureSets::bootstrap)
-            .add(Registries.TEMPLATE_POOL, UltraStructurePools::bootstrap);
+            .add(Registries.TEMPLATE_POOL, UltraStructurePools::bootstrap)
+            .add(MKFactionRegistry.FACTION_REGISTRY_KEY, MKUFactions::bootstrap);
 
     public MKURegistrySets(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         super(output, registries, BUILDER, Collections.singleton(MKUltra.MODID));

@@ -1,0 +1,23 @@
+{
+  "allies": [],
+  "defaultPlayerScore": -5000,
+  "enemies": [
+    "mkfaction:villagers"
+  ],
+  "firstNames": [
+    "James",
+    "Jolipnik",
+    "Ted"
+  ],
+  "lastNames": [
+    "Caliente",
+    "Elkins",
+    "Smith"
+  ],
+  "messages": {
+    "battlecries": [],
+    "friendly_greetings": [],
+    "member_greetings": [],
+    "outsider_greetings": []
+  }
+}

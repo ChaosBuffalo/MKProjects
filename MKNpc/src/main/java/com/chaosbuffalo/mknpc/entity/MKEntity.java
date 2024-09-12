@@ -470,17 +470,17 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             return;
         }
 
-        IMobFaction.get(this).ifPresent(faction -> {
-            if (faction.hasFaction()) {
-                MKCore.getEntityData(target).ifPresent(entityData -> {
-                    if (entityData.getStats().getTimer(faction.getBattlecryName()) <= 0) {
-                        DialogueUtils.sendMessageToAllAround(this,
-                                DialogueUtils.formatSpeakerMessage(this, battlecry));
-                        entityData.getStats().setTimer(faction.getBattlecryName(), BATTLECRY_COOLDOWN);
-                    }
-                });
-            }
-        });
+        IMobFaction faction = IMobFaction.getMobOrThrow(this);
+        if (faction.hasFaction()) {
+            MKCore.getEntityData(target).ifPresent(entityData -> {
+                var battlecryName = faction.getBattlecryName();
+                if (entityData.getStats().getTimer(battlecryName) <= 0) {
+                    DialogueUtils.sendMessageToAllAround(this,
+                            DialogueUtils.formatSpeakerMessage(this, battlecry));
+                    entityData.getStats().setTimer(battlecryName, BATTLECRY_COOLDOWN);
+                }
+            });
+        }
     }
 
     public void callForHelp(LivingEntity entity, float threatVal) {

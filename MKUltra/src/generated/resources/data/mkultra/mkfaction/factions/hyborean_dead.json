@@ -9,11 +9,11 @@
     "mkultra:green_knights"
   ],
   "firstNames": [],
-  "greetings": {
+  "lastNames": [],
+  "messages": {
     "battlecries": [],
     "friendly_greetings": [],
     "member_greetings": [],
     "outsider_greetings": []
-  },
-  "lastNames": []
+  }
 }

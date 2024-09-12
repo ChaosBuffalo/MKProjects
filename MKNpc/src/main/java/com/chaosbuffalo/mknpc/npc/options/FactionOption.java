@@ -1,12 +1,14 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
+import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
@@ -22,6 +24,11 @@ public class FactionOption extends NpcDefinitionOption {
     public FactionOption(ResourceLocation factionId) {
         super(NAME, ApplyOrder.MIDDLE);
         this.factionId = factionId;
+    }
+
+    public FactionOption(ResourceKey<MKFaction> factionId) {
+        super(NAME, ApplyOrder.MIDDLE);
+        this.factionId = factionId.location();
     }
 
     public ResourceLocation getValue() {

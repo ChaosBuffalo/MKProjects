@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionStatus;
 import com.chaosbuffalo.mkfaction.init.FactionAttachments;
 import com.chaosbuffalo.targeting_api.Targeting;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -19,41 +20,39 @@ public interface IPlayerFaction extends INBTSerializable<CompoundTag> {
 
     Map<ResourceLocation, PlayerFactionEntry> getFactionMap();
 
-    Optional<PlayerFactionEntry> getFactionEntry(ResourceLocation factionName);
+    Optional<PlayerFactionEntry> getFactionEntry(Holder<MKFaction> factionHolder);
 
-    default Optional<PlayerFactionEntry> getFactionEntry(MKFaction faction) {
-        return getFactionEntry(faction.getId());
+    default PlayerFactionStatus getFactionStatus(IMobFaction mobFaction) {
+        if (mobFaction.hasFaction()) {
+            return getFactionStatus(mobFaction.getFaction());
+        }
+        return PlayerFactionStatus.UNKNOWN;
     }
 
-    default PlayerFactionStatus getFactionStatus(ResourceLocation factionName) {
-        return getFactionEntry(factionName)
+    default PlayerFactionStatus getFactionStatus(Holder<MKFaction> factionHolder) {
+        return getFactionEntry(factionHolder)
                 .map(PlayerFactionEntry::getFactionStatus)
                 .orElse(PlayerFactionStatus.UNKNOWN);
     }
 
-    default PlayerFactionStatus getFactionStatus(IMobFaction mobFaction) {
-        return getFactionStatus(mobFaction.getFactionName());
+    default Targeting.TargetRelation getFactionRelation(IMobFaction mobFaction) {
+        if (mobFaction.hasFaction()) {
+            return getFactionRelation(mobFaction.getFaction());
+        }
+        return Targeting.TargetRelation.UNHANDLED;
     }
 
-    default Targeting.TargetRelation getFactionRelation(ResourceLocation factionName) {
-        return getFactionEntry(factionName)
+    default Targeting.TargetRelation getFactionRelation(Holder<MKFaction> factionHolder) {
+        return getFactionEntry(factionHolder)
                 .map(PlayerFactionEntry::getTargetRelation)
                 .orElse(Targeting.TargetRelation.UNHANDLED);
     }
 
-    default Targeting.TargetRelation getFactionRelation(IMobFaction mobFaction) {
-        return getFactionRelation(mobFaction.getFactionName());
-    }
-
-    default void addRepToFaction(ResourceLocation factionName, int factionAmount) {
-        getFactionEntry(factionName).ifPresent(entry -> entry.incrementFaction(factionAmount));
-    }
-
-    default void subRepFromFaction(ResourceLocation factionName, int factionAmount) {
-        getFactionEntry(factionName).ifPresent(entry -> entry.decrementFaction(factionAmount));
-    }
-
     static Optional<IPlayerFaction> get(Player entity) {
         return Optional.of(entity.getData(FactionAttachments.PLAYER_DATA_ATTACHMENT));
+    }
+
+    static IPlayerFaction getOrThrow(Player entity) {
+        return entity.getData(FactionAttachments.PLAYER_DATA_ATTACHMENT);
     }
 }

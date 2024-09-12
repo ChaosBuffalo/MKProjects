@@ -37,7 +37,7 @@ public class MKUDataGenerators {
         generator.addProvider(event.includeServer(), new UltraBiomeTagsProvider(packOutput, datapackLookup, fileHelper));
         generator.addProvider(event.includeServer(), new UltraStructureTagsProvider(packOutput, datapackLookup, fileHelper));
 
-        generator.addProvider(event.includeServer(), new MKUFactionProvider(generator));
+//        generator.addProvider(event.includeServer(), new MKUFactionProvider(generator));
         generator.addProvider(event.includeServer(), new MKUDialogueProvider(generator));
         generator.addProvider(event.includeServer(), new MKULootTierProvider(generator));
         generator.addProvider(event.includeServer(), new MKUTalentTreeProvider(generator));

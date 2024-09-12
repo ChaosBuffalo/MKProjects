@@ -17,6 +17,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -103,7 +104,7 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
         if (title != null) {
             name += title;
         }
-        MKFaction faction = MKFactionRegistry.getFaction(definition.getFactionName());
+        MKFaction faction = MKFactionRegistry.getFaction(ServerLifecycleHooks.getCurrentServer().registryAccess(), definition.getFactionName());
         if (faction != null) {
             name += " ";
             String firstName = getRandomEntry(random, faction.getFirstNames());

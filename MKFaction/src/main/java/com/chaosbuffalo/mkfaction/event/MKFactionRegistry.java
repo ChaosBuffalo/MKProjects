@@ -2,30 +2,33 @@ package com.chaosbuffalo.mkfaction.event;
 
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.registries.NewRegistryEvent;
-import net.neoforged.neoforge.registries.RegistryBuilder;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @EventBusSubscriber(modid = MKFactionMod.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class MKFactionRegistry {
     public static final ResourceKey<Registry<MKFaction>> FACTION_REGISTRY_KEY = ResourceKey.createRegistryKey(MKFactionMod.id("factions"));
 
-    public static final Registry<MKFaction> FACTION_REGISTRY = new RegistryBuilder<>(FACTION_REGISTRY_KEY).create();
-
     @Nullable
-    public static MKFaction getFaction(ResourceLocation name) {
-        return FACTION_REGISTRY.get(name);
+    public static MKFaction getFaction(RegistryAccess registryAccess, ResourceLocation factionId) {
+        return registryAccess.registryOrThrow(FACTION_REGISTRY_KEY).get(factionId);
     }
 
-    @SuppressWarnings("unused")
+    public static Optional<Holder.Reference<MKFaction>> getFactionHolder(RegistryAccess registryAccess, ResourceLocation factionId) {
+        return registryAccess.registryOrThrow(FACTION_REGISTRY_KEY).getHolder(factionId);
+    }
+
     @SubscribeEvent
-    public static void createRegistries(NewRegistryEvent event) {
-        event.register(FACTION_REGISTRY);
+    public static void createDataPackRegistries(DataPackRegistryEvent.NewRegistry event) {
+        event.dataPackRegistry(FACTION_REGISTRY_KEY, MKFaction.DIRECT_CODEC, MKFaction.DIRECT_CODEC);
     }
 }
