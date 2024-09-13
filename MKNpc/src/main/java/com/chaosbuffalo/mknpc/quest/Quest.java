@@ -104,15 +104,7 @@ public class Quest {
     public Set<QuestStructureLocation> getStructuresNeeded() {
         return objectives.stream().map(QuestObjective::getStructure).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toSet());
     }
-
-//    public List<Pair<ResourceLocation, Integer>> getStructuresNeeded() {
-//        return objectives.stream()
-//                .flatMap(x -> x.getStructure().stream())
-//                .map(l -> new Pair<>(l.getStructureId(), l.getIndex() + 1))
-//                .toList();
-//    }
-
-
+    
     public boolean isStructureRelevant(MKStructureEntry entry) {
         return objectives.stream().allMatch(x -> x.isStructureRelevant(entry));
     }
