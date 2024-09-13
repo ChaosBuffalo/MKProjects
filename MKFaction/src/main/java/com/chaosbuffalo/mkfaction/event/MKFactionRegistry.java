@@ -27,6 +27,10 @@ public class MKFactionRegistry {
         return registryAccess.registryOrThrow(FACTION_REGISTRY_KEY).getHolder(factionId);
     }
 
+    public static Optional<Holder.Reference<MKFaction>> getFactionHolder(RegistryAccess registryAccess, ResourceKey<MKFaction> factionId) {
+        return registryAccess.registryOrThrow(FACTION_REGISTRY_KEY).getHolder(factionId);
+    }
+
     @SubscribeEvent
     public static void createDataPackRegistries(DataPackRegistryEvent.NewRegistry event) {
         event.dataPackRegistry(FACTION_REGISTRY_KEY, MKFaction.DIRECT_CODEC, MKFaction.DIRECT_CODEC);

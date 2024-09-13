@@ -1,44 +1,44 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
+import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 public class FactionOption extends NpcDefinitionOption {
     public static final ResourceLocation NAME = MKNpc.id("faction");
-    public static final Codec<FactionOption> CODEC = ResourceLocation.CODEC.xmap(FactionOption::new, FactionOption::getValue);
     public static final MapCodec<FactionOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
-        ResourceLocation.CODEC.fieldOf("factionId").forGetter(i -> i.factionId)
+            ResourceKey.codec(MKFactionRegistry.FACTION_REGISTRY_KEY).fieldOf("factionId").forGetter(i -> i.factionId)
     ).apply(builder, FactionOption::new));
 
-    private final ResourceLocation factionId;
+    private final ResourceKey<MKFaction> factionId;
 
-    public FactionOption(ResourceLocation factionId) {
+    public FactionOption(ResourceKey<MKFaction> factionId) {
         super(NAME, ApplyOrder.MIDDLE);
         this.factionId = factionId;
     }
 
-    public FactionOption(ResourceKey<MKFaction> factionId) {
-        super(NAME, ApplyOrder.MIDDLE);
-        this.factionId = factionId.location();
-    }
-
     public ResourceLocation getValue() {
-        return factionId;
+        return factionId.location();
     }
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
-        IMobFaction.get(entity)
-                .ifPresent(cap -> cap.setFactionName(factionId));
+        IMobFaction.get(entity).ifPresent(cap -> {
+            Holder<MKFaction> faction = MKFactionRegistry.getFactionHolder(entity.registryAccess(), factionId).orElseGet(() -> {
+                MKNpc.LOGGER.error("Tried to apply invalid faction {} to entity {}", factionId, entity);
+                return null;
+            });
+            cap.setFaction(faction);
+        });
     }
 
     @Override

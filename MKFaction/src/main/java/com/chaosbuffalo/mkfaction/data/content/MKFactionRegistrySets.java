@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkfaction.data;
+package com.chaosbuffalo.mkfaction.data.content;
 
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;

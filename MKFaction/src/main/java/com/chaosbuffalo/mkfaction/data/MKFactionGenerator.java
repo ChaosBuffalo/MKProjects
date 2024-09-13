@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mkfaction.data;
 
+import com.chaosbuffalo.mkfaction.data.content.MKFactionRegistrySets;
+import com.chaosbuffalo.mkfaction.data.content.MKFactionsDefaultFactionGenerator;
 import net.minecraft.DetectedVersion;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
@@ -11,7 +13,6 @@ import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.util.InclusiveRange;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import java.util.Optional;
@@ -27,6 +28,7 @@ public class MKFactionGenerator {
         var registrySets = new MKFactionRegistrySets(packOutput, event.getLookupProvider());
         gen.addProvider(event.includeServer(), registrySets);
         CompletableFuture<HolderLookup.Provider> lookupProvider = registrySets.getRegistryProvider();
+        gen.addProvider(event.includeServer(), new MKFactionsDefaultFactionGenerator(packOutput, lookupProvider));
 
         // pack.mcmeta
         gen.addProvider(true, new PackMetadataGenerator(gen.getPackOutput())

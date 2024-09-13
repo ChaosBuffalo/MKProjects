@@ -19,7 +19,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class MKFaction {
     public static final Codec<MKFaction> DIRECT_CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.<MKFaction>mapCodec(builder -> builder.group(
@@ -130,6 +133,7 @@ public class MKFaction {
             }
             return ret;
         }
+
         private final Set<ResourceKey<MKFaction>> allies = new TreeSet<>(Builder::keyCompare);
         private final Set<ResourceKey<MKFaction>> enemies = new TreeSet<>(Builder::keyCompare);
         private final Set<String> firstNames = new TreeSet<>(String::compareToIgnoreCase);

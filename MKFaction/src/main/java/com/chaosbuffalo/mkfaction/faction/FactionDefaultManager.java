@@ -1,58 +1,66 @@
 package com.chaosbuffalo.mkfaction.faction;
 
-import com.chaosbuffalo.mkcore.utils.SingleJsonFileReloadListener;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
-import com.google.gson.*;
+import com.chaosbuffalo.mkfaction.init.FactionDataMaps;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.registries.datamaps.DataMapsUpdatedEvent;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
-public class FactionDefaultManager extends SingleJsonFileReloadListener {
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-    private static final HashMap<ResourceLocation, ResourceLocation> factionDefaults = new HashMap<>();
+@EventBusSubscriber(modid = MKFactionMod.MODID, bus = EventBusSubscriber.Bus.GAME)
+public class FactionDefaultManager {
+    private static final Map<EntityType<?>, Holder<MKFaction>> factionDefaults = new HashMap<>();
 
-    public FactionDefaultManager() {
-        super(GSON, MKFactionMod.MODID, "categories");
-        NeoForge.EVENT_BUS.addListener(this::addReloadListener);
-    }
+    private FactionDefaultManager() {
 
-    public static Optional<ResourceLocation> getDefaultFaction(ResourceLocation entityType) {
-        return Optional.ofNullable(factionDefaults.get(entityType));
     }
 
     public static Optional<Holder<MKFaction>> getDefaultFaction(Entity entity) {
-        return getDefaultFaction(BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()))
-                .flatMap(factionId -> MKFactionRegistry.getFactionHolder(entity.registryAccess(), factionId));
+        return getDefaultFaction(entity.getType());
     }
 
-    private void addReloadListener(AddReloadListenerEvent event) {
-        event.addListener(this);
+    public static Optional<Holder<MKFaction>> getDefaultFaction(EntityType<?> entityType) {
+        return Optional.ofNullable(factionDefaults.get(entityType));
     }
 
-    @Override
-    protected void apply(JsonObject objectIn, @Nullable ResourceManager resourceManagerIn,
-                         @Nonnull ProfilerFiller profilerIn) {
-        JsonArray arr = objectIn.getAsJsonArray("members");
-        factionDefaults.clear();
-        for (JsonElement ele : arr) {
-            JsonObject obj = ele.getAsJsonObject();
-            ResourceLocation factionName = ResourceLocation.parse(obj.get("name").getAsString());
-            JsonArray members = obj.getAsJsonArray("defaultMembers");
-            for (JsonElement memb : members) {
-                ResourceLocation memberName = ResourceLocation.parse(memb.getAsString());
-                factionDefaults.put(memberName, factionName);
-            }
-        }
+    @SubscribeEvent
+    public static void onDataMapUpdated(DataMapsUpdatedEvent event) {
+        event.ifRegistry(Registries.ENTITY_TYPE, entityRegistry -> {
+            Registry<MKFaction> factionRegistry = event.getRegistries().registryOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY);
+            factionDefaults.clear();
+            entityRegistry.holders().forEach(typeHolder -> {
+                EntityType<?> type = typeHolder.value();
+
+                EntityDefaultFaction defFaction = typeHolder.getData(FactionDataMaps.ENTITY_DEFAULT_FACTION);
+                if (defFaction != null) {
+                    factionRegistry.getHolder(defFaction.faction()).ifPresentOrElse(factionHolder -> {
+                        if (type.getCategory().isFriendly() && factionHolder.value().getDefaultPlayerScore() < 0) {
+                            MKFactionMod.LOGGER.warn("Friendly mob {} assigned to enemy faction", type);
+                        }
+                        factionDefaults.put(typeHolder.value(), factionHolder);
+                    }, () -> MKFactionMod.LOGGER.warn("Mob {} has invalid default faction assigned", typeHolder.key()));
+                } else {
+                    if (type.getCategory() != MobCategory.MISC) {
+                        if (!type.getCategory().isFriendly()) {
+                            MKFactionMod.LOGGER.warn("Enemy mob {} not assigned to enemy faction", type);
+                        } else {
+                            MKFactionMod.LOGGER.warn("Friendly mob {} not assigned to any faction", type);
+                        }
+                    }
+                }
+            });
+
+            MKFactionMod.LOGGER.info("Default Faction assignments reloaded");
+        });
     }
 }

@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkfaction.event;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
 import com.chaosbuffalo.mkfaction.faction.FactionDefaultManager;
-import com.chaosbuffalo.mkfaction.network.MobFactionAssignmentPacket;
+import com.chaosbuffalo.mkfaction.network.packets.MobFactionAssignmentPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;

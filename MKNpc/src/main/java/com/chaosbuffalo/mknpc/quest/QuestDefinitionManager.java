@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -34,11 +35,12 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> objectIn, ResourceManager resourceManagerIn, ProfilerFiller profilerIn) {
         DEFINITIONS.clear();
+        RegistryOps<JsonElement> regJsonOps = getRegistryLookup().createSerializationContext(JsonOps.INSTANCE);
         for (Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
             ResourceLocation definitionId = entry.getKey();
             MKNpc.LOGGER.info("Found Quest Definition file: {}", definitionId);
             QuestDefinition def = new QuestDefinition(definitionId);
-            def.deserialize(new Dynamic<>(JsonOps.INSTANCE, entry.getValue()), getRegistryLookup());
+            def.deserialize(new Dynamic<>(regJsonOps, entry.getValue()), getRegistryLookup());
             DEFINITIONS.put(def.getName(), def);
         }
     }

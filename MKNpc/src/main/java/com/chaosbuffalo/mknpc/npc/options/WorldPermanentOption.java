@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 
 import java.util.UUID;
 
@@ -22,7 +23,7 @@ public abstract class WorldPermanentOption extends NpcDefinitionOption {
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
-        ContentDB.tryGetLevelData(entity.getCommandSenderWorld()).ifPresent(worldCap -> {
+        ContentDB.tryGetLevelData(entity.level()).ifPresent(worldCap -> {
             ensureGenerated(definition, WorldNpcDataHandler.getSpawnIdForEntity(entity), worldCap);
             applyFromWorld(definition, entity, worldCap);
         });
@@ -43,10 +44,10 @@ public abstract class WorldPermanentOption extends NpcDefinitionOption {
         return worldNpcData.getEntityOptionEntry(definition, this, entityId);
     }
 
-    protected abstract INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random);
+    protected abstract INpcOptionEntry makeOptionEntry(NpcDefinition definition, Level level, RandomSource random);
 
     protected void generateWorldEntry(NpcDefinition definition, UUID spawnId, IWorldNpcData worldNpcData) {
         worldNpcData.addEntityOptionEntry(definition, this, spawnId,
-                makeOptionEntry(definition, worldNpcData.getWorld().getRandom()));
+                makeOptionEntry(definition, worldNpcData.getWorld(), worldNpcData.getWorld().getRandom()));
     }
 }

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkfaction.network;
 
+import com.chaosbuffalo.mkfaction.network.packets.MobFactionAssignmentPacket;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 

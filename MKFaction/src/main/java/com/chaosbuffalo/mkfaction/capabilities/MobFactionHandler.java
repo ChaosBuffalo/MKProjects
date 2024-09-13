@@ -1,8 +1,7 @@
 package com.chaosbuffalo.mkfaction.capabilities;
 
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
-import com.chaosbuffalo.mkfaction.network.MobFactionAssignmentPacket;
+import com.chaosbuffalo.mkfaction.network.packets.MobFactionAssignmentPacket;
 import com.chaosbuffalo.targeting_api.Targeting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -66,16 +65,9 @@ public class MobFactionHandler implements IMobFaction {
     }
 
     @Override
-    public void setFactionName(ResourceLocation factionName) {
-        Holder<MKFaction> faction = MKFactionRegistry.getFactionHolder(entity.registryAccess(), factionName).orElse(null);
-
-        setFaction(faction);
-    }
-
-    @Override
     public void setFaction(@Nullable Holder<MKFaction> faction) {
         this.faction = faction;
-        if (!getEntity().getCommandSenderWorld().isClientSide) {
+        if (!getEntity().level().isClientSide) {
             syncToAllTracking();
         }
     }

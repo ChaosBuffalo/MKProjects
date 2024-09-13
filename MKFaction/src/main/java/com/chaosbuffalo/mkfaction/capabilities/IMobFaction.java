@@ -28,15 +28,12 @@ public interface IMobFaction extends INBTSerializable<CompoundTag> {
 
     ResourceLocation getBattlecryName();
 
-    void setFactionName(ResourceLocation factionName);
-
     void setFaction(@Nullable Holder<MKFaction> faction);
 
     @Nullable
     Holder<MKFaction> getFaction();
 
     Targeting.TargetRelation getRelationToEntity(LivingEntity entity);
-
 
 
     static Optional<IMobFaction> get(LivingEntity entity) {

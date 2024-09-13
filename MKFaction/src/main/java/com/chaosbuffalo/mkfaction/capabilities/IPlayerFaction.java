@@ -23,8 +23,9 @@ public interface IPlayerFaction extends INBTSerializable<CompoundTag> {
     Optional<PlayerFactionEntry> getFactionEntry(Holder<MKFaction> factionHolder);
 
     default PlayerFactionStatus getFactionStatus(IMobFaction mobFaction) {
-        if (mobFaction.hasFaction()) {
-            return getFactionStatus(mobFaction.getFaction());
+        var mobActiveFaction = mobFaction.getFaction();
+        if (mobActiveFaction != null) {
+            return getFactionStatus(mobActiveFaction);
         }
         return PlayerFactionStatus.UNKNOWN;
     }
@@ -36,8 +37,9 @@ public interface IPlayerFaction extends INBTSerializable<CompoundTag> {
     }
 
     default Targeting.TargetRelation getFactionRelation(IMobFaction mobFaction) {
-        if (mobFaction.hasFaction()) {
-            return getFactionRelation(mobFaction.getFaction());
+        var mobActiveFaction = mobFaction.getFaction();
+        if (mobActiveFaction != null) {
+            return getFactionRelation(mobActiveFaction);
         }
         return Targeting.TargetRelation.UNHANDLED;
     }

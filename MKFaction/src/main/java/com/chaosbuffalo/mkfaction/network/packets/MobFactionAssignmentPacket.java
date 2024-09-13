@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkfaction.network;
+package com.chaosbuffalo.mkfaction.network.packets;
 
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
