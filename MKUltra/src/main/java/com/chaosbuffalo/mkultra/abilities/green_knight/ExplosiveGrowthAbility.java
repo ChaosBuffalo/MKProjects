@@ -137,7 +137,7 @@ public class ExplosiveGrowthAbility extends MKAbility {
                 }
             }
 
-            MKParticles.spawn(entHit, new Vec3(0.0, 1.0, 0.0), detonate_particles.getValue());
+            MKParticles.spawnOffset(entHit, new Vec3(0.0, 1.0, 0.0), detonate_particles.getValue());
         }
 
         HitResult blockHit = RayTraceUtils.rayTraceBlocks(castingEntity, from, to, false);

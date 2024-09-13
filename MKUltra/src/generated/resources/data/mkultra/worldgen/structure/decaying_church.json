@@ -15,7 +15,45 @@
   },
   "start_pool": "mkultra:decaying_church/base",
   "step": "surface_structures",
-  "structure_events": {},
+  "structure_events": {
+    "structure_events": [
+      {
+        "type": "mknpc:struct_event.spawn_npc",
+        "conditions": [
+          {
+            "type": "mknpc:struct_condition.npc_death_count",
+            "count": 4,
+            "name": "priest_kills",
+            "npcDefinition": "mkultra:ancient_priest_ghost"
+          }
+        ],
+        "cooldown": 12000,
+        "event_name": "summon_cardinal",
+        "faceTag": "cardinal_facing",
+        "moveType": "STATIONARY",
+        "npcDefinition": "mkultra:ancient_cardinal",
+        "poiTag": "cardinal_spawn",
+        "requirements": [
+          {
+            "type": "mknpc:struct_requirement.has_poi",
+            "poiName": "cardinal_spawn"
+          },
+          {
+            "type": "mknpc:struct_requirement.has_poi",
+            "poiName": "cardinal_facing"
+          },
+          {
+            "type": "mknpc:struct_requirement.has_npc",
+            "npcDefinition": "mkultra:ancient_priest_ghost"
+          }
+        ],
+        "triggers": [
+          "ON_ACTIVATE",
+          "ON_DEATH"
+        ]
+      }
+    ]
+  },
   "terrain_adaptation": "beard_thin",
   "use_expansion_hack": true
 }

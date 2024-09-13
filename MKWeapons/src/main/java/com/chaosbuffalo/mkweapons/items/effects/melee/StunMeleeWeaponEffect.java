@@ -48,7 +48,7 @@ public class StunMeleeWeaponEffect extends BaseMeleeWeaponEffect {
             MKEffectBuilder<?> stun = StunEffect.from(attackerData.getEntity())
                     .timed(stunDuration * GameConstants.TICKS_PER_SECOND);
             MKCore.getEntityData(target).ifPresent(targetData -> targetData.getEffects().addEffect(stun));
-            MKParticles.spawn(target, new Vec3(0.0, target.getBbHeight(), 0.0), PARTICLES);
+            MKParticles.spawnOffset(target, new Vec3(0.0, target.getBbHeight(), 0.0), PARTICLES);
         }
     }
 

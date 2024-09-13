@@ -24,7 +24,7 @@ public abstract class ParticleEffectState extends MKEffectState {
 
     protected void sendEffectParticles(Entity target) {
         if (particles != null) {
-            MKParticles.spawn(target, YP, particles);
+            MKParticles.spawnOffset(target, YP, particles);
         }
     }
 

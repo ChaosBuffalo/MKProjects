@@ -60,7 +60,8 @@ public class MKURenderers {
         List<ModelStyle> humanStyles = List.of(ModelStyles.BASIC_STYLE, MKUHumans.TWO_LAYER_ARMOR_NO_HAIR,
                 MKUHumans.TWO_LAYER_ARMOR_SHORT_HAIR, MKUHumans.GHOST_LONG_HAIR_STYLE, MKUHumans.TWO_LAYER_CLOTHES_SHORT_HAIR,
                 MKUHumans.ARMORED_GHOST_LONG_HAIR_STYLE, ModelStyles.SHORT_HAIR_STYLE, MKUHumans.GHOST_LONG_HAIR_NO_CLOTHES_STYLE,
-                MKUHumans.ARMORED_GHOST_LONG_HAIR_NO_CLOTHES_STYLE);
+                MKUHumans.ARMORED_GHOST_LONG_HAIR_NO_CLOTHES_STYLE, MKUHumans.GHOST_SHORT_HAIR_NO_CLOTHES_STYLE,
+                MKUHumans.ARMORED_GHOST_SHORT_HAIR_NO_CLOTHES_STYLE);
 
         for (ModelStyle style : humanStyles) {
             style.registerModelLayers(event, MKBipedModel::createBodyLayer,

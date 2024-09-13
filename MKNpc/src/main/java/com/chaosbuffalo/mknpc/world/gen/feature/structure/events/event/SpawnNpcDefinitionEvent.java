@@ -11,9 +11,11 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.NotableDeadCondition;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.NpcDeathCountCondition;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.StructureEventCondition;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureEventRequirement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureHasNotableRequirement;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureHasNpcRequirement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureHasPoiRequirement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -68,6 +70,12 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
     public SpawnNpcDefinitionEvent addNotableDeadCondition(ResourceLocation notable, boolean killAll) {
         addRequirement(new StructureHasNotableRequirement(notable));
         addCondition(new NotableDeadCondition(notable, killAll));
+        return this;
+    }
+
+    public SpawnNpcDefinitionEvent addNpcDeathCountCondition(ResourceLocation npcDefinition, int count, String name) {
+        addRequirement(new StructureHasNpcRequirement(npcDefinition));
+        addCondition(new NpcDeathCountCondition(npcDefinition, count, name));
         return this;
     }
 

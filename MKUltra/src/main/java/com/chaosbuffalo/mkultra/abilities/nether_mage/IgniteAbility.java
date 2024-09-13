@@ -130,7 +130,7 @@ public class IgniteAbility extends MKAbility {
                             .ability(this);
                     targetData.getEffects().addEffect(burn);
 
-                    MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_1_particles.getValue());
+                    MKParticles.spawnOffset(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_1_particles.getValue());
                 }
             });
         });

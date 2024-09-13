@@ -75,7 +75,7 @@ public class ShadowBoltAbility extends ProjectileAbility {
     public boolean onImpact(AbilityProjectileEntity projectile, LivingEntity caster, HitResult result, int amplifier) {
         SoundSource cat = caster instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
         SoundUtils.serverPlaySoundAtEntity(projectile, MKUSounds.spell_dark_8.value(), cat);
-        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
+        MKParticles.spawnOffset(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
 
         if (result.getType().equals(HitResult.Type.ENTITY)) {
             EntityHitResult entityTrace = (EntityHitResult) result;

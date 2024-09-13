@@ -116,6 +116,6 @@ public class FlameWaveAbility extends MKAbility {
                 .disableParticle()
                 .spawn();
 
-        MKParticles.spawn(entity, new Vec3(0.0, 1.0, 0.0), cast_1_particles.getValue());
+        MKParticles.spawnOffset(entity, new Vec3(0.0, 1.0, 0.0), cast_1_particles.getValue());
     }
 }

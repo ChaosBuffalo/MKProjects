@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.world.gen.feature.structure.events;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.utils.CommonCodecs;
-import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
@@ -47,6 +46,13 @@ public abstract class StructureEvent {
     protected final ResourceLocation timerName;
 
     protected boolean startsCooldownImmediately;
+
+    public void onTimerStart(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, int ticks) {
+    }
+
+    public void onTimerStop(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure) {
+        conditions.forEach(x -> x.reset(entry, activeStructure));
+    }
 
     public enum EventTrigger implements StringRepresentable {
         ON_TICK,
@@ -124,6 +130,15 @@ public abstract class StructureEvent {
     public void onTrackedEntityDeath(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure,
                                      IEntityNpcData npcData) {
 
+    }
+
+    public void onNpcDeath(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure,
+                           IEntityNpcData npcData) {
+        conditions.forEach(x -> x.onNpcDeath(entry, activeStructure, npcData));
+    }
+
+    public void reset(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure) {
+        conditions.forEach(x -> x.reset(entry, activeStructure));
     }
 
     public boolean meetsRequirements(MKStructureEntry entry,

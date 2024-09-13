@@ -55,7 +55,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     public boolean getBool(String name) {
-        return boolData.get(name);
+        return boolData.getOrDefault(name, false);
     }
 
     public void putBool(String name, boolean value) {
@@ -67,11 +67,15 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     public int getInt(String name) {
-        return intData.get(name);
+        return intData.getOrDefault(name, 0);
     }
 
     public void putInt(String name, int value) {
         intData.put(name, value);
+    }
+
+    public void incrementInt(String name, int value) {
+        intData.put(name, intData.getOrDefault(name, 0) + value);
     }
 
     public void removeInt(String name) {
@@ -79,7 +83,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     public double getDouble(String name) {
-        return doubleData.get(name);
+        return doubleData.getOrDefault(name, 0.0);
     }
 
     public void putDouble(String name, double value) {
@@ -103,7 +107,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     public float getFloat(String name) {
-        return floatData.get(name);
+        return floatData.getOrDefault(name, 0.0f);
     }
 
     public void putFloat(String name, float value) {

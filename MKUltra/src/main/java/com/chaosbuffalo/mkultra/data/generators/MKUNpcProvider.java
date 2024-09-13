@@ -75,7 +75,8 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 writeDefinition(generateSeawovenSkeleton(), cache),
                 writeDefinition(generateSeawovenWretch(), cache),
                 writeDefinition(generateAncientPriestGhost(), cache),
-                writeDefinition(generateAncientCardinal(), cache)
+                writeDefinition(generateAncientCardinal(), cache),
+                writeDefinition(generateGhostApprentice(), cache)
         );
     }
 
@@ -367,6 +368,37 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         return def;
     }
 
+    private NpcDefinition generateGhostApprentice() {
+        NpcDefinition def = new NpcDefinition(MKUltra.id("ancient_apprentice_ghost"),
+                MKUEntities.HUMAN_GHOST_TYPE.getId(), null);
+        def.addOption(new FactionOption(MKUFactions.GHOSTS_OF_HYBORIA.getId()));
+        def.addOption(new RenderGroupOption(MKUHumans.GHOST_LOOK_CLEAN_SHORT_NAME));
+        def.addOption(new MKSizeOption(0.92f));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 100.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 100.0))
+                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 3.0))
+        );
+        def.addOption(new FactionNameOption().setTitle("Apprentice"));
+        def.addOption(new GhostOption().setGhostTranslucency(0.7f));
+        def.addOption(new AbilitiesOption()
+                .withAbilityOption(MKUAbilities.HEAL.get(), 1, 1.0)
+                .withAbilityOption(MKUAbilities.SMITE.get(), 2, 1.0)
+        );
+        def.addOption(new NotableOption());
+        EquipmentOption equipOption = new EquipmentOption();
+        equipOption.addItemChoice(EquipmentSlot.CHEST,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientPriestChestplate.get()), 1.0, 0.05f));
+        equipOption.addItemChoice(EquipmentSlot.LEGS,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientPriestLeggings.get()), 1.0, 0.05f));
+        equipOption.addItemChoice(EquipmentSlot.FEET,
+                new NpcItemChoice(new ItemStack(MKUItems.ancientPriestBoots.get()), 1.0, 0.05f));
+        def.addOption(MKUNpcGenUtils.getSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.PALADIN));
+        def.addOption(equipOption);
+        return def;
+    }
+
+
     private NpcDefinition generateAncientPriestGhost() {
         NpcDefinition def = new NpcDefinition(MKUltra.id("ancient_priest_ghost"),
                 MKUEntities.HUMAN_GHOST_TYPE.getId(), null);
@@ -380,10 +412,11 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
         );
         def.addOption(new NameOption("An Ancient Priest"));
         def.addOption(new GhostOption().setGhostTranslucency(0.7f));
-//        def.addOption(new AbilitiesOption()
-//                .withAbilityOption(HealAbility.INSTANCE, 1, 1.0)
-//                .withAbilityOption(SmiteAbility.INSTANCE, 2, 1.0)
-//        );
+        def.addOption(new AbilitiesOption()
+                .withAbilityOption(MKUAbilities.HEAL.get(), 1, 1.0)
+                .withAbilityOption(MKUAbilities.HOLY_WORD.get(), 2, 1.0)
+                .withAbilityOption(MKUAbilities.HOLY_FIRE.get(), 3, 0.5)
+        );
 //        EquipmentOption equipOption = new EquipmentOption();
 //        equipOption.addItemChoice(EquipmentSlotType.MAINHAND,
 //                new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(
@@ -398,7 +431,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
                 new NpcItemChoice(new ItemStack(MKUItems.ancientPriestLeggings.get()), 1.0, 0.05f));
         equipOption.addItemChoice(EquipmentSlot.FEET,
                 new NpcItemChoice(new ItemStack(MKUItems.ancientPriestBoots.get()), 1.0, 0.05f));
-        def.addOption(MKUNpcGenUtils.getSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.FIGHTER));
+        def.addOption(MKUNpcGenUtils.getSkillOptionForClass(MKUNpcGenUtils.NpcSkillClass.CLERIC));
         def.addOption(equipOption);
         return def;
     }

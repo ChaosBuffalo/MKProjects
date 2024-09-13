@@ -72,6 +72,6 @@ public class SkinLikeWoodAbility extends MKToggleAbility {
                 .infinite();
         entityData.getEffects().addEffect(instance);
 
-        MKParticles.spawn(entity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
+        MKParticles.spawnOffset(entity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
     }
 }

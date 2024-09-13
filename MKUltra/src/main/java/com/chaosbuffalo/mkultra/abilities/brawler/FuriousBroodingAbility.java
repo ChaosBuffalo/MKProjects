@@ -20,11 +20,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
 
 public class FuriousBroodingAbility extends MKAbility {
     public static final ResourceLocation TICK_PARTICLES = MKUltra.id("furious_brooding_pulse");
@@ -87,7 +85,7 @@ public class FuriousBroodingAbility extends MKAbility {
             MKEffectBuilder<?> heal = createFuriousBroodingEffect(casterData, level).ability(this);
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> targetData.getEffects().addEffect(heal));
 
-            MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), tick_particles.getValue());
+            MKParticles.spawnOffset(targetEntity, new Vec3(0.0, 1.0, 0.0), tick_particles.getValue());
         });
     }
 }

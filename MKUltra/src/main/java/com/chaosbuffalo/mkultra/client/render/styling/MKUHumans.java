@@ -70,6 +70,21 @@ public class MKUHumans {
 
     public static final String GHOST_LOOK_CLEAN_NAME = "ghost_clean";
 
+    public static final String GHOST_SHORT_HAIR_NO_CLOTHES_NAME = "ghost_short_hair_no_clothes";
+    public static final String GHOST_SHORT_HAIR_NO_CLOTHES_ARMORED_NAME = "ghost_short_hair_no_clothes_armored";
+
+
+    public static final ModelStyle ARMORED_GHOST_SHORT_HAIR_NO_CLOTHES_STYLE = new ModelStyle(GHOST_SHORT_HAIR_NO_CLOTHES_ARMORED_NAME,
+            true, false,
+            new LayerStyle("hair_1", 0.25F, true));
+    public static final ModelStyle GHOST_SHORT_HAIR_NO_CLOTHES_STYLE = new ModelStyle(GHOST_SHORT_HAIR_NO_CLOTHES_NAME,
+            true, true,
+            new LayerStyle("hair_1", 0.25F, true));
+
+    public static ModelLook GHOST_LOOK_CLEAN_SHORT = new ModelLook(GHOST_SHORT_HAIR_NO_CLOTHES_STYLE, GHOST_SKIN_1, GHOST_HAIR_1);
+
+    public static final String GHOST_LOOK_CLEAN_SHORT_NAME = "ghost_clean_short";
+
     public static ModelLook CLERIC_1_LOOK = new ModelLook(TWO_LAYER_CLOTHES_SHORT_HAIR, HUMAN_SKIN_1, HUMAN_HAIR_1,
             MKUClothes.SOLANG_ROBES_1, MKUClothes.SOLANG_ROBES_2);
     public static ModelLook CLERIC_2_LOOK = new ModelLook(TWO_LAYER_CLOTHES_SHORT_HAIR, HUMAN_SKIN_2, HUMAN_HAIR_2,

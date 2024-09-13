@@ -126,12 +126,12 @@ public class BossStage {
         if (transitionParticles != null) {
             switch (particleMode) {
                 case LINE_HEIGHT:
-                    MKParticles.spawn(entity, new Vec3(0.0, 0.0, 0.0), transitionParticles,
+                    MKParticles.spawnOffset(entity, new Vec3(0.0, 0.0, 0.0), transitionParticles,
                             p -> p.addLoc(new Vec3(0.0, entity.getBbHeight() * 4.0, 0.0)));
                     break;
                 case MIDDLE:
                 default:
-                    MKParticles.spawn(entity, new Vec3(0.0, entity.getBbHeight() * 0.5, 0.0),
+                    MKParticles.spawnOffset(entity, new Vec3(0.0, entity.getBbHeight() * 0.5, 0.0),
                             transitionParticles);
                     break;
             }

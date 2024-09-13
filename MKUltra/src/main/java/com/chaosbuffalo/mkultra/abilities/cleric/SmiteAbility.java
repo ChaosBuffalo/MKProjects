@@ -96,7 +96,7 @@ public class SmiteAbility extends MKAbility {
                 targetData.getEffects().addEffect(stun);
             });
             SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_holy_2.value(), targetEntity.getSoundSource());
-            MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
+            MKParticles.spawnOffset(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
         });
     }
 }

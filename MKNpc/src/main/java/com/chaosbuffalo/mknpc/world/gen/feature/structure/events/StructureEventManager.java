@@ -2,10 +2,12 @@ package com.chaosbuffalo.mknpc.world.gen.feature.structure.events;
 
 import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.NotableDeadCondition;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.NpcDeathCountCondition;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions.StructureEventCondition;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.event.SpawnNpcDefinitionEvent;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureEventRequirement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureHasNotableRequirement;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureHasNpcRequirement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.StructureHasPoiRequirement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -44,7 +46,9 @@ public class StructureEventManager {
     public static void setupDeserializers() {
         registerRequirement(StructureHasPoiRequirement.TYPE_NAME, StructureHasPoiRequirement.MAP_CODEC);
         registerRequirement(StructureHasNotableRequirement.TYPE_NAME, StructureHasNotableRequirement.MAP_CODEC);
+        registerRequirement(StructureHasNpcRequirement.TYPE_NAME, StructureHasNpcRequirement.MAP_CODEC);
         registerCondition(NotableDeadCondition.TYPE_NAME, NotableDeadCondition.MAP_CODEC);
+        registerCondition(NpcDeathCountCondition.TYPE_NAME, NpcDeathCountCondition.MAP_CODEC);
         registerEventType(SpawnNpcDefinitionEvent.TYPE_NAME, SpawnNpcDefinitionEvent.MAP_CODEC);
     }
 }

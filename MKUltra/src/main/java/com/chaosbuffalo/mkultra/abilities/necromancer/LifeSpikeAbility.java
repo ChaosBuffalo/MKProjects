@@ -102,7 +102,7 @@ public class LifeSpikeAbility extends MKAbility {
             });
 
             SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_shadow_6.value(), targetEntity.getSoundSource());
-            MKParticles.spawn(targetEntity, new Vec3(0.0, 1.75, 0.0), cast_particles.getValue());
+            MKParticles.spawnOffset(targetEntity, new Vec3(0.0, 1.75, 0.0), cast_particles.getValue());
         });
     }
 }

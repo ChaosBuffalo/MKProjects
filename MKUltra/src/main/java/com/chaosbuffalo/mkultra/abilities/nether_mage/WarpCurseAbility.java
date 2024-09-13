@@ -98,7 +98,7 @@ public class WarpCurseAbility extends MKAbility {
             targetEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, oldAmp, false, false, true));
 
             SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_fire_5.value(), targetEntity.getSoundSource());
-            MKParticles.spawn(castingEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
+            MKParticles.spawnOffset(castingEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
         });
     }
 }

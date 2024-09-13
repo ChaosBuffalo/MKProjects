@@ -10,6 +10,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 
@@ -278,5 +280,42 @@ public class AbilityTracker implements ISyncObject {
     @Override
     public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
 
+    }
+
+    public static class ExternalEventsTracker extends AbilityTracker {
+        protected static HashMap<ResourceLocation, Consumer<Boolean>> removedCallbacks = new HashMap<>();
+        protected static HashMap<ResourceLocation, BiConsumer<Integer, Boolean>> addedCallbacks = new HashMap<>();
+
+
+        @Override
+        protected void onTimerAdded(ResourceLocation timerId, int ticksIn, boolean local) {
+            super.onTimerAdded(timerId, ticksIn, local);
+            var cb = addedCallbacks.get(timerId);
+            if (cb != null) {
+                cb.accept(ticksIn, local);
+            }
+        }
+
+        public void subscribeToRemoved(ResourceLocation timerId, Consumer<Boolean> cb){
+            removedCallbacks.put(timerId, cb);
+        }
+
+        public void subscribeToAdded(ResourceLocation timerId, BiConsumer<Integer, Boolean> cb){
+            addedCallbacks.put(timerId, cb);
+        }
+
+        public void unsubscribe(ResourceLocation timerId) {
+            removedCallbacks.remove(timerId);
+            addedCallbacks.remove(timerId);
+        }
+
+        @Override
+        protected void onTimerRemoved(ResourceLocation timerId, boolean local) {
+            super.onTimerRemoved(timerId, local);
+            var cb = removedCallbacks.get(timerId);
+            if (cb != null) {
+                cb.accept(local);
+            }
+        }
     }
 }
