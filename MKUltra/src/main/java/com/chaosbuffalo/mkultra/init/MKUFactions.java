@@ -70,7 +70,7 @@ public class MKUFactions {
                     .addEnemy(IMPERIAL_DEAD_NAME)));
 
     public static DeferredHolder<MKFaction, MKFaction> GHOSTS_OF_HYBORIA = REGISTRY.register("ghosts_of_hyboria",
-            () -> new MKFaction(FactionConstants.TRUE_NEUTRAL));
+            () -> setupGreekNames(new MKFaction(FactionConstants.TRUE_NEUTRAL)));
 
     public static DeferredHolder<MKFaction, MKFaction> NETHER_MAGES = REGISTRY.register("nether_mages",
             () -> setupMongolianNames(new MKFaction(FactionConstants.FRIENDLY_THRESHOLD,
@@ -270,9 +270,127 @@ public class MKUFactions {
         return faction;
     }
 
+    private static MKFaction setupGreekNames(MKFaction faction) {
+        String[] names = {
+                "Achilles", "Adam", "Adonis", "Agapios", "Alexander",
+                "Alexandros", "Alexios", "Ambrosios", "Anastasios", "Andreas",
+                "Andronis", "Angelos", "Antonios", "Antony", "Apollo",
+                "Apostolos", "Archimedes", "Aristides", "Aristotelis", "Aristotle",
+                "Athanasios", "Basil", "Basileios", "Basilios", "Basilis",
+                "Benedictos", "Christianos", "Christos", "Damian", "Damianos",
+                "Damon", "Demetri", "Demetrios", "Demetrius", "Dimitrios",
+                "Dimitris", "Dion", "Dionisios", "Dionysios", "Elias",
+                "Elis", "Erasmios", "Erasmos", "Eugenios", "Eustakhios",
+                "Evangelos", "George", "Georges", "Georgios", "Georgis",
+                "Georgos", "Giannes", "Giannis", "Gregorios", "Grigoris",
+                "Herakles", "Iason", "Ioannes", "Ioannis", "Ion",
+                "John", "Kalinikos", "Konstantinos", "Kosmas", "Kostas",
+                "Kristianos", "Kristos", "Kypros", "Kyriako", "Kyrillos",
+                "Lambros", "Leiandros", "Leonidas", "Leontius", "Loukanos",
+                "Loukas", "Lukas", "Lysander", "Lysandros", "Makarios",
+                "Manolis", "Mark", "Markos", "Martinos", "Matthaios",
+                "Menelas", "Michael", "Mihail", "Mikhalis", "Milos",
+                "Nektarios", "Nestor", "Nick", "Nicolas", "Niko",
+                "Nikodemos", "Nikolaos", "Nikolas", "Nikolos", "Nikomedes",
+                "Nikos", "Odysseus", "Orestes", "Orion", "Panagiotes",
+                "Panagris", "Panos", "Pantelis", "Panus", "Parthenios",
+                "Pericles", "Periklis", "Peter", "Petros", "Philip",
+                "Philippos", "Rhigas", "Savas", "Sebastianos", "Simeon",
+                "Sivos", "Spiridon", "Spyros", "Stavros", "Stefanos",
+                "Stelios", "Stephanos", "Thaddaios", "Thanos", "Theodoros",
+                "Theodorus", "Theodosius", "Theofanis", "Theophilos", "Thomas",
+                "Timotheos", "Tom", "Vangeli", "Vangelos", "Vasileios",
+                "Vasilios", "Vasilis", "Vassili", "Yannis", "Yiannis",
+                "Yiorgos", "Yorgos", "Zenobios", "Adonia", "Agalia", "Agatha", "Agathe", "Agathi", "Aleka",
+                "Alethea", "Alexa", "Alexandra", "Alithea",
+                "Althaia", "Ambrosia", "Anastasia", "Anastasie", "Anatolia", "Andrea", "Andrianna", "Andromede",
+                "Angelika", "Angeliki", "Anna", "Anthea", "Apolline", "Arete", "Ariadne", "Ariane", "Artemisia",
+                "Astrea", "Atalanta", "Atalante", "Athena", "Atlanta", "Berenike", "Charis", "Charissa", "Chloe",
+                "Chloris", "Christiane", "Cressida", "Cynara", "Cytherea", "Damaris", "Daphne", "Deianira", "Delia",
+                "Delphine", "Delphinia", "Demetria", "Denise", "Dora", "Doris", "Dorkas", "Dorothea", "Efimia",
+                "Eireni", "Ekaterini", "Elena", "Eleni", "Eudora", "Eudoxia", "Evadne", "Evgenia", "Fotini", "Helena",
+                "Helene", "Hrisoula", "Ioanna", "Iona", "Ione", "Iris", "Isadora", "Kaligenia", "Kalika", "Kallirrhoe",
+                "Kalonice", "Kalyca", "Kassandra", "Katerina", "Konstantina", "Korinna", "Kosta", "Kostatina", "Kyra",
+                "Kyriakoula", "Leandra", "Leda", "Lena", "Lydia", "Margareta", "Margaritis", "Maria", "Marika", "Marina",
+                "Maroula", "Melina", "Melissa", "Melita", "Nerissa", "Nikola", "Nikoleta", "Niobe", "Noula", "Nyssa",
+                "Olympia", "Ourania", "Pauline", "Pelagia", "Penelope", "Petra", "Philippa", "Philomela", "Phyllis",
+                "Pipitsa", "Popi", "Rasia", "Rena", "Saphhira", "Sibyl", "Sofi", "Sofia", "Sofronia", "Sophia",
+                "Stamatia", "Stefana", "Stefania", "Stella", "Sylva", "Tassia", "Tassis", "Tekla", "Thea", "Theodora",
+                "Theodosia", "Theophila", "Theophilia", "Theresa", "Timothea", "Toula", "Triphena", "Xanthe", "Xenia",
+                "Xylia", "Xylina", "Zephyra", "Zoë"
+        };
+        String[] lastNames = {
+                "Adamakos", "Adamopoulos", "Adraktas", "Adriopoulos", "Agamemmonos",
+                "Agelakos", "Agorastos", "Alexiadis", "Alexiou", "Alexopoulos",
+                "Anagnostou", "Anastassiou", "Andreou", "Andriopoulos", "Andronikos",
+                "Androupolos", "Angelis", "Angelou", "Anninos", "Anthimiades",
+                "Antonopoulos", "Athanasiadis", "Bakirdzis", "Balanos", "Ballas",
+                "Bazignos", "Bekatorou", "Boudouris", "Boufidis", "Boyagis",
+                "Callaros", "Carides", "Chiklakis", "Christodoulou", "Christofis",
+                "Chrysidou", "Chryssos", "Chryssou", "Clerides", "Cocoros",
+                "Constantinis", "Costanduros", "Cotsadis", "Coulouris", "Dalakas",
+                "Damaskinos", "Deligiorgis", "Dellas", "Demosthenes", "Diakonis",
+                "Diakopoulou", "Diamandakis", "Dimitrakos", "Dimitriades", "Dimitris",
+                "Dimopoulos", "Diomedes", "Doukas", "Dukakis", "Economakis",
+                "Eliades", "Ellinas", "Evangelou", "Fassouletou", "Felouzis",
+                "Fettas", "Filippidis", "Filippidou", "Filippos", "Galonopoulas",
+                "Gatzioudis", "Georgiadis", "Georgiadou", "Gergatsoulis", "Giannakas",
+                "Giannetakis", "Giorgiou", "Giorgokopoulos", "Gizikis", "Grigoratos",
+                "Halkias", "Hatzinikitas", "Herouvis", "Hiras", "Horiatis",
+                "Iakovakis", "Iakovou", "Iatrides", "Ikonomou", "Ioannis",
+                "Ioannou", "Kafkaloudes", "Kakadelis", "Kallabis", "Kalvos",
+                "Kanellopoulos", "Kapakos", "Kapetanakis", "Karamanlis", "Karatossos",
+                "Karaxis", "Kasomoulis", "Kassotis", "Katros", "Katrou",
+                "Katsounis", "Kavallierou", "Kochalakos", "Kokotis", "Kokounos",
+                "Kolokouris", "Konidis", "Konstanopoulos", "Konstantinidis", "Konstantinidou",
+                "Konstantinou", "Koryzis", "Koskotas", "Kosmas", "Kostis",
+                "Kostopoulou", "Kostopulos", "Kotekas", "Kourlabas", "Kourlas",
+                "Kourniakis", "Kousoulas", "Kritikou", "Kritopoulos", "Kyprianou",
+                "Kyriakou", "Kyriazis", "Labrinos", "Lalos", "Lambrakis",
+                "Lambrinos", "Lambrou", "Lathouras", "Leonidis", "Lianis",
+                "Logothetis", "Lukios", "Lyristakis", "Lyssarides", "Madias",
+                "Maganas", "Maharis", "Maithonis", "Makarezos", "Makrakos",
+                "Malachias", "Mandrapilias", "Manoussos", "Maragos", "Marcoullides",
+                "Marinatos", "Markakis", "Markos", "Markoulides", "Matsakis",
+                "Mavridou", "Mavros", "Mavroudis", "Mazourakis", "Melas",
+                "Melikis", "Melissanides", "Mercouris", "Mikalis", "Mikhalakopoulos",
+                "Mitrou", "Mitsotakis", "Mousetis", "Mouskouris", "Moustakakis",
+                "Mylonas", "Niarkhos", "Nicholas", "Nickos", "Nikolaides",
+                "Nikolaidou", "Nikolaos", "Nikolaou", "Nikolos", "Niotis",
+                "Nisyrios", "Nisyriou", "Onassis", "Orphanides", "Ortakales",
+                "Oxinos", "Pagonis", "Pahoundis", "Palamas", "Panagiotou",
+                "Panagou", "Panagoulis", "Panas", "Pandis", "Pangalos",
+                "Pantelis", "Papadakis", "Papademetriou", "Papadias", "Papadopoulos",
+                "Papadopoulou", "Papageorgiou", "Papagos", "Papakostas", "Papandreou",
+                "Papanikitas", "Papathanassiou", "Papoulias", "Pappangelis", "Pappas",
+                "Pavlou", "Pelegrinnis", "Peppas", "Perdikologos", "Petrakis",
+                "Petritis", "Pietris", "Polydorou", "Poulos", "Primikynos",
+                "Psaros", "Rigopoulos", "Rigos", "Rousakos", "Roussou",
+                "Sakellaris", "Samaris", "Samos", "Sanassis", "Saraphis",
+                "Savakis", "Savalos", "Sirtis", "Sitaras", "Skiotis",
+                "Skoulos", "Skouphas", "Sophoulis", "Souvaltzis", "Spiropoulos",
+                "Stabolis", "Stamatiadis", "Stavrakis", "Stavrianos", "Stavros",
+                "Stefanos", "Stephanopoulos", "Strategos", "Symeonides", "Taliadoros",
+                "Tathouris", "Theodopoulos", "Theodorakis", "Tsakabikas", "Tsakiris",
+                "Tsatsos", "Tsavdaridou", "Tsirigolis", "Tsolias", "Tzemopoulos",
+                "Tzemos", "Tzivas", "Tzounas", "Valakis", "Vangelis",
+                "Varkas", "Vasdekis", "Vasiliou", "Vassilides", "Verdanis",
+                "Vergis", "Vergopoulos", "Xanthos", "Xanthou", "Xenakis",
+                "Xeriteas", "Xeritis", "Xydis", "Yannopoulos", "Zaferatos",
+                "Zafiropoulos", "Zakhariadis", "Zannakis", "Zannis", "Zarikos",
+                "Zavolas", "Zervakos", "Zervas", "Zervoudakis", "Zikos",
+                "Zindilis", "Zisimides", "Zolotas"
+        };
+        for (String name : names) {
+            faction.addFirstName(name);
+        }
+        for (String name : lastNames) {
+            faction.addLastName(name);
+        }
+        return faction;
+    }
+
     public static void register(IEventBus bus) {
         REGISTRY.register(bus);
     }
-
-
 }

@@ -95,7 +95,7 @@ public class HealAbility extends MKAbility {
             MKCore.getEntityData(targetEntity).ifPresent(targetData -> targetData.getEffects().addEffect(heal));
 
             SoundUtils.serverPlaySoundAtEntity(targetEntity, MKUSounds.spell_heal_3.value(), targetEntity.getSoundSource());
-            MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
+            MKParticles.spawnOffset(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
         });
     }
 }

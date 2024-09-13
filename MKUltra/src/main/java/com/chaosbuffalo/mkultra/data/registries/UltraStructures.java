@@ -84,11 +84,19 @@ public class UltraStructures {
                         templates.getOrThrow(CryptStructurePools.BASE))
                         .setHeightProvider(ConstantHeight.of(VerticalAnchor.absolute(-19)))
                         .build());
+
         context.register(DECAYING_CHURCH,
                 new MKJigsawBuilder(
                         emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_DECAYING_CHURCH),
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.BEARD_THIN),
                         templates.getOrThrow(DecayingChurchPools.BASE))
+                        .addEvent(new SpawnNpcDefinitionEvent("summon_cardinal",
+                                MKUltra.id("ancient_cardinal"),
+                                "cardinal_spawn", "cardinal_facing",
+                                MKEntity.NonCombatMoveType.STATIONARY)
+                                .addNpcDeathCountCondition(MKUltra.id("ancient_priest_ghost"), 4, "priest_kills")
+                                .addTrigger(StructureEvent.EventTrigger.ON_ACTIVATE)
+                                .addTrigger(StructureEvent.EventTrigger.ON_DEATH))
                         .build());
     }
 

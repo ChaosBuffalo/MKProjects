@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.StructureMode;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import javax.annotation.Nonnull;
@@ -56,6 +57,7 @@ public class FinalizeMKSpawnerPacket implements CustomPacketPayload {
                 entity.level().setBlock(packet.blockEntityPos.above(), dataState, 3);
                 BlockEntity other = entity.level().getBlockEntity(packet.blockEntityPos.above());
                 if (other instanceof StructureBlockEntity structureBlock) {
+                    structureBlock.setMode(StructureMode.DATA);
                     structureBlock.setMetaData("mkspawner");
                 }
             }

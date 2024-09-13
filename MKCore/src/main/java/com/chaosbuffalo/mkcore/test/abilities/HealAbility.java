@@ -96,7 +96,7 @@ public class HealAbility extends MKAbility {
             });
 //            targetEntity.addPotionEffect(heal.toPotionEffect(level));
 //            SoundUtils.serverPlaySoundAtEntity(targetEntity, ModSounds.spell_heal_3, targetEntity.getSoundCategory());
-            MKParticles.spawn(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
+            MKParticles.spawnOffset(targetEntity, new Vec3(0.0, 1.0, 0.0), cast_particles.getValue());
         });
     }
 }

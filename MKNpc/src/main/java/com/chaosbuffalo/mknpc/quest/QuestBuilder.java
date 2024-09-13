@@ -11,10 +11,13 @@ import com.chaosbuffalo.mknpc.quest.objectives.*;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -42,6 +45,19 @@ public class QuestBuilder {
 
     public QuestBuilder killNotable(String objectiveName, QuestNpc npc) {
         KillNotableNpcObjective kill = new KillNotableNpcObjective(objectiveName, npc.location, npc.npcDef);
+        objective(kill);
+        return this;
+    }
+
+    public QuestBuilder killOneOfNotables(String objectiveName, QuestStructureLocation location, List<ResourceLocation> npcDefs) {
+
+        KillOneOfNotablesObjective kill = new KillOneOfNotablesObjective(objectiveName, location, new HashSet<>(npcDefs));
+        objective(kill);
+        return this;
+    }
+
+    public QuestBuilder killType(String objectiveName, TagKey<EntityType<?>> tag, String tagDesc, int count) {
+        KillTypeTagObjective kill = new KillTypeTagObjective(objectiveName, tag, tagDesc, count);
         objective(kill);
         return this;
     }
@@ -121,6 +137,17 @@ public class QuestBuilder {
         objective(talkObj);
         return this;
     }
+    public QuestBuilder builderHail(String objectiveName, Component description,
+                                    QuestNpc talkTo, DialogueBuilder builder,
+                                    @Nullable Consumer<TalkToNpcObjective> additionalLogic) {
+        TalkToNpcObjective talkObj = new TalkToNpcObjective(objectiveName, talkTo.location, talkTo.npcDef, description);
+        builder.build().populateTalkObjective(talkObj, quest);
+        if (additionalLogic != null) {
+            additionalLogic.accept(talkObj);
+        }
+        objective(talkObj);
+        return this;
+    }
 
     public QuestBuilder lootChest(String objectiveName, Component description, QuestStructureLocation location,
                                   String chestTag, ItemStack... items) {
@@ -143,7 +170,7 @@ public class QuestBuilder {
         }
 
         public String getDialogueLink() {
-            return NpcDialogueUtils.getNotableNpcRaw(location.getStructureId(), location.getIndex(), npcDef);
+            return NpcDialogueUtils.getNotableNpcRaw(location.getStructureId(), location.getName(), npcDef);
         }
     }
 }

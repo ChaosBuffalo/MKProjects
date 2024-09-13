@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure.events.conditions;
 
-import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEventManager;
@@ -24,6 +24,12 @@ public abstract class StructureEventCondition {
 
     public abstract boolean meetsCondition(MKStructureEntry entry,
                                            WorldStructureManager.ActiveStructure activeStructure, Level world);
+
+    public void onNpcDeath(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, IEntityNpcData entityData) {
+
+    }
+
+    public void reset(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure) {}
 
     public <D> D serialize(DynamicOps<D> ops) {
         return CODEC.encodeStart(ops, this).getOrThrow();

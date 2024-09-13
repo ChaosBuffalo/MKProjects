@@ -10,20 +10,20 @@
           }
         ],
         "message": "This world is on the verge of deletion, the dead rise from the ground everywhere, there may still be time to save it if we act now. We're in need of another hero: go talk to our smith and get equipped.",
-        "nodeId": "start_quest"
+        "nodeId": "dont_know"
       },
       {
-        "message": "Hail and well met. You're lucky we were able to grab you before your soul drifted too far into the aether. {prompt:start_quest} in an archival zone?",
+        "message": "Hail and well met. You're lucky we were able to grab you before your soul drifted too far into the aether. {prompt:dont_know} in an archival zone?",
         "nodeId": "hail"
       }
     ],
     "prompts": [
       {
         "highlightedText": "What are you doing",
-        "promptId": "start_quest",
+        "promptId": "dont_know",
         "responses": [
           {
-            "responseNodeId": "start_quest"
+            "responseNodeId": "dont_know"
           },
           {
             "conditions": [
@@ -32,7 +32,7 @@
                 "allowRepeat": false
               }
             ],
-            "responseNodeId": "start_quest"
+            "responseNodeId": "dont_know"
           }
         ],
         "suggestionFillText": "I don't know",
@@ -102,7 +102,7 @@
           "npcDefinition": "mkultra:green_smith",
           "objectiveName": "talk_to_smith",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -157,7 +157,7 @@
           ],
           "objectiveName": "loot_chest",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -224,7 +224,7 @@
           "npcDefinition": "mkultra:green_smith",
           "objectiveName": "return_to_smith",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -279,7 +279,7 @@
           "npcDefinition": "mkultra:green_lady",
           "objectiveName": "green_lady_talent",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -308,40 +308,29 @@
               {
                 "effects": [
                   {
-                    "type": "mknpc:open_learn_abilities"
-                  }
-                ],
-                "message": "Let me see what I can teach you. Talk to me again when you're done.",
-                "nodeId": "open_training"
-              },
-              {
-                "message": "Come back to me when you have spent your first talent point.",
-                "nodeId": "return_to_green_lady_wo_cond"
-              },
-              {
-                "effects": [
-                  {
                     "type": "mknpc:objective_completion",
                     "objectiveName": "return_to_green_lady",
                     "questName": "return_to_green_lady"
                   }
                 ],
-                "message": "Alright you're now {prompt:need_training} your first ability.",
-                "nodeId": "return_to_green_lady_w_cond"
+                "message": "Alright you're now {prompt:want_to_learn} your first ability.",
+                "nodeId": "return_to_green_lady.hail_w_cond"
+              },
+              {
+                "message": "Come back to me when you have spent your first talent point.",
+                "nodeId": "return_to_green_lady.hail_wo_cond"
+              },
+              {
+                "effects": [
+                  {
+                    "type": "mknpc:open_learn_abilities"
+                  }
+                ],
+                "message": "Let me see what I can teach you. Talk to me again when you're done",
+                "nodeId": "want_to_learn"
               }
             ],
             "prompts": [
-              {
-                "highlightedText": "ready to learn",
-                "promptId": "need_training",
-                "responses": [
-                  {
-                    "responseNodeId": "open_training"
-                  }
-                ],
-                "suggestionFillText": "I want to learn.",
-                "triggerPhrase": "want to learn"
-              },
               {
                 "highlightedText": "",
                 "promptId": "hail",
@@ -353,21 +342,32 @@
                         "talentCount": 1
                       }
                     ],
-                    "responseNodeId": "return_to_green_lady_w_cond"
+                    "responseNodeId": "return_to_green_lady.hail_w_cond"
                   },
                   {
-                    "responseNodeId": "return_to_green_lady_wo_cond"
+                    "responseNodeId": "return_to_green_lady.hail_wo_cond"
                   }
                 ],
                 "suggestionFillText": "",
                 "triggerPhrase": ""
+              },
+              {
+                "highlightedText": "ready to learn",
+                "promptId": "want_to_learn",
+                "responses": [
+                  {
+                    "responseNodeId": "want_to_learn"
+                  }
+                ],
+                "suggestionFillText": "I want to learn",
+                "triggerPhrase": "want to learn"
               }
             ]
           },
           "npcDefinition": "mkultra:green_lady",
           "objectiveName": "return_to_green_lady",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -398,10 +398,6 @@
             "hailPromptId": "hail",
             "nodes": [
               {
-                "message": "Come back to me once you've learned one of our abilities.",
-                "nodeId": "after_green_lady_wo_cond"
-              },
-              {
                 "effects": [
                   {
                     "type": "mknpc:objective_completion",
@@ -410,7 +406,11 @@
                   }
                 ],
                 "message": "Now we must test your mettle in combat. Go kill some of the zombies on the first floor to try out your new magic, and don't forget you can always return to me to learn more.",
-                "nodeId": "after_green_lady_w_cond"
+                "nodeId": "after_green_lady.hail_w_cond"
+              },
+              {
+                "message": "Come back to me once you've {prompt:want_to_learn} one of our abilities.",
+                "nodeId": "after_green_lady.hail_wo_cond"
               },
               {
                 "effects": [
@@ -419,7 +419,7 @@
                   }
                 ],
                 "message": "Let me see what I can teach you. Talk to me again when you're done.",
-                "nodeId": "open_training_ability"
+                "nodeId": "want_to_learn"
               }
             ],
             "prompts": [
@@ -438,24 +438,24 @@
                         "allMatch": false
                       }
                     ],
-                    "responseNodeId": "after_green_lady_w_cond"
+                    "responseNodeId": "after_green_lady.hail_w_cond"
                   },
                   {
-                    "responseNodeId": "after_green_lady_wo_cond"
+                    "responseNodeId": "after_green_lady.hail_wo_cond"
                   }
                 ],
                 "suggestionFillText": "",
                 "triggerPhrase": ""
               },
               {
-                "highlightedText": "ready to learn",
-                "promptId": "need_training_ability",
+                "highlightedText": "learned",
+                "promptId": "want_to_learn",
                 "responses": [
                   {
-                    "responseNodeId": "open_training_ability"
+                    "responseNodeId": "want_to_learn"
                   }
                 ],
-                "suggestionFillText": "I want to learn.",
+                "suggestionFillText": "I want to learn",
                 "triggerPhrase": "want to learn"
               }
             ]
@@ -463,7 +463,7 @@
           "npcDefinition": "mkultra:green_lady",
           "objectiveName": "after_green_lady",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -547,7 +547,7 @@
           "npcDefinition": "mkultra:green_lady",
           "objectiveName": "after_kill",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -569,7 +569,7 @@
           "npcDefinition": "mkultra:trooper_captain",
           "objectiveName": "kill_captain",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         },
@@ -627,7 +627,7 @@
           "npcDefinition": "mkultra:green_lady",
           "objectiveName": "after_kill_captain",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -658,6 +658,22 @@
             "hailPromptId": "hail",
             "nodes": [
               {
+                "message": "Those {prompt:crusaders} sent you after me didn't they?",
+                "nodeId": "talk_to_ghost.hail"
+              },
+              {
+                "message": "There's always only one Green Lady. I don't know if it's always the same one. The Green Lady is in charge, whatever that means. The GK's are a secretive bunch. I never dealt with them when I was alive.",
+                "nodeId": "Green_Lady"
+              },
+              {
+                "message": "Best I can tell, that was 500 or so years ago. This castle dates back to the {prompt:Piglin_Empire} of my time.",
+                "nodeId": "your_time"
+              },
+              {
+                "message": "Those pigs just can't stop killing and stealing. They show up every hundred years or so. I died here in an early {prompt:attempt} at banishing a Piglin Castle back to their home-plane.",
+                "nodeId": "Piglin_Empire"
+              },
+              {
                 "effects": [
                   {
                     "type": "mknpc:objective_completion",
@@ -666,66 +682,28 @@
                   }
                 ],
                 "message": "The skeleton that stands ever-burning in the chamber beyond. Destroy this revenant and return to your Green Lady. Leave me to infinity.",
-                "nodeId": "offer"
+                "nodeId": "soulless_husk"
               },
               {
-                "message": "Best I can tell, that was 500 or so years ago. This castle dates back to the {prompt:empire} of my time. We were in the early days of the first invasion.",
-                "nodeId": "my_time"
+                "message": "Oh the same old hogwash about the world being overrun by the undead and then deleted. In the Hyborean religion we believe the world, which is a giant cube, travels around in the dice bag of an interplanar vagrant. Obviously the world will end when aforesaid villain abandons, forgets, or perhaps loses us in a game of chance to an even iller-suited caretaker.",
+                "nodeId": "grave_peril"
               },
               {
-                "message": "Those {prompt:crusaders} sent you after me didn't they?",
-                "nodeId": "talk_to_ghost_hail"
-              },
-              {
-                "message": "There's always only one Green Lady. I don't know if it's always the same one. The Green Lady is in charge, whatever that means. The GK's are a secretive bunch. I never dealt with them when I was alive.",
-                "nodeId": "green_lady_desc"
-              },
-              {
-                "message": "Those pigs just can't stop killing and stealing. Been doing it for 500 years or so. I died here in an early {prompt:attempt} at banishing a Piglin Castle back to their home-plane.",
-                "nodeId": "empire"
-              },
-              {
-                "message": "Oh the same old hogwash about the world being overrun by the undead and then deleted. In the Hyborean religion we believe the world, which is a giant cube, travels around in the dice bag of an interplanar vagrant. Obviously the world will end when said villain abandons, forgets, or perhaps loses us in a game of chance to an even iller-suited caretaker.",
-                "nodeId": "peril"
-              },
-              {
-                "message": "I was mortally wounded when the time came, and something went wrong. My partner and I were unable to complete the ritual. My body was destroyed immediately, leaving my soul bound to the castle grounds. My partner's spirit was shorn from their body as the spell completed, leaving only a {prompt:offer} to stalk the depths of this cursed castle.",
+                "message": "I was mortally wounded when the time came, and something went wrong. My partner and I were unable to complete the ritual. My body was destroyed immediately, leaving my soul bound to the castle grounds. My partner's spirit was shorn from their body as the spell completed, leaving only a {prompt:soulless_husk} to stalk the depths of this cursed castle.",
                 "nodeId": "attempt"
               },
               {
-                "message": "They call themselves the Green Knights, we had them in {prompt:my_time} as well. Serve some orc called the {prompt:green_lady_desc}. They're laser-focused on seeking out and destroying corruption throughout the known planes; think we're all in {prompt:peril} and so on.",
+                "message": "They call themselves the Green Knights, we had them in {prompt:your_time} as well. Serve some orc called the {prompt:Green_Lady}. They're hyper-focused on seeking out and destroying corruption throughout the known planes; think we're all in {prompt:grave_peril} and so on.",
                 "nodeId": "crusaders"
               }
             ],
             "prompts": [
               {
-                "highlightedText": "soulless husk",
-                "promptId": "offer",
-                "responses": [
-                  {
-                    "responseNodeId": "offer"
-                  }
-                ],
-                "suggestionFillText": "a soulless husk?",
-                "triggerPhrase": "soulless husk"
-              },
-              {
-                "highlightedText": "my time",
-                "promptId": "my_time",
-                "responses": [
-                  {
-                    "responseNodeId": "my_time"
-                  }
-                ],
-                "suggestionFillText": "When was your time?",
-                "triggerPhrase": "your time"
-              },
-              {
                 "highlightedText": "Green Lady",
-                "promptId": "green_lady_desc",
+                "promptId": "Green_Lady",
                 "responses": [
                   {
-                    "responseNodeId": "green_lady_desc"
+                    "responseNodeId": "Green_Lady"
                   }
                 ],
                 "suggestionFillText": "What do you know about the Green Lady?",
@@ -733,21 +711,43 @@
               },
               {
                 "highlightedText": "Piglin Empire",
-                "promptId": "empire",
+                "promptId": "Piglin_Empire",
                 "responses": [
                   {
-                    "responseNodeId": "empire"
+                    "responseNodeId": "Piglin_Empire"
                   }
                 ],
                 "suggestionFillText": "the Piglin Empire?",
                 "triggerPhrase": "Piglin Empire"
               },
               {
-                "highlightedText": "grave peril",
-                "promptId": "peril",
+                "highlightedText": "my time",
+                "promptId": "your_time",
                 "responses": [
                   {
-                    "responseNodeId": "peril"
+                    "responseNodeId": "your_time"
+                  }
+                ],
+                "suggestionFillText": "When was your time?",
+                "triggerPhrase": "your time"
+              },
+              {
+                "highlightedText": "soulless husk",
+                "promptId": "soulless_husk",
+                "responses": [
+                  {
+                    "responseNodeId": "soulless_husk"
+                  }
+                ],
+                "suggestionFillText": "a soulless husk?",
+                "triggerPhrase": "soulless husk"
+              },
+              {
+                "highlightedText": "grave peril",
+                "promptId": "grave_peril",
+                "responses": [
+                  {
+                    "responseNodeId": "grave_peril"
                   }
                 ],
                 "suggestionFillText": "What grave peril?",
@@ -758,7 +758,7 @@
                 "promptId": "hail",
                 "responses": [
                   {
-                    "responseNodeId": "talk_to_ghost_hail"
+                    "responseNodeId": "talk_to_ghost.hail"
                   }
                 ],
                 "suggestionFillText": "",
@@ -773,7 +773,7 @@
                   }
                 ],
                 "suggestionFillText": "What happened during the attempt?",
-                "triggerPhrase": "the attempt"
+                "triggerPhrase": "attempt"
               },
               {
                 "highlightedText": "dimension-hopping crusaders",
@@ -791,7 +791,7 @@
           "npcDefinition": "mkultra:forlorn_ghost",
           "objectiveName": "talk_to_ghost",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -813,7 +813,7 @@
           "npcDefinition": "mkultra:burning_skeleton",
           "objectiveName": "kill_burning",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         },
@@ -871,7 +871,7 @@
           "npcDefinition": "mkultra:green_lady",
           "objectiveName": "after_kill_burning",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }

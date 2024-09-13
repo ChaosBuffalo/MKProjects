@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.quest.objectives;
 
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
@@ -23,26 +24,28 @@ import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
-public class KillNotableNpcObjective extends QuestObjective<UUIDInstanceData> implements IKillObjectiveHandler {
-    public static final MapCodec<KillNotableNpcObjective> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> {
+public class KillOneOfNotablesObjective extends QuestObjective<UUIDInstanceData> implements IKillObjectiveHandler {
+    public static final MapCodec<KillOneOfNotablesObjective> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> {
         return builder.group(
                 Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
                 QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
-                ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition)
-        ).apply(builder, KillNotableNpcObjective::new);
+                CommonCodecs.sortedSet(ResourceLocation.CODEC, ResourceLocation::compareNamespaced).fieldOf("npcDefinition").forGetter(i -> i.npcDefinitions)
+        ).apply(builder, KillOneOfNotablesObjective::new);
     });
 
-    private final ResourceLocation npcDefinition;
 
-    public KillNotableNpcObjective(String name, QuestStructureLocation structureLocation, ResourceLocation npcDef) {
+    private final Set<ResourceLocation> npcDefinitions;
+
+    public KillOneOfNotablesObjective(String name, QuestStructureLocation structureLocation, Set<ResourceLocation> npcDef) {
         super(name, structureLocation);
-        npcDefinition = npcDef;
+        npcDefinitions = npcDef;
     }
 
     @Override
     public QuestObjectiveType<? extends QuestObjective<?>> getType() {
-        return QuestObjectiveTypes.KILL_NOTABLE_NPC.get();
+        return QuestObjectiveTypes.KILL_ONE_OF_NOTABLE.get();
     }
 
     @Override
@@ -74,7 +77,7 @@ public class KillNotableNpcObjective extends QuestObjective<UUIDInstanceData> im
     @Override
     public UUIDInstanceData generateInstanceData(Map<QuestStructureLocation, MKStructureEntry> questStructures, Level level) {
         MKStructureEntry entry = questStructures.get(location);
-        Optional<NotableNpcEntry> npcOpt = entry.getFirstNotableOfType(npcDefinition, level.registryAccess());
+        Optional<NotableNpcEntry> npcOpt = entry.getRandomNotableFromTypes(npcDefinitions, level.registryAccess());
         return npcOpt.map(x -> new UUIDInstanceData(x.getNotableId())).orElse(new UUIDInstanceData());
     }
 
@@ -86,7 +89,7 @@ public class KillNotableNpcObjective extends QuestObjective<UUIDInstanceData> im
 
     @Override
     public boolean isStructureRelevant(MKStructureEntry entry) {
-        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNotableOfType(npcDefinition, entry.getWorldData().getWorld().registryAccess());
+        return location.getStructureId().equals(entry.getStructureName()) && entry.hasAnyNotableOfTypes(npcDefinitions, entry.getWorldData().getWorld().registryAccess());
     }
 
     @Override

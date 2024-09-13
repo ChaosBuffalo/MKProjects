@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.WorldPermanentOption;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
+import com.chaosbuffalo.mknpc.quest.QuestStructureLocation;
 import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
 import com.chaosbuffalo.mknpc.block_entities.MKPoiBlockEntity;
 import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
@@ -152,42 +153,49 @@ public class WorldNpcDataHandler implements IWorldNpcData {
 
     @Override
     public Optional<QuestChainBuildResult> buildQuest(QuestDefinition definition, BlockPos pos) {
-        Map<ResourceLocation, Integer> structuresNeeded = definition.getStructuresNeeded();
-        if (hasStructureInstances(structuresNeeded.keySet())) {
-            Map<ResourceLocation, List<MKStructureEntry>> possibilities = structuresNeeded.keySet().stream()
-                    .map(x -> new Pair<>(x, structureToInstanceIndex.get(x)))
+        Set<QuestStructureLocation>structuresNeeded = definition.getStructuresNeeded();
+        if (hasStructureInstances(structuresNeeded)) {
+            Map<QuestStructureLocation, List<MKStructureEntry>> possibilities = structuresNeeded.stream()
+                    .map(x -> new Pair<>(x, structureToInstanceIndex.get(x.getStructureId())))
                     .map(x -> x.mapSecond(ids -> ids.stream().map(structureIndex::get)
                             .filter(Objects::nonNull)
-                            .filter(definition::doesStructureMeetRequirements)))
+                            .filter(y -> definition.doesStructureMeetRequirements(x.getFirst(), y))))
                     .collect(Collectors.toMap(Pair::getFirst, pair -> pair.getSecond().collect(Collectors.toList())));
-            if (possibilities.entrySet().stream().allMatch(x -> x.getValue().size() >= structuresNeeded.get(x.getKey()))) {
-                Map<ResourceLocation, List<MKStructureEntry>> questStructures = new HashMap<>();
-                for (Map.Entry<ResourceLocation, Integer> needed : structuresNeeded.entrySet()) {
-                    int toFind = needed.getValue();
-                    List<MKStructureEntry> byDistance = possibilities.get(needed.getKey()).stream().sorted(Comparator.comparingInt(
-                                    x -> new ChunkPos(pos).getChessboardDistance(x.getChunkPos())))
-                            .collect(Collectors.toList());
-                    List<MKStructureEntry> finals = new ArrayList<>();
-                    for (int i = 0; i < toFind; i++) {
-                        finals.add(byDistance.get(i));
-                    }
-                    questStructures.put(needed.getKey(), finals);
-                }
-
-                QuestChainInstance instance = definition.generate(questStructures, getWorld());
-                instance.generateDialogue(questStructures);
-                MKNpc.LOGGER.debug("Built quest {} for {}", instance.getQuestId(), definition.getName());
-                quests.put(instance.getQuestId(), instance);
-                return Optional.of(new QuestChainBuildResult(instance, questStructures));
-            } else {
+            if (possibilities.entrySet().stream().anyMatch(x -> x.getValue().isEmpty())) {
                 return Optional.empty();
+            } else {
+                // sort by number of possibilites so we pick the structure with the least possibilites first
+                var inOrder = possibilities.entrySet().stream().sorted(Comparator.comparingInt(x -> x.getValue().size())).toList();
+                // final choices
+                Map<QuestStructureLocation, MKStructureEntry> questStructures = new HashMap<>();
+                for (var entry : inOrder) {
+                    List<MKStructureEntry> byDistance = entry.getValue().stream().sorted(Comparator.comparingInt(
+                                    x -> new ChunkPos(pos).getChessboardDistance(x.getChunkPos())))
+                            .toList();
+                    for (var found : byDistance) {
+                        if (questStructures.values().stream().noneMatch(x -> x.getStructureId().equals(found.getStructureId()))) {
+                            questStructures.put(entry.getKey(), found);
+                            break;
+                        }
+                    }
+                }
+                // check if we found a structure for each possibility
+                if (questStructures.size() == inOrder.size()) {
+                    QuestChainInstance instance = definition.generate(questStructures, getWorld());
+                    instance.generateDialogue(questStructures);
+                    MKNpc.LOGGER.debug("Built quest {} for {}", instance.getQuestId(), definition.getName());
+                    quests.put(instance.getQuestId(), instance);
+                    return Optional.of(new QuestChainBuildResult(instance, questStructures));
+                } else {
+                    return Optional.empty();
+                }
             }
         }
         return Optional.empty();
     }
 
-    public boolean hasStructureInstances(Set<ResourceLocation> structureNames) {
-        return structureNames.stream().allMatch(this::isStructureIndexed);
+    public boolean hasStructureInstances(Set<QuestStructureLocation> structureNames) {
+        return structureNames.stream().allMatch(x -> isStructureIndexed(x.getStructureId()));
     }
 
     private MKStructureEntry computeStructureEntry(IStructurePlaced structurePlaced) {

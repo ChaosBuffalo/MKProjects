@@ -23,12 +23,16 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -208,6 +212,13 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     @Override
     public void setDeathReceiver(INotifyOnEntityDeath receiver) {
         deathReceiver = receiver;
+    }
+
+    @Override
+    public void receiveInteract(Player player, Vec3 vec, InteractionHand hand) {
+        if (!questRequests.isEmpty()) {
+            player.sendSystemMessage(Component.literal("This NPC has quests that have not generated yet. Explore more of your world and come back later."));
+        }
     }
 
     @Override

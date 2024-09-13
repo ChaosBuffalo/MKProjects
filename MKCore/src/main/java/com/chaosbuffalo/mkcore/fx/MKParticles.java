@@ -16,13 +16,20 @@ public class MKParticles {
                 entityId), target);
     }
 
-    public static void spawn(Entity target, Vec3 posVec, ResourceLocation animName) {
+    public static void spawnOffset(Entity target, Vec3 posVec, ResourceLocation animName) {
         spawn(target, posVec, animName, target.getId());
+    }
+
+    public static void spawnOffset(Entity target, Vec3 posVec, ResourceLocation animName,
+                                   Consumer<MKParticleEffectSpawnPacket> customizer) {
+        var packet = new MKParticleEffectSpawnPacket(posVec, animName, target.getId());
+        customizer.accept(packet);
+        PacketHandler.sendToTrackingAndSelf(packet, target);
     }
 
     public static void spawn(Entity target, Vec3 posVec, ResourceLocation animName,
                              Consumer<MKParticleEffectSpawnPacket> customizer) {
-        var packet = new MKParticleEffectSpawnPacket(posVec, animName);
+        var packet = new MKParticleEffectSpawnPacket(posVec, animName, -1);
         customizer.accept(packet);
         PacketHandler.sendToTrackingAndSelf(packet, target);
     }

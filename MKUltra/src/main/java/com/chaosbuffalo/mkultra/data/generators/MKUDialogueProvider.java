@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkultra.data.generators;
 import com.chaosbuffalo.mkchat.data.DialogueProvider;
 import com.chaosbuffalo.mkchat.dialogue.*;
 import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
+import com.chaosbuffalo.mknpc.quest.DialogueBuilder;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasEntitlementCondition;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUEntitlements;
@@ -24,7 +25,8 @@ public class MKUDialogueProvider extends DialogueProvider {
         return CompletableFuture.allOf(
                 writeDialogue(getAlphaMovePrompt(), pOutput),
                 writeDialogue(getClericAcolyteDefault(), pOutput),
-                writeDialogue(getNetherMageInitiateDefault(), pOutput)
+                writeDialogue(getNetherMageInitiateDefault(), pOutput),
+                writeDialogue(clericDefault(), pOutput)
         );
     }
 
@@ -131,5 +133,16 @@ public class MKUDialogueProvider extends DialogueProvider {
 
         treeBuilder.hail(hailP);
         return treeBuilder.build();
+    }
+
+    private DialogueTree clericDefault() {
+        var treeBuilder = DialogueBuilder.hailWithCondition("Hail and well met {player}, are you in need of [training|I need training]?",
+                        "I am {name}, Solang's Servant for this temple. May His Light guide you.",
+                new HasEntitlementCondition(MKUEntitlements.ClericTier1))
+                .effectNode("training", "Let's see what I can teach you", new OpenLearnAbilitiesEffect())
+                .context("name", DialogueContexts.ENTITY_NAME_CONTEXT)
+                .context("player", DialogueContexts.PLAYER_NAME_CONTEXT);
+
+        return treeBuilder.build().buildStandalone(MKUltra.id("cleric_default"));
     }
 }

@@ -24,4 +24,8 @@ public class QuestObjectiveTypes {
     public static final Supplier<QuestObjectiveType<TalkToNpcObjective>> TALK_TO_NPC = REGISTRY.register("talk_to_npc", () -> () -> TalkToNpcObjective.MAP_CODEC);
 
     public static final Supplier<QuestObjectiveType<TradeItemsObjective>> TRADE_WITH_NPC = REGISTRY.register("trade_with_npc", () -> () -> TradeItemsObjective.MAP_CODEC);
+
+    public static final Supplier<QuestObjectiveType<KillTypeTagObjective>> KILL_TYPE_TAG = REGISTRY.register("kill_type_tag", () -> () -> KillTypeTagObjective.CODEC);
+
+    public static final Supplier<QuestObjectiveType<KillOneOfNotablesObjective>> KILL_ONE_OF_NOTABLE = REGISTRY.register("kill_one_of_notables", () -> () -> KillOneOfNotablesObjective.MAP_CODEC);
 }

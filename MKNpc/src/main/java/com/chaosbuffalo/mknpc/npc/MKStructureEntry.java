@@ -37,7 +37,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
     private StructureData structureData;
     private final WorldNpcDataHandler worldData;
     private final NBTSerializableMappedData customStructureData;
-    private final AbilityTracker cooldownTracker;
+    private final AbilityTracker.ExternalEventsTracker cooldownTracker;
     private final Set<String> activeEvents = new HashSet<>();
 
     public MKStructureEntry(WorldNpcDataHandler worldData, ResourceLocation structureName, UUID structureId, @Nullable StructureData structureData) {
@@ -47,7 +47,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         this.structureData = structureData;
     }
 
-    public AbilityTracker getCooldownTracker() {
+    public AbilityTracker.ExternalEventsTracker getCooldownTracker() {
         return cooldownTracker;
     }
 
@@ -80,7 +80,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         pois = new HashMap<>();
         structureData = null;
         customStructureData = new NBTSerializableMappedData();
-        cooldownTracker = new AbilityTracker();
+        cooldownTracker = new AbilityTracker.ExternalEventsTracker();
     }
 
     public Map<String, List<PointOfInterestEntry>> getPointsOfInterest() {
@@ -111,6 +111,29 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
             var definition = x.getDefinition(registryAccess);
             return definition != null && definition.getDefinitionName().equals(npcDef);
         }).findFirst();
+    }
+
+    public boolean hasAnyNotableOfTypes(Set<ResourceLocation> defs, RegistryAccess registryAccess) {
+        return notables.stream().anyMatch(x -> {
+            var definition = x.getDefinition(registryAccess);
+            return definition != null && defs.contains(definition.getDefinitionName());
+        });
+    }
+
+    public boolean hasNpc(ResourceLocation npcDef, RegistryAccess registryAccess) {
+        return mobs.contains(npcDef);
+    }
+
+    public List<NotableNpcEntry> getNotablesOfTypes(Set<ResourceLocation> defs, RegistryAccess registryAccess) {
+        return notables.stream().filter(x -> {
+            var definition = x.getDefinition(registryAccess);
+            return definition != null && defs.contains(definition.getDefinitionName());
+        }).collect(Collectors.toList());
+    }
+
+    public Optional<NotableNpcEntry> getRandomNotableFromTypes(Set<ResourceLocation> defs, RegistryAccess registryAccess) {
+        var matches = getNotablesOfTypes(defs, registryAccess);
+        return matches.isEmpty() ? Optional.empty() : Optional.of(matches.get(getWorldData().getWorld().getRandom().nextInt(matches.size())));
     }
 
     public List<NotableNpcEntry> getAllNotablesOfType(ResourceLocation npcDef, RegistryAccess registryAccess) {

@@ -11,10 +11,9 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.Level;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,15 +23,22 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> {
             QuestRegistries.QUEST_OBJECTIVES.byNameCodec().dispatch(QuestObjective::getType, QuestObjectiveType::codec));
 
     protected final String objectiveName;
-    protected QuestStructureLocation location; // temporary
+
+    @Nullable
+    protected final QuestStructureLocation location; // temporary
 
     public QuestObjective(String name) {
-        objectiveName = name;
+        this(name, null);
     }
 
     public QuestObjective(String name, QuestStructureLocation location) {
         objectiveName = name;
         this.location = location;
+    }
+
+    @Nullable
+    public QuestStructureLocation getLocation() {
+        return location;
     }
 
     public abstract QuestObjectiveType<? extends QuestObjective<?>> getType();
@@ -53,7 +59,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> {
         return Optional.ofNullable(location);
     }
 
-    public abstract T generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level);
+    public abstract T generateInstanceData(Map<QuestStructureLocation, MKStructureEntry> questStructures, Level level);
 
     public abstract T instanceDataFactory();
 

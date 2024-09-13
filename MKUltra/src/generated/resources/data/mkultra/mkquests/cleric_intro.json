@@ -5,18 +5,14 @@
     "nodes": [
       {
         "message": "While you are exploring the castle, could you search for {prompt:apprentice}? We were ambushed by zombies while investigating the library and had to split up. I made it back but {mk_quest_notable:mkultra:intro_castle#0#mkultra:solangian_apprentice} has yet to return.",
-        "nodeId": "start_quest"
+        "nodeId": "task"
       },
       {
-        "message": "Our order is dedicated to the worship of the Sun God, Solang. We work to preserve order and prosperity in the realm. This plague of undeath is of great concern to the {prompt:council} and we believe that this castle is somehow connected.",
-        "nodeId": "holySee"
+        "message": "Our order is dedicated to the worship of the Sun God, Solang. We work to preserve order and prosperity in the realm. This plague of undeath is of great concern to the {prompt:Council} and we believe that this castle is somehow connected.",
+        "nodeId": "the_Holy_See"
       },
       {
-        "message": "The leadership of my order is called the Council of the Nine. They are tasked with overseeing all affairs of the church.",
-        "nodeId": "council"
-      },
-      {
-        "message": "I am {context:entity_name}, sent here under the authority of the {prompt:holySee} to investigate the appearance of this castle. I hear you are going into the castle; if you're interested, I have a {prompt:start_quest} for you.",
+        "message": "I am {context:entity_name}, sent here under the authority of {prompt:the_Holy_See} to investigate the appearance of this castle. I hear you are going into the castle; if you're interested,I have a {prompt:task} for you.",
         "nodeId": "hail"
       },
       {
@@ -27,15 +23,19 @@
         ],
         "message": "I last saw {mk_quest_notable:mkultra:intro_castle#0#mkultra:solangian_apprentice} in the library on the upper floors of the castle.",
         "nodeId": "apprentice"
+      },
+      {
+        "message": "The leadership of my order is called the Council of the Nine. They are tasked with overseeing all affairs of the church.",
+        "nodeId": "Council"
       }
     ],
     "prompts": [
       {
         "highlightedText": "task",
-        "promptId": "start_quest",
+        "promptId": "task",
         "responses": [
           {
-            "responseNodeId": "start_quest"
+            "responseNodeId": "task"
           }
         ],
         "suggestionFillText": "What task?",
@@ -43,25 +43,14 @@
       },
       {
         "highlightedText": "Holy See of Solang",
-        "promptId": "holySee",
+        "promptId": "the_Holy_See",
         "responses": [
           {
-            "responseNodeId": "holySee"
+            "responseNodeId": "the_Holy_See"
           }
         ],
         "suggestionFillText": "Who are the Holy See?",
         "triggerPhrase": "the Holy See"
-      },
-      {
-        "highlightedText": "Council",
-        "promptId": "council",
-        "responses": [
-          {
-            "responseNodeId": "council"
-          }
-        ],
-        "suggestionFillText": "the Council?",
-        "triggerPhrase": "Council"
       },
       {
         "highlightedText": "",
@@ -99,6 +88,17 @@
         ],
         "suggestionFillText": "Where did you last see your apprentice?",
         "triggerPhrase": "apprentice"
+      },
+      {
+        "highlightedText": "Council",
+        "promptId": "Council",
+        "responses": [
+          {
+            "responseNodeId": "Council"
+          }
+        ],
+        "suggestionFillText": "the Council?",
+        "triggerPhrase": "Council"
       }
     ]
   },
@@ -119,8 +119,8 @@
             "hailPromptId": "hail",
             "nodes": [
               {
-                "message": "Oh thank goodness, it is good to see a friendly face. One of the zombies chased me into here and I wasn't certain if I'd ever get out. Can you do me {prompt:favor}?",
-                "nodeId": "talk_to_apprentice_hail"
+                "message": "Oh thank goodness, it is good to see a friendly face. One of the zombies chased me into here and I wasn't certain if I'd ever get out. Can you do me {prompt:favor}",
+                "nodeId": "talk_to_apprentice.hail"
               },
               {
                 "effects": [
@@ -130,7 +130,7 @@
                     "questName": "talk_to_apprentice"
                   }
                 ],
-                "message": "When we were escaping from the library I accidentally dropped a necklace of sentimental value. I think the {mk_quest_notable:mkultra:intro_castle#0#mkultra:imperial_magus} has it. Will you retrieve it for me?",
+                "message": "When we were escaping from the library I accidentally dropped a necklace of sentimental value.  I think the {mk_quest_notable:mkultra:intro_castle#0#mkultra:imperial_magus} has it. Will you retrieve it for me?",
                 "nodeId": "favor"
               }
             ],
@@ -151,7 +151,7 @@
                 "promptId": "hail",
                 "responses": [
                   {
-                    "responseNodeId": "talk_to_apprentice_hail"
+                    "responseNodeId": "talk_to_apprentice.hail"
                   }
                 ],
                 "suggestionFillText": "",
@@ -162,7 +162,7 @@
           "npcDefinition": "mkultra:solangian_apprentice",
           "objectiveName": "talk_to_apprentice",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -185,7 +185,7 @@
           "npcDefinition": "mkultra:imperial_magus",
           "objectiveName": "loot_necklace",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -240,7 +240,7 @@
           "npcDefinition": "mkultra:solangian_apprentice",
           "objectiveName": "return_to_apprentice",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }
@@ -295,7 +295,7 @@
           "npcDefinition": "mkultra:solangian_acolyte",
           "objectiveName": "return_to_acolyte",
           "structure": {
-            "index": 0,
+            "name": "0",
             "structureId": "mkultra:intro_castle"
           }
         }

@@ -7,9 +7,11 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
+import javax.annotation.Nullable;
+
 public interface IKillObjectiveHandler {
 
     boolean onPlayerKillNpcDefEntity(Player player, PlayerQuestObjectiveData objectiveData,
-                                     NpcDefinition def, LivingDeathEvent event, QuestData quest,
+                                     @Nullable NpcDefinition def, LivingDeathEvent event, QuestData quest,
                                      PlayerQuestChainInstance playerChain);
 }

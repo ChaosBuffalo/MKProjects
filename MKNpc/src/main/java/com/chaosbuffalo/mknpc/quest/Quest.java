@@ -15,7 +15,6 @@ import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
 import com.google.common.collect.ImmutableMap;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.core.HolderLookup;
@@ -23,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Quest {
 
@@ -66,7 +66,7 @@ public class Quest {
 
     public DialogueTree generateDialogueForNpc(QuestChainInstance questChain, ResourceLocation npcDefinitionName,
                                                UUID npcId, DialogueTree tree,
-                                               Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                               Map<QuestStructureLocation, MKStructureEntry> questStructures,
                                                QuestDefinition definition) {
         QuestData questData = questChain.getQuestData(this);
         for (QuestObjective<?> obj : getObjectives()) {
@@ -101,14 +101,10 @@ public class Quest {
         return objectives;
     }
 
-    public List<Pair<ResourceLocation, Integer>> getStructuresNeeded() {
-        return objectives.stream()
-                .flatMap(x -> x.getStructure().stream())
-                .map(l -> new Pair<>(l.getStructureId(), l.getIndex() + 1))
-                .toList();
+    public Set<QuestStructureLocation> getStructuresNeeded() {
+        return objectives.stream().map(QuestObjective::getStructure).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toSet());
     }
-
-
+    
     public boolean isStructureRelevant(MKStructureEntry entry) {
         return objectives.stream().allMatch(x -> x.isStructureRelevant(entry));
     }

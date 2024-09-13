@@ -107,7 +107,7 @@ public class CleansingSeedAbility extends ProjectileAbility {
                 }
             }
         }
-        MKParticles.spawn(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
+        MKParticles.spawnOffset(projectile, new Vec3(0.0, 0.0, 0.0), detonateParticles.getValue());
         return true;
     }
 

@@ -48,6 +48,12 @@ public class DialogueNode extends DialogueObject {
         return newNode;
     }
 
+    public DialogueNode copyWithId(String nodeId) {
+        DialogueNode newNode = new DialogueNode(nodeId, getRawMessage());
+        effects.forEach(e -> newNode.addEffect(e.copy()));
+        return newNode;
+    }
+
     public List<DialogueEffect> getEffects() {
         return effects;
     }

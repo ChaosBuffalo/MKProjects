@@ -1,5 +1,5 @@
-// 1.21.1	2024-09-02T19:47:42.3045812	Registries
-dcdb0ddc6fc338bbe6f725cdf0021ef87580cd0c data/mkultra/worldgen/structure/decaying_church.json
+// 1.21.1	2024-09-13T13:15:56.1718693	Registries
+211070d10fca7c18316f323a8b535eb24ff1e258 data/mkultra/worldgen/structure/decaying_church.json
 dddb6355dcba4aef8229c895bdffb3c732d9e3d4 data/mkultra/worldgen/structure/deepslate_obelisk.json
 0734b7eea6f303bc9e45f9e7a8b2813e3d3e25cd data/mkultra/worldgen/structure/desert_temple_village.json
 f2202306612f5d1ebca336cc367674dbe92585f5 data/mkultra/worldgen/structure/hyborean_crypt.json
@@ -8,7 +8,7 @@ f2202306612f5d1ebca336cc367674dbe92585f5 data/mkultra/worldgen/structure/hyborea
 dc2fc61a853de9e1bbf079939f1e3ca6dd8529ba data/mkultra/worldgen/structure_set/decaying_church.json
 4c4c4fa5d3df12ea5e4c661946b9f558eba39296 data/mkultra/worldgen/structure_set/deepslate_obelisk.json
 a62fd166740f9915434b389adafaf1f8fb2bb308 data/mkultra/worldgen/structure_set/desert_temple_village.json
-563910b67eb7ea0b19f01ce0af269a55565b7736 data/mkultra/worldgen/structure_set/hyborean_crypt.json
+7f8521a114e90c71516d16838373f70b914cc5a6 data/mkultra/worldgen/structure_set/hyborean_crypt.json
 a51c83722daf4f6e9b89ee07b0c3c011f8e27867 data/mkultra/worldgen/structure_set/intro_castle.json
 df0412b1238480adc204b9e8c93d47652cf33d5d data/mkultra/worldgen/structure_set/necrotide_alter.json
 17338a5b1c5d6a1d82397135d2aa6316bc06c998 data/mkultra/worldgen/template_pool/crypt/crypt_base.json

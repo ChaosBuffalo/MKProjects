@@ -1,6 +1,6 @@
 {
   "entityType": "mkultra:human_ghost",
-  "name": "mkultra:ancient_priest_ghost",
+  "name": "mkultra:ancient_apprentice_ghost",
   "options": {
     "mknpc:abilities": {
       "type": "mknpc:abilities",
@@ -11,14 +11,9 @@
           "priority": 1
         },
         {
-          "abilityId": "mkultra:holy_word",
+          "abilityId": "mkultra:smite",
           "chance": 1.0,
           "priority": 2
-        },
-        {
-          "abilityId": "mkultra:ability.holy_fire",
-          "chance": 0.5,
-          "priority": 3
         }
       ]
     },
@@ -62,16 +57,6 @@
             "weight": 1.0
           }
         ],
-        "head": [
-          {
-            "dropChance": 0.05,
-            "item": {
-              "count": 1,
-              "id": "mkultra:ancient_priest_helmet"
-            },
-            "weight": 1.0
-          }
-        ],
         "legs": [
           {
             "dropChance": 0.05,
@@ -86,7 +71,11 @@
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
-      "factionId": "mkfaction:undead"
+      "factionId": "mkultra:ghosts_of_hyboria"
+    },
+    "mknpc:faction_name": {
+      "type": "mknpc:faction_name",
+      "title": "Apprentice"
     },
     "mknpc:ghost": {
       "type": "mknpc:ghost",
@@ -96,30 +85,37 @@
     },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
-      "scale": 1.0
+      "scale": 0.92
     },
-    "mknpc:name": {
-      "type": "mknpc:name",
-      "name": "An Ancient Priest"
+    "mknpc:notable": {
+      "type": "mknpc:notable",
+      "isNotable": true
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
-      "renderGroup": "ghost_clean"
+      "renderGroup": "ghost_clean_short"
     },
     "mknpc:skills": {
       "type": "mknpc:skills",
       "major_skills": [
-        "mkcore:alteration",
-        "mkcore:restoration"
+        "mkcore:one_hand_blunt",
+        "mkcore:one_hand_pierce",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:two_hand_slash"
       ],
       "minor_skills": [
         "mkcore:abjuration",
-        "mkcore:evocation",
-        "mkcore:necromancy"
+        "mkcore:alteration",
+        "mkcore:hand_to_hand",
+        "mkcore:pankration",
+        "mkcore:restoration"
       ],
       "remedial_skills": [
-        "mkcore:one_hand_blunt",
-        "mkcore:two_hand_blunt"
+        "mkcore:arete",
+        "mkcore:evocation",
+        "mkcore:pneuma"
       ]
     }
   }

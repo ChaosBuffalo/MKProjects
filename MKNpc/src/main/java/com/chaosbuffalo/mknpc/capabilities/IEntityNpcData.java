@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
-import com.chaosbuffalo.mkcore.init.CoreAttachments;
 import com.chaosbuffalo.mknpc.init.MKNpcAttachments;
 import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -9,11 +8,13 @@ import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
@@ -110,4 +111,6 @@ public interface IEntityNpcData extends INBTSerializable<CompoundTag> {
         }
         return Optional.of(entity.getData(MKNpcAttachments.NPC_DATA));
     }
+
+    void receiveInteract(Player player, Vec3 vec, InteractionHand hand);
 }

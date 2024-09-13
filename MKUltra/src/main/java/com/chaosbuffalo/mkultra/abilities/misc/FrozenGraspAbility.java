@@ -79,7 +79,7 @@ public class FrozenGraspAbility extends MKAbility {
     public MKEffectBuilder<?> onHitEffect(OnHitEffect.OnHitCallbackData args) {
         int dur = getBuffDuration(args.entityData, args.instance.getSkillLevel(),
                 baseDuration.value(), scaleDuration.value());
-        MKParticles.spawn(args.target, YP, hitParticles.getValue());
+        MKParticles.spawnOffset(args.target, YP, hitParticles.getValue());
         return MKUEffects.FROZEN_GRASP.get().builder(args.entityData.getEntity())
                 .skillLevel(args.instance.getSkillLevel()).timed(dur);
     }

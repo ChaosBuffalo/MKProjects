@@ -1,0 +1,459 @@
+{
+  "dialogue": {
+    "dialogueId": "mknpc:give_quest.mkultra.cleric_unlock_chain",
+    "hailPromptId": "hail",
+    "nodes": [
+      {
+        "effects": [
+          {
+            "type": "mknpc:start_quest_chain"
+          }
+        ],
+        "message": "A donation of 10 {item:minecraft:gold_ingot} would allow us to continue arming the templars and supporting the community here.",
+        "nodeId": "contribute"
+      },
+      {
+        "message": "There are many expenses in the pursuit of our mission to rid this world of the restless dead. Perhaps you would like to {prompt:contribute}?",
+        "nodeId": "tithed"
+      },
+      {
+        "message": "This temple is dedicated to the worship of His Holy Radiance: Solang, God of the Sun, Bringer of the Morning Light, Banisher of the Dead. According to our records it doesn't look like you've ever {prompt:tithed}.",
+        "nodeId": "temple"
+      },
+      {
+        "message": "Hail and well met traveler. I'm {context:entity_name} and I welcome you to our humble {prompt:temple}.",
+        "nodeId": "hail"
+      }
+    ],
+    "prompts": [
+      {
+        "highlightedText": "contribute",
+        "promptId": "contribute",
+        "responses": [
+          {
+            "responseNodeId": "contribute"
+          },
+          {
+            "conditions": [
+              {
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": false
+              }
+            ],
+            "responseNodeId": "contribute"
+          }
+        ],
+        "suggestionFillText": "I can contribute",
+        "triggerPhrase": "contribute"
+      },
+      {
+        "highlightedText": "tithed",
+        "promptId": "tithed",
+        "responses": [
+          {
+            "responseNodeId": "tithed"
+          }
+        ],
+        "suggestionFillText": "What do you mean by tithed?",
+        "triggerPhrase": "tithed"
+      },
+      {
+        "highlightedText": "temple",
+        "promptId": "temple",
+        "responses": [
+          {
+            "responseNodeId": "temple"
+          }
+        ],
+        "suggestionFillText": "Tell me about this temple.",
+        "triggerPhrase": "temple"
+      },
+      {
+        "highlightedText": "",
+        "promptId": "hail",
+        "responses": [
+          {
+            "conditions": [
+              {
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": false
+              }
+            ],
+            "responseNodeId": "hail"
+          }
+        ],
+        "suggestionFillText": "",
+        "triggerPhrase": ""
+      }
+    ]
+  },
+  "questMode": 0,
+  "questName": "\"Seeking the Light\"",
+  "quests": [
+    {
+      "autoComplete": true,
+      "description": "\"The Temple of Solang desires a donation of gold.\"",
+      "objectives": [
+        {
+          "type": "mknpc:trade_with_npc",
+          "items": [
+            {
+              "count": 10,
+              "id": "minecraft:gold_ingot"
+            }
+          ],
+          "npcDefinition": "mkultra:solangian_cleric",
+          "objectiveName": "trade_gold_bars",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:desert_temple_village"
+          }
+        }
+      ],
+      "questName": "gold_bars",
+      "rewards": [
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 100
+        },
+        {
+          "type": "mknpc:entitlement",
+          "entitlement": "mkultra:cleric.tier_1"
+        }
+      ]
+    },
+    {
+      "autoComplete": true,
+      "description": "\"Return to the Cleric\"",
+      "objectives": [
+        {
+          "type": "mknpc:talk_to_npc",
+          "description": [
+            "Talk to the Cleric again."
+          ],
+          "dialogue": {
+            "dialogueId": "mknpc:quest.dialogue.return_to_cleric",
+            "hailPromptId": "hail",
+            "nodes": [
+              {
+                "effects": [
+                  {
+                    "type": "mknpc:objective_completion",
+                    "objectiveName": "return_to_cleric",
+                    "questName": "return_to_cleric"
+                  }
+                ],
+                "message": "We need someone to go out and cull the dead that walk amongst the living still. Return to me when you've completed",
+                "nodeId": "task"
+              },
+              {
+                "effects": [
+                  {
+                    "type": "mknpc:open_learn_abilities"
+                  }
+                ],
+                "message": "Let me see what I can teach you. Talk to me again when you're done.",
+                "nodeId": "want_to_learn"
+              },
+              {
+                "message": "Now that you have joined our efforts, perhaps you would like to {prompt:want_to_learn} some of our spells, and maybe you can use one of those to help us with a {prompt:task}.",
+                "nodeId": "return_to_cleric.hail"
+              }
+            ],
+            "prompts": [
+              {
+                "highlightedText": "task",
+                "promptId": "task",
+                "responses": [
+                  {
+                    "responseNodeId": "task"
+                  }
+                ],
+                "suggestionFillText": "I will assist with your task.",
+                "triggerPhrase": "task"
+              },
+              {
+                "highlightedText": "",
+                "promptId": "hail",
+                "responses": [
+                  {
+                    "responseNodeId": "return_to_cleric.hail"
+                  }
+                ],
+                "suggestionFillText": "",
+                "triggerPhrase": ""
+              },
+              {
+                "highlightedText": "learn",
+                "promptId": "want_to_learn",
+                "responses": [
+                  {
+                    "responseNodeId": "want_to_learn"
+                  }
+                ],
+                "suggestionFillText": "I want to learn.",
+                "triggerPhrase": "want to learn"
+              }
+            ]
+          },
+          "npcDefinition": "mkultra:solangian_cleric",
+          "objectiveName": "return_to_cleric",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:desert_temple_village"
+          }
+        }
+      ],
+      "questName": "return_to_cleric",
+      "rewards": [
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 50
+        },
+        {
+          "type": "mknpc:faction",
+          "faction": "mkultra:see_of_solang",
+          "faction_amount": 50
+        }
+      ]
+    },
+    {
+      "autoComplete": true,
+      "description": "\"Cull the dead that walk amongst the living.\"",
+      "objectives": [
+        {
+          "type": "mknpc:kill_type_tag",
+          "count": 20,
+          "objectiveName": "kill_dead_1",
+          "tag": "minecraft:undead",
+          "tagDesc": "Undead"
+        }
+      ],
+      "questName": "kill_dead_1",
+      "rewards": [
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 250
+        }
+      ]
+    },
+    {
+      "autoComplete": true,
+      "description": "\"Return to the Cleric\"",
+      "objectives": [
+        {
+          "type": "mknpc:talk_to_npc",
+          "description": [
+            "Talk to the Cleric again."
+          ],
+          "dialogue": {
+            "dialogueId": "mknpc:quest.dialogue.return_after_kill_dead_1",
+            "hailPromptId": "hail",
+            "nodes": [
+              {
+                "effects": [
+                  {
+                    "type": "mknpc:objective_completion",
+                    "objectiveName": "return_after_kill_dead_1",
+                    "questName": "return_after_kill_dead_1"
+                  }
+                ],
+                "message": "You must go to the tomb and destroy the greater spirits found within. Be cautious for your targets still retain some of the vitality they possessed in life.",
+                "nodeId": "tomb"
+              },
+              {
+                "message": "It seems you have a talent for this type of work. Those with the strength to {prompt:purify_the_land} are needed around these parts.",
+                "nodeId": "return_after_kill_dead_1.hail"
+              },
+              {
+                "message": "The dead walk everywhere, but some places call to the fel spirits that drive them. Not far from here lies such a place: a {prompt:tomb} built by the {prompt:ancients} many, many years ago.",
+                "nodeId": "purify_the_land"
+              },
+              {
+                "message": "The Hyborean Empire used to extend to the furthest reaches of these lands. Now only shattered remains of their tombs and cities can be found. Few have ever stepped foot in these ruins as vengeful spirits still haunt them.",
+                "nodeId": "ancients"
+              }
+            ],
+            "prompts": [
+              {
+                "highlightedText": "tomb",
+                "promptId": "tomb",
+                "responses": [
+                  {
+                    "responseNodeId": "tomb"
+                  }
+                ],
+                "suggestionFillText": "What must I do at this tomb?",
+                "triggerPhrase": "tomb"
+              },
+              {
+                "highlightedText": "purify the land",
+                "promptId": "purify_the_land",
+                "responses": [
+                  {
+                    "responseNodeId": "purify_the_land"
+                  }
+                ],
+                "suggestionFillText": "How can I help purify the land?",
+                "triggerPhrase": "purify the land"
+              },
+              {
+                "highlightedText": "",
+                "promptId": "hail",
+                "responses": [
+                  {
+                    "responseNodeId": "return_after_kill_dead_1.hail"
+                  }
+                ],
+                "suggestionFillText": "",
+                "triggerPhrase": ""
+              },
+              {
+                "highlightedText": "ancients",
+                "promptId": "ancients",
+                "responses": [
+                  {
+                    "responseNodeId": "ancients"
+                  }
+                ],
+                "suggestionFillText": "Who were the ancients?",
+                "triggerPhrase": "ancients"
+              }
+            ]
+          },
+          "npcDefinition": "mkultra:solangian_cleric",
+          "objectiveName": "return_after_kill_dead_1",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:desert_temple_village"
+          }
+        }
+      ],
+      "questName": "return_after_kill_dead_1",
+      "rewards": [
+        {
+          "type": "mknpc:faction",
+          "faction": "mkultra:see_of_solang",
+          "faction_amount": 100
+        },
+        {
+          "type": "mknpc:entitlement",
+          "entitlement": "mkultra:cleric.tier_2"
+        },
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 250
+        }
+      ]
+    },
+    {
+      "autoComplete": true,
+      "description": "\"Destroy the Greater Dead\"",
+      "objectives": [
+        {
+          "type": "mknpc:kill_one_of_notables",
+          "npcDefinition": [
+            "mkultra:an_ancient_king",
+            "mkultra:hyborean_sorcerer_queen"
+          ],
+          "objectiveName": "kill_greater",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:hyborean_crypt"
+          }
+        },
+        {
+          "type": "mknpc:kill_npc_def",
+          "count": 8,
+          "npcDefinition": "mkultra:hyborean_warrior",
+          "objectiveName": "kill_warriors"
+        },
+        {
+          "type": "mknpc:kill_npc_def",
+          "count": 4,
+          "npcDefinition": "mkultra:hyborean_honor_guard",
+          "objectiveName": "kill_honor_guard"
+        },
+        {
+          "type": "mknpc:kill_npc_def",
+          "count": 4,
+          "npcDefinition": "mkultra:hyborean_sorcerer",
+          "objectiveName": "kill_sorcerers"
+        }
+      ],
+      "questName": "kill_dead_2",
+      "rewards": [
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 100
+        }
+      ]
+    },
+    {
+      "autoComplete": true,
+      "description": "\"Return to the Cleric\"",
+      "objectives": [
+        {
+          "type": "mknpc:talk_to_npc",
+          "description": [
+            "Talk to the Cleric again."
+          ],
+          "dialogue": {
+            "dialogueId": "mknpc:quest.dialogue.return_after_kill_2",
+            "hailPromptId": "hail",
+            "nodes": [
+              {
+                "effects": [
+                  {
+                    "type": "mknpc:objective_completion",
+                    "objectiveName": "return_after_kill_2",
+                    "questName": "after_kill_2"
+                  }
+                ],
+                "message": "It is the solumn duty of a Cleric of Solang to bring His Light into the Dark and drive back the dead with it. You have shown great talent at this task. I hope you will continue to act with faith and fortune.",
+                "nodeId": "return_after_kill_2.hail"
+              }
+            ],
+            "prompts": [
+              {
+                "highlightedText": "",
+                "promptId": "hail",
+                "responses": [
+                  {
+                    "responseNodeId": "return_after_kill_2.hail"
+                  }
+                ],
+                "suggestionFillText": "",
+                "triggerPhrase": ""
+              }
+            ]
+          },
+          "npcDefinition": "mkultra:solangian_cleric",
+          "objectiveName": "return_after_kill_2",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:desert_temple_village"
+          }
+        }
+      ],
+      "questName": "after_kill_2",
+      "rewards": [
+        {
+          "type": "mknpc:faction",
+          "faction": "mkultra:see_of_solang",
+          "faction_amount": 200
+        },
+        {
+          "type": "mknpc:entitlement",
+          "entitlement": "mkultra:cleric.tier_3"
+        },
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 400
+        }
+      ]
+    }
+  ],
+  "repeatable": false,
+  "requirements": []
+}

@@ -61,7 +61,7 @@ public class MKParticleEffect extends MKEffect {
 
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect instance) {
-            MKParticles.spawn(targetData.getEntity(), location, animName);
+            MKParticles.spawnOffset(targetData.getEntity(), location, animName);
             return true;
         }
 

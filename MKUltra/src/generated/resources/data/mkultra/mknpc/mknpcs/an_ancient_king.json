@@ -183,6 +183,10 @@
       "type": "mknpc:name",
       "name": "An Ancient King"
     },
+    "mknpc:notable": {
+      "type": "mknpc:notable",
+      "isNotable": true
+    },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
       "renderGroup": "ancient_king"

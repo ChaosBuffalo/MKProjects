@@ -1,0 +1,56 @@
+{
+  "dialogueId": "mkultra:cleric_default",
+  "hailPromptId": "hail",
+  "nodes": [
+    {
+      "message": "Hail and well met {context:player_name}, are you in need of {prompt:training}?",
+      "nodeId": "hail_w_cond"
+    },
+    {
+      "effects": [
+        {
+          "type": "mknpc:open_learn_abilities"
+        }
+      ],
+      "message": "Let's see what I can teach you",
+      "nodeId": "training"
+    },
+    {
+      "message": "I am {context:entity_name}, Solang's Servant for this temple. May His Light guide you.",
+      "nodeId": "hail_wo_cond"
+    }
+  ],
+  "prompts": [
+    {
+      "highlightedText": "training",
+      "promptId": "training",
+      "responses": [
+        {
+          "responseNodeId": "training"
+        }
+      ],
+      "suggestionFillText": "I need training",
+      "triggerPhrase": "training"
+    },
+    {
+      "highlightedText": "",
+      "promptId": "hail",
+      "responses": [
+        {
+          "conditions": [
+            {
+              "type": "mknpc:has_entitlement",
+              "entitlement": "mkultra:cleric.tier_1"
+            }
+          ],
+          "responseNodeId": "hail_w_cond"
+        },
+        {
+          "responseNodeId": "hail_wo_cond"
+        }
+      ],
+      "suggestionFillText": "",
+      "triggerPhrase": ""
+    }
+  ]
+}

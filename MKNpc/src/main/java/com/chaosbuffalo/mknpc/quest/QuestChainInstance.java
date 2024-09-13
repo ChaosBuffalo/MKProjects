@@ -34,7 +34,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
     private UUID questSourceNpc;
     private final Level level;
 
-    public QuestChainInstance(QuestDefinition definition, Map<ResourceLocation, List<MKStructureEntry>> questStructures, Level level) {
+    public QuestChainInstance(QuestDefinition definition, Map<QuestStructureLocation, MKStructureEntry> questStructures, Level level) {
         questId = UUID.randomUUID();
         this.definition = definition;
         this.level = level;
@@ -52,7 +52,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         deserializeNBT(provider, nbt);
     }
 
-    public void generateDialogue(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
+    public void generateDialogue(Map<QuestStructureLocation, MKStructureEntry> questStructures) {
         ResourceLocation dialogueName = getDialogueTreeName();
         Map<ResourceLocation, UUID> speakingRoles = getSpeakingRoles();
 

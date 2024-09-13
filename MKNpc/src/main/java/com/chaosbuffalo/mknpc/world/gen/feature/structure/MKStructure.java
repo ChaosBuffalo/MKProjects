@@ -109,6 +109,10 @@ public abstract class MKStructure extends Structure {
     public void onStructureActivate(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
         MKNpc.LOGGER.debug("Activating structure {} (ID: {})", entry.getStructureName(), entry.getStructureId());
         for (Map.Entry<String, StructureEvent> ev : events.entrySet()) {
+            entry.getCooldownTracker().subscribeToAdded(ev.getValue().getTimerName(),
+                    (ticks, local) -> ev.getValue().onTimerStart(entry, activeStructure, ticks));
+            entry.getCooldownTracker().subscribeToRemoved(ev.getValue().getTimerName(),
+                    (local) -> ev.getValue().onTimerStop(entry, activeStructure));
             if (ev.getValue().meetsRequirements(entry, activeStructure, world)) {
                 entry.addActiveEvent(ev.getKey());
             }
@@ -129,6 +133,11 @@ public abstract class MKStructure extends Structure {
                 checkAndExecuteEvent(ev, entry, activeStructure, world);
             }
         }
+        for (Map.Entry<String, StructureEvent> ev : events.entrySet()) {
+            entry.getCooldownTracker().unsubscribe(ev.getValue().getTimerName());
+        }
+
+
         entry.clearActiveEvents();
     }
 
@@ -163,9 +172,13 @@ public abstract class MKStructure extends Structure {
     public void onNpcDeath(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, IEntityNpcData npcData) {
         for (String key : entry.getActiveEvents()) {
             StructureEvent ev = events.get(key);
-            if (ev != null && ev.canTrigger(StructureEvent.EventTrigger.ON_DEATH)) {
-                checkAndExecuteEvent(ev, entry, activeStructure, npcData.getEntity().getCommandSenderWorld());
+            if (ev != null) {
+                ev.onNpcDeath(entry, activeStructure, npcData);
+                if (ev.canTrigger(StructureEvent.EventTrigger.ON_DEATH)) {
+                    checkAndExecuteEvent(ev, entry, activeStructure, npcData.getEntity().getCommandSenderWorld());
+                }
             }
+
         }
     }
 }

@@ -886,6 +886,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
                 if (player.isShiftKeyDown()) {
                     player.openMenu(entityTradeContainer);
                 } else {
+                    IEntityNpcData.get(this).ifPresent(cap -> cap.receiveInteract(player, vec, hand));
                     INpcDialogue.get(this)
                             .ifPresent(cap -> cap.hail(serverPlayer));
                 }
