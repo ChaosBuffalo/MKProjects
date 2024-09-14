@@ -27,7 +27,6 @@ public class MKUltra {
         MKUEntitlements.register(modBus);
         MKUTalents.register(modBus);
         MKUSounds.register(modBus);
-        MKUFactions.register(modBus);
         MKUItems.register(modBus);
         MKUArmorMaterial.register(modBus);
         modBus.addListener(this::enqueueIMC);

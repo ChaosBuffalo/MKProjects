@@ -83,7 +83,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateSeawovenWretch() {
         NpcDefinition def = new NpcDefinition(MKUltra.id("seawoven_wretch"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption(MKFactions.UNDEAD));
         def.addOption(new RenderGroupOption(MKUSkeletons.SEAWOVEN_WRTECH_NAME));
         def.addOption(new MKSizeOption(0.92f));
         def.addOption(new AttributesOption()
@@ -100,7 +100,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateSeawovenSkeleton() {
         NpcDefinition def = new NpcDefinition(MKUltra.id("seawoven_skeleton"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption(MKFactions.UNDEAD));
         def.addOption(new RenderGroupOption(MKUSkeletons.SEAWOVEN_NAME));
         def.addOption(new MKSizeOption(0.98f));
         def.addOption(new AttributesOption()
@@ -402,7 +402,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateAncientPriestGhost() {
         NpcDefinition def = new NpcDefinition(MKUltra.id("ancient_priest_ghost"),
                 MKUEntities.HUMAN_GHOST_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption(MKFactions.UNDEAD));
         def.addOption(new RenderGroupOption(MKUHumans.GHOST_LOOK_CLEAN_NAME));
         def.addOption(new MKSizeOption(1.0f));
         def.addOption(new AttributesOption()
@@ -439,7 +439,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateAncientCardinal() {
         NpcDefinition def = new NpcDefinition(MKUltra.id("ancient_cardinal"),
                 MKUEntities.HUMAN_GHOST_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption(MKFactions.UNDEAD));
         def.addOption(new MKSizeOption(1.2f));
         def.addOption(new RenderGroupOption(MKUHumans.GHOST_LOOK_CLEAN_NAME));
         def.addOption(new AttributesOption()
@@ -962,7 +962,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateHyboreanWarrior() {
         NpcDefinition def = new NpcDefinition(MKUltra.id("hyborean_warrior"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption(MKFactions.UNDEAD));
         def.addOption(new MKSizeOption(1.0f));
         def.addOption(new RenderGroupOption(MKUSkeletons.HYBOREAN_WARRIOR_NAME));
         def.addOption(new AttributesOption()
@@ -1026,7 +1026,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateHyboreanArcher() {
         NpcDefinition def = new NpcDefinition(MKUltra.id("hyborean_archer"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption(MKFactions.UNDEAD));
         def.addOption(new MKSizeOption(0.95f));
         def.addOption(new RenderGroupOption(MKUSkeletons.HYBOREAN_ARCHER_NAME));
         def.addOption(new AttributesOption()
@@ -1050,7 +1050,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateHyboreanSorcererQueen() {
         NpcDefinition def = new NpcDefinition(MKUltra.id("hyborean_sorcerer_queen"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption(MKFactions.UNDEAD));
         def.addOption(new MKSizeOption(1.1f));
         def.addOption(new RenderGroupOption(MKUSkeletons.SORCERER_QUEEN_NAME));
         def.addOption(new AttributesOption()
@@ -1092,7 +1092,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateAncientKing() {
         NpcDefinition def = new NpcDefinition(MKUltra.id("an_ancient_king"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption(MKFactions.UNDEAD));
         def.addOption(new MKSizeOption(1.15f));
         def.addOption(new RenderGroupOption(MKUSkeletons.ANCIENT_KING_NAME));
         def.addOption(new AttributesOption()
@@ -1157,7 +1157,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateHyboreanSorcerer() {
         NpcDefinition def = new NpcDefinition(MKUltra.id("hyborean_sorcerer"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption(MKFactions.UNDEAD));
         def.addOption(new MKSizeOption(0.9f));
         def.addOption(new RenderGroupOption(MKUSkeletons.SORCERER_NAME));
         def.addOption(new AttributesOption()
@@ -1186,7 +1186,7 @@ public class MKUNpcProvider extends NpcDefinitionProvider {
     private NpcDefinition generateHyboreanHonorGuard() {
         NpcDefinition def = new NpcDefinition(MKUltra.id("hyborean_honor_guard"),
                 MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKFactions.UNDEAD_FACTION_NAME));
+        def.addOption(new FactionOption(MKFactions.UNDEAD));
         def.addOption(new MKSizeOption(1.0f));
         def.addOption(new RenderGroupOption(MKUSkeletons.HONOR_GUARD_NAME));
         def.addOption(new AttributesOption()

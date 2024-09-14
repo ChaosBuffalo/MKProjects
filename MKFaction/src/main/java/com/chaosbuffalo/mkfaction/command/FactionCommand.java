@@ -2,8 +2,8 @@ package com.chaosbuffalo.mkfaction.command;
 
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
 import com.chaosbuffalo.mkfaction.capabilities.IPlayerFaction;
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
+import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;

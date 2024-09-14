@@ -18,7 +18,7 @@ public class MKFactionsDefaultFactionGenerator extends FactionDefaultDataMapProv
     @Override
     protected void gather() {
         // #undead = #skeletons + #zombies + wither + phantom
-        var undead = new EntityDefaultFaction(MKFactions.UNDEAD_FACTION_NAME);
+        var undead = new EntityDefaultFaction(MKFactions.UNDEAD);
         tagGroup(undead, EntityTypeTags.UNDEAD);
         entityGroup(undead,
                 EntityType.VEX,
@@ -26,7 +26,7 @@ public class MKFactionsDefaultFactionGenerator extends FactionDefaultDataMapProv
         );
 
 
-        var domesticatedAnimals = new EntityDefaultFaction(MKFactions.DOMESTICATED_ANIMALS_FACTION_NAME);
+        var domesticatedAnimals = new EntityDefaultFaction(MKFactions.DOMESTICATED_ANIMALS);
         entityGroup(domesticatedAnimals,
                 EntityType.BEE,
                 EntityType.CAT,
@@ -45,7 +45,7 @@ public class MKFactionsDefaultFactionGenerator extends FactionDefaultDataMapProv
         );
 
 
-        var wildAnimals = new EntityDefaultFaction(MKFactions.WILD_ANIMALS_FACTION_NAME);
+        var wildAnimals = new EntityDefaultFaction(MKFactions.WILD_ANIMALS);
         entityGroup(wildAnimals,
                 EntityType.BAT,
                 EntityType.COD,
@@ -72,7 +72,7 @@ public class MKFactionsDefaultFactionGenerator extends FactionDefaultDataMapProv
         );
 
 
-        var hostileAnimals = new EntityDefaultFaction(MKFactions.HOSTILE_ANIMALS_FACTION_NAME);
+        var hostileAnimals = new EntityDefaultFaction(MKFactions.HOSTILE_ANIMALS);
         entityGroup(hostileAnimals,
                 EntityType.SPIDER,
                 EntityType.CAVE_SPIDER,
@@ -80,7 +80,7 @@ public class MKFactionsDefaultFactionGenerator extends FactionDefaultDataMapProv
         );
 
 
-        var villagers = new EntityDefaultFaction(MKFactions.VILLAGER_FACTION_NAME);
+        var villagers = new EntityDefaultFaction(MKFactions.VILLAGERS);
         entityGroup(villagers,
                 EntityType.VILLAGER,
                 EntityType.IRON_GOLEM,
@@ -89,7 +89,7 @@ public class MKFactionsDefaultFactionGenerator extends FactionDefaultDataMapProv
         );
 
 
-        var illagerFaction = new EntityDefaultFaction(MKFactions.ILLAGERS_FACTION_NAME);
+        var illagerFaction = new EntityDefaultFaction(MKFactions.ILLAGERS);
         // #illager = evoker + illusioner + pillager + vindicator
         tagGroup(illagerFaction, EntityTypeTags.ILLAGER);
         entityGroup(illagerFaction,
@@ -98,7 +98,7 @@ public class MKFactionsDefaultFactionGenerator extends FactionDefaultDataMapProv
         );
 
 
-        var monsterFaction = new EntityDefaultFaction(MKFactions.MONSTERS_FACTION_NAME);
+        var monsterFaction = new EntityDefaultFaction(MKFactions.MONSTERS);
         entityGroup(monsterFaction,
                 "minecraft:blaze",
                 "minecraft:creeper",

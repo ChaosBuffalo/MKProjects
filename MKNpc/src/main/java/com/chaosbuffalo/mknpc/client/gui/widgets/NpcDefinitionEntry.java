@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.client.gui.widgets;
 
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
+import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionClient;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;

@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
+import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.content.ContentDB;

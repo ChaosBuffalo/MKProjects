@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkfaction.faction;
 
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceKey;
 

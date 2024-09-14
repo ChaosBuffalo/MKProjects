@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkfaction.faction;
 
 import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

@@ -1,23 +1,23 @@
 package com.chaosbuffalo.mkfaction.init;
 
 import com.chaosbuffalo.mkfaction.MKFactionMod;
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.FactionConstants;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
+import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 
 
 public class MKFactions {
 
-    public static final ResourceKey<MKFaction> UNDEAD_FACTION_NAME = key("undead");
-    public static final ResourceKey<MKFaction> VILLAGER_FACTION_NAME = key("villagers");
-    public static final ResourceKey<MKFaction> DOMESTICATED_ANIMALS_FACTION_NAME = key("domesticated_animals");
-    public static final ResourceKey<MKFaction> WILD_ANIMALS_FACTION_NAME = key("wild_animals");
-    public static final ResourceKey<MKFaction> HOSTILE_ANIMALS_FACTION_NAME = key("hostile_animals");
-    public static final ResourceKey<MKFaction> ILLAGERS_FACTION_NAME = key("illagers");
-    public static final ResourceKey<MKFaction> MONSTERS_FACTION_NAME = key("monsters");
-    public static final ResourceKey<MKFaction> NEUTRAL_FACTION_NAME = key("neutral");
+    public static final ResourceKey<MKFaction> UNDEAD = key("undead");
+    public static final ResourceKey<MKFaction> VILLAGERS = key("villagers");
+    public static final ResourceKey<MKFaction> DOMESTICATED_ANIMALS = key("domesticated_animals");
+    public static final ResourceKey<MKFaction> WILD_ANIMALS = key("wild_animals");
+    public static final ResourceKey<MKFaction> HOSTILE_ANIMALS = key("hostile_animals");
+    public static final ResourceKey<MKFaction> ILLAGERS = key("illagers");
+    public static final ResourceKey<MKFaction> MONSTERS = key("monsters");
+    public static final ResourceKey<MKFaction> NEUTRAL = key("neutral");
 
 
     private static ResourceKey<MKFaction> key(String name) {
@@ -26,7 +26,7 @@ public class MKFactions {
 
     private static MKFaction undead(BootstrapContext<MKFaction> context) {
         var faction = new MKFaction.Builder(FactionConstants.ENEMY_THRESHOLD);
-        faction.addEnemy(VILLAGER_FACTION_NAME);
+        faction.addEnemy(VILLAGERS);
 
         faction.addFirstName("Ted");
         faction.addFirstName("James");
@@ -41,11 +41,11 @@ public class MKFactions {
 
     private static MKFaction villagers(BootstrapContext<MKFaction> context) {
         var faction = new MKFaction.Builder(FactionConstants.FRIENDLY_THRESHOLD);
-        faction.addAlly(DOMESTICATED_ANIMALS_FACTION_NAME);
-        faction.addEnemy(UNDEAD_FACTION_NAME);
-        faction.addEnemy(HOSTILE_ANIMALS_FACTION_NAME);
-        faction.addEnemy(MONSTERS_FACTION_NAME);
-        faction.addEnemy(ILLAGERS_FACTION_NAME);
+        faction.addAlly(DOMESTICATED_ANIMALS);
+        faction.addEnemy(UNDEAD);
+        faction.addEnemy(HOSTILE_ANIMALS);
+        faction.addEnemy(MONSTERS);
+        faction.addEnemy(ILLAGERS);
 
         faction.addFirstName("Ted");
         faction.addFirstName("James");
@@ -59,19 +59,19 @@ public class MKFactions {
     }
 
     public static void bootstrap(BootstrapContext<MKFaction> context) {
-        context.register(UNDEAD_FACTION_NAME, undead(context));
-        context.register(VILLAGER_FACTION_NAME, villagers(context));
+        context.register(UNDEAD, undead(context));
+        context.register(VILLAGERS, villagers(context));
 
-        context.register(DOMESTICATED_ANIMALS_FACTION_NAME, new MKFaction(FactionConstants.FRIENDLY_THRESHOLD));
+        context.register(DOMESTICATED_ANIMALS, new MKFaction(FactionConstants.FRIENDLY_THRESHOLD));
 
-        context.register(WILD_ANIMALS_FACTION_NAME, new MKFaction(FactionConstants.TRUE_NEUTRAL));
+        context.register(WILD_ANIMALS, new MKFaction(FactionConstants.TRUE_NEUTRAL));
 
-        context.register(HOSTILE_ANIMALS_FACTION_NAME, new MKFaction(FactionConstants.ENEMY_THRESHOLD));
+        context.register(HOSTILE_ANIMALS, new MKFaction(FactionConstants.ENEMY_THRESHOLD));
 
-        context.register(ILLAGERS_FACTION_NAME, new MKFaction(FactionConstants.ENEMY_THRESHOLD));
+        context.register(ILLAGERS, new MKFaction(FactionConstants.ENEMY_THRESHOLD));
 
-        context.register(MONSTERS_FACTION_NAME, new MKFaction(FactionConstants.ENEMY_THRESHOLD));
+        context.register(MONSTERS, new MKFaction(FactionConstants.ENEMY_THRESHOLD));
 
-        context.register(NEUTRAL_FACTION_NAME, new MKFaction(FactionConstants.TRUE_NEUTRAL));
+        context.register(NEUTRAL, new MKFaction(FactionConstants.TRUE_NEUTRAL));
     }
 }

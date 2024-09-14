@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkfaction.data.content;
 
 import com.chaosbuffalo.mkfaction.MKFactionMod;
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
+import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.init.MKFactions;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistrySetBuilder;

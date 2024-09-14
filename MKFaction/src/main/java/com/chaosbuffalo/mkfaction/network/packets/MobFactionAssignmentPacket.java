@@ -2,8 +2,8 @@ package com.chaosbuffalo.mkfaction.network.packets;
 
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
+import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;

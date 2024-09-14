@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkultra.data.generators;
 
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
+import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructurePools;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructureSets;
