@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
+import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.content.ContentDB;
@@ -58,10 +58,10 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
 
     @Override
     @Nullable
-    public MutableComponent getEntityName(NpcDefinition definition, Level world, UUID spawnId) {
-        return ContentDB.tryGetLevelData(world).map(cap -> {
+    public MutableComponent getEntityName(NpcDefinition definition, Level level, UUID spawnId) {
+        return ContentDB.tryGetLevelData(level).map(cap -> {
             if (!cap.hasEntityOptionEntry(definition, this, spawnId)) {
-                cap.addEntityOptionEntry(definition, this, spawnId, makeOptionEntry(definition, world.getRandom()));
+                cap.addEntityOptionEntry(definition, this, spawnId, makeOptionEntry(definition, level, level.getRandom()));
             }
             INpcOptionEntry entry = cap.getEntityOptionEntry(definition, this, spawnId);
             if (entry instanceof INameEntry nameEntry) {
@@ -98,12 +98,12 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
+    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Level level, RandomSource random) {
         String name = "";
         if (title != null) {
             name += title;
         }
-        MKFaction faction = MKFactionRegistry.getFaction(definition.getFactionName());
+        MKFaction faction = MKFactionRegistry.getFaction(level.registryAccess(), definition.getFactionName());
         if (faction != null) {
             name += " ";
             String firstName = getRandomEntry(random, faction.getFirstNames());

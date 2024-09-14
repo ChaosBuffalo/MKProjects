@@ -297,12 +297,6 @@
     "Zephyra",
     "Zoë"
   ],
-  "greetings": {
-    "battlecries": [],
-    "friendly_greetings": [],
-    "member_greetings": [],
-    "outsider_greetings": []
-  },
   "lastNames": [
     "Adamakos",
     "Adamopoulos",
@@ -602,5 +596,11 @@
     "Zindilis",
     "Zisimides",
     "Zolotas"
-  ]
+  ],
+  "messages": {
+    "battlecries": [],
+    "friendly_greetings": [],
+    "member_greetings": [],
+    "outsider_greetings": []
+  }
 }

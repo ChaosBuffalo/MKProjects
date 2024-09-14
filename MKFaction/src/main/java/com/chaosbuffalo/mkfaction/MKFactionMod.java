@@ -3,11 +3,9 @@ package com.chaosbuffalo.mkfaction;
 import com.chaosbuffalo.mkfaction.capabilities.PlayerFactionHandler;
 import com.chaosbuffalo.mkfaction.client.gui.FactionPage;
 import com.chaosbuffalo.mkfaction.command.FactionCommand;
-import com.chaosbuffalo.mkfaction.faction.FactionDefaultManager;
-import com.chaosbuffalo.mkfaction.faction.FactionManager;
 import com.chaosbuffalo.mkfaction.init.FactionAttachments;
 import com.chaosbuffalo.mkfaction.init.FactionCommands;
-import com.chaosbuffalo.mkfaction.init.MKFactions;
+import com.chaosbuffalo.mkfaction.init.FactionDataMaps;
 import com.chaosbuffalo.mkfaction.network.PacketHandler;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -25,20 +23,16 @@ import org.apache.logging.log4j.Logger;
 public class MKFactionMod {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final String MODID = "mkfaction";
-    private final FactionManager factionManager;
-    private final FactionDefaultManager factionDefaultManager;
 
     public MKFactionMod(net.neoforged.bus.api.IEventBus modBus) {
         modBus.addListener(this::setup);
         modBus.addListener(this::clientSetup);
         modBus.addListener(this::enqueueIMC);
         modBus.addListener(PacketHandler::register);
+        modBus.addListener(FactionDataMaps::registerDataMapTypes);
 
         NeoForge.EVENT_BUS.register(this);
-        MKFactions.register(modBus);
 
-        factionManager = new FactionManager();
-        factionDefaultManager = new FactionDefaultManager();
         FactionAttachments.register(modBus);
         FactionCommands.register(modBus);
     }
@@ -50,7 +44,7 @@ public class MKFactionMod {
 
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
-        FactionCommand.register(event.getDispatcher());
+        FactionCommand.register(event.getDispatcher(), event.getBuildContext());
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {

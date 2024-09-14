@@ -1,36 +1,48 @@
-package com.chaosbuffalo.mkfaction.network;
+package com.chaosbuffalo.mkfaction.network.packets;
 
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
+import com.chaosbuffalo.mkfaction.faction.MKFaction;
+import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class MobFactionAssignmentPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<MobFactionAssignmentPacket> TYPE = new CustomPacketPayload.Type<>(
             MKFactionMod.id("faction_assignment"));
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, MobFactionAssignmentPacket> STREAM_CODEC = StreamCodec.ofMember(
-            MobFactionAssignmentPacket::toBytes, MobFactionAssignmentPacket::new
+    public static final StreamCodec<RegistryFriendlyByteBuf, MobFactionAssignmentPacket> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.INT,
+            i -> i.entityId,
+            ByteBufCodecs.optional(
+                    ByteBufCodecs.holderRegistry(MKFactionRegistry.FACTION_REGISTRY_KEY)
+            ),
+            i -> Optional.ofNullable(i.faction),
+            MobFactionAssignmentPacket::new
     );
 
-    private final ResourceLocation factionName;
+    @Nullable
+    private final Holder<MKFaction> faction;
     private final int entityId;
+
+    public MobFactionAssignmentPacket(int entityId, Optional<Holder<MKFaction>> mobFaction) {
+        this.entityId = entityId;
+        this.faction = mobFaction.orElse(null);
+    }
 
     public MobFactionAssignmentPacket(IMobFaction mobFaction) {
         entityId = mobFaction.getEntity().getId();
-        factionName = mobFaction.getFactionName();
-    }
-
-    public MobFactionAssignmentPacket(FriendlyByteBuf buffer) {
-        entityId = buffer.readInt();
-        factionName = buffer.readResourceLocation();
+        faction = mobFaction.getFaction();
     }
 
     @Override
@@ -38,10 +50,6 @@ public class MobFactionAssignmentPacket implements CustomPacketPayload {
         return TYPE;
     }
 
-    public void toBytes(FriendlyByteBuf buffer) {
-        buffer.writeInt(entityId);
-        buffer.writeResourceLocation(factionName);
-    }
 
     public static void handle(final MobFactionAssignmentPacket packet, IPayloadContext context) {
         ClientHandler.handle(packet);
@@ -57,7 +65,7 @@ public class MobFactionAssignmentPacket implements CustomPacketPayload {
             Entity entity = world.getEntity(packet.entityId);
             if (entity != null) {
                 IMobFaction.get(entity).ifPresent(mobFaction ->
-                        mobFaction.setFactionName(packet.factionName));
+                        mobFaction.setFaction(packet.faction));
             }
         }
     }

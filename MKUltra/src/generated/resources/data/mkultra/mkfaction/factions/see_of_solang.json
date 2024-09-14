@@ -35,8 +35,8 @@
     "Angelica",
     "Aniella",
     "Anna",
-    "AnnaMaria",
     "Annabella",
+    "AnnaMaria",
     "Annunziata",
     "Antonia",
     "Argento",
@@ -505,11 +505,11 @@
     "Zaira",
     "Zita"
   ],
-  "greetings": {
+  "lastNames": [],
+  "messages": {
     "battlecries": [],
     "friendly_greetings": [],
     "member_greetings": [],
     "outsider_greetings": []
-  },
-  "lastNames": []
+  }
 }

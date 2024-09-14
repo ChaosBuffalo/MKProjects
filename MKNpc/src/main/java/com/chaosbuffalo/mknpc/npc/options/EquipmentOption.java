@@ -14,6 +14,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -42,7 +43,7 @@ public class EquipmentOption extends WorldPermanentOption {
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
+    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Level level, RandomSource random) {
         EquipmentOptionEntry equipmentEntry = new EquipmentOptionEntry();
         for (Map.Entry<EquipmentSlot, List<NpcItemChoice>> entry : itemChoices.entrySet()) {
             RandomCollection<NpcItemChoice> slotChoices = new RandomCollection<>();

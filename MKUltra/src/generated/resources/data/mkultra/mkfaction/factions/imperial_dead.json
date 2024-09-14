@@ -77,12 +77,6 @@
     "Uris",
     "Vilbia"
   ],
-  "greetings": {
-    "battlecries": [],
-    "friendly_greetings": [],
-    "member_greetings": [],
-    "outsider_greetings": []
-  },
   "lastNames": [
     "I",
     "II",
@@ -114,5 +108,11 @@
     "XXVII",
     "XXVIII",
     "XXX"
-  ]
+  ],
+  "messages": {
+    "battlecries": [],
+    "friendly_greetings": [],
+    "member_greetings": [],
+    "outsider_greetings": []
+  }
 }

@@ -1,24 +1,28 @@
 {
   "allies": [
-    "mkfaction:domesticated_animals",
-    "mkfaction:villagers"
+    "mkfaction:domesticated_animals"
   ],
   "defaultPlayerScore": 1000,
   "enemies": [
     "mkfaction:hostile_animals",
     "mkfaction:illagers",
     "mkfaction:monsters",
-    "mkfaction:undead",
-    "mkultra:hyborean_dead",
-    "mkultra:imperial_dead",
-    "mkultra:necrotide_cultists"
+    "mkfaction:undead"
   ],
-  "firstNames": [],
-  "greetings": {
+  "firstNames": [
+    "James",
+    "Jolipnik",
+    "Ted"
+  ],
+  "lastNames": [
+    "Caliente",
+    "Elkins",
+    "Smith"
+  ],
+  "messages": {
     "battlecries": [],
     "friendly_greetings": [],
     "member_greetings": [],
     "outsider_greetings": []
-  },
-  "lastNames": []
+  }
 }

@@ -1,86 +1,101 @@
 package com.chaosbuffalo.mkultra.init;
 
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
+import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.FactionConstants;
 import com.chaosbuffalo.mkfaction.faction.FactionGreetings;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mkultra.MKUltra;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.resources.ResourceKey;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class MKUFactions {
 
-    public static final DeferredRegister<MKFaction> REGISTRY = DeferredRegister.create(
-            MKFactionRegistry.FACTION_REGISTRY, MKUltra.MODID);
 
-    public static final ResourceLocation GREEN_KNIGHT_FACTION_NAME = MKUltra.id("green_knights");
-    public static final ResourceLocation HYBOREAN_DEAD_NAME = MKUltra.id("hyborean_dead");
-    public static final ResourceLocation IMPERIAL_DEAD_NAME = MKUltra.id("imperial_dead");
-    public static final ResourceLocation SEE_OF_SOLANG_NAME = MKUltra.id("see_of_solang");
-    public static final ResourceLocation GHOSTS_OF_HYBORIA_NAME = MKUltra.id("ghosts_of_hyboria");
-    public static final ResourceLocation NETHER_MAGE_NAME = MKUltra.id("nether_mages");
-    public static final ResourceLocation NECROTIDE_CULTISTS_NAME = MKUltra.id("necrotide_cultists");
+    public static final ResourceKey<MKFaction> GREEN_KNIGHT_FACTION_NAME = createKey("green_knights");
+    public static final ResourceKey<MKFaction> HYBOREAN_DEAD_NAME = createKey("hyborean_dead");
+    public static final ResourceKey<MKFaction> IMPERIAL_DEAD_NAME = createKey("imperial_dead");
+    public static final ResourceKey<MKFaction> SEE_OF_SOLANG_NAME = createKey("see_of_solang");
+    public static final ResourceKey<MKFaction> GHOSTS_OF_HYBORIA_NAME = createKey("ghosts_of_hyboria");
+    public static final ResourceKey<MKFaction> NETHER_MAGE_NAME = createKey("nether_mages");
+    public static final ResourceKey<MKFaction> NECROTIDE_CULTISTS_NAME = createKey("necrotide_cultists");
 
-    protected static Set<ResourceLocation> getDefaultGoodFactionSet() {
-        Set<ResourceLocation> factions = new HashSet<>();
-        factions.add(MKFactions.DOMESTICATED_ANIMALS_FACTION_NAME);
-        factions.add(MKFactions.VILLAGER_FACTION_NAME);
+
+    private static ResourceKey<MKFaction> createKey(String name) {
+        return ResourceKey.create(MKFactionRegistry.FACTION_REGISTRY_KEY, MKUltra.id(name));
+    }
+
+    public static void bootstrap(BootstrapContext<MKFaction> context) {
+        var defGoodSet = getDefaultGoodFactionSet();
+        var defBadSet = getDefaultBadFactionSet();
+
+        context.register(GREEN_KNIGHT_FACTION_NAME, new MKFaction.Builder(FactionConstants.FRIENDLY_THRESHOLD)
+                .addAlly(defGoodSet)
+                .addEnemy(defBadSet)
+                .addEnemy(HYBOREAN_DEAD_NAME)
+                .addEnemy(IMPERIAL_DEAD_NAME)
+                .addEnemy(NECROTIDE_CULTISTS_NAME)
+                .build(context));
+
+        context.register(HYBOREAN_DEAD_NAME, new MKFaction.Builder(FactionConstants.ENEMY_THRESHOLD)
+                .addEnemy(defGoodSet)
+                .addEnemy(GREEN_KNIGHT_FACTION_NAME)
+                .addAlly(MKFactions.UNDEAD)
+                .build(context));
+
+        context.register(IMPERIAL_DEAD_NAME, setupRomanNames(
+                new MKFaction.Builder(FactionConstants.ENEMY_THRESHOLD))
+                .addEnemy(defGoodSet)
+                .addEnemy(GREEN_KNIGHT_FACTION_NAME)
+                .addAlly(MKFactions.UNDEAD)
+                .build(context));
+
+        context.register(SEE_OF_SOLANG_NAME, setupItalianFirstNames(
+                new MKFaction.Builder(FactionConstants.FRIENDLY_THRESHOLD))
+                .addAlly(defGoodSet)
+                .addEnemy(defBadSet)
+                .addAlly(GREEN_KNIGHT_FACTION_NAME)
+                .addEnemy(HYBOREAN_DEAD_NAME)
+                .addEnemy(IMPERIAL_DEAD_NAME)
+                .build(context));
+
+        context.register(GHOSTS_OF_HYBORIA_NAME, setupGreekNames(new MKFaction.Builder(FactionConstants.TRUE_NEUTRAL))
+                .build(context));
+
+        context.register(NETHER_MAGE_NAME, setupMongolianNames(
+                new MKFaction.Builder(FactionConstants.FRIENDLY_THRESHOLD))
+                .addAlly(defGoodSet)
+                .addEnemy(defBadSet)
+                .build(context));
+
+        context.register(NECROTIDE_CULTISTS_NAME, setupNecrotideGreetings(setupMongolianNames(
+                new MKFaction.Builder(FactionConstants.ENEMY_THRESHOLD)))
+                .addEnemy(defGoodSet)
+                .build(context));
+    }
+
+    protected static Set<ResourceKey<MKFaction>> getDefaultGoodFactionSet() {
+        Set<ResourceKey<MKFaction>> factions = new HashSet<>();
+        factions.add(MKFactions.DOMESTICATED_ANIMALS);
+        factions.add(MKFactions.VILLAGERS);
         return factions;
     }
 
-    protected static Set<ResourceLocation> getDefaultBadFactionSet() {
-        Set<ResourceLocation> factions = new HashSet<>();
-        factions.add(MKFactions.ILLAGERS_FACTION_NAME);
-        factions.add(MKFactions.HOSTILE_ANIMALS_FACTION_NAME);
-        factions.add(MKFactions.UNDEAD_FACTION_NAME);
-        factions.add(MKFactions.MONSTERS_FACTION_NAME);
+    protected static Set<ResourceKey<MKFaction>> getDefaultBadFactionSet() {
+        Set<ResourceKey<MKFaction>> factions = new HashSet<>();
+        factions.add(MKFactions.ILLAGERS);
+        factions.add(MKFactions.HOSTILE_ANIMALS);
+        factions.add(MKFactions.UNDEAD);
+        factions.add(MKFactions.MONSTERS);
         factions.add(NECROTIDE_CULTISTS_NAME);
         return factions;
     }
 
-    public static DeferredHolder<MKFaction, MKFaction> GREEN_KNIGHTS_FACTION = REGISTRY.register("green_knights",
-            () -> new MKFaction(FactionConstants.FRIENDLY_THRESHOLD,
-                    getDefaultGoodFactionSet(), getDefaultBadFactionSet())
-                    .addEnemy(HYBOREAN_DEAD_NAME)
-                    .addEnemy(IMPERIAL_DEAD_NAME)
-                    .addEnemy(NECROTIDE_CULTISTS_NAME));
-
-    public static DeferredHolder<MKFaction, MKFaction> HYBOREAN_DEAD = REGISTRY.register("hyborean_dead",
-            () -> new MKFaction(FactionConstants.ENEMY_THRESHOLD, new HashSet<>(), getDefaultGoodFactionSet())
-                    .addEnemy(GREEN_KNIGHT_FACTION_NAME)
-                    .addAlly(MKFactions.UNDEAD_FACTION_NAME));
-
-    public static DeferredHolder<MKFaction, MKFaction> IMPERIAL_DEAD = REGISTRY.register("imperial_dead",
-            () -> setupRomanNames(new MKFaction(FactionConstants.ENEMY_THRESHOLD, new HashSet<>(), getDefaultGoodFactionSet())
-                    .addEnemy(GREEN_KNIGHT_FACTION_NAME)
-                    .addAlly(MKFactions.UNDEAD_FACTION_NAME)));
-
-    public static DeferredHolder<MKFaction, MKFaction> SEE_OF_SOLANG = REGISTRY.register("see_of_solang",
-            () -> setupItalianFirstNames(new MKFaction(FactionConstants.FRIENDLY_THRESHOLD,
-                    getDefaultGoodFactionSet(), getDefaultBadFactionSet())
-                    .addAlly(GREEN_KNIGHT_FACTION_NAME)
-                    .addEnemy(HYBOREAN_DEAD_NAME)
-                    .addEnemy(IMPERIAL_DEAD_NAME)));
-
-    public static DeferredHolder<MKFaction, MKFaction> GHOSTS_OF_HYBORIA = REGISTRY.register("ghosts_of_hyboria",
-            () -> setupGreekNames(new MKFaction(FactionConstants.TRUE_NEUTRAL)));
-
-    public static DeferredHolder<MKFaction, MKFaction> NETHER_MAGES = REGISTRY.register("nether_mages",
-            () -> setupMongolianNames(new MKFaction(FactionConstants.FRIENDLY_THRESHOLD,
-                    getDefaultGoodFactionSet(), getDefaultBadFactionSet())));
-
-    public static DeferredHolder<MKFaction, MKFaction> NECROTIDE_CULTISTS = REGISTRY.register("necrotide_cultists",
-            () -> setupNecrotideGreetings(setupMongolianNames(new MKFaction(FactionConstants.ENEMY_THRESHOLD,
-                    new HashSet<>(), getDefaultGoodFactionSet()))));
-
-    public static MKFaction setupNecrotideGreetings(MKFaction faction) {
+    public static MKFaction.Builder setupNecrotideGreetings(MKFaction.Builder faction) {
         faction.getGreetings()
                 .addGreeting(FactionGreetings.GreetingType.BATTLECRY,
                         Component.literal("All was once water, all will return to water in.. the… end…"))
@@ -118,7 +133,7 @@ public class MKUFactions {
     }
 
 
-    private static MKFaction setupMongolianNames(MKFaction faction) {
+    private static MKFaction.Builder setupMongolianNames(MKFaction.Builder faction) {
         String[] names = {
                 "A'uchu", "Achiq-shirun", "Adarkidai", "Ajai", "Alaq", "Alaqush-digit-quri", "Alchidai", "Alchiq", "Altan", "Altun-ashuq",
                 "Amal", "Ambaqai", "Aqutai", "Arajan", "Arasen", "Arqai-qasar", "Arslan", "Asha-gambu", "Ashiq", "Ba'aridai", "Badai", "Bala",
@@ -149,7 +164,7 @@ public class MKUFactions {
         return faction;
     }
 
-    private static MKFaction setupItalianFirstNames(MKFaction faction) {
+    private static MKFaction.Builder setupItalianFirstNames(MKFaction.Builder faction) {
         String[] names = {
                 "Bodo", "Bonauito", "Bonaventura", "Bonfilio", "Bonizo", "Brizio", "Bruno", "Callisto", "Calogero", "Camaino",
                 "Cambio", "Camillo", "Carlito", "Carlo", "Cesare", "Cipriano", "Ciro", "Claudio", "Columbano", "Constanzo", "Coppo",
@@ -207,7 +222,7 @@ public class MKUFactions {
         return faction;
     }
 
-    private static MKFaction setupRomanNames(MKFaction faction) {
+    private static MKFaction.Builder setupRomanNames(MKFaction.Builder faction) {
         String[] names = {
                 "Cilla", "Bore", "Muxom", "Cogi",
                 "Erir", "Rogi", "Inealbh", "Boge",
@@ -270,7 +285,7 @@ public class MKUFactions {
         return faction;
     }
 
-    private static MKFaction setupGreekNames(MKFaction faction) {
+    private static MKFaction.Builder setupGreekNames(MKFaction.Builder faction) {
         String[] names = {
                 "Achilles", "Adam", "Adonis", "Agapios", "Alexander",
                 "Alexandros", "Alexios", "Ambrosios", "Anastasios", "Andreas",
@@ -388,9 +403,5 @@ public class MKUFactions {
             faction.addLastName(name);
         }
         return faction;
-    }
-
-    public static void register(IEventBus bus) {
-        REGISTRY.register(bus);
     }
 }

@@ -7,9 +7,10 @@ import com.chaosbuffalo.mkcore.core.persona.IPersonaExtensionProvider;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
+import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -37,8 +38,9 @@ public class PlayerFactionHandler implements IPlayerFaction {
         return getPersonaData().getFactionMap();
     }
 
-    public Optional<PlayerFactionEntry> getFactionEntry(ResourceLocation factionName) {
-        return Optional.ofNullable(getPersonaData().getFactionEntry(factionName));
+    @Override
+    public Optional<PlayerFactionEntry> getFactionEntry(Holder<MKFaction> factionHolder) {
+        return Optional.ofNullable(getPersonaData().getFactionEntry(factionHolder));
     }
 
     @Override
@@ -91,11 +93,9 @@ public class PlayerFactionHandler implements IPlayerFaction {
             if (factionId.equals(MKFaction.INVALID_FACTION)) {
                 return null;
             }
-            MKFaction faction = MKFactionRegistry.getFaction(factionId);
-            if (faction == null) {
-                return null;
-            }
-            return new PlayerFactionEntry(faction, this::onDirtyEntry);
+
+            return MKFactionRegistry.getFactionHolder(persona.getEntity().registryAccess(), factionId)
+                    .map(h -> new PlayerFactionEntry(h, this::onDirtyEntry)).orElseThrow();
         }
 
         public Map<ResourceLocation, PlayerFactionEntry> getFactionMap() {
@@ -116,8 +116,16 @@ public class PlayerFactionHandler implements IPlayerFaction {
             });
         }
 
+        @Nullable
+        private PlayerFactionEntry getFactionEntry(Holder<MKFaction> factionName) {
+            return getFactionEntry(factionName.getKey().location());
+        }
+
         private void onDirtyEntry(PlayerFactionEntry entry) {
-            factionUpdater.markDirty(entry.getFactionName());
+            // TODO: better sync for datapack-keyed elements
+            ResourceLocation factionId = persona.getEntity().registryAccess()
+                    .registryOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY).getKey(entry.getFaction());
+            factionUpdater.markDirty(factionId);
         }
 
         @Override

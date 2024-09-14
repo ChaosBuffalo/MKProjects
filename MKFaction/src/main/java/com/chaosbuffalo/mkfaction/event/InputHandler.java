@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
 import com.chaosbuffalo.mkfaction.capabilities.IPlayerFaction;
 import com.chaosbuffalo.mkfaction.client.gui.FactionPage;
+import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionStatus;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
@@ -62,16 +63,22 @@ public class InputHandler {
             EntityHitResult trace = getLookingAtNonPlayer(LivingEntity.class, player, 30.0f);
             if (trace != null && trace.getType() != HitResult.Type.MISS) {
                 Entity target = trace.getEntity();
-                IMobFaction.get(target).ifPresent(mobFaction ->
-                        IPlayerFaction.get(player).ifPresent(playerFaction -> {
-                            PlayerFactionStatus status = playerFaction.getFactionStatus(mobFaction);
-                            MutableComponent msg = Component.translatable(status.getTranslationKey() + ".con",
-                                    target.getName()).withStyle(status.getColor());
-                            if (player.isCreative()) {
-                                msg.append(String.format(" (%s)", mobFaction.getFactionName()));
-                            }
-                            player.sendSystemMessage(msg);
-                        }));
+                IMobFaction.get(target).ifPresent(mobFaction -> {
+                    IPlayerFaction playerFaction = IPlayerFaction.getOrThrow(player);
+                    PlayerFactionStatus status = playerFaction.getFactionStatus(mobFaction);
+                    MutableComponent msg = Component.translatable(status.getTranslationKey() + ".con",
+                            target.getName()).withStyle(status.getColor());
+                    if (player.isCreative()) {
+                        msg.append(" (");
+                        if (mobFaction.getFaction() != null) {
+                            msg.append(mobFaction.getFaction().getRegisteredName());
+                        } else {
+                            msg.append(MKFaction.INVALID_FACTION.toString());
+                        }
+                        msg.append(")");
+                    }
+                    player.sendSystemMessage(msg);
+                });
             }
         }
         while (FACTION_PANEL_KEY_BIND.consumeClick()) {

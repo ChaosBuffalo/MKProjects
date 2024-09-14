@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
-import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
+import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.FactionGreetings;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -33,8 +34,8 @@ public class FactionBattlecryOption extends WorldPermanentOption {
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
-        MKFaction faction = MKFactionRegistry.getFaction(definition.getFactionName());
+    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Level level, RandomSource random) {
+        MKFaction faction = MKFactionRegistry.getFaction(level.registryAccess(), definition.getFactionName());
         if (faction != null) {
             return faction.getGreetings().getGreetingsWithMembers(FactionGreetings.GreetingType.BATTLECRY)
                     .map(x -> new FactionBattlecryOptionEntry(getRandomEntry(random, x)))

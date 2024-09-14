@@ -96,7 +96,7 @@ public class MKEntitySummonAbility extends MKAbility {
                     pet.getEntity().setNoncombatBehavior(new PetNonCombatBehavior(castingEntity));
                     pet.getEntity().setNonCombatMoveType(MKEntity.NonCombatMoveType.STATIONARY);
                     MKNpc.getNpcData(pet.getEntity()).ifPresent(x -> x.setMKSpawned(true));
-                    IMobFaction.get(pet.getEntity()).ifPresent(x -> x.setFactionName(MKFaction.INVALID_FACTION));
+                    IMobFaction.get(pet.getEntity()).ifPresent(x -> x.setFaction(null));
                     Component newName = Component.translatable("mkultra.pet_name_format", castingEntity.getName(), pet.getEntity().getName());
                     pet.getEntity().setCustomName(newName);
                 } else {

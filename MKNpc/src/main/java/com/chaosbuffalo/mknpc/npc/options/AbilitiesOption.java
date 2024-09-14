@@ -13,6 +13,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,7 @@ public class AbilitiesOption extends WorldPermanentOption {
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
+    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Level level, RandomSource random) {
         List<NpcAbilityEntry> finalChoices = new ArrayList<>();
         for (NpcAbilityEntry entry : abilities) {
             if (random.nextDouble() <= entry.getChance()) {

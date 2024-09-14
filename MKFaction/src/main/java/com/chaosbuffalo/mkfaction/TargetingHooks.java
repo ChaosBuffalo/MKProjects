@@ -10,31 +10,28 @@ import net.minecraft.world.entity.player.Player;
 public class TargetingHooks {
 
     private static Targeting.TargetRelation getPlayerMobRelation(Player source, IMobFaction mobFaction) {
-        return IPlayerFaction.get(source)
-                .map(playerFaction -> playerFaction.getFactionRelation(mobFaction))
-                .orElse(Targeting.TargetRelation.UNHANDLED);
+        IPlayerFaction playerFaction = IPlayerFaction.getOrThrow(source);
+        return playerFaction.getFactionRelation(mobFaction);
     }
 
     private static Targeting.TargetRelation playerTargetLiving(Player source, LivingEntity target) {
-        return IMobFaction.get(target)
-                .map(targetFaction -> getPlayerMobRelation(source, targetFaction))
-                .orElse(Targeting.TargetRelation.UNHANDLED);
+        IMobFaction targetFaction = IMobFaction.getMobOrThrow(target);
+        return getPlayerMobRelation(source, targetFaction);
     }
 
     private static Targeting.TargetRelation livingTargetLiving(LivingEntity source, LivingEntity target) {
-        return IMobFaction.get(source)
-                .map(sourceFaction -> sourceFaction.getRelationToEntity(target))
-                .orElse(Targeting.TargetRelation.UNHANDLED);
+        IMobFaction sourceFaction = IMobFaction.getMobOrThrow(source);
+        return sourceFaction.getRelationToEntity(target);
     }
 
     private static Targeting.TargetRelation targetHook(Entity source, Entity target) {
-        if (source instanceof Player) {
-            if (target instanceof LivingEntity && !(target instanceof Player)) {
-                return playerTargetLiving((Player) source, (LivingEntity) target);
+        if (source instanceof Player playerSource) {
+            if (target instanceof LivingEntity mobTarget && !(target instanceof Player)) {
+                return playerTargetLiving(playerSource, mobTarget);
             }
-        } else if (source instanceof LivingEntity) {
-            if (target instanceof LivingEntity) {
-                return livingTargetLiving((LivingEntity) source, (LivingEntity) target);
+        } else if (source instanceof LivingEntity mobSource) {
+            if (target instanceof LivingEntity mobTarget) {
+                return livingTargetLiving(mobSource, mobTarget);
             }
         }
 

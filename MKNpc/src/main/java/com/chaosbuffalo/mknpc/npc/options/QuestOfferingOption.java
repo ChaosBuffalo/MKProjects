@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
-import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ParticleEffectInstance;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
@@ -12,6 +11,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class QuestOfferingOption extends WorldPermanentOption {
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, RandomSource random) {
+    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Level level, RandomSource random) {
         return new QuestOptionEntry(questOfferings);
     }
 
