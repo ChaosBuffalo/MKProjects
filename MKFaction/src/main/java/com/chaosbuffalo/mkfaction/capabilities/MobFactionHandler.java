@@ -7,8 +7,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -32,36 +30,10 @@ public class MobFactionHandler implements IMobFaction {
         return entity;
     }
 
-    @Override
-    public boolean hasFaction() {
-        return faction != null;
-    }
-
     @Nullable
     @Override
     public Holder<MKFaction> getFaction() {
         return faction;
-    }
-
-    @Override
-    public ResourceLocation getFactionName() {
-        if (faction != null) {
-            return faction.unwrapKey().map(ResourceKey::location).orElse(MKFaction.INVALID_FACTION);
-        }
-        return MKFaction.INVALID_FACTION;
-    }
-
-    @Override
-    public boolean isMember(MKFaction otherFaction) {
-        if (faction != null) {
-            return faction.value() == otherFaction;
-        }
-        return false;
-    }
-
-    @Override
-    public ResourceLocation getBattlecryName() {
-        return getFactionName().withPrefix("battlecry.");
     }
 
     @Override

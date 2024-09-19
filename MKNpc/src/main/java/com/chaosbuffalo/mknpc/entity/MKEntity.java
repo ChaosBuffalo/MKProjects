@@ -46,6 +46,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -471,14 +472,17 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             return;
         }
 
-        IMobFaction faction = IMobFaction.getMobOrThrow(this);
-        if (faction.hasFaction()) {
+        var faction = IMobFaction.getMobOrThrow(this).getFaction();
+        if (faction != null) {
             MKCore.getEntityData(target).ifPresent(entityData -> {
-                var battlecryName = faction.getBattlecryName();
-                if (entityData.getStats().getTimer(battlecryName) <= 0) {
+                ResourceLocation timerId = faction.unwrapKey()
+                        .map(ResourceKey::location)
+                        .map(r -> r.withPrefix("battlecry"))
+                        .orElseThrow();
+                if (entityData.getStats().getTimer(timerId) <= 0) {
                     DialogueUtils.sendMessageToAllAround(this,
                             DialogueUtils.formatSpeakerMessage(this, battlecry));
-                    entityData.getStats().setTimer(battlecryName, BATTLECRY_COOLDOWN);
+                    entityData.getStats().setTimer(timerId, BATTLECRY_COOLDOWN);
                 }
             });
         }

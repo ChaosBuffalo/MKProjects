@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkfaction.init.FactionAttachments;
 import com.chaosbuffalo.targeting_api.Targeting;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -20,13 +19,9 @@ public interface IMobFaction extends INBTSerializable<CompoundTag> {
     @Nonnull
     LivingEntity getEntity();
 
-    boolean hasFaction();
-
-    ResourceLocation getFactionName();
-
-    boolean isMember(MKFaction otherFaction);
-
-    ResourceLocation getBattlecryName();
+    default boolean hasFaction() {
+        return getFaction() != null;
+    }
 
     void setFaction(@Nullable Holder<MKFaction> faction);
 
