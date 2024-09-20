@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
@@ -49,5 +50,9 @@ public interface INpcDialogue extends INBTSerializable<CompoundTag> {
             return Optional.empty();
         }
         return Optional.of(entity.getData(ChatAttachments.ENTITY_DATA_ATTACHMENT));
+    }
+
+    static INpcDialogue getOrThrow(Mob entity) {
+        return entity.getData(ChatAttachments.ENTITY_DATA_ATTACHMENT);
     }
 }

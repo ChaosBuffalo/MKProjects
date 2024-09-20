@@ -15,13 +15,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class DialogueNode extends DialogueObject {
-    public static final Codec<DialogueNode> CODEC = RecordCodecBuilder.<DialogueNode>mapCodec(builder -> {
-        return builder.group(
-                Codec.STRING.fieldOf("nodeId").forGetter(DialogueObject::getId),
-                Codec.STRING.fieldOf("message").forGetter(DialogueObject::getRawMessage),
-                Codec.list(DialogueEffect.CODEC).optionalFieldOf("effects", Collections.emptyList()).forGetter(i -> i.effects)
-        ).apply(builder, DialogueNode::new);
-    }).codec();
+    public static final Codec<DialogueNode> CODEC = RecordCodecBuilder.<DialogueNode>mapCodec(builder -> builder.group(
+            Codec.STRING.fieldOf("nodeId").forGetter(DialogueObject::getId),
+            Codec.STRING.fieldOf("message").forGetter(DialogueObject::getRawMessage),
+            DialogueEffect.CODEC.listOf().optionalFieldOf("effects", Collections.emptyList()).forGetter(i -> i.effects)
+    ).apply(builder, DialogueNode::new)).codec();
 
     private final List<DialogueEffect> effects;
 
@@ -62,23 +60,26 @@ public class DialogueNode extends DialogueObject {
         this.effects.add(effect);
     }
 
-    public MutableComponent getSpeakerMessage(LivingEntity speaker, ServerPlayer player) {
+    protected MutableComponent evaluateConversationMessage(LivingEntity speaker, ServerPlayer player) {
         DialogueContext context = new DialogueContext(speaker, player, this);
-        Component body = context.evaluate(getMessage());
-        return DialogueUtils.formatSpeakerMessage(speaker, body);
+        return context.evaluate(getMessage());
     }
 
     public void sendMessage(ServerPlayer player, LivingEntity source) {
-        sendMessage(player, source, getSpeakerMessage(source, player));
+        MutableComponent message = evaluateConversationMessage(source, player);
+        Component decorated = DialogueUtils.formatSpeakerMessage(source, message);
+
+        sendMessage(player, source, decorated);
     }
 
     public void sendMessageWithSibling(ServerPlayer player, LivingEntity source,
                                        DialoguePrompt withAdditional) {
-        MutableComponent message = getSpeakerMessage(source, player)
+        MutableComponent message = evaluateConversationMessage(source, player)
                 .append(" ")
                 .append(withAdditional.getPromptLink());
+        Component decorated = DialogueUtils.formatSpeakerMessage(source, message);
 
-        sendMessage(player, source, message);
+        sendMessage(player, source, decorated);
     }
 
     private void sendMessage(ServerPlayer player, LivingEntity source, Component message) {

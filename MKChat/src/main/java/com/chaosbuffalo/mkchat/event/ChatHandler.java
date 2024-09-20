@@ -17,7 +17,6 @@ import java.util.List;
 @EventBusSubscriber(modid = MKChat.MODID)
 public class ChatHandler {
 
-
     private static AABB getChatBoundingBox(ServerPlayer entity, double radius) {
         return new AABB(new BlockPos(entity.blockPosition())).inflate(radius, entity.getBbHeight(), radius);
     }
@@ -25,17 +24,16 @@ public class ChatHandler {
     @SubscribeEvent
     public static void handleServerChat(ServerChatEvent event) {
         ServerPlayer player = event.getPlayer();
-        if (player.getServer() != null) {
 
-            DialogueUtils.sendMessageToAllAround(player, event.getMessage());
+        var decorated = DialogueUtils.formatSpeakerMessage(player, event.getMessage());
+        DialogueUtils.sendMessageToAllAround(player, decorated);
 
-            List<Mob> entities = player.level().getEntitiesOfClass(Mob.class,
-                    getChatBoundingBox(player, ChatConstants.NPC_CHAT_RADIUS),
-                    x -> x.getSensing().hasLineOfSight(player) && INpcDialogue.get(x).map(INpcDialogue::hasDialogue).orElse(false));
+        List<Mob> entities = player.level().getEntitiesOfClass(Mob.class,
+                getChatBoundingBox(player, ChatConstants.NPC_CHAT_RADIUS),
+                x -> x.getSensing().hasLineOfSight(player) && INpcDialogue.getOrThrow(x).hasDialogue());
 
-            for (Mob entity : entities) {
-                INpcDialogue.get(entity).ifPresent(cap -> cap.receiveMessage(player, event.getMessage().getString()));
-            }
+        for (Mob entity : entities) {
+            INpcDialogue.get(entity).ifPresent(cap -> cap.receiveMessage(player, event.getMessage().getString()));
         }
         event.setCanceled(true);
     }
