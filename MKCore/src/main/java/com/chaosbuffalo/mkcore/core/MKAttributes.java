@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.core;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.attributes.AttributeSyncType;
+import com.chaosbuffalo.mkcore.attributes.MKPercentageAttribute;
 import com.chaosbuffalo.mkcore.attributes.MKRangedAttribute;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -28,8 +29,7 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> MELEE_CRIT = REGISTRY.register("melee_crit_chance", () ->
-            new MKRangedAttribute("attribute.name.mk.melee_crit_chance", 0.00, 0.0, 1.0)
-            .setAdditionIsPercentage(true)
+            new MKPercentageAttribute("attribute.name.mk.melee_crit_chance", 0.00, 0.0, 1.0)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> MELEE_CRIT_MULTIPLIER = REGISTRY.register("melee_crit_multiplier", () ->
@@ -37,8 +37,7 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> SPELL_CRIT = REGISTRY.register("spell_crit_chance", () ->
-            new MKRangedAttribute("attribute.name.mk.spell_crit_chance", 0.1, 0.0, 1.0)
-            .setAdditionIsPercentage(true)
+            new MKPercentageAttribute("attribute.name.mk.spell_crit_chance", 0.1, 0.0, 1.0)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> SPELL_CRIT_MULTIPLIER = REGISTRY.register("spell_crit_multiplier", () ->
@@ -46,8 +45,7 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> RANGED_CRIT = REGISTRY.register("ranged_crit", () ->
-            new MKRangedAttribute("attribute.name.mk.ranged_crit_chance", 0.00, 0.0, 1.0)
-            .setAdditionIsPercentage(true)
+            new MKPercentageAttribute("attribute.name.mk.ranged_crit_chance", 0.00, 0.0, 1.0)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> RANGED_CRIT_MULTIPLIER = REGISTRY.register("ranged_crit_multiplier", () ->
@@ -68,7 +66,7 @@ public class MKAttributes {
     // 1.9 max means the cooldown will progress at most 10x faster than the normal rate. This translates into a 90% reduction in observed cooldown.
     // -3.0 minimum means that a cooldown can be increased up to 5x of the normal value. This translates into a 500% increase in the observed cooldown
     public static final Holder<Attribute> COOLDOWN = REGISTRY.register("cooldown_rate", () ->
-            new MKRangedAttribute("attribute.name.mk.cooldown_rate", 1.0, -3.0, 1.9)
+            new MKPercentageAttribute("attribute.name.mk.cooldown_rate", 1.0, -3.0, 1.9)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> HEAL_BONUS = REGISTRY.register("heal_bonus", () ->
@@ -76,8 +74,7 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> CASTING_SPEED = REGISTRY.register("casting_speed", () ->
-            new MKRangedAttribute("attribute.name.mk.casting_speed", 1.0, -3.0, 1.9)
-            .setAdditionIsPercentage(true)
+            new MKPercentageAttribute("attribute.name.mk.casting_speed", 1.0, -3.0, 1.9)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> BUFF_DURATION = REGISTRY.register("buff_duration", () ->
@@ -245,11 +242,11 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> BLOCK_EFFICIENCY = REGISTRY.register("block_efficiency", () ->
-            new MKRangedAttribute("attribute.name.mk.block_efficiency", 0, 0, 1.0)
+            new MKPercentageAttribute("attribute.name.mk.block_efficiency", 0, 0, 1.0)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> HEAL_EFFICIENCY = REGISTRY.register("heal_efficiency", () ->
-            new MKRangedAttribute("attribute.name.mk.heal_efficiency", 1.0, 0, 1000.0)
+            new MKPercentageAttribute("attribute.name.mk.heal_efficiency", 1.0, 0, 1000.0)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> HEALTH_REGEN = REGISTRY.register("health_regen", () ->

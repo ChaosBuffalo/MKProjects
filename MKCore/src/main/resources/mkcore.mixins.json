@@ -18,7 +18,6 @@
   "client": [
     "client.EntityRendererDispatcherMixins",
     "client.InGameGuiMixins",
-    "client.ItemStackClientMixins",
     "client.LevelRendererMixins",
     "client.LocalPlayerMixins",
     "client.MobEffectTextureManagerMixins",

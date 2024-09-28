@@ -11,7 +11,6 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtensionProvider;
 import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
 import com.chaosbuffalo.mkcore.core.talents.TalentManager;
-import com.chaosbuffalo.mkcore.events.ClientEventHandler;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreAttachments;
 import com.chaosbuffalo.mkcore.init.CoreItems;
@@ -97,7 +96,6 @@ public class MKCore {
     private void clientSetup(final FMLClientSetupEvent event) {
         PlayerPageRegistry.init();
         event.enqueueWork(CoreItems::registerItemProperties);
-        ClientEventHandler.setupAttributeRenderers();
     }
 
     public void registerLayers(RegisterGuiLayersEvent event) {

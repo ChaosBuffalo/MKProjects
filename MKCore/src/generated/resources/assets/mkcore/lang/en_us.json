@@ -143,7 +143,7 @@
   "mkcore.gui.character.talents": "Talents",
   "mkcore.gui.character.unmet_req": "Unmet Requirement",
   "mkcore.gui.character.unmet_req_tooltip": "You do not meet the requirements to learn this ability.",
-  "mkcore.gui.item.armor_class.effect.name": "Effect",
+  "mkcore.gui.item.armor_class.effect.name": "- Effect: ",
   "mkcore.gui.item.armor_class.effect_prompt": "Hold <shift> to see Armor Class Effects",
   "mkcore.gui.item.armor_class.name": "Armor Class",
   "mkcore.gui.manage_memory": "Manage",

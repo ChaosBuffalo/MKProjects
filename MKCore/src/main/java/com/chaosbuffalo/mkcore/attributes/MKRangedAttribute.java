@@ -3,21 +3,11 @@ package com.chaosbuffalo.mkcore.attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 
 
-public class MKRangedAttribute extends RangedAttribute {
-    private boolean additionIsPercentage;
+public class MKRangedAttribute extends RangedAttribute implements IMKAttribute {
     private AttributeSyncType syncType = AttributeSyncType.None;
 
     public MKRangedAttribute(String name, double defaultValue, double minimumValueIn, double maximumValueIn) {
         super(name, defaultValue, minimumValueIn, maximumValueIn);
-    }
-
-    public MKRangedAttribute setAdditionIsPercentage(boolean set) {
-        additionIsPercentage = set;
-        return this;
-    }
-
-    public boolean displayAdditionAsPercentage() {
-        return additionIsPercentage;
     }
 
     @Override
@@ -30,6 +20,7 @@ public class MKRangedAttribute extends RangedAttribute {
         return this;
     }
 
+    @Override
     public AttributeSyncType getSyncType() {
         return syncType;
     }

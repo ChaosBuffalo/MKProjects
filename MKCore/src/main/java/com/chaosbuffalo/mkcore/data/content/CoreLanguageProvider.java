@@ -32,7 +32,7 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.gui.select_talent_tree", "Select a Talent Tree to inspect it.");
         add("mkcore.gui.item.armor_class.name", "Armor Class");
         add("mkcore.gui.item.armor_class.effect_prompt", "Hold <shift> to see Armor Class Effects");
-        add("mkcore.gui.item.armor_class.effect.name", "Effect");
+        add("mkcore.gui.item.armor_class.effect.name", "- Effect: ");
         add("mkcore.gui.character.persona_name", "Persona: %s");
         add("mkcore.gui.character.current_health", "Health: %s / %s");
         add("mkcore.gui.character.current_mana", "Mana: %s / %s");

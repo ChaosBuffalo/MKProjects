@@ -7,13 +7,10 @@ import com.chaosbuffalo.mkcore.client.gui.IPlayerDataAwareScreen;
 import com.chaosbuffalo.mkcore.client.gui.ParticleEditorScreen;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.client.rendering.MKPlayerRenderer;
-import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.attributes.MKRangedAttribute;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
-import com.chaosbuffalo.mkcore.item.AttributeTooltipManager;
 import com.chaosbuffalo.mkcore.network.ExecuteActiveAbilityPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.targeting_api.Targeting;
@@ -25,12 +22,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -45,7 +41,6 @@ import net.neoforged.neoforge.client.settings.KeyModifier;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 
 @EventBusSubscriber(modid = MKCore.MOD_ID, value = Dist.CLIENT)
@@ -209,33 +204,6 @@ public class ClientEventHandler {
         addArmorClassTooltip(event);
     }
 
-    public static void setupAttributeRenderers() {
-        AttributeTooltipManager.registerAttributeRenderer(MKAttributes.MAX_POISE, ClientEventHandler::renderPoise);
-        AttributeTooltipManager.registerAttributeRenderer(MKAttributes.BLOCK_EFFICIENCY, ClientEventHandler::renderAbsolutePercentTwoDigits);
-        AttributeTooltipManager.registerAttributeRenderer(MKAttributes.MELEE_CRIT, ClientEventHandler::renderAbsolutePercentTwoDigits);
-        AttributeTooltipManager.registerAttributeRenderer(MKAttributes.MELEE_CRIT_MULTIPLIER, ClientEventHandler::renderCritMultiplier);
-    }
-
-    static void renderPoise(ItemStack stack, Player player,
-                            Holder<Attribute> attribute, AttributeModifier modifier, Consumer<Component> output) {
-        output.accept(AttributeTooltipManager.makePlusOrTakeText(attribute, modifier,
-                modifier.amount(), modifier.amount()));
-    }
-
-    static void renderAbsolutePercentTwoDigits(ItemStack stack, Player player,
-                                               Holder<Attribute> attribute, AttributeModifier modifier,
-                                               Consumer<Component> output) {
-        output.accept(AttributeTooltipManager.makeEqualsText(attribute, modifier,
-                modifier.amount() * 100, v -> String.format("%.2f%%", v)));
-    }
-
-    static void renderCritMultiplier(ItemStack stack, Player player, Holder<Attribute> attribute,
-                                     AttributeModifier modifier, Consumer<Component> output) {
-        double value = player.getAttributeBaseValue(attribute) + modifier.amount();
-        output.accept(AttributeTooltipManager.makeEqualsText(attribute, modifier, value,
-                v -> String.format("%.1fx", v)));
-    }
-
     private static void addArmorClassTooltip(ItemTooltipEvent event) {
         if (!MKConfig.CLIENT.showArmorClassOnTooltip.get())
             return;
@@ -254,9 +222,9 @@ public class ClientEventHandler {
                 List<Component> tooltip = event.getToolTip();
                 if (Screen.hasShiftDown()) {
                     armorClass.getPositiveModifierMap(armorItem.getEquipmentSlot())
-                            .forEach(((attribute, modifier) -> addAttributeToTooltip(tooltip, attribute, modifier, ChatFormatting.GREEN)));
+                            .forEach(((attribute, modifier) -> addArmorClassAttributeToTooltip(tooltip, attribute, modifier, ChatFormatting.GREEN, event.getFlags())));
                     armorClass.getNegativeModifierMap(armorItem.getEquipmentSlot())
-                            .forEach(((attribute, modifier) -> addAttributeToTooltip(tooltip, attribute, modifier, ChatFormatting.RED)));
+                            .forEach(((attribute, modifier) -> addArmorClassAttributeToTooltip(tooltip, attribute, modifier, ChatFormatting.RED, event.getFlags())));
                 } else {
                     tooltip.add(Component.translatable("mkcore.gui.item.armor_class.effect_prompt"));
                 }
@@ -264,30 +232,11 @@ public class ClientEventHandler {
         }
     }
 
-    private static void addAttributeToTooltip(List<Component> tooltip, Holder<Attribute> attribute,
-                                              AttributeModifier modifier, ChatFormatting color) {
-        String suffix = "";
-        double amount = modifier.amount();
-        if (modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
-            if (attribute instanceof MKRangedAttribute mkRangedAttribute) {
-                if (mkRangedAttribute.displayAdditionAsPercentage()) {
-                    suffix = "%";
-                    amount *= 100;
-                }
-            }
-        } else if (modifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
-            amount *= 100;
-            suffix = "%";
-        } else if (modifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE) {
-            amount *= 100;
-            suffix = "% of base";
-        }
-        String prefix = amount > 0 ? "+" : "";
-
+    private static void addArmorClassAttributeToTooltip(List<Component> tooltip, Holder<Attribute> attribute,
+                                                        AttributeModifier modifier, ChatFormatting color, TooltipFlag flag) {
         Component component = Component.translatable("mkcore.gui.item.armor_class.effect.name")
                 .withStyle(color)
-                .append(String.format(": %s%.2f%s ", prefix, amount, suffix))
-                .append(Component.translatable(attribute.value().getDescriptionId()));
+                .append(attribute.value().toComponent(modifier, flag));
 
         tooltip.add(component);
     }

@@ -13,7 +13,6 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -89,8 +88,7 @@ public class DamagePage extends StatPageBase {
         stackLayout.setPaddingTop(2);
         stackLayout.setPaddingBot(2);
         layout.addWidget(stackLayout);
-        LocalPlayer clientPlayer = Minecraft.getInstance().player;
-        if (clientPlayer != null) {
+        if (playerData.getEntity() instanceof LocalPlayer clientPlayer) {
             addStatTextToLayout(stackLayout, Stats.DAMAGE_DEALT, clientPlayer);
             addStatTextToLayout(stackLayout, Stats.DAMAGE_TAKEN, clientPlayer);
             addStatTextToLayout(stackLayout, Stats.DAMAGE_RESISTED, clientPlayer);
@@ -100,14 +98,15 @@ public class DamagePage extends StatPageBase {
     private void addStatTextToLayout(MKLayout layout, ResourceLocation statName,
                                      LocalPlayer clientPlayer) {
         Stat<ResourceLocation> statType = Stats.CUSTOM.get(statName);
-        String formattedValue = statType.format(clientPlayer.getStats().getValue(Stats.CUSTOM, statName));
-        MutableComponent statNameTranslated = Component.translatable("stat." +
-                statType.getValue().toString().replace(':', '.'));
-        MKText statText = new MKText(font, String.format("%s: %s", statNameTranslated.getString(), formattedValue));
-        layout.addWidget(statText);
-        addPreDrawRunnable(() -> {
-            String val = statType.format(clientPlayer.getStats().getValue(Stats.CUSTOM, statName));
-            statText.setText(String.format("%s: %s", statNameTranslated.getString(), val));
+        MKText statText = new MKText(font, () -> {
+            MutableComponent statNameTranslated = Component.translatable("stat." +
+                    statType.getValue().toString().replace(':', '.'));
+            int rawValue = clientPlayer.getStats().getValue(Stats.CUSTOM, statName);
+            String val = statType.format(rawValue);
+            return statNameTranslated
+                    .append(": ")
+                    .append(val);
         });
+        layout.addWidget(statText);
     }
 }

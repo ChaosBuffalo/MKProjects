@@ -2,7 +2,7 @@ package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.attributes.AttributeMapExtension;
-import com.chaosbuffalo.mkcore.attributes.MKRangedAttribute;
+import com.chaosbuffalo.mkcore.attributes.IMKAttribute;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.core.Holder;
@@ -64,8 +64,8 @@ public class PlayerAttributeMonitor {
             }
         }
 
-        if (instance.getAttribute().value() instanceof MKRangedAttribute mkAttr) {
-            if (mkAttr.getSyncType().syncChanges()) {
+        if (instance.getAttribute().value() instanceof IMKAttribute mkAttribute) {
+            if (mkAttribute.getSyncType().syncChanges()) {
                 dirtyPrivates.add(instance);
             }
         }
@@ -106,8 +106,8 @@ public class PlayerAttributeMonitor {
         ImmutableSet.Builder<Holder<Attribute>> builder = ImmutableSet.builder();
         AttributeSupplier playerSupplier = DefaultAttributes.getSupplier(EntityType.PLAYER);
         playerSupplier.instances.forEach((attr, instance) -> {
-            if (attr.value() instanceof MKRangedAttribute mkAttr &&
-                    mkAttr.getSyncType().needsInitialSync()) {
+            if (attr.value() instanceof IMKAttribute mkAttribute &&
+                    mkAttribute.getSyncType().needsInitialSync()) {
                 builder.add(attr);
             }
         });
