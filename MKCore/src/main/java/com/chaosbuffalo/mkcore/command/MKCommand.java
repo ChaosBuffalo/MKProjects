@@ -10,6 +10,7 @@ public class MKCommand {
     public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal("mk")
                 .then(StatCommand.register())
+                .then(AttributeCommand.register())
                 .then(CooldownCommand.register())
                 .then(AbilityCommand.register())
                 .then(EffectCommand.register())
