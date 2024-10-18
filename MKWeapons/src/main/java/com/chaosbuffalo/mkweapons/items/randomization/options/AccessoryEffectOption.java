@@ -34,7 +34,7 @@ public class AccessoryEffectOption extends EffectOption<IAccessoryEffect> {
     }
 
     @Override
-    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
+    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, int slotIndex, double difficulty) {
         getItemEffects().forEach(eff -> {
             IAccessoryEffect newEffect = eff.createTunedEffect(difficulty / GameConstants.MAX_DIFFICULTY);
             AccessoryEffectsComponent.addEffect(stack, newEffect);

@@ -15,23 +15,24 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
+import java.util.function.UnaryOperator;
+
 
 public class AttributeOptionEntry {
-    public static final MapCodec<AttributeOptionEntry> MAP_CODEC = RecordCodecBuilder.<AttributeOptionEntry>mapCodec(builder -> {
-        return builder.group(
-                BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("attribute").forGetter(AttributeOptionEntry::getAttribute),
-                AttributeModifier.CODEC.fieldOf("modifier").forGetter(AttributeOptionEntry::getModifier),
-                EquipmentSlotGroup.CODEC
-                        .optionalFieldOf("slot", EquipmentSlotGroup.ANY)
-                        .forGetter(AttributeOptionEntry::getSlotGroup),
-                Codec.DOUBLE.fieldOf("minValue").forGetter(i -> i.minValue),
-                Codec.DOUBLE.fieldOf("maxValue").forGetter(i -> i.maxValue)
-        ).apply(builder, AttributeOptionEntry::new);
-    });
+    public static final MapCodec<AttributeOptionEntry> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("attribute").forGetter(AttributeOptionEntry::getAttribute),
+            AttributeModifier.CODEC.fieldOf("modifier").forGetter(AttributeOptionEntry::getModifier),
+            EquipmentSlotGroup.CODEC
+                    .optionalFieldOf("slot", EquipmentSlotGroup.ANY)
+                    .forGetter(AttributeOptionEntry::getSlotGroup),
+            Codec.DOUBLE.fieldOf("minValue").forGetter(i -> i.minValue),
+            Codec.DOUBLE.fieldOf("maxValue").forGetter(i -> i.maxValue)
+    ).apply(builder, AttributeOptionEntry::new));
     public static final Codec<AttributeOptionEntry> CODEC = MAP_CODEC.codec();
 
     public static final StreamCodec<RegistryFriendlyByteBuf, AttributeOptionEntry> STREAM_CODEC = StreamCodec.composite(
@@ -82,9 +83,9 @@ public class AttributeOptionEntry {
         return slotGroup;
     }
 
-    public AttributeOptionEntry createScaledModifier(double difficultyScale) {
+    public AttributeOptionEntry createModifierInstance(double difficultyScale, UnaryOperator<ResourceLocation> idFactory) {
         double finalAmount = MathUtils.lerpDouble(minValue, maxValue, difficultyScale / GameConstants.MAX_DIFFICULTY);
-        return new AttributeOptionEntry(getAttribute(), new AttributeModifier(modifier.id(),
+        return new AttributeOptionEntry(getAttribute(), new AttributeModifier(idFactory.apply(modifier.id()),
                 finalAmount, modifier.operation()), slotGroup, minValue, maxValue);
     }
 
@@ -115,5 +116,11 @@ public class AttributeOptionEntry {
 
     public static <D> AttributeOptionEntry deserialize(Dynamic<D> dynamic) {
         return CODEC.parse(dynamic).getOrThrow();
+    }
+
+    // For mods like curios where there can be multiple of the same type of slot, this function allows you to customize
+    // the id based on some per-slot context known only at equip time
+    public AttributeModifier getModifierWithId(UnaryOperator<ResourceLocation> idFactory) {
+        return new AttributeModifier(idFactory.apply(modifier.id()), modifier.amount(), modifier.operation());
     }
 }

@@ -41,7 +41,7 @@ public class PrefixNameOption extends BaseRandomizationOption {
     }
 
     @Override
-    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
+    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, int slotIndex, double difficulty) {
         stack.set(DataComponents.CUSTOM_NAME, Component.translatable("mkweapons.prefix.format", name, stack.getItem().getName(stack)));
     }
 }

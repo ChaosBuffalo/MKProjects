@@ -12,7 +12,7 @@ public interface IRandomizationOption {
 
     ResourceLocation getName();
 
-    void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty);
+    void applyToItemStackForSlot(ItemStack stack, LootSlot slot, int slotIndex, double difficulty);
 
     boolean isApplicableToItem(ItemStack stack);
 

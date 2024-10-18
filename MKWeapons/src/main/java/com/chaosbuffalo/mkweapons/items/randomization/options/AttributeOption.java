@@ -55,8 +55,13 @@ public class AttributeOption extends BaseRandomizationOption {
         this.modifiers = new ArrayList<>();
     }
 
-    public List<AttributeOptionEntry> getModifiers(double difficulty) {
-        return modifiers.stream().map(mod -> mod.createScaledModifier(difficulty)).collect(Collectors.toList());
+    private List<AttributeOptionEntry> createStackModifiers(LootSlot lootSlot, int slotIndex, double difficulty) {
+        return modifiers.stream().map(mod -> {
+            // Give each modifier a unique name in case an item with multiple attribute slots rolls the same attribute twice
+            return mod.createModifierInstance(difficulty, id -> {
+                return id.withSuffix(String.format("/%s/%d", lootSlot.getName().toLanguageKey(), slotIndex));
+            });
+        }).collect(Collectors.toList());
     }
 
     public void addFixedAttributeModifier(Holder<Attribute> attribute, AttributeModifier attributeModifier) {
@@ -92,16 +97,17 @@ public class AttributeOption extends BaseRandomizationOption {
     }
 
     @Override
-    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
+    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, int slotIndex, double difficulty) {
+        var stackModifiers = createStackModifiers(slot, slotIndex, difficulty);
         switch (stack.getItem()) {
             case IMKMeleeWeapon meleeWeapon ->
-                    MeleeEffectsComponent.addEffect(stack, new MeleeModifierEffect(getModifiers(difficulty)));
+                    MeleeEffectsComponent.addEffect(stack, new MeleeModifierEffect(stackModifiers));
             case IMKRangedWeapon rangedWeapon ->
-                    RangedEffectsComponent.addEffect(stack, new RangedModifierEffect(getModifiers(difficulty)));
+                    RangedEffectsComponent.addEffect(stack, new RangedModifierEffect(stackModifiers));
             case IMKArmor armor ->
-                    ArmorEffectsComponent.addEffect(stack, new ArmorModifierEffect(getModifiers(difficulty)));
+                    ArmorEffectsComponent.addEffect(stack, new ArmorModifierEffect(stackModifiers));
             case IMKAccessory accessory ->
-                    AccessoryEffectsComponent.addEffect(stack, new AccessoryModifierEffect(getModifiers(difficulty)));
+                    AccessoryEffectsComponent.addEffect(stack, new AccessoryModifierEffect(stackModifiers));
             default -> {
             }
         }

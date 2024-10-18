@@ -107,6 +107,7 @@ public class LootItemTemplate {
     public LootConstructor generateConstructorForTemplate(RandomSource random, RandomizationTemplate template) {
         ItemStack stack = chooseItem(random).copy();
         List<IRandomizationOption> chosenOptions = new ArrayList<>();
+        List<IRandomizationSlot> templateSlots = new ArrayList<>();
         for (IRandomizationSlot randomizationSlot : template.getRandomizationSlots()) {
             if (randomizationSlot.isPermanent()) {
                 List<IRandomizationOption> options = this.options.stream().filter(x ->
@@ -122,11 +123,11 @@ public class LootItemTemplate {
                     MKWeapons.LOGGER.debug("No choices for slot: {} in template: {} generated loot slot: {}",
                             randomizationSlot.getName(), template.getName(), lootSlot.getName());
                 }
+            } else {
+                templateSlots.add(randomizationSlot);
             }
         }
         LootConstructor constructor = new LootConstructor(stack, lootSlot, chosenOptions);
-        List<IRandomizationSlot> templateSlots = template.getRandomizationSlots().stream()
-                .filter(x -> !x.isPermanent()).collect(Collectors.toList());
         if (!templateSlots.isEmpty()) {
             constructor.addTemplateOptions(template, options);
         }

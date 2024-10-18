@@ -34,7 +34,7 @@ public class MeleeEffectOption extends EffectOption<IMeleeWeaponEffect> {
     }
 
     @Override
-    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
+    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, int slotIndex, double difficulty) {
         getItemEffects().forEach(eff -> {
             IMeleeWeaponEffect newEffect = eff.createTunedEffect(difficulty / GameConstants.MAX_DIFFICULTY);
             MeleeEffectsComponent.addEffect(stack, newEffect);

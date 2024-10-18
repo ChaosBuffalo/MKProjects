@@ -36,7 +36,7 @@ public class ArmorEffectOption extends EffectOption<IArmorEffect> {
     }
 
     @Override
-    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
+    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, int slotIndex, double difficulty) {
         getItemEffects().forEach(eff -> {
             IArmorEffect newEffect = eff.createTunedEffect(difficulty / GameConstants.MAX_DIFFICULTY);
             ArmorEffectsComponent.addEffect(stack, newEffect);
