@@ -31,5 +31,7 @@ public class UltraStructureTagsProvider extends StructureTagsProvider {
                 .add(UltraStructures.HYBOREAN_CRYPT);
         tag(UltraTags.Structures.DECAYING_CHURCH)
                 .add(UltraStructures.DECAYING_CHURCH);
+        tag(UltraTags.Structures.THEMCROMANCER_LAIR)
+                .add(UltraStructures.THEMCROMANCERS_LAIR);
     }
 }

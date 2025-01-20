@@ -47,5 +47,6 @@ public class MKUDataGenerators {
 
         generator.addProvider(event.includeClient(), new MKUItemModelProvider(packOutput, fileHelper));
         generator.addProvider(event.includeServer(), new UltraItemTagsProvider(generator, datapackLookup, blockTagsProvider, fileHelper));
+        generator.addProvider(true, new MKULangProvider(packOutput, "en_us"));
     }
 }

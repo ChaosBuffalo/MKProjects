@@ -1,7 +1,8 @@
-// 1.21.1	2024-09-02T19:47:42.3045812	Tags for minecraft:worldgen/biome mod id mkultra
+// 1.21.1	2025-01-17T13:17:48.4946792	Tags for minecraft:worldgen/biome mod id mkultra
 838db0776806dff951c32e01a83e6ae538bb3c42 data/mkultra/tags/worldgen/biome/has_decaying_church.json
 838db0776806dff951c32e01a83e6ae538bb3c42 data/mkultra/tags/worldgen/biome/has_deepslate_obelisk.json
 838db0776806dff951c32e01a83e6ae538bb3c42 data/mkultra/tags/worldgen/biome/has_desert_temple_village.json
 838db0776806dff951c32e01a83e6ae538bb3c42 data/mkultra/tags/worldgen/biome/has_hyborean_crypt.json
 b020f6cdcd2d955793278b2f89a178a1d31e599a data/mkultra/tags/worldgen/biome/has_intro_castle.json
 838db0776806dff951c32e01a83e6ae538bb3c42 data/mkultra/tags/worldgen/biome/has_necrotide_alter.json
+838db0776806dff951c32e01a83e6ae538bb3c42 data/mkultra/tags/worldgen/biome/has_themcromancer_lair.json

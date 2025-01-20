@@ -38,6 +38,8 @@ public class UltraStructures {
 
     public static ResourceKey<Structure> DECAYING_CHURCH = createKey("decaying_church");
 
+    public static ResourceKey<Structure> THEMCROMANCERS_LAIR = createKey("themcromancers_lair");
+
     public static ResourceKey<Structure> createKey(String name) {
         return ResourceKey.create(Registries.STRUCTURE, MKUltra.id(name));
     }
@@ -97,6 +99,13 @@ public class UltraStructures {
                                 .addNpcDeathCountCondition(MKUltra.id("ancient_priest_ghost"), 4, "priest_kills")
                                 .addTrigger(StructureEvent.EventTrigger.ON_ACTIVATE)
                                 .addTrigger(StructureEvent.EventTrigger.ON_DEATH))
+                        .build());
+
+        context.register(THEMCROMANCERS_LAIR,
+                new MKJigsawBuilder(emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_THEMCROMANCER_LAIR),
+                        GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.BEARD_THIN),
+                templates.getOrThrow(ThemcromancersLairPools.GATE_POOL))
+                        .setMaxDistFromCenter(100)
                         .build());
     }
 
