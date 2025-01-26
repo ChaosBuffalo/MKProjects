@@ -39,23 +39,19 @@
       "equipment": {
         "feet": [
           {
-            "dropChance": 0.0,
-            "weight": 2.0
-          },
-          {
             "dropChance": 1.1,
             "item": {
               "count": 1,
               "id": "mkultra:ancient_bronze_boots"
             },
             "weight": 1.0
-          }
-        ],
-        "head": [
+          },
           {
             "dropChance": 0.0,
             "weight": 2.0
-          },
+          }
+        ],
+        "head": [
           {
             "dropChance": 1.1,
             "item": {
@@ -63,6 +59,10 @@
               "id": "mkultra:ancient_bronze_helmet"
             },
             "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
+            "weight": 2.0
           }
         ],
         "mainhand": [

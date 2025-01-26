@@ -16,14 +16,14 @@
           "priority": 2
         },
         {
-          "abilityId": "mkultra:spirit_bomb",
-          "chance": 1.0,
-          "priority": 4
-        },
-        {
           "abilityId": "mkultra:explosive_growth",
           "chance": 1.0,
           "priority": 3
+        },
+        {
+          "abilityId": "mkultra:spirit_bomb",
+          "chance": 1.0,
+          "priority": 4
         },
         {
           "abilityId": "mkultra:cleansing_seed",

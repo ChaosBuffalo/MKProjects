@@ -24,23 +24,19 @@
       "equipment": {
         "chest": [
           {
-            "dropChance": 0.0,
-            "weight": 20.0
-          },
-          {
             "dropChance": 1.1,
             "item": {
               "count": 1,
               "id": "mkultra:ancient_bronze_chestplate"
             },
             "weight": 1.0
-          }
-        ],
-        "feet": [
+          },
           {
             "dropChance": 0.0,
             "weight": 20.0
-          },
+          }
+        ],
+        "feet": [
           {
             "dropChance": 1.1,
             "item": {
@@ -48,13 +44,13 @@
               "id": "mkultra:ancient_bronze_boots"
             },
             "weight": 1.0
-          }
-        ],
-        "head": [
+          },
           {
             "dropChance": 0.0,
             "weight": 20.0
-          },
+          }
+        ],
+        "head": [
           {
             "dropChance": 1.1,
             "item": {
@@ -62,13 +58,13 @@
               "id": "mkultra:ancient_bronze_helmet"
             },
             "weight": 1.0
-          }
-        ],
-        "legs": [
+          },
           {
             "dropChance": 0.0,
             "weight": 20.0
-          },
+          }
+        ],
+        "legs": [
           {
             "dropChance": 1.1,
             "item": {
@@ -76,6 +72,10 @@
               "id": "mkultra:ancient_bronze_leggings"
             },
             "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
+            "weight": 20.0
           }
         ],
         "mainhand": [

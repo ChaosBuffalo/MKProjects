@@ -19,6 +19,8 @@ import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import com.chaosbuffalo.mkweapons.items.weapon.types.WeaponTypeManager;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
@@ -93,6 +95,15 @@ public class MKWeaponsItems {
 
     public static Item lookupWeapon(IMKTier tier, IMeleeWeaponType weaponType) {
         return WEAPON_LOOKUP.get(tier).get(weaponType);
+    }
+
+    public static Optional<Holder.Reference<Item>> lookupMelee(IMKTier tier, IMeleeWeaponType weaponType, String sourceMod) {
+        return BuiltInRegistries.ITEM.getHolder(ResourceLocation.fromNamespaceAndPath(sourceMod,
+                String.format("%s_%s", weaponType.getName().getPath(), tier.getName())));
+    }
+
+    public static Optional<Holder.Reference<Item>> lookupMelee(IMKTier tier, IMeleeWeaponType weaponType) {
+        return lookupMelee(tier, weaponType, MKWeapons.MODID);
     }
 
     @SubscribeEvent
