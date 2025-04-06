@@ -66,11 +66,6 @@ public class DecayingChurchNpcs {
                 .withAbilityOption(MKUAbilities.HOLY_WORD.get(), 2, 1.0)
                 .withAbilityOption(MKUAbilities.HOLY_FIRE.get(), 3, 0.5)
         );
-//        EquipmentOption equipOption = new EquipmentOption();
-//        equipOption.addItemChoice(EquipmentSlotType.MAINHAND,
-//                new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(
-//                        ResourceLocation.parse("mkweapons:mace_iron"))), 1.0, 0.0f));
-//        def.addOption(equipOption);
         EquipmentOption equipOption = new EquipmentOption();
         equipOption.addItemChoice(EquipmentSlot.HEAD,
                 new NpcItemChoice(new ItemStack(MKUItems.ancientPriestHelmet.get()), 1.0, 0.05f));
@@ -105,13 +100,13 @@ public class DecayingChurchNpcs {
                 new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(
                         ResourceLocation.parse("mkweapons:warhammer_gold"))), 1.0, 0.0f));
         equipOption.addItemChoice(EquipmentSlot.HEAD,
-                new NpcItemChoice(new ItemStack(MKUItems.ancientCardinalHelmet.get()), 1.0, 0.05f));
+                new NpcItemChoice(new ItemStack(MKUItems.ancientCardinalHelmet.get()), 1.0, 0.15f));
         equipOption.addItemChoice(EquipmentSlot.CHEST,
-                new NpcItemChoice(new ItemStack(MKUItems.ancientCardinalChestplate.get()), 1.0, 0.05f));
+                new NpcItemChoice(new ItemStack(MKUItems.ancientCardinalChestplate.get()), 1.0, 0.15f));
         equipOption.addItemChoice(EquipmentSlot.LEGS,
-                new NpcItemChoice(new ItemStack(MKUItems.ancientCardinalLeggings.get()), 1.0, 0.05f));
+                new NpcItemChoice(new ItemStack(MKUItems.ancientCardinalLeggings.get()), 1.0, 0.15f));
         equipOption.addItemChoice(EquipmentSlot.FEET,
-                new NpcItemChoice(new ItemStack(MKUItems.ancientCardinalBoots.get()), 1.0, 0.05f));
+                new NpcItemChoice(new ItemStack(MKUItems.ancientCardinalBoots.get()), 1.0, 0.15f));
         def.addOption(equipOption);
         def.addOption(new NotableOption());
         def.addOption(new BossStageOption()
@@ -120,9 +115,6 @@ public class DecayingChurchNpcs {
                                                 .withAbilityOption(MKUAbilities.HOLY_FIRE.get(), 1, 1.0)
                                                 .withAbilityOption(MKUAbilities.HOLY_WORD_SHOTGUN.get(), 2, 1.0)
                                                 .withAbilityOption(MKUAbilities.HOLY_WORD.get(), 3, 1.0))
-//                        .withOption(new ParticleEffectsOption().withEffects(Collections.singletonList(
-//                                new BoneEffectInstance(UUID.fromString("3e7496f1-f5bf-45e6-b8e5-64192633ae9f"),
-//                                        BipedSkeleton.HEAD_BONE_NAME, MKUltra.id("flame_wave_casting")))))
                         )
                         .withStage(new BossStage()
                                         .withOption(new TempAbilitiesOption()
@@ -131,27 +123,12 @@ public class DecayingChurchNpcs {
                                                 .withAbilityOption(MKUAbilities.HOLY_WORD_BURST.get(), 3, 1.0)
                                                 .withAbilityOption(MKUAbilities.HOLY_WORD_SHOTGUN.get(), 4, 1.0)
                                                 .withAbilityOption(MKUAbilities.HOLY_WORD.get(), 5, 1.0))
-//                        .withOption(new ParticleEffectsOption().withEffects(Collections.singletonList(
-//                                new BoneEffectInstance(UUID.fromString("e45696e1-ddb1-4709-bc29-1733ee1bced9"),
-//                                BipedSkeleton.HEAD_BONE_NAME, MKUltra.id("flame_wave_casting")))))
                                         .withParticleMode(BossStage.ParticleMode.LINE_HEIGHT)
                                         .withTransitionParticles(MKUltra.id("wrath_skeleton_transition"))
                                         .withTransitionSound(MKUSounds.spell_holy_9.getId())
                         )
         );
         def.addOption(new ExperienceOption(75));
-//        def.addOption(new ParticleEffectsOption(List.of(
-//                new BoneEffectInstance(UUID.fromString("3e7496f1-f5bf-45e6-b8e5-64192633ae9f"),
-//                        MKUltra.id("burning_skeleton_head"), BipedSkeleton.HEAD_BONE_NAME)
-//        )));
-//        ResourceLocation lootTierName = MKUltra.id("burning_skeleton");
-//        def.addOption(new ExtraLootOption().withLootOptions(new LootOptionEntry(LootSlotManager.MAIN_HAND.getName(), lootTierName, 1.0))
-//                .withLootOptions(new LootOptionEntry(LootSlotManager.RINGS.getName(), lootTierName, 3.0))
-//                .withLootOptions(new LootOptionEntry(LootSlotManager.EARRINGS.getName(), lootTierName, 2.0))
-//                .withDropChances(1)
-//                .withNoLootChance(0.1)
-//                .withNoLootIncrease(0.0));
-
         def.addOption(NpcGenUtils.getSkillOptionForClass(NpcGenUtils.NpcSkillClass.MAGE));
         return def;
     }

@@ -4,14 +4,15 @@ package com.chaosbuffalo.mknpc.data;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingRequirement;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ParticleEffectInstance;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
+import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.*;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
-import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -21,12 +22,10 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 
 public class NpcDefinitionBuilder {
@@ -163,6 +162,21 @@ public class NpcDefinitionBuilder {
         return this;
     }
 
+    public NpcDefinitionBuilder ghost(float translucency) {
+        GhostOption opt = (GhostOption) options.computeIfAbsent(GhostOption.NAME,
+                key -> new GhostOption());
+        opt.setGhostTranslucency(translucency);
+        return this;
+    }
+
+    public NpcDefinitionBuilder ghost(float translucency, float armorTranslucency) {
+        GhostOption opt = (GhostOption) options.computeIfAbsent(GhostOption.NAME,
+                key -> new GhostOption());
+        opt.setGhostTranslucency(translucency);
+        opt.setArmorTranslucency(armorTranslucency);
+        return this;
+    }
+
     public NpcDefinitionBuilder titledFactionName(String title) {
         return titledFactionName(title, false);
     }
@@ -259,6 +273,19 @@ public class NpcDefinitionBuilder {
 
     public NpcDefinitionBuilder xp(int value) {
         var opt = new ExperienceOption(value);
+        index(opt);
+        return this;
+    }
+
+    public NpcDefinitionBuilder bossStage(BossStage stage) {
+        BossStageOption opt = (BossStageOption) options.computeIfAbsent(BossStageOption.NAME,
+                key -> new BossStageOption());
+        opt.withStage(stage);
+        return this;
+    }
+
+    public NpcDefinitionBuilder particles(ParticleEffectInstance... instances) {
+        ParticleEffectsOption opt = new ParticleEffectsOption(Arrays.stream(instances).toList());
         index(opt);
         return this;
     }
