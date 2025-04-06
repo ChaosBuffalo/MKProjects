@@ -17,8 +17,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
-import java.util.UUID;
-
 public class NecrotideNpcs {
     static NpcDefinition generateNecrotideCultist() {
 
