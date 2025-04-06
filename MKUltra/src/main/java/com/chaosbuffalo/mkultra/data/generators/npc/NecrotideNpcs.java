@@ -1,26 +1,23 @@
 package com.chaosbuffalo.mkultra.data.generators.npc;
 
+
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
-import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
-import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
-import com.chaosbuffalo.mknpc.npc.options.*;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUGolems;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUHumans;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUSkeletons;
-import com.chaosbuffalo.mkultra.init.MKUAbilities;
-import com.chaosbuffalo.mkultra.init.MKUEntities;
-import com.chaosbuffalo.mkultra.init.MKUFactions;
+import com.chaosbuffalo.mkultra.init.*;
+import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
+import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.ItemStack;
+
+import java.util.UUID;
 
 public class NecrotideNpcs {
     static NpcDefinition generateNecrotideCultist() {
@@ -44,127 +41,94 @@ public class NecrotideNpcs {
     }
 
     static NpcDefinition generateSkeletalLock() {
-        NpcDefinition def = new NpcDefinition(MKUltra.id("skeletal_lock"),
-                MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKUFactions.NECROTIDE_CULTISTS_NAME));
-        def.addOption(new RenderGroupOption(MKUSkeletons.BASIC_NAME));
-        def.addOption(new MKSizeOption(1.0f));
-        def.addOption(new AttributesOption()
-                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 50.0))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 50.0))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.0))
-        );
-        def.addOption(new NameOption("A Skeletal Lock"));
-        def.addOption(new AbilitiesOption()
-                .withAbilityOption(MKUAbilities.SHADOW_BOLT.get(), 1, 1.0)
-                .withAbilityOption(MKUAbilities.SHADOW_PULSE.get(), 2, 1.0)
-        );
-        def.addOption(NpcGenUtils.getSkillOptionForClass(NpcGenUtils.NpcSkillClass.MAGE));
-        def.addOption(new NotableOption());
-        return def;
+        return new NpcDefinitionBuilder(MKUltra.id("skeletal_lock"))
+                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+                .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
+                .renderGroup(MKUSkeletons.BASIC_NAME)
+                .size(1.0f)
+                .attribute(Attributes.MAX_HEALTH, 50.0)
+                .attribute(MKAttributes.MAX_MANA, 50.0)
+                .attribute(MKAttributes.MANA_REGEN, 2.0)
+                .name("A Skeletal Lock")
+                .ability(MKUAbilities.SHADOW_BOLT, 1, 1.0)
+                .ability(MKUAbilities.SHADOW_PULSE, 2, 1.0)
+                .skillClass(NpcGenUtils.NpcSkillClass.MAGE)
+                .notable()
+                .build();
     }
 
     static NpcDefinition generateNecrotideGolem() {
-        NpcDefinition def = new NpcDefinition(MKUltra.id("necrotide_golem"),
-                MKUEntities.GOLEM_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKUFactions.NECROTIDE_CULTISTS_NAME));
-        def.addOption(new RenderGroupOption(MKUGolems.NECROTIDE_GOLEM_NAME));
-        def.addOption(new MKSizeOption(1.25f));
-        def.addOption(new AttributesOption()
-                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 500.0))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 500.0))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 5.0))
-        );
-        def.addOption(new NameOption("A Necrotide Construction"));
-        def.addOption(new AbilitiesOption()
-                .withAbilityOption(MKUAbilities.SHADOW_BOLT.get(), 2, 1.0)
-                .withAbilityOption(MKUAbilities.NECROTIDE_GOLEM_BEAM.get(), 1, 1.0)
-        );
-        def.addOption(NpcGenUtils.getSkillOptionForClass(NpcGenUtils.NpcSkillClass.NECROMANCER));
-        def.addOption(new NotableOption());
         ResourceLocation lootTierName = MKUltra.id("necrotide_golem");
-        def.addOption(new ExtraLootOption()
-                .withLootOptions(new LootOptionEntry(LootSlotManager.RINGS.getName(), lootTierName, 3.0))
-                .withLootOptions(new LootOptionEntry(LootSlotManager.HANDS.getName(), lootTierName, 1.0))
-                .withDropChances(1)
-                .withNoLootChance(0.0)
-                .withNoLootIncrease(0.0));
-        return def;
+        return new NpcDefinitionBuilder(MKUltra.id("necrotide_golem"))
+                .type(MKUEntities.GOLEM_TYPE)
+                .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
+                .renderGroup(MKUGolems.NECROTIDE_GOLEM_NAME)
+                .size(1.25f)
+                .attribute(Attributes.MAX_HEALTH, 500.0)
+                .attribute(MKAttributes.MAX_MANA, 500.0)
+                .attribute(MKAttributes.MANA_REGEN, 5.0)
+                .name("A Necrotide Construction")
+                .ability(MKUAbilities.SHADOW_BOLT, 2, 1.0)
+                .ability(MKUAbilities.NECROTIDE_GOLEM_BEAM, 1, 1.0)
+                .skillClass(NpcGenUtils.NpcSkillClass.NECROMANCER)
+                .notable()
+                .loot(LootSlotManager.RINGS, lootTierName, 3.0)
+                .loot(LootSlotManager.HANDS, lootTierName, 1.0)
+                .lootDropChances(1)
+                .noLootChance(0.0)
+                .noLootChanceIncrease(0.0)
+                .build();
     }
 
     static NpcDefinition generateNecrotideCultistAcolyte() {
-        NpcDefinition def = new NpcDefinition(MKUltra.id("necrotide_acolyte"),
-                MKUEntities.HUMAN_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKUFactions.NECROTIDE_CULTISTS_NAME));
-        def.addOption(new RenderGroupOption(MKUHumans.NECROTIDE_CULTIST_1_NAME));
-        def.addOption(new MKSizeOption(0.95f));
-        def.addOption(new AttributesOption()
-                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 50.0))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 50.0))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.0))
-        );
-        def.addOption(new NameOption("A Necrotide Acolyte"));
-        def.addOption(new AbilitiesOption()
-                .withAbilityOption(MKUAbilities.SHADOW_BOLT.get(), 1, 1.0)
-                .withAbilityOption(MKUAbilities.DROWN.get(), 2, 0.5)
-                .withAbilityOption(MKUAbilities.SHADOW_PULSE.get(), 3, 0.5)
-        );
-        def.addOption(NpcGenUtils.getSkillOptionForClass(NpcGenUtils.NpcSkillClass.MAGE));
-        def.addOption(new FactionBattlecryOption());
-        return def;
+        return new NpcDefinitionBuilder(MKUltra.id("necrotide_acolyte"))
+                .type(MKUEntities.HUMAN_TYPE)
+                .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
+                .renderGroup(MKUHumans.NECROTIDE_CULTIST_1_NAME)
+                .size(0.95f)
+                .attribute(Attributes.MAX_HEALTH, 50.0)
+                .attribute(MKAttributes.MAX_MANA, 50.0)
+                .attribute(MKAttributes.MANA_REGEN, 2.0)
+                .name("A Necrotide Acolyte")
+                .ability(MKUAbilities.SHADOW_BOLT, 1, 1.0)
+                .ability(MKUAbilities.DROWN, 2, 0.5)
+                .ability(MKUAbilities.SHADOW_PULSE, 3, 0.5)
+                .skillClass(NpcGenUtils.NpcSkillClass.MAGE)
+                .battlecry()
+                .build();
     }
 
     static NpcDefinition generateNecrotideSkeletalWarrior() {
-        NpcDefinition def = new NpcDefinition(MKUltra.id("necrotide_skeletal_warrior"),
-                MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKUFactions.NECROTIDE_CULTISTS_NAME));
-        def.addOption(new MKSizeOption(1.0f));
-        def.addOption(new RenderGroupOption(MKUSkeletons.BASIC_NAME));
-        def.addOption(new AttributesOption()
-                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 65.0))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 65.0))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 2.0))
-        );
-        def.addOption(new NameOption("Skeleton Warrior"));
-        EquipmentOption equipOption = new EquipmentOption();
-        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
-                new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(
-                        ResourceLocation.parse("mkweapons:battleaxe_iron"))), 1.0, 0.0f));
-        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
-                new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(
-                        ResourceLocation.parse("mkweapons:spear_iron"))), 1.0, 0.0f));
-        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
-                new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(
-                        ResourceLocation.parse("mkweapons:greatsword_iron"))), 1.0, 0.0f));
-        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
-                new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(
-                        ResourceLocation.parse("mkweapons:longsword_iron"))), 1.0, 0.0f));
-        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
-                new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(
-                        ResourceLocation.parse("mkweapons:warhammer_iron"))), 1.0, 0.0f));
-        def.addOption(equipOption);
-        def.addOption(NpcGenUtils.getSkillOptionForClass(NpcGenUtils.NpcSkillClass.WARRIOR));
-        return def;
+        return new NpcDefinitionBuilder(MKUltra.id("necrotide_skeletal_warrior"))
+                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+                .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
+                .renderGroup(MKUSkeletons.BASIC_NAME)
+                .size(1.0f)
+                .attribute(Attributes.MAX_HEALTH, 65.0)
+                .attribute(MKAttributes.MAX_MANA, 65.0)
+                .attribute(MKAttributes.MANA_REGEN, 2.0)
+                .name("Skeleton Warrior")
+                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.SPEAR_TYPE).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.GREATSWORD_TYPE).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.LONGSWORD_TYPE).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.WARHAMMER_TYPE).orElseThrow())
+                .skillClass(NpcGenUtils.NpcSkillClass.WARRIOR)
+                .build();
     }
 
     static NpcDefinition generateNecrotideSkeletalArcher() {
-        NpcDefinition def = new NpcDefinition(MKUltra.id("necrotide_skeletal_archer"),
-                MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), null);
-        def.addOption(new FactionOption(MKUFactions.NECROTIDE_CULTISTS_NAME));
-        def.addOption(new MKSizeOption(0.95f));
-        def.addOption(new RenderGroupOption(MKUSkeletons.HYBOREAN_ARCHER_NAME));
-        def.addOption(new AttributesOption()
-                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 30.0))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MAX_MANA, 30.0))
-                .addAttributeEntry(new NpcAttributeEntry(MKAttributes.MANA_REGEN, 1.0))
-        );
-        def.addOption(new NameOption("Skeleton Archer"));
-        EquipmentOption equipOption = new EquipmentOption();
-        equipOption.addItemChoice(EquipmentSlot.MAINHAND,
-                new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(
-                        ResourceLocation.parse("mkweapons:longbow_iron"))), 1.0, 0.0f));
-        def.addOption(equipOption);
-        def.addOption(NpcGenUtils.getSkillOptionForClass(NpcGenUtils.NpcSkillClass.ARCHER));
-        return def;
+        return new NpcDefinitionBuilder(MKUltra.id("necrotide_skeletal_archer"))
+                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+                .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
+                .renderGroup(MKUSkeletons.HYBOREAN_ARCHER_NAME)
+                .size(0.95f)
+                .attribute(Attributes.MAX_HEALTH, 30.0)
+                .attribute(MKAttributes.MAX_MANA, 30.0)
+                .attribute(MKAttributes.MANA_REGEN, 1.0)
+                .name("Skeleton Archer")
+                .mainHand(BuiltInRegistries.ITEM.getHolder(ResourceLocation.parse("mkweapons:longbow_iron")).orElseThrow())
+                .skillClass(NpcGenUtils.NpcSkillClass.ARCHER)
+                .build();
     }
 }
