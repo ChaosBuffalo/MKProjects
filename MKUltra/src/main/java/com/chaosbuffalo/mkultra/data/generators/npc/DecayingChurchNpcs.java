@@ -4,6 +4,7 @@ package com.chaosbuffalo.mkultra.data.generators.npc;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
+import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -13,10 +14,22 @@ import com.chaosbuffalo.mkultra.client.render.styling.MKUHumans;
 import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+
+import java.util.concurrent.CompletableFuture;
 
 
 public class DecayingChurchNpcs {
+
+    public static CompletableFuture<?> writeDefinitions(NpcDefinitionProvider provider, CachedOutput cache) {
+        return CompletableFuture.allOf(
+                provider.writeDefinition(DecayingChurchNpcs.generateAncientPriestGhost(), cache),
+                provider.writeDefinition(DecayingChurchNpcs.generateAncientCardinal(), cache),
+                provider.writeDefinition(DecayingChurchNpcs.generateGhostApprentice(), cache)
+        );
+    }
+
     static NpcDefinition generateGhostApprentice() {
         return new NpcDefinitionBuilder(MKUltra.id("ancient_apprentice_ghost"))
                 .type(MKUEntities.HUMAN_GHOST_TYPE)

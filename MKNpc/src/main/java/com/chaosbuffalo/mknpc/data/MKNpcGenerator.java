@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.data.generators.NpcRegistrySets;
 import com.chaosbuffalo.mknpc.data.generators.tags.NpcBiomeTagsProvider;
 import com.chaosbuffalo.mknpc.data.generators.tags.NpcStructureTagsProvider;
+import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcItemChoice;

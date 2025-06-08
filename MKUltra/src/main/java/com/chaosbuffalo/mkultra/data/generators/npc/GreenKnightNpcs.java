@@ -2,15 +2,29 @@ package com.chaosbuffalo.mkultra.data.generators.npc;
 
 import com.chaosbuffalo.mkcore.abilities.training.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
+import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUOrcs;
 import com.chaosbuffalo.mkultra.init.*;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.concurrent.CompletableFuture;
+
 public class GreenKnightNpcs {
+
+    public static CompletableFuture<?> writeDefinitions(NpcDefinitionProvider provider, CachedOutput cache) {
+        return CompletableFuture.allOf(
+                provider.writeDefinition(generateGreenLady(), cache),
+                provider.writeDefinition(generateGreenLadyGuard1(), cache),
+                provider.writeDefinition(generateGreenLadyGuard2(), cache),
+                provider.writeDefinition(generateGreenSmith(), cache)
+        );
+    }
+
     static NpcDefinition generateGreenLadyGuard1() {
         return new NpcDefinitionBuilder(MKUltra.id("green_lady_guard_1"))
                 .type(MKUEntities.ORC_TYPE)

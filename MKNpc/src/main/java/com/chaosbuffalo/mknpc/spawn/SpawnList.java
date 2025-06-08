@@ -1,20 +1,34 @@
 package com.chaosbuffalo.mknpc.spawn;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SpawnList implements INBTSerializable<CompoundTag> {
+
+    public static final Codec<SpawnList> CODEC = RecordCodecBuilder.<SpawnList>mapCodec(builder -> {
+        return builder.group(
+               SpawnOption.CODEC.listOf().fieldOf("options").forGetter(SpawnList::getOptions)
+        ).apply(builder, SpawnList::new);
+    }).codec();
 
     private final List<SpawnOption> options;
 
     public SpawnList() {
         this.options = new ArrayList<>();
+    }
+
+    public SpawnList(List<SpawnOption> options) {
+        this.options = new ArrayList<>(options);
     }
 
     public List<SpawnOption> getOptions() {

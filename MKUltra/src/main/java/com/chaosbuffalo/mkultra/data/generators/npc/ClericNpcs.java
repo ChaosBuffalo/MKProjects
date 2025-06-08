@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkultra.data.generators.npc;
 
 import com.chaosbuffalo.mkcore.abilities.training.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
+import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -12,8 +13,19 @@ import com.chaosbuffalo.mkultra.init.MKUEntitlements;
 import com.chaosbuffalo.mkultra.init.MKUFactions;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
+import net.minecraft.data.CachedOutput;
+
+import java.util.concurrent.CompletableFuture;
 
 public class ClericNpcs {
+
+    public static CompletableFuture<?> writeDefinitions(NpcDefinitionProvider provider, CachedOutput cache) {
+        return CompletableFuture.allOf(
+                provider.writeDefinition(generateTempleGuard(), cache),
+                provider.writeDefinition(generateTempleGuard2(), cache),
+                provider.writeDefinition(generateCleric(), cache)
+        );
+    }
 
 
     static NpcDefinition generateCleric() {

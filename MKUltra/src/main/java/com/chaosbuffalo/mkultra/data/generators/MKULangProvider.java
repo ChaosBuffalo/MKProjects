@@ -1,12 +1,12 @@
 package com.chaosbuffalo.mkultra.data.generators;
 
-import com.chaosbuffalo.mkcore.data.providers.MKLanguageProvider;
+import com.chaosbuffalo.mknpc.data.providers.NpcLanguageProvider;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import net.minecraft.data.PackOutput;
 
-public class MKULangProvider extends MKLanguageProvider {
+public class MKULangProvider extends NpcLanguageProvider {
 
     public MKULangProvider(PackOutput output, String locale) {
         super(output, MKUltra.MODID, locale);
@@ -74,7 +74,6 @@ public class MKULangProvider extends MKLanguageProvider {
         mkEffect(MKUEffects.FROZEN_GRASP_APPLIER, "Frozen Grasp (self)");
         ability(MKUAbilities.FROZEN_GRASP, "Frozen Grasp", "Causes your next %s hits to slow the targets casting, attack, and movement speed for %s seconds.");
         ability(MKUAbilities.DROWN, "Drown", "Fills the targets lungs with water dealing %s every %s seconds for %s seconds.");
-
         ability(MKUAbilities.SHADOW_PUlSE_FLURRY, "Shadow Pulse Flurry");
         ability(MKUAbilities.SEAFURY, "Seafury", "Places a line of %s eruptions down at the target position %s blocks apart, causing %s after %s seconds to targets within %s blocks.");
         ability(MKUAbilities.GREEN_SOUL, "Green Soul", "Infuses you with the indomitable spirit of a Green Knight, increasing health and armor.");
@@ -133,11 +132,20 @@ public class MKULangProvider extends MKLanguageProvider {
         ability(MKUAbilities.SPIRIT_BOMB, "Spirit Bomb", "Shoot a projectile that will explode after 2 seconds, dealing %s damage to enemies in the area.");
         ability(MKUAbilities.CLEANSING_SEED, "Cleansing Seed", "Shoot a projectile that removes negative effects from friends or deals %s damage to enemies.");
         add("mkultra.quest_reward.receive_item.name", "You Will Receive a %s");
-        add("faction.mkultra.green_knights.name", "Green Knights");
-        add("faction.mkultra.imperial_dead.name", "Imperial Dead");
-        add("faction.mkultra.see_of_solang.name", "See of Solang");
-        add("faction.mkultra.nether_mages.name", "Nether Mage's Guild");
-        add("faction.mkultra.hyborean_dead.name", "Hyborean Dead");
-        add("faction.mkultra.necrotide_cultists.name", "Necrotide Cultists");
+        faction(MKUFactions.GREEN_KNIGHT_FACTION_NAME, "Green Knights");
+        faction(MKUFactions.IMPERIAL_DEAD_NAME, "Imperial Dead");
+        faction(MKUFactions.SEE_OF_SOLANG_NAME, "See of Solang");
+        faction(MKUFactions.NETHER_MAGE_NAME, "Nether Mage's Guild");
+        faction(MKUFactions.HYBOREAN_DEAD_NAME, "Hyborean Dead");
+        faction(MKUFactions.NECROTIDE_CULTISTS_NAME, "Necrotide Cultists");
+        entitlement(MKUEntitlements.ThemcromancerTier1, "Necromancer Tier 1");
+        entitlement(MKUEntitlements.ThemcromancerTier2, "Necromancer Tier 2");
+        entitlement(MKUEntitlements.ThemcromancerTier3, "Necromancer Tier 3");
+        faction(MKUFactions.THEMCROMANCERS_NAME, "Necromancers of Them");
+        addItem(MKUItems.themnianLeaderBoots, "Themnian Archon Thigh-High Boots");
+        addItem(MKUItems.themnianLeaderHelmet, "Themnian Archon Hood");
+        addItem(MKUItems.themnianLeaderChestplate, "Themnian Archon Robes");
+        addItem(MKUItems.themnianLeaderLeggings, "Themnian Archon Leggings");
+        faction(MKUFactions.THEMCROMANCER_GATEKEEPER_NAME, "Themcromancer Gatekeepers");
     }
 }

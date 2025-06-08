@@ -23,6 +23,8 @@ public class MKUFactions {
     public static final ResourceKey<MKFaction> GHOSTS_OF_HYBORIA_NAME = createKey("ghosts_of_hyboria");
     public static final ResourceKey<MKFaction> NETHER_MAGE_NAME = createKey("nether_mages");
     public static final ResourceKey<MKFaction> NECROTIDE_CULTISTS_NAME = createKey("necrotide_cultists");
+    public static final ResourceKey<MKFaction> THEMCROMANCERS_NAME = createKey("themcromancers");
+    public static final ResourceKey<MKFaction> THEMCROMANCER_GATEKEEPER_NAME = createKey("themcromancer_gatekeepers");
 
 
     private static ResourceKey<MKFaction> createKey(String name) {
@@ -75,6 +77,14 @@ public class MKUFactions {
         context.register(NECROTIDE_CULTISTS_NAME, setupNecrotideGreetings(setupMongolianNames(
                 new MKFaction.Builder(FactionConstants.ENEMY_THRESHOLD)))
                 .addEnemy(defGoodSet)
+                .build(context));
+
+        context.register(THEMCROMANCERS_NAME, setupGreekNames(new MKFaction.Builder(FactionConstants.ENEMY_THRESHOLD))
+                .addEnemy(defGoodSet)
+                .addAlly(THEMCROMANCER_GATEKEEPER_NAME)
+                .build(context));
+
+        context.register(THEMCROMANCER_GATEKEEPER_NAME, setupGreekNames(new MKFaction.Builder(FactionConstants.TRUE_NEUTRAL))
                 .build(context));
     }
 

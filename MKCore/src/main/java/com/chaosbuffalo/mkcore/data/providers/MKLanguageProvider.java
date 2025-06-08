@@ -53,4 +53,5 @@ public class MKLanguageProvider extends LanguageProvider {
     public void talentTree(ResourceLocation talentTreeId, String name) {
         add(talentTreeId.getNamespace() + ".talent_tree." + talentTreeId.getPath() + ".name",  name);
     }
+
 }

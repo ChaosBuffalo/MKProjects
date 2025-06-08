@@ -1,0 +1,134 @@
+{
+  "entityType": "mkultra:human",
+  "name": "mkultra:themcromancer_archon",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "abilities": [
+        {
+          "abilityId": "mkultra:shadow_bolt",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:engulfing_darkness",
+          "chance": 1.0,
+          "priority": 2
+        },
+        {
+          "abilityId": "mkultra:life_spike",
+          "chance": 1.0,
+          "priority": 3
+        },
+        {
+          "abilityId": "mkultra:shadow_pulse_flurry",
+          "chance": 1.0,
+          "priority": 4
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 300.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 300.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 3.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "equipment": {
+        "chest": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "count": 1,
+              "id": "mkultra:themnian_leader_chestplate"
+            },
+            "weight": 1.0
+          }
+        ],
+        "feet": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "count": 1,
+              "id": "mkultra:themnian_leader_boots"
+            },
+            "weight": 1.0
+          }
+        ],
+        "head": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "count": 1,
+              "id": "mkultra:themnian_leader_helmet"
+            },
+            "weight": 1.0
+          }
+        ],
+        "legs": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "count": 1,
+              "id": "mkultra:themnian_leader_leggings"
+            },
+            "weight": 1.0
+          }
+        ],
+        "mainhand": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "count": 1,
+              "id": "mkultra:staff_bronze"
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "factionId": "mkultra:themcromancers"
+    },
+    "mknpc:faction_name": {
+      "type": "mknpc:faction_name",
+      "title": "Archon"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "scale": 1.0
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "renderGroup": "default"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "major_skills": [
+        "mkcore:conjuration",
+        "mkcore:necromancy"
+      ],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:evocation"
+      ],
+      "remedial_skills": [
+        "mkcore:one_hand_pierce"
+      ]
+    }
+  }
+}

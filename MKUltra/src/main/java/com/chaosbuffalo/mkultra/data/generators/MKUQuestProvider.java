@@ -2,7 +2,7 @@ package com.chaosbuffalo.mkultra.data.generators;
 
 import com.chaosbuffalo.mkchat.dialogue.*;
 import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
-import com.chaosbuffalo.mknpc.data.QuestDefinitionProvider;
+import com.chaosbuffalo.mknpc.data.providers.QuestDefinitionProvider;
 import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
 import com.chaosbuffalo.mknpc.quest.*;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasSpentTalentPointsCondition;

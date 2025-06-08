@@ -64,6 +64,10 @@ public class MKUItemModelProvider extends MKWeaponModelProvider {
             makeBowModels(bow);
         }
         projectileItem(MKUItems.holyWordProjectileItem.get());
+        makeSimpleItem(MKUItems.themnianLeaderBoots.get());
+        makeSimpleItem(MKUItems.themnianLeaderChestplate.get());
+        makeSimpleItem(MKUItems.themnianLeaderLeggings.get());
+        makeSimpleItem(MKUItems.themnianLeaderHelmet.get());
     }
 
     private void makeSimpleItem(Item item) {

@@ -125,6 +125,15 @@ public class MKUArmorMaterial {
     }), 20, SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, () -> Ingredient.of(Items.STRING));
     public static final int THEMNIAN_ROBES_DURABILITY = 18;
 
+    public static Holder<ArmorMaterial> THEMNIAN_LEADER_ROBES = register("themnian_leader_robes", Util.make(new EnumMap<>(ArmorItem.Type.class), defenses -> {
+        defenses.put(ArmorItem.Type.BOOTS, 1);
+        defenses.put(ArmorItem.Type.LEGGINGS, 4);
+        defenses.put(ArmorItem.Type.CHESTPLATE, 5);
+        defenses.put(ArmorItem.Type.HELMET, 2);
+        defenses.put(ArmorItem.Type.BODY, 5);
+    }), 20, SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, () -> Ingredient.of(Items.STRING));
+    public static final int THEMNIAN_LEADER_ROBES_DURABILITY = 23;
+
 
     public static void register(IEventBus modBus) {
         REGISTER.register(modBus);

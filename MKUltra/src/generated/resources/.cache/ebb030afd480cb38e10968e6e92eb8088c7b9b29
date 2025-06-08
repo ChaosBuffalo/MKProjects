@@ -1,8 +1,10 @@
-// 1.21.1	2025-04-05T18:20:04.74228	MKU NPC GEN
+// 1.21.1	2025-06-07T08:39:37.0645718	MKU NPC GEN
 d32a85294da14d5f136addce542d07fd90fde7c5 data/mkultra/mknpc/mknpcs/ancient_apprentice_ghost.json
 6b15235c826c86e44e1cdcb898a0665494cf866f data/mkultra/mknpc/mknpcs/ancient_cardinal.json
 50d98549fcdbf9708b7b96871996f6c3e320239d data/mkultra/mknpc/mknpcs/ancient_priest_ghost.json
 48ecaa1ec676672936bff646b102f7a7002dcbeb data/mkultra/mknpc/mknpcs/an_ancient_king.json
+8bcc25a3c17efa569f8920bb35c9fcd41ce856dd data/mkultra/mknpc/mknpcs/a_skeletal_gatekeeper.json
+7f4a0b78e11d0d6c4aa6382c87e982ed72ad7f91 data/mkultra/mknpc/mknpcs/a_skeletal_guard.json
 57a1d2499aab9fddf9eefe2be9f1ddb6fab6a948 data/mkultra/mknpc/mknpcs/burning_skeleton.json
 a07bd3289d0d46b84f486ee20d83c75fa602ae3e data/mkultra/mknpc/mknpcs/crumbling_trooper.json
 76a7c8cbcf7cdd991e3bb69aa865ae8d28ce5cd9 data/mkultra/mknpc/mknpcs/crumbling_trooper_mage.json
@@ -34,5 +36,8 @@ ac5eebf02e661f1d085ab5ce4ccbd1315292ab91 data/mkultra/mknpc/mknpcs/seawoven_wret
 d3b0ea4654bc9216e6b6a7010bb3ec12cb651ca1 data/mkultra/mknpc/mknpcs/solangian_cleric.json
 a69d7e3deab72969cf39fe422b146c01e8c48d52 data/mkultra/mknpc/mknpcs/solangian_temple_guard.json
 ddbddb93689af9abdfd800b8df47361325c48e3e data/mkultra/mknpc/mknpcs/solangian_temple_guard_2.json
+11e76a59c027abc49fdcafd21c87945565e194df data/mkultra/mknpc/mknpcs/themcromancer_acolyte.json
+99b723094f39a7c37bfa82ed1916d4e1125e1c86 data/mkultra/mknpc/mknpcs/themcromancer_archon.json
+acf4145e0e8ebe8753f9980de4db4feed0f6d347 data/mkultra/mknpc/mknpcs/themcromancer_neophyte.json
 e23c8a7f84a75310783ca795bf79ebd96c4c3047 data/mkultra/mknpc/mknpcs/trooper_captain.json
 a56f6644a9e786b2dc5ac185feb5c49ad900325e data/mkultra/mknpc/mknpcs/trooper_executioner.json

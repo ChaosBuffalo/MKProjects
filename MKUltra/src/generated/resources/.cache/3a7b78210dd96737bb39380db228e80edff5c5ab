@@ -1,4 +1,4 @@
-// 1.21.1	2025-01-19T10:02:26.6780392	Item Models: mkultra
+// 1.21.1	2025-05-04T09:22:40.85786	Item Models: mkultra
 1721932322d371d58de6ee8f5671c3af3187fa8a assets/mkultra/models/item/ancient_bronze_boots.json
 666e68a68b960d2f2cce8c9a15af9d23c64eae23 assets/mkultra/models/item/ancient_bronze_chestplate.json
 8ba458b6a5ffa226d75cb2fb629cf55f18159950 assets/mkultra/models/item/ancient_bronze_helmet.json
@@ -47,6 +47,10 @@ f79b84a68af4f758f3d6ff24cf059df7fc1de14f assets/mkultra/models/item/staff_bronze
 74dbbf989a5983c3b1b44b6197bf700fe653f075 assets/mkultra/models/item/themnian_boots.json
 a6abf7ebbbb2953e2eb6df06ac5bf07e70510ecb assets/mkultra/models/item/themnian_chestplate.json
 d25b948fe0474db4a61f67f88fc3d0cdbc961d34 assets/mkultra/models/item/themnian_helmet.json
+1279f839bbd593663b68a2daf97b4947284ebe26 assets/mkultra/models/item/themnian_leader_boots.json
+c17cf4034befc4f7d6f269c34804cbeba91095d6 assets/mkultra/models/item/themnian_leader_chestplate.json
+d52dd72f29baf13faf6947407ea3a0a3d5a3a86b assets/mkultra/models/item/themnian_leader_helmet.json
+dee74a80594b91ee2f760a5d123bcef9863999d4 assets/mkultra/models/item/themnian_leader_leggings.json
 c2363d0cad4b6094263769c1ea771eebe41fa58e assets/mkultra/models/item/themnian_leggings.json
 62f03b992e1048d67f800842e631355af892903c assets/mkultra/models/item/trooper_knight_boots.json
 053da4e63aa9c26fe9834c97de917882ca80ac86 assets/mkultra/models/item/trooper_knight_chestplate.json

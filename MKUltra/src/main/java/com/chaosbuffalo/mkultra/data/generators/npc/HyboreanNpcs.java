@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkultra.data.generators.npc;
 
 import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
+import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -13,10 +14,25 @@ import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 
+import java.util.concurrent.CompletableFuture;
+
 public class HyboreanNpcs {
+
+    public static CompletableFuture<?> writeDefinitions(NpcDefinitionProvider provider, CachedOutput cache) {
+        return CompletableFuture.allOf(
+                provider.writeDefinition(generateHyboreanWarrior(), cache),
+                provider.writeDefinition(generateHyboreanHonorGuard(), cache),
+                provider.writeDefinition(generateHyboreanArcher(), cache),
+                provider.writeDefinition(generateHyboreanSorcerer(), cache),
+                provider.writeDefinition(generateAncientKing(), cache),
+                provider.writeDefinition(generateHyboreanSorcererQueen(), cache)
+        );
+    }
+
     static NpcDefinition generateHyboreanHonorGuard() {
         return new NpcDefinitionBuilder(MKUltra.id("hyborean_honor_guard"))
                 .type(MKUEntities.HYBOREAN_SKELETON_TYPE)

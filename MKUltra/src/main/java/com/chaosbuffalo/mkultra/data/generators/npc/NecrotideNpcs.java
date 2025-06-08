@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkultra.data.generators.npc;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
+import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -14,10 +15,25 @@ import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
+import java.util.concurrent.CompletableFuture;
+
 public class NecrotideNpcs {
+
+    public static CompletableFuture<?> writeDefinitions(NpcDefinitionProvider provider, CachedOutput cache) {
+        return CompletableFuture.allOf(
+                provider.writeDefinition(generateNecrotideCultistAcolyte(), cache),
+                provider.writeDefinition(generateNecrotideCultist(), cache),
+                provider.writeDefinition(generateSkeletalLock(), cache),
+                provider.writeDefinition(generateNecrotideGolem(), cache),
+                provider.writeDefinition(generateNecrotideSkeletalArcher(), cache),
+                provider.writeDefinition(generateNecrotideSkeletalWarrior(), cache)
+        );
+    }
+
     static NpcDefinition generateNecrotideCultist() {
 
         return new NpcDefinitionBuilder(MKUltra.id("necrotide_cultist"))

@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.BoneEffectInstance;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
+import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -18,6 +19,7 @@ import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import net.minecraft.core.Holder;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -25,8 +27,28 @@ import net.minecraft.world.item.Items;
 
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class IntroCastleNpcs {
+
+    public static CompletableFuture<?> writeDefinitions(NpcDefinitionProvider provider, CachedOutput cache) {
+        return CompletableFuture.allOf(
+                provider.writeDefinition(generateCrumblingTrooper(), cache),
+                provider.writeDefinition(generateCrumblingTrooperMage(), cache),
+                provider.writeDefinition(generateDecayingZombieArcher(), cache),
+                provider.writeDefinition(generateDecayingZombiePiglin(), cache),
+                provider.writeDefinition(generateImperialMagus(), cache),
+                provider.writeDefinition(generateTrooperCaptain(), cache),
+                provider.writeDefinition(generateTrooperExecution(), cache),
+                provider.writeDefinition(generateSkeletalTrooperMage(), cache),
+                provider.writeDefinition(generateBurningSkeleton(), cache),
+                provider.writeDefinition(generateClericAcolyte(), cache),
+                provider.writeDefinition(generateClericApprentice(), cache),
+                provider.writeDefinition(generateForlornGhost(), cache),
+                provider.writeDefinition(generateNetherMageInitiate(), cache)
+        );
+    }
+
     static NpcDefinition generateCrumblingTrooper() {
         ResourceLocation lootTierName = MKUltra.id("zombie_trooper");
         return new NpcDefinitionBuilder(MKUltra.id("crumbling_trooper"))

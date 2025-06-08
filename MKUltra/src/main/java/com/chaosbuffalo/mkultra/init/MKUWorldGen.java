@@ -23,18 +23,8 @@ public class MKUWorldGen {
             STRUCTURE_PLACEMENT_REGISTRY.register("static_placement",
                     () -> () -> StaticPlacement.CODEC);
 
-//    public static final RegistryObject<StructureFeature<JigsawConfiguration>> NECROTIDE_ALTER = STRUCTURE_REGISTRY.register("necrotide_alter",
-//            () -> new MKJigsawStructure(JigsawConfiguration.CODEC, 0, true, true, (piece) -> true, false)
-//                    .addEvent("summon_golem", new SpawnNpcDefinitionEvent(new ResourceLocation(MKUltra.MODID, "necrotide_golem"),
-//                            "golem_spawn", "golem_look", MKEntity.NonCombatMoveType.STATIONARY)
-//                            .addNotableDeadCondition(new ResourceLocation(MKUltra.MODID, "skeletal_lock"), true)
-//                            .addTrigger(StructureEvent.EventTrigger.ON_DEATH)));
-//
-
     public static void register(IEventBus bus) {
         STRUCTURE_REGISTRY.register(bus);
         STRUCTURE_PLACEMENT_REGISTRY.register(bus);
     }
-
-
 }

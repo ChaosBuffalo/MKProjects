@@ -1,0 +1,129 @@
+{
+  "entityType": "mkultra:human",
+  "name": "mkultra:themcromancer_acolyte",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "abilities": [
+        {
+          "abilityId": "mkultra:shadow_bolt",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:shadow_pulse",
+          "chance": 1.0,
+          "priority": 2
+        },
+        {
+          "abilityId": "mkultra:necrotide_warrior_summon",
+          "chance": 1.0,
+          "priority": 3
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 90.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 90.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 3.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "equipment": {
+        "chest": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "count": 1,
+              "id": "mkultra:themnian_chestplate"
+            },
+            "weight": 1.0
+          }
+        ],
+        "feet": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "count": 1,
+              "id": "mkultra:themnian_boots"
+            },
+            "weight": 1.0
+          }
+        ],
+        "head": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "count": 1,
+              "id": "mkultra:themnian_helmet"
+            },
+            "weight": 1.0
+          }
+        ],
+        "legs": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "count": 1,
+              "id": "mkultra:themnian_leggings"
+            },
+            "weight": 1.0
+          }
+        ],
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "count": 1,
+              "id": "mkweapons:dagger_iron"
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "factionId": "mkultra:themcromancers"
+    },
+    "mknpc:faction_name": {
+      "type": "mknpc:faction_name",
+      "title": "Acolyte"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "scale": 0.92
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "renderGroup": "default"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "major_skills": [
+        "mkcore:conjuration",
+        "mkcore:necromancy"
+      ],
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:evocation"
+      ],
+      "remedial_skills": [
+        "mkcore:one_hand_pierce"
+      ]
+    }
+  }
+}

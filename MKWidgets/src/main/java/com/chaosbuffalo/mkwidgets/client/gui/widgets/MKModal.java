@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkwidgets.client.gui.widgets;
 
 import com.chaosbuffalo.mkwidgets.client.gui.screens.IMKScreen;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 
@@ -72,6 +73,9 @@ public class MKModal extends MKWidget implements IMKModal {
     @Override
     public void preDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         super.preDraw(graphics, mc, x, y, width, height, mouseX, mouseY, partialTicks);
+        // We need to clear the depth buffer so that text from previous draws doesnt render on top of our modals.
+        // FIXME: In 1.21.5 we need to change this to be RenderSystem.getDevice().createCommandEncoder().clearDepthTexture
+        RenderSystem.clear(256, Minecraft.ON_OSX);
         if (shouldDoBackground()) {
             graphics.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), getBackgroundColor());
         }
