@@ -9,10 +9,7 @@ import com.chaosbuffalo.mkultra.abilities.brawler.*;
 import com.chaosbuffalo.mkultra.abilities.cleric.*;
 import com.chaosbuffalo.mkultra.abilities.green_knight.*;
 import com.chaosbuffalo.mkultra.abilities.misc.*;
-import com.chaosbuffalo.mkultra.abilities.necromancer.EngulfingDarknessAbility;
-import com.chaosbuffalo.mkultra.abilities.necromancer.LifeSpikeAbility;
-import com.chaosbuffalo.mkultra.abilities.necromancer.ShadowBoltAbility;
-import com.chaosbuffalo.mkultra.abilities.necromancer.ShadowPulseAbility;
+import com.chaosbuffalo.mkultra.abilities.necromancer.*;
 import com.chaosbuffalo.mkultra.abilities.nether_mage.*;
 import com.chaosbuffalo.mkultra.abilities.passives.GreenSoulAbility;
 import com.chaosbuffalo.mkultra.abilities.passives.LifeSiphonAbility;
@@ -33,6 +30,7 @@ public class MKUAbilities {
     public static final DeferredHolder<MKAbility, WrathBeamFlurryAbility> WRATH_BEAM_FLURRY = REGISTRY.register("wrath_beam_flurry", WrathBeamFlurryAbility::new);
     public static final DeferredHolder<MKAbility, SeverTendonAbility> SEVER_TENDON = REGISTRY.register("sever_tendon", SeverTendonAbility::new);
     public static final DeferredHolder<MKAbility, FireballAbility> FIREBALL = REGISTRY.register("fireball", FireballAbility::new);
+    public static final DeferredHolder<MKAbility, FireballBurstAbility> FIREBALL_BURST = REGISTRY.register("fireball_burst", FireballBurstAbility::new);
     public static final DeferredHolder<MKAbility, ShadowPulseFlurryAbility> SHADOW_PUlSE_FLURRY = REGISTRY.register("shadow_pulse_flurry", ShadowPulseFlurryAbility::new);
 
     public static final DeferredHolder<MKAbility, SeafuryAbility> SEAFURY = REGISTRY.register("seafury", SeafuryAbility::new);
@@ -64,6 +62,7 @@ public class MKUAbilities {
     public static final DeferredHolder<MKAbility, ShadowBoltAbility> SHADOW_BOLT = REGISTRY.register("shadow_bolt", ShadowBoltAbility::new);
     public static final DeferredHolder<MKAbility, LifeSpikeAbility> LIFE_SPIKE = REGISTRY.register("life_spike", LifeSpikeAbility::new);
     public static final DeferredHolder<MKAbility, EngulfingDarknessAbility> ENGULFING_DARKNESS = REGISTRY.register("engulfing_darkness", EngulfingDarknessAbility::new);
+    public static final DeferredHolder<MKAbility, ShadowboltDualShotgunAbility> SHADOW_BOLT_DUAL_SHOTGUN = REGISTRY.register("shadow_bolt_dual_shotgun", ShadowboltDualShotgunAbility::new);
 
     // nethermage
     public static final DeferredHolder<MKAbility, EmberAbility> EMBER = REGISTRY.register("ember", EmberAbility::new);

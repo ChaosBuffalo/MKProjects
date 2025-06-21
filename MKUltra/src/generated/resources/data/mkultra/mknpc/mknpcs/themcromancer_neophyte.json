@@ -93,13 +93,13 @@
       "type": "mknpc:faction",
       "factionId": "mkultra:themcromancers"
     },
-    "mknpc:faction_name": {
-      "type": "mknpc:faction_name",
-      "title": "Neophyte"
-    },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
       "scale": 0.85
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "name": "Themnian Neophyte"
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",

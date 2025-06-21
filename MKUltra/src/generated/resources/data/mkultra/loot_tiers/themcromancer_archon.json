@@ -1,0 +1,121 @@
+{
+  "name": "mkultra:themcromancer_archon",
+  "slotItems": {
+    "mkweapons:earrings": [
+      {
+        "template": {
+          "lootSlot": "mkweapons:earrings",
+          "options": [
+            {
+              "type": "mkweapons:attributes",
+              "modifiers": [
+                {
+                  "attribute": "mkcore:mana_regen",
+                  "maxValue": 10.0,
+                  "minValue": 1.0,
+                  "modifier": {
+                    "amount": 1.0,
+                    "id": "mkultra:themcromancer_archon",
+                    "operation": "add_value"
+                  }
+                },
+                {
+                  "attribute": "mkcore:evocation",
+                  "maxValue": 20.0,
+                  "minValue": 5.0,
+                  "modifier": {
+                    "amount": 5.0,
+                    "id": "mkultra:themcromancer_archon",
+                    "operation": "add_value"
+                  }
+                },
+                {
+                  "attribute": "mkcore:shadow_damage",
+                  "maxValue": 0.2,
+                  "minValue": 0.05,
+                  "modifier": {
+                    "amount": 0.05,
+                    "id": "mkultra:themcromancer_archon",
+                    "operation": "add_multiplied_total"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "mkweapons:name",
+              "name": "Archon's Silver Stud"
+            }
+          ],
+          "potentialItems": [
+            {
+              "item": {
+                "count": 1,
+                "id": "mkweapons:silver_earring"
+              }
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "name": "mkultra:archon_stud",
+                "slots": [
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.name"
+                ]
+              },
+              "weight": 10.0
+            }
+          ]
+        },
+        "weight": 10.0
+      }
+    ],
+    "mkweapons:rings": [
+      {
+        "template": {
+          "lootSlot": "mkweapons:rings",
+          "options": [
+            {
+              "type": "mkweapons:accessory_effect",
+              "effects": [
+                {
+                  "type": "mkweapons:accessory_effect.reset_cooldown",
+                  "chance": {
+                    "max": 0.5,
+                    "min": 0.05
+                  },
+                  "skill": "mkcore:evocation"
+                }
+              ]
+            },
+            {
+              "type": "mkweapons:name",
+              "name": "Archon Skull Ring"
+            }
+          ],
+          "potentialItems": [
+            {
+              "item": {
+                "count": 1,
+                "id": "mkultra:themcromancer_archon_ring"
+              }
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "name": "mkultra:effect_ring",
+                "slots": [
+                  "mkweapons:randomization.effect",
+                  "mkweapons:randomization.name"
+                ]
+              },
+              "weight": 10.0
+            }
+          ]
+        },
+        "weight": 10.0
+      }
+    ]
+  }
+}

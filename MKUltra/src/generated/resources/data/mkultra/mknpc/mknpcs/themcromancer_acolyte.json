@@ -16,6 +16,11 @@
           "priority": 2
         },
         {
+          "abilityId": "mkultra:fireball",
+          "chance": 0.5,
+          "priority": 3
+        },
+        {
           "abilityId": "mkultra:necrotide_warrior_summon",
           "chance": 1.0,
           "priority": 3
@@ -98,13 +103,13 @@
       "type": "mknpc:faction",
       "factionId": "mkultra:themcromancers"
     },
-    "mknpc:faction_name": {
-      "type": "mknpc:faction_name",
-      "title": "Acolyte"
-    },
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
       "scale": 0.92
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "name": "Themnian Acolyte"
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",

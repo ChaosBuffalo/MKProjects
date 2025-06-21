@@ -1,0 +1,21 @@
+{
+  "isDefault": true,
+  "lines": [
+    {
+      "name": "a",
+      "talents": [
+        {
+          "max_points": 1,
+          "name": "mkcore:bleed_damage",
+          "value": 1.0
+        },
+        {
+          "max_points": 1,
+          "name": "mkcore:bleed_resistance",
+          "value": 0.009999999776482582
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

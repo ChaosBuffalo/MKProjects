@@ -455,6 +455,9 @@ public final class MKUItems {
     public static DeferredHolder<Item, Item> seawovenScrap = REGISTRY.register("seawoven_scrap",
             () -> new Item(new Item.Properties()));
 
+    public static DeferredHolder<Item, Item> themcromancerArchonRing = REGISTRY.register("themcromancer_archon_ring",
+            () -> new MKCurioAccessory(new Item.Properties().stacksTo(1)));
+
     public static void register(IEventBus bus) {
         REGISTRY.register(bus);
     }

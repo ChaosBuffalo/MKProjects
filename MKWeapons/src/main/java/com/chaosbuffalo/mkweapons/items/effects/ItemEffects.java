@@ -1,10 +1,7 @@
 package com.chaosbuffalo.mkweapons.items.effects;
 
 import com.chaosbuffalo.mkcore.utils.CommonCodecs;
-import com.chaosbuffalo.mkweapons.items.effects.accesory.AccessoryModifierEffect;
-import com.chaosbuffalo.mkweapons.items.effects.accesory.IAccessoryEffect;
-import com.chaosbuffalo.mkweapons.items.effects.accesory.OnMeleeProcEffect;
-import com.chaosbuffalo.mkweapons.items.effects.accesory.RestoreManaOnCastEffect;
+import com.chaosbuffalo.mkweapons.items.effects.accesory.*;
 import com.chaosbuffalo.mkweapons.items.effects.armor.ArmorModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.armor.IArmorEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.*;
@@ -85,5 +82,6 @@ public class ItemEffects {
         accessoryEffect(AccessoryModifierEffect.NAME, AccessoryModifierEffect.MAP_CODEC);
         accessoryEffect(RestoreManaOnCastEffect.NAME, RestoreManaOnCastEffect.MAP_CODEC);
         accessoryEffect(OnMeleeProcEffect.NAME, OnMeleeProcEffect.MAP_CODEC);
+        accessoryEffect(ResetCooldownOnCastEffect.NAME, ResetCooldownOnCastEffect.MAP_CODEC);
     }
 }

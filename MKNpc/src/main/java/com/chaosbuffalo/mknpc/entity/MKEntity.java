@@ -36,6 +36,7 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.NpcConstants;
 import com.chaosbuffalo.targeting_api.ITargetingOwner;
 import com.chaosbuffalo.targeting_api.Targeting;
+import com.chaosbuffalo.targeting_api.TargetingAPI;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
@@ -593,6 +594,11 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         MKAbility ability = decision.getAbility();
         if (ability == null) {
             return StationaryMovementStrategy.STATIONARY_MOVEMENT_STRATEGY;
+        }
+        if (!Targeting.isValidEnemy(this, decision.getTargetEntity())) {
+            if (getNonCombatMoveType() == NonCombatMoveType.STATIONARY) {
+                return StationaryMovementStrategy.STATIONARY_MOVEMENT_STRATEGY;
+            }
         }
         switch (decision.getMovementSuggestion()) {
             case KITE:

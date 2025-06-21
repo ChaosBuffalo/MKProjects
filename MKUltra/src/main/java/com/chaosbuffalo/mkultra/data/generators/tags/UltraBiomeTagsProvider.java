@@ -32,6 +32,8 @@ public class UltraBiomeTagsProvider extends BiomeTagsProvider {
         tag(UltraTags.Biomes.HAS_DECAYING_CHURCH)
                 .addTag(BiomeTags.HAS_VILLAGE_DESERT);
         tag(UltraTags.Biomes.HAS_THEMCROMANCER_LAIR)
-                .addTag(BiomeTags.HAS_VILLAGE_DESERT);
+                .addTag(BiomeTags.HAS_VILLAGE_DESERT)
+                .addTag(BiomeTags.HAS_VILLAGE_PLAINS)
+                .addTag(BiomeTags.IS_FOREST);
     }
 }

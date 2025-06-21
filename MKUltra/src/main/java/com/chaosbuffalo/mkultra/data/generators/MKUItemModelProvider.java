@@ -68,6 +68,7 @@ public class MKUItemModelProvider extends MKWeaponModelProvider {
         makeSimpleItem(MKUItems.themnianLeaderChestplate.get());
         makeSimpleItem(MKUItems.themnianLeaderLeggings.get());
         makeSimpleItem(MKUItems.themnianLeaderHelmet.get());
+        makeSimpleItem(MKUItems.themcromancerArchonRing.get());
     }
 
     private void makeSimpleItem(Item item) {

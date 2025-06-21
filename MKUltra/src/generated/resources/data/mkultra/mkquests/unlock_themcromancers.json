@@ -1,0 +1,202 @@
+{
+  "additionalNotables": [
+    {
+      "location": {
+        "name": "0",
+        "structureId": "mkultra:themcromancers_lair"
+      },
+      "notableDefs": "mkultra:themcromancer_archon"
+    }
+  ],
+  "dialogue": {
+    "dialogueId": "mknpc:give_quest.mkultra.unlock_themcromancers",
+    "hailPromptId": "hail",
+    "nodes": [
+      {
+        "message": "The acolytes are always in need of more... {prompt:materials} for their experiments.",
+        "nodeId": "prove"
+      },
+      {
+        "effects": [
+          {
+            "type": "mknpc:start_quest_chain"
+          }
+        ],
+        "message": "Our work makes use of 64 {item:minecraft:bone} and 64 {item:minecraft:rotten_flesh}, bring some to me and you will be granted entry.",
+        "nodeId": "materials"
+      },
+      {
+        "message": "You look upon a great temple to Them, Mortal. You will not be able to walk with the chosen without {prompt:prove} your worth.",
+        "nodeId": "hail"
+      }
+    ],
+    "prompts": [
+      {
+        "highlightedText": "proving",
+        "promptId": "prove",
+        "responses": [
+          {
+            "responseNodeId": "prove"
+          }
+        ],
+        "suggestionFillText": "How can I prove my worth?",
+        "triggerPhrase": "prove"
+      },
+      {
+        "highlightedText": "materials",
+        "promptId": "materials",
+        "responses": [
+          {
+            "responseNodeId": "materials"
+          },
+          {
+            "conditions": [
+              {
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": false
+              }
+            ],
+            "responseNodeId": "materials"
+          }
+        ],
+        "suggestionFillText": "What materials?",
+        "triggerPhrase": "materials"
+      },
+      {
+        "highlightedText": "",
+        "promptId": "hail",
+        "responses": [
+          {
+            "conditions": [
+              {
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": false
+              }
+            ],
+            "responseNodeId": "hail"
+          }
+        ],
+        "suggestionFillText": "",
+        "triggerPhrase": ""
+      }
+    ]
+  },
+  "questMode": 0,
+  "questName": "\"Supplying Materials\"",
+  "quests": [
+    {
+      "autoComplete": true,
+      "description": "\"You must deliver a grisly harvest to the skeletal gatekeeper.\"",
+      "objectives": [
+        {
+          "type": "mknpc:trade_with_npc",
+          "items": [
+            {
+              "count": 64,
+              "id": "minecraft:bone"
+            },
+            {
+              "count": 64,
+              "id": "minecraft:rotten_flesh"
+            }
+          ],
+          "npcDefinition": "mkultra:a_skeletal_gatekeeper",
+          "objectiveName": "trade_bones_flesh",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:themcromancers_lair"
+          }
+        }
+      ],
+      "questName": "bones_flesh",
+      "rewards": [
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 100
+        },
+        {
+          "type": "mknpc:faction",
+          "faction": "mkultra:themcromancers",
+          "faction_amount": 1000
+        }
+      ]
+    },
+    {
+      "autoComplete": true,
+      "description": "\"Return to the gatekeeper\"",
+      "objectives": [
+        {
+          "type": "mknpc:talk_to_npc",
+          "description": [
+            "Talk to the skeletal gatekeeper again."
+          ],
+          "dialogue": {
+            "dialogueId": "mknpc:quest.dialogue.return_to_gatekeeper",
+            "hailPromptId": "hail",
+            "nodes": [
+              {
+                "message": "You will be allowed onto the grounds now. You should seek out the {prompt:archon} to learn more of our art.",
+                "nodeId": "return_to_gatekeeper.hail"
+              },
+              {
+                "effects": [
+                  {
+                    "type": "mknpc:objective_completion",
+                    "objectiveName": "return_to_gatekeeper",
+                    "questName": "return_to_gatekeeper"
+                  }
+                ],
+                "message": "{mk_quest_notable:mkultra:themcromancers_lair#0#mkultra:themcromancer_archon} is in charge of this particular temple. There are others like it all over the world, you will find you have access to them all. You will find him in the inner sanctum of the temple.",
+                "nodeId": "archon"
+              }
+            ],
+            "prompts": [
+              {
+                "highlightedText": "",
+                "promptId": "hail",
+                "responses": [
+                  {
+                    "responseNodeId": "return_to_gatekeeper.hail"
+                  }
+                ],
+                "suggestionFillText": "",
+                "triggerPhrase": ""
+              },
+              {
+                "highlightedText": "archon",
+                "promptId": "archon",
+                "responses": [
+                  {
+                    "responseNodeId": "archon"
+                  }
+                ],
+                "suggestionFillText": "Who is the archon?",
+                "triggerPhrase": "archon"
+              }
+            ]
+          },
+          "npcDefinition": "mkultra:a_skeletal_gatekeeper",
+          "objectiveName": "return_to_gatekeeper",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:themcromancers_lair"
+          }
+        }
+      ],
+      "questName": "return_to_gatekeeper",
+      "rewards": [
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 50
+        },
+        {
+          "type": "mknpc:faction",
+          "faction": "mkultra:themcromancers",
+          "faction_amount": 1000
+        }
+      ]
+    }
+  ],
+  "repeatable": false,
+  "requirements": []
+}

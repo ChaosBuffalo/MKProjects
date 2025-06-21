@@ -1,4 +1,5 @@
 {
+  "additionalNotables": [],
   "dialogue": {
     "dialogueId": "mknpc:give_quest.mkultra.cleric_intro",
     "hailPromptId": "hail",

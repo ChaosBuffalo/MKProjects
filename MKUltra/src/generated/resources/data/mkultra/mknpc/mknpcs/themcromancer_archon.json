@@ -6,7 +6,7 @@
       "type": "mknpc:abilities",
       "abilities": [
         {
-          "abilityId": "mkultra:shadow_bolt",
+          "abilityId": "mkultra:shadow_bolt_dual_shotgun",
           "chance": 1.0,
           "priority": 1
         },
@@ -21,9 +21,64 @@
           "priority": 3
         },
         {
-          "abilityId": "mkultra:shadow_pulse_flurry",
+          "abilityId": "mkultra:wrath_beam",
           "chance": 1.0,
           "priority": 4
+        },
+        {
+          "abilityId": "mkultra:shadow_pulse_flurry",
+          "chance": 1.0,
+          "priority": 5
+        }
+      ]
+    },
+    "mknpc:ability_trainings": {
+      "type": "mknpc:ability_trainings",
+      "abilities": [
+        {
+          "ability": "mkultra:necrotide_warrior_summon",
+          "requirements": [
+            {
+              "type": "mkcore:training_req.has_entitlement",
+              "entitlement": "mkultra:themcromancer.tier_1"
+            }
+          ]
+        },
+        {
+          "ability": "mkultra:engulfing_darkness",
+          "requirements": [
+            {
+              "type": "mkcore:training_req.has_entitlement",
+              "entitlement": "mkultra:themcromancer.tier_1"
+            }
+          ]
+        },
+        {
+          "ability": "mkultra:shadow_bolt",
+          "requirements": [
+            {
+              "type": "mkcore:training_req.has_entitlement",
+              "entitlement": "mkultra:themcromancer.tier_2"
+            }
+          ]
+        },
+        {
+          "ability": "mkultra:shadow_pulse",
+          "requirements": [
+            {
+              "type": "mkcore:training_req.has_entitlement",
+              "entitlement": "mkultra:themcromancer.tier_2"
+            }
+          ]
+        },
+        {
+          "ability": "mkultra:life_spike",
+          "requirements": [
+            {
+              "type": "mkcore:training_req.has_entitlement",
+              "entitlement": "mkultra:themcromancer.tier_3"
+            }
+          ]
         }
       ]
     },
@@ -49,7 +104,7 @@
       "equipment": {
         "chest": [
           {
-            "dropChance": 0.05,
+            "dropChance": 1.0,
             "item": {
               "count": 1,
               "id": "mkultra:themnian_leader_chestplate"
@@ -59,7 +114,7 @@
         ],
         "feet": [
           {
-            "dropChance": 0.05,
+            "dropChance": 1.0,
             "item": {
               "count": 1,
               "id": "mkultra:themnian_leader_boots"
@@ -69,7 +124,7 @@
         ],
         "head": [
           {
-            "dropChance": 0.05,
+            "dropChance": 1.0,
             "item": {
               "count": 1,
               "id": "mkultra:themnian_leader_helmet"
@@ -79,7 +134,7 @@
         ],
         "legs": [
           {
-            "dropChance": 0.05,
+            "dropChance": 1.0,
             "item": {
               "count": 1,
               "id": "mkultra:themnian_leader_leggings"
@@ -89,7 +144,7 @@
         ],
         "mainhand": [
           {
-            "dropChance": 0.05,
+            "dropChance": 1.0,
             "item": {
               "count": 1,
               "id": "mkultra:staff_bronze"
@@ -98,6 +153,22 @@
           }
         ]
       }
+    },
+    "mknpc:extra_loot": {
+      "type": "mknpc:extra_loot",
+      "lootOptions": [
+        {
+          "lootSlotName": "mkweapons:rings",
+          "lootSlotTier": "mkultra:themcromancer_archon",
+          "weight": 3.0
+        },
+        {
+          "lootSlotName": "mkweapons:earrings",
+          "lootSlotTier": "mkultra:themcromancer_archon",
+          "weight": 2.0
+        }
+      ],
+      "noLootChance": 0.25
     },
     "mknpc:faction": {
       "type": "mknpc:faction",
@@ -110,6 +181,10 @@
     "mknpc:mk_size": {
       "type": "mknpc:mk_size",
       "scale": 1.0
+    },
+    "mknpc:notable": {
+      "type": "mknpc:notable",
+      "isNotable": true
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",

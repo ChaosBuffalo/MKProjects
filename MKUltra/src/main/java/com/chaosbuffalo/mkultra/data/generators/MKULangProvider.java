@@ -147,5 +147,7 @@ public class MKULangProvider extends NpcLanguageProvider {
         addItem(MKUItems.themnianLeaderChestplate, "Themnian Archon Robes");
         addItem(MKUItems.themnianLeaderLeggings, "Themnian Archon Leggings");
         faction(MKUFactions.THEMCROMANCER_GATEKEEPER_NAME, "Themcromancer Gatekeepers");
+        addItem(MKUItems.themcromancerArchonRing, "Themnian Archon Ring");
+        talentTree(MKUltra.id("knave_talents"), "Knave");
     }
 }

@@ -59,7 +59,7 @@ public class ItemUtils {
     private static Set<DataComponentType<?>> noDurability = Set.of(DataComponents.DAMAGE, DataComponents.MAX_DAMAGE);
 
     public static boolean isEqualNoDurability(ItemStack stack1, ItemStack stack2) {
-        return compareItemsWithBlacklist(stack1, stack1, noDurability);
+        return compareItemsWithBlacklist(stack1, stack2, noDurability);
     }
 
     public static EquipmentSlot getGenericEquipmentSlotForItem(ItemStack stack) {

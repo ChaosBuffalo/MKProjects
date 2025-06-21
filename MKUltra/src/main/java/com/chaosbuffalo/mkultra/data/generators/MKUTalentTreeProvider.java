@@ -27,7 +27,8 @@ public class MKUTalentTreeProvider extends TalentTreeProvider {
     public CompletableFuture<?> run(CachedOutput pOutput) {
         return CompletableFuture.allOf(
                 generateCoreTree(pOutput),
-                generateGreenKnightTree(pOutput)
+                generateGreenKnightTree(pOutput),
+                generateKnaveTree(pOutput)
         );
     }
 
@@ -57,6 +58,176 @@ public class MKUTalentTreeProvider extends TalentTreeProvider {
         healing.addNode(new AttributeTalentNode(CoreTalents.MAX_POISE_TALENT, 2, 2.0));
         healing.addNode(new AttributeTalentNode(CoreTalents.MANA_REGEN_TALENT, 1, 0.5));
         tree.addLine(healing);
+        return writeDefinition(tree, pOutput);
+    }
+//    {
+//        "version": 1,
+//            "lines": [
+//        {
+//            "name": "mkultra:knave_1",
+//                "talents": [
+//            {
+//                "name": "mkultra:talent.magic_damage",
+//                    "max_points": 1,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.magic_armor",
+//                    "max_points": 1,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.melee_crit",
+//                    "max_points": 2,
+//                    "value": 0.01
+//            },
+//            {
+//                "name": "mkultra:talent.magic_damage",
+//                    "max_points": 1,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.max_health",
+//                    "max_points": 2,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.life_siphon",
+//                    "max_points": 1
+//            }
+//      ]
+//        },
+//        {
+//            "name": "mkultra:knave_2",
+//                "talents": [
+//            {
+//                "name": "mkultra:talent.attack_damage",
+//                    "max_points": 1,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.max_health",
+//                    "max_points": 2,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.movement_speed",
+//                    "max_points": 3,
+//                    "value": 0.01
+//            },
+//            {
+//                "name": "mkultra:talent.attack_damage",
+//                    "max_points": 2,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.movement_speed",
+//                    "max_points": 4,
+//                    "value": 0.01
+//            },
+//            {
+//                "name": "mkultra:talent.max_mana",
+//                    "max_points": 2,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.attack_damage",
+//                    "max_points": 3,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.magic_armor",
+//                    "max_points": 1,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.melee_crit_damage",
+//                    "max_points": 5,
+//                    "value": 0.1
+//            },
+//            {
+//                "name": "mkultra:talent.backstab",
+//                    "max_points": 1
+//            }
+//      ]
+//        },
+//        {
+//            "name": "mkultra:knave_3",
+//                "talents": [
+//            {
+//                "name": "mkultra:talent.max_mana",
+//                    "max_points": 2,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.spell_crit",
+//                    "max_points": 2,
+//                    "value": 0.01
+//            },
+//            {
+//                "name": "mkultra:talent.movement_speed",
+//                    "max_points": 3,
+//                    "value": 0.01
+//            },
+//            {
+//                "name": "mkultra:talent.magic_damage",
+//                    "max_points": 1,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.melee_crit",
+//                    "max_points": 3,
+//                    "value": 0.01
+//            },
+//            {
+//                "name": "mkultra:talent.extended_duration",
+//                    "max_points": 1
+//            }
+//      ]
+//        }
+//  ]
+//    }
+    private CompletableFuture<?> generateKnaveTree(CachedOutput pOutput) {
+        TalentTreeDefinition tree = new TalentTreeDefinition(MKUltra.id("knave_talents"));
+        tree.setVersion(1);
+        tree.setDefault(true);
+        TalentLineDefinition line = new TalentLineDefinition(tree, "a");
+        tree.addLine(line);
+        line.addNode(new AttributeTalentNode(CoreTalents.BLEED_DAMAGE_TALENT, 1, 1));
+        line.addNode(new AttributeTalentNode(CoreTalents.BLEED_RESISTANCE_TALENT, 1, 0.01f));
+
+
+        //            "name": "mkultra:knave_1",
+//                "talents": [
+//            {
+//                "name": "mkultra:talent.magic_damage",
+//                    "max_points": 1,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.magic_armor",
+//                    "max_points": 1,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.melee_crit",
+//                    "max_points": 2,
+//                    "value": 0.01
+//            },
+//            {
+//                "name": "mkultra:talent.magic_damage",
+//                    "max_points": 1,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.max_health",
+//                    "max_points": 2,
+//                    "value": 1
+//            },
+//            {
+//                "name": "mkultra:talent.life_siphon",
+//                    "max_points": 1
+//            }
         return writeDefinition(tree, pOutput);
     }
 

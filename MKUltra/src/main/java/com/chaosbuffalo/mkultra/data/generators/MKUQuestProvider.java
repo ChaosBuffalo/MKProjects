@@ -26,6 +26,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -48,8 +49,68 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 writeDefinition(generateTrooperArmorQuest(), cache),
                 writeDefinition(generateIntroClericQuest(), cache),
                 writeDefinition(generateIntroMageQuest(), cache),
-                writeDefinition(this::generateClericQuestChain, cache)
+                writeDefinition(this::generateClericQuestChain, cache),
+                writeDefinition(this::generateJoinThemcromancers, cache)
         );
+    }
+
+    private QuestDefinition generateJoinThemcromancers(HolderLookup.Provider provider) {
+        var factionReg = provider.lookupOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY);
+        QuestStructureLocation lair = new QuestStructureLocation(UltraStructures.THEMCROMANCERS_LAIR.location(), "0");
+        QuestBuilder.QuestNpc gatekeeper = new QuestBuilder.QuestNpc(lair, MKUltra.id("a_skeletal_gatekeeper"));
+        QuestBuilder.QuestNpc archon = new QuestBuilder.QuestNpc(lair, MKUltra.id("themcromancer_archon"));
+
+        QuestDefinition def = new QuestDefinition(MKUltra.id("unlock_themcromancers"));
+        def.setRepeatable(false);
+        def.setQuestName(Component.literal("Supplying Materials"));
+
+        DialogueBuilder start = DialogueBuilder.hail(
+                "You look upon a great temple to Them, Mortal. You will not be able to walk with the chosen without " +
+                        "[proving|prove|How can I prove my worth?] your worth.")
+                .node("prove", "The acolytes are always in need of more... [materials|What materials?] for their experiments.")
+                .node("materials", "Our work makes use of {bones} and {flesh}, bring some to me and you will be granted entry.")
+                .context("bones", DialogueUtils.getStackCountItemProvider(new ItemStack(Items.BONE, 64)))
+                .context("flesh", DialogueUtils.getStackCountItemProvider(new ItemStack(Items.ROTTEN_FLESH, 64)));
+
+        start.build().populateStart(def, "materials");
+
+        Quest bonesAndFlesh = new Quest("bones_flesh", text("You must deliver a grisly harvest to the skeletal gatekeeper."));
+        bonesAndFlesh.setAutoComplete(true);
+        TradeItemsObjective tradeGold = new TradeItemsObjective(
+                "trade_bones_flesh",
+                lair,
+                gatekeeper.npcDef,
+                List.of(
+                        new ItemStack(Items.BONE, 64),
+                        new ItemStack(Items.ROTTEN_FLESH, 64)
+                ));
+        bonesAndFlesh.addObjective(tradeGold);
+        bonesAndFlesh.addReward(new XpReward(100));
+        bonesAndFlesh.addReward(new FactionReward(1000, factionReg.getOrThrow(MKUFactions.THEMCROMANCERS_NAME)));
+        def.addQuest(bonesAndFlesh);
+
+        DialogueBuilder visitArchon = DialogueBuilder.hail("You will be allowed onto the grounds now. You should seek out the [archon|Who is the archon?] to learn more of our art.")
+                .effectNode("archon", "{archon_name} is in charge of this particular temple. There are others like it all over the world, you will find you have access to them all. " +
+                        "You will find him in the inner sanctum of the temple.",
+                        new ObjectiveCompleteEffect("return_to_gatekeeper", "return_to_gatekeeper"))
+                .context("archon_name", archon.getDialogueLink());
+
+
+        Quest return1 = new QuestBuilder("return_to_gatekeeper",
+                Component.literal("Return to the gatekeeper"))
+                .autoComplete(true)
+                .builderHail("return_to_gatekeeper", Component.literal("Talk to the skeletal gatekeeper again."),
+                        gatekeeper,
+                        visitArchon,
+                        null
+                )
+                .reward(new XpReward(50))
+                .reward(new FactionReward(1000, factionReg.getOrThrow(MKUFactions.THEMCROMANCERS_NAME)))
+                .quest();
+        def.addQuest(return1);
+        //this quest does not reference this character in any particular objective but we need it to generate the dialogue
+        def.addAdditionalNotable(lair, archon.npcDef);
+        return def;
     }
 
     private QuestDefinition generateClericQuestChain(HolderLookup.Provider provider) {

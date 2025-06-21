@@ -11,14 +11,9 @@
           "priority": 1
         },
         {
-          "abilityId": "mkultra:yaup",
-          "chance": 1.0,
-          "priority": 2
-        },
-        {
           "abilityId": "mkultra:furious_brooding",
           "chance": 1.0,
-          "priority": 3
+          "priority": 2
         }
       ]
     },

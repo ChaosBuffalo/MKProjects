@@ -31,6 +31,16 @@
       "type": "mknpc:name",
       "name": "a skeletal gatekeeper"
     },
+    "mknpc:notable": {
+      "type": "mknpc:notable",
+      "isNotable": true
+    },
+    "mknpc:offer_quests": {
+      "type": "mknpc:offer_quests",
+      "questIds": [
+        "mkultra:unlock_themcromancers"
+      ]
+    },
     "mknpc:render_group": {
       "type": "mknpc:render_group",
       "renderGroup": "basic"

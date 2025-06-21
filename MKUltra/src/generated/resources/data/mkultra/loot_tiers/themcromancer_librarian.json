@@ -1,0 +1,91 @@
+{
+  "name": "mkultra:themcromancer_librarian",
+  "slotItems": {
+    "mkweapons:main_hand": [
+      {
+        "template": {
+          "lootSlot": "mkweapons:main_hand",
+          "options": [
+            {
+              "type": "mkweapons:option.ability",
+              "ability": "mkultra:shadow_bolt_dual_shotgun"
+            },
+            {
+              "type": "mkweapons:prefix_name",
+              "name": "Shadow-Touched"
+            }
+          ],
+          "potentialItems": [
+            {
+              "item": {
+                "count": 1,
+                "id": "mkultra:staff_bronze"
+              }
+            },
+            {
+              "item": {
+                "count": 1,
+                "id": "mkultra:dagger_bronze"
+              }
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "name": "mkultra:ability_weapon",
+                "slots": [
+                  "mkweapons:randomization.ability",
+                  "mkweapons:randomization.name"
+                ]
+              },
+              "weight": 10.0
+            }
+          ]
+        },
+        "weight": 10.0
+      },
+      {
+        "template": {
+          "lootSlot": "mkweapons:main_hand",
+          "options": [
+            {
+              "type": "mkweapons:option.ability",
+              "ability": "mkultra:fireball_burst"
+            },
+            {
+              "type": "mkweapons:prefix_name",
+              "name": "Flame-Touched"
+            }
+          ],
+          "potentialItems": [
+            {
+              "item": {
+                "count": 1,
+                "id": "mkultra:staff_bronze"
+              }
+            },
+            {
+              "item": {
+                "count": 1,
+                "id": "mkultra:dagger_bronze"
+              }
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "name": "mkultra:ability_weapon",
+                "slots": [
+                  "mkweapons:randomization.ability",
+                  "mkweapons:randomization.name"
+                ]
+              },
+              "weight": 10.0
+            }
+          ]
+        },
+        "weight": 10.0
+      }
+    ]
+  }
+}
