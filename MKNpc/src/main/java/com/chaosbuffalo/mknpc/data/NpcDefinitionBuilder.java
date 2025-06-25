@@ -231,6 +231,10 @@ public class NpcDefinitionBuilder {
         return attribute(MKAttributes.MANA_REGEN, value);
     }
 
+    public NpcDefinitionBuilder healthRegen(double value) {
+        return attribute(MKAttributes.HEALTH_REGEN, value);
+    }
+
     public NpcDefinitionBuilder combo(int delay, int count) {
         var opt = new MKComboSettingsOption(delay, count);
         index(opt);

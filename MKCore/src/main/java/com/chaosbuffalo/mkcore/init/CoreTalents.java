@@ -277,6 +277,12 @@ public class CoreTalents {
                     .setDisplayAsPercentage(true)
                     .setDefaultPerRank(0.01));
 
+    public static final DeferredHolder<MKTalent, AttributeTalent> HEALTH_REGEN_TALENT = TALENTS.register("health_regen",
+            () -> new AttributeTalent(
+                    MKAttributes.HEALTH_REGEN,
+                    UUID.fromString("5b3f17d9-b249-4ea2-ad7c-06bc9d9c8afd"))
+                    .setDefaultPerRank(0.5f));
+
 
     public static final DeferredHolder<MKTalent, EntitlementGrantTalent> ABILITY_SLOT_TALENT = TALENTS.register("ability_slot",
             () -> new EntitlementGrantTalent(TalentType.BASIC_SLOT));

@@ -78,7 +78,7 @@ public class MKULangProvider extends NpcLanguageProvider {
         ability(MKUAbilities.SEAFURY, "Seafury", "Places a line of %s eruptions down at the target position %s blocks apart, causing %s after %s seconds to targets within %s blocks.");
         ability(MKUAbilities.GREEN_SOUL, "Green Soul", "Infuses you with the indomitable spirit of a Green Knight, increasing health and armor.");
         talent(MKUTalents.GREEN_SOUL_TALENT, "Green Soul", "Grants the Green Soul passive ability.");
-        talentTree(MKUltra.id("green_knight_talents"), "Green Knight");
+        talentTree(MKUltra.id("green_knight"), "Green Knight");
         ability(MKUAbilities.SHADOW_PULSE, "Shadow Pulse", "Summons a vortex of shadow with a radius of %s blocks, pulling nearby enemies in and dealing %s every %s seconds for %s seconds. When the effect ends, the vortex detonates dealing %s.");
         ability(MKUAbilities.SHADOW_BOLT, "Shadow Bolt", "Throws a magical ball of shadow, causing %s to the target.");
         ability(MKUAbilities.ENGULFING_DARKNESS, "Engulfing Darkness", "Conjures a magical darkness around the target, causing %s every %s seconds for %s seconds and slowing their movement. Every tick has a %s chance to grant the caster Shadowbringer for %s seconds. Shadowbringer causes your next Shadowbolt to have an instant cast time, 50%% of the mana cost, and instantly resets its cooldown.");
@@ -107,7 +107,7 @@ public class MKULangProvider extends NpcLanguageProvider {
         ability(MKUAbilities.LIFE_SIPHON, "Life Siphon", "Heals you for %s when you kill a target.");
         ability(MKUAbilities.SOUL_DRAIN, "Soul Drain", "Restores %.1f mana when you kill a target.");
         mkEffect(MKUEffects.SOUL_DRAIN, "Soul Drain");
-        talentTree(MKUltra.id("core_talents"), "Core");
+        talentTree(MKUltra.id("core"), "Core");
         ability(MKUAbilities.WARP_CURSE, "Warp Curse", "Curses your target, causing them to teleport a short distance and take %s every %d seconds and slowing them for %d seconds.");
         ability(MKUAbilities.FLAME_WAVE, "Flame Wave", "A wave of fire engulfs your enemies, causing %s to each one. If the target is already burning damage is increased by %.2f%% and the target is withered for %d seconds.");
         ability(MKUAbilities.FIREBALL, "Fireball", "Throws a magical ball of fire, causing %s to enemies within %.1f blocks of its impact. Reduces target fire resistance by %.2f%% for %d seconds.");
@@ -148,6 +148,10 @@ public class MKULangProvider extends NpcLanguageProvider {
         addItem(MKUItems.themnianLeaderLeggings, "Themnian Archon Leggings");
         faction(MKUFactions.THEMCROMANCER_GATEKEEPER_NAME, "Themcromancer Gatekeepers");
         addItem(MKUItems.themcromancerArchonRing, "Themnian Archon Ring");
-        talentTree(MKUltra.id("knave_talents"), "Knave");
+        talentTree(MKUltra.id("knave"), "Knave");
+        talentTree(MKUltra.id("knight"), "Knight");
+        talentTree(MKUltra.id("priest"), "Priest");
+        talentTree(MKUltra.id("mage"), "Mage");
+        talentTree(MKUltra.id("warrior"), "Warrior");
     }
 }

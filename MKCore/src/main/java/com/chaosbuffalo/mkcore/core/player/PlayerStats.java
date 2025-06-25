@@ -106,6 +106,15 @@ public class PlayerStats extends EntityStats {
     }
 
     @Override
+    protected void doHealthRegen(float current, float max, float regenRate) {
+        final float tickPeriod = 3.0f;
+        final float healthPerTick = (regenRate / tickPeriod / GameConstants.TICKS_PER_SECOND);
+
+        float newHealth = Math.min(current + healthPerTick, max);
+        setHealth(newHealth);
+    }
+
+    @Override
     protected void doPoiseRegen(float current, float max, float regenRate) {
         // if getPoiseRegenRate == 1, this is 1 poise per 1 seconds
         final float poiseTickPeriod = 1.0f;
