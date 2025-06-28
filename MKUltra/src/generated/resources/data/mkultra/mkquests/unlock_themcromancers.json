@@ -146,7 +146,7 @@
                     "questName": "return_to_gatekeeper"
                   }
                 ],
-                "message": "{mk_quest_notable:mkultra:themcromancers_lair#0#mkultra:themcromancer_archon} is in charge of this particular temple. There are others like it all over the world, you will find you have access to them all. You will find him in the inner sanctum of the temple.",
+                "message": "{mk_quest_notable:mkultra:themcromancers_lair#0#mkultra:themcromancer_archon} is in charge of this temple. There are others like it all over the world, you will find you have access to them all. The Archon will be in the inner sanctum of the temple.",
                 "nodeId": "archon"
               }
             ],

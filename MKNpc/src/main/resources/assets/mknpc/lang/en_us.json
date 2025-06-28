@@ -37,5 +37,7 @@
   "mknpc.quest_reward.faction.name": "Grants %d faction to %s.",
   "mknpc.quest_reward.faction.message": "You gained %d faction with %s from completing a quest.",
   "mknpc.ui.search": "Search",
-  "block.mknpc.mk_spawner": "MK Spawner"
+  "block.mknpc.mk_spawner": "MK Spawner",
+  "mknpc.objective.quest_loot_type_tag.desc": "Loot %s from %s (%s / %s)",
+  "mknpc.objective.quest_loot_type_tag.progress": "You found %s on the corpse of %s (%s / %s)."
 }

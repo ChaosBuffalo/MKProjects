@@ -1,7 +1,8 @@
-// 1.21.1	2025-06-21T08:50:13.5235675	Quest Definitions: mkultra
+// 1.21.1	2025-06-26T17:17:55.5473501	Quest Definitions: mkultra
 c8c50bae433d6081e25d414a9a0fbe003fed93d8 data/mkultra/mkquests/cleric_intro.json
 6a0fad6a7a76aa3560574029ffcec97546be281e data/mkultra/mkquests/cleric_unlock_chain.json
 6c9105d7992c171eded66e4e525b9320e11afb2d data/mkultra/mkquests/intro_quest.json
+fd4dc3711a6d4ecbfc83e6114abefe25fface905 data/mkultra/mkquests/necromancer_unlock_chain.json
 e0ba1a79e1b8f11ba7cf27017f314c789c6a4fb7 data/mkultra/mkquests/nether_mage_intro.json
 d3b4d6ed86a9bb6f50e48e2775e81403f4395404 data/mkultra/mkquests/trooper_armor.json
-c6886c98e02641df3b92d5fb9e459f8f687fcc77 data/mkultra/mkquests/unlock_themcromancers.json
+4181a8476a4a07ede5645a431e4549ecdd92a91a data/mkultra/mkquests/unlock_themcromancers.json

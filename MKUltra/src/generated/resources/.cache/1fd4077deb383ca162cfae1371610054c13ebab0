@@ -1,0 +1,4 @@
+// 1.21.1	2025-06-26T08:40:12.9567526	Tags for minecraft:entity_type mod id mkultra
+56da95eca42f03946f98593ab3194d32d1c4943a data/minecraft/tags/entity_type/skeletons.json
+a09247af982bea8c666a02e371be7d87e29df581 data/minecraft/tags/entity_type/undead.json
+fe78a5d0ca0513ac0480c90bf2f478ff5800f886 data/minecraft/tags/entity_type/zombies.json

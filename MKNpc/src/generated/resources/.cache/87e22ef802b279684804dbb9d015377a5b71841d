@@ -1,0 +1,4 @@
+// 1.21.1	2025-06-26T08:37:45.4214647	Tags for minecraft:entity_type mod id mknpc
+7602070d5d7585ba63931092ef41f3058b48ddbf data/minecraft/tags/entity_type/skeletons.json
+67d6ecb600461f45a600d760ce29374a2cffb409 data/minecraft/tags/entity_type/undead.json
+557dae85100bf4614b3bfa61fc03672d05ac1c5c data/minecraft/tags/entity_type/zombies.json

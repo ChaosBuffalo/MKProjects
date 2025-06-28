@@ -2,14 +2,12 @@ package com.chaosbuffalo.mknpc.quest.objectives;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mknpc.quest.QuestStructureLocation;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
-import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
+import com.chaosbuffalo.mknpc.quest.data.objective.EmptyInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.mojang.serialization.Codec;
@@ -17,10 +15,13 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -30,39 +31,53 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> implements IKillObjectiveHandler {
-    public static final MapCodec<QuestLootNpcObjective> MAP_CODEC = RecordCodecBuilder.<QuestLootNpcObjective>mapCodec(builder -> {
+public class QuestLootTypeTagObjective extends QuestObjective<EmptyInstanceData> implements IKillObjectiveHandler {
+    public static final MapCodec<QuestLootTypeTagObjective> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> {
         return builder.group(
                 Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
-                QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
-                ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
+                TagKey.codec(BuiltInRegistries.ENTITY_TYPE.key()).fieldOf("tag").forGetter(i -> i.tag),
                 Codec.DOUBLE.optionalFieldOf("chance", 1.0).forGetter(i -> i.chanceToFind),
                 Codec.INT.optionalFieldOf("count", 1).forGetter(i -> i.requiredCount),
-                ComponentSerialization.CODEC.fieldOf("itemDescription").forGetter(i -> i.itemDescription)
-        ).apply(builder, QuestLootNpcObjective::new);
+                ComponentSerialization.CODEC.fieldOf("itemDescription").forGetter(i -> i.itemDescription),
+                Codec.STRING.fieldOf("tagDesc").forGetter(i -> i.tagDesc)
+        ).apply(builder, QuestLootTypeTagObjective::new);
     });
 
-    public static final ResourceLocation NAME = MKNpc.id("objective.quest_loot_npc");
-    protected ResourceLocation npcDefinition;
+    private final TagKey<EntityType<?>> tag;
+    public static final ResourceLocation NAME = MKNpc.id("objective.quest_loot_type_tag");
     protected double chanceToFind;
     private final int requiredCount;
     protected Component itemDescription;
     protected List<Component> description = new ArrayList<>();
+    private final String tagDesc;
 
 
-    public QuestLootNpcObjective(String name, QuestStructureLocation structureLocation, ResourceLocation npcDefinition,
-                                 double chance, int count, Component itemDescription) {
-        super(name, structureLocation);
-        this.npcDefinition = npcDefinition;
+    public QuestLootTypeTagObjective(String name, TagKey<EntityType<?>> tag,
+                                     double chance, int count, Component itemDescription,
+                                     String tagDesc) {
+        super(name);
+        this.tag = tag;
         chanceToFind = chance;
         requiredCount = count;
         this.itemDescription = itemDescription;
+        this.tagDesc = tagDesc;
     }
 
     @Override
     public QuestObjectiveType<? extends QuestObjective<?>> getType() {
-        return QuestObjectiveTypes.QUEST_LOOT_NPC.get();
+        return QuestObjectiveTypes.QUEST_LOOT_TYPE_TAG.get();
     }
+
+    @Override
+    public EmptyInstanceData generateInstanceData(Map<QuestStructureLocation, MKStructureEntry> questStructures, Level level) {
+        return new EmptyInstanceData();
+    }
+
+    @Override
+    public EmptyInstanceData instanceDataFactory() {
+        return new EmptyInstanceData();
+    }
+
 
     @Override
     public List<Component> getDescription(IWorldNpcData worldData) {
@@ -70,25 +85,20 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
     }
 
     private MutableComponent getDescriptionWithCount(int count, RegistryAccess registryAccess) {
-        NpcDefinition def = registryAccess.registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(npcDefinition);
-        return Component.translatable("mknpc.objective.quest_loot_npc.desc", itemDescription, def.getDisplayName(),
+        return net.minecraft.network.chat.Component.translatable("mknpc.objective.quest_loot_type_tag.desc", itemDescription, tagDesc,
                 MKAbility.INTEGER_FORMATTER.format(count), MKAbility.INTEGER_FORMATTER.format(requiredCount));
     }
 
     private MutableComponent getProgressMessage(LivingEntity entity, int count) {
-        return Component.translatable("mknpc.objective.quest_loot_npc.progress", itemDescription, entity.getName(),
+        return net.minecraft.network.chat.Component.translatable("mknpc.objective.quest_loot_type_tag.progress", itemDescription, entity.getName(),
                 MKAbility.INTEGER_FORMATTER.format(count), MKAbility.INTEGER_FORMATTER.format(requiredCount));
     }
 
     @Override
     public boolean onPlayerKillNpcDefEntity(Player player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
-                                            LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
+            LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)) {
-            UUIDInstanceData objData = getInstanceData(quest);
-            boolean applies = IEntityNpcData.get(event.getEntity())
-                    .map(x -> x.getStructureId().map(structId -> structId.equals(objData.getUUID())).orElse(false))
-                    .orElse(false)
-                    && def != null && def.getDefinitionName().equals(npcDefinition);
+            boolean applies = event.getEntity().getType().is(tag);
             if (applies && player.getRandom().nextDouble() <= chanceToFind) {
                 int currentCount = objectiveData.getInt("lootCount");
                 currentCount++;
@@ -106,22 +116,6 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
         return false;
     }
 
-    @Override
-    public UUIDInstanceData generateInstanceData(Map<QuestStructureLocation, MKStructureEntry> questStructures, Level level) {
-        MKStructureEntry entry = questStructures.get(location);
-        return new UUIDInstanceData(entry.getStructureId());
-    }
-
-    @Override
-    public UUIDInstanceData instanceDataFactory() {
-        return new UUIDInstanceData();
-    }
-
-
-    @Override
-    public boolean isStructureRelevant(MKStructureEntry entry) {
-        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNotableOfType(npcDefinition, entry.getWorldData().getWorld().registryAccess());
-    }
 
     @Override
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {

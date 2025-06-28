@@ -25,7 +25,7 @@ public class MeleeWeaponTypes {
     public static final MeleeWeaponType LONGSWORD_TYPE = MeleeWeaponType.builder(MKWeapons.id("longsword"))
             .damageMultiplier(1.5f)
             .attackSpeed(-2.4f)
-            .critical(0.5f, 0.5f)
+            .critical(0.5f, 0.05f)
             .reach(0.0f)
             .blocking(0.75f, 25)
             .effect(new MeleeSkillScalingEffect(4.5, MKAttributes.ONE_HAND_SLASH))

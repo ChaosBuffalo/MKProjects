@@ -171,9 +171,9 @@ public class MeleeWeaponType implements IMeleeWeaponType {
             return this;
         }
 
-        public Builder blocking(float b, float m) {
-            blockEfficiency = b;
-            maxPoise = m;
+        public Builder blocking(float efficiency, float poise) {
+            blockEfficiency = efficiency;
+            maxPoise = poise;
             return this;
         }
 

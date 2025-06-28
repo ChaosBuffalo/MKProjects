@@ -28,4 +28,6 @@ public class QuestObjectiveTypes {
     public static final Supplier<QuestObjectiveType<KillTypeTagObjective>> KILL_TYPE_TAG = REGISTRY.register("kill_type_tag", () -> () -> KillTypeTagObjective.CODEC);
 
     public static final Supplier<QuestObjectiveType<KillOneOfNotablesObjective>> KILL_ONE_OF_NOTABLE = REGISTRY.register("kill_one_of_notables", () -> () -> KillOneOfNotablesObjective.MAP_CODEC);
+
+    public static final Supplier<QuestObjectiveType<QuestLootTypeTagObjective>> QUEST_LOOT_TYPE_TAG = REGISTRY.register("quest_loot_type_tag", () -> () -> QuestLootTypeTagObjective.MAP_CODEC);
 }
