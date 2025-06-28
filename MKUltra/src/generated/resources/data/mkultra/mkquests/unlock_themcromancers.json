@@ -117,7 +117,7 @@
         {
           "type": "mknpc:faction",
           "faction": "mkultra:themcromancers",
-          "faction_amount": 1000
+          "faction_amount": 4000
         }
       ]
     },

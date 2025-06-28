@@ -145,10 +145,8 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     @Override
     public void addEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute,
                                      UUID spawnId, INpcOptionEntry entry) {
-        if (!worldPermanentSpawnConfigurations.containsKey(spawnId)) {
-            worldPermanentSpawnConfigurations.put(spawnId, new WorldPermanentSpawnConfiguration());
-        }
-        worldPermanentSpawnConfigurations.get(spawnId).addAttributeEntry(definition, attribute, entry);
+        worldPermanentSpawnConfigurations.computeIfAbsent(
+                spawnId, (id) -> new WorldPermanentSpawnConfiguration()).addAttributeEntry(definition, attribute, entry);
     }
 
     @Override

@@ -99,6 +99,10 @@
         }
       ]
     },
+    "mknpc:dialogue": {
+      "type": "mknpc:dialogue",
+      "dialogueId": "mkultra:necro_default"
+    },
     "mknpc:equipment": {
       "type": "mknpc:equipment",
       "equipment": {
@@ -185,6 +189,12 @@
     "mknpc:notable": {
       "type": "mknpc:notable",
       "isNotable": true
+    },
+    "mknpc:offer_quests": {
+      "type": "mknpc:offer_quests",
+      "questIds": [
+        "mkultra:necromancer_unlock_chain"
+      ]
     },
     "mknpc:render_group": {
       "type": "mknpc:render_group",

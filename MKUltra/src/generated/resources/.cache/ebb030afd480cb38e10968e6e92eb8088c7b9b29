@@ -1,4 +1,4 @@
-// 1.21.1	2025-06-12T17:00:44.817888	MKU NPC GEN
+// 1.21.1	2025-06-28T07:45:39.0111859	MKU NPC GEN
 d32a85294da14d5f136addce542d07fd90fde7c5 data/mkultra/mknpc/mknpcs/ancient_apprentice_ghost.json
 6b15235c826c86e44e1cdcb898a0665494cf866f data/mkultra/mknpc/mknpcs/ancient_cardinal.json
 50d98549fcdbf9708b7b96871996f6c3e320239d data/mkultra/mknpc/mknpcs/ancient_priest_ghost.json
@@ -37,7 +37,7 @@ d3b0ea4654bc9216e6b6a7010bb3ec12cb651ca1 data/mkultra/mknpc/mknpcs/solangian_cle
 a69d7e3deab72969cf39fe422b146c01e8c48d52 data/mkultra/mknpc/mknpcs/solangian_temple_guard.json
 ddbddb93689af9abdfd800b8df47361325c48e3e data/mkultra/mknpc/mknpcs/solangian_temple_guard_2.json
 9a7f1543e9511f26a9c1f31b8d677552100adee1 data/mkultra/mknpc/mknpcs/themcromancer_acolyte.json
-d40dc5b500b12fd400ab26deb029c365069159a3 data/mkultra/mknpc/mknpcs/themcromancer_archon.json
+da74f9b9c8866095b9c6a92f7452f1f88e8df936 data/mkultra/mknpc/mknpcs/themcromancer_archon.json
 2b6e3f41400b752b13adc3218598032bd1b84367 data/mkultra/mknpc/mknpcs/themcromancer_librarian.json
 34ec06da3b381d02ee51407520fcf04951bfc210 data/mkultra/mknpc/mknpcs/themcromancer_neophyte.json
 e23c8a7f84a75310783ca795bf79ebd96c4c3047 data/mkultra/mknpc/mknpcs/trooper_captain.json

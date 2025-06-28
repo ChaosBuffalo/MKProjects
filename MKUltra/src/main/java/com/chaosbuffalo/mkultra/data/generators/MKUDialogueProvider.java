@@ -9,7 +9,6 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUEntitlements;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -26,7 +25,8 @@ public class MKUDialogueProvider extends DialogueProvider {
                 writeDialogue(getAlphaMovePrompt(), pOutput),
                 writeDialogue(getClericAcolyteDefault(), pOutput),
                 writeDialogue(getNetherMageInitiateDefault(), pOutput),
-                writeDialogue(clericDefault(), pOutput)
+                writeDialogue(clericDefault(), pOutput),
+                writeDialogue(necroDefault(), pOutput)
         );
     }
 
@@ -46,7 +46,7 @@ public class MKUDialogueProvider extends DialogueProvider {
                 .build();
 
         DialogueNode root = treeBuilder.newNode("root")
-                .text("Hello ", PLAYER, ", welcome to the MKU alpha. Do you ").prompt(need)
+                .text("Hello ", PLAYER, ", welcome to the MKU beta. Do you ").prompt(need)
                 .build();
 
         DialoguePrompt hail = treeBuilder.newPrompt("hail")
@@ -144,5 +144,16 @@ public class MKUDialogueProvider extends DialogueProvider {
                 .context("player", DialogueContexts.PLAYER_NAME_CONTEXT);
 
         return treeBuilder.build().buildStandalone(MKUltra.id("cleric_default"));
+    }
+
+    private DialogueTree necroDefault() {
+        var treeBuilder = DialogueBuilder.hailWithCondition("Darkness has brought you here {player}, what do you hear in the [whispers|whisper|They whisper to me of strength and decay.]?",
+                        "The necromantic arts can sap strength from sinew and carve flesh with ease.",
+                        new HasEntitlementCondition(MKUEntitlements.ThemcromancerTier1))
+                .effectNode("whisper", "The power we receive from darkness is beyond the ken of mortals.", new OpenLearnAbilitiesEffect())
+                .context("name", DialogueContexts.ENTITY_NAME_CONTEXT)
+                .context("player", DialogueContexts.PLAYER_NAME_CONTEXT);
+
+        return treeBuilder.build().buildStandalone(MKUltra.id("necro_default"));
     }
 }

@@ -153,5 +153,6 @@ public class MKULangProvider extends NpcLanguageProvider {
         talentTree(MKUltra.id("priest"), "Priest");
         talentTree(MKUltra.id("mage"), "Mage");
         talentTree(MKUltra.id("warrior"), "Warrior");
+        ability(MKUAbilities.NECROTIDE_WARRIOR_SUMMON, "Summon Skeletal Warrior", "Summons a skeletal warrior to fight by your side.");
     }
 }

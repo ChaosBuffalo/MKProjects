@@ -148,6 +148,10 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
     private CompoundTag serializeQuestParameters(HolderLookup.Provider provider) {
         CompoundTag questNbt = new CompoundTag();
         for (Map.Entry<String, QuestData> entry : questData.entrySet()) {
+            if (entry.getKey() == null) {
+                MKNpc.LOGGER.error("QUEST WITH NULL NAME BEING SERIALIZED: {}", getDefinition().getName().toString());
+                continue;
+            }
             questNbt.put(entry.getKey(), entry.getValue().serializeNBT(provider));
         }
         return questNbt;

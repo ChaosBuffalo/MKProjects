@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.quest.objectives;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
@@ -99,7 +100,7 @@ public class QuestLootTypeTagObjective extends QuestObjective<EmptyInstanceData>
             LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)) {
             boolean applies = event.getEntity().getType().is(tag);
-            if (applies && player.getRandom().nextDouble() <= chanceToFind) {
+            if (applies && MathUtils.rollLuck(player, chanceToFind)) {
                 int currentCount = objectiveData.getInt("lootCount");
                 currentCount++;
                 objectiveData.putInt("lootCount", currentCount);

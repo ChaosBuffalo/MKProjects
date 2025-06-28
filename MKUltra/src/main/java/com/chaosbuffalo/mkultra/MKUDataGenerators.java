@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkultra;
 import com.chaosbuffalo.mkcore.data.providers.MKAbilityProvider;
 import com.chaosbuffalo.mkcore.data.content.MKCoreGenerators;
 import com.chaosbuffalo.mkultra.data.generators.*;
-import com.chaosbuffalo.mkultra.data.generators.npc.MKUNpcProvider;
+import com.chaosbuffalo.mkultra.data.generators.MKUNpcProvider;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraBiomeTagsProvider;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraEntityTypeTagsProvider;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraItemTagsProvider;

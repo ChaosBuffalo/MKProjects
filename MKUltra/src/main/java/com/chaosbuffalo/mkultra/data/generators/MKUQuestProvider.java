@@ -9,7 +9,6 @@ import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasSpentTalentPointsCond
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasTrainedAbilitiesCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasWeaponInHandCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
-import com.chaosbuffalo.mknpc.quest.objectives.QuestLootTypeTagObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.TradeItemsObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.quest.rewards.*;
@@ -27,7 +26,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.EntityTypeTags;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -74,7 +72,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         DialogueBuilder start = DialogueBuilder.hail(
                         "What has brought you to this temple child? I, {name}, humble Servant of Them have many mysteries to contemplate. " +
                                 "Begone unless you can be of [service|How can I be of service?].")
-                .node("service", "There is always work to be done to keep the constructs in working order. Perhaps you could" +
+                .node("service", "There is always work to be done to keep the constructs in working order. Perhaps you could " +
                         "[collect|I will collect the parts.] some necessary parts.")
                 .node("collect", "Go out in the dead of night and bring back everything on this list. Complete this task and " +
                         "I will set you upon the path.")
@@ -122,9 +120,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 Component.literal("Collect the remnants of the sea."))
                 .autoComplete(true)
                 .questLootFromDef("whispers", obelisk, MKUltra.id("seawoven_wretch"),
-                        0.25, 5, Component.literal("Whispers of Sea Foam"))
+                        0.50, 5, Component.literal("Whispers of Sea Foam"))
                 .questLootFromDef("echoes", obelisk, MKUltra.id("seawoven_skeleton"),
-                        0.2, 8, Component.literal("Echoes of Dead Waves"))
+                        0.50, 4, Component.literal("Echoes of Dead Waves"))
                 .reward(new XpReward(250))
                 .quest();
         def.addQuest(remnants);
@@ -148,7 +146,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                         null
                 )
                 .reward(new FactionReward(100, factionReg.getOrThrow(MKUFactions.THEMCROMANCERS_NAME)))
-                .reward(new FactionReward(-5000, factionReg.getOrThrow(MKUFactions.SEE_OF_SOLANG_NAME)))
+                .reward(new FactionReward(-10000, factionReg.getOrThrow(MKUFactions.SEE_OF_SOLANG_NAME)))
                 .reward(new GrantEntitlementReward(MKUEntitlements.ThemcromancerTier2))
                 .reward(new XpReward(250))
                 .quest();
@@ -215,7 +213,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 ));
         bonesAndFlesh.addObjective(tradeGold);
         bonesAndFlesh.addReward(new XpReward(100));
-        bonesAndFlesh.addReward(new FactionReward(1000, factionReg.getOrThrow(MKUFactions.THEMCROMANCERS_NAME)));
+        bonesAndFlesh.addReward(new FactionReward(4000, factionReg.getOrThrow(MKUFactions.THEMCROMANCERS_NAME)));
         def.addQuest(bonesAndFlesh);
 
         DialogueBuilder visitArchon = DialogueBuilder.hail("You will be allowed onto the grounds now. You should seek out the [archon|Who is the archon?] to learn more of our art.")

@@ -5,7 +5,7 @@
     "hailPromptId": "hail",
     "nodes": [
       {
-        "message": "There is always work to be done to keep the constructs in working order. Perhaps you could{prompt:collect} some necessary parts.",
+        "message": "There is always work to be done to keep the constructs in working order. Perhaps you could {prompt:collect} some necessary parts.",
         "nodeId": "service"
       },
       {
@@ -221,7 +221,7 @@
       "objectives": [
         {
           "type": "mknpc:quest_loot_npc",
-          "chance": 0.25,
+          "chance": 0.5,
           "count": 5,
           "itemDescription": "Whispers of Sea Foam",
           "npcDefinition": "mkultra:seawoven_wretch",
@@ -233,8 +233,8 @@
         },
         {
           "type": "mknpc:quest_loot_npc",
-          "chance": 0.2,
-          "count": 8,
+          "chance": 0.5,
+          "count": 4,
           "itemDescription": "Echoes of Dead Waves",
           "npcDefinition": "mkultra:seawoven_skeleton",
           "objectiveName": "echoes",

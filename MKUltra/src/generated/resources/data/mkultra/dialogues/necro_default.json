@@ -1,0 +1,56 @@
+{
+  "dialogueId": "mkultra:necro_default",
+  "hailPromptId": "hail",
+  "nodes": [
+    {
+      "effects": [
+        {
+          "type": "mknpc:open_learn_abilities"
+        }
+      ],
+      "message": "The power we receive from darkness is beyond the ken of mortals.",
+      "nodeId": "whisper"
+    },
+    {
+      "message": "Darkness has brought you here {context:player_name}, what do you hear in the {prompt:whisper}?",
+      "nodeId": "hail_w_cond"
+    },
+    {
+      "message": "The necromantic arts can sap strength from sinew and carve flesh with ease.",
+      "nodeId": "hail_wo_cond"
+    }
+  ],
+  "prompts": [
+    {
+      "highlightedText": "whispers",
+      "promptId": "whisper",
+      "responses": [
+        {
+          "responseNodeId": "whisper"
+        }
+      ],
+      "suggestionFillText": "They whisper to me of strength and decay.",
+      "triggerPhrase": "whisper"
+    },
+    {
+      "highlightedText": "",
+      "promptId": "hail",
+      "responses": [
+        {
+          "conditions": [
+            {
+              "type": "mknpc:has_entitlement",
+              "entitlement": "mkultra:themcromancer.tier_1"
+            }
+          ],
+          "responseNodeId": "hail_w_cond"
+        },
+        {
+          "responseNodeId": "hail_wo_cond"
+        }
+      ],
+      "suggestionFillText": "",
+      "triggerPhrase": ""
+    }
+  ]
+}

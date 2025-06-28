@@ -44,6 +44,8 @@
   "ability.mkultra.life_spike.name": "Life Spike",
   "ability.mkultra.natures_remedy.description": "Heals your target for %s every second, lasts for %d seconds.",
   "ability.mkultra.natures_remedy.name": "Nature's Remedy",
+  "ability.mkultra.necrotide_warrior_summon.description": "Summons a skeletal warrior to fight by your side.",
+  "ability.mkultra.necrotide_warrior_summon.name": "Summon Skeletal Warrior",
   "ability.mkultra.power_word_summon.description": "Summons your target in front of you, if they're an enemy roots them for %d seconds.",
   "ability.mkultra.power_word_summon.name": "Power Word Summon",
   "ability.mkultra.seafury.description": "Places a line of %s eruptions down at the target position %s blocks apart, causing %s after %s seconds to targets within %s blocks.",

@@ -1,8 +1,9 @@
-package com.chaosbuffalo.mkultra.data.generators.npc;
+package com.chaosbuffalo.mkultra.data.generators;
 
 
 import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.data.generators.npc.*;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;

@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
+import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -95,7 +96,10 @@ public class KillNotableNpcObjective extends QuestObjective<UUIDInstanceData> im
         PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription(worldData));
         NotableNpcEntry notable = worldData.getNotableNpc(objData.getUUID());
         if (notable != null) {
-            newObj.setDescription(Component.translatable("mknpc.objective.kill_notable.desc", notable.getName()));
+            newObj.setDescription(ImmutableList.of(
+                    Component.translatable("mknpc.objective.kill_notable.desc", notable.getName()),
+                    Component.literal(notable.getLocation().pos().toString()))
+            );
             newObj.putBlockPos("npcPos", notable.getLocation());
         }
         newObj.putBool("hasKilled", false);
