@@ -39,6 +39,7 @@ import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 public class WorldNpcDataHandler implements IWorldNpcData {
@@ -51,7 +52,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     private final HashMap<UUID, NotableNpcEntry> notableNpcs;
     private final HashMap<UUID, PointOfInterestEntry> pointOfInterests;
     private final WorldStructureManager structureManager;
-    private final List<GlobalPos> chestsToProcess;
+    private final ConcurrentLinkedQueue<GlobalPos> chestsToProcess;
     private final Level world;
 
     public WorldNpcDataHandler(Level world) {
@@ -64,7 +65,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         quests = new HashMap<>();
         pointOfInterests = new HashMap<>();
         structureManager = new WorldStructureManager(this);
-        chestsToProcess = new ArrayList<>();
+        chestsToProcess = new ConcurrentLinkedQueue<>();
     }
 
 
@@ -254,8 +255,11 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     @Override
     public void update() {
         structureManager.tick();
-        chestsToProcess.forEach(this::processChest);
-        chestsToProcess.clear();
+        int processCount = 0;
+        while (!chestsToProcess.isEmpty() && processCount < 5) {
+            processChest(chestsToProcess.poll());
+            processCount++;
+        }
     }
 
     @Override
@@ -292,6 +296,11 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         if (getWorld() instanceof ServerLevel && getWorld().getServer() != null) {
             Level chestLevel = getWorld().getServer().getLevel(pos.dimension());
             if (chestLevel != null) {
+                ChunkPos chunkPos = new ChunkPos(pos.pos());
+                if (!chestLevel.hasChunk(chunkPos.x, chunkPos.z)) {
+                    chestsToProcess.add(pos);
+                    return;
+                }
                 BlockEntity entity = chestLevel.getBlockEntity(pos.pos());
                 if (entity != null) {
                     IChestNpcData.get(entity).ifPresent(IChestNpcData::onLoad);
