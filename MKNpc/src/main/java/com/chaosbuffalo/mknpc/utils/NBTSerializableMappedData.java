@@ -31,11 +31,19 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     public UUID computeUUID(String name) {
+        validateName(name);
         return uuidData.computeIfAbsent(name, k -> UUID.randomUUID());
     }
 
     public void putUUID(String name, UUID value) {
+        validateName(name);
         uuidData.put(name, value);
+    }
+
+    protected void validateName(String name) throws IllegalArgumentException {
+        if (name == null) {
+            throw new IllegalArgumentException("Name cannot be null for NBTSerializableMappedData");
+        }
     }
 
     public void removeUUID(String name) {
@@ -47,6 +55,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     public void putString(String name, String value) {
+        validateName(name);
         stringData.put(name, value);
     }
 
@@ -59,6 +68,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     public void putBool(String name, boolean value) {
+        validateName(name);
         boolData.put(name, value);
     }
 
@@ -71,10 +81,12 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     public void putInt(String name, int value) {
+        validateName(name);
         intData.put(name, value);
     }
 
     public void incrementInt(String name, int value) {
+        validateName(name);
         intData.put(name, intData.getOrDefault(name, 0) + value);
     }
 
@@ -87,6 +99,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     public void putDouble(String name, double value) {
+        validateName(name);
         doubleData.put(name, value);
     }
 
@@ -99,6 +112,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     public void putBlockPos(String name, GlobalPos value) {
+        validateName(name);
         blockPosData.put(name, value);
     }
 
@@ -111,6 +125,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     public void putFloat(String name, float value) {
+        validateName(name);
         floatData.put(name, value);
     }
 
@@ -123,6 +138,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     public void putResourceLocation(String name, ResourceLocation value) {
+        validateName(name);
         rlData.put(name, value);
     }
 
@@ -135,6 +151,7 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundTag> 
     }
 
     public void putTextComponent(String name, Component component) {
+        validateName(name);
         textData.put(name, component);
     }
 

@@ -1,5 +1,9 @@
 {
   "values": [
+    "#minecraft:is_mountain",
+    "#minecraft:is_savanna",
+    "#minecraft:is_forest",
+    "#minecraft:is_badlands",
     "#minecraft:has_structure/village_desert"
   ]
 }

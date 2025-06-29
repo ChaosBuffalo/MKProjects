@@ -197,6 +197,24 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         return structureNames.stream().allMatch(x -> isStructureIndexed(x.getStructureId()));
     }
 
+    private MKStructureEntry computeStructureEntry(GlobalPos structurePos, ResourceLocation structureName, UUID structureId) {
+        StructureData structureData = null;
+        Level structureWorld = getWorld().getServer().getLevel(structurePos.dimension());
+        if (structureWorld instanceof ServerLevel serverLevel) {
+            MKStructure struct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structureName);
+            if (struct != null) {
+                StructureStart start = serverLevel.structureManager()
+                        .getStructureAt(structurePos.pos(), struct);
+                structureData = new StructureData(structureWorld.dimension(),
+                        start, this::getComponentDataFromPiece);
+            }
+
+        }
+        MKStructureEntry structureEntry = new MKStructureEntry(this, structureName, structureId, structureData);
+        indexStructureEntry(structureEntry);
+        return structureEntry;
+    }
+
     private MKStructureEntry computeStructureEntry(IStructurePlaced structurePlaced) {
         StructureData structureData = null;
         Level structureWorld = structurePlaced.getStructureLevel();
@@ -250,6 +268,13 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         MKStructureEntry structure = structureIndex.computeIfAbsent(entity.getStructureId(),
                 key -> computeStructureEntry(entity));
         structure.addPOI(entity);
+    }
+
+    @Override
+    public void addPointOfInterest(GlobalPos location, String label, UUID structureId, UUID pointId, ResourceLocation structureName) {
+        MKStructureEntry structure = structureIndex.computeIfAbsent(structureId,
+                key -> computeStructureEntry(location, structureName, structureId));
+        structure.addPOI(location, label, structureId, pointId);
     }
 
     @Override
