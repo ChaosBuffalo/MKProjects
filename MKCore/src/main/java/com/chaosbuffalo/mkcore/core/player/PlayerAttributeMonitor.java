@@ -16,12 +16,10 @@ import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.neoforged.neoforge.common.util.Lazy;
 
 import java.util.*;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 
 public class PlayerAttributeMonitor {
     private static final boolean LOG_EN = false;
-    private static final UUID EV_ID = UUID.fromString("2ea5c7a6-c8b2-4e10-98cd-6cdc6e9efd1e");
+    private static final boolean LOG_DIRTY_SOURCE_EN = false;
 
     private static final Lazy<Set<Holder<Attribute>>> allInitialSync = Lazy.of(PlayerAttributeMonitor::buildInitialSyncSet);
 
@@ -31,26 +29,15 @@ public class PlayerAttributeMonitor {
         void onValueChanged(MKPlayerData playerData, AttributeInstance instance);
     }
 
-    private final Map<Holder<Attribute>, AttributeChangeHandler> handlerMap = new IdentityHashMap<>();
+    private final Map<Holder<Attribute>, AttributeChangeHandler> handlerMap = new HashMap<>();
     private final Set<AttributeInstance> dirtyPrivates = new HashSet<>();
-    private final Consumer<BooleanSupplier> tickRequest;
 
-    public PlayerAttributeMonitor(MKPlayerData playerData, Consumer<BooleanSupplier> tickRequest) {
+    public PlayerAttributeMonitor(MKPlayerData playerData) {
         this.playerData = playerData;
-        this.tickRequest = tickRequest;
-        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_LEVEL, EV_ID, this::onJoinLevel);
     }
 
     public void monitor(Holder<Attribute> attribute, AttributeChangeHandler handler) {
         handlerMap.put(attribute, handler);
-    }
-
-    private void onJoinLevel(PlayerEvents.JoinLevelServerEvent event) {
-        ServerPlayer serverPlayer = event.getPlayerData().getEntity();
-
-        // This setup is deferred until now because the entity is not fully constructed during the ctor.
-        AttributeMapExtension.setModificationHandler(serverPlayer, this::onAttributeModified);
-        sendInitialPrivateAttributes(serverPlayer);
     }
 
     private void sendInitialPrivateAttributes(ServerPlayer serverPlayer) {
@@ -62,18 +49,24 @@ public class PlayerAttributeMonitor {
     }
 
     private void sendAttributes(ServerPlayer serverPlayer, Collection<AttributeInstance> attrs) {
+        if (LOG_EN) {
+            MKCore.LOGGER.debug("sending {} attributes to {}", attrs.size(), serverPlayer);
+            attrs.forEach(i -> MKCore.LOGGER.debug("   {} - {}", i.getAttribute().getRegisteredName(), i.getValue()));
+        }
         serverPlayer.connection.send(new ClientboundUpdateAttributesPacket(serverPlayer.getId(), attrs));
     }
 
     private void onAttributeModified(AttributeInstance instance) {
         if (LOG_EN) {
             MKCore.LOGGER.debug("attr {} for {} dirty", instance.getAttribute().value().getDescriptionId(), playerData.getEntity());
-//        new Exception("!!attr " + instance.getAttribute().getDescriptionId() + " " + instance.getModifiers().size()).printStackTrace();
+            if (LOG_DIRTY_SOURCE_EN) {
+                new Exception("!!attr " + instance.getAttribute().getRegisteredName() + " dirty by:" + instance.getModifiers().size()).printStackTrace();
+            }
         }
+
         if (instance.getAttribute().value() instanceof MKRangedAttribute mkAttr) {
             if (mkAttr.getSyncType().syncChanges()) {
                 dirtyPrivates.add(instance);
-                tickRequest.accept(this::sendUpdates);
             }
         }
 
@@ -85,14 +78,21 @@ public class PlayerAttributeMonitor {
         }
     }
 
-    private boolean sendUpdates() {
+    public void syncInitial() {
+        if (playerData.getEntity() instanceof ServerPlayer serverPlayer) {
+            sendInitialPrivateAttributes(serverPlayer);
+            AttributeMapExtension.setModificationHandler(serverPlayer, this::onAttributeModified);
+        }
+    }
+
+    public void syncUpdates() {
         if (dirtyPrivates.isEmpty())
-            return true;
+            return;
 
         if (playerData.getEntity() instanceof ServerPlayer serverPlayer) {
             // If not added to the world keep trying to sync
             if (!serverPlayer.isAddedToLevel())
-                return false;
+                return;
 
             if (LOG_EN) {
                 MKCore.LOGGER.debug("sending {} private attr updates to {}", dirtyPrivates.size(), serverPlayer);
@@ -100,7 +100,6 @@ public class PlayerAttributeMonitor {
             sendAttributes(serverPlayer, dirtyPrivates);
             dirtyPrivates.clear();
         }
-        return true;
     }
 
     private static Set<Holder<Attribute>> buildInitialSyncSet() {

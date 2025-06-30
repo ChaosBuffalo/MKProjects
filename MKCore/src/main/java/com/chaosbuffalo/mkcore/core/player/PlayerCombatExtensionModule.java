@@ -11,10 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
-import java.util.UUID;
-
 public class PlayerCombatExtensionModule extends CombatExtensionModule implements IPlayerSyncComponentProvider {
-    private static final UUID EV_ID = UUID.fromString("fce9b2a1-c8ec-4c1d-9da4-63bdd95e2ff9");
     private static final ResourceLocation blockMaxPoiseBonusId = MKCore.id("block_skill_modifier");
     private final PlayerSyncComponent sync = new PlayerSyncComponent("combatExtension");
     private final SyncInt currentProjectileHitCount = new SyncInt("projectileHits", 0);
@@ -23,7 +20,6 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
     public PlayerCombatExtensionModule(MKPlayerData playerData) {
         super(playerData);
         addSyncPrivate(currentProjectileHitCount);
-        playerData.events().subscribe(PlayerEvents.SERVER_JOIN_LEVEL, EV_ID, PlayerCombatExtensionModule::onJoinLevelServer);
     }
 
     @Override
@@ -50,9 +46,9 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         }
     }
 
-    private static void onJoinLevelServer(PlayerEvents.JoinLevelServerEvent event) {
-        updatePoiseBonus(event.getPlayerData());
-        event.getPlayerData().getAttributes().monitor(MKAttributes.BLOCK, PlayerCombatExtensionModule::onBlockChange);
+    public void serverInit() {
+        updatePoiseBonus(getPlayerData());
+        getPlayerData().getAttributeMonitor().monitor(MKAttributes.BLOCK, PlayerCombatExtensionModule::onBlockChange);
     }
 
     private static void onBlockChange(MKPlayerData playerData, AttributeInstance attributeInstance) {

@@ -8,7 +8,7 @@ import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
-import it.unimi.dsi.fastutil.objects.Object2DoubleOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
@@ -22,7 +22,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.util.strategy.IdentityStrategy;
 
 import java.util.*;
 import java.util.function.DoubleUnaryOperator;
@@ -34,7 +33,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
     }
 
     private final Persona persona;
-    private final Object2DoubleMap<Holder<Attribute>> skillValues = new Object2DoubleOpenCustomHashMap<>(IdentityStrategy.IDENTITY);
+    private final Object2DoubleMap<Holder<Attribute>> skillValues = new Object2DoubleOpenHashMap<>();
 
     private static final Map<Holder<Attribute>, SkillChangeHandler> skillChangeHandlers = Util.make(() -> {
         Map<Holder<Attribute>, SkillChangeHandler> map = new HashMap<>(8);

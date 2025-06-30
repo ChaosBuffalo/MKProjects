@@ -116,7 +116,6 @@ public class MKEntityData implements IMKEntityData {
         getEffects().sendAllEffectsToPlayer(playerEntity);
     }
 
-    @Override
     public void attachUpdateEngine(SyncController engine) {
         pets.getSyncComponent().attach(engine);
         stats.getSyncComponent().attach(engine);

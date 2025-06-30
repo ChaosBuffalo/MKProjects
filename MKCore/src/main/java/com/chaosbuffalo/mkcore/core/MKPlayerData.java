@@ -12,7 +12,6 @@ import com.chaosbuffalo.mkcore.core.player.*;
 import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
 import com.chaosbuffalo.mkcore.sync.controllers.PlayerSyncController;
 import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,8 +21,6 @@ import net.minecraft.world.entity.player.Player;
 import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.BooleanSupplier;
 
 public class MKPlayerData implements IMKEntityData {
     protected final Player player;
@@ -33,14 +30,13 @@ public class MKPlayerData implements IMKEntityData {
     protected final PlayerSyncController syncController;
     private final PlayerAnimationModule animationModule;
     private final PlayerEquipment equipment;
-    private final PlayerCombatExtensionModule combatExtensionModule;
+    protected final PlayerCombatExtensionModule combatExtensionModule;
     private final PlayerEditorModule editorModule;
     private final PlayerEffectHandler effectHandler;
     private final EntityPetModule pets;
-    private final PlayerAttributeMonitor attributes;
+    protected final PlayerAttributeMonitor attributeMonitor;
     private final PlayerEventDispatcher events;
     private final EntityRiderModule riders;
-    private final Set<BooleanSupplier> tickCallbacks = new ObjectArraySet<>(4);
 
     public MKPlayerData(Player playerEntity) {
         player = Objects.requireNonNull(playerEntity);
@@ -49,7 +45,7 @@ public class MKPlayerData implements IMKEntityData {
         personaManager = PersonaManager.getPersonaManager(this);
         abilityExecutor = new PlayerAbilityExecutor(this);
         combatExtensionModule = new PlayerCombatExtensionModule(this);
-        attributes = new PlayerAttributeMonitor(this, this::enqueueTick);
+        attributeMonitor = new PlayerAttributeMonitor(this);
         stats = new PlayerStats(this);
 
         animationModule = new PlayerAnimationModule(this);
@@ -156,8 +152,8 @@ public class MKPlayerData implements IMKEntityData {
         return effectHandler;
     }
 
-    public PlayerAttributeMonitor getAttributes() {
-        return attributes;
+    public PlayerAttributeMonitor getAttributeMonitor() {
+        return attributeMonitor;
     }
 
     private void completeAbility(MKAbility ability) {
@@ -181,10 +177,6 @@ public class MKPlayerData implements IMKEntityData {
         getPets().onDeath(Entity.RemovalReason.KILLED);
     }
 
-    private void enqueueTick(BooleanSupplier callback) {
-        tickCallbacks.add(callback);
-    }
-
     @Override
     public void update() {
         getEffects().tick();
@@ -192,10 +184,6 @@ public class MKPlayerData implements IMKEntityData {
         getAbilityExecutor().tick();
         getAnimationModule().tick();
         getCombatExtension().tick();
-
-        if (!tickCallbacks.isEmpty()) {
-            tickCallbacks.removeIf(BooleanSupplier::getAsBoolean);
-        }
     }
 
     public void clone(HolderLookup.Provider provider, MKPlayerData previous, boolean death) {
@@ -212,7 +200,6 @@ public class MKPlayerData implements IMKEntityData {
         getEffects().sendAllEffectsToPlayer(otherPlayer);
     }
 
-    @Override
     public void attachUpdateEngine(SyncController engine) {
         animationModule.getSyncComponent().attach(engine);
         combatExtensionModule.getSyncComponent().attach(engine);
