@@ -147,9 +147,7 @@ public class ClientEventHandler {
         if (player == null)
             return;
 
-        MKPlayerData playerData = MKCore.getPlayerOrNull(player);
-        if (playerData == null)
-            return;
+        MKPlayerData playerData = MKCore.getPlayerOrThrow(player);
 
         while (playerMenuBind.consumeClick()) {
             PlayerPageRegistry.openDefaultPlayerScreen(playerData);

@@ -2,63 +2,49 @@ package com.chaosbuffalo.mkcore.mixins;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.entity.EntityRiderModule;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(Entity.class)
 public abstract class EntityMixins {
-
-    @Shadow
-    public abstract boolean hasPassenger(Entity pEntity);
-
-    @Shadow
-    public abstract double getY();
-
-    @Shadow
-    public abstract double getX();
-
-    @Shadow
-    public abstract double getZ();
-
-    @Shadow public abstract Vec3 getPassengerRidingPosition(Entity entity);
-
-    @Unique
-    private Entity getSelf() {
-        return ((Entity)(Object)this);
-    }
 
     /**
      * @author kovak
      * @reason adding some riding logic
      * <p>
      */
-    @Overwrite
-    protected void positionRider(Entity passenger, Entity.MoveFunction callback) {
-        MKCore.getEntityData(getSelf()).ifPresentOrElse(entityData -> {
-            if (entityData.getRiders().hasRider(passenger)) {
-                EntityRiderModule.EntityRider rider = entityData.getRiders().getRider(passenger);
-                Vec2 rot = entityData.getEntity().getRotationVector();
+    @WrapOperation(
+            method = "positionRider(Lnet/minecraft/world/entity/Entity;)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/Entity;positionRider(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity$MoveFunction;)V"
+            )
+    )
+    private void mkcore$positionRider(Entity instance, Entity passenger, Entity.MoveFunction callback, Operation<Void> original) {
+        if (instance instanceof LivingEntity livingSelf) {
+            var entityData = MKCore.getEntityDataOrThrow(livingSelf);
+
+            EntityRiderModule.EntityRider rider = entityData.getRiders().getRider(passenger);
+            if (rider != null) {
+                Vec2 rot = livingSelf.getRotationVector();
                 Vec3 newOffset = rider.getOffset().yRot(-rot.y * ((float)Math.PI / 180F));
-                Vec3 newPos = entityData.getEntity().position().add(newOffset);
+                Vec3 newPos = livingSelf.position().add(newOffset);
                 callback.accept(passenger, newPos.x, newPos.y, newPos.z);
                 if (rider.shouldDoPitch()) {
                     passenger.setXRot(rot.x);
                 }
                 passenger.setYRot(rot.y + rider.getYawOffset());
             } else {
-                Vec3 vec3 = getPassengerRidingPosition(passenger);
-                Vec3 vec31 = passenger.getVehicleAttachmentPoint(getSelf());
-                callback.accept(passenger, vec3.x - vec31.x, vec3.y - vec31.y, vec3.z - vec31.z);
+                original.call(instance, passenger, callback);
             }
-        }, () -> {
-            Vec3 vec3 = getPassengerRidingPosition(passenger);
-            Vec3 vec31 = passenger.getVehicleAttachmentPoint(getSelf());
-            callback.accept(passenger, vec3.x - vec31.x, vec3.y - vec31.y, vec3.z - vec31.z);
-        });
+        } else {
+            original.call(instance, passenger, callback);
+        }
     }
 }

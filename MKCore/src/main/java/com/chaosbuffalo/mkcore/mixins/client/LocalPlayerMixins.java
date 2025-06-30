@@ -24,10 +24,9 @@ public abstract class LocalPlayerMixins extends AbstractClientPlayer {
     @Override
     public Collection<MobEffectInstance> getActiveEffects() {
         List<MobEffectInstance> fullList = new ArrayList<>(super.getActiveEffects());
-        MKCore.getPlayer(this).ifPresent(playerData -> {
-            playerData.getEffects().effects().forEach(effectInstance -> {
-                fullList.add(effectInstance.getClientDisplayEffectInstance());
-            });
+        var playerData = MKCore.getPlayerOrThrow(this);
+        playerData.getEffects().effects().forEach(effectInstance -> {
+            fullList.add(effectInstance.getClientDisplayEffectInstance());
         });
 
         return fullList;

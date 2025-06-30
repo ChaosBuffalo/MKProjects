@@ -76,10 +76,8 @@ public record EntityDataUpdatePacket(int entityId, CompoundTag updateTag, EnumSe
             }
 
             if (target instanceof Player player) {
-                MKPlayerData data = MKCore.getPlayerOrNull(player);
-                if (data != null) {
-                    data.getSyncController().deserializeUpdate(target.registryAccess(), packet.updateTag, packet.visibility);
-                }
+                MKPlayerData data = MKCore.getPlayerOrThrow(player);
+                data.getSyncController().deserializeUpdate(target.registryAccess(), packet.updateTag, packet.visibility);
             } else if (target instanceof ISyncControllerProvider provider) {
                 provider.getSyncController().deserializeUpdate(target.registryAccess(), packet.updateTag, packet.visibility);
             }

@@ -50,11 +50,8 @@ public class NpcClientEventHandler {
         if (player == null)
             return;
 
-        MKPlayerData playerData = MKCore.getPlayerOrNull(player);
-        if (playerData == null)
-            return;
-
         while (questMenuBind.consumeClick()) {
+            MKPlayerData playerData = MKCore.getPlayerOrThrow(player);
             Minecraft.getInstance().setScreen(new QuestPage(playerData));
         }
     }

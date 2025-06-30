@@ -39,6 +39,7 @@ import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import org.slf4j.Logger;
 
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
@@ -147,12 +148,11 @@ public class MKCore {
 
     @Nullable
     public static MKPlayerData getPlayerOrNull(Entity entity) {
-        return entity instanceof Player player ? getPlayerOrNull(player) : null;
+        return entity instanceof Player player ? getPlayerOrThrow(player) : null;
     }
 
-    // FIXME: Not actually nullable, but fix callers before removing the annotation
-    @Nullable
-    public static MKPlayerData getPlayerOrNull(Player playerEntity) {
+    @Nonnull
+    public static MKPlayerData getPlayerOrThrow(Player playerEntity) {
         return playerEntity.getData(CoreAttachments.PLAYER_DATA_ATTACHMENT);
     }
 
@@ -163,6 +163,13 @@ public class MKCore {
     // FIXME: All LivingEntity will have the attachment so we don't need optionals here
     public static Optional<? extends IMKEntityData> getEntityData(@Nullable LivingEntity entity) {
         return Optional.ofNullable(getEntityDataOrNull(entity));
+    }
+
+    public static IMKEntityData getEntityDataOrThrow(@Nonnull LivingEntity entity) {
+        if (entity instanceof Player) {
+            return entity.getData(CoreAttachments.PLAYER_DATA_ATTACHMENT);
+        }
+        return entity.getData(CoreAttachments.ENTITY_DATA_ATTACHMENT);
     }
 
     @Nullable

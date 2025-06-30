@@ -4,12 +4,10 @@
   "compatibilityLevel": "JAVA_21",
   "refmap": "mkcore.refmap.json",
   "mixins": [
-    "AttributeInstanceMixins",
     "AttributeMapMixins",
     "DamageSourceMixins",
     "EntityMixins",
     "LivingEntityMixins",
-    "MobEntityMixins",
     "PlayerMixins",
     "ShieldItemMixins",
     "SwordItemMixins"

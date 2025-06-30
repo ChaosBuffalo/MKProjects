@@ -22,9 +22,8 @@ public class PlayerMixins {
     )
     private void mkcore$postAttack(CallbackInfo ci) {
         Player player = (Player) (Object) this;
-        MKCore.getEntityData(player).ifPresent(cap -> {
-            cap.getCombatExtension().recordSwingHit();
-            NeoForge.EVENT_BUS.post(new PostAttackEvent(cap));
-        });
+        var playerData = MKCore.getPlayerOrThrow(player);
+        playerData.getCombatExtension().recordSwingHit();
+        NeoForge.EVENT_BUS.post(new PostAttackEvent(playerData));
     }
 }

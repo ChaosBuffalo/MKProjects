@@ -375,9 +375,7 @@ public class MKOverlay implements LayeredDraw.Layer {
         if (mc.player == null || mc.options.hideGui)
             return;
 
-        MKPlayerData cap = MKCore.getPlayerOrNull(mc.player);
-        if (cap == null)
-            return;
+        MKPlayerData cap = MKCore.getPlayerOrThrow(mc.player);
 
         int width = mc.getWindow().getGuiScaledWidth();
         int height = mc.getWindow().getGuiScaledHeight();

@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.mixins;
+package com.chaosbuffalo.mknpc.mixins.client;
 
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
