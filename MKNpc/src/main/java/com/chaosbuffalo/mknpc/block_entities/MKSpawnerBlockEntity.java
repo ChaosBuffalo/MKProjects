@@ -7,6 +7,8 @@ import com.chaosbuffalo.mkcore.utils.WorldUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.blocks.MKSpawnerBlock;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
+import com.chaosbuffalo.mknpc.components.NpcComponents;
+import com.chaosbuffalo.mknpc.components.SpawnerDataComponent;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.init.MKNpcBlockEntityTypes;
@@ -18,6 +20,7 @@ import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -250,6 +253,22 @@ public class MKSpawnerBlockEntity extends BlockEntity implements IStructurePlace
         }
     }
 
+    @Override
+    protected void applyImplicitComponents(DataComponentInput componentInput) {
+        super.applyImplicitComponents(componentInput);
+        SpawnerDataComponent comp = componentInput.get(NpcComponents.SPAWNER_DATA);
+        if (comp != null) {
+            setSpawnList(comp.spawns());
+            setRespawnTime(comp.spawnTime());
+            setMoveType(comp.moveType());
+        }
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder components) {
+        super.collectImplicitComponents(components);
+        components.set(NpcComponents.SPAWNER_DATA, new SpawnerDataComponent(getSpawnList(), getRespawnTime(), getMoveType()));
+    }
 
     public void spawnEntity() {
         if (getLevel() != null) {

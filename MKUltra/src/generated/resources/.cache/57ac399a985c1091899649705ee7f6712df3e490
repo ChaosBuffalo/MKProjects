@@ -1,3 +1,8 @@
-// 1.21.1	2024-09-02T19:47:42.3015769	Talent Trees: mkultra
-9686ec60360c9312db9e4a20aa1c775db6f25d36 data/mkultra/player_talents/core_talents.json
-9cb6604050cdd7e505eab06d5b258ab432adab1b data/mkultra/player_talents/green_knight_talents.json
+// 1.21.1	2025-06-23T17:19:20.1383315	Talent Trees: mkultra
+fb6ed68663f7c8f92533f73da809e6fcc1448e1c data/mkultra/player_talents/core.json
+9cb6604050cdd7e505eab06d5b258ab432adab1b data/mkultra/player_talents/green_knight.json
+235bf26af735bd43175fb68dc05d456343f82f1d data/mkultra/player_talents/knave.json
+96d390a7d06de47ce9b7df6c959980e262307d8a data/mkultra/player_talents/knight.json
+6639acbc06736d06a9693d0d57767aa52bc40dd7 data/mkultra/player_talents/mage.json
+4b61d12c84b1108346201570621ad5836b5a2536 data/mkultra/player_talents/priest.json
+c888ef12c4095060b0d3c842dae640acc686f3ad data/mkultra/player_talents/warrior.json

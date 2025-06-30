@@ -1,0 +1,35 @@
+{
+  "attributes": {
+    "base_damage": 6.0,
+    "cast_behavior": {
+      "type": "mkcore:burst",
+      "doPitch": true,
+      "location": {
+        "type": "mkcore:circular_location",
+        "count": 4,
+        "distance": 1.0,
+        "inheritPitch": true,
+        "maxDegrees": 0.0,
+        "minDegrees": 0.0,
+        "offset": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "percentEyeHeight": 1.2
+      }
+    },
+    "casting_particles": "mkultra:fireball_casting",
+    "detonate_particles": "mkultra:fireball_detonate",
+    "explosionRadius": 2.0,
+    "modifier_scaling": 1.0,
+    "npc_solve_ballistics": 1,
+    "projectile_inaccuracy": 0.2,
+    "projectile_speed": 1.25,
+    "scale_damage": 2.0,
+    "trail_particles": "mkultra:fireball_trail"
+  },
+  "castTime": 80,
+  "cooldown": 80,
+  "manaCost": 5.0
+}

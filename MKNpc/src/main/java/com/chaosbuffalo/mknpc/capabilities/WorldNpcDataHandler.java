@@ -39,6 +39,7 @@ import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 public class WorldNpcDataHandler implements IWorldNpcData {
@@ -51,7 +52,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     private final HashMap<UUID, NotableNpcEntry> notableNpcs;
     private final HashMap<UUID, PointOfInterestEntry> pointOfInterests;
     private final WorldStructureManager structureManager;
-    private final List<GlobalPos> chestsToProcess;
+    private final ConcurrentLinkedQueue<GlobalPos> chestsToProcess;
     private final Level world;
 
     public WorldNpcDataHandler(Level world) {
@@ -64,7 +65,7 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         quests = new HashMap<>();
         pointOfInterests = new HashMap<>();
         structureManager = new WorldStructureManager(this);
-        chestsToProcess = new ArrayList<>();
+        chestsToProcess = new ConcurrentLinkedQueue<>();
     }
 
 
@@ -145,10 +146,8 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     @Override
     public void addEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute,
                                      UUID spawnId, INpcOptionEntry entry) {
-        if (!worldPermanentSpawnConfigurations.containsKey(spawnId)) {
-            worldPermanentSpawnConfigurations.put(spawnId, new WorldPermanentSpawnConfiguration());
-        }
-        worldPermanentSpawnConfigurations.get(spawnId).addAttributeEntry(definition, attribute, entry);
+        worldPermanentSpawnConfigurations.computeIfAbsent(
+                spawnId, (id) -> new WorldPermanentSpawnConfiguration()).addAttributeEntry(definition, attribute, entry);
     }
 
     @Override
@@ -196,6 +195,24 @@ public class WorldNpcDataHandler implements IWorldNpcData {
 
     public boolean hasStructureInstances(Set<QuestStructureLocation> structureNames) {
         return structureNames.stream().allMatch(x -> isStructureIndexed(x.getStructureId()));
+    }
+
+    private MKStructureEntry computeStructureEntry(GlobalPos structurePos, ResourceLocation structureName, UUID structureId) {
+        StructureData structureData = null;
+        Level structureWorld = getWorld().getServer().getLevel(structurePos.dimension());
+        if (structureWorld instanceof ServerLevel serverLevel) {
+            MKStructure struct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structureName);
+            if (struct != null) {
+                StructureStart start = serverLevel.structureManager()
+                        .getStructureAt(structurePos.pos(), struct);
+                structureData = new StructureData(structureWorld.dimension(),
+                        start, this::getComponentDataFromPiece);
+            }
+
+        }
+        MKStructureEntry structureEntry = new MKStructureEntry(this, structureName, structureId, structureData);
+        indexStructureEntry(structureEntry);
+        return structureEntry;
     }
 
     private MKStructureEntry computeStructureEntry(IStructurePlaced structurePlaced) {
@@ -254,10 +271,20 @@ public class WorldNpcDataHandler implements IWorldNpcData {
     }
 
     @Override
+    public void addPointOfInterest(GlobalPos location, String label, UUID structureId, UUID pointId, ResourceLocation structureName) {
+        MKStructureEntry structure = structureIndex.computeIfAbsent(structureId,
+                key -> computeStructureEntry(location, structureName, structureId));
+        structure.addPOI(location, label, structureId, pointId);
+    }
+
+    @Override
     public void update() {
         structureManager.tick();
-        chestsToProcess.forEach(this::processChest);
-        chestsToProcess.clear();
+        int processCount = 0;
+        while (!chestsToProcess.isEmpty() && processCount < 5) {
+            processChest(chestsToProcess.poll());
+            processCount++;
+        }
     }
 
     @Override
@@ -294,6 +321,11 @@ public class WorldNpcDataHandler implements IWorldNpcData {
         if (getWorld() instanceof ServerLevel && getWorld().getServer() != null) {
             Level chestLevel = getWorld().getServer().getLevel(pos.dimension());
             if (chestLevel != null) {
+                ChunkPos chunkPos = new ChunkPos(pos.pos());
+                if (!chestLevel.hasChunk(chunkPos.x, chunkPos.z)) {
+                    chestsToProcess.add(pos);
+                    return;
+                }
                 BlockEntity entity = chestLevel.getBlockEntity(pos.pos());
                 if (entity != null) {
                     IChestNpcData.get(entity).ifPresent(IChestNpcData::onLoad);

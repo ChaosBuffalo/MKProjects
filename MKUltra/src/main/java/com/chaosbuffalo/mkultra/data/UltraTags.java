@@ -7,6 +7,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.structure.Structure;
 
+import java.nio.Buffer;
+
 public class UltraTags {
 
     public static class Biomes {
@@ -18,6 +20,7 @@ public class UltraTags {
         public static final TagKey<Biome> HAS_HYBOREAN_CRYPT = tag("has_hyborean_crypt");
 
         public static final TagKey<Biome> HAS_DECAYING_CHURCH = tag("has_decaying_church");
+        public static final TagKey<Biome> HAS_THEMCROMANCER_LAIR = tag("has_themcromancer_lair");
 
         private static TagKey<Biome> tag(String name) {
             return TagKey.create(Registries.BIOME, MKUltra.id(name));
@@ -33,6 +36,7 @@ public class UltraTags {
         public static final TagKey<Structure> HYBOREAN_CRYPT = tag("hyborean_crypt");
 
         public static final TagKey<Structure> DECAYING_CHURCH = tag("decaying_church");
+        public static final TagKey<Structure> THEMCROMANCER_LAIR = tag("themcromancer_lair");
 
         private static TagKey<Structure> tag(String name) {
             return TagKey.create(Registries.STRUCTURE, MKUltra.id(name));

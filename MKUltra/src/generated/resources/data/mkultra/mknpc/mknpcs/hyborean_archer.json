@@ -42,6 +42,10 @@
         ]
       }
     },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "experience": 25
+    },
     "mknpc:faction": {
       "type": "mknpc:faction",
       "factionId": "mkfaction:undead"

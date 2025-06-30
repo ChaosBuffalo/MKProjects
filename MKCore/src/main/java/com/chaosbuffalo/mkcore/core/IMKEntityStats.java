@@ -38,6 +38,10 @@ public interface IMKEntityStats {
         return (float) getEntity().getAttributeValue(MKAttributes.MANA_REGEN);
     }
 
+    default float getHealthRegenRate() {
+        return (float) getEntity().getAttributeValue(MKAttributes.HEALTH_REGEN);
+    }
+
     void addMana(float value);
 
     boolean consumeMana(float amount);

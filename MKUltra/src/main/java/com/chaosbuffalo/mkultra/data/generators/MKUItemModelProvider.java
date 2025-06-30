@@ -53,6 +53,10 @@ public class MKUItemModelProvider extends MKWeaponModelProvider {
         makeSimpleItem(MKUItems.ancientPriestChestplate.get());
         makeSimpleItem(MKUItems.ancientPriestLeggings.get());
         makeSimpleItem(MKUItems.ancientPriestHelmet.get());
+        makeSimpleItem(MKUItems.themnianBoots.get());
+        makeSimpleItem(MKUItems.themnianChestplate.get());
+        makeSimpleItem(MKUItems.themnianLeggings.get());
+        makeSimpleItem(MKUItems.themnianHelmet.get());
         for (MKMeleeWeapon weapon : MKUItems.WEAPONS) {
             makeWeaponModel(weapon);
         }
@@ -60,6 +64,11 @@ public class MKUItemModelProvider extends MKWeaponModelProvider {
             makeBowModels(bow);
         }
         projectileItem(MKUItems.holyWordProjectileItem.get());
+        makeSimpleItem(MKUItems.themnianLeaderBoots.get());
+        makeSimpleItem(MKUItems.themnianLeaderChestplate.get());
+        makeSimpleItem(MKUItems.themnianLeaderLeggings.get());
+        makeSimpleItem(MKUItems.themnianLeaderHelmet.get());
+        makeSimpleItem(MKUItems.themcromancerArchonRing.get());
     }
 
     private void makeSimpleItem(Item item) {

@@ -1,5 +1,5 @@
 {
   "values": [
-    "#minecraft:has_structure/village_desert"
+    "#minecraft:is_overworld"
   ]
 }

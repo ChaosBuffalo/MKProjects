@@ -39,6 +39,8 @@ public class GuiTextures {
     public static final String XP_BAR_ON_SCREEN_BLUE = "xp_bar_on_screen_blue";
     public static final String PLAYER_BAR_OUTLINE = "player_bar_outline";
     public static final String SHORT_BAR_OUTLINE = "short_bar_outline";
+    public static final String FREEZING_BAR_LONG = "freezing_bar_long";
+    public static final String FREEZING_BAR = "freezing_bar";
 
 
     static {
@@ -75,6 +77,8 @@ public class GuiTextures {
         CORE_TEXTURES.addTextureRegion(ABSORPTON_BAR, 378, 45, 50, 5);
         CORE_TEXTURES.addTextureRegion(PLAYER_BAR_OUTLINE, 455, 54, 75, 5);
         CORE_TEXTURES.addTextureRegion(SHORT_BAR_OUTLINE, 455, 45, 50, 5);
+        CORE_TEXTURES.addTextureRegion(FREEZING_BAR, 326, 131, 50, 3);
+        CORE_TEXTURES.addTextureRegion(FREEZING_BAR_LONG, 378, 131, 75, 3);
 
 
     }

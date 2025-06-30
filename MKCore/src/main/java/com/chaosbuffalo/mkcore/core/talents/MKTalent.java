@@ -25,7 +25,7 @@ public abstract class MKTalent {
         return Objects.requireNonNull(MKCoreRegistry.TALENTS.getKey(this));
     }
 
-    protected String getTalentNameKey(ResourceLocation talentId) {
+    public static String getTalentNameKey(ResourceLocation talentId) {
         return talentId.toLanguageKey("talent", "name");
     }
 
@@ -41,7 +41,7 @@ public abstract class MKTalent {
         consumer.accept(getTalentDescription(record).withStyle(ChatFormatting.GRAY));
     }
 
-    protected String getTalentDescriptionKey(ResourceLocation talentId) {
+    public static String getTalentDescriptionKey(ResourceLocation talentId) {
         return talentId.toLanguageKey("talent", "description");
     }
 

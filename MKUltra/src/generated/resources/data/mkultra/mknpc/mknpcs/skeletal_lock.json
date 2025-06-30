@@ -34,6 +34,10 @@
         }
       ]
     },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "experience": 45
+    },
     "mknpc:faction": {
       "type": "mknpc:faction",
       "factionId": "mkultra:necrotide_cultists"

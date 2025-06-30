@@ -3,7 +3,9 @@ package com.chaosbuffalo.mkultra;
 import com.chaosbuffalo.mkcore.data.providers.MKAbilityProvider;
 import com.chaosbuffalo.mkcore.data.content.MKCoreGenerators;
 import com.chaosbuffalo.mkultra.data.generators.*;
+import com.chaosbuffalo.mkultra.data.generators.MKUNpcProvider;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraBiomeTagsProvider;
+import com.chaosbuffalo.mkultra.data.generators.tags.UltraEntityTypeTagsProvider;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraItemTagsProvider;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraStructureTagsProvider;
 import net.minecraft.core.HolderLookup;
@@ -36,6 +38,7 @@ public class MKUDataGenerators {
 
         generator.addProvider(event.includeServer(), new UltraBiomeTagsProvider(packOutput, datapackLookup, fileHelper));
         generator.addProvider(event.includeServer(), new UltraStructureTagsProvider(packOutput, datapackLookup, fileHelper));
+        generator.addProvider(event.includeServer(), new UltraEntityTypeTagsProvider(packOutput, datapackLookup, fileHelper));
 
         generator.addProvider(event.includeServer(), new MKUDialogueProvider(generator));
         generator.addProvider(event.includeServer(), new MKULootTierProvider(generator));
@@ -47,5 +50,6 @@ public class MKUDataGenerators {
 
         generator.addProvider(event.includeClient(), new MKUItemModelProvider(packOutput, fileHelper));
         generator.addProvider(event.includeServer(), new UltraItemTagsProvider(generator, datapackLookup, blockTagsProvider, fileHelper));
+        generator.addProvider(true, new MKULangProvider(packOutput, "en_us"));
     }
 }

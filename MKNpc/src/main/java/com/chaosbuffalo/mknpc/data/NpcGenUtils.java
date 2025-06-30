@@ -1,9 +1,9 @@
-package com.chaosbuffalo.mkultra.data.generators;
+package com.chaosbuffalo.mknpc.data;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mknpc.npc.options.SkillOption;
 
-public class MKUNpcGenUtils {
+public class NpcGenUtils {
 
 
     public enum NpcSkillClass {

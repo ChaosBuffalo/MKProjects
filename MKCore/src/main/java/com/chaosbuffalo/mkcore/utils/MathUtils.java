@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.utils;
 
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -40,6 +41,11 @@ public class MathUtils {
 
     public static boolean isInteger(String str) {
         return str.matches("^([+-]?[1-9]\\d*|0)$");
+    }
+
+    public static boolean rollLuck(Player player, double chanceToFind) {
+        double bonus = player.getLuck() + 1.0f * (chanceToFind/4.0);
+        return player.getRandom().nextDouble() <= Math.max((chanceToFind + bonus), 0.01);
     }
 
     //FIXME: not certain if this was correct translation from mc to joml, also do we even use this?

@@ -252,6 +252,10 @@ public class MKAttributes {
             new MKRangedAttribute("attribute.name.mk.heal_efficiency", 1.0, 0, 1000.0)
             .setSyncType(AttributeSyncType.Private));
 
+    public static final Holder<Attribute> HEALTH_REGEN = REGISTRY.register("health_regen", () ->
+            new MKRangedAttribute("attribute.name.mk.health_regen", 0, 0, 1024)
+                    .setSyncType(AttributeSyncType.Private));
+
     public static double getValueSafe(Holder<Attribute> attr, LivingEntity target) {
         AttributeInstance instance = target.getAttribute(attr);
         if (instance != null) {
@@ -312,6 +316,7 @@ public class MKAttributes {
         consumer.accept(MAX_MANA);
         consumer.accept(MANA_REGEN);
         consumer.accept(HAND_TO_HAND);
+        consumer.accept(HEALTH_REGEN);
     }
 
     public static void iteratePlayerAttributes(Consumer<Holder<Attribute>> consumer) {

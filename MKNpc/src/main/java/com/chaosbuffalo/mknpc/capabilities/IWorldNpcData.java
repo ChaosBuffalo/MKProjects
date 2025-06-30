@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -45,6 +46,8 @@ public interface IWorldNpcData extends INBTSerializable<CompoundTag> {
     void addChest(IChestNpcData chestData);
 
     void addPointOfInterest(MKPoiBlockEntity entry);
+
+    void addPointOfInterest(GlobalPos location, String label, UUID structureId, UUID pointId, ResourceLocation structureName);
 
     void update();
 

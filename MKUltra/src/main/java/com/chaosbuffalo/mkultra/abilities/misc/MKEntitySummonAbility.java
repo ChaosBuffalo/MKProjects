@@ -55,6 +55,7 @@ public class MKEntitySummonAbility extends MKAbility {
         return TargetingContexts.ALL;
     }
 
+
     @Override
     public AbilityTargetSelector getTargetSelector() {
         return AbilityTargeting.POSITION_INCLUDE_ENTITIES;

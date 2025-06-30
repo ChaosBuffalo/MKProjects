@@ -3,7 +3,7 @@
   "hailPromptId": "hail",
   "nodes": [
     {
-      "message": "Hello {context:player_name}, welcome to the MKU alpha. Do you {prompt:need_training}",
+      "message": "Hello {context:player_name}, welcome to the MKU beta. Do you {prompt:need_training}",
       "nodeId": "root"
     },
     {

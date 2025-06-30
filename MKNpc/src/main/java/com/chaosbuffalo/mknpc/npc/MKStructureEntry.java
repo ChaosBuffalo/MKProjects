@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.block_entities.MKPoiBlockEntity;
 import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import com.chaosbuffalo.mknpc.utils.NBTSerializableMappedData;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructure;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
@@ -187,6 +188,9 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
     }
 
     private void putPoi(PointOfInterestEntry entry) {
+        if (entry.getLabel() == null) {
+            throw new IllegalArgumentException("Poi cannot have a null label");
+        }
         List<PointOfInterestEntry> entries = pois.computeIfAbsent(entry.getLabel(), (key) -> new ArrayList<>());
         entries.add(entry);
         worldData.putNotablePOI(entry);
@@ -198,6 +202,11 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
 
     public void addPOI(MKPoiBlockEntity poi) {
         PointOfInterestEntry entry = new PointOfInterestEntry(poi);
+        putPoi(entry);
+    }
+
+    public void addPOI(GlobalPos location, String label, UUID structureId, UUID pointId) {
+        PointOfInterestEntry entry = new PointOfInterestEntry(location, label, structureId, pointId);
         putPoi(entry);
     }
 

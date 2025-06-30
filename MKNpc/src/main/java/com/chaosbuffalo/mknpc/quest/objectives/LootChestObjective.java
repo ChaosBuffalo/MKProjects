@@ -80,6 +80,11 @@ public class LootChestObjective extends QuestObjective<UUIDInstanceData> impleme
         NotableChestEntry chest = worldData.getNotableChest(objData.getUUID());
         if (chest != null) {
             newObj.putBlockPos("chestPos", chest.getLocation());
+            newObj.setDescription(ImmutableList.<Component>builder()
+                    .addAll(getDescription(worldData))
+                    .add(Component.literal(chest.getLocation().pos().toString()))
+                    .build()
+            );
         }
         newObj.putBool("hasLooted", false);
         return newObj;

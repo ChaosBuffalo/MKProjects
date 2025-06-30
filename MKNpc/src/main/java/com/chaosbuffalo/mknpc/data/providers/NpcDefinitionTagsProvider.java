@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.data;
+package com.chaosbuffalo.mknpc.data.providers;
 
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import net.minecraft.core.HolderLookup;

@@ -123,5 +123,8 @@
   "mkweapons.weapon_effect.ranged_mana_drain.name": "Mana Drain",
   "item.mkweapons.copper_earring": "Copper Earring",
   "mkweapons.accessory_effect.on_hit_ability.name": "On Melee Hit: %s",
-  "mkweapons.accessory_effect.on_hit_ability.description": "Proc Chance: %s, Casts at Skill Level: %s"
+  "mkweapons.accessory_effect.on_hit_ability.description": "Proc Chance: %s, Casts at Skill Level: %s",
+  "mkweapons.accessory_effect.reset_cooldown.name": "Reset Cooldown",
+  "mkweapons.accessory_effect.reset_cooldown.message": "Your %s glows faintly as you feel a gentle breeze.",
+  "mkweapons.accessory_effect.reset_cooldown.description": "Has a %s chance on cast of resetting the cooldown on %s skills."
 }

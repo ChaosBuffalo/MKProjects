@@ -1,19 +1,26 @@
 package com.chaosbuffalo.mknpc.spawn;
 
-import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionClient;
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
-import com.chaosbuffalo.mknpc.npc.NpcRegistries;
+import com.chaosbuffalo.mknpc.npc.*;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
 public class SpawnOption implements INBTSerializable<CompoundTag> {
     private double weight;
     private ResourceLocation definitionName;
+
+    public static final Codec<SpawnOption> CODEC = RecordCodecBuilder.<SpawnOption>mapCodec(builder -> {
+        return builder.group(
+                Codec.DOUBLE.fieldOf("weight").forGetter(i -> i.weight),
+                ResourceLocation.CODEC.fieldOf("definition").forGetter(i -> i.definitionName)
+        ).apply(builder, SpawnOption::new);
+    }).codec();
 
     public SpawnOption() {
         this.weight = 1.0;

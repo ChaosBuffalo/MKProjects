@@ -149,6 +149,140 @@ public class CoreTalents {
                     .setRequiresStatRefresh(true)
                     .setDefaultPerRank(1));
 
+    public static final DeferredHolder<MKTalent, AttributeTalent> SHADOW_DAMAGE_TALENT = TALENTS.register("shadow_damage",
+            () -> new AttributeTalent(
+                    MKAttributes.SHADOW_DAMAGE,
+                    UUID.fromString("5c1c4b81-5cb3-4e23-81b7-27a10b0e559a"))
+                    .setRequiresStatRefresh(true)
+                    .setDefaultPerRank(1));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> FIRE_DAMAGE_TALENT = TALENTS.register("fire_damage",
+            () -> new AttributeTalent(
+                    MKAttributes.FIRE_DAMAGE,
+                    UUID.fromString("04bd899c-2d67-433f-99e4-0419beb5c2cc"))
+                    .setRequiresStatRefresh(true)
+                    .setDefaultPerRank(1));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> FROST_DAMAGE_TALENT = TALENTS.register("frost_damage",
+            () -> new AttributeTalent(
+                    MKAttributes.FROST_DAMAGE,
+                    UUID.fromString("de9136d1-ff8d-4aff-8f28-f3216b73f5fc"))
+                    .setRequiresStatRefresh(true)
+                    .setDefaultPerRank(1));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> HOLY_DAMAGE_TALENT = TALENTS.register("holy_damage",
+            () -> new AttributeTalent(
+                    MKAttributes.HOLY_DAMAGE,
+                    UUID.fromString("449f91dd-4be6-4a32-8d1c-e0b18f9a6464"))
+                    .setRequiresStatRefresh(true)
+                    .setDefaultPerRank(1));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> ARCANE_DAMAGE_TALENT = TALENTS.register("arcane_damage",
+            () -> new AttributeTalent(
+                    MKAttributes.ARCANE_DAMAGE,
+                    UUID.fromString("1f8b52fe-994e-4d8e-9d94-3c6551fe8fea"))
+                    .setRequiresStatRefresh(true)
+                    .setDefaultPerRank(1));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> POISON_DAMAGE_TALENT = TALENTS.register("poison_damage",
+            () -> new AttributeTalent(
+                    MKAttributes.POISON_DAMAGE,
+                    UUID.fromString("a89e3452-9f37-4bc5-8b75-95892f1b3da7"))
+                    .setRequiresStatRefresh(true)
+                    .setDefaultPerRank(1));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> BLEED_DAMAGE_TALENT = TALENTS.register("bleed_damage",
+            () -> new AttributeTalent(
+                    MKAttributes.BLEED_DAMAGE,
+                    UUID.fromString("55333945-634b-400f-b93c-5cc6d37923eb"))
+                    .setRequiresStatRefresh(true)
+                    .setDefaultPerRank(1));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> RANGED_DAMAGE_TALENT = TALENTS.register("ranged_damage",
+            () -> new AttributeTalent(
+                    MKAttributes.RANGED_DAMAGE,
+                    UUID.fromString("162f29c1-ca25-4304-936e-9823f2cdab03"))
+                    .setRequiresStatRefresh(true)
+                    .setDefaultPerRank(1));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> BLEED_RESISTANCE_TALENT = TALENTS.register("bleed_resistance",
+            () -> new AttributeTalent(
+                    MKAttributes.BLEED_RESISTANCE,
+                    UUID.fromString("d9501c4f-7a7c-4c27-a834-0639a31b6bfe"))
+                    .setRequiresStatRefresh(true)
+                    .setDisplayAsPercentage(true)
+                    .setDefaultPerRank(0.01));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> HOLY_RESISTANCE_TALENT = TALENTS.register("holy_resistance",
+            () -> new AttributeTalent(
+                    MKAttributes.HOLY_RESISTANCE,
+                    UUID.fromString("fd524571-6147-4661-8eb3-199a533f9bc8"))
+                    .setRequiresStatRefresh(true)
+                    .setDisplayAsPercentage(true)
+                    .setDefaultPerRank(0.01));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> FROST_RESISTANCE_TALENT = TALENTS.register("frost_resistance",
+            () -> new AttributeTalent(
+                    MKAttributes.FROST_RESISTANCE,
+                    UUID.fromString("e512ef85-ef65-476b-bc04-c504c863fdb0"))
+                    .setRequiresStatRefresh(true)
+                    .setDisplayAsPercentage(true)
+                    .setDefaultPerRank(0.01));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> FIRE_RESISTANCE_TALENT = TALENTS.register("fire_resistance",
+            () -> new AttributeTalent(
+                    MKAttributes.FIRE_RESISTANCE,
+                    UUID.fromString("ed6fc985-520b-45dd-89bc-21e997a5be32"))
+                    .setRequiresStatRefresh(true)
+                    .setDisplayAsPercentage(true)
+                    .setDefaultPerRank(0.01));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> ARCANE_RESISTANCE_TALENT = TALENTS.register("arcane_resistance",
+            () -> new AttributeTalent(
+                    MKAttributes.ARCANE_RESISTANCE,
+                    UUID.fromString("039abddc-4665-4288-a0c0-00fd71315a3e"))
+                    .setRequiresStatRefresh(true)
+                    .setDisplayAsPercentage(true)
+                    .setDefaultPerRank(0.01));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> POISON_RESISTANCE_TALENT = TALENTS.register("poison_resistance",
+            () -> new AttributeTalent(
+                    MKAttributes.POISON_RESISTANCE,
+                    UUID.fromString("c431f0d3-2c25-4d9e-8678-eed060291464"))
+                    .setRequiresStatRefresh(true)
+                    .setDisplayAsPercentage(true)
+                    .setDefaultPerRank(0.01));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> SHADOW_RESISTANCE_TALENT = TALENTS.register("shadow_resistance",
+            () -> new AttributeTalent(
+                    MKAttributes.SHADOW_RESISTANCE,
+                    UUID.fromString("dccbf0d9-39f6-48d4-947d-423782232a84"))
+                    .setRequiresStatRefresh(true)
+                    .setDisplayAsPercentage(true)
+                    .setDefaultPerRank(0.01));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> RANGED_RESISTANCE_TALENT = TALENTS.register("ranged_resistance",
+            () -> new AttributeTalent(
+                    MKAttributes.RANGED_RESISTANCE,
+                    UUID.fromString("98c02c1c-21b1-4613-a37d-d32be6f57b4a"))
+                    .setRequiresStatRefresh(true)
+                    .setDisplayAsPercentage(true)
+                    .setDefaultPerRank(0.01));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> NATURE_RESISTANCE_TALENT = TALENTS.register("nature_resistance",
+            () -> new AttributeTalent(
+                    MKAttributes.NATURE_RESISTANCE,
+                    UUID.fromString("7a1d447c-655c-4d8c-87f5-63cb7f0977b9"))
+                    .setRequiresStatRefresh(true)
+                    .setDisplayAsPercentage(true)
+                    .setDefaultPerRank(0.01));
+
+    public static final DeferredHolder<MKTalent, AttributeTalent> HEALTH_REGEN_TALENT = TALENTS.register("health_regen",
+            () -> new AttributeTalent(
+                    MKAttributes.HEALTH_REGEN,
+                    UUID.fromString("5b3f17d9-b249-4ea2-ad7c-06bc9d9c8afd"))
+                    .setDefaultPerRank(0.5f));
+
 
     public static final DeferredHolder<MKTalent, EntitlementGrantTalent> ABILITY_SLOT_TALENT = TALENTS.register("ability_slot",
             () -> new EntitlementGrantTalent(TalentType.BASIC_SLOT));

@@ -26,6 +26,7 @@ public class StatsPage extends StatPageBase {
 
     static {
         STAT_PANEL_ATTRIBUTES.add(Attributes.MAX_HEALTH);
+        STAT_PANEL_ATTRIBUTES.add(MKAttributes.HEALTH_REGEN);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.MAX_MANA);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.MANA_REGEN);
         STAT_PANEL_ATTRIBUTES.add(Attributes.ARMOR);

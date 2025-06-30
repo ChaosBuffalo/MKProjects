@@ -1,4 +1,4 @@
-// 1.21.1	2024-09-02T19:47:42.3000183	MK Abilities: mkultra
+// 1.21.1	2025-06-09T15:59:12.6108356	MK Abilities: mkultra
 cea9b732cddb5061d92e9e0dd259d709cb23086f data/mkultra/player_abilities/ability.healing_circle.json
 99a250fdc1bb341b0854c404059c11098bdd2ce4 data/mkultra/player_abilities/ability.holy_fire.json
 786048dc93b971a0c3b0d2d3955dd2aee206092c data/mkultra/player_abilities/ability.holy_fire_flurry.json
@@ -10,6 +10,7 @@ cc5322c19e3793af8e9a3a52c580c412530df12f data/mkultra/player_abilities/ember.jso
 fd0053e7a9ddff2b459104524434e61099d37cea data/mkultra/player_abilities/engulfing_darkness.json
 79cf4dab99fda31d19d7e589aa8aec0b36883afa data/mkultra/player_abilities/explosive_growth.json
 1aa55ec80d65afa7b99605967b10f83c91fe774e data/mkultra/player_abilities/fireball.json
+7fc22f9146cfd7fcd5854603a55a42337fa92c0d data/mkultra/player_abilities/fireball_burst.json
 59ed64ab4270354caf13a2a3942a5c8f928f49e5 data/mkultra/player_abilities/fire_armor.json
 742c76729f9ced6356fbff2164e066c0568f17af data/mkultra/player_abilities/flame_wave.json
 760afe768fa8bc4c6e39c983a0e82c8d7e6b9acf data/mkultra/player_abilities/frozen_grasp.json
@@ -29,6 +30,7 @@ c2ddaba6ed427490207c1d82d5494d7ce7ea4bad data/mkultra/player_abilities/power_wor
 03b71dde2e6704db02683697b32d763962143b18 data/mkultra/player_abilities/seafury.json
 67446dd337a4a414be5ef3996b379b77397ff65e data/mkultra/player_abilities/sever_tendon.json
 4de3457ff2165e46764236145d341053697b145f data/mkultra/player_abilities/shadow_bolt.json
+70789d49587ab429a55c367a40db3a471b107aa3 data/mkultra/player_abilities/shadow_bolt_dual_shotgun.json
 f52942442f98a9fe46ce33378a196066b158f586 data/mkultra/player_abilities/shadow_pulse.json
 0895d6530cfbb3adbad3dafd5f2f15d2e6e329ba data/mkultra/player_abilities/shadow_pulse_flurry.json
 fb01462029e506a59062a9dddbc91b8016014baf data/mkultra/player_abilities/skin_like_wood.json

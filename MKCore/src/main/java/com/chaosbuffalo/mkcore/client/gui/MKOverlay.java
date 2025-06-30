@@ -104,7 +104,8 @@ public class MKOverlay implements LayeredDraw.Layer {
         float absorption = data.getEntity().getAbsorptionAmount();
         float maxHp = data.getEntity().getMaxHealth();
         float current_hp = data.getEntity().getHealth();
-        String textureName = isWithered ? GuiTextures.HP_WITHER_BAR : GuiTextures.HP_BAR;
+        boolean isFreezing = data.getEntity().isFullyFrozen();
+        String textureName = isWithered ? GuiTextures.HP_WITHER_BAR : isFreezing ? GuiTextures.FREEZING_BAR : GuiTextures.HP_BAR;
         float percentage = current_hp / maxHp;
         if (percentage > 1.0f) {
             percentage = 1.0f;
@@ -223,7 +224,8 @@ public class MKOverlay implements LayeredDraw.Layer {
         float absorption = data.getEntity().getAbsorptionAmount();
         float maxHp = data.getEntity().getMaxHealth();
         float current_hp = data.getEntity().getHealth();
-        String textureName = isWithered ? GuiTextures.WITHER_BAR_LONG : GuiTextures.HP_BAR_LONG;
+        boolean isFrozen = data.getEntity().isFullyFrozen();
+        String textureName = isWithered ? GuiTextures.WITHER_BAR_LONG : isFrozen ? GuiTextures.FREEZING_BAR_LONG : GuiTextures.HP_BAR_LONG;
         float percentage = current_hp / maxHp;
         if (percentage > 1.0f) {
             percentage = 1.0f;

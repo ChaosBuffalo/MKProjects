@@ -79,6 +79,10 @@ public class TradeItemsObjective extends QuestObjective<UUIDInstanceData> implem
         PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription(worldData));
         NotableNpcEntry entry = worldData.getNotableNpc(objData.getUUID());
         if (entry != null) {
+            newObj.setDescription(ImmutableList.<Component>builder()
+                            .addAll(getDescription(worldData))
+                            .add(Component.literal(entry.getLocation().pos().toString()))
+                            .build());
             newObj.putBlockPos("npcPos", entry.getLocation());
         }
         return newObj;

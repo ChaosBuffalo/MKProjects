@@ -1,0 +1,144 @@
+{
+  "entityType": "mkultra:hyborean_skeleton",
+  "name": "mkultra:a_skeletal_guard",
+  "options": {
+    "mknpc:abilities": {
+      "type": "mknpc:abilities",
+      "abilities": [
+        {
+          "abilityId": "mkultra:sever_tendon",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "abilityId": "mkultra:furious_brooding",
+          "chance": 1.0,
+          "priority": 2
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 100.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 100.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 2.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "type": "mknpc:equipment",
+      "equipment": {
+        "chest": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "count": 1,
+              "id": "mkultra:ancient_bronze_chestplate"
+            },
+            "weight": 1.0
+          }
+        ],
+        "feet": [
+          {
+            "dropChance": 0.05,
+            "item": {
+              "count": 1,
+              "id": "mkultra:ancient_bronze_boots"
+            },
+            "weight": 1.0
+          }
+        ],
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "count": 1,
+              "id": "mkweapons:battleaxe_iron"
+            },
+            "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
+            "item": {
+              "count": 1,
+              "id": "mkweapons:spear_iron"
+            },
+            "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
+            "item": {
+              "count": 1,
+              "id": "mkweapons:greatsword_iron"
+            },
+            "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
+            "item": {
+              "count": 1,
+              "id": "mkweapons:longsword_iron"
+            },
+            "weight": 1.0
+          },
+          {
+            "dropChance": 0.0,
+            "item": {
+              "count": 1,
+              "id": "mkweapons:warhammer_iron"
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "experience": 50
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "factionId": "mkultra:themcromancers"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "scale": 1.1
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "name": "a skeletal guard"
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "renderGroup": "basic"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "major_skills": [
+        "mkcore:one_hand_blunt",
+        "mkcore:one_hand_pierce",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:two_hand_slash"
+      ],
+      "minor_skills": [
+        "mkcore:hand_to_hand",
+        "mkcore:pankration"
+      ],
+      "remedial_skills": [
+        "mkcore:arete",
+        "mkcore:pneuma"
+      ]
+    }
+  }
+}

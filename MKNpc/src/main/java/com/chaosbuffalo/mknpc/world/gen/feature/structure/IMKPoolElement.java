@@ -23,7 +23,7 @@ public interface IMKPoolElement {
                     ChunkGenerator pGenerator, BlockPos piecePosition, BlockPos firstPieceBottomCenter, Rotation pRotation,
                     BoundingBox pBox, RandomSource pRandom, LiquidSettings liquidSettings, boolean pKeepJigsaws, ResourceLocation name, UUID uuid);
 
-    default void mkHandleDataMarker(LevelAccessor worldIn, StructureTemplate.StructureBlockInfo blockInfo,
+    default void mkHandleDataMarker(WorldGenLevel worldIn, StructureTemplate.StructureBlockInfo blockInfo,
                                     BlockPos structureStartPos, Rotation rotationIn,
                                     RandomSource rand, BoundingBox boundingBox, ResourceLocation structureName, UUID instanceId) {
         StructureUtils.handleMKDataMarker(blockInfo.nbt().getString("metadata"), blockInfo.pos(), worldIn, rand, boundingBox,

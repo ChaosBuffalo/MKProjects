@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.quest.objectives;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
@@ -12,6 +13,7 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
+import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -38,8 +40,7 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
                 ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
                 Codec.DOUBLE.optionalFieldOf("chance", 1.0).forGetter(i -> i.chanceToFind),
                 Codec.INT.optionalFieldOf("count", 1).forGetter(i -> i.requiredCount),
-                ComponentSerialization.CODEC.fieldOf("itemDescription").forGetter(i -> i.itemDescription),
-                Codec.list(ComponentSerialization.CODEC).fieldOf("description").forGetter(i -> i.description)
+                ComponentSerialization.CODEC.fieldOf("itemDescription").forGetter(i -> i.itemDescription)
         ).apply(builder, QuestLootNpcObjective::new);
     });
 
@@ -52,14 +53,12 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
 
 
     public QuestLootNpcObjective(String name, QuestStructureLocation structureLocation, ResourceLocation npcDefinition,
-                                 double chance, int count, Component itemDescription,
-                                 List<Component> description) {
+                                 double chance, int count, Component itemDescription) {
         super(name, structureLocation);
         this.npcDefinition = npcDefinition;
         chanceToFind = chance;
         requiredCount = count;
         this.itemDescription = itemDescription;
-        this.description.addAll(description);
     }
 
     @Override
@@ -92,11 +91,16 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
                     .map(x -> x.getStructureId().map(structId -> structId.equals(objData.getUUID())).orElse(false))
                     .orElse(false)
                     && def != null && def.getDefinitionName().equals(npcDefinition);
-            if (applies && player.getRandom().nextDouble() <= chanceToFind) {
+            if (applies && MathUtils.rollLuck(player, chanceToFind)) {
                 int currentCount = objectiveData.getInt("lootCount");
                 currentCount++;
                 objectiveData.putInt("lootCount", currentCount);
-                objectiveData.setDescription(getDescriptionWithCount(currentCount, player.registryAccess()));
+                if (objectiveData.getDescription().size() > 1) {
+                    Component pos = objectiveData.getDescription().getLast();
+                    objectiveData.setDescription(ImmutableList.of(getDescriptionWithCount(currentCount, player.registryAccess()), pos));
+                } else {
+                    objectiveData.setDescription(getDescriptionWithCount(currentCount, player.registryAccess()));
+                }
                 player.sendSystemMessage(getProgressMessage(event.getEntity(), currentCount)
                         .withStyle(ChatFormatting.GOLD));
                 if (currentCount == requiredCount) {
@@ -123,13 +127,20 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
 
     @Override
     public boolean isStructureRelevant(MKStructureEntry entry) {
-        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNotableOfType(npcDefinition, entry.getWorldData().getWorld().registryAccess());
+        return location.getStructureId().equals(entry.getStructureName()) && entry.hasNpc(npcDefinition, entry.getWorldData().getWorld().registryAccess());
     }
 
     @Override
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
         PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription(worldData));
         newObj.putInt("lootCount", 0);
+        Component desc = getDescriptionWithCount(0, worldData.getWorld().registryAccess());
+        newObj.setDescription(getDescriptionWithCount(0, worldData.getWorld().registryAccess()));
+        UUIDInstanceData objData = getInstanceData(questData);
+        worldData.getStructureData(objData.getUUID()).ifPresent(x -> {
+            String chunkPosString = x.getChunkPos().toString();
+            newObj.setDescription(ImmutableList.of(desc, Component.literal(chunkPosString)));
+        });
         return newObj;
     }
 }

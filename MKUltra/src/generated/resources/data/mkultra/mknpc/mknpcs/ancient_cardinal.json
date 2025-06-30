@@ -102,7 +102,7 @@
       "equipment": {
         "chest": [
           {
-            "dropChance": 0.05,
+            "dropChance": 0.15,
             "item": {
               "count": 1,
               "id": "mkultra:ancient_cardinal_chestplate"
@@ -112,7 +112,7 @@
         ],
         "feet": [
           {
-            "dropChance": 0.05,
+            "dropChance": 0.15,
             "item": {
               "count": 1,
               "id": "mkultra:ancient_cardinal_boots"
@@ -122,7 +122,7 @@
         ],
         "head": [
           {
-            "dropChance": 0.05,
+            "dropChance": 0.15,
             "item": {
               "count": 1,
               "id": "mkultra:ancient_cardinal_helmet"
@@ -132,7 +132,7 @@
         ],
         "legs": [
           {
-            "dropChance": 0.05,
+            "dropChance": 0.15,
             "item": {
               "count": 1,
               "id": "mkultra:ancient_cardinal_leggings"
@@ -154,7 +154,7 @@
     },
     "mknpc:experience": {
       "type": "mknpc:experience",
-      "experience": 75
+      "experience": 150
     },
     "mknpc:faction": {
       "type": "mknpc:faction",

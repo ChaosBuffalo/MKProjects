@@ -16,7 +16,7 @@
         },
         {
           "max_points": 2,
-          "name": "mkcore:armor",
+          "name": "mkcore:max_mana",
           "value": 1.0
         },
         {

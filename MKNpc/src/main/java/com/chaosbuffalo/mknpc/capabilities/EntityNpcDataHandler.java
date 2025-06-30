@@ -188,13 +188,15 @@ public class EntityNpcDataHandler implements IEntityNpcData {
 
     @Override
     public void tick() {
-        if (questGenCd <= 0) {
-            if (!questRequests.isEmpty()) {
-                handleQuestRequests();
-                questGenCd = entity.getRandom().nextInt(GameConstants.TICKS_PER_SECOND * 5);
+        if (wasMKSpawned()) {
+            if (questGenCd <= 0) {
+                if (!questRequests.isEmpty()) {
+                    handleQuestRequests();
+                    questGenCd = entity.getRandom().nextInt(GameConstants.TICKS_PER_SECOND * 5);
+                }
+            } else {
+                questGenCd--;
             }
-        } else {
-            questGenCd--;
         }
     }
 

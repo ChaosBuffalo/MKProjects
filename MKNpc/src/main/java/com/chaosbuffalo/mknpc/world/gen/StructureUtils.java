@@ -1,16 +1,22 @@
 package com.chaosbuffalo.mknpc.world.gen;
 
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
+import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
 import com.chaosbuffalo.mknpc.block_entities.MKPoiBlockEntity;
 import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -38,7 +44,7 @@ public class StructureUtils {
         }
     }
 
-    public static void handleMKDataMarker(String function, BlockPos pos, LevelAccessor worldIn, RandomSource rand, BoundingBox sbb,
+    public static void handleMKDataMarker(String function, BlockPos pos, WorldGenLevel worldIn, RandomSource rand, BoundingBox sbb,
                                           ResourceLocation structureName, UUID instanceId) {
         if (function.equals("mkspawner")) {
             BlockEntity blockEntity = worldIn.getBlockEntity(pos.below());
@@ -65,15 +71,15 @@ public class StructureUtils {
         } else if (function.startsWith("mkpoi")) {
             String[] names = function.split("#", 2);
             String tag = names[1];
-            worldIn.destroyBlock(pos, false);
-            worldIn.setBlock(pos, MKNpcBlocks.MK_POI_BLOCK.get().defaultBlockState(), 3);
-            BlockEntity blockEntity = worldIn.getBlockEntity(pos);
-            if (blockEntity instanceof MKPoiBlockEntity poi) {
-                poi.regenerateId();
-                poi.setStructureId(instanceId);
-                poi.setStructureName(structureName);
-                poi.setPoiTag(tag);
+            worldIn.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+            if (tag == null || tag.isEmpty()) {
+                MKNpc.LOGGER.error("MKPOI with null or empty tag ({}) attempted to load for {}, skipping", function, structureName);
+                return;
             }
+            worldIn.getServer().tell(new TickTask(0, () -> {
+                ContentDB.getPrimaryData().addPointOfInterest(new GlobalPos(worldIn.getLevel().dimension(), pos),
+                        tag, instanceId, UUID.randomUUID(), structureName);
+            }));
         }
     }
 

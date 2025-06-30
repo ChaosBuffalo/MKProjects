@@ -37,6 +37,12 @@ public class MKUEntitlements {
             () -> new SimpleEntitlement(1));
     public static DeferredHolder<MKEntitlement, MKEntitlement> IntroNetherMageTier1 = REGISTRY.register("nether_mage.intro.tier_1",
             () -> new SimpleEntitlement(1));
+    public static DeferredHolder<MKEntitlement, MKEntitlement> ThemcromancerTier1 = REGISTRY.register("themcromancer.tier_1",
+            () -> new SimpleEntitlement(1));
+    public static DeferredHolder<MKEntitlement, MKEntitlement> ThemcromancerTier2 = REGISTRY.register("themcromancer.tier_2",
+            () -> new SimpleEntitlement(1));
+    public static DeferredHolder<MKEntitlement, MKEntitlement> ThemcromancerTier3 = REGISTRY.register("themcromancer.tier_3",
+            () -> new SimpleEntitlement(1));
 
 
     public static void register(IEventBus modBus) {

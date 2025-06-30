@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkultra.init.MKUItems;
 import com.chaosbuffalo.mkweapons.data.LootTierProvider;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.OnMeleeProcEffect;
+import com.chaosbuffalo.mkweapons.items.effects.accesory.ResetCooldownOnCastEffect;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.RestoreManaOnCastEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.OnHitAbilityEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.UndeadDamageMeleeWeaponEffect;
@@ -49,8 +50,63 @@ public class MKULootTierProvider extends LootTierProvider {
                 writeLootTier(seawovenSkeletonTier(), cache),
                 writeLootTier(ancientKingTier(), cache),
                 writeLootTier(hyboreanSorcQueenTier(), cache),
-                writeLootTier(necrotideGolem(), cache)
+                writeLootTier(necrotideGolem(), cache),
+                writeLootTier(themcromancerLibrarian(), cache),
+                writeLootTier(themcromancerArchon(), cache)
         );
+    }
+
+    private LootTier themcromancerArchon() {
+        LootTier tier = new LootTier(MKUltra.id("themcromancer_archon"));
+        LootItemTemplate archonRingTemplate = new LootItemTemplate(LootSlotManager.RINGS);
+        archonRingTemplate.addItem(MKUItems.themcromancerArchonRing.get());
+        AccessoryEffectOption option = new AccessoryEffectOption(RandomizationSlotManager.EFFECT_SLOT);
+        option.addEffect(new ResetCooldownOnCastEffect(0.05, 0.50, MKAttributes.EVOCATION));
+        var name = new NameOption(Component.literal("Archon Skull Ring"));
+        archonRingTemplate.addRandomizationOption(option);
+        archonRingTemplate.addRandomizationOption(name);
+        archonRingTemplate.addTemplate(new RandomizationTemplate(MKUltra.id("effect_ring"),
+                RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.NAME_SLOT), 10);
+        tier.addItemTemplate(archonRingTemplate, 10);
+        LootItemTemplate archonNecklaceTemplate = new LootItemTemplate(LootSlotManager.EARRINGS);
+        archonNecklaceTemplate.addItem(MKWeaponsItems.SilverEarring.get());
+        AttributeOption attrs = new AttributeOption(RandomizationSlotManager.ATTRIBUTE_SLOT);
+        attrs.addAttributeModifier(MKAttributes.MANA_REGEN, tier.getName(), 1.0, 10.0, AttributeModifier.Operation.ADD_VALUE);
+        attrs.addAttributeModifier(MKAttributes.EVOCATION, tier.getName(), 5, 20, AttributeModifier.Operation.ADD_VALUE);
+        attrs.addAttributeModifier(MKAttributes.SHADOW_DAMAGE, tier.getName(), 0.05, 0.20, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+        archonNecklaceTemplate.addTemplate(new RandomizationTemplate(MKUltra.id("archon_stud"),
+                RandomizationSlotManager.ATTRIBUTE_SLOT, RandomizationSlotManager.NAME_SLOT), 10);
+        archonNecklaceTemplate.addRandomizationOption(attrs);
+        archonNecklaceTemplate.addRandomizationOption(new NameOption(Component.literal("Archon's Silver Stud")));
+        tier.addItemTemplate(archonNecklaceTemplate, 10);
+        return tier;
+    }
+
+    private LootTier themcromancerLibrarian() {
+        LootTier tier = new LootTier(MKUltra.id("themcromancer_librarian"));
+        LootItemTemplate shadowTouchedTemplate = new LootItemTemplate(LootSlotManager.MAIN_HAND);
+        shadowTouchedTemplate.addItem(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE, MKUltra.MODID).orElseThrow().value());
+        shadowTouchedTemplate.addItem(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.DAGGER_TYPE, MKUltra.MODID).orElseThrow().value());
+        AddAbilityOption abilityOption = new AddAbilityOption(MKUAbilities.SHADOW_BOLT_DUAL_SHOTGUN,
+                RandomizationSlotManager.ABILITY_SLOT);
+        shadowTouchedTemplate.addRandomizationOption(abilityOption);
+        var name = new PrefixNameOption(Component.literal("Shadow-Touched"));
+        shadowTouchedTemplate.addRandomizationOption(name);
+        tier.addItemTemplate(shadowTouchedTemplate, 10.0);
+        LootItemTemplate fieryTemplate = new LootItemTemplate(LootSlotManager.MAIN_HAND);
+        fieryTemplate.addItem(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE, MKUltra.MODID).orElseThrow().value());
+        fieryTemplate.addItem(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.DAGGER_TYPE, MKUltra.MODID).orElseThrow().value());
+        AddAbilityOption abilityOption2 = new AddAbilityOption(MKUAbilities.FIREBALL_BURST,
+                RandomizationSlotManager.ABILITY_SLOT);
+        fieryTemplate.addRandomizationOption(abilityOption2);
+        var name2 = new PrefixNameOption(Component.literal("Flame-Touched"));
+        fieryTemplate.addRandomizationOption(name2);
+        tier.addItemTemplate(fieryTemplate, 10.0);
+        fieryTemplate.addTemplate(new RandomizationTemplate(MKUltra.id("ability_weapon"),
+                RandomizationSlotManager.ABILITY_SLOT, RandomizationSlotManager.NAME_SLOT), 10);
+        shadowTouchedTemplate.addTemplate(new RandomizationTemplate(MKUltra.id("ability_weapon"),
+                RandomizationSlotManager.ABILITY_SLOT, RandomizationSlotManager.NAME_SLOT), 10);
+        return tier;
     }
 
     private LootTier seafuryWeapon() {

@@ -170,7 +170,26 @@ public abstract class EntityStats implements IMKEntityStats, IPlayerSyncComponen
         doManaRegen(current, max, regenRate);
     }
 
+    protected void updateHealth() {
+        final float regenRate = getHealthRegenRate();
+        if (regenRate <= 0.0f) {
+            return;
+        }
+        final float max = getMaxHealth();
+        float current = getHealth();
+        if (current > max) {
+            setHealth(max);
+            return;
+        } else if (current == max) {
+            return;
+        }
+
+        doHealthRegen(current, max, regenRate);
+    }
+
     protected abstract void doManaRegen(float current, float max, float regenRate);
+
+    protected abstract void doHealthRegen(float current, float max, float regenRate);
 
     @Override
     public BlockResult tryPoiseBlock(float damageIn) {

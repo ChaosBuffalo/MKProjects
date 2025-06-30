@@ -1,4 +1,4 @@
-// 1.21.1	2024-09-02T19:47:42.3025817	Loot Tiers: mkultra
+// 1.21.1	2025-06-12T10:03:27.5275358	Loot Tiers: mkultra
 f23c41160efaa920e8c67409ca56773538f78b7d data/mkultra/loot_tiers/ancient_king.json
 a67ffb37751150d81b1fe847bf1669b3817b434f data/mkultra/loot_tiers/burning_skeleton.json
 70fd6bc2885e460a14e6ba9debcffcb9d5a475ce data/mkultra/loot_tiers/burning_staff.json
@@ -6,6 +6,8 @@ ced556cdbadff2d8b883b43f4d0175191690994a data/mkultra/loot_tiers/hyborean_sorcer
 c1de19de923095e98f46b10a952b08bbd3cf5dfe data/mkultra/loot_tiers/necrotide_golem.json
 cebd87de8a769d6e2a9403b8e2e4eb15de2fd0ed data/mkultra/loot_tiers/seafury.json
 cea1e3919e7918ecc5f68d01eedd91b031fb99aa data/mkultra/loot_tiers/seawoven_skeleton.json
+c65588fb377f36c74dc0d5bbd06e03d84bdb89f3 data/mkultra/loot_tiers/themcromancer_archon.json
+948d14bf5be9b622a51e73e58204cba297ac0a2f data/mkultra/loot_tiers/themcromancer_librarian.json
 80ef1532ec422163d608fa2092afa2ea98685929 data/mkultra/loot_tiers/trooper_captain.json
 85f33dd3df27d173d9f56df01e1d3024272352c5 data/mkultra/loot_tiers/trooper_executioner.json
 fb5567e86072670300d90579a6e319aa6bd90284 data/mkultra/loot_tiers/trooper_knight_armor.json

@@ -5,14 +5,21 @@ import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
 import com.chaosbuffalo.mkchat.dialogue.DialogueResponse;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
+import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.CanStartQuestCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
+import com.chaosbuffalo.mkweapons.components.RangedEffectsComponent;
+import com.chaosbuffalo.mkweapons.items.effects.ranged.IRangedWeaponEffect;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
@@ -29,6 +36,13 @@ public class QuestDefinition {
         UNSORTED
     }
 
+    public record AdditionalNotable(QuestStructureLocation location, ResourceLocation notableDef) {
+        public static final Codec<AdditionalNotable> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+                QuestStructureLocation.CODEC.fieldOf("location").forGetter(AdditionalNotable::location),
+                ResourceLocation.CODEC.fieldOf("notableDefs").forGetter(AdditionalNotable::notableDef)
+        ).apply(builder, AdditionalNotable::new));
+    }
+
 
     private final ResourceLocation name;
     private final List<Quest> questChain;
@@ -40,11 +54,16 @@ public class QuestDefinition {
     private QuestMode mode;
     private DialogueTree startQuestTree;
 
+    private final List<AdditionalNotable> additionalNotables;
+
+
+
     public QuestDefinition(ResourceLocation name) {
         this.name = name;
         this.questChain = new ArrayList<>();
         this.questIndex = new HashMap<>();
         this.requirements = new ArrayList<>();
+        this.additionalNotables = new ArrayList<>();
         this.repeatable = false;
         this.mode = QuestMode.LINEAR;
         this.questName = defaultQuestName;
@@ -52,6 +71,10 @@ public class QuestDefinition {
         DialoguePrompt hailPrompt = new DialoguePrompt("hail");
         startQuestTree.addPrompt(hailPrompt);
         startQuestTree.setHailPrompt(hailPrompt);
+    }
+
+    public void addAdditionalNotable(QuestStructureLocation location, ResourceLocation notable) {
+        additionalNotables.add(new AdditionalNotable(location, notable));
     }
 
     public QuestMode getMode() {
@@ -174,6 +197,7 @@ public class QuestDefinition {
         builder.put(ops.createString("requirements"), ops.createList(requirements.stream().flatMap(x -> QuestRequirement.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
         builder.put(ops.createString("questMode"), ops.createInt(getMode().ordinal()));
         builder.put(ops.createString("dialogue"), startQuestTree.serialize(ops));
+        builder.put(ops.createString("additionalNotables"), ops.createList(additionalNotables.stream().flatMap(x -> AdditionalNotable.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
         return ops.createMap(builder.build());
     }
 
@@ -195,6 +219,9 @@ public class QuestDefinition {
         dynamic.get("requirements").asStream().forEach(x -> {
             QuestRequirement.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addRequirement);
         });
+        dynamic.get("additionalNotables").asStream().forEach(x -> {
+            AdditionalNotable.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(not -> addAdditionalNotable(not.location, not.notableDef));
+        });
         startQuestTree = DialogueTree.deserialize(makeTreeId(getName()),
                 dynamic.get("dialogue").result().orElseThrow(() -> new IllegalStateException(String.format(
                         "QuestDefinition: %s missing start quest dialogue", getName().toString()))));
@@ -211,11 +238,21 @@ public class QuestDefinition {
         if (entry == null) {
             return false;
         }
-        return questChain.stream()
+        boolean meetsRequires = questChain.stream()
                 .flatMap(x -> x.getObjectives().stream())
                 .filter(x -> x.getLocation() != null && x.getLocation().equals(location))
                 .allMatch(x -> x.isStructureRelevant(entry));
-
+        if (!meetsRequires) {
+            return false;
+        }
+        for (AdditionalNotable not : additionalNotables) {
+            if (not.location.equals(location)) {
+                if (!entry.hasNotableOfType(not.notableDef, entry.getWorldData().getWorld().registryAccess())) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public QuestChainInstance generate(Map<QuestStructureLocation, MKStructureEntry> questStructures, Level level) {

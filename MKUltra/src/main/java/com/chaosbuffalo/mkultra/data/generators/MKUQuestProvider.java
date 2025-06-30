@@ -2,7 +2,7 @@ package com.chaosbuffalo.mkultra.data.generators;
 
 import com.chaosbuffalo.mkchat.dialogue.*;
 import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
-import com.chaosbuffalo.mknpc.data.QuestDefinitionProvider;
+import com.chaosbuffalo.mknpc.data.providers.QuestDefinitionProvider;
 import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
 import com.chaosbuffalo.mknpc.quest.*;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasSpentTalentPointsCondition;
@@ -48,8 +48,196 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 writeDefinition(generateTrooperArmorQuest(), cache),
                 writeDefinition(generateIntroClericQuest(), cache),
                 writeDefinition(generateIntroMageQuest(), cache),
-                writeDefinition(this::generateClericQuestChain, cache)
+                writeDefinition(this::generateClericQuestChain, cache),
+                writeDefinition(this::generateJoinThemcromancers, cache),
+                writeDefinition(this::generateThemcromancerChain, cache)
         );
+    }
+
+    private QuestDefinition generateThemcromancerChain(HolderLookup.Provider provider) {
+        var factionReg = provider.lookupOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY);
+
+        QuestStructureLocation temple = new QuestStructureLocation(UltraStructures.THEMCROMANCERS_LAIR.location(), "0");
+        QuestStructureLocation obelisk = new QuestStructureLocation(UltraStructures.DEEPSLATE_OBELISK.location(), "0");
+        QuestStructureLocation solangTemple = new QuestStructureLocation(UltraStructures.DESERT_TEMPLE_VILLAGE.location(), "0");
+        QuestBuilder.QuestNpc archon = new QuestBuilder.QuestNpc(temple, MKUltra.id("themcromancer_archon"));
+        QuestBuilder.QuestNpc solangTempleGuard = new QuestBuilder.QuestNpc(solangTemple, MKUltra.id("solangian_temple_guard_2"));
+
+
+        QuestDefinition def = new QuestDefinition(MKUltra.id("necromancer_unlock_chain"));
+        def.setRepeatable(false);
+        def.setQuestName(Component.literal("Path to Them"));
+
+
+        DialogueBuilder start = DialogueBuilder.hail(
+                        "What has brought you to this temple child? I, {name}, humble Servant of Them have many mysteries to contemplate. " +
+                                "Begone unless you can be of [service|How can I be of service?].")
+                .node("service", "There is always work to be done to keep the constructs in working order. Perhaps you could " +
+                        "[collect|I will collect the parts.] some necessary parts.")
+                .node("collect", "Go out in the dead of night and bring back everything on this list. Complete this task and " +
+                        "I will set you upon the path.")
+                .context("name", DialogueContexts.ENTITY_NAME_CONTEXT);
+
+        start.build().populateStart(def, "collect");
+
+        Quest parts = new QuestBuilder("parts",
+                Component.literal("The Archon has provided you with a shopping list. Destroy undead in the wilderness and collect their parts."))
+                .questLootFromTypeTag("badly_damaged_skulls", EntityTypeTags.UNDEAD, "the Undead",
+                        10, 0.50, Component.literal("Badly Damaged Skull"))
+                .questLootFromTypeTag("femurs", EntityTypeTags.UNDEAD, "the Undead",
+                        4, 0.10, Component.literal("Cracked Femur"))
+                .questLootFromTypeTag("finger_bones", EntityTypeTags.UNDEAD, "the Undead",
+                        6, 0.25, Component.literal("Decaying Fingerbones"))
+                .autoComplete(true)
+                .reward(new GrantEntitlementReward(MKUEntitlements.ThemcromancerTier1))
+                .xp(250)
+                .quest();
+        parts.setAutoComplete(true);
+        def.addQuest(parts);
+
+        DialogueBuilder postParts = DialogueBuilder.hail(
+                "You have performed adequately. I will [teach|Will you teach me?] you some of the basics of necromancy. There is" +
+                        "another [task|What task?] for you to complete.")
+                .effectNode("task", "Go and find an obelisk surrounded by seafury skeletons. Collect the remnants of the sea from their bones.",
+                        new ObjectiveCompleteEffect("return_to_archon", "return_to_archon"))
+                .effectNode("teach", "The necromantic arts can sap strength from sinew and carve flesh with ease.",
+                        new OpenLearnAbilitiesEffect());
+
+        Quest return1 = new QuestBuilder("return_to_archon",
+                Component.literal("Return to the Archon"))
+                .autoComplete(true)
+                .builderHail("return_to_archon", Component.literal("Talk to the Archon again."),
+                        archon,
+                        postParts,
+                        null
+                )
+                .reward(new XpReward(50))
+                .reward(new FactionReward(100, factionReg.getOrThrow(MKUFactions.THEMCROMANCERS_NAME)))
+                .quest();
+        def.addQuest(return1);
+
+        Quest remnants = new QuestBuilder("collect_remnants",
+                Component.literal("Collect the remnants of the sea."))
+                .autoComplete(true)
+                .questLootFromDef("whispers", obelisk, MKUltra.id("seawoven_wretch"),
+                        0.50, 5, Component.literal("Whispers of Sea Foam"))
+                .questLootFromDef("echoes", obelisk, MKUltra.id("seawoven_skeleton"),
+                        0.50, 4, Component.literal("Echoes of Dead Waves"))
+                .reward(new XpReward(250))
+                .quest();
+        def.addQuest(remnants);
+
+        DialogueBuilder postRemnants = DialogueBuilder.hail(
+                        "Ahhhh... Even now, I can still smell the breath of those ancient seamen on you. " +
+                                "Did you feel the spray of waves from centuries long past as you sifted through their remains?" +
+                                "Now I will teach you even more secrets of necromancy. However, to become a full-fledged Necromancer, you must [prove|How can I prove myself?] yourself.")
+                .node("prove", "Go to the temple of the God Solang and kill {temple_guard}. Beware, the Clerics will know of your intent should you accept. Are you [ready|I am ready.]?")
+                .effectNode("ready", "Go swiftly, kill the Temple Cleric, and return here.",
+                        new ObjectiveCompleteEffect("return_after_remnants", "return_after_remnants"))
+                .context("temple_guard", solangTempleGuard.getDialogueLink());
+
+
+        Quest returnAfterRemnants = new QuestBuilder("return_after_remnants",
+                Component.literal("Return to the Archon"))
+                .autoComplete(true)
+                .builderHail("return_after_remnants", Component.literal("Talk to the Archon again."),
+                        archon,
+                        postRemnants,
+                        null
+                )
+                .reward(new FactionReward(100, factionReg.getOrThrow(MKUFactions.THEMCROMANCERS_NAME)))
+                .reward(new FactionReward(-10000, factionReg.getOrThrow(MKUFactions.SEE_OF_SOLANG_NAME)))
+                .reward(new GrantEntitlementReward(MKUEntitlements.ThemcromancerTier2))
+                .reward(new XpReward(250))
+                .quest();
+        def.addQuest(returnAfterRemnants);
+
+        Quest killTempleGuard = new QuestBuilder("kill_temple_guard", Component.literal("Eliminate the Temple Guard"))
+                .autoComplete(true)
+                .killNotable("kill_temple_guard", solangTempleGuard)
+                .reward(new XpReward(500))
+                .reward(new FactionReward(500, factionReg.getOrThrow(MKUFactions.THEMCROMANCERS_NAME)))
+                .quest();
+
+        def.addQuest(killTempleGuard);
+
+
+        DialogueBuilder postKill2 = DialogueBuilder
+                .hail("You have proven yourself to me, and to the King of Darkness. I will now teach you our most secret technique. " +
+                        "Go forth and continue to spread the Will.", true);
+
+        Quest afterKill2 = new QuestBuilder("after_kill_2",
+                Component.literal("Return to the Archon"))
+                .autoComplete(true)
+                .builderHail("return_after_kill_2", Component.literal("Talk to the Archon again."),
+                        archon, postKill2, null)
+                .reward(new FactionReward(200, factionReg.getOrThrow(MKUFactions.SEE_OF_SOLANG_NAME)))
+                .reward(new GrantEntitlementReward(MKUEntitlements.ThemcromancerTier3))
+                .reward(new XpReward(400))
+                .quest();
+
+        def.addQuest(afterKill2);
+
+        return def;
+    }
+
+    private QuestDefinition generateJoinThemcromancers(HolderLookup.Provider provider) {
+        var factionReg = provider.lookupOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY);
+        QuestStructureLocation lair = new QuestStructureLocation(UltraStructures.THEMCROMANCERS_LAIR.location(), "0");
+        QuestBuilder.QuestNpc gatekeeper = new QuestBuilder.QuestNpc(lair, MKUltra.id("a_skeletal_gatekeeper"));
+        QuestBuilder.QuestNpc archon = new QuestBuilder.QuestNpc(lair, MKUltra.id("themcromancer_archon"));
+
+        QuestDefinition def = new QuestDefinition(MKUltra.id("unlock_themcromancers"));
+        def.setRepeatable(false);
+        def.setQuestName(Component.literal("Supplying Materials"));
+
+        DialogueBuilder start = DialogueBuilder.hail(
+                "You look upon a great temple to Them, Mortal. You will not be able to walk with the chosen without " +
+                        "[proving|prove|How can I prove my worth?] your worth.")
+                .node("prove", "The acolytes are always in need of more... [materials|What materials?] for their experiments.")
+                .node("materials", "Our work makes use of {bones} and {flesh}, bring some to me and you will be granted entry.")
+                .context("bones", DialogueUtils.getStackCountItemProvider(new ItemStack(Items.BONE, 64)))
+                .context("flesh", DialogueUtils.getStackCountItemProvider(new ItemStack(Items.ROTTEN_FLESH, 64)));
+
+        start.build().populateStart(def, "materials");
+
+        Quest bonesAndFlesh = new Quest("bones_flesh", text("You must deliver a grisly harvest to the skeletal gatekeeper."));
+        bonesAndFlesh.setAutoComplete(true);
+        TradeItemsObjective tradeGold = new TradeItemsObjective(
+                "trade_bones_flesh",
+                lair,
+                gatekeeper.npcDef,
+                List.of(
+                        new ItemStack(Items.BONE, 64),
+                        new ItemStack(Items.ROTTEN_FLESH, 64)
+                ));
+        bonesAndFlesh.addObjective(tradeGold);
+        bonesAndFlesh.addReward(new XpReward(100));
+        bonesAndFlesh.addReward(new FactionReward(4000, factionReg.getOrThrow(MKUFactions.THEMCROMANCERS_NAME)));
+        def.addQuest(bonesAndFlesh);
+
+        DialogueBuilder visitArchon = DialogueBuilder.hail("You will be allowed onto the grounds now. You should seek out the [archon|Who is the archon?] to learn more of our art.")
+                .effectNode("archon", "{archon_name} is in charge of this temple. There are others like it all over the world, you will find you have access to them all. " +
+                        "The Archon will be in the inner sanctum of the temple.",
+                        new ObjectiveCompleteEffect("return_to_gatekeeper", "return_to_gatekeeper"))
+                .context("archon_name", archon.getDialogueLink());
+
+
+        Quest return1 = new QuestBuilder("return_to_gatekeeper",
+                Component.literal("Return to the gatekeeper"))
+                .autoComplete(true)
+                .builderHail("return_to_gatekeeper", Component.literal("Talk to the skeletal gatekeeper again."),
+                        gatekeeper,
+                        visitArchon,
+                        null
+                )
+                .reward(new XpReward(50))
+                .reward(new FactionReward(1000, factionReg.getOrThrow(MKUFactions.THEMCROMANCERS_NAME)))
+                .quest();
+        def.addQuest(return1);
+        //this quest does not reference this character in any particular objective but we need it to generate the dialogue
+        def.addAdditionalNotable(lair, archon.npcDef);
+        return def;
     }
 
     private QuestDefinition generateClericQuestChain(HolderLookup.Provider provider) {

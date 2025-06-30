@@ -200,6 +200,42 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("location_provider.perpendicular_line", "%d projectiles in a perpendicular line");
         add("location_provider.circular", "%d projectiles in an arc from %s° to %s°");
         add("projectile_behavior.burst", "Fires %s, one after another over %s seconds.");
+        add("talent.mkcore.arcane_damage.name", "Arcane Damage");
+        add("talent.mkcore.arcane_damage.description", "Increases your arcane damage by %s");
+        add("talent.mkcore.bleed_damage.name", "Bleed Damage");
+        add("talent.mkcore.bleed_damage.description", "Increases your bleed damage by %s");
+        add("talent.mkcore.fire_damage.name", "Fire Damage");
+        add("talent.mkcore.fire_damage.description", "Increases your fire damage by %s");
+        add("talent.mkcore.frost_damage.name", "Frost Damage");
+        add("talent.mkcore.frost_damage.description", "Increases your frost damage by %s");
+        add("talent.mkcore.holy_damage.name", "Holy Damage");
+        add("talent.mkcore.holy_damage.description", "Increases your holy damage by %s");
+        add("talent.mkcore.poison_damage.name", "Poison Damage");
+        add("talent.mkcore.poison_damage.description", "Increases your poison damage by %s");
+        add("talent.mkcore.ranged_damage.name", "Ranged Damage");
+        add("talent.mkcore.ranged_damage.description", "Increases your ranged damage by %s");
+        add("talent.mkcore.shadow_damage.name", "Shadow Damage");
+        add("talent.mkcore.shadow_damage.description", "Increases your shadow damage by %s");
+        add("talent.mkcore.bleed_resistance.name", "Bleed Resistance");
+        add("talent.mkcore.bleed_resistance.description", "Increases your bleed resistance by %s");
+        add("talent.mkcore.shadow_resistance.name", "Shadow Resistance");
+        add("talent.mkcore.shadow_resistance.description", "Increases your shadow resistance by %s");
+        add("talent.mkcore.arcane_resistance.name", "Arcane Resistance");
+        add("talent.mkcore.arcane_resistance.description", "Increases your arcane resistance by %s");
+        add("talent.mkcore.fire_resistance.name", "Fire Resistance");
+        add("talent.mkcore.fire_resistance.description", "Increases your fire resistance by %s");
+        add("talent.mkcore.poison_resistance.name", "Poison Resistance");
+        add("talent.mkcore.poison_resistance.description", "Increases your poison resistance by %s");
+        add("talent.mkcore.ranged_resistance.name", "Ranged Resistance");
+        add("talent.mkcore.ranged_resistance.description", "Increases your ranged resistance by %s");
+        add("talent.mkcore.frost_resistance.name", "Frost Resistance");
+        add("talent.mkcore.frost_resistance.description", "Increases your frost resistance by %s");
+        add("talent.mkcore.holy_resistance.name", "Holy Resistance");
+        add("talent.mkcore.holy_resistance.description", "Increases your holy resistance by %s");
+        add("talent.mkcore.nature_resistance.name", "Nature Resistance");
+        add("talent.mkcore.nature_resistance.description", "Increases your nature resistance by %s");
+        add("talent.mkcore.health_regen.name", "Health Regen");
+        add("talent.mkcore.health_regen.description", "Increases your health regen by %s");
     }
 
 
@@ -261,6 +297,7 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("attribute.name.mk.one_hand_pierce", "1H Pierce");
         add("attribute.name.mk.block", "Block");
         add("attribute.name.mk.heal_efficiency", "Heal Efficiency");
+        add("attribute.name.mk.health_regen", "Health Regen");
     }
 
     private void addDamageTypes() {
@@ -271,5 +308,8 @@ class CoreLanguageProvider extends MKLanguageProvider {
         damageType(CoreDamageTypes.ShadowDamage, "Shadow Damage", "Corrupting Damage");
         damageType(CoreDamageTypes.ArcaneDamage, "Arcane Damage", "Aetheric Damage");
         damageType(CoreDamageTypes.NatureDamage, "Nature Damage", "Wild Damage");
+        damageType(CoreDamageTypes.BleedDamage, "Bleed Damage", "Bleeding Damage");
+        damageType(CoreDamageTypes.MeleeDamage, "Melee Damage", "Hemorrhagic Damage");
+        damageType(CoreDamageTypes.RangedDamage, "Ranged Damage", "Ablative Damage");
     }
 }

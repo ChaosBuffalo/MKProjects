@@ -25,4 +25,9 @@ public abstract class MKEntitlement {
         ResourceLocation id = getId();
         return Component.translatable(String.format("%s.entitlement.%s.name", id.getNamespace(), id.getPath()));
     }
+
+    public static String nameKey(ResourceLocation id) {
+        return String.format("%s.entitlement.%s.name", id.getNamespace(), id.getPath());
+    }
+
 }

@@ -1,6 +1,8 @@
-// 1.21.1	2024-09-13T17:20:05.9665154	Quest Definitions: mkultra
-98c23c3cfcab4beae3575fc5145c76897f8e316b data/mkultra/mkquests/cleric_intro.json
-f8d393bcc0a4bf6c70a8cb2360458a49d0ece53e data/mkultra/mkquests/cleric_unlock_chain.json
-51bf76afb4f3624d9ddd0787f064c36efe2ab36b data/mkultra/mkquests/intro_quest.json
-f78669227c9f6dbcc7fa5c772f4b7d0cb8acd270 data/mkultra/mkquests/nether_mage_intro.json
-31d290308d087f32fa2f59e7b0c73be689cf6a35 data/mkultra/mkquests/trooper_armor.json
+// 1.21.1	2025-06-29T08:38:32.2154644	Quest Definitions: mkultra
+c8c50bae433d6081e25d414a9a0fbe003fed93d8 data/mkultra/mkquests/cleric_intro.json
+6a0fad6a7a76aa3560574029ffcec97546be281e data/mkultra/mkquests/cleric_unlock_chain.json
+6c9105d7992c171eded66e4e525b9320e11afb2d data/mkultra/mkquests/intro_quest.json
+16d6c6ec7db59d7e5623571f053e237e4f0849b1 data/mkultra/mkquests/necromancer_unlock_chain.json
+e0ba1a79e1b8f11ba7cf27017f314c789c6a4fb7 data/mkultra/mkquests/nether_mage_intro.json
+d3b4d6ed86a9bb6f50e48e2775e81403f4395404 data/mkultra/mkquests/trooper_armor.json
+a3a5a8c1d9df7dc6d247b7ce74184cbfc577174d data/mkultra/mkquests/unlock_themcromancers.json

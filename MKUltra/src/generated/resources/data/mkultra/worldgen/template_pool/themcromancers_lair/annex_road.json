@@ -1,0 +1,18 @@
+{
+  "elements": [
+    {
+      "element": {
+        "bWaterLog": true,
+        "element_type": "mknpc:mk_single_jigsaw",
+        "location": "mkultra:themcromancers_lair/pathway_1",
+        "override_liquid_settings": "apply_waterlogging",
+        "processors": {
+          "processors": []
+        },
+        "projection": "terrain_matching"
+      },
+      "weight": 1
+    }
+  ],
+  "fallback": "minecraft:empty"
+}

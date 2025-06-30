@@ -159,10 +159,14 @@ public class TalkToNpcObjective extends QuestObjective<UUIDInstanceData> {
     @Override
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
-        PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), getDescription(worldData));
+
+        List<Component> descs = getDescription(worldData);
+        PlayerQuestObjectiveData newObj = new PlayerQuestObjectiveData(getObjectiveName(), descs);
         NotableNpcEntry entry = worldData.getNotableNpc(objData.getUUID());
         if (entry != null) {
             newObj.putBlockPos("npcPos", entry.getLocation());
+            newObj.setDescription(ImmutableList.<Component>builder()
+                    .addAll(descs).add(Component.literal(entry.getLocation().pos().toString())).build());
         }
 
         newObj.putBool("hasSpoken", false);

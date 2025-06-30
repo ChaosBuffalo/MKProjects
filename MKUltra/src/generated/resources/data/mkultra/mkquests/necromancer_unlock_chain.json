@@ -1,0 +1,448 @@
+{
+  "additionalNotables": [],
+  "dialogue": {
+    "dialogueId": "mknpc:give_quest.mkultra.necromancer_unlock_chain",
+    "hailPromptId": "hail",
+    "nodes": [
+      {
+        "message": "There is always work to be done to keep the constructs in working order. Perhaps you could {prompt:collect} some necessary parts.",
+        "nodeId": "service"
+      },
+      {
+        "message": "What has brought you to this temple child? I, {context:entity_name}, humble Servant of Them have many mysteries to contemplate. Begone unless you can be of {prompt:service}.",
+        "nodeId": "hail"
+      },
+      {
+        "effects": [
+          {
+            "type": "mknpc:start_quest_chain"
+          }
+        ],
+        "message": "Go out in the dead of night and bring back everything on this list. Complete this task and I will set you upon the path.",
+        "nodeId": "collect"
+      }
+    ],
+    "prompts": [
+      {
+        "highlightedText": "service",
+        "promptId": "service",
+        "responses": [
+          {
+            "responseNodeId": "service"
+          }
+        ],
+        "suggestionFillText": "How can I be of service?",
+        "triggerPhrase": "service"
+      },
+      {
+        "highlightedText": "",
+        "promptId": "hail",
+        "responses": [
+          {
+            "conditions": [
+              {
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": false
+              }
+            ],
+            "responseNodeId": "hail"
+          }
+        ],
+        "suggestionFillText": "",
+        "triggerPhrase": ""
+      },
+      {
+        "highlightedText": "collect",
+        "promptId": "collect",
+        "responses": [
+          {
+            "responseNodeId": "collect"
+          },
+          {
+            "conditions": [
+              {
+                "type": "mknpc:can_start_quest",
+                "allowRepeat": false
+              }
+            ],
+            "responseNodeId": "collect"
+          }
+        ],
+        "suggestionFillText": "I will collect the parts.",
+        "triggerPhrase": "collect"
+      }
+    ]
+  },
+  "questMode": 0,
+  "questName": "\"Path to Them\"",
+  "quests": [
+    {
+      "autoComplete": true,
+      "description": "\"The Archon has provided you with a shopping list. Destroy undead in the wilderness and collect their parts.\"",
+      "objectives": [
+        {
+          "type": "mknpc:quest_loot_type_tag",
+          "chance": 0.5,
+          "count": 10,
+          "itemDescription": "Badly Damaged Skull",
+          "objectiveName": "badly_damaged_skulls",
+          "tag": "minecraft:undead",
+          "tagDesc": "the Undead"
+        },
+        {
+          "type": "mknpc:quest_loot_type_tag",
+          "chance": 0.1,
+          "count": 4,
+          "itemDescription": "Cracked Femur",
+          "objectiveName": "femurs",
+          "tag": "minecraft:undead",
+          "tagDesc": "the Undead"
+        },
+        {
+          "type": "mknpc:quest_loot_type_tag",
+          "chance": 0.25,
+          "count": 6,
+          "itemDescription": "Decaying Fingerbones",
+          "objectiveName": "finger_bones",
+          "tag": "minecraft:undead",
+          "tagDesc": "the Undead"
+        }
+      ],
+      "questName": "parts",
+      "rewards": [
+        {
+          "type": "mknpc:entitlement",
+          "entitlement": "mkultra:themcromancer.tier_1"
+        },
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 250
+        }
+      ]
+    },
+    {
+      "autoComplete": true,
+      "description": "\"Return to the Archon\"",
+      "objectives": [
+        {
+          "type": "mknpc:talk_to_npc",
+          "description": [
+            "Talk to the Archon again."
+          ],
+          "dialogue": {
+            "dialogueId": "mknpc:quest.dialogue.return_to_archon",
+            "hailPromptId": "hail",
+            "nodes": [
+              {
+                "message": "You have performed adequately. I will {prompt:teach} you some of the basics of necromancy. There isanother {prompt:task} for you to complete.",
+                "nodeId": "return_to_archon.hail"
+              },
+              {
+                "effects": [
+                  {
+                    "type": "mknpc:objective_completion",
+                    "objectiveName": "return_to_archon",
+                    "questName": "return_to_archon"
+                  }
+                ],
+                "message": "Go and find an obelisk surrounded by seafury skeletons. Collect the remnants of the sea from their bones.",
+                "nodeId": "task"
+              },
+              {
+                "effects": [
+                  {
+                    "type": "mknpc:open_learn_abilities"
+                  }
+                ],
+                "message": "The necromantic arts can sap strength from sinew and carve flesh with ease.",
+                "nodeId": "teach"
+              }
+            ],
+            "prompts": [
+              {
+                "highlightedText": "task",
+                "promptId": "task",
+                "responses": [
+                  {
+                    "responseNodeId": "task"
+                  }
+                ],
+                "suggestionFillText": "What task?",
+                "triggerPhrase": "task"
+              },
+              {
+                "highlightedText": "teach",
+                "promptId": "teach",
+                "responses": [
+                  {
+                    "responseNodeId": "teach"
+                  }
+                ],
+                "suggestionFillText": "Will you teach me?",
+                "triggerPhrase": "teach"
+              },
+              {
+                "highlightedText": "",
+                "promptId": "hail",
+                "responses": [
+                  {
+                    "responseNodeId": "return_to_archon.hail"
+                  }
+                ],
+                "suggestionFillText": "",
+                "triggerPhrase": ""
+              }
+            ]
+          },
+          "npcDefinition": "mkultra:themcromancer_archon",
+          "objectiveName": "return_to_archon",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:themcromancers_lair"
+          }
+        }
+      ],
+      "questName": "return_to_archon",
+      "rewards": [
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 50
+        },
+        {
+          "type": "mknpc:faction",
+          "faction": "mkultra:themcromancers",
+          "faction_amount": 100
+        }
+      ]
+    },
+    {
+      "autoComplete": true,
+      "description": "\"Collect the remnants of the sea.\"",
+      "objectives": [
+        {
+          "type": "mknpc:quest_loot_npc",
+          "chance": 0.5,
+          "count": 5,
+          "itemDescription": "Whispers of Sea Foam",
+          "npcDefinition": "mkultra:seawoven_wretch",
+          "objectiveName": "whispers",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:deepslate_obelisk"
+          }
+        },
+        {
+          "type": "mknpc:quest_loot_npc",
+          "chance": 0.5,
+          "count": 4,
+          "itemDescription": "Echoes of Dead Waves",
+          "npcDefinition": "mkultra:seawoven_skeleton",
+          "objectiveName": "echoes",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:deepslate_obelisk"
+          }
+        }
+      ],
+      "questName": "collect_remnants",
+      "rewards": [
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 250
+        }
+      ]
+    },
+    {
+      "autoComplete": true,
+      "description": "\"Return to the Archon\"",
+      "objectives": [
+        {
+          "type": "mknpc:talk_to_npc",
+          "description": [
+            "Talk to the Archon again."
+          ],
+          "dialogue": {
+            "dialogueId": "mknpc:quest.dialogue.return_after_remnants",
+            "hailPromptId": "hail",
+            "nodes": [
+              {
+                "message": "Ahhhh... Even now, I can still smell the breath of those ancient seamen on you. Did you feel the spray of waves from centuries long past as you sifted through their remains?Now I will teach you even more secrets of necromancy. However, to become a full-fledged Necromancer, you must {prompt:prove} yourself.",
+                "nodeId": "return_after_remnants.hail"
+              },
+              {
+                "message": "Go to the temple of the God Solang and kill {mk_quest_notable:mkultra:desert_temple_village#0#mkultra:solangian_temple_guard_2}. Beware, the Clerics will know of your intent should you accept. Are you {prompt:ready}?",
+                "nodeId": "prove"
+              },
+              {
+                "effects": [
+                  {
+                    "type": "mknpc:objective_completion",
+                    "objectiveName": "return_after_remnants",
+                    "questName": "return_after_remnants"
+                  }
+                ],
+                "message": "Go swiftly, kill the Temple Cleric, and return here.",
+                "nodeId": "ready"
+              }
+            ],
+            "prompts": [
+              {
+                "highlightedText": "prove",
+                "promptId": "prove",
+                "responses": [
+                  {
+                    "responseNodeId": "prove"
+                  }
+                ],
+                "suggestionFillText": "How can I prove myself?",
+                "triggerPhrase": "prove"
+              },
+              {
+                "highlightedText": "ready",
+                "promptId": "ready",
+                "responses": [
+                  {
+                    "responseNodeId": "ready"
+                  }
+                ],
+                "suggestionFillText": "I am ready.",
+                "triggerPhrase": "ready"
+              },
+              {
+                "highlightedText": "",
+                "promptId": "hail",
+                "responses": [
+                  {
+                    "responseNodeId": "return_after_remnants.hail"
+                  }
+                ],
+                "suggestionFillText": "",
+                "triggerPhrase": ""
+              }
+            ]
+          },
+          "npcDefinition": "mkultra:themcromancer_archon",
+          "objectiveName": "return_after_remnants",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:themcromancers_lair"
+          }
+        }
+      ],
+      "questName": "return_after_remnants",
+      "rewards": [
+        {
+          "type": "mknpc:faction",
+          "faction": "mkultra:themcromancers",
+          "faction_amount": 100
+        },
+        {
+          "type": "mknpc:faction",
+          "faction": "mkultra:see_of_solang",
+          "faction_amount": -10000
+        },
+        {
+          "type": "mknpc:entitlement",
+          "entitlement": "mkultra:themcromancer.tier_2"
+        },
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 250
+        }
+      ]
+    },
+    {
+      "autoComplete": true,
+      "description": "\"Eliminate the Temple Guard\"",
+      "objectives": [
+        {
+          "type": "mknpc:kill_notable_npc",
+          "npcDefinition": "mkultra:solangian_temple_guard_2",
+          "objectiveName": "kill_temple_guard",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:desert_temple_village"
+          }
+        }
+      ],
+      "questName": "kill_temple_guard",
+      "rewards": [
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 500
+        },
+        {
+          "type": "mknpc:faction",
+          "faction": "mkultra:themcromancers",
+          "faction_amount": 500
+        }
+      ]
+    },
+    {
+      "autoComplete": true,
+      "description": "\"Return to the Archon\"",
+      "objectives": [
+        {
+          "type": "mknpc:talk_to_npc",
+          "description": [
+            "Talk to the Archon again."
+          ],
+          "dialogue": {
+            "dialogueId": "mknpc:quest.dialogue.return_after_kill_2",
+            "hailPromptId": "hail",
+            "nodes": [
+              {
+                "effects": [
+                  {
+                    "type": "mknpc:objective_completion",
+                    "objectiveName": "return_after_kill_2",
+                    "questName": "after_kill_2"
+                  }
+                ],
+                "message": "You have proven yourself to me, and to the King of Darkness. I will now teach you our most secret technique. Go forth and continue to spread the Will.",
+                "nodeId": "return_after_kill_2.hail"
+              }
+            ],
+            "prompts": [
+              {
+                "highlightedText": "",
+                "promptId": "hail",
+                "responses": [
+                  {
+                    "responseNodeId": "return_after_kill_2.hail"
+                  }
+                ],
+                "suggestionFillText": "",
+                "triggerPhrase": ""
+              }
+            ]
+          },
+          "npcDefinition": "mkultra:themcromancer_archon",
+          "objectiveName": "return_after_kill_2",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:themcromancers_lair"
+          }
+        }
+      ],
+      "questName": "after_kill_2",
+      "rewards": [
+        {
+          "type": "mknpc:faction",
+          "faction": "mkultra:see_of_solang",
+          "faction_amount": 200
+        },
+        {
+          "type": "mknpc:entitlement",
+          "entitlement": "mkultra:themcromancer.tier_3"
+        },
+        {
+          "type": "mknpc:xp",
+          "xp_amount": 400
+        }
+      ]
+    }
+  ],
+  "repeatable": false,
+  "requirements": []
+}

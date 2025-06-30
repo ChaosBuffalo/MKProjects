@@ -1,0 +1,72 @@
+{
+  "entityType": "mkultra:hyborean_skeleton",
+  "name": "mkultra:a_skeletal_gatekeeper",
+  "options": {
+    "mknpc:attributes": {
+      "type": "mknpc:attributes",
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "value": 600.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "value": 600.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "value": 2.0
+        }
+      ]
+    },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "experience": 100
+    },
+    "mknpc:faction": {
+      "type": "mknpc:faction",
+      "factionId": "mkultra:themcromancer_gatekeepers"
+    },
+    "mknpc:mk_size": {
+      "type": "mknpc:mk_size",
+      "scale": 1.0
+    },
+    "mknpc:name": {
+      "type": "mknpc:name",
+      "name": "a skeletal gatekeeper"
+    },
+    "mknpc:notable": {
+      "type": "mknpc:notable",
+      "isNotable": true
+    },
+    "mknpc:offer_quests": {
+      "type": "mknpc:offer_quests",
+      "questIds": [
+        "mkultra:unlock_themcromancers"
+      ]
+    },
+    "mknpc:render_group": {
+      "type": "mknpc:render_group",
+      "renderGroup": "basic"
+    },
+    "mknpc:skills": {
+      "type": "mknpc:skills",
+      "major_skills": [
+        "mkcore:one_hand_blunt",
+        "mkcore:one_hand_pierce",
+        "mkcore:one_hand_slash",
+        "mkcore:two_hand_blunt",
+        "mkcore:two_hand_pierce",
+        "mkcore:two_hand_slash"
+      ],
+      "minor_skills": [
+        "mkcore:hand_to_hand",
+        "mkcore:pankration"
+      ],
+      "remedial_skills": [
+        "mkcore:arete",
+        "mkcore:pneuma"
+      ]
+    }
+  }
+}

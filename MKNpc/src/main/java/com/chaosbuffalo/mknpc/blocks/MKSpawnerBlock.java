@@ -1,6 +1,11 @@
 package com.chaosbuffalo.mknpc.blocks;
 
+
+import com.chaosbuffalo.mknpc.blocks.interfaces.IFirstUseBlock;
+import com.chaosbuffalo.mknpc.components.NpcComponents;
+import com.chaosbuffalo.mknpc.components.SpawnerDataComponent;
 import com.chaosbuffalo.mknpc.init.MKNpcBlockEntityTypes;
+import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
 import com.chaosbuffalo.mknpc.network.packets.OpenMKSpawnerPacket;
 import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import com.mojang.serialization.MapCodec;
@@ -8,8 +13,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -26,8 +35,35 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 
-public class MKSpawnerBlock extends BaseEntityBlock {
+public class MKSpawnerBlock extends BaseEntityBlock implements IFirstUseBlock {
     public static final MapCodec<MKSpawnerBlock> CODEC = simpleCodec(MKSpawnerBlock::new);
+
+    @Override
+    public InteractionResult onFirstUse(ItemStack stack, UseOnContext context) {
+        BlockEntity entity = context.getLevel().getBlockEntity(context.getClickedPos());
+        if (entity instanceof MKSpawnerBlockEntity spawner)
+        {
+            if (stack.getItem().equals(MKNpcBlocks.MK_SPAWNER_ITEM.asItem())) {
+                if (context.getPlayer().isCreative()) {
+                    if (context.getPlayer().isShiftKeyDown()) {
+                        if (stack.has(NpcComponents.SPAWNER_DATA)) {
+                            SpawnerDataComponent data = stack.get(NpcComponents.SPAWNER_DATA);
+                            if (data == null) {
+                                return InteractionResult.FAIL;
+                            }
+                            if (!context.getLevel().isClientSide) {
+                                spawner.setSpawnList(data.spawns());
+                                spawner.setRespawnTime(data.spawnTime());
+                                spawner.setMoveType(data.moveType());
+                            }
+                            return InteractionResult.SUCCESS;
+                        }
+                    }
+                }
+            }
+        }
+        return InteractionResult.PASS;
+    }
 
     public enum MKSpawnerOrientation implements StringRepresentable {
         EAST("east", Direction.EAST),
@@ -157,6 +193,24 @@ public class MKSpawnerBlock extends BaseEntityBlock {
         return InteractionResult.SUCCESS;
     }
 
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (stack.getItem().equals(MKNpcBlocks.MK_SPAWNER_ITEM.asItem())) {
+            if (player.isCreative()) {
+                if (!player.isShiftKeyDown()) {
+                    if (!level.isClientSide) {
+                        BlockEntity entity = level.getBlockEntity(pos);
+                        if (entity instanceof MKSpawnerBlockEntity spawner) {
+                            stack.set(NpcComponents.SPAWNER_DATA, new SpawnerDataComponent(spawner.getSpawnList(),
+                                    spawner.getRespawnTime(), spawner.getMoveType()));
+                        }
+                    }
+                    return ItemInteractionResult.SUCCESS;
+                }
+            }
+        }
+        return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
+    }
 
     @Override
     public RenderShape getRenderShape(BlockState p_49232_) {

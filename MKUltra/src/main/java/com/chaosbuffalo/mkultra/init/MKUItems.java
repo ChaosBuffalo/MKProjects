@@ -39,6 +39,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.RegisterEvent;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 @EventBusSubscriber(modid = MKUltra.MODID, bus = EventBusSubscriber.Bus.MOD)
 public final class MKUItems {
@@ -339,6 +340,106 @@ public final class MKUItems {
                                     EquipmentSlotGroup.FEET)
                     ))));
 
+    public static DeferredHolder<Item, MKArmorItem> themnianHelmet = REGISTRY.register("themnian_helmet",
+            () -> new MKArmorItem(MKUArmorMaterial.THEMNIAN_ROBES, ArmorItem.Type.HELMET,
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.HELMET.getDurability(MKUArmorMaterial.THEMNIAN_ROBES_DURABILITY)),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.MANA_REGEN,
+                                    createTransitionalModifier(HELMET_UUID, "themnian", 1.5, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.HEAD)
+                    ))));
+
+    public static DeferredHolder<Item, MKArmorItem> themnianLeggings = REGISTRY.register("themnian_leggings",
+            () -> new MKArmorItem(MKUArmorMaterial.THEMNIAN_ROBES, ArmorItem.Type.LEGGINGS,
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.LEGGINGS.getDurability(MKUArmorMaterial.THEMNIAN_ROBES_DURABILITY)),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.SHADOW_DAMAGE,
+                                    createTransitionalModifier(LEGGINGS_UUID, "themnian", 0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                                    EquipmentSlotGroup.LEGS)
+                    ))));
+
+    public static DeferredHolder<Item, MKArmorItem> themnianChestplate = REGISTRY.register("themnian_chestplate",
+            () -> new MKArmorItem(MKUArmorMaterial.THEMNIAN_ROBES, ArmorItem.Type.CHESTPLATE,
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.CHESTPLATE.getDurability(MKUArmorMaterial.THEMNIAN_ROBES_DURABILITY)),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.MAX_MANA,
+                                    createTransitionalModifier(CHEST_UUID, "themnian", 5.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.CHEST),
+                            new AttributeOptionEntry(MKAttributes.NECROMANCY,
+                                    createTransitionalModifier(CHEST_UUID, "themnian", 5.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.CHEST)
+                    ))));
+
+    public static DeferredHolder<Item, MKArmorItem> themnianBoots = REGISTRY.register("themnian_boots",
+            () -> new MKArmorItem(MKUArmorMaterial.THEMNIAN_ROBES, ArmorItem.Type.BOOTS,
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.BOOTS.getDurability(MKUArmorMaterial.THEMNIAN_ROBES_DURABILITY)),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.SHADOW_DAMAGE,
+                                    createTransitionalModifier(FEET_UUID, "themnian", 0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                                    EquipmentSlotGroup.FEET)
+                    ))));
+
+    public static DeferredHolder<Item, MKArmorItem> themnianLeaderHelmet = REGISTRY.register("themnian_leader_helmet",
+            () -> new MKArmorItem(MKUArmorMaterial.THEMNIAN_LEADER_ROBES, ArmorItem.Type.HELMET,
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.HELMET.getDurability(MKUArmorMaterial.THEMNIAN_LEADER_ROBES_DURABILITY)),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.MANA_REGEN,
+                                    createTransitionalModifier(HELMET_UUID, "themnian", 2.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.HEAD),
+                            new AttributeOptionEntry(MKAttributes.BUFF_DURATION,
+                                    createTransitionalModifier(HELMET_UUID, "themnian", 0.10, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                                    EquipmentSlotGroup.HEAD)
+                    ))));
+
+    public static DeferredHolder<Item, MKArmorItem> themnianLeaderLeggings = REGISTRY.register("themnian_leader_leggings",
+            () -> new MKArmorItem(MKUArmorMaterial.THEMNIAN_LEADER_ROBES, ArmorItem.Type.LEGGINGS,
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.LEGGINGS.getDurability(MKUArmorMaterial.THEMNIAN_LEADER_ROBES_DURABILITY)),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.SHADOW_DAMAGE,
+                                    createTransitionalModifier(LEGGINGS_UUID, "themnian", 0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                                    EquipmentSlotGroup.LEGS),
+                            new AttributeOptionEntry(MKAttributes.SHADOW_DAMAGE,
+                                    createTransitionalModifier(LEGGINGS_UUID, "themnian", 0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                                    EquipmentSlotGroup.LEGS)
+                    ))));
+
+    public static DeferredHolder<Item, MKArmorItem> themnianLeaderChestplate = REGISTRY.register("themnian_leader_chestplate",
+            () -> new MKArmorItem(MKUArmorMaterial.THEMNIAN_LEADER_ROBES, ArmorItem.Type.CHESTPLATE,
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.CHESTPLATE.getDurability(MKUArmorMaterial.THEMNIAN_LEADER_ROBES_DURABILITY)),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.MAX_MANA,
+                                    createTransitionalModifier(CHEST_UUID, "themnian", 10.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.CHEST),
+                            new AttributeOptionEntry(MKAttributes.NECROMANCY,
+                                    createTransitionalModifier(CHEST_UUID, "themnian", 5.0, AttributeModifier.Operation.ADD_VALUE),
+                                    EquipmentSlotGroup.CHEST),
+                            new AttributeOptionEntry(MKAttributes.SHADOW_DAMAGE,
+                                    createTransitionalModifier(CHEST_UUID, "themnian", 0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                                    EquipmentSlotGroup.CHEST)
+                    ))));
+
+    public static DeferredHolder<Item, MKArmorItem> themnianLeaderBoots = REGISTRY.register("themnian_leader_boots",
+            () -> new MKArmorItem(MKUArmorMaterial.THEMNIAN_ROBES, ArmorItem.Type.BOOTS,
+                    new Item.Properties()
+                            .durability(ArmorItem.Type.BOOTS.getDurability(MKUArmorMaterial.THEMNIAN_LEADER_ROBES_DURABILITY)),
+                    new ArmorModifierEffect(List.of(
+                            new AttributeOptionEntry(MKAttributes.SHADOW_DAMAGE,
+                                    createTransitionalModifier(FEET_UUID, "themnian", 0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                                    EquipmentSlotGroup.FEET),
+                            new AttributeOptionEntry(MKAttributes.SHADOW_RESISTANCE,
+                                    createTransitionalModifier(FEET_UUID, "themnian", 0.10, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                                    EquipmentSlotGroup.FEET)
+                    ))));
+
+
+
     public static DeferredHolder<Item, Item> destroyedTrooperHelmet = REGISTRY.register("destroyed_trooper_helmet",
             () -> new Item(new Item.Properties()));
 
@@ -353,6 +454,9 @@ public final class MKUItems {
 
     public static DeferredHolder<Item, Item> seawovenScrap = REGISTRY.register("seawoven_scrap",
             () -> new Item(new Item.Properties()));
+
+    public static DeferredHolder<Item, Item> themcromancerArchonRing = REGISTRY.register("themcromancer_archon_ring",
+            () -> new MKCurioAccessory(new Item.Properties().stacksTo(1)));
 
     public static void register(IEventBus bus) {
         REGISTRY.register(bus);
@@ -369,6 +473,10 @@ public final class MKUItems {
 
     public static Item lookupWeapon(IMKTier tier, IMeleeWeaponType weaponType) {
         return WEAPON_LOOKUP.get(tier).get(weaponType);
+    }
+
+    public static Supplier<Item> lookupWeaponSupplier(IMKTier tier, IMeleeWeaponType weaponType) {
+        return () -> lookupWeapon(tier, weaponType);
     }
 
     @SubscribeEvent

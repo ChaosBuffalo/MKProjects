@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
+import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
@@ -16,7 +18,7 @@ public class ExperienceOption extends NpcDefinitionOption {
             Codec.INT.fieldOf("experience").forGetter(i -> i.bonusXp)
     ).apply(builder, ExperienceOption::new));
 
-    private final int bonusXp;
+    private int bonusXp;
 
     public ExperienceOption(int bonusXp) {
         super(NAME, ApplyOrder.MIDDLE);
@@ -27,9 +29,14 @@ public class ExperienceOption extends NpcDefinitionOption {
         return bonusXp;
     }
 
+    public void setBonusXp(int bonusXp) {
+        this.bonusXp = bonusXp;
+    }
+
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
-        MKNpc.getNpcData(entity).ifPresent(cap -> cap.setBonusXp(bonusXp));
+        double scaling = MKAbility.convertSkillToMultiplier(difficultyLevel);
+        MKNpc.getNpcData(entity).ifPresent(cap -> cap.setBonusXp((int) (bonusXp + Math.round(bonusXp * scaling))));
     }
 
     @Override

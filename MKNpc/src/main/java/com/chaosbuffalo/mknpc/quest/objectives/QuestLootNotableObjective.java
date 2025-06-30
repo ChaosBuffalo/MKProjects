@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.quest.objectives;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
@@ -85,7 +86,7 @@ public class QuestLootNotableObjective extends QuestObjective<UUIDInstanceData> 
             boolean applies = IEntityNpcData.get(event.getEntity())
                     .map(x -> x.getNotableUUID().equals(objData.getUUID()))
                     .orElse(false);
-            if (applies && player.getRandom().nextDouble() <= chanceToFind) {
+            if (applies && MathUtils.rollLuck(player, chanceToFind)) {
                 int currentCount = objectiveData.getInt("lootCount");
                 currentCount++;
                 objectiveData.putInt("lootCount", currentCount);

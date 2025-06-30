@@ -35,7 +35,9 @@ public class UltraItemTagsProvider extends ItemTagsProvider {
         tag(CoreTags.Items.ROBES_ARMOR)
                 .add(MKUItems.seawovenBoots.get(), MKUItems.seawovenHelmet.get(), MKUItems.seawovenChestplate.get(), MKUItems.seawovenLeggings.get())
                 .add(MKUItems.ancientPriestChestplate.get(), MKUItems.ancientPriestLeggings.get(), MKUItems.ancientPriestBoots.get(), MKUItems.ancientPriestHelmet.get())
-                .add(MKUItems.ancientCardinalChestplate.get(), MKUItems.ancientCardinalLeggings.get(), MKUItems.ancientCardinalBoots.get(), MKUItems.ancientCardinalHelmet.get());
+                .add(MKUItems.ancientCardinalChestplate.get(), MKUItems.ancientCardinalLeggings.get(), MKUItems.ancientCardinalBoots.get(), MKUItems.ancientCardinalHelmet.get())
+                .add(MKUItems.themnianChestplate.get(), MKUItems.themnianLeggings.get(), MKUItems.themnianBoots.get(), MKUItems.themnianHelmet.get())
+                .add(MKUItems.themnianLeaderChestplate.get(), MKUItems.themnianLeaderLeggings.get(), MKUItems.themnianLeaderBoots.get(), MKUItems.themnianLeaderHelmet.get());
         tag(CoreTags.Items.MEDIUM_ARMOR)
                 .add(MKUItems.trooperKnightLeggings.get(), MKUItems.trooperKnightBoots.get(), MKUItems.trooperKnightHelmet.get(), MKUItems.trooperKnightChestplate.get())
                 .add(MKUItems.ancientBronzeBoots.get(), MKUItems.ancientBronzeChestplate.get(), MKUItems.ancientBronzeLeggings.get(), MKUItems.ancientBronzeHelmet.get());
@@ -44,7 +46,8 @@ public class UltraItemTagsProvider extends ItemTagsProvider {
         tag(accessory("hands"))
                 .add(MKUItems.corruptedGauntlets.get());
         tag(accessory("ring"))
-                .add(MKUItems.necrotideBand.get());
+                .add(MKUItems.necrotideBand.get())
+                .add(MKUItems.themcromancerArchonRing.get());
 
     }
 

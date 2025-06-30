@@ -9,6 +9,7 @@ import com.chaosbuffalo.mknpc.quest.dialogue.conditions.ObjectivesCompleteCondit
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.objectives.*;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
+import com.chaosbuffalo.mknpc.quest.rewards.XpReward;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -40,6 +41,11 @@ public class QuestBuilder {
 
     public QuestBuilder reward(QuestReward reward) {
         quest.addReward(reward);
+        return this;
+    }
+
+    public QuestBuilder xp(int amount) {
+        reward(new XpReward(amount));
         return this;
     }
 
@@ -76,6 +82,21 @@ public class QuestBuilder {
 
     public QuestBuilder questLootFromNotable(String objectiveName, QuestNpc npc, double chance, int count, Component itemDescription) {
         QuestLootNotableObjective obj = new QuestLootNotableObjective(objectiveName, npc.location, npc.npcDef, chance, count, itemDescription);
+        objective(obj);
+        return this;
+    }
+
+    public QuestBuilder questLootFromTypeTag(String objectiveName, TagKey<EntityType<?>> tag, String tagDesc,
+                                             int count, double chance, Component itemDesc) {
+        QuestLootTypeTagObjective obj = new QuestLootTypeTagObjective(objectiveName,
+                tag, chance, count, itemDesc, tagDesc);
+        objective(obj);
+        return this;
+    }
+
+    public QuestBuilder questLootFromDef(String objectiveName, QuestStructureLocation location,
+                                         ResourceLocation definition, double chance, int count, Component itemDesc) {
+        QuestLootNpcObjective obj = new QuestLootNpcObjective(objectiveName, location, definition, chance, count, itemDesc);
         objective(obj);
         return this;
     }
