@@ -1,5 +1,8 @@
 plugins {
-    id "mk-platform"
+    id 'idea'
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version "${mdg_version}"
 }
 
 
@@ -18,22 +21,4 @@ apply from: '../common.gradle'
 
 neoForge {
     validateAccessTransformers = true
-}
-
-processResources {
-    exclude '.cache'
-    duplicatesStrategy(DuplicatesStrategy.FAIL)
-}
-
-sourceSets {
-    main {
-        resources {
-            srcDir 'src/generated/resources'
-            exclude('.cache')
-        }
-    }
-}
-
-idea.module {
-    excludeDirs << file("run")
 }
