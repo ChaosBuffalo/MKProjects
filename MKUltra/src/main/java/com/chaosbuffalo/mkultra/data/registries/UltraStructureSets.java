@@ -37,26 +37,26 @@ public class UltraStructureSets {
 
         context.register(DESERT_TEMPLE_VILLAGE,
                 new StructureSet(structures.getOrThrow(UltraStructures.DESERT_TEMPLE_VILLAGE),
-                        new RandomSpreadStructurePlacement(36, 8, RandomSpreadType.LINEAR, 14444012)));
+                        new RandomSpreadStructurePlacement(30, 6, RandomSpreadType.LINEAR, 14444012)));
 
         context.register(NECROTIDE_ALTER,
                 new StructureSet(structures.getOrThrow(UltraStructures.NECROTIDE_ALTER),
-                        new RandomSpreadStructurePlacement(50, 24, RandomSpreadType.LINEAR, 132321313)));
+                        new RandomSpreadStructurePlacement(40, 18, RandomSpreadType.LINEAR, 132321313)));
 
         context.register(DEEPSLATE_OBELISK,
                 new StructureSet(structures.getOrThrow(UltraStructures.DEEPSLATE_OBELISK),
-                        new RandomSpreadStructurePlacement(65, 35, RandomSpreadType.LINEAR, 111111111)));
+                        new RandomSpreadStructurePlacement(36, 16, RandomSpreadType.LINEAR, 111111111)));
 
         context.register(HYBOREAN_CRYPT,
                 new StructureSet(structures.getOrThrow(UltraStructures.HYBOREAN_CRYPT),
-                        new RandomSpreadStructurePlacement(50, 20, RandomSpreadType.LINEAR, 222222)));
+                        new RandomSpreadStructurePlacement(40, 16, RandomSpreadType.LINEAR, 222222)));
 
         context.register(DECAYING_CHURCH,
                 new StructureSet(structures.getOrThrow(UltraStructures.DECAYING_CHURCH),
-                        new RandomSpreadStructurePlacement(75, 35, RandomSpreadType.LINEAR, 4)));
+                        new RandomSpreadStructurePlacement(60, 28, RandomSpreadType.LINEAR, 4)));
 
         context.register(THEMCROMANCERS_LAIR,
                 new StructureSet(structures.getOrThrow(UltraStructures.THEMCROMANCERS_LAIR),
-                        new RandomSpreadStructurePlacement(89, 40, RandomSpreadType.LINEAR, 69420)));
+                        new RandomSpreadStructurePlacement(72, 32, RandomSpreadType.LINEAR, 69420)));
     }
 }

@@ -154,7 +154,7 @@
     },
     "mknpc:experience": {
       "type": "mknpc:experience",
-      "experience": 75
+      "experience": 150
     },
     "mknpc:faction": {
       "type": "mknpc:faction",

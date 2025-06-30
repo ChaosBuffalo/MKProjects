@@ -37,6 +37,7 @@ public class SeawovenNpcs {
                 .name("A Seawoven Wretch")
                 .ability(MKUAbilities.FROZEN_GRASP, 1, 1.0)
                 .skillClass(NpcGenUtils.NpcSkillClass.NECROMANCER)
+                .xp(40)
                 .build();
     }
 
@@ -56,6 +57,7 @@ public class SeawovenNpcs {
                 .lootDropChances(1)
                 .noLootChanceIncrease(.25)
                 .noLootChance(.25)
+                .xp(50)
                 .loot(LootSlotManager.ITEMS, lootTierName, 1.0)
                 .build();
     }

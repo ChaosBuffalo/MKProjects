@@ -77,6 +77,10 @@
         ]
       }
     },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "experience": 150
+    },
     "mknpc:extra_loot": {
       "type": "mknpc:extra_loot",
       "dropChances": 2,

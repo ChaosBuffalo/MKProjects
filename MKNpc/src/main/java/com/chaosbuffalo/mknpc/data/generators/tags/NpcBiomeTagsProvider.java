@@ -19,7 +19,7 @@ public class NpcBiomeTagsProvider extends BiomeTagsProvider {
 
     @Override
     public void addTags(HolderLookup.Provider provider) {
-        tag(NpcTags.Biomes.HAS_TEST_STRUCTURES)
-                .addTag(BiomeTags.IS_FOREST);
+        tag(NpcTags.Biomes.HAS_TEST_STRUCTURES);
+//                .addTag(BiomeTags.IS_FOREST);
     }
 }

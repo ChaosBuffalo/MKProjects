@@ -49,6 +49,10 @@
         ]
       }
     },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "experience": 100
+    },
     "mknpc:faction": {
       "type": "mknpc:faction",
       "factionId": "mkultra:green_knights"

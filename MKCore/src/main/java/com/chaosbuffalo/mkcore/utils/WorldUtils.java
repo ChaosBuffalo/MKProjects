@@ -13,7 +13,7 @@ public class WorldUtils {
 
     private static final Map<ResourceKey<Level>, Double> difficultyBonuses = new HashMap<>();
     private static final Vec3i CENTER = new Vec3i(0, 0, 0);
-    private static final int DIFFICULTY_BAND_SIZE = 500;
+    private static final int DIFFICULTY_BAND_SIZE = 2500;
     private static final double DIFFICULTY_SCORE_PER_BAND = 10.0;
 
     static {

@@ -1,8 +1,5 @@
 {
   "values": [
-    "#minecraft:is_forest",
-    "#minecraft:is_savanna",
-    "#minecraft:is_beach",
-    "#minecraft:has_structure/village_desert"
+    "#minecraft:is_overworld"
   ]
 }

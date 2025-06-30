@@ -48,6 +48,7 @@ public class GreenKnightNpcs {
                 .dropChance(0.0f)
                 .mainHand(BuiltInRegistries.ITEM.getHolder(ResourceLocation.parse("mkweapons:battleaxe_stone")).get())
                 .notable()
+                .xp(50)
                 .skillClass(NpcGenUtils.NpcSkillClass.PALADIN)
                 .build();
     }
@@ -68,6 +69,7 @@ public class GreenKnightNpcs {
                 .mana(150)
                 .manaRegen(4.0)
                 .dropChance(0.05f)
+                .xp(50)
                 .helmet(MKUItems.greenKnightHelmet)
                 .leggings(MKUItems.greenKnightLeggings)
                 .chestplate(MKUItems.greenKnightChestplate)
@@ -96,6 +98,7 @@ public class GreenKnightNpcs {
                 .mana(400)
                 .manaRegen(10.0)
                 .notable()
+                .xp(250)
                 .quests(MKUltra.id("intro_quest"))
                 .skillClass(NpcGenUtils.NpcSkillClass.CLERIC)
                 .trains(MKUAbilities.SKIN_LIKE_WOOD, new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier1.get()))
@@ -118,6 +121,7 @@ public class GreenKnightNpcs {
                 .health(400)
                 .mana(400)
                 .manaRegen(4.0)
+                .xp(100)
                 .notable()
                 .mainHand(BuiltInRegistries.ITEM.getHolder(ResourceLocation.parse("mkweapons:warhammer_iron")).get())
                 .quests(MKUltra.id("trooper_armor"))

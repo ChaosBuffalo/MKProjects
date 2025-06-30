@@ -72,6 +72,7 @@ public class DecayingChurchNpcs {
                 .leggings(MKUItems.ancientPriestLeggings)
                 .boots(MKUItems.ancientPriestBoots)
                 .skillClass(NpcGenUtils.NpcSkillClass.CLERIC)
+                .xp(35)
                 .build();
     }
 
@@ -112,7 +113,7 @@ public class DecayingChurchNpcs {
                         .withTransitionParticles(MKUltra.id("wrath_skeleton_transition"))
                         .withTransitionSound(MKUSounds.spell_holy_9.getId())
                 )
-                .xp(75)
+                .xp(150)
                 .skillClass(NpcGenUtils.NpcSkillClass.MAGE)
                 .build();
     }

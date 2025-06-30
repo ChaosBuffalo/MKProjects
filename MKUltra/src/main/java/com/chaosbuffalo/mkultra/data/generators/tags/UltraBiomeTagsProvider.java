@@ -23,19 +23,19 @@ public class UltraBiomeTagsProvider extends BiomeTagsProvider {
                 .addTag(BiomeTags.IS_OVERWORLD);
         tag(UltraTags.Biomes.HAS_DESERT_TEMPLE_VILLAGE)
                 .addTag(BiomeTags.HAS_VILLAGE_DESERT)
-                .addTag(BiomeTags.HAS_VILLAGE_SAVANNA);
+                .addTag(BiomeTags.HAS_VILLAGE_SAVANNA)
+                .addTag(BiomeTags.IS_BADLANDS)
+                .addTag(BiomeTags.IS_MOUNTAIN);
         tag(UltraTags.Biomes.HAS_NECROTIDE_ALTER)
                 .addTag(BiomeTags.IS_BADLANDS)
                 .addTag(BiomeTags.IS_SAVANNA)
                 .addTag(BiomeTags.HAS_VILLAGE_DESERT);
         tag(UltraTags.Biomes.HAS_DEEPSLATE_OBELISK)
-                .addTag(BiomeTags.IS_FOREST)
-                .addTag(BiomeTags.IS_SAVANNA)
-                .addTag(BiomeTags.IS_BEACH)
-                .addTag(BiomeTags.HAS_VILLAGE_DESERT);
+                .addTag(BiomeTags.IS_OVERWORLD);
         tag(UltraTags.Biomes.HAS_HYBOREAN_CRYPT)
                 .addTag(BiomeTags.IS_MOUNTAIN)
                 .addTag(BiomeTags.IS_SAVANNA)
+                .addTag(BiomeTags.IS_JUNGLE)
                 .addTag(BiomeTags.IS_FOREST)
                 .addTag(BiomeTags.IS_BADLANDS)
                 .addTag(BiomeTags.HAS_VILLAGE_DESERT);

@@ -50,6 +50,7 @@ public class NecrotideNpcs {
                 .ability(MKUAbilities.SHADOW_PULSE, 3, 1.0)
                 .ability(MKUAbilities.NECROTIDE_WARRIOR_SUMMON, 4, 1.0)
                 .skillClass(NpcGenUtils.NpcSkillClass.NECROMANCER)
+                .xp(65)
                 .battlecry()
                 .build();
     }
@@ -67,6 +68,7 @@ public class NecrotideNpcs {
                 .ability(MKUAbilities.SHADOW_BOLT, 1, 1.0)
                 .ability(MKUAbilities.SHADOW_PULSE, 2, 1.0)
                 .skillClass(NpcGenUtils.NpcSkillClass.MAGE)
+                .xp(45)
                 .notable()
                 .build();
     }
@@ -91,6 +93,7 @@ public class NecrotideNpcs {
                 .lootDropChances(1)
                 .noLootChance(0.0)
                 .noLootChanceIncrease(0.0)
+                .xp(500)
                 .build();
     }
 
@@ -108,6 +111,7 @@ public class NecrotideNpcs {
                 .ability(MKUAbilities.DROWN, 2, 0.5)
                 .ability(MKUAbilities.SHADOW_PULSE, 3, 0.5)
                 .skillClass(NpcGenUtils.NpcSkillClass.MAGE)
+                .xp(30)
                 .battlecry()
                 .build();
     }
@@ -128,6 +132,7 @@ public class NecrotideNpcs {
                 .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.LONGSWORD_TYPE).orElseThrow())
                 .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.WARHAMMER_TYPE).orElseThrow())
                 .skillClass(NpcGenUtils.NpcSkillClass.WARRIOR)
+                .xp(30)
                 .build();
     }
 
@@ -143,6 +148,7 @@ public class NecrotideNpcs {
                 .name("Skeleton Archer")
                 .mainHand(BuiltInRegistries.ITEM.getHolder(ResourceLocation.parse("mkweapons:longbow_iron")).orElseThrow())
                 .skillClass(NpcGenUtils.NpcSkillClass.ARCHER)
+                .xp(25)
                 .build();
     }
 }

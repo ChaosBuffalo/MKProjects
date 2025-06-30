@@ -34,10 +34,13 @@ public class NpcDefinitionBuilder {
     private Holder<EntityType<?>> entityType;
     private final Map<ResourceLocation, NpcDefinitionOption> options = new HashMap<>();
     private float defaultDropChance;
+    private final ExperienceOption experienceOption;
 
     public NpcDefinitionBuilder(ResourceLocation name) {
         this.name = name;
         defaultDropChance = 0.0f;
+        experienceOption = new ExperienceOption(10);
+        index(experienceOption);
     }
 
     public NpcDefinitionBuilder type(Holder<EntityType<?>> entityType) {
@@ -276,8 +279,7 @@ public class NpcDefinitionBuilder {
     }
 
     public NpcDefinitionBuilder xp(int value) {
-        var opt = new ExperienceOption(value);
-        index(opt);
+        experienceOption.setBonusXp(value);
         return this;
     }
 

@@ -81,6 +81,10 @@
         ]
       }
     },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "experience": 10
+    },
     "mknpc:faction": {
       "type": "mknpc:faction",
       "factionId": "mkultra:nether_mages"

@@ -57,6 +57,7 @@ public class HyboreanNpcs {
                 .ability(MKUAbilities.NATURES_REMEDY, 2, 1.0)
                 .ability(MKUAbilities.SEVER_TENDON, 3, 1.0)
                 .combo(30, 4)
+                .xp(65)
                 .skillClass(NpcGenUtils.NpcSkillClass.PALADIN)
                 .build();
     }
@@ -78,6 +79,7 @@ public class HyboreanNpcs {
                 .ability(MKUAbilities.FIREBALL, 1, 1.0)
                 .ability(MKUAbilities.EMBER, 3, 1.0)
                 .skillClass(NpcGenUtils.NpcSkillClass.MAGE)
+                .xp(65)
                 .build();
     }
 
@@ -118,6 +120,7 @@ public class HyboreanNpcs {
                 .noLootChanceIncrease(0.25)
                 .notable()
                 .combo(10, 2)
+                .xp(100)
                 .skillClass(NpcGenUtils.NpcSkillClass.PALADIN)
                 .build();
     }
@@ -148,6 +151,7 @@ public class HyboreanNpcs {
                 .noLootChance(0.2)
                 .noLootChanceIncrease(0.25)
                 .combo(60, 5)
+                .xp(150)
                 .skillClass(NpcGenUtils.NpcSkillClass.MAGE)
                 .notable()
                 .build();
@@ -168,6 +172,7 @@ public class HyboreanNpcs {
                 .dropChance(1.1f)
                 .mainHand(BuiltInRegistries.ITEM.getHolder(
                         MKUltra.id("longbow_bronze")).get(), 4.0)
+                .xp(25)
                 .skillClass(NpcGenUtils.NpcSkillClass.ARCHER)
                 .build();
     }
@@ -202,6 +207,7 @@ public class HyboreanNpcs {
                 .emptyChance(EquipmentSlot.CHEST, 20.0)
                 .emptyChance(EquipmentSlot.LEGS, 20.0)
                 .skillClass(NpcGenUtils.NpcSkillClass.WARRIOR)
+                .xp(35)
                 .build();
     }
 }

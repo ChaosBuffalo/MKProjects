@@ -53,6 +53,7 @@ public class ClericNpcs {
                 .trains(MKUAbilities.POWER_WORD_SUMMON, new HasEntitlementRequirement(MKUEntitlements.ClericTier2.get()))
                 .trains(MKUAbilities.INSPIRE, new HasEntitlementRequirement(MKUEntitlements.ClericTier3.get()))
                 .skillClass(NpcGenUtils.NpcSkillClass.CLERIC)
+                .xp(100)
                 .build();
     }
 
@@ -72,6 +73,7 @@ public class ClericNpcs {
                 .ability(MKUAbilities.SEVER_TENDON, 3, 1.0)
                 .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.GOLD_TIER, MeleeWeaponTypes.SPEAR_TYPE).orElseThrow(), 1.0)
                 .skillClass(NpcGenUtils.NpcSkillClass.PALADIN)
+                .xp(65)
                 .build();
     }
 
@@ -90,6 +92,7 @@ public class ClericNpcs {
                 .ability(MKUAbilities.SMITE, 2, 1.0)
                 .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.GOLD_TIER, MeleeWeaponTypes.SPEAR_TYPE).orElseThrow(), 1.0)
                 .skillClass(NpcGenUtils.NpcSkillClass.PALADIN)
+                .xp(50)
                 .build();
     }
 }

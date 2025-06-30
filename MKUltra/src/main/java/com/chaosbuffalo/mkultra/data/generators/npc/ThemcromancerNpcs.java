@@ -53,6 +53,7 @@ public class ThemcromancerNpcs {
                 .chestplate(MKUItems.themnianChestplate)
                 .leggings(MKUItems.themnianLeggings)
                 .skillClass(NpcGenUtils.NpcSkillClass.NECROMANCER)
+                .xp(75)
                 .build();
     }
 
@@ -75,6 +76,7 @@ public class ThemcromancerNpcs {
                 .boots(MKUItems.themnianBoots)
                 .chestplate(MKUItems.themnianChestplate)
                 .leggings(MKUItems.themnianLeggings)
+                .xp(50)
                 .skillClass(NpcGenUtils.NpcSkillClass.NECROMANCER)
                 .build();
     }
@@ -114,6 +116,7 @@ public class ThemcromancerNpcs {
                 .trains(MKUAbilities.LIFE_SPIKE, new HasEntitlementRequirement(MKUEntitlements.ThemcromancerTier3.get()))
                 .skillClass(NpcGenUtils.NpcSkillClass.NECROMANCER)
                 .dialogue(MKUltra.id("necro_default"))
+                .xp(150)
                 .quests(MKUltra.id("necromancer_unlock_chain"))
                 .build();
     }
@@ -145,6 +148,7 @@ public class ThemcromancerNpcs {
                 .chestplate(MKUItems.themnianChestplate)
                 .leggings(MKUItems.themnianLeggings)
                 .skillClass(NpcGenUtils.NpcSkillClass.NECROMANCER)
+                .xp(100)
                 .build();
     }
 
@@ -161,6 +165,7 @@ public class ThemcromancerNpcs {
                 .notable()
                 .quests(MKUltra.id("unlock_themcromancers"))
                 .skillClass(NpcGenUtils.NpcSkillClass.WARRIOR)
+                .xp(100)
                 .build();
     }
 
@@ -185,6 +190,7 @@ public class ThemcromancerNpcs {
                 .ability(MKUAbilities.SEVER_TENDON, 1, 1.0)
                 .ability(MKUAbilities.FURIOUS_BROODING, 2, 1.0)
                 .skillClass(NpcGenUtils.NpcSkillClass.WARRIOR)
+                .xp(50)
                 .build();
     }
 }

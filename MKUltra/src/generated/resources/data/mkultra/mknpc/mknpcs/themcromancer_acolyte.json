@@ -99,6 +99,10 @@
         ]
       }
     },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "experience": 75
+    },
     "mknpc:faction": {
       "type": "mknpc:faction",
       "factionId": "mkultra:themcromancers"

@@ -34,6 +34,10 @@
         }
       ]
     },
+    "mknpc:experience": {
+      "type": "mknpc:experience",
+      "experience": 500
+    },
     "mknpc:extra_loot": {
       "type": "mknpc:extra_loot",
       "lootOptions": [
