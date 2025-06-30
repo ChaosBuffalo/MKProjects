@@ -47,19 +47,23 @@ public class ItemUtils {
     }
 
 
-    public static boolean compareItemsWithBlacklist(ItemStack stack, ItemStack other, Set<DataComponentType<?>> blackList) {
+    public static boolean compareItemsWithIgnoreList(ItemStack stack, ItemStack other, Set<DataComponentType<?>> ignoreList) {
         if (!stack.is(other.getItem())) {
             return false;
         } else {
-            return stack.isEmpty() && other.isEmpty() || stack.getComponents().stream().allMatch(
-                    comp -> blackList.contains(comp.type()) || Objects.equals(comp, other.getComponents().get(comp.type())));
+            if (stack.isEmpty() && other.isEmpty()) {
+                return true;
+            }
+            return stack.getComponents().stream()
+                    .allMatch(comp -> ignoreList.contains(comp.type()) ||
+                            Objects.equals(comp.value(), other.get(comp.type())));
         }
     }
 
-    private static Set<DataComponentType<?>> noDurability = Set.of(DataComponents.DAMAGE, DataComponents.MAX_DAMAGE);
+    private static final Set<DataComponentType<?>> DURABILITY_COMPONENTS = Set.of(DataComponents.DAMAGE, DataComponents.MAX_DAMAGE);
 
     public static boolean isEqualNoDurability(ItemStack stack1, ItemStack stack2) {
-        return compareItemsWithBlacklist(stack1, stack2, noDurability);
+        return compareItemsWithIgnoreList(stack1, stack2, DURABILITY_COMPONENTS);
     }
 
     public static EquipmentSlot getGenericEquipmentSlotForItem(ItemStack stack) {
