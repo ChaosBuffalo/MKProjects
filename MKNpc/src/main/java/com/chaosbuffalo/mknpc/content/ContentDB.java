@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-@EventBusSubscriber(modid = MKNpc.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MKNpc.MODID)
 public class ContentDB {
 
     static Map<ResourceKey<Level>, IWorldNpcData> levelCaps = new IdentityHashMap<>();

@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@EventBusSubscriber(modid = MKNpc.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MKNpc.MODID)
 public class WorldStructureHandler {
     public static final Map<ResourceLocation, MKStructure> MK_STRUCTURE_INDEX = new HashMap<>();
 

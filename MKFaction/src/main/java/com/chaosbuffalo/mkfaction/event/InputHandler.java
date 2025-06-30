@@ -27,7 +27,7 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import javax.annotation.Nullable;
 
 @SuppressWarnings("unused")
-@EventBusSubscriber(modid = MKFactionMod.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MKFactionMod.MODID, value = Dist.CLIENT)
 public class InputHandler {
 
     public static final KeyMapping CON_KEY_BIND = new KeyMapping("key.mkfaction.con.desc",
@@ -37,7 +37,7 @@ public class InputHandler {
             InputConstants.KEY_P,
             "key.mkfaction.category");
 
-    @EventBusSubscriber(modid = MKFactionMod.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MKFactionMod.MODID, value = Dist.CLIENT)
     public static class ModEvents {
         @SubscribeEvent
         public static void registerKeyBinding(RegisterKeyMappingsEvent event) {

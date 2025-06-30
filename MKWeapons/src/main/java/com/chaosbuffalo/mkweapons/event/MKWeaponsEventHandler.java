@@ -33,7 +33,7 @@ import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
 
 import java.util.List;
 
-@EventBusSubscriber(modid = MKWeapons.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MKWeapons.MODID)
 public class MKWeaponsEventHandler {
 
     private static void handleProjectileDamage(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,

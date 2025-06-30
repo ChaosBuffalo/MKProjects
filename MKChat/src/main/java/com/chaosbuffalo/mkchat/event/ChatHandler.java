@@ -14,7 +14,7 @@ import net.neoforged.neoforge.event.ServerChatEvent;
 
 import java.util.List;
 
-@EventBusSubscriber(modid = MKChat.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MKChat.MODID)
 public class ChatHandler {
 
 

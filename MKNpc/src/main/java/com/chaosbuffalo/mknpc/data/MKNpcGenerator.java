@@ -37,7 +37,7 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber
 public class MKNpcGenerator {
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {

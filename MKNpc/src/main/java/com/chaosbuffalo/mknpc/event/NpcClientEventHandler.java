@@ -32,7 +32,7 @@ public class NpcClientEventHandler {
             InputConstants.KEY_K, "key.mknpc.category");
     private static int ticks = -1;
 
-    @EventBusSubscriber(modid = MKNpc.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MKNpc.MODID, value = Dist.CLIENT)
     public static class ModEvents {
         @SubscribeEvent
         public static void registerKeyBinding(RegisterKeyMappingsEvent event) {

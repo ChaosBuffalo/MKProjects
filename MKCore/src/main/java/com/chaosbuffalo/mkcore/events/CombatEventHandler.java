@@ -27,7 +27,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 
-@EventBusSubscriber(modid = MKCore.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MKCore.MOD_ID)
 public class CombatEventHandler {
 
     @SubscribeEvent

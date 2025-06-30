@@ -33,7 +33,7 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber
 public class MKWeaponsGenerator {
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {

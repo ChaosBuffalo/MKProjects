@@ -47,7 +47,7 @@ import java.util.Optional;
 
 
 @SuppressWarnings("unused")
-@EventBusSubscriber(modid = MKNpc.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MKNpc.MODID)
 public class EntityHandler {
 
     @SubscribeEvent

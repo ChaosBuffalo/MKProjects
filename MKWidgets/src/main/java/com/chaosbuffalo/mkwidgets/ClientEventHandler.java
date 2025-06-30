@@ -12,7 +12,7 @@ import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 
 
-@EventBusSubscriber(modid = MKWidgets.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MKWidgets.MODID, value = Dist.CLIENT)
 public class ClientEventHandler {
 
     public static final KeyMapping openTestUi = new KeyMapping("key.mkwidgets.test.desc",
@@ -27,7 +27,7 @@ public class ClientEventHandler {
         }
     }
 
-    @EventBusSubscriber(modid = MKWidgets.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MKWidgets.MODID, value = Dist.CLIENT)
     public static class ModEvents {
         @SubscribeEvent
         public static void registerKeyBinding(RegisterKeyMappingsEvent event) {

@@ -41,7 +41,7 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 import java.util.*;
 import java.util.function.Supplier;
 
-@EventBusSubscriber(modid = MKUltra.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKUltra.MODID)
 public final class MKUItems {
 
     public static final UUID CHEST_UUID = UUID.fromString("434f17f4-4763-4d27-afdb-368e76ab259e");

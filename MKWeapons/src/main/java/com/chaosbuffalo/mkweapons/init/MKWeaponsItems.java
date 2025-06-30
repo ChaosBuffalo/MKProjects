@@ -41,7 +41,7 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 
 import java.util.*;
 
-@EventBusSubscriber(modid = MKWeapons.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKWeapons.MODID)
 public class MKWeaponsItems {
 
     public static final DeferredRegister.Items REGISTRY = DeferredRegister.createItems(MKWeapons.MODID);

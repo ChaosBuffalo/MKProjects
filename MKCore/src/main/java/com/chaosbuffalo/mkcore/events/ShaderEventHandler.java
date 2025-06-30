@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Objects;
 
-@EventBusSubscriber(value = Dist.CLIENT, modid = MKCore.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(value = Dist.CLIENT, modid = MKCore.MOD_ID)
 public class ShaderEventHandler {
     @Nullable
     private static ShaderInstance rendertypeMagicParticle;

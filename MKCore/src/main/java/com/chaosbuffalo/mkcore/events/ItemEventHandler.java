@@ -19,7 +19,7 @@ import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-@EventBusSubscriber(modid = MKCore.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MKCore.MOD_ID)
 public class ItemEventHandler {
 
     private static final UUID[] SHIELD_EFFICIENCY_MOD_UUID = new UUID[]{

@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 
-@EventBusSubscriber(modid = MKCore.MOD_ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MKCore.MOD_ID, value = Dist.CLIENT)
 public class ClientEventHandler {
 
     private static final KeyMapping playerMenuBind = new KeyMapping("key.hud.playermenu",
@@ -59,7 +59,7 @@ public class ClientEventHandler {
     private static KeyMapping[] ultimateAbilityBinds;
     private static KeyMapping itemAbilityBind;
 
-    @EventBusSubscriber(modid = MKCore.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MKCore.MOD_ID, value = Dist.CLIENT)
     public static class ModEvents {
         @SubscribeEvent
         public static void registerKeyBinding(RegisterKeyMappingsEvent event) {

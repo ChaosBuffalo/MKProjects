@@ -11,7 +11,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-@EventBusSubscriber(modid = MKNpc.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKNpc.MODID)
 public class PacketHandler {
 
     private static final String VERSION = "1.0";

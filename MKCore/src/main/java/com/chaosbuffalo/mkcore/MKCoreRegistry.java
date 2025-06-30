@@ -29,7 +29,7 @@ import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import javax.annotation.Nullable;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber
 public class MKCoreRegistry {
     public static final ResourceLocation INVALID_ABILITY = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "ability.invalid");
     public static final ResourceLocation INVALID_TALENT = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "talent.invalid");

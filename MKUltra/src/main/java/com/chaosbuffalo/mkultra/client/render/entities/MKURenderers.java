@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Created by Jacob on 7/15/2016.
  */
-@EventBusSubscriber(modid = MKUltra.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKUltra.MODID, value = Dist.CLIENT)
 public class MKURenderers {
 
     @SubscribeEvent

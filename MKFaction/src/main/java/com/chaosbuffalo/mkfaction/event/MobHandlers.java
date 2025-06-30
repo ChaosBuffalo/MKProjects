@@ -15,7 +15,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 @SuppressWarnings("unused")
-@EventBusSubscriber(modid = MKFactionMod.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MKFactionMod.MODID)
 public class MobHandlers {
 
     @SubscribeEvent

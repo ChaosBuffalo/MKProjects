@@ -13,7 +13,7 @@ import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-@EventBusSubscriber(modid = MKFactionMod.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKFactionMod.MODID)
 public class MKFactionRegistry {
     public static final ResourceKey<Registry<MKFaction>> FACTION_REGISTRY_KEY = ResourceKey.createRegistryKey(MKFactionMod.id("factions"));
 

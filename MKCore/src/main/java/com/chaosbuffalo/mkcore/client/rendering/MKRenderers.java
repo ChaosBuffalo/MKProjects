@@ -17,7 +17,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import org.jetbrains.annotations.NotNull;
 
-@EventBusSubscriber(modid = MKCore.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKCore.MOD_ID, value = Dist.CLIENT)
 public class MKRenderers {
 
     @SubscribeEvent

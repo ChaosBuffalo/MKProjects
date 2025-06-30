@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-@EventBusSubscriber(modid = MKFactionMod.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MKFactionMod.MODID)
 public class FactionDefaultManager {
     private static final Map<EntityType<?>, Holder<MKFaction>> factionDefaults = new HashMap<>();
 

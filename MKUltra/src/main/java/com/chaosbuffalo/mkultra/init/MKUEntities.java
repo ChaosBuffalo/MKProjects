@@ -19,7 +19,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 
-@EventBusSubscriber(modid = MKUltra.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKUltra.MODID)
 public class MKUEntities {
 
     public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, MKUltra.MODID);

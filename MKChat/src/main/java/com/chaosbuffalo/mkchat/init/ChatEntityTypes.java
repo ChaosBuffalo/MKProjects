@@ -12,7 +12,7 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-@EventBusSubscriber(modid = MKChat.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKChat.MODID)
 public class ChatEntityTypes {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE,
             MKChat.MODID);

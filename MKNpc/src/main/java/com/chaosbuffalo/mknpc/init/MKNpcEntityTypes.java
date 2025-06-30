@@ -13,7 +13,7 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-@EventBusSubscriber(modid = MKNpc.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MKNpc.MODID)
 public class MKNpcEntityTypes {
     public static final String SKELETON_NAME = "skeleton";
     public static final String ZOMBIFIED_PIGLIN_NAME = "zombified_piglin";
