@@ -217,7 +217,7 @@ public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
     }
 
     private void handleWorldGenerated() {
-        Path dataPath = server.storageSource.getLevelPath(LevelResource.GENERATED_DIR).normalize();
+        Path dataPath = server.getWorldPath(LevelResource.GENERATED_DIR).normalize();
         loadAnimationsFromWorldGenerated(dataPath);
     }
 
@@ -226,7 +226,7 @@ public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
         Map<ResourceLocation, ParticleAnimation> updateMap = new HashMap<>();
         updateMap.put(location, animation);
         syncAnimations(updateMap);
-        Path dataPath = server.storageSource.getLevelPath(LevelResource.GENERATED_DIR).normalize();
+        Path dataPath = server.getWorldPath(LevelResource.GENERATED_DIR).normalize();
         Path loc = Paths.get(dataPath.toString(), location.getNamespace(), "particle_animations", location.getPath() + ".json");
         try {
             JsonElement element = animation.serialize(JsonOps.INSTANCE);
