@@ -37,16 +37,6 @@ public class WorldStructureHandler {
     }
 
     @SubscribeEvent
-    public static void chunkUnload(ChunkEvent.Unload event) {
-        for (var pos : event.getChunk().getBlockEntitiesPos()) {
-            BlockEntity entity = event.getChunk().getBlockEntity(pos);
-            if (entity instanceof MKSpawnerBlockEntity spawnerBlock) {
-                spawnerBlock.clearSpawn();
-            }
-        }
-    }
-
-    @SubscribeEvent
     public static void onWorldTick(LevelTickEvent.Post event) {
         if (event.getLevel() instanceof ServerLevel serverLevel) {
             IWorldNpcData over = ContentDB.getPrimaryData();

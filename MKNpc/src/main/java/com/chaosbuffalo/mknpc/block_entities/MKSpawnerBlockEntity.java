@@ -362,6 +362,12 @@ public class MKSpawnerBlockEntity extends BlockEntity implements IStructurePlace
         ticksSinceDeath = 0;
     }
 
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        clearSpawn();
+    }
+
     private boolean isAir(Level world, BlockPos pos) {
         BlockState blockState = world.getBlockState(pos);
         return blockState.isAir();
