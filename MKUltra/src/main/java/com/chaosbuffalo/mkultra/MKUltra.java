@@ -1,14 +1,11 @@
 package com.chaosbuffalo.mkultra;
 
-
-import com.chaosbuffalo.mkultra.client.MKUItemProperties;
 import com.chaosbuffalo.mkultra.extensions.MKUNpcExtensions;
 import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkultra.item.MKUArmorMaterial;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
