@@ -17,7 +17,8 @@
                     "amount": 1.0,
                     "id": "mkultra:themcromancer_archon",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 },
                 {
                   "attribute": "mkcore:evocation",
@@ -27,7 +28,8 @@
                     "amount": 5.0,
                     "id": "mkultra:themcromancer_archon",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 },
                 {
                   "attribute": "mkcore:shadow_damage",
@@ -37,7 +39,8 @@
                     "amount": 0.05,
                     "id": "mkultra:themcromancer_archon",
                     "operation": "add_multiplied_total"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },

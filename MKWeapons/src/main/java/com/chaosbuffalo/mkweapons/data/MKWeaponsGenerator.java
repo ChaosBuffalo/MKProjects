@@ -96,7 +96,7 @@ public class MKWeaponsGenerator {
                     5, 10, AttributeModifier.Operation.ADD_VALUE, EquipmentSlotGroup.MAINHAND);
             AttributeOption manaRegen = new AttributeOption();
             manaRegen.addAttributeModifier(MKAttributes.MANA_REGEN, modifierId,
-                    0.5, 2.0, AttributeModifier.Operation.ADD_VALUE);
+                    0.5, 2.0, AttributeModifier.Operation.ADD_VALUE, EquipmentSlotGroup.MAINHAND);
 
             LootItemTemplate ringTemplate = new LootItemTemplate(LootSlotManager.RINGS);
             ringTemplate.addItem(MKWeaponsItems.CopperRing.get());

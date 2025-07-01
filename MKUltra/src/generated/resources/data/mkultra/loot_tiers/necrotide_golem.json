@@ -126,12 +126,6 @@
                 "count": 1,
                 "id": "mkultra:corrupted_gauntlets"
               }
-            },
-            {
-              "item": {
-                "count": 1,
-                "id": "mkultra:necrotide_band"
-              }
             }
           ],
           "templates": [
@@ -278,7 +272,14 @@
               ]
             }
           ],
-          "potentialItems": [],
+          "potentialItems": [
+            {
+              "item": {
+                "count": 1,
+                "id": "mkultra:necrotide_band"
+              }
+            }
+          ],
           "templates": [
             {
               "template": {

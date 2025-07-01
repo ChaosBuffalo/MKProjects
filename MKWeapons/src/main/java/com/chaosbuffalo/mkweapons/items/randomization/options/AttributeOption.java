@@ -68,28 +68,14 @@ public class AttributeOption extends BaseRandomizationOption {
         modifiers.add(new AttributeOptionEntry(attribute, attributeModifier, attributeModifier.amount(), attributeModifier.amount()));
     }
 
-    public static AttributeOption withModifier(Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
-        return withModifier(RandomizationSlotManager.ATTRIBUTE_SLOT, attribute, name, minAmount, maxAmount, op);
-    }
-
     public static AttributeOption withModifier(Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op, EquipmentSlotGroup slotGroup) {
         return withModifier(RandomizationSlotManager.ATTRIBUTE_SLOT, attribute, name, minAmount, maxAmount, op, slotGroup);
-    }
-
-    public static AttributeOption withModifier(IRandomizationSlot slot, Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
-        AttributeOption opt = new AttributeOption(slot);
-        opt.addAttributeModifier(attribute, name, minAmount, maxAmount, op);
-        return opt;
     }
 
     public static AttributeOption withModifier(IRandomizationSlot slot, Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op, EquipmentSlotGroup slotGroup) {
         AttributeOption opt = new AttributeOption(slot);
         opt.addAttributeModifier(attribute, name, minAmount, maxAmount, op, slotGroup);
         return opt;
-    }
-
-    public void addAttributeModifier(Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
-        modifiers.add(new AttributeOptionEntry(attribute, new AttributeModifier(name, minAmount, op), minAmount, maxAmount));
     }
 
     public void addAttributeModifier(Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op, EquipmentSlotGroup slotGroup) {

@@ -17,7 +17,8 @@
                     "amount": 2.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -66,7 +67,8 @@
                     "amount": 1.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 },
                 {
                   "attribute": "mkcore:fire_damage",
@@ -76,7 +78,8 @@
                     "amount": 1.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 }
               ],
               "weight": 9.0
@@ -92,7 +95,8 @@
                     "amount": 1.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 },
                 {
                   "attribute": "mkcore:fire_damage",
@@ -102,7 +106,8 @@
                     "amount": 2.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 }
               ],
               "weight": 8.0
@@ -118,7 +123,8 @@
                     "amount": 1.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 },
                 {
                   "attribute": "mkcore:fire_damage",
@@ -128,7 +134,8 @@
                     "amount": 3.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 }
               ],
               "weight": 7.0
@@ -144,7 +151,8 @@
                     "amount": 2.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 },
                 {
                   "attribute": "mkcore:fire_damage",
@@ -154,7 +162,8 @@
                     "amount": 1.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 }
               ],
               "weight": 8.0
@@ -170,7 +179,8 @@
                     "amount": 2.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 },
                 {
                   "attribute": "mkcore:fire_damage",
@@ -180,7 +190,8 @@
                     "amount": 2.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 }
               ],
               "weight": 6.0
@@ -196,7 +207,8 @@
                     "amount": 2.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 },
                 {
                   "attribute": "mkcore:fire_damage",
@@ -206,7 +218,8 @@
                     "amount": 3.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 }
               ],
               "weight": 4.0
@@ -222,7 +235,8 @@
                     "amount": 3.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 },
                 {
                   "attribute": "mkcore:fire_damage",
@@ -232,7 +246,8 @@
                     "amount": 1.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 }
               ],
               "weight": 7.0
@@ -248,7 +263,8 @@
                     "amount": 3.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 },
                 {
                   "attribute": "mkcore:fire_damage",
@@ -258,7 +274,8 @@
                     "amount": 2.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 }
               ],
               "weight": 4.0
@@ -274,7 +291,8 @@
                     "amount": 3.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 },
                 {
                   "attribute": "mkcore:fire_damage",
@@ -284,7 +302,8 @@
                     "amount": 3.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "hand"
                 }
               ]
             },
@@ -333,7 +352,8 @@
                     "amount": 3.0,
                     "id": "mkultra:burning_skeleton",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
