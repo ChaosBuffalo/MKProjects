@@ -11,47 +11,40 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class LootItemTemplate {
-    public static final Codec<LootItemTemplate> CODEC = RecordCodecBuilder.<LootItemTemplate>mapCodec(builder -> {
-        return builder.group(
-                LootSlot.CODEC.fieldOf("lootSlot").forGetter(LootItemTemplate::getLootSlot),
-                RandomizationItemEntry.CODEC.listOf().fieldOf("potentialItems").forGetter(i -> i.potentialItems),
-                IRandomizationOption.CODEC.listOf().fieldOf("options").forGetter(i -> i.options),
-                RandomizationTemplateEntry.CODEC.listOf().fieldOf("templates").forGetter(i -> new ArrayList<>(i.templates.values()))
-        ).apply(builder, LootItemTemplate::new);
-    }).codec();
+    public static final Codec<LootItemTemplate> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            LootSlot.CODEC.fieldOf("lootSlot").forGetter(LootItemTemplate::getLootSlot),
+            RandomizationItemEntry.CODEC.listOf().fieldOf("potentialItems").forGetter(i -> i.potentialItems),
+            IRandomizationOption.CODEC.listOf().fieldOf("options").forGetter(i -> i.options),
+            RandomizationTemplateEntry.CODEC.listOf().fieldOf("templates").forGetter(i -> i.templates)
+    ).apply(builder, LootItemTemplate::new));
 
     private final LootSlot lootSlot;
     private final List<RandomizationItemEntry> potentialItems;
     private final List<IRandomizationOption> options;
-    private final Map<ResourceLocation, RandomizationTemplateEntry> templates;
+    private final List<RandomizationTemplateEntry> templates;
 
     private LootItemTemplate(LootSlot lootSlot, List<RandomizationItemEntry> potentialItems, List<IRandomizationOption> options,
                              List<RandomizationTemplateEntry> templates) {
         this.lootSlot = lootSlot;
         this.potentialItems = potentialItems;
         this.options = options;
-        this.templates = new HashMap<>(templates.size());
-        templates.forEach(x -> this.templates.put(x.template.getName(), x));
+        this.templates = List.copyOf(templates);
     }
 
     public LootItemTemplate(LootSlot lootSlot) {
         this.lootSlot = lootSlot;
         this.potentialItems = new ArrayList<>();
         this.options = new ArrayList<>();
-        this.templates = new HashMap<>();
+        this.templates = new ArrayList<>();
     }
 
     public LootSlot getLootSlot() {
@@ -75,23 +68,7 @@ public class LootItemTemplate {
     }
 
     public void addTemplate(RandomizationTemplate template, double weight) {
-        this.templates.put(template.getName(), new RandomizationTemplateEntry(template, weight));
-    }
-
-    @Nullable
-    public RandomizationTemplate getTemplate(ResourceLocation name) {
-        RandomizationTemplateEntry entry = templates.get(name);
-        return entry != null ? entry.template : null;
-    }
-
-    @Nullable
-    public LootConstructor generateConstructorForTemplateName(RandomSource random, ResourceLocation templateName) {
-        RandomizationTemplate template = getTemplate(templateName);
-        if (template != null) {
-            return generateConstructorForTemplate(random, template);
-        } else {
-            return null;
-        }
+        templates.add(new RandomizationTemplateEntry(template, weight));
     }
 
     @Nullable
@@ -104,18 +81,22 @@ public class LootItemTemplate {
         }
     }
 
+    @Nullable
     public LootConstructor generateConstructorForTemplate(RandomSource random, RandomizationTemplate template) {
+        if (potentialItems.isEmpty()) {
+            // cannot construct if no item candidates
+            return null;
+        }
         ItemStack stack = chooseItem(random).copy();
         List<IRandomizationOption> chosenOptions = new ArrayList<>();
         List<IRandomizationSlot> templateSlots = new ArrayList<>();
         for (IRandomizationSlot randomizationSlot : template.getRandomizationSlots()) {
             if (randomizationSlot.isPermanent()) {
-                List<IRandomizationOption> options = this.options.stream().filter(x ->
-                                x.getSlot().equals(randomizationSlot) && x.isApplicableToItem(stack))
-                        .collect(Collectors.toList());
                 RandomCollection<IRandomizationOption> optionChoices = new RandomCollection<>();
-                for (IRandomizationOption option : options) {
-                    optionChoices.add(option.getWeight(), option);
+                for (IRandomizationOption option : this.options) {
+                    if (option.getSlot().equals(randomizationSlot) && option.isApplicableToItem(stack)) {
+                        optionChoices.add(option.getWeight(), option);
+                    }
                 }
                 if (optionChoices.size() > 0) {
                     chosenOptions.add(optionChoices.next(random));
@@ -145,7 +126,7 @@ public class LootItemTemplate {
         } else {
             RandomCollection<ItemStack> choices = new RandomCollection<>();
             for (RandomizationItemEntry entry : potentialItems) {
-                choices.add(entry.weight, entry.item);
+                choices.add(entry.weight(), entry.item());
             }
             return choices.next(random);
         }
@@ -154,8 +135,8 @@ public class LootItemTemplate {
     @Nullable
     public RandomizationTemplate chooseTemplate(RandomSource random) {
         RandomCollection<RandomizationTemplate> choices = new RandomCollection<>();
-        for (RandomizationTemplateEntry entry : templates.values()) {
-            choices.add(entry.weight, entry.template);
+        for (RandomizationTemplateEntry entry : templates) {
+            choices.add(entry.weight(), entry.template());
         }
         if (choices.size() > 0) {
             return choices.next(random);

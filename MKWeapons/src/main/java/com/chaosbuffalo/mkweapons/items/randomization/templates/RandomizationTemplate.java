@@ -11,12 +11,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class RandomizationTemplate {
-    public static final Codec<RandomizationTemplate> CODEC = RecordCodecBuilder.<RandomizationTemplate>mapCodec(builder -> {
-        return builder.group(
-                ResourceLocation.CODEC.fieldOf("name").forGetter(RandomizationTemplate::getName),
-                IRandomizationSlot.CODEC.listOf().fieldOf("slots").forGetter(RandomizationTemplate::getRandomizationSlots)
-        ).apply(builder, RandomizationTemplate::new);
-    }).codec();
+    public static final Codec<RandomizationTemplate> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            ResourceLocation.CODEC.fieldOf("name").forGetter(RandomizationTemplate::getName),
+            IRandomizationSlot.CODEC.listOf().fieldOf("slots").forGetter(RandomizationTemplate::getRandomizationSlots)
+    ).apply(builder, RandomizationTemplate::new));
 
     private final ResourceLocation name;
     private final List<IRandomizationSlot> slots;
@@ -40,13 +38,5 @@ public class RandomizationTemplate {
 
     public List<IRandomizationSlot> getRandomizationSlots() {
         return slots;
-    }
-
-    public <D> D serialize(DynamicOps<D> ops) {
-        return CODEC.encodeStart(ops, this).getOrThrow();
-    }
-
-    public static <D> RandomizationTemplate deserialize(Dynamic<D> dynamic) {
-        return CODEC.parse(dynamic).getOrThrow();
     }
 }

@@ -29,7 +29,7 @@ public class LootGenCommand {
                 .then(Commands.argument("loot_tier", LootTierArgument.definition())
                         .suggests(LootGenCommand::suggestLootTiers)
                         .then(Commands.argument("loot_slot", LootSlotArgument.definition())
-                                .suggests(LootGenCommand::suggestLootSlots)
+                                .suggests(LootGenCommand::suggestLootSlotsForTier)
                                 .then(Commands.argument("difficulty", difficultyArgument())
                                         .executes(LootGenCommand::summon))));
     }
@@ -44,8 +44,16 @@ public class LootGenCommand {
                 .map(ResourceLocation::toString), builder);
     }
 
-    static CompletableFuture<Suggestions> suggestLootSlots(final CommandContext<CommandSourceStack> context,
-                                                           final SuggestionsBuilder builder) {
+    static CompletableFuture<Suggestions> suggestLootSlotsForTier(final CommandContext<CommandSourceStack> context,
+                                                                  final SuggestionsBuilder builder) {
+        ResourceLocation tierName = context.getArgument("loot_tier", ResourceLocation.class);
+
+        LootTier tier = LootTierManager.getTierFromName(tierName);
+        if (tier != null) {
+            return SharedSuggestionProvider.suggest(tier.getSlots().stream()
+                    .map(LootSlot::getName)
+                    .map(ResourceLocation::toString), builder);
+        }
         return SharedSuggestionProvider.suggest(LootSlotManager.SLOTS.keySet().stream()
                 .map(ResourceLocation::toString), builder);
     }

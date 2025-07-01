@@ -83,17 +83,17 @@
       "dropChances": 2,
       "lootOptions": [
         {
-          "lootSlotName": "mkweapons:main_hand",
-          "lootSlotTier": "mkultra:trooper_magus"
+          "loot_slot": "mkweapons:main_hand",
+          "loot_tier": "mkultra:trooper_magus"
         },
         {
-          "lootSlotName": "mkweapons:rings",
-          "lootSlotTier": "mkultra:trooper_magus",
+          "loot_slot": "mkweapons:rings",
+          "loot_tier": "mkultra:trooper_magus",
           "weight": 2.0
         },
         {
-          "lootSlotName": "mkweapons:earrings",
-          "lootSlotTier": "mkultra:trooper_magus"
+          "loot_slot": "mkweapons:earrings",
+          "loot_tier": "mkultra:trooper_magus"
         }
       ],
       "noLootChance": 0.2,

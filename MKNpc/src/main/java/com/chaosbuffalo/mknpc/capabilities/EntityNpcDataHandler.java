@@ -18,7 +18,6 @@ import com.chaosbuffalo.mkweapons.items.randomization.LootConstructor;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
-import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -125,12 +124,12 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             if (entity.getRandom().nextDouble() >= noLoot) {
                 RandomCollection<LootOptionEntry> rolls = new RandomCollection<>();
                 for (LootOptionEntry option : options) {
-                    rolls.add(option.weight, option);
+                    rolls.add(option.weight(), option);
                 }
                 if (rolls.size() > 0) {
                     LootOptionEntry selected = rolls.next(entity.getRandom());
-                    LootSlot lootSlot = LootSlotManager.getSlotFromName(selected.lootSlotName);
-                    LootTier lootTier = LootTierManager.getTierFromName(selected.lootTierName);
+                    LootSlot lootSlot = selected.lootSlot();
+                    LootTier lootTier = LootTierManager.getTierFromName(selected.lootTierName());
                     if (lootSlot != null && lootTier != null) {
                         LootConstructor constructor = lootTier.generateConstructorForSlot(entity.getRandom(), lootSlot);
                         if (constructor != null) {

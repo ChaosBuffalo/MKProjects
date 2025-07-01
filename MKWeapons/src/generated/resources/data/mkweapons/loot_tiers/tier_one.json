@@ -152,9 +152,8 @@
           "templates": [
             {
               "template": {
-                "name": "mkweapons:simple_template_2x",
+                "name": "mkweapons:simple_template",
                 "slots": [
-                  "mkweapons:randomization.attributes",
                   "mkweapons:randomization.attributes"
                 ]
               },
@@ -162,8 +161,9 @@
             },
             {
               "template": {
-                "name": "mkweapons:simple_template",
+                "name": "mkweapons:simple_template_2x",
                 "slots": [
+                  "mkweapons:randomization.attributes",
                   "mkweapons:randomization.attributes"
                 ]
               },
@@ -223,9 +223,8 @@
           "templates": [
             {
               "template": {
-                "name": "mkweapons:simple_template_2x",
+                "name": "mkweapons:simple_template",
                 "slots": [
-                  "mkweapons:randomization.attributes",
                   "mkweapons:randomization.attributes"
                 ]
               },
@@ -233,8 +232,9 @@
             },
             {
               "template": {
-                "name": "mkweapons:simple_template",
+                "name": "mkweapons:simple_template_2x",
                 "slots": [
+                  "mkweapons:randomization.attributes",
                   "mkweapons:randomization.attributes"
                 ]
               },

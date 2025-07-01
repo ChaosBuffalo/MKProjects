@@ -58,8 +58,8 @@
       "dropChances": 2,
       "lootOptions": [
         {
-          "lootSlotName": "mkweapons:items",
-          "lootSlotTier": "mkultra:zombie_trooper"
+          "loot_slot": "mkweapons:items",
+          "loot_tier": "mkultra:zombie_trooper"
         }
       ],
       "noLootChance": 0.1,

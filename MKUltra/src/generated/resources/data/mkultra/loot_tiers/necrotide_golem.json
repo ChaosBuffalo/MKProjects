@@ -131,16 +131,6 @@
           "templates": [
             {
               "template": {
-                "name": "mkultra:corrupted_gauntlets_crit",
-                "slots": [
-                  "mkweapons:randomization.effect",
-                  "mkweapons:randomization.attributes",
-                  "mkweapons:randomization.attributes"
-                ]
-              }
-            },
-            {
-              "template": {
                 "name": "mkultra:corrupted_gauntlets",
                 "slots": [
                   "mkweapons:randomization.effect",
@@ -148,6 +138,16 @@
                 ]
               },
               "weight": 10.0
+            },
+            {
+              "template": {
+                "name": "mkultra:corrupted_gauntlets_crit",
+                "slots": [
+                  "mkweapons:randomization.effect",
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.attributes"
+                ]
+              }
             }
           ]
         },
@@ -283,16 +283,6 @@
           "templates": [
             {
               "template": {
-                "name": "mkultra:necrotide_band_crit",
-                "slots": [
-                  "mkweapons:randomization.effect",
-                  "mkweapons:randomization.attributes",
-                  "mkweapons:randomization.attributes"
-                ]
-              }
-            },
-            {
-              "template": {
                 "name": "mkultra:necrotide_band",
                 "slots": [
                   "mkweapons:randomization.effect",
@@ -300,6 +290,16 @@
                 ]
               },
               "weight": 10.0
+            },
+            {
+              "template": {
+                "name": "mkultra:necrotide_band_crit",
+                "slots": [
+                  "mkweapons:randomization.effect",
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.attributes"
+                ]
+              }
             }
           ]
         },

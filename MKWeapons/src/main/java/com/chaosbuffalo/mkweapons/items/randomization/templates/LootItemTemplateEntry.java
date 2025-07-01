@@ -2,31 +2,12 @@ package com.chaosbuffalo.mkweapons.items.randomization.templates;
 
 import com.chaosbuffalo.mkweapons.items.randomization.LootItemTemplate;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-public class LootItemTemplateEntry {
-    public static final Codec<LootItemTemplateEntry> CODEC = RecordCodecBuilder.<LootItemTemplateEntry>mapCodec(builder -> {
-        return builder.group(
-                LootItemTemplate.CODEC.fieldOf("template").forGetter(i -> i.template),
-                Codec.DOUBLE.fieldOf("weight").forGetter(i -> i.weight)
-        ).apply(builder, LootItemTemplateEntry::new);
-    }).codec();
+public record LootItemTemplateEntry(LootItemTemplate template, double weight) {
+    public static final Codec<LootItemTemplateEntry> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            LootItemTemplate.CODEC.fieldOf("template").forGetter(LootItemTemplateEntry::template),
+            Codec.DOUBLE.fieldOf("weight").forGetter(LootItemTemplateEntry::weight)
+    ).apply(builder, LootItemTemplateEntry::new));
 
-    public final LootItemTemplate template;
-    public final double weight;
-
-    public LootItemTemplateEntry(LootItemTemplate template, double weight) {
-        this.weight = weight;
-        this.template = template;
-    }
-
-    public <D> D serialize(DynamicOps<D> ops) {
-        return CODEC.encodeStart(ops, this).getOrThrow();
-    }
-
-    public static <D> LootItemTemplateEntry deserialize(Dynamic<D> dynamic) {
-        return CODEC.parse(dynamic).getOrThrow();
-    }
 }

@@ -166,13 +166,13 @@
       "type": "mknpc:extra_loot",
       "lootOptions": [
         {
-          "lootSlotName": "mkweapons:rings",
-          "lootSlotTier": "mkultra:themcromancer_archon",
+          "loot_slot": "mkweapons:rings",
+          "loot_tier": "mkultra:themcromancer_archon",
           "weight": 3.0
         },
         {
-          "lootSlotName": "mkweapons:earrings",
-          "lootSlotTier": "mkultra:themcromancer_archon",
+          "loot_slot": "mkweapons:earrings",
+          "loot_tier": "mkultra:themcromancer_archon",
           "weight": 2.0
         }
       ],

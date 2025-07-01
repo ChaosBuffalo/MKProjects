@@ -247,7 +247,7 @@ public class NpcDefinitionBuilder {
     public NpcDefinitionBuilder loot(LootSlot slot, ResourceLocation lootTier, double weight) {
         ExtraLootOption opt = (ExtraLootOption) options.computeIfAbsent(ExtraLootOption.NAME,
                 key -> new ExtraLootOption());
-        opt.withLootOptions(new LootOptionEntry(slot.getName(), lootTier, weight));
+        opt.withLootOptions(new LootOptionEntry(lootTier, slot, weight));
         return this;
     }
 
