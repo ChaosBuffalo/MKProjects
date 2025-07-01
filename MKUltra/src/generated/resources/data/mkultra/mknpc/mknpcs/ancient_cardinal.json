@@ -3,7 +3,6 @@
   "name": "mkultra:ancient_cardinal",
   "options": {
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -32,7 +31,6 @@
       ]
     },
     "mknpc:boss_stage": {
-      "type": "mknpc:boss_stage",
       "stages": [
         {
           "options": [
@@ -98,7 +96,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "chest": [
           {
@@ -153,31 +150,24 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 150
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkfaction:undead"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.2
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Ancient Cardinal"
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "ghost_clean"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",

@@ -3,7 +3,6 @@
   "name": "mkultra:crumbling_trooper",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:sever_tendon",
@@ -18,7 +17,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -35,7 +33,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "mainhand": [
           {
@@ -66,11 +63,9 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 10
     },
     "mknpc:extra_loot": {
-      "type": "mknpc:extra_loot",
       "dropChances": 2,
       "lootOptions": [
         {
@@ -82,27 +77,21 @@
       "noLootIncrease": 0.25
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:imperial_dead"
     },
     "mknpc:lunge_speed": {
-      "type": "mknpc:lunge_speed",
       "lungeSpeed": 0.35
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.1
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Crumbling Trooper"
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "zombie_pig_trooper"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:hand_to_hand",
         "mkcore:one_hand_blunt",

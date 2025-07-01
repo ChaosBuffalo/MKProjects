@@ -3,7 +3,6 @@
   "name": "mkultra:an_ancient_king",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:natures_remedy",
@@ -38,7 +37,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -55,7 +53,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "chest": [
           {
@@ -150,11 +147,9 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 100
     },
     "mknpc:extra_loot": {
-      "type": "mknpc:extra_loot",
       "dropChances": 2,
       "lootOptions": [
         {
@@ -171,32 +166,25 @@
       "noLootIncrease": 0.25
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkfaction:undead"
     },
     "mknpc:mk_combo": {
-      "type": "mknpc:mk_combo",
       "cooldown": 10,
       "count": 2
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.15
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "An Ancient King"
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "ancient_king"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:one_hand_blunt",
         "mkcore:one_hand_pierce",

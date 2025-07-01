@@ -3,7 +3,6 @@
   "name": "mkultra:themcromancer_neophyte",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:shadow_bolt",
@@ -18,7 +17,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -35,7 +33,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "chest": [
           {
@@ -90,27 +87,21 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 50
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:themcromancers"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 0.85
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Themnian Neophyte"
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "default"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:conjuration",
         "mkcore:necromancy"

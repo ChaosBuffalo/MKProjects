@@ -3,7 +3,6 @@
   "name": "mkultra:green_lady_guard_1",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:skin_like_wood",
@@ -33,7 +32,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -50,7 +48,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "chest": [
           {
@@ -105,31 +102,24 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 50
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:green_knights"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.1
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Green Knight"
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "green_lady_guard_1"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:one_hand_blunt",
         "mkcore:one_hand_pierce",

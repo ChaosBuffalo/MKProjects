@@ -3,7 +3,6 @@
   "name": "mkultra:seawoven_skeleton",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:seafury",
@@ -13,7 +12,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -30,11 +28,9 @@
       ]
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 50
     },
     "mknpc:extra_loot": {
-      "type": "mknpc:extra_loot",
       "lootOptions": [
         {
           "loot_slot": "mkweapons:items",
@@ -45,23 +41,18 @@
       "noLootIncrease": 0.25
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkfaction:undead"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 0.98
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "A Seawoven Skeleton"
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "seawoven"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:conjuration",
         "mkcore:necromancy"

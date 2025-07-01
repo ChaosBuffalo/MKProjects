@@ -3,7 +3,6 @@
   "name": "mkultra:solangian_cleric",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:heal",
@@ -33,7 +32,6 @@
       ]
     },
     "mknpc:ability_trainings": {
-      "type": "mknpc:ability_trainings",
       "abilities": [
         {
           "ability": "mkultra:heal",
@@ -83,7 +81,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -100,11 +97,9 @@
       ]
     },
     "mknpc:dialogue": {
-      "type": "mknpc:dialogue",
       "dialogueId": "mkultra:cleric_default"
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "mainhand": [
           {
@@ -119,37 +114,29 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 100
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:see_of_solang"
     },
     "mknpc:faction_name": {
-      "type": "mknpc:faction_name",
       "title": "Cleric"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.05
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:offer_quests": {
-      "type": "mknpc:offer_quests",
       "questIds": [
         "mkultra:cleric_unlock_chain"
       ]
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "cleric_1"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:alteration",
         "mkcore:restoration"

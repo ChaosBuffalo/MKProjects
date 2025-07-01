@@ -3,7 +3,6 @@
   "name": "mknpc:test_ghost",
   "options": {
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "chest": [
           {
@@ -18,11 +17,9 @@
       }
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkfaction:undead"
     },
     "mknpc:ghost": {
-      "type": "mknpc:ghost",
       "armor_translucency": 0.7,
       "ghost_armor": true,
       "ghost_translucency": 0.7

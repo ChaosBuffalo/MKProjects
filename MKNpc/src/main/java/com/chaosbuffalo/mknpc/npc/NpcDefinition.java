@@ -6,11 +6,10 @@ import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.options.*;
-import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -24,47 +23,50 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Supplier;
 
 public class NpcDefinition {
     private static final ResourceLocation HEALTH_SCALING_MOD_ID = MKNpc.id("health_difficulty_scaling");
     public static final Codec<NpcDefinition> CODEC = RecordCodecBuilder.<NpcDefinition>mapCodec(builder -> builder.group(
             ResourceLocation.CODEC.fieldOf("name").forGetter(NpcDefinition::getDefinitionName),
-            ResourceLocation.CODEC.optionalFieldOf("entityType").forGetter(i -> Optional.ofNullable(i.getEntityType())),
-            ResourceLocation.CODEC.optionalFieldOf("parent").forGetter(i -> Optional.ofNullable(i.getParentName())),
-            Codec.unboundedMap(ResourceLocation.CODEC, NpcDefinitionOption.DIRECT_CODEC).fieldOf("options").forGetter(i -> i.options)
+            NeoForgeExtraCodecs.xor(
+                    BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("entityType"),
+                    ResourceLocation.CODEC.fieldOf("parent")
+            ).forGetter(i -> i.parentName != null ? Either.right(i.parentName) : Either.left(i.entityType)),
+            NpcDefinitionOption.OPTION_MAP_CODEC.fieldOf("options").forGetter(i -> i.options)
     ).apply(builder, NpcDefinition::new)).codec();
 
     private final ResourceLocation definitionName;
     @Nullable
     private final ResourceLocation parentName;
     @Nullable
-    private ResourceLocation entityType;
+    private EntityType<?> entityType;
     private NpcDefinition parent;
-    private final Map<ResourceLocation, NpcDefinitionOption> options;
+    private final Map<NpcOptionType<?>, NpcDefinitionOption> options;
 
-    public NpcDefinition(ResourceLocation definitionName, Optional<ResourceLocation> parentName) {
-        this(definitionName, Optional.empty(), parentName,  new HashMap<>());
+    public NpcDefinition(ResourceLocation definitionName, EntityType<?> entityType) {
+        this(definitionName, Either.left(entityType), new HashMap<>());
     }
 
-    public NpcDefinition(ResourceLocation definitionName, ResourceLocation entityType) {
-        this(definitionName, Optional.of(entityType), Optional.empty(), new HashMap<>());
+    public NpcDefinition(ResourceLocation definitionName, Holder<EntityType<?>> entityType) {
+        this(definitionName, entityType.value());
     }
 
-    public NpcDefinition(ResourceLocation definitionName, ResourceLocation typeName, ResourceLocation parentName) {
-        this(definitionName, Optional.ofNullable(typeName), Optional.ofNullable(parentName),  new HashMap<>());
-    }
-
-    public NpcDefinition(ResourceLocation definitionName, Optional<ResourceLocation> entityType, Optional<ResourceLocation> parentName, Map<ResourceLocation, NpcDefinitionOption> options) {
+    public NpcDefinition(ResourceLocation definitionName, Either<EntityType<?>, ResourceLocation> either,
+                          Map<NpcOptionType<?>, NpcDefinitionOption> options) {
         this.definitionName = definitionName;
-        this.entityType = entityType.orElse(null);
-        this.parentName = parentName.orElse(null);
+
+        this.entityType = either.left().orElse(null);
+        this.parentName = either.right().orElse(null);
         this.options = new HashMap<>(options);
-        if (parentName.isEmpty() && entityType.isEmpty()) {
-            MKNpc.LOGGER.error("Creating definition {} with empty parent name and empty entity type.", definitionName);
-        }
+    }
+
+    public static NpcDefinition derived(ResourceLocation definitionName, ResourceLocation parentName) {
+        return new NpcDefinition(definitionName, Either.right(parentName), Map.of());
     }
 
     public ResourceLocation getDefinitionName() {
@@ -101,7 +103,7 @@ public class NpcDefinition {
         }
     }
 
-    public ResourceLocation getEntityType() {
+    public EntityType<?> getEntityType() {
         return entityType;
     }
 
@@ -114,30 +116,35 @@ public class NpcDefinition {
     }
 
     @Nullable
-    public NpcDefinitionOption getOption(ResourceLocation optionName) {
+    public NpcDefinitionOption getOption(NpcOptionType<?> optionName) {
         NpcDefinitionOption localOption = options.get(optionName);
         if (localOption != null) {
             return localOption;
-        }
-        else if (hasParent()) {
+        } else if (hasParent()) {
             return getParent().getOption(optionName);
         }
         return null;
     }
 
+    @Nullable
+    public <T extends NpcDefinitionOption> T getOption(Supplier<NpcOptionType<T>> optionName) {
+        //noinspection unchecked
+        return (T) getOption(optionName.get());
+    }
+
     public void addOption(NpcDefinitionOption option) {
-        options.put(option.getName(), option);
+        options.put(option.getType(), option);
     }
 
     public boolean isNotable() {
-        if (getOption(NotableOption.NAME) instanceof NotableOption option) {
+        if (getOption(NpcOptionTypes.NOTABLE) instanceof NotableOption option) {
             return option.isNotable();
         }
         return false;
     }
 
     public ResourceLocation getFactionName() {
-        if (getOption(FactionOption.NAME) instanceof FactionOption option) {
+        if (getOption(NpcOptionTypes.FACTION) instanceof FactionOption option) {
             return option.getValue();
         }
         return MKFaction.INVALID_FACTION;
@@ -204,9 +211,9 @@ public class NpcDefinition {
         if (hasParent()) {
             getParent().apply(entity, order, difficultyValue);
         }
-        for (Map.Entry<ResourceLocation, NpcDefinitionOption> option : options.entrySet()) {
-            if (option.getValue().getOrdering() == order) {
-                option.getValue().applyToEntity(this, entity, difficultyValue);
+        for (NpcDefinitionOption option : options.values()) {
+            if (option.getOrdering() == order) {
+                option.applyToEntity(this, entity, difficultyValue);
             }
         }
     }
@@ -216,45 +223,9 @@ public class NpcDefinition {
         return createEntity(world, pos, UUID.randomUUID(), difficultyValue);
     }
 
-    protected <D> D getDynamicType(DynamicOps<D> ops) {
-        if (hasParentName()) {
-            return ops.createMap(ImmutableMap.of(
-                    ops.createString("parent"), ops.createString(getParentName().toString())
-            ));
-        } else {
-            return ops.createMap(ImmutableMap.of(
-                    ops.createString("entityType"), ops.createString(getEntityType().toString())
-            ));
-        }
-    }
-
-    public <D> D serialize(DynamicOps<D> ops) {
-        D type = getDynamicType(ops);
-        return ops.mergeToMap(type, ImmutableMap.of(
-                        ops.createString("options"),
-                        ops.createList(options.values().stream().flatMap(entry -> NpcDefinitionOption.DIRECT_CODEC.encodeStart(ops, entry).resultOrPartial(MKNpc.LOGGER::error).stream()))
-                )
-        ).result().orElse(type);
-    }
-
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        options.clear();
-        dynamic.get("options").asStream().forEach(x -> {
-            NpcDefinitionOption.DIRECT_CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(o -> options.put(o.getName(), o));
-        });
-    }
-
-    public static <D> NpcDefinition deserializeDefinitionFromDynamic(ResourceLocation name, Dynamic<D> dynamic) {
-        ResourceLocation parentName = dynamic.get("parent").asString().result().map(ResourceLocation::parse).orElse(null);
-        ResourceLocation typeName = dynamic.get("entityType").asString().result().map(ResourceLocation::parse).orElse(null);
-        NpcDefinition def = new NpcDefinition(name, typeName, parentName);
-        def.deserialize(dynamic);
-        return def;
-    }
-
     @Nullable
     public Entity createEntity(Level world, Vec3 pos, UUID uuid, double difficultyValue) {
-        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(getEntityType());
+        EntityType<?> type = getEntityType();
         if (type != null) {
             Entity entity = type.create(world);
             if (entity == null) {

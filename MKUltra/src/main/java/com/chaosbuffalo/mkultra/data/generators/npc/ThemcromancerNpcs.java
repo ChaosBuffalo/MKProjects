@@ -33,8 +33,7 @@ public class ThemcromancerNpcs {
 
     static NpcDefinition generateThemnianAcolyte() {
 
-        return new NpcDefinitionBuilder(MKUltra.id("themcromancer_acolyte"))
-                .type(MKUEntities.HUMAN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("themcromancer_acolyte"), MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
                 .renderGroup(MKUHumans.DEFAULT_NAME)
                 .size(0.92f)
@@ -59,8 +58,7 @@ public class ThemcromancerNpcs {
 
     static NpcDefinition generateThemnianNeophyte() {
 
-        return new NpcDefinitionBuilder(MKUltra.id("themcromancer_neophyte"))
-                .type(MKUEntities.HUMAN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("themcromancer_neophyte"), MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
                 .renderGroup(MKUHumans.DEFAULT_NAME)
                 .size(0.85f)
@@ -83,8 +81,7 @@ public class ThemcromancerNpcs {
 
     static NpcDefinition generateThemnianArchon() {
 
-        return new NpcDefinitionBuilder(MKUltra.id("themcromancer_archon"))
-                .type(MKUEntities.HUMAN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("themcromancer_archon"), MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
                 .renderGroup(MKUHumans.DEFAULT_NAME)
                 .size(1.0f)
@@ -123,8 +120,7 @@ public class ThemcromancerNpcs {
 
     static NpcDefinition generateThemnianLibrarian() {
 
-        return new NpcDefinitionBuilder(MKUltra.id("themcromancer_librarian"))
-                .type(MKUEntities.HUMAN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("themcromancer_librarian"), MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
                 .renderGroup(MKUHumans.DEFAULT_NAME)
                 .size(0.92f)
@@ -153,8 +149,7 @@ public class ThemcromancerNpcs {
     }
 
     static NpcDefinition generateSkeletalGatekeeper() {
-        return new NpcDefinitionBuilder(MKUltra.id("a_skeletal_gatekeeper"))
-                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("a_skeletal_gatekeeper"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.THEMCROMANCER_GATEKEEPER_NAME)
                 .renderGroup(MKUSkeletons.BASIC_NAME)
                 .size(1.0f)
@@ -170,8 +165,7 @@ public class ThemcromancerNpcs {
     }
 
     static NpcDefinition generateSkeletalGuard() {
-        return new NpcDefinitionBuilder(MKUltra.id("a_skeletal_guard"))
-                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("a_skeletal_guard"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
                 .renderGroup(MKUSkeletons.BASIC_NAME)
                 .size(1.1f)

@@ -3,7 +3,6 @@
   "name": "mkultra:necrotide_cultist",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:shadow_bolt",
@@ -28,7 +27,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -45,30 +43,22 @@
       ]
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 65
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:necrotide_cultists"
     },
-    "mknpc:faction_battlecry": {
-      "type": "mknpc:faction_battlecry"
-    },
+    "mknpc:faction_battlecry": {},
     "mknpc:faction_name": {
-      "type": "mknpc:faction_name",
       "title": "Cultist"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.05
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "necrotide_cultist_skull_1"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:conjuration",
         "mkcore:necromancy"

@@ -1,9 +1,8 @@
 {
-  "entityType": "mknpc:green_lady",
+  "entityType": "minecraft:villager",
   "name": "mknpc:test",
   "options": {
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -12,11 +11,9 @@
       ]
     },
     "mknpc:dialogue": {
-      "type": "mknpc:dialogue",
       "dialogueId": "mkchat:test"
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "mainhand": [
           {
@@ -39,11 +36,9 @@
       }
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkfaction:villagers"
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Test Lady"
     }
   }

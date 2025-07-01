@@ -26,8 +26,7 @@ public class SeawovenNpcs {
     }
 
     static NpcDefinition generateSeawovenWretch() {
-        return new NpcDefinitionBuilder(MKUltra.id("seawoven_wretch"))
-                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("seawoven_wretch"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .renderGroup(MKUSkeletons.SEAWOVEN_WRTECH_NAME)
                 .size(0.92f)
@@ -43,8 +42,7 @@ public class SeawovenNpcs {
 
     static NpcDefinition generateSeawovenSkeleton() {
         ResourceLocation lootTierName = MKUltra.id("seawoven_skeleton");
-        return new NpcDefinitionBuilder(MKUltra.id("seawoven_skeleton"))
-                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("seawoven_skeleton"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .renderGroup(MKUSkeletons.SEAWOVEN_NAME)
                 .size(0.98f)

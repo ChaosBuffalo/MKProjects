@@ -34,8 +34,7 @@ public class HyboreanNpcs {
     }
 
     static NpcDefinition generateHyboreanHonorGuard() {
-        return new NpcDefinitionBuilder(MKUltra.id("hyborean_honor_guard"))
-                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("hyborean_honor_guard"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .name("Undying Honor Guard")
                 .size(1.0f)
@@ -63,8 +62,7 @@ public class HyboreanNpcs {
     }
 
     static NpcDefinition generateHyboreanSorcerer() {
-        return new NpcDefinitionBuilder(MKUltra.id("hyborean_sorcerer"))
-                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("hyborean_sorcerer"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .name("Hyborean Sorcerer")
                 .size(0.9f)
@@ -85,8 +83,7 @@ public class HyboreanNpcs {
 
     static NpcDefinition generateAncientKing() {
         ResourceLocation lootTierName = MKUltra.id("ancient_king");
-        return new NpcDefinitionBuilder(MKUltra.id("an_ancient_king"))
-                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("an_ancient_king"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .name("An Ancient King")
                 .size(1.15f)
@@ -127,8 +124,7 @@ public class HyboreanNpcs {
 
     static NpcDefinition generateHyboreanSorcererQueen() {
         ResourceLocation lootTierName = MKUltra.id("hyborean_sorcerer_queen");
-        return new NpcDefinitionBuilder(MKUltra.id("hyborean_sorcerer_queen"))
-                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("hyborean_sorcerer_queen"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .name("Hyborean Sorcerer Queen")
                 .faction(MKFactions.UNDEAD)
                 .size(1.1f)
@@ -158,8 +154,7 @@ public class HyboreanNpcs {
     }
 
     static NpcDefinition generateHyboreanArcher() {
-        return new NpcDefinitionBuilder(MKUltra.id("hyborean_archer"))
-                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("hyborean_archer"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .name("Decaying Archer")
                 .faction(MKFactions.UNDEAD)
                 .size(0.95f)
@@ -178,8 +173,7 @@ public class HyboreanNpcs {
     }
 
     static NpcDefinition generateHyboreanWarrior() {
-        return new NpcDefinitionBuilder(MKUltra.id("hyborean_warrior"))
-                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("hyborean_warrior"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .size(1.0f)
                 .renderGroup(MKUSkeletons.HYBOREAN_WARRIOR_NAME)

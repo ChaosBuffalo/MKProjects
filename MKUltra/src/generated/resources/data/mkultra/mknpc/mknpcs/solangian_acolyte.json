@@ -3,7 +3,6 @@
   "name": "mkultra:solangian_acolyte",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:heal",
@@ -23,7 +22,6 @@
       ]
     },
     "mknpc:ability_trainings": {
-      "type": "mknpc:ability_trainings",
       "abilities": [
         {
           "ability": "mkultra:heal",
@@ -46,7 +44,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -63,11 +60,9 @@
       ]
     },
     "mknpc:dialogue": {
-      "type": "mknpc:dialogue",
       "dialogueId": "mkultra:intro_cleric_acolyte"
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "mainhand": [
           {
@@ -82,37 +77,29 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 10
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:see_of_solang"
     },
     "mknpc:faction_name": {
-      "type": "mknpc:faction_name",
       "title": "Acolyte"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.05
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:offer_quests": {
-      "type": "mknpc:offer_quests",
       "questIds": [
         "mkultra:cleric_intro"
       ]
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "cleric_1"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:alteration",
         "mkcore:restoration"

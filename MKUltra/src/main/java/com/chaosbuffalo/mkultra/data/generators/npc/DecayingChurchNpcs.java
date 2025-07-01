@@ -31,8 +31,7 @@ public class DecayingChurchNpcs {
     }
 
     static NpcDefinition generateGhostApprentice() {
-        return new NpcDefinitionBuilder(MKUltra.id("ancient_apprentice_ghost"))
-                .type(MKUEntities.HUMAN_GHOST_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("ancient_apprentice_ghost"), MKUEntities.HUMAN_GHOST_TYPE)
                 .faction(MKUFactions.GHOSTS_OF_HYBORIA_NAME)
                 .size(0.92f)
                 .renderGroup(MKUHumans.GHOST_LOOK_CLEAN_SHORT_NAME)
@@ -53,8 +52,7 @@ public class DecayingChurchNpcs {
     }
 
     static NpcDefinition generateAncientPriestGhost() {
-        return new NpcDefinitionBuilder(MKUltra.id("ancient_priest_ghost"))
-                .type(MKUEntities.HUMAN_GHOST_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("ancient_priest_ghost"), MKUEntities.HUMAN_GHOST_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .size(1.0f)
                 .renderGroup(MKUHumans.GHOST_LOOK_CLEAN_NAME)
@@ -77,8 +75,7 @@ public class DecayingChurchNpcs {
     }
 
     static NpcDefinition generateAncientCardinal() {
-        return new NpcDefinitionBuilder(MKUltra.id("ancient_cardinal"))
-                .type(MKUEntities.HUMAN_GHOST_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("ancient_cardinal"), MKUEntities.HUMAN_GHOST_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .size(1.2f)
                 .renderGroup(MKUHumans.GHOST_LOOK_CLEAN_NAME)

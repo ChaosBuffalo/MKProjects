@@ -3,7 +3,6 @@
   "name": "mkultra:seawoven_wretch",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:frozen_grasp",
@@ -13,7 +12,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -30,27 +28,21 @@
       ]
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 40
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkfaction:undead"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 0.92
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "A Seawoven Wretch"
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "seawoven_wretch"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:conjuration",
         "mkcore:necromancy"

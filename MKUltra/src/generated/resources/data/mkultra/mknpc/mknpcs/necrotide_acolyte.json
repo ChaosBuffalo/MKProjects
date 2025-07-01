@@ -3,7 +3,6 @@
   "name": "mkultra:necrotide_acolyte",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:shadow_bolt",
@@ -23,7 +22,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -40,30 +38,22 @@
       ]
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 30
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:necrotide_cultists"
     },
-    "mknpc:faction_battlecry": {
-      "type": "mknpc:faction_battlecry"
-    },
+    "mknpc:faction_battlecry": {},
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 0.95
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "A Necrotide Acolyte"
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "necrotide_cultist_1"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",
