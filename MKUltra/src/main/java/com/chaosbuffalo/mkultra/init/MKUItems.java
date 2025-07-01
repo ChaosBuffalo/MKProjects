@@ -119,25 +119,25 @@ public final class MKUItems {
     public static DeferredHolder<Item, MKArmorItem> greenKnightHelmet = REGISTRY.register("green_knight_helmet",
             () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.HELMET,
                     new Item.Properties()
-                            .durability(ArmorItem.Type.HELMET.getDurability(MKUArmorMaterial.GREEN_KNOX_ARMOR_DURABILITY)),
+                            .durability(ArmorItem.Type.HELMET.getDurability(MKUArmorMaterial.GREEN_KNIGHT_ARMOR_DURABILITY)),
                     new ArmorModifierEffect(gkHelmetAttrs)));
 
     public static DeferredHolder<Item, MKArmorItem> greenKnightLeggings = REGISTRY.register("green_knight_leggings",
             () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.LEGGINGS,
                     new Item.Properties()
-                            .durability(ArmorItem.Type.LEGGINGS.getDurability(MKUArmorMaterial.GREEN_KNOX_ARMOR_DURABILITY)),
+                            .durability(ArmorItem.Type.LEGGINGS.getDurability(MKUArmorMaterial.GREEN_KNIGHT_ARMOR_DURABILITY)),
                     new ArmorModifierEffect(gkLegsAttrs)));
 
     public static DeferredHolder<Item, MKArmorItem> greenKnightChestplate = REGISTRY.register("green_knight_chestplate",
             () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.CHESTPLATE,
                     new Item.Properties()
-                            .durability(ArmorItem.Type.CHESTPLATE.getDurability(MKUArmorMaterial.GREEN_KNOX_ARMOR_DURABILITY)),
+                            .durability(ArmorItem.Type.CHESTPLATE.getDurability(MKUArmorMaterial.GREEN_KNIGHT_ARMOR_DURABILITY)),
                     new ArmorModifierEffect(gkChestAttrs)));
 
     public static DeferredHolder<Item, MKArmorItem> greenKnightBoots = REGISTRY.register("green_knight_boots",
             () -> new MKArmorItem(MKUArmorMaterial.GREEN_KNIGHT_ARMOR, ArmorItem.Type.BOOTS,
                     new Item.Properties()
-                            .durability(ArmorItem.Type.BOOTS.getDurability(MKUArmorMaterial.GREEN_KNOX_ARMOR_DURABILITY)),
+                            .durability(ArmorItem.Type.BOOTS.getDurability(MKUArmorMaterial.GREEN_KNIGHT_ARMOR_DURABILITY)),
                     new ArmorModifierEffect(gkBootsAttrs)));
 
     public static DeferredHolder<Item, Item> corruptedPigIronPlate = REGISTRY.register("corrupted_pig_iron_plate",
