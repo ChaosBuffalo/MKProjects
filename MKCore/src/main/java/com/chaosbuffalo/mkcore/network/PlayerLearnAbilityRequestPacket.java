@@ -5,8 +5,8 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEntry;
-import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainer;
-import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainingEntity;
+import com.chaosbuffalo.mkcore.abilities.training.EntityAbilityTrainer;
+import com.chaosbuffalo.mkcore.init.CoreAttachments;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -78,42 +78,45 @@ public class PlayerLearnAbilityRequestPacket implements CustomPacketPayload {
                 return;
             }
         }
-        MKAbility toLearn = MKCoreRegistry.getAbility(learning);
-        if (toLearn == null) {
-            MKCore.LOGGER.error("Learn ability failed because ability with id {} is null for player: {}.", learning.toString(), player);
-        }
 
         Entity teacher = player.level().getEntity(entityId);
-        if (teacher instanceof IAbilityTrainingEntity teachingEntity) {
-            IAbilityTrainer abilityTrainer = teachingEntity.getAbilityTrainer();
+        if (teacher == null) {
+            MKCore.LOGGER.error("Player {} tried to learn ability {} from invalid entity (id {})", player, learning, entityId);
+            return;
+        }
 
-            MKCore.getPlayer(player).ifPresent(playerData -> {
-                AbilityTrainingEntry entry = abilityTrainer.getTrainingEntry(toLearn);
-                if (entry == null) {
-                    MKCore.LOGGER.error("Trainer {} does not have requested ability {}. Requested by {}", teacher, learning, player);
-                    return;
-                }
-                if (!entry.checkRequirements(playerData)) {
-                    MKCore.LOGGER.debug("Failed to learn ability {} from {} - unmet requirements", learning, teacher);
-                    return;
-                }
+        var playerData = MKCore.getPlayerOrThrow(player);
 
-                int count = playerData.getAbilities().getSlotDeficitToLearnAnAbility();
-                if (count != forgetting.size()) {
-                    MKCore.LOGGER.debug("Failed to learn ability {} from {} - a", learning, teacher);
-                    return;
-                }
-                for (ResourceLocation toForget : forgetting) {
-                    if (!playerData.getAbilities().unlearnAbility(toForget, AbilitySource.TRAINED)) {
-                        MKCore.LOGGER.debug("Failed to learn ability {} from {} - provided unlearned ability for forgetting {}", learning, teacher, toForget);
-                        return;
-                    }
-                }
+        EntityAbilityTrainer abilityTrainer = teacher.getExistingDataOrNull(CoreAttachments.ABILITY_TRAINER);
+        if (abilityTrainer == null) {
+            MKCore.LOGGER.error("Entity {} is not an ability trainer. Requested by {}", teacher, player);
+            return;
+        }
 
-                if (playerData.getAbilities().learnAbility(toLearn, AbilitySource.TRAINED)) {
-                    entry.onAbilityLearned(playerData);
-                }
-            });
+        AbilityTrainingEntry entry = abilityTrainer.getTrainingEntry(learning);
+        if (entry == null) {
+            MKCore.LOGGER.error("Trainer {} does not have requested ability {}. Requested by {}", teacher, learning, player);
+            return;
+        }
+        if (!entry.checkRequirements(playerData)) {
+            MKCore.LOGGER.debug("Failed to learn ability {} from {} - unmet requirements", learning, teacher);
+            return;
+        }
+
+        int count = playerData.getAbilities().getSlotDeficitToLearnAnAbility();
+        if (count != forgetting.size()) {
+            MKCore.LOGGER.debug("Failed to learn ability {} from {} - a", learning, teacher);
+            return;
+        }
+        for (ResourceLocation toForget : forgetting) {
+            if (!playerData.getAbilities().unlearnAbility(toForget, AbilitySource.TRAINED)) {
+                MKCore.LOGGER.debug("Failed to learn ability {} from {} - provided unlearned ability for forgetting {}", learning, teacher, toForget);
+                return;
+            }
+        }
+
+        if (playerData.getAbilities().learnAbility(entry.getAbility(), AbilitySource.TRAINED)) {
+            entry.onAbilityLearned(playerData);
         }
     }
 }

@@ -138,16 +138,6 @@
           "templates": [
             {
               "template": {
-                "name": "mkultra:blade_crit",
-                "slots": [
-                  "mkweapons:randomization.ability",
-                  "mkweapons:randomization.name",
-                  "mkweapons:randomization.attributes"
-                ]
-              }
-            },
-            {
-              "template": {
                 "name": "mkultra:blade",
                 "slots": [
                   "mkweapons:randomization.ability",
@@ -155,6 +145,16 @@
                 ]
               },
               "weight": 10.0
+            },
+            {
+              "template": {
+                "name": "mkultra:blade_crit",
+                "slots": [
+                  "mkweapons:randomization.ability",
+                  "mkweapons:randomization.name",
+                  "mkweapons:randomization.attributes"
+                ]
+              }
             }
           ]
         },

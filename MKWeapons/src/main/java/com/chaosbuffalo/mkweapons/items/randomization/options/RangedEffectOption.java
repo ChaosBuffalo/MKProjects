@@ -36,7 +36,7 @@ public class RangedEffectOption extends EffectOption<IRangedWeaponEffect> {
     }
 
     @Override
-    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
+    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, int slotIndex, double difficulty) {
         getItemEffects().forEach(eff -> {
             IRangedWeaponEffect newEffect = eff.createTunedEffect(difficulty / GameConstants.MAX_DIFFICULTY);
             RangedEffectsComponent.addEffect(stack, newEffect);

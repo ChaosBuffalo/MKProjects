@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityManager;
-import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.command.MKCommand;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
@@ -12,7 +11,6 @@ import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
 import com.chaosbuffalo.mkcore.core.talents.TalentManager;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreAttachments;
-import com.chaosbuffalo.mkcore.init.CoreItems;
 import com.chaosbuffalo.mkcore.init.CoreParticles;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
@@ -26,7 +24,6 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -59,7 +56,6 @@ public class MKCore {
         INSTANCE = this;
         MKConfig.init(modContainer);
         modBus.addListener(EventPriority.LOWEST, this::loadComplete);
-        modBus.addListener(this::clientSetup);
         modBus.addListener(this::modifyAttributesEvent);
         // Register the processIMC method for modloading
         modBus.addListener(this::processIMC);
@@ -89,14 +85,6 @@ public class MKCore {
     private void registerAttributes() {
         Attributes.ATTACK_DAMAGE.value().setSyncable(true);
     }
-
-    private void clientSetup(final FMLClientSetupEvent event) {
-        PlayerPageRegistry.init();
-        event.enqueueWork(CoreItems::registerItemProperties);
-    }
-
-
-
 
     @SubscribeEvent
     public void registerCommands(RegisterCommandsEvent event) {

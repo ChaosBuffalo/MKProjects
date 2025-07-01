@@ -17,7 +17,8 @@
                     "amount": 0.05,
                     "id": "mkultra:hyborean_sorcerer_queen",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -187,6 +188,16 @@
           "templates": [
             {
               "template": {
+                "name": "mkultra:staff",
+                "slots": [
+                  "mkweapons:randomization.ability",
+                  "mkweapons:randomization.name"
+                ]
+              },
+              "weight": 10.0
+            },
+            {
+              "template": {
                 "name": "mkultra:staff_crit",
                 "slots": [
                   "mkweapons:randomization.ability",
@@ -195,16 +206,6 @@
                 ]
               },
               "weight": 5.0
-            },
-            {
-              "template": {
-                "name": "mkultra:staff",
-                "slots": [
-                  "mkweapons:randomization.ability",
-                  "mkweapons:randomization.name"
-                ]
-              },
-              "weight": 10.0
             }
           ]
         },

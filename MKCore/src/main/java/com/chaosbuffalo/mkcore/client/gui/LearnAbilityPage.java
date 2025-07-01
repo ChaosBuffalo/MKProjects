@@ -53,11 +53,11 @@ public class LearnAbilityPage extends AbilityPageBase {
 
     @Override
     protected List<MKAbility> getSortedAbilityList() {
-        return offeredAbilities.stream().map(AbilityTrainingEvaluation::getAbility).collect(Collectors.toList());
+        return offeredAbilities.stream().map(AbilityTrainingEvaluation::ability).collect(Collectors.toList());
     }
 
     private Optional<AbilityTrainingEvaluation> findEvaluation(MKAbility ability) {
-        return offeredAbilities.stream().filter(evaluation -> evaluation.getAbility() == ability).findFirst();
+        return offeredAbilities.stream().filter(evaluation -> evaluation.ability() == ability).findFirst();
     }
 
     @Override
@@ -106,7 +106,7 @@ public class LearnAbilityPage extends AbilityPageBase {
             @Override
             public void onMouseHover(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
                 super.onMouseHover(mc, mouseX, mouseY, partialTicks);
-                if (requirementsTray != null && requirementsTray.getEvaluation() != null && !requirementsTray.getEvaluation().getRequirements().isEmpty()) {
+                if (requirementsTray != null && requirementsTray.getEvaluation() != null && !requirementsTray.getEvaluation().requirements().isEmpty()) {
                     if (getScreen() != null) {
                         getScreen().addPostRenderInstruction(new HoveringTextInstruction(
                                 I18n.get("mkcore.gui.character.unmet_req_tooltip"),

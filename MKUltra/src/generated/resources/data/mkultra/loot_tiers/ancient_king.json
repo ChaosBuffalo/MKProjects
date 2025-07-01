@@ -17,7 +17,8 @@
                     "amount": 0.05,
                     "id": "mkultra:ancient_king",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -66,7 +67,8 @@
                     "amount": 0.02,
                     "id": "mkultra:ancient_king",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -113,7 +115,8 @@
                     "amount": 0.02,
                     "id": "mkultra:ancient_king",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },

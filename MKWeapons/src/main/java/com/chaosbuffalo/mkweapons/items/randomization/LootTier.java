@@ -14,14 +14,12 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class LootTier {
-    public static final Codec<LootTier> CODEC = RecordCodecBuilder.<LootTier>mapCodec(builder -> {
-        return builder.group(
-                ResourceLocation.CODEC.fieldOf("name").forGetter(i -> i.name),
-                Codec.unboundedMap(LootSlot.CODEC, LootItemTemplateEntry.CODEC.listOf()).fieldOf("slotItems").forGetter(LootTier::stableSortedMap)
-        ).apply(builder, LootTier::new);
-    }).codec();
+    public static final Codec<LootTier> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            ResourceLocation.CODEC.fieldOf("name").forGetter(i -> i.name),
+            Codec.unboundedMap(LootSlot.CODEC, LootItemTemplateEntry.CODEC.listOf()).fieldOf("slotItems").forGetter(LootTier::stableSortedMap)
+    ).apply(builder, LootTier::new));
 
-    private static final List<LootItemTemplateEntry> EMPTY_CHOICES = new ArrayList<>();
+    private static final List<LootItemTemplateEntry> EMPTY_CHOICES = List.of();
     private final ResourceLocation name;
     private final Map<LootSlot, List<LootItemTemplateEntry>> potentialItemsForSlot;
 
@@ -50,7 +48,7 @@ public class LootTier {
         } else {
             RandomCollection<LootItemTemplate> choices = new RandomCollection<>();
             for (LootItemTemplateEntry entry : slotOptions) {
-                choices.add(entry.weight, entry.template);
+                choices.add(entry.weight(), entry.template());
             }
             return choices.next(random);
         }
@@ -73,6 +71,10 @@ public class LootTier {
 
     public ResourceLocation getName() {
         return name;
+    }
+
+    public Set<LootSlot> getSlots() {
+        return Collections.unmodifiableSet(potentialItemsForSlot.keySet());
     }
 
     public <D> D serialize(DynamicOps<D> ops) {

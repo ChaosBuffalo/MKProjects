@@ -55,26 +55,21 @@ public class AttributeOption extends BaseRandomizationOption {
         this.modifiers = new ArrayList<>();
     }
 
-    public List<AttributeOptionEntry> getModifiers(double difficulty) {
-        return modifiers.stream().map(mod -> mod.createScaledModifier(difficulty)).collect(Collectors.toList());
+    private List<AttributeOptionEntry> createStackModifiers(LootSlot lootSlot, int slotIndex, double difficulty) {
+        return modifiers.stream().map(mod -> {
+            // Give each modifier a unique name in case an item with multiple attribute slots rolls the same attribute twice
+            return mod.createModifierInstance(difficulty, id -> {
+                return id.withSuffix(String.format("/%s/%d", lootSlot.getName().toLanguageKey(), slotIndex));
+            });
+        }).collect(Collectors.toList());
     }
 
     public void addFixedAttributeModifier(Holder<Attribute> attribute, AttributeModifier attributeModifier) {
         modifiers.add(new AttributeOptionEntry(attribute, attributeModifier, attributeModifier.amount(), attributeModifier.amount()));
     }
 
-    public static AttributeOption withModifier(Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
-        return withModifier(RandomizationSlotManager.ATTRIBUTE_SLOT, attribute, name, minAmount, maxAmount, op);
-    }
-
     public static AttributeOption withModifier(Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op, EquipmentSlotGroup slotGroup) {
         return withModifier(RandomizationSlotManager.ATTRIBUTE_SLOT, attribute, name, minAmount, maxAmount, op, slotGroup);
-    }
-
-    public static AttributeOption withModifier(IRandomizationSlot slot, Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
-        AttributeOption opt = new AttributeOption(slot);
-        opt.addAttributeModifier(attribute, name, minAmount, maxAmount, op);
-        return opt;
     }
 
     public static AttributeOption withModifier(IRandomizationSlot slot, Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op, EquipmentSlotGroup slotGroup) {
@@ -83,25 +78,22 @@ public class AttributeOption extends BaseRandomizationOption {
         return opt;
     }
 
-    public void addAttributeModifier(Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op) {
-        modifiers.add(new AttributeOptionEntry(attribute, new AttributeModifier(name, minAmount, op), minAmount, maxAmount));
-    }
-
     public void addAttributeModifier(Holder<Attribute> attribute, ResourceLocation name, double minAmount, double maxAmount, AttributeModifier.Operation op, EquipmentSlotGroup slotGroup) {
         modifiers.add(new AttributeOptionEntry(attribute, new AttributeModifier(name, minAmount, op), slotGroup, minAmount, maxAmount));
     }
 
     @Override
-    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, double difficulty) {
+    public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, int slotIndex, double difficulty) {
+        var stackModifiers = createStackModifiers(slot, slotIndex, difficulty);
         switch (stack.getItem()) {
             case IMKMeleeWeapon meleeWeapon ->
-                    MeleeEffectsComponent.addEffect(stack, new MeleeModifierEffect(getModifiers(difficulty)));
+                    MeleeEffectsComponent.addEffect(stack, new MeleeModifierEffect(stackModifiers));
             case IMKRangedWeapon rangedWeapon ->
-                    RangedEffectsComponent.addEffect(stack, new RangedModifierEffect(getModifiers(difficulty)));
+                    RangedEffectsComponent.addEffect(stack, new RangedModifierEffect(stackModifiers));
             case IMKArmor armor ->
-                    ArmorEffectsComponent.addEffect(stack, new ArmorModifierEffect(getModifiers(difficulty)));
+                    ArmorEffectsComponent.addEffect(stack, new ArmorModifierEffect(stackModifiers));
             case IMKAccessory accessory ->
-                    AccessoryEffectsComponent.addEffect(stack, new AccessoryModifierEffect(getModifiers(difficulty)));
+                    AccessoryEffectsComponent.addEffect(stack, new AccessoryModifierEffect(stackModifiers));
             default -> {
             }
         }

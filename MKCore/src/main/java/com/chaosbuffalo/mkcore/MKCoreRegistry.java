@@ -35,11 +35,11 @@ public class MKCoreRegistry {
     public static final ResourceLocation INVALID_TALENT = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "talent.invalid");
     public static final ResourceLocation INVALID_ENTITLEMENT = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "entitlement.invalid");
 
-    public static final ResourceKey<Registry<MKAbility>> ABILITY_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.makeRL("abilities"));
-    public static final ResourceKey<Registry<MKDamageType>> DAMAGE_TYPE_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.makeRL("damage_types"));
-    public static final ResourceKey<Registry<MKEffect>> EFFECT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.makeRL("effects"));
-    public static final ResourceKey<Registry<MKEntitlement>> ENTITLEMENT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.makeRL("entitlements"));
-    public static final ResourceKey<Registry<MKTalent>> TALENT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.makeRL("talents"));
+    public static final ResourceKey<Registry<MKAbility>> ABILITY_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("abilities"));
+    public static final ResourceKey<Registry<MKDamageType>> DAMAGE_TYPE_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("damage_types"));
+    public static final ResourceKey<Registry<MKEffect>> EFFECT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("effects"));
+    public static final ResourceKey<Registry<MKEntitlement>> ENTITLEMENT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("entitlements"));
+    public static final ResourceKey<Registry<MKTalent>> TALENT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("talents"));
 
     public static final ResourceKey<Registry<LocationProviderType<?>>> LOC_PROVIDER_TYPES_NAME = ResourceKey.createRegistryKey(
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "loc_provider_types"));
@@ -48,21 +48,26 @@ public class MKCoreRegistry {
     public static final ResourceKey<Registry<AbilityClientStateType<?>>> CLIENT_STATE_TYPES_NAME = ResourceKey.createRegistryKey(
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "ability_client_state_types"));
 
-    public static final Registry<MKAbility> ABILITIES;
-    public static final Registry<MKDamageType> DAMAGE_TYPES;
-    public static final Registry<MKEffect> EFFECTS;
-    public static final Registry<MKTalent> TALENTS;
-    public static final Registry<MKEntitlement> ENTITLEMENTS;
+    public static final Registry<MKAbility> ABILITIES = new RegistryBuilder<>(ABILITY_REGISTRY_KEY)
+            .sync(true)
+            .create();
+    public static final Registry<MKDamageType> DAMAGE_TYPES = new RegistryBuilder<>(DAMAGE_TYPE_REGISTRY_KEY)
+            .sync(true)
+            .create();
+    public static final Registry<MKEffect> EFFECTS = new RegistryBuilder<>(EFFECT_REGISTRY_KEY)
+            .sync(true)
+            .create();
+    public static final Registry<MKTalent> TALENTS = new RegistryBuilder<>(TALENT_REGISTRY_KEY)
+            .sync(true)
+            .create();
+    public static final Registry<MKEntitlement> ENTITLEMENTS = new RegistryBuilder<>(ENTITLEMENT_REGISTRY_KEY)
+            .sync(true)
+            .create();
     public static final Registry<LocationProviderType<?>> LOCATION_PROVIDER_TYPES;
     public static final Registry<ProjectileCastBehaviorType<?>> CAST_BEHAVIOR_TYPES;
     public static final Registry<AbilityClientStateType<?>> CLIENT_STATE_TYPES;
 
     static {
-        ABILITIES = new RegistryBuilder<>(ABILITY_REGISTRY_KEY).create();
-        DAMAGE_TYPES = new RegistryBuilder<>(DAMAGE_TYPE_REGISTRY_KEY).create();
-        EFFECTS = new RegistryBuilder<>(EFFECT_REGISTRY_KEY).create();
-        TALENTS = new RegistryBuilder<>(TALENT_REGISTRY_KEY).create();
-        ENTITLEMENTS = new RegistryBuilder<>(ENTITLEMENT_REGISTRY_KEY).create();
         LOCATION_PROVIDER_TYPES = new RegistryBuilder<>(LOC_PROVIDER_TYPES_NAME).create();
         CLIENT_STATE_TYPES = new RegistryBuilder<>(CLIENT_STATE_TYPES_NAME).create();
         CAST_BEHAVIOR_TYPES = new RegistryBuilder<>(CAST_BEHAVIOR_TYPES_NAME).create();

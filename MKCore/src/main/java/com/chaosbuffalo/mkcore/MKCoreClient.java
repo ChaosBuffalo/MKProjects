@@ -1,11 +1,13 @@
 package com.chaosbuffalo.mkcore;
 
 import com.chaosbuffalo.mkcore.client.gui.MKOverlay;
-import net.minecraft.resources.ResourceLocation;
+import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
+import com.chaosbuffalo.mkcore.init.CoreItems;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
@@ -13,12 +15,18 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 @Mod(value = MKCore.MOD_ID, dist = Dist.CLIENT)
 public class MKCoreClient {
 
-    public MKCoreClient(ModContainer modContainer) {
+    public MKCoreClient(IEventBus modBus, ModContainer modContainer) {
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, (mc, parent) -> new ConfigurationScreen(modContainer, parent));
+        modBus.addListener(this::registerLayers);
+        modBus.addListener(this::clientSetup);
     }
 
-    @SubscribeEvent
     public void registerLayers(RegisterGuiLayersEvent event) {
-        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "mk"), MKOverlay.INSTANCE);
+        event.registerAboveAll(MKCore.id("mk"), MKOverlay.INSTANCE);
+    }
+
+    private void clientSetup(final FMLClientSetupEvent event) {
+        PlayerPageRegistry.init();
+        event.enqueueWork(CoreItems::registerItemProperties);
     }
 }

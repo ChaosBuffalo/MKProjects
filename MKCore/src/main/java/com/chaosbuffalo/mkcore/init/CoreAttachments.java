@@ -1,10 +1,12 @@
 package com.chaosbuffalo.mkcore.init;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities.training.EntityAbilityTrainer;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.MKServerPlayerData;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.IEventBus;
@@ -36,6 +38,15 @@ public class CoreAttachments {
                     return new MKEntityData(entity);
                 }
                 throw new IllegalArgumentException("Cannot construct entity_data attachment for non-living entity " + holder);
+            }).build()
+    );
+
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<EntityAbilityTrainer>> ABILITY_TRAINER = ATTACHMENT_TYPES.register(
+            "ability_trainer", () -> AttachmentType.builder(holder -> {
+                if (holder instanceof Entity entity && !(entity instanceof Player)) {
+                    return new EntityAbilityTrainer(entity);
+                }
+                throw new IllegalArgumentException("Cannot construct ability_trainer attachment for non-entity " + holder);
             }).build()
     );
 

@@ -40,8 +40,10 @@ public class LootConstructor {
             return ItemStack.EMPTY;
         }
         ItemStack newItem = item.copy();
+        int slotIndex = 0;
         for (IRandomizationOption option : permanentOptions) {
-            option.applyToItemStackForSlot(newItem, slot, difficulty);
+            option.applyToItemStackForSlot(newItem, slot, slotIndex, difficulty);
+            slotIndex++;
         }
         if (template != null) {
             for (IRandomizationSlot randomizationSlot : template.getRandomizationSlots()) {
@@ -55,7 +57,8 @@ public class LootConstructor {
                     }
                     if (optionChoices.size() > 0) {
                         IRandomizationOption opt = optionChoices.next(random);
-                        opt.applyToItemStackForSlot(newItem, slot, difficulty);
+                        opt.applyToItemStackForSlot(newItem, slot, slotIndex, difficulty);
+                        slotIndex++;
                     } else {
                         MKWeapons.LOGGER.debug("No choices for randomizationSlot: {} in template: {} generated loot lootSlot: {}",
                                 randomizationSlot.getName(), template.getName(), slot.getName());

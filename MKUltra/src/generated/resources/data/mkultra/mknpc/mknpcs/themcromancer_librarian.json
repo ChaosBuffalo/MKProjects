@@ -107,8 +107,8 @@
       "type": "mknpc:extra_loot",
       "lootOptions": [
         {
-          "lootSlotName": "mkweapons:main_hand",
-          "lootSlotTier": "mkultra:themcromancer_librarian",
+          "loot_slot": "mkweapons:main_hand",
+          "loot_tier": "mkultra:themcromancer_librarian",
           "weight": 3.0
         }
       ],

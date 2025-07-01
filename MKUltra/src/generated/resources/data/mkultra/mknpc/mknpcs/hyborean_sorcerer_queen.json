@@ -86,12 +86,12 @@
       "dropChances": 2,
       "lootOptions": [
         {
-          "lootSlotName": "mkweapons:main_hand",
-          "lootSlotTier": "mkultra:hyborean_sorcerer_queen"
+          "loot_slot": "mkweapons:main_hand",
+          "loot_tier": "mkultra:hyborean_sorcerer_queen"
         },
         {
-          "lootSlotName": "mkweapons:earrings",
-          "lootSlotTier": "mkultra:hyborean_sorcerer_queen",
+          "loot_slot": "mkweapons:earrings",
+          "loot_tier": "mkultra:hyborean_sorcerer_queen",
           "weight": 3.0
         }
       ],

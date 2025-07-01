@@ -17,7 +17,8 @@
                     "amount": 4.0,
                     "id": "mkultra:trooper_captain",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -192,16 +193,6 @@
           "templates": [
             {
               "template": {
-                "name": "mkultra:blade_crit",
-                "slots": [
-                  "mkweapons:randomization.effect",
-                  "mkweapons:randomization.name",
-                  "mkweapons:randomization.attributes"
-                ]
-              }
-            },
-            {
-              "template": {
                 "name": "mkultra:blade",
                 "slots": [
                   "mkweapons:randomization.effect",
@@ -209,6 +200,16 @@
                 ]
               },
               "weight": 10.0
+            },
+            {
+              "template": {
+                "name": "mkultra:blade_crit",
+                "slots": [
+                  "mkweapons:randomization.effect",
+                  "mkweapons:randomization.name",
+                  "mkweapons:randomization.attributes"
+                ]
+              }
             }
           ]
         },

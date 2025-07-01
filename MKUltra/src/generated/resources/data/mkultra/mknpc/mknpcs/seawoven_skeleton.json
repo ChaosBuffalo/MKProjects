@@ -37,8 +37,8 @@
       "type": "mknpc:extra_loot",
       "lootOptions": [
         {
-          "lootSlotName": "mkweapons:items",
-          "lootSlotTier": "mkultra:seawoven_skeleton"
+          "loot_slot": "mkweapons:items",
+          "loot_tier": "mkultra:seawoven_skeleton"
         }
       ],
       "noLootChance": 0.25,

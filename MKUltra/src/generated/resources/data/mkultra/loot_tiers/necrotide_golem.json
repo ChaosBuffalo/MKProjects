@@ -34,7 +34,8 @@
                     "amount": 6.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -49,7 +50,8 @@
                     "amount": 6.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -64,7 +66,8 @@
                     "amount": 0.5,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -79,7 +82,8 @@
                     "amount": 2.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -94,7 +98,8 @@
                     "amount": 2.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -109,7 +114,8 @@
                     "amount": 0.05,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             }
@@ -120,25 +126,9 @@
                 "count": 1,
                 "id": "mkultra:corrupted_gauntlets"
               }
-            },
-            {
-              "item": {
-                "count": 1,
-                "id": "mkultra:necrotide_band"
-              }
             }
           ],
           "templates": [
-            {
-              "template": {
-                "name": "mkultra:corrupted_gauntlets_crit",
-                "slots": [
-                  "mkweapons:randomization.effect",
-                  "mkweapons:randomization.attributes",
-                  "mkweapons:randomization.attributes"
-                ]
-              }
-            },
             {
               "template": {
                 "name": "mkultra:corrupted_gauntlets",
@@ -148,6 +138,16 @@
                 ]
               },
               "weight": 10.0
+            },
+            {
+              "template": {
+                "name": "mkultra:corrupted_gauntlets_crit",
+                "slots": [
+                  "mkweapons:randomization.effect",
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.attributes"
+                ]
+              }
             }
           ]
         },
@@ -186,7 +186,8 @@
                     "amount": 6.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -201,7 +202,8 @@
                     "amount": 6.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -216,7 +218,8 @@
                     "amount": 0.5,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -231,7 +234,8 @@
                     "amount": 2.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -246,7 +250,8 @@
                     "amount": 2.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -261,23 +266,21 @@
                     "amount": 0.05,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             }
           ],
-          "potentialItems": [],
-          "templates": [
+          "potentialItems": [
             {
-              "template": {
-                "name": "mkultra:necrotide_band_crit",
-                "slots": [
-                  "mkweapons:randomization.effect",
-                  "mkweapons:randomization.attributes",
-                  "mkweapons:randomization.attributes"
-                ]
+              "item": {
+                "count": 1,
+                "id": "mkultra:necrotide_band"
               }
-            },
+            }
+          ],
+          "templates": [
             {
               "template": {
                 "name": "mkultra:necrotide_band",
@@ -287,6 +290,16 @@
                 ]
               },
               "weight": 10.0
+            },
+            {
+              "template": {
+                "name": "mkultra:necrotide_band_crit",
+                "slots": [
+                  "mkweapons:randomization.effect",
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.attributes"
+                ]
+              }
             }
           ]
         },

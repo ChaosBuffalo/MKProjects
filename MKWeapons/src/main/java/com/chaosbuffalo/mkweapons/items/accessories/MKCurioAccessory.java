@@ -61,7 +61,10 @@ public class MKCurioAccessory extends Item implements ICurioItem, IMKAccessory {
         for (var effect : stackEffects) {
             if (effect instanceof ItemModifierEffect modifierEffect) {
                 for (AttributeOptionEntry m : modifierEffect.getModifiers()) {
-                    map.put(m.getAttribute(), m.getModifier());
+                    // Give each modifier a unique id reflecting their curio slot
+                    var mod = m.getModifierWithId(modifierId -> modifierId.withSuffix("/" + id.toLanguageKey()));
+
+                    map.put(m.getAttribute(), mod);
                 }
             }
         }

@@ -158,12 +158,12 @@
       "dropChances": 2,
       "lootOptions": [
         {
-          "lootSlotName": "mkweapons:rings",
-          "lootSlotTier": "mkultra:ancient_king"
+          "loot_slot": "mkweapons:rings",
+          "loot_tier": "mkultra:ancient_king"
         },
         {
-          "lootSlotName": "mkweapons:earrings",
-          "lootSlotTier": "mkultra:ancient_king",
+          "loot_slot": "mkweapons:earrings",
+          "loot_tier": "mkultra:ancient_king",
           "weight": 3.0
         }
       ],
