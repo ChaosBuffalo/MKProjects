@@ -16,7 +16,7 @@
           "priority": 2
         },
         {
-          "abilityId": "mkultra:ability.holy_fire",
+          "abilityId": "mkultra:holy_fire",
           "chance": 0.5,
           "priority": 3
         }

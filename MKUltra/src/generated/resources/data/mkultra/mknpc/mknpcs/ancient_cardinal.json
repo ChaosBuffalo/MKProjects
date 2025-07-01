@@ -40,12 +40,12 @@
               "type": "mknpc:temp_abilities",
               "abilities": [
                 {
-                  "abilityId": "mkultra:ability.holy_fire",
+                  "abilityId": "mkultra:holy_fire",
                   "chance": 1.0,
                   "priority": 1
                 },
                 {
-                  "abilityId": "mkultra:ability.holy_word_shotgun",
+                  "abilityId": "mkultra:holy_word_shotgun",
                   "chance": 1.0,
                   "priority": 2
                 },
@@ -64,22 +64,22 @@
               "type": "mknpc:temp_abilities",
               "abilities": [
                 {
-                  "abilityId": "mkultra:ability.holy_fire_flurry",
+                  "abilityId": "mkultra:holy_fire_flurry",
                   "chance": 1.0,
                   "priority": 1
                 },
                 {
-                  "abilityId": "mkultra:ability.holy_fire",
+                  "abilityId": "mkultra:holy_fire",
                   "chance": 1.0,
                   "priority": 2
                 },
                 {
-                  "abilityId": "mkultra:ability.holy_word_burst",
+                  "abilityId": "mkultra:holy_word_burst",
                   "chance": 1.0,
                   "priority": 3
                 },
                 {
-                  "abilityId": "mkultra:ability.holy_word_shotgun",
+                  "abilityId": "mkultra:holy_word_shotgun",
                   "chance": 1.0,
                   "priority": 4
                 },

@@ -1,9 +1,4 @@
-// 1.21.1	2025-06-09T15:59:12.6108356	MK Abilities: mkultra
-cea9b732cddb5061d92e9e0dd259d709cb23086f data/mkultra/player_abilities/ability.healing_circle.json
-99a250fdc1bb341b0854c404059c11098bdd2ce4 data/mkultra/player_abilities/ability.holy_fire.json
-786048dc93b971a0c3b0d2d3955dd2aee206092c data/mkultra/player_abilities/ability.holy_fire_flurry.json
-371dfa9927f1844ffdcbec76413710f9c7717fe9 data/mkultra/player_abilities/ability.holy_word_burst.json
-737516053c029dec641193b4890b9bd91948ee51 data/mkultra/player_abilities/ability.holy_word_shotgun.json
+// 1.21.1	2025-06-30T14:37:29.8650233	MK Abilities: mkultra
 8f06670fae5893f8c3cdc2b51911b94eec3cf287 data/mkultra/player_abilities/cleansing_seed.json
 25bc9079c333533ceae36aca0ded4e323afcbd81 data/mkultra/player_abilities/drown.json
 cc5322c19e3793af8e9a3a52c580c412530df12f data/mkultra/player_abilities/ember.json
@@ -18,7 +13,12 @@ fd0053e7a9ddff2b459104524434e61099d37cea data/mkultra/player_abilities/engulfing
 ac98c00329b3a4fb85d756bac45748a00d7be15d data/mkultra/player_abilities/galvanize.json
 1a39ab1c37fc9f55e58f756a3c2998e2e35c0e08 data/mkultra/player_abilities/green_soul.json
 5c7e7c5e2383cf7f4baccc7108c5b8f9772bb526 data/mkultra/player_abilities/heal.json
+cea9b732cddb5061d92e9e0dd259d709cb23086f data/mkultra/player_abilities/healing_circle.json
+99a250fdc1bb341b0854c404059c11098bdd2ce4 data/mkultra/player_abilities/holy_fire.json
+786048dc93b971a0c3b0d2d3955dd2aee206092c data/mkultra/player_abilities/holy_fire_flurry.json
 600ee492ccf3ef189033b80cdceb9d58a8dc0536 data/mkultra/player_abilities/holy_word.json
+371dfa9927f1844ffdcbec76413710f9c7717fe9 data/mkultra/player_abilities/holy_word_burst.json
+737516053c029dec641193b4890b9bd91948ee51 data/mkultra/player_abilities/holy_word_shotgun.json
 833c7bf980edf8b52ad4c75c1fcf29fc96ba6d9c data/mkultra/player_abilities/ignite.json
 da26df9f5a2c3bdb2d9494c7ad5fa42b9610adb0 data/mkultra/player_abilities/inspire.json
 4caa045c62e3e927b6472f2cab4ef78ac900f6df data/mkultra/player_abilities/life_siphon.json

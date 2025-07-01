@@ -42,15 +42,15 @@ public class MKUAbilities {
 
     public static final DeferredHolder<MKAbility, HolyWordAbility> HOLY_WORD = REGISTRY.register("holy_word",
             HolyWordAbility::new);
-    public static final DeferredHolder<MKAbility, HolyWordShotgunAbility> HOLY_WORD_SHOTGUN = REGISTRY.register("ability.holy_word_shotgun",
+    public static final DeferredHolder<MKAbility, HolyWordShotgunAbility> HOLY_WORD_SHOTGUN = REGISTRY.register("holy_word_shotgun",
             HolyWordShotgunAbility::new);
-    public static final DeferredHolder<MKAbility, HolyFireAbility> HOLY_FIRE = REGISTRY.register("ability.holy_fire",
+    public static final DeferredHolder<MKAbility, HolyFireAbility> HOLY_FIRE = REGISTRY.register("holy_fire",
             HolyFireAbility::new);
-    public static final DeferredHolder<MKAbility, HolyFireFlurryAbility> HOLY_FIRE_FLURRY = REGISTRY.register("ability.holy_fire_flurry",
+    public static final DeferredHolder<MKAbility, HolyFireFlurryAbility> HOLY_FIRE_FLURRY = REGISTRY.register("holy_fire_flurry",
             HolyFireFlurryAbility::new);
-    public static final DeferredHolder<MKAbility, HolyWordBurstAbility> HOLY_WORD_BURST = REGISTRY.register("ability.holy_word_burst",
+    public static final DeferredHolder<MKAbility, HolyWordBurstAbility> HOLY_WORD_BURST = REGISTRY.register("holy_word_burst",
             HolyWordBurstAbility::new);
-    public static final DeferredHolder<MKAbility, HealingCircleAbility> HOLY_CIRCLE_ABILITY = REGISTRY.register("ability.healing_circle", HealingCircleAbility::new);
+    public static final DeferredHolder<MKAbility, HealingCircleAbility> HOLY_CIRCLE_ABILITY = REGISTRY.register("healing_circle", HealingCircleAbility::new);
 
     //necromancer
     public static final DeferredHolder<MKAbility, MKEntitySummonAbility> TEST_SUMMON = REGISTRY.register("test_summon",

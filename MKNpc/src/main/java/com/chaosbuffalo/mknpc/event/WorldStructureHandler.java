@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.event;
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.block_entities.MKSpawnerBlockEntity;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.content.ContentDB;
@@ -14,9 +15,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.StructureManager;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
@@ -31,6 +34,16 @@ public class WorldStructureHandler {
     @SubscribeEvent
     public static void serverStarted(final ServerStartedEvent event) {
         WorldStructureHandler.cacheStructures(event.getServer());
+    }
+
+    @SubscribeEvent
+    public static void chunkUnload(ChunkEvent.Unload event) {
+        for (var pos : event.getChunk().getBlockEntitiesPos()) {
+            BlockEntity entity = event.getChunk().getBlockEntity(pos);
+            if (entity instanceof MKSpawnerBlockEntity spawnerBlock) {
+                spawnerBlock.clearSpawn();
+            }
+        }
     }
 
     @SubscribeEvent
