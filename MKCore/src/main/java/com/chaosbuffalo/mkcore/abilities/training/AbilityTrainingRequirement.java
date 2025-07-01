@@ -22,7 +22,9 @@ public abstract class AbilityTrainingRequirement {
 
     public abstract boolean check(MKPlayerData playerData, MKAbility ability);
 
-    public abstract void onLearned(MKPlayerData playerData, MKAbility ability);
+    public void onLearned(MKPlayerData playerData, MKAbility ability) {
+
+    }
 
     public abstract MutableComponent describe(MKPlayerData playerData);
 }

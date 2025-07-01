@@ -76,7 +76,7 @@ public class LearnAbilityTray extends MKStackLayoutVertical {
             reqlayout.setPaddingBot(1);
             reqlayout.setPaddingTop(1);
             reqScrollView.addWidget(reqlayout);
-            List<Component> texts = evaluation.getRequirements().stream()
+            List<Component> texts = evaluation.requirements().stream()
                     .map(req -> Component.literal("  - ")
                             .append(req.description())
                             .withStyle(req.isMet() ? ChatFormatting.DARK_GREEN : ChatFormatting.BLACK))

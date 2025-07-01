@@ -16,13 +16,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public class HeldItemRequirement extends AbilityTrainingRequirement {
-    public final static ResourceLocation TYPE_NAME = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "training_req.held_item");
-    public static final MapCodec<HeldItemRequirement> CODEC = RecordCodecBuilder.<HeldItemRequirement>mapCodec(builder -> {
-        return builder.group(
-                BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(i -> i.item),
-                Codec.STRING.xmap(InteractionHand::valueOf, InteractionHand::name).fieldOf("hand").forGetter(i -> i.hand)
-        ).apply(builder, HeldItemRequirement::new);
-    });
+    public static final ResourceLocation TYPE_NAME = MKCore.id("training_req.held_item");
+    public static final MapCodec<HeldItemRequirement> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(i -> i.item),
+            Codec.STRING.xmap(InteractionHand::valueOf, InteractionHand::name).fieldOf("hand").forGetter(i -> i.hand)
+    ).apply(builder, HeldItemRequirement::new));
 
     private final Item item;
     private final InteractionHand hand;
@@ -40,11 +38,6 @@ public class HeldItemRequirement extends AbilityTrainingRequirement {
             return false;
 
         return stack.is(item);
-    }
-
-    @Override
-    public void onLearned(MKPlayerData playerData, MKAbility ability) {
-
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.dialogue.effects;
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffectType;
-import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainingEntity;
+import com.chaosbuffalo.mkcore.init.CoreAttachments;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueEffectTypes;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerPlayer;
@@ -26,8 +26,8 @@ public class OpenLearnAbilitiesEffect extends DialogueEffect {
 
     @Override
     public void applyEffect(ServerPlayer player, LivingEntity livingEntity, DialogueNode dialogueNode) {
-        if (livingEntity instanceof IAbilityTrainingEntity trainingEntity) {
-            trainingEntity.openTrainingGui(player);
-        }
+        livingEntity.getExistingData(CoreAttachments.ABILITY_TRAINER).ifPresent(trainer -> {
+            trainer.openTrainingGui(player);
+        });
     }
 }
