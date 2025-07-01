@@ -15,7 +15,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -36,7 +35,6 @@ public class MKWeapons {
     public MKWeapons(IEventBus modBus) {
         NeoForge.EVENT_BUS.register(this);
         modBus.addListener(this::setup);
-        modBus.addListener(this::clientSetup);
         modBus.addListener(this::processIMC);
         modBus.addListener(PacketHandler::register);
         setupRegistries(modBus);
@@ -70,9 +68,7 @@ public class MKWeapons {
         });
     }
 
-    private void clientSetup(final FMLClientSetupEvent event) {
-        event.enqueueWork(MKWeaponsItems::registerItemProperties);
-    }
+
 
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {

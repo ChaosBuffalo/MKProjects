@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityManager;
-import com.chaosbuffalo.mkcore.client.gui.MKOverlay;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.command.MKCommand;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -30,7 +29,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -60,7 +58,6 @@ public class MKCore {
     public MKCore(IEventBus modBus, ModContainer modContainer) {
         INSTANCE = this;
         MKConfig.init(modContainer);
-        modBus.addListener(this::registerLayers);
         modBus.addListener(EventPriority.LOWEST, this::loadComplete);
         modBus.addListener(this::clientSetup);
         modBus.addListener(this::modifyAttributesEvent);
@@ -98,9 +95,7 @@ public class MKCore {
         event.enqueueWork(CoreItems::registerItemProperties);
     }
 
-    public void registerLayers(RegisterGuiLayersEvent event) {
-        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "mk"), MKOverlay.INSTANCE);
-    }
+
 
 
     @SubscribeEvent

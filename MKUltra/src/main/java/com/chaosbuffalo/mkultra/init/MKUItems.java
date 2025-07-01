@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.item.MKUArmorMaterial;
-import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.accessories.MKCurioAccessory;
@@ -523,11 +522,6 @@ public final class MKUItems {
             event.register(Registries.ITEM,
                     MKUltra.id(String.format("longbow_%s", mat.getA())), () -> bow);
         }
-    }
-
-    public static void registerItemProperties() {
-        MKWeaponsItems.registerDefaultRangedWeaponItemProperties(BOWS);
-        MKWeaponsItems.registerDefaultMeleeWeaponItemProperties(WEAPONS);
     }
 
 }

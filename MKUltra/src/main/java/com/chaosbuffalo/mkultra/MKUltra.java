@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkultra;
 
 
+import com.chaosbuffalo.mkultra.client.MKUItemProperties;
 import com.chaosbuffalo.mkultra.extensions.MKUNpcExtensions;
 import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkultra.item.MKUArmorMaterial;
@@ -19,7 +20,6 @@ public class MKUltra {
     public static final Logger LOGGER = LogManager.getLogger();
 
     public MKUltra(IEventBus modBus) {
-        modBus.addListener(this::clientSetup);
         MKUEffects.register(modBus);
         MKUEntities.register(modBus);
         MKUAbilities.register(modBus);
@@ -32,9 +32,7 @@ public class MKUltra {
         modBus.addListener(this::enqueueIMC);
     }
 
-    private void clientSetup(final FMLClientSetupEvent event) {
-        event.enqueueWork(MKUItems::registerItemProperties);
-    }
+
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
         MKUNpcExtensions.sendExtension();
