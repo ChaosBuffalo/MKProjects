@@ -157,7 +157,7 @@ public class MKULootTierProvider extends LootTierProvider {
         template.addTemplate(new RandomizationTemplate(MKUltra.id("corrupted_gauntlets_crit"),
                 RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT), 1);
         tier.addItemTemplate(template, 10);
-        necrotideGolemAttrs(tier, template, EquipmentSlotGroup.ANY);
+        necrotideGolemAttrs(tier, template, EquipmentSlotGroup.ARMOR);
         LootItemTemplate ringTemplate = new LootItemTemplate(LootSlotManager.RINGS);
         template.addItem(MKUItems.necrotideBand.get());
         var restoreMana = new RestoreManaOnCastEffect(0.05, 0.25, 0.1f, 1.0f);
@@ -169,7 +169,7 @@ public class MKULootTierProvider extends LootTierProvider {
         ringTemplate.addTemplate(new RandomizationTemplate(MKUltra.id("necrotide_band_crit"),
                 RandomizationSlotManager.EFFECT_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT, RandomizationSlotManager.ATTRIBUTE_SLOT), 1);
         tier.addItemTemplate(ringTemplate, 20);
-        necrotideGolemAttrs(tier, ringTemplate, EquipmentSlotGroup.ANY);
+        necrotideGolemAttrs(tier, ringTemplate, EquipmentSlotGroup.ARMOR);
         return tier;
 
     }

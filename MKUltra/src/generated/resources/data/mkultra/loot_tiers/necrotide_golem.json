@@ -34,7 +34,8 @@
                     "amount": 6.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -49,7 +50,8 @@
                     "amount": 6.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -64,7 +66,8 @@
                     "amount": 0.5,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -79,7 +82,8 @@
                     "amount": 2.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -94,7 +98,8 @@
                     "amount": 2.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -109,7 +114,8 @@
                     "amount": 0.05,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             }
@@ -186,7 +192,8 @@
                     "amount": 6.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -201,7 +208,8 @@
                     "amount": 6.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -216,7 +224,8 @@
                     "amount": 0.5,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -231,7 +240,8 @@
                     "amount": 2.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -246,7 +256,8 @@
                     "amount": 2.0,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             },
@@ -261,7 +272,8 @@
                     "amount": 0.05,
                     "id": "mkultra:necrotide_golem",
                     "operation": "add_value"
-                  }
+                  },
+                  "slot": "armor"
                 }
               ]
             }
