@@ -261,7 +261,7 @@ public class ClientEventHandler {
             Minecraft mc = Minecraft.getInstance();
             Player player = mc.player;
             if (player != null && mc.crosshairPickEntity != null) {
-                if (Targeting.isValidFriendly(player, mc.crosshairPickEntity)) {
+                if (MKConfig.CLIENT.disableAutoattackForFriend.get() && Targeting.isValidFriendly(player, mc.crosshairPickEntity)) {
                     event.setCanceled(true);
                 }
             }

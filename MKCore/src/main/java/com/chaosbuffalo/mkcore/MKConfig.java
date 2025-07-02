@@ -35,6 +35,7 @@ public class MKConfig {
         public ModConfigSpec.BooleanValue enablePlayerCastAnimations;
         public ModConfigSpec.BooleanValue showArmorClassOnTooltip;
         public ModConfigSpec.BooleanValue showArmorClassEffectsOnTooltip;
+        public ModConfigSpec.BooleanValue disableAutoattackForFriend;
 
         public Client(ModConfigSpec.Builder builder) {
             builder.comment("General settings").push("general");
@@ -54,6 +55,9 @@ public class MKConfig {
             showArmorClassEffectsOnTooltip = builder
                     .comment("Show armor class effects on the item tooltip")
                     .define("showArmorClassEffectsOnTooltip", true);
+            disableAutoattackForFriend = builder
+                    .comment("Disables auto-attacking on friendly targets")
+                    .define("disableAutoattackForFriend", false);
             builder.pop();
         }
     }
