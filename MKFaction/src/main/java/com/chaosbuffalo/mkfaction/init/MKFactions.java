@@ -62,7 +62,7 @@ public class MKFactions {
         context.register(UNDEAD, undead(context));
         context.register(VILLAGERS, villagers(context));
 
-        context.register(DOMESTICATED_ANIMALS, new MKFaction(FactionConstants.FRIENDLY_THRESHOLD));
+        context.register(DOMESTICATED_ANIMALS, new MKFaction(FactionConstants.TRUE_NEUTRAL));
 
         context.register(WILD_ANIMALS, new MKFaction(FactionConstants.TRUE_NEUTRAL));
 
