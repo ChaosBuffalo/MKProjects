@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.core.player;
 
-import com.chaosbuffalo.mkcore.abilities.AbilitySource;
+import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -14,7 +15,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
@@ -23,7 +23,6 @@ public class PlayerEquipment extends EntityEquipment {
     private static final UUID EV_ID = UUID.fromString("951a29de-b941-4c4d-9d01-dba4c68b7897");
 
     private final MKPlayerData playerData;
-    private MKAbility currentMainAbility = null;
 
     public PlayerEquipment(MKPlayerData playerData) {
         super(playerData);
@@ -35,44 +34,25 @@ public class PlayerEquipment extends EntityEquipment {
     @Override
     protected void handleEquip(EquipmentSlot slot, ItemStack to) {
         super.handleEquip(slot, to);
+        addItemAbility(slot, to);
         if (slot.isArmor()) {
             applyArmorClassBonus(slot, to);
-            addItemAbility(slot, to);
-        } else if (slot == EquipmentSlot.MAINHAND) {
-            handleMainHandChange(to);
         }
     }
 
     @Override
     protected void handleRemoval(EquipmentSlot slot, ItemStack from) {
         super.handleRemoval(slot, from);
-        if (slot.isArmor() && !from.isEmpty()) {
+        removeItemAbility(slot, from);
+        if (slot.isArmor()) {
             removeArmorClassBonus(slot, from);
-            removeItemAbility(slot, from);
-        } else if (slot == EquipmentSlot.MAINHAND) {
-            clearItemAbility();
-        }
-    }
-
-    private void clearItemAbility() {
-        if (currentMainAbility != null) {
-            playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).clearSlot(0);
-            currentMainAbility = null;
-        }
-    }
-
-    private void handleMainHandChange(ItemStack to) {
-        // Clear the current ability if present
-        clearItemAbility();
-
-        ItemGrantedAbility itemAbility = to.get(CoreItemComponents.ITEM_ABILITY);
-        if (itemAbility != null) {
-            currentMainAbility = itemAbility.ability().value();
-            playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).setSlot(0, currentMainAbility.getAbilityId());
         }
     }
 
     private void applyArmorClassBonus(EquipmentSlot slot, ItemStack to) {
+        if (to.isEmpty())
+            return;
+
         ArmorClass armorClass = ArmorClass.getItemArmorClass(to);
         if (armorClass != null) {
             armorClass.getPositiveModifierMap(slot).forEach((attr, mod) -> tryAddModifier(attr, slot, mod));
@@ -81,6 +61,9 @@ public class PlayerEquipment extends EntityEquipment {
     }
 
     private void removeArmorClassBonus(EquipmentSlot slot, ItemStack from) {
+        if (from.isEmpty())
+            return;
+
         ArmorClass itemClass = ArmorClass.getItemArmorClass(from);
         if (itemClass != null) {
             itemClass.getPositiveModifierMap(slot).forEach((attr, mod) -> tryRemoveModifier(attr, slot, mod));
@@ -121,7 +104,9 @@ public class PlayerEquipment extends EntityEquipment {
         ItemGrantedAbility itemAbility = newItem.get(CoreItemComponents.ITEM_ABILITY);
         if (itemAbility != null) {
             MKAbility ability = itemAbility.ability().value();
-            playerData.getAbilities().learnAbility(ability, AbilitySource.forEquipmentSlot(slot));
+            playerData.getLoadout().getItemGroup().setSlot(slot, ability);
+        } else {
+            playerData.getLoadout().getItemGroup().clearSlot(slot);
         }
     }
 
@@ -136,8 +121,11 @@ public class PlayerEquipment extends EntityEquipment {
 
         ItemGrantedAbility itemAbility = oldItem.get(CoreItemComponents.ITEM_ABILITY);
         if (itemAbility != null) {
-            MKAbility ability = itemAbility.ability().value();
-            playerData.getAbilities().unlearnAbility(ability.getAbilityId(), AbilitySource.forEquipmentSlot(slot));
+            var existingAbilityId = playerData.getLoadout().getItemGroup().getSlot(slot);
+            if (!existingAbilityId.equals(MKCoreRegistry.INVALID_ABILITY) && !itemAbility.ability().is(existingAbilityId)) {
+                MKCore.LOGGER.warn("Player {} unequipping slot {} had differing item abilities! Found {}, expected {} on {}", playerData.getEntity(), slot, itemAbility.ability().value(), existingAbilityId, oldItem);
+            }
+            playerData.getLoadout().getItemGroup().clearSlot(slot);
         }
     }
 
@@ -176,9 +164,7 @@ public class PlayerEquipment extends EntityEquipment {
     }
 
     public void onPersonaActivated(PlayerEvents.PersonaEvent event) {
-        Player player = playerData.getEntity();
-        ItemStack mainHand = player.getItemBySlot(EquipmentSlot.MAINHAND);
-        handleMainHandChange(mainHand);
+        addItemAbility(EquipmentSlot.MAINHAND);
         addItemAbility(EquipmentSlot.HEAD);
         addItemAbility(EquipmentSlot.CHEST);
         addItemAbility(EquipmentSlot.LEGS);
@@ -186,7 +172,7 @@ public class PlayerEquipment extends EntityEquipment {
     }
 
     private void onPersonaDeactivated(PlayerEvents.PersonaEvent event) {
-        handleMainHandChange(ItemStack.EMPTY);
+        removeItemAbility(EquipmentSlot.MAINHAND);
         removeItemAbility(EquipmentSlot.HEAD);
         removeItemAbility(EquipmentSlot.CHEST);
         removeItemAbility(EquipmentSlot.LEGS);
