@@ -229,7 +229,8 @@ public class ClientEventHandler {
 
             event.getToolTip().add(Component.translatable("mkcore.gui.item.armor_class.name")
                     .append(": ")
-                    .append(armorClass.getName()));
+                    .append(armorClass.getName())
+                    .withStyle(ChatFormatting.GRAY));
 
             if (MKConfig.CLIENT.showArmorClassEffectsOnTooltip.get()) {
                 List<Component> tooltip = event.getToolTip();
@@ -239,7 +240,7 @@ public class ClientEventHandler {
                     armorClass.getNegativeModifierMap(armorItem.getEquipmentSlot())
                             .forEach(((attribute, modifier) -> addArmorClassAttributeToTooltip(tooltip, attribute, modifier, ChatFormatting.RED, event.getFlags())));
                 } else {
-                    tooltip.add(Component.translatable("mkcore.gui.item.armor_class.effect_prompt"));
+                    tooltip.add(Component.translatable("mkcore.gui.item.armor_class.effect_prompt").withStyle(ChatFormatting.DARK_GRAY));
                 }
             }
         }

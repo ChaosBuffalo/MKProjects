@@ -1,0 +1,34 @@
+{
+  "display_name": {
+    "translate": "mkcore.armor_class.medium.name"
+  },
+  "negative_modifiers": {
+    "mkcore:casting_speed": {
+      "amount": -0.03,
+      "id": "mkcore:armor_class_negatives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:cooldown_rate": {
+      "amount": -0.02,
+      "id": "mkcore:armor_class_negatives",
+      "operation": "add_multiplied_total"
+    }
+  },
+  "positive_modifiers": {
+    "minecraft:generic.attack_speed": {
+      "amount": 0.03,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    },
+    "minecraft:generic.max_health": {
+      "amount": 0.02,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:heal_bonus": {
+      "amount": 0.04,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    }
+  }
+}

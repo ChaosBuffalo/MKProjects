@@ -29,23 +29,29 @@ public class MKCoreGenerators {
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
+        PackOutput packOutput = generator.getPackOutput();
 
-        CoreLanguageProvider languageProvider = new CoreLanguageProvider(generator.getPackOutput(), "en_us");
+        var registrySets = new CoreRegistrySets(packOutput, event.getLookupProvider());
+        generator.addProvider(true, registrySets);
+        var datapackLookup = registrySets.getRegistryProvider();
+
+        CoreLanguageProvider languageProvider = new CoreLanguageProvider(packOutput, "en_us");
 
         if (event.includeServer()) {
-            MKBlockTagsProvider blockTagsProvider = new MKBlockTagsProvider(generator.getPackOutput(),
-                    event.getLookupProvider(), MKCore.MOD_ID, event.getExistingFileHelper());
+            MKBlockTagsProvider blockTagsProvider = new MKBlockTagsProvider(packOutput,
+                    datapackLookup, MKCore.MOD_ID, event.getExistingFileHelper());
             generator.addProvider(true, blockTagsProvider);
             generator.addProvider(true, new MKAbilityProvider.FromMod(generator, MKCore.MOD_ID));
             generator.addProvider(true, new CoreItemTagsProvider(generator,
-                    event.getLookupProvider(), blockTagsProvider, event.getExistingFileHelper()));
+                    datapackLookup, blockTagsProvider, event.getExistingFileHelper()));
             generator.addProvider(true, new CoreTalentTreeProvider(generator));
             generator.addProvider(true, new CoreParticleProvider(generator));
+            generator.addProvider(true, new CoreArmorClassProvider(packOutput, datapackLookup));
 
             new CoreAbilityLanguageProvider(languageProvider).run();
         }
 
-        generator.addProvider(event.includeClient(), new CoreSoundProvider(generator.getPackOutput(), event.getExistingFileHelper()));
+        generator.addProvider(event.includeClient(), new CoreSoundProvider(packOutput, event.getExistingFileHelper()));
         generator.addProvider(true, languageProvider);
 
         // pack.mcmeta

@@ -12,6 +12,7 @@ import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.talents.MKTalent;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.init.*;
+import com.chaosbuffalo.mkcore.item.ArmorClass;
 import com.chaosbuffalo.mkcore.item.CoreItemComponents;
 import com.chaosbuffalo.mkcore.test.MKCoreTestItems;
 import com.chaosbuffalo.mkcore.test.MKCoreTestTalents;
@@ -25,6 +26,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 
@@ -41,6 +43,7 @@ public class MKCoreRegistry {
     public static final ResourceKey<Registry<MKEffect>> EFFECT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("effects"));
     public static final ResourceKey<Registry<MKEntitlement>> ENTITLEMENT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("entitlements"));
     public static final ResourceKey<Registry<MKTalent>> TALENT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("talents"));
+    public static final ResourceKey<Registry<ArmorClass>> ARMOR_CLASS_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("armor_class"));
 
     public static final ResourceKey<Registry<LocationProviderType<?>>> LOC_PROVIDER_TYPES_NAME = ResourceKey.createRegistryKey(
             ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "loc_provider_types"));
@@ -102,6 +105,11 @@ public class MKCoreRegistry {
         event.register(CAST_BEHAVIOR_TYPES);
     }
 
+    @SubscribeEvent
+    public static void createDataPackRegistries(DataPackRegistryEvent.NewRegistry event) {
+        event.dataPackRegistry(ARMOR_CLASS_REGISTRY_KEY, ArmorClass.DIRECT_CODEC, ArmorClass.DIRECT_CODEC);
+    }
+
     public static void register(IEventBus modBus) {
         CoreCommands.register(modBus);
         CoreDamageTypes.register(modBus);
@@ -122,5 +130,6 @@ public class MKCoreRegistry {
         MKAttributes.register(modBus);
         CoreAttachments.register(modBus);
         CoreItemComponents.register(modBus);
+        CoreDataMaps.register(modBus);
     }
 }

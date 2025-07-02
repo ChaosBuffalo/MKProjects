@@ -1,0 +1,39 @@
+{
+  "display_name": {
+    "translate": "mkcore.armor_class.light.name"
+  },
+  "negative_modifiers": {
+    "minecraft:generic.max_health": {
+      "amount": -0.04,
+      "id": "mkcore:armor_class_negatives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:casting_speed": {
+      "amount": -0.02,
+      "id": "mkcore:armor_class_negatives",
+      "operation": "add_multiplied_total"
+    }
+  },
+  "positive_modifiers": {
+    "mkcore:cooldown_rate": {
+      "amount": 0.02,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:melee_crit_chance": {
+      "amount": 0.02,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:ranged_crit": {
+      "amount": 0.02,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:spell_crit_chance": {
+      "amount": 0.02,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    }
+  }
+}

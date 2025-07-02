@@ -1,0 +1,8 @@
+{
+  "values": {
+    "#mkcore:armor/heavy": "mkcore:armor_class.heavy",
+    "#mkcore:armor/light": "mkcore:armor_class.light",
+    "#mkcore:armor/medium": "mkcore:armor_class.medium",
+    "#mkcore:armor/robes": "mkcore:armor_class.robes"
+  }
+}
