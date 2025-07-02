@@ -188,11 +188,11 @@ public class NpcDefinition {
         if (entity instanceof LivingEntity living) {
             living.setHealth(living.getMaxHealth());
             living.detectEquipmentUpdates();
+
+            var entityData = MKCore.getEntityDataOrThrow(living);
+            entityData.getStats().setPoise(entityData.getStats().getMaxPoise());
+            entityData.getStats().setMana(entityData.getStats().getMaxMana());
         }
-        MKCore.getEntityData(entity).ifPresent(cap -> {
-            cap.getStats().setPoise(cap.getStats().getMaxPoise());
-            cap.getStats().setMana(cap.getStats().getMaxMana());
-        });
     }
 
     private void applyDifficultyScaling(Entity entity, double difficultyValue) {

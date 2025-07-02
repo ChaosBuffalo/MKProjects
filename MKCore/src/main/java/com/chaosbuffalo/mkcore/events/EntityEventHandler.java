@@ -12,7 +12,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.scores.Team;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.EntityEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -20,21 +19,15 @@ import net.neoforged.neoforge.event.entity.player.PlayerXpEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 import java.util.List;
-import java.util.Optional;
 
 @EventBusSubscriber(modid = MKCore.MOD_ID)
 public class EntityEventHandler {
 
     @SubscribeEvent
     public static void onLivingUpdate(EntityTickEvent.Post event) {
-        MKCore.getEntityData(event.getEntity()).ifPresent(IMKEntityData::update);
-    }
-
-    private static MKPlayerData playerCapFactory(Player player) {
-        if (player instanceof ServerPlayer serverPlayer) {
-            return new MKServerPlayerData(serverPlayer);
-        } else {
-            return new MKPlayerData(player);
+        if (event.getEntity() instanceof LivingEntity living) {
+            var entityData = MKCore.getEntityDataOrThrow(living);
+            entityData.update();
         }
     }
 
@@ -42,14 +35,15 @@ public class EntityEventHandler {
     @SubscribeEvent
     public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
         if (event.getEntity() instanceof LivingEntity living) {
-            MKCore.getEntityData(living).ifPresent(IMKEntityData::onJoinWorld);
+            var entityData = MKCore.getEntityDataOrThrow(living);
+            entityData.onJoinWorld();
         }
     }
 
     @SubscribeEvent
     public static void onPlayerLogOut(PlayerEvent.PlayerLoggedOutEvent event) {
-        MKCore.getEntityData(event.getEntity()).ifPresent(
-                entityData -> entityData.getAbilityExecutor().interruptCast(CastInterruptReason.Logout));
+        var playerData = MKCore.getPlayerOrThrow(event.getEntity());
+        playerData.getAbilityExecutor().interruptCast(CastInterruptReason.Logout);
     }
 
     @SubscribeEvent
@@ -57,9 +51,9 @@ public class EntityEventHandler {
         if (event.getAmount() == 0) {
             return;
         }
-        MKCore.getPlayer(event.getEntity()).ifPresent(data -> {
-            data.getTalents().addTalentXp(event.getAmount());
-        });
+
+        var playerData = MKCore.getPlayerOrThrow(event.getEntity());
+        playerData.getTalents().addTalentXp(event.getAmount());
     }
 
     private static int calculateXpShare(int fullAmount, int players) {
@@ -109,9 +103,10 @@ public class EntityEventHandler {
         Player player = event.getEntity();
         Player oldPlayer = event.getOriginal();
 
-        MKCore.getPlayer(player)
-                .ifPresent(newCap -> MKCore.getPlayer(oldPlayer)
-                        .ifPresent(oldCap -> newCap.clone(event.getEntity().registryAccess(), oldCap, event.isWasDeath())));
+        var oldData = MKCore.getPlayerOrThrow(oldPlayer);
+        var newData = MKCore.getPlayerOrThrow(player);
+
+        newData.clone(oldData, event.isWasDeath());
     }
 
     @SubscribeEvent
@@ -127,11 +122,10 @@ public class EntityEventHandler {
 
     @SubscribeEvent
     public static void onEntityJump(LivingEvent.LivingJumpEvent event) {
-        MKCore.getEntityData(event.getEntity()).ifPresent(entityData -> {
-            entityData.getAbilityExecutor().interruptCast(CastInterruptReason.Jump);
-            if (entityData.getEffects().isEffectActive(CoreEffects.STUN.get())) {
-                event.getEntity().setDeltaMovement(0, 0, 0);
-            }
-        });
+        var entityData = MKCore.getEntityDataOrThrow(event.getEntity());
+        entityData.getAbilityExecutor().interruptCast(CastInterruptReason.Jump);
+        if (entityData.getEffects().isEffectActive(CoreEffects.STUN.get())) {
+            event.getEntity().setDeltaMovement(0, 0, 0);
+        }
     }
 }

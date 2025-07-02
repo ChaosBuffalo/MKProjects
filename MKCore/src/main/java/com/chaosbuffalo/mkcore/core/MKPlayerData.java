@@ -186,12 +186,13 @@ public class MKPlayerData implements IMKEntityData {
         getCombatExtension().tick();
     }
 
-    public void clone(HolderLookup.Provider provider, MKPlayerData previous, boolean death) {
+    public void clone(MKPlayerData previous, boolean death) {
         if (death) {
             previous.onDeath();
         }
-        CompoundTag tag = previous.serializeNBT(provider);
-        deserializeNBT(provider, tag);
+        var prov = player.registryAccess();
+        CompoundTag tag = previous.serializeNBT(prov);
+        deserializeNBT(prov, tag);
     }
 
     @Override
