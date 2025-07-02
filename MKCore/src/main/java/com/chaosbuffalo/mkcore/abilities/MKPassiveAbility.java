@@ -50,4 +50,14 @@ public abstract class MKPassiveAbility extends MKAbility {
         MKEffect passiveEffect = getPassiveEffect();
         entityData.getEffects().removeEffect(passiveEffect, entityData);
     }
+
+    @Override
+    public void onAbilityGroupAdded(IMKEntityData targetData, MKAbilityInfo abilityInfo) {
+        activate(targetData, abilityInfo);
+    }
+
+    @Override
+    public void onAbilityGroupRemoved(IMKEntityData targetData, MKAbilityInfo abilityInfo) {
+        deactivate(targetData, abilityInfo);
+    }
 }

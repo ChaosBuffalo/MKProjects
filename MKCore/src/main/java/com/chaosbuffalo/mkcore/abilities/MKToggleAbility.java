@@ -72,7 +72,7 @@ public abstract class MKToggleAbility extends MKAbility {
     }
 
     public boolean isEffectActive(IMKEntityData targetData) {
-        return targetData.getEffects().isEffectActive(getToggleEffect());
+        return targetData.getEffects().isEffectActive(getToggleEffect(), targetData);
     }
 
     public void applyEffect(LivingEntity castingEntity, IMKEntityData casterData, AbilityContext context) {
@@ -84,6 +84,18 @@ public abstract class MKToggleAbility extends MKAbility {
         if (isEffectActive(casterData)) {
             casterData.getEffects().removeEffect(getToggleEffect());
         }
+    }
+
+    @Override
+    public void onAbilityGroupAdded(IMKEntityData targetData, MKAbilityInfo abilityInfo) {
+        if (isEffectActive(targetData)) {
+            targetData.getAbilityExecutor().setToggleGroupAbility(getToggleGroupId(), this);
+        }
+    }
+
+    @Override
+    public void onAbilityGroupRemoved(IMKEntityData targetData, MKAbilityInfo abilityInfo) {
+        removeEffect(targetData);
     }
 
     @Override

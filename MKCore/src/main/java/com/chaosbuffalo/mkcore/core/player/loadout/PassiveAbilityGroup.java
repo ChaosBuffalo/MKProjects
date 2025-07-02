@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.core.player.loadout;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKPassiveAbility;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
@@ -9,7 +8,6 @@ import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 
-import javax.annotation.Nonnull;
 import java.util.UUID;
 
 public class PassiveAbilityGroup extends AbilityGroup {
@@ -17,7 +15,6 @@ public class PassiveAbilityGroup extends AbilityGroup {
 
     public PassiveAbilityGroup(Persona persona) {
         super(persona, "passive", AbilityGroupId.Passive);
-        persona.subscribe(PlayerEvents.SERVER_JOIN_LEVEL, EV_ID, this::onJoinLevel);
         persona.subscribe(PlayerEvents.SKILL_LEVEL_CHANGE, EV_ID, this::onSkillChange);
     }
 
@@ -26,65 +23,15 @@ public class PassiveAbilityGroup extends AbilityGroup {
         return false;
     }
 
-    @Override
-    protected void onAbilityAdded(MKAbilityInfo abilityInfo) {
-        super.onAbilityAdded(abilityInfo);
-        activatePassive(abilityInfo);
-    }
-
-    @Override
-    protected void onAbilityRemoved(MKAbilityInfo abilityInfo) {
-        super.onAbilityRemoved(abilityInfo);
-        removePassive(abilityInfo);
-    }
-
-    private void onJoinLevel(PlayerEvents.JoinLevelServerEvent event) {
-        activateAllPassives(true);
-    }
-
-    @Override
-    public void onPersonaActivated() {
-        super.onPersonaActivated();
-        activateAllPassives(false);
-    }
-
-    @Override
-    protected void onPersonaDeactivatedAbility(@Nonnull MKAbilityInfo abilityInfo) {
-        super.onPersonaDeactivatedAbility(abilityInfo);
-        removePassive(abilityInfo);
-    }
-
     private void onSkillChange(PlayerEvents.SkillEvent event) {
         Holder<Attribute> skill = event.getSkillAttributeInstance().getAttribute();
         getAbilityInfoStream()
                 .filter(info -> info.getAbility().getSkillAttributes().contains(skill))
                 .forEach(info -> {
-                    removePassive(info);
-                    activatePassive(info);
+                    if (info.getAbility() instanceof MKPassiveAbility passiveAbility) {
+                        passiveAbility.deactivate(playerData, info);
+                        passiveAbility.activate(playerData, info);
+                    }
                 });
-    }
-
-    private void activatePassive(MKAbilityInfo info) {
-        if (info != null && info.getAbility() instanceof MKPassiveAbility passive) {
-            passive.activate(playerData, info);
-        }
-    }
-
-    private void activateAllPassives(boolean willBeInWorld) {
-        if (playerData.isClientSide())
-            return;
-
-        // We come here during deserialization of the active persona, and it tries to apply effects which will crash the client because it's too early
-        // Active persona passives should be caught by onJoinWorld
-        // Persona switching while in-game should not go inside this branch
-        if (willBeInWorld || playerData.getEntity().isAddedToLevel()) {
-            getAbilityInfoStream().forEach(this::activatePassive);
-        }
-    }
-
-    private void removePassive(MKAbilityInfo abilityInfo) {
-        if (abilityInfo.getAbility() instanceof MKPassiveAbility passive) {
-            passive.deactivate(playerData, abilityInfo);
-        }
     }
 }
