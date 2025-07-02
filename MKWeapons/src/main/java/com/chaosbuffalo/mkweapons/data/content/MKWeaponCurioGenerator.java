@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkweapons.data;
+package com.chaosbuffalo.mkweapons.data.content;
 
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import net.minecraft.core.HolderLookup;

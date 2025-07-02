@@ -44,7 +44,7 @@ public class MKCoreGenerators {
             generator.addProvider(true, new MKAbilityProvider.FromMod(generator, MKCore.MOD_ID));
             generator.addProvider(true, new CoreItemTagsProvider(generator,
                     datapackLookup, blockTagsProvider, event.getExistingFileHelper()));
-            generator.addProvider(true, new CoreTalentTreeProvider(generator));
+            generator.addProvider(true, new CoreTalentTreeProvider(generator, datapackLookup));
             generator.addProvider(true, new CoreParticleProvider(generator));
             generator.addProvider(true, new CoreArmorClassProvider(packOutput, datapackLookup));
 

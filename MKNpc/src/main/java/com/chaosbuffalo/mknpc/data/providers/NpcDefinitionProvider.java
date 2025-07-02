@@ -12,21 +12,25 @@ import net.minecraft.resources.ResourceLocation;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 public abstract class NpcDefinitionProvider extends MKDataProvider {
 
-    protected final CompletableFuture<HolderLookup.Provider> lookupProvider;
-
     public NpcDefinitionProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> lookupProvider, String modId) {
-        super(generator, modId, "Npc Definitions");
-        this.lookupProvider = lookupProvider;
+        super(generator, lookupProvider, modId, "Npc Definitions");
     }
 
     public CompletableFuture<?> writeDefinition(NpcDefinition definition, CachedOutput pOutput) {
-        Path outputFolder = this.generator.getPackOutput().getOutputFolder();
-        ResourceLocation key = definition.getDefinitionName();
-        Path local = Paths.get("data", key.getNamespace(), "mknpc", "mknpcs", key.getPath() + ".json");
-        Path path = outputFolder.resolve(local);
-        return lookupProvider.thenCompose(registries -> DataProvider.saveStable(pOutput, registries, NpcDefinition.CODEC, definition, path));
+        return writeDefinition(p -> definition, pOutput);
+    }
+
+    public CompletableFuture<?> writeDefinition(Function<HolderLookup.Provider, NpcDefinition> definitionProvider, CachedOutput pOutput) {
+        return registries.thenCompose(registries -> {
+            NpcDefinition definition = definitionProvider.apply(registries);
+            ResourceLocation key = definition.getDefinitionName();
+            Path local = Paths.get("data", key.getNamespace(), "mknpc", "mknpcs", key.getPath() + ".json");
+            Path path = generator.getPackOutput().getOutputFolder().resolve(local);
+            return DataProvider.saveStable(pOutput, registries, NpcDefinition.CODEC, definition, path);
+        });
     }
 }

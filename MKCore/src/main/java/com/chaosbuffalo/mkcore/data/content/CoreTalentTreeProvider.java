@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;
 import com.chaosbuffalo.mkcore.core.talents.nodes.AttributeTalentNode;
 import com.chaosbuffalo.mkcore.data.providers.TalentTreeProvider;
 import com.chaosbuffalo.mkcore.init.CoreTalents;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 
@@ -13,8 +14,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class CoreTalentTreeProvider extends TalentTreeProvider {
 
-    public CoreTalentTreeProvider(DataGenerator generator) {
-        super(generator, MKCore.MOD_ID);
+    public CoreTalentTreeProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> registries) {
+        super(generator, registries, MKCore.MOD_ID);
     }
 
     @Override

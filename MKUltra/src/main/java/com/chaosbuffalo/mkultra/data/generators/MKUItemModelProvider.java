@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkultra.data.generators;
 
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUItems;
-import com.chaosbuffalo.mkweapons.data.MKWeaponModelProvider;
+import com.chaosbuffalo.mkweapons.data.content.MKWeaponModelProvider;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import net.minecraft.core.registries.BuiltInRegistries;

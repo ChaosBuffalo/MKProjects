@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -35,8 +35,10 @@ public class LootTierManager extends SimpleJsonResourceReloadListener {
             ResourceLocation resourcelocation = entry.getKey();
             MKWeapons.LOGGER.debug("Found loot tier file: {}", resourcelocation);
 
-            LootTier tier = LootTier.deserialize(new Dynamic<>(JsonOps.INSTANCE, entry.getValue()));
-            LOOT_TIERS.put(tier.getName(), tier);
+            DataResult<LootTier> dataRes = LootTier.CODEC.parse(JsonOps.INSTANCE, entry.getValue());
+            dataRes.resultOrPartial(MKWeapons.LOGGER::error).ifPresent(tier -> {
+                LOOT_TIERS.put(tier.getName(), tier);
+            });
         }
     }
 

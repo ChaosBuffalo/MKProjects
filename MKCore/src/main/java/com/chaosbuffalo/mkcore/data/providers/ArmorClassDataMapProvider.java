@@ -20,7 +20,7 @@ public abstract class ArmorClassDataMapProvider extends DataMapProvider {
     }
 
     @Override
-    protected void gather(HolderLookup.Provider provider) {
+    protected final void gather(HolderLookup.Provider provider) {
        armorClassRegistry = provider.lookupOrThrow(MKCoreRegistry.ARMOR_CLASS_REGISTRY_KEY);
        gatherClasses(provider);
     }
