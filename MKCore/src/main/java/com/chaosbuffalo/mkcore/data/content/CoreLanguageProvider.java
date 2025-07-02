@@ -49,6 +49,7 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.gui.manage_memory", "Manage");
         add("mkcore.gui.memory_pool", "%d/%d");
         add("mkcore.gui.memory_pool_tooltip", "Memory Pool Slot Usage");
+        add("mkcore.item_tooltip.grants_ability", "Grants Ability: %s");
     }
 
     private void addLegacy() {

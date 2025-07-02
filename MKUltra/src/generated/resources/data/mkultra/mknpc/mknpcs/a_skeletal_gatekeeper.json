@@ -3,7 +3,6 @@
   "name": "mkultra:a_skeletal_gatekeeper",
   "options": {
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -20,37 +19,29 @@
       ]
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 100
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:themcromancer_gatekeepers"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.0
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "a skeletal gatekeeper"
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:offer_quests": {
-      "type": "mknpc:offer_quests",
       "questIds": [
         "mkultra:unlock_themcromancers"
       ]
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "basic"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:one_hand_blunt",
         "mkcore:one_hand_pierce",

@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.core.talents.TalentManager;
 import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
@@ -14,8 +15,8 @@ import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class TalentTreeProvider extends MKDataProvider {
-    public TalentTreeProvider(DataGenerator generator, String modId) {
-        super(generator, modId, "Talent Trees");
+    public TalentTreeProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> registries, String modId) {
+        super(generator, registries, modId, "Talent Trees");
     }
 
     public CompletableFuture<?> writeDefinition(TalentTreeDefinition definition, CachedOutput pOutput) {

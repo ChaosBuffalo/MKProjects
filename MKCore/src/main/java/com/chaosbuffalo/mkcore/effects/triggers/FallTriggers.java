@@ -32,9 +32,7 @@ public class FallTriggers extends SpellTriggers.TriggerCollectionBase {
         if (fallTriggers.isEmpty())
             return;
 
-        IMKEntityData entityData = MKCore.getEntityDataOrNull(entity);
-        if (entityData == null)
-            return;
+        IMKEntityData entityData = MKCore.getEntityDataOrThrow(entity);
         if (startTrigger(entityData, TAG))
             return;
         fallTriggers.forEach(f -> f.apply(event, source, entity));

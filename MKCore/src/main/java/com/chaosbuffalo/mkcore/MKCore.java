@@ -138,7 +138,7 @@ public class MKCore {
     }
 
     public static Optional<? extends IMKEntityData> getEntityData(@Nullable Entity entity) {
-        return Optional.ofNullable(getEntityDataOrNull(entity));
+        return entity instanceof LivingEntity living ? Optional.of(getEntityDataOrThrow(living)) : Optional.empty();
     }
 
     // FIXME: All LivingEntity will have the attachment so we don't need optionals here
@@ -146,6 +146,7 @@ public class MKCore {
         return Optional.ofNullable(getEntityDataOrNull(entity));
     }
 
+    @Nonnull
     public static IMKEntityData getEntityDataOrThrow(@Nonnull LivingEntity entity) {
         if (entity instanceof Player) {
             return entity.getData(CoreAttachments.PLAYER_DATA_ATTACHMENT);

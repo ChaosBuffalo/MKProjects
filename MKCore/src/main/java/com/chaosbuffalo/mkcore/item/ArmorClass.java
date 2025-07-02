@@ -1,92 +1,79 @@
 package com.chaosbuffalo.mkcore.item;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.MKAttributes;
-import com.chaosbuffalo.mkcore.init.CoreTags;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.init.CoreDataMaps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
 public class ArmorClass {
 
-    public static final ResourceLocation ARMOR_CLASS_POSITIVES_ID = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "armor_class_positives");
-    public static final ResourceLocation ARMOR_CLASS_NEGATIVES_ID = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "armor_class_negatives");
+    public static final Codec<ArmorClass> DIRECT_CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            ComponentSerialization.CODEC.fieldOf("display_name").forGetter(i -> i.name),
+            Codec.unboundedMap(BuiltInRegistries.ATTRIBUTE.holderByNameCodec(), AttributeModifier.CODEC).fieldOf("positive_modifiers").forGetter(i -> i.positiveModifierMap),
+            Codec.unboundedMap(BuiltInRegistries.ATTRIBUTE.holderByNameCodec(), AttributeModifier.CODEC).fieldOf("negative_modifiers").forGetter(i -> i.negativeModifierMap)
+    ).apply(builder, ArmorClass::new));
 
-    public static final ArmorClass ROBES = new ArmorClass(MKCore.makeRL("armor_class.robes"), CoreTags.Items.ROBES_ARMOR)
-            .addPositiveEffect(Attributes.MOVEMENT_SPEED, 0.025, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(MKAttributes.CASTING_SPEED, 0.025, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(MKAttributes.MANA_REGEN, 0.025, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addNegativeEffect(Attributes.ARMOR, -0.04, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addNegativeEffect(Attributes.MAX_HEALTH, -0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+    public static final Codec<Holder<ArmorClass>> CODEC = RegistryFileCodec.create(MKCoreRegistry.ARMOR_CLASS_REGISTRY_KEY, DIRECT_CODEC);
+    public static final Codec<Holder<ArmorClass>> REFERENCE_CODEC = RegistryFixedCodec.create(MKCoreRegistry.ARMOR_CLASS_REGISTRY_KEY);
 
-    public static final ArmorClass LIGHT = new ArmorClass(MKCore.makeRL("armor_class.light"), CoreTags.Items.LIGHT_ARMOR)
-            .addPositiveEffect(MKAttributes.MELEE_CRIT, 0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(MKAttributes.SPELL_CRIT, 0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(MKAttributes.RANGED_CRIT, 0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(MKAttributes.COOLDOWN, 0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addNegativeEffect(MKAttributes.CASTING_SPEED, -0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addNegativeEffect(Attributes.MAX_HEALTH, -0.04, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-    public static final ArmorClass MEDIUM = new ArmorClass(MKCore.makeRL("armor_class.medium"), CoreTags.Items.MEDIUM_ARMOR)
-            .addPositiveEffect(MKAttributes.HEAL_BONUS, 0.04, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(Attributes.ATTACK_SPEED, 0.03, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(Attributes.MAX_HEALTH, 0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addNegativeEffect(MKAttributes.COOLDOWN, -0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addNegativeEffect(MKAttributes.CASTING_SPEED, -0.03, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-    public static final ArmorClass HEAVY = new ArmorClass(MKCore.makeRL("armor_class.heavy"), CoreTags.Items.HEAVY_ARMOR)
-            .addPositiveEffect(Attributes.ATTACK_DAMAGE, 0.025, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(Attributes.MAX_HEALTH, 0.04, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(MKAttributes.MAX_POISE, 0.03, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(MKAttributes.ARCANE_RESISTANCE, 0.015, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(MKAttributes.FIRE_RESISTANCE, 0.015, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(MKAttributes.FROST_RESISTANCE, 0.015, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(MKAttributes.NATURE_RESISTANCE, 0.015, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(MKAttributes.POISON_RESISTANCE, 0.015, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addPositiveEffect(Attributes.ARMOR_TOUGHNESS, 0.025, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addNegativeEffect(Attributes.MOVEMENT_SPEED, -0.025, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addNegativeEffect(MKAttributes.COOLDOWN, -0.04, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addNegativeEffect(MKAttributes.CASTING_SPEED, -0.04, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
-            .addNegativeEffect(Attributes.ATTACK_SPEED, -0.025, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-    private static final List<ArmorClass> CHECK_ORDER = Arrays.asList(ROBES, LIGHT, MEDIUM, HEAVY);
+    public static final ResourceLocation ARMOR_CLASS_POSITIVES_ID = MKCore.id("armor_class_positives");
+    public static final ResourceLocation ARMOR_CLASS_NEGATIVES_ID = MKCore.id("armor_class_negatives");
 
-    private final ResourceLocation location;
+    private final Component name;
     private final Map<Holder<Attribute>, AttributeModifier> positiveModifierMap = new HashMap<>();
     private final Map<Holder<Attribute>, AttributeModifier> negativeModifierMap = new HashMap<>();
-    private final TagKey<Item> tag;
 
     public static ArmorClass getItemArmorClass(ItemStack item) {
-        for (ArmorClass armorClass : CHECK_ORDER) {
-            if (item.is(armorClass.tag)) {
-                return armorClass;
-            }
+        var armorClassHolder = item.getItemHolder().getData(CoreDataMaps.ARMOR_CLASS_MAPPING);
+        if (armorClassHolder != null) {
+            return armorClassHolder.value();
         }
         return null;
     }
 
-    public ArmorClass(ResourceLocation location, TagKey<Item> tag) {
-        this.location = location;
-        this.tag = tag;
+    private ArmorClass(Component displayName, Map<Holder<Attribute>, AttributeModifier> posMap, Map<Holder<Attribute>, AttributeModifier> negMap) {
+        this.name = displayName;
+        this.positiveModifierMap.putAll(posMap);
+        this.negativeModifierMap.putAll(negMap);
+    }
+
+    public ArmorClass(Component displayName) {
+        this.name = displayName;
+    }
+
+    public Component getName() {
+        return name.copy();
     }
 
     public ArmorClass addNegativeEffect(Holder<Attribute> attributeIn, double amount, AttributeModifier.Operation operation) {
+        if (negativeModifierMap.containsKey(attributeIn)) {
+            throw new IllegalArgumentException("Cannot add 2 modifiers for the same attribute '%s' to armor class".formatted(attributeIn));
+        }
         AttributeModifier attributemodifier = new AttributeModifier(ARMOR_CLASS_NEGATIVES_ID, amount, operation);
         this.negativeModifierMap.put(attributeIn, attributemodifier);
         return this;
     }
 
     public ArmorClass addPositiveEffect(Holder<Attribute> attributeIn, double amount, AttributeModifier.Operation operation) {
+        if (positiveModifierMap.containsKey(attributeIn)) {
+            throw new IllegalArgumentException("Cannot add 2 modifiers for the same attribute '%s' to armor class".formatted(attributeIn));
+        }
         AttributeModifier attributemodifier = new AttributeModifier(ARMOR_CLASS_POSITIVES_ID, amount, operation);
         this.positiveModifierMap.put(attributeIn, attributemodifier);
         return this;
@@ -98,17 +85,5 @@ public class ArmorClass {
 
     public Map<Holder<Attribute>, AttributeModifier> getNegativeModifierMap(EquipmentSlot slot) {
         return this.negativeModifierMap;
-    }
-
-    private String getTranslationKey() {
-        return String.format("%s.%s.name", location.getNamespace(), location.getPath());
-    }
-
-    public Component getName() {
-        return Component.translatable(getTranslationKey());
-    }
-
-    public ResourceLocation getLocation() {
-        return location;
     }
 }

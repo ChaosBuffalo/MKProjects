@@ -51,8 +51,7 @@ public class IntroCastleNpcs {
 
     static NpcDefinition generateCrumblingTrooper() {
         ResourceLocation lootTierName = MKUltra.id("zombie_trooper");
-        return new NpcDefinitionBuilder(MKUltra.id("crumbling_trooper"))
-                .type(MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("crumbling_trooper"), MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
                 .faction(MKUFactions.IMPERIAL_DEAD_NAME)
                 .size(1.1f)
                 .renderGroup(MKUPiglins.ZOMBIE_PIG_TROOPER_NAME)
@@ -76,8 +75,7 @@ public class IntroCastleNpcs {
     }
 
     static NpcDefinition generateSkeletalTrooperMage() {
-        return new NpcDefinitionBuilder(MKUltra.id("skeletal_trooper_mage"))
-                .type(MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("skeletal_trooper_mage"), MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
                 .faction(MKUFactions.IMPERIAL_DEAD_NAME)
                 .size(1.0f)
                 .renderGroup(MKUPiglins.DESTROYED_SKELETAL_MAGE_NAME)
@@ -98,8 +96,7 @@ public class IntroCastleNpcs {
 
     static NpcDefinition generateTrooperCaptain() {
         ResourceLocation lootTierName = MKUltra.id("trooper_captain");
-        return new NpcDefinitionBuilder(MKUltra.id("trooper_captain"))
-                .type(MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("trooper_captain"), MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
                 .renderGroup(MKUPiglins.SKELETAL_TROOPER_NAME)
                 .faction(MKUFactions.IMPERIAL_DEAD_NAME)
                 .size(1.2f)
@@ -128,8 +125,7 @@ public class IntroCastleNpcs {
 
     static NpcDefinition generateImperialMagus() {
         ResourceLocation lootTierName = MKUltra.id("trooper_magus");
-        return new NpcDefinitionBuilder(MKUltra.id("imperial_magus"))
-                .type(MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("imperial_magus"), MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
                 .faction(MKUFactions.IMPERIAL_DEAD_NAME)
                 .size(1.0f)
                 .renderGroup(MKUPiglins.SKELETAL_MAGE_NAME)
@@ -159,8 +155,7 @@ public class IntroCastleNpcs {
     }
 
     static NpcDefinition generateCrumblingTrooperMage() {
-        return new NpcDefinitionBuilder(MKUltra.id("crumbling_trooper_mage"))
-                .type(MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("crumbling_trooper_mage"), MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
                 .faction(MKUFactions.IMPERIAL_DEAD_NAME)
                 .size(0.95f)
                 .renderGroup(MKUPiglins.ZOMBIE_PIG_MAGUS_NAME)
@@ -182,8 +177,7 @@ public class IntroCastleNpcs {
 
 
     static NpcDefinition generateDecayingZombieArcher() {
-        return new NpcDefinitionBuilder(MKUltra.id("decaying_piglin_archer"))
-                .type(MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("decaying_piglin_archer"), MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
                 .faction(MKUFactions.IMPERIAL_DEAD_NAME)
                 .size(0.85f)
                 .renderGroup(MKUPiglins.ZOMBIE_PIG_NAME)
@@ -199,8 +193,7 @@ public class IntroCastleNpcs {
 
     static NpcDefinition generateTrooperExecution() {
         ResourceLocation lootTierName = MKUltra.id("trooper_executioner");
-        return new NpcDefinitionBuilder(MKUltra.id("trooper_executioner"))
-                .type(MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("trooper_executioner"), MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
                 .faction(MKUFactions.IMPERIAL_DEAD_NAME)
                 .size(1.0f)
                 .renderGroup(MKUPiglins.DESTROYED_SKELETAL_TROOPER_NAME)
@@ -227,8 +220,7 @@ public class IntroCastleNpcs {
 
 
     static NpcDefinition generateClericApprentice() {
-        return new NpcDefinitionBuilder(MKUltra.id("solangian_apprentice"))
-                .type(MKUEntities.HUMAN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("solangian_apprentice"), MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
                 .size(0.85f)
                 .renderGroup(MKUHumans.CLERIC_2_NAME)
@@ -245,8 +237,7 @@ public class IntroCastleNpcs {
     }
 
     static NpcDefinition generateNetherMageInitiate() {
-        return new NpcDefinitionBuilder(MKUltra.id("nether_mage_initiate"))
-                .type(MKUEntities.HUMAN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("nether_mage_initiate"), MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.NETHER_MAGE_NAME)
                 .size(0.90f)
                 .renderGroup(MKUHumans.NETHER_MAGE_1_NAME)
@@ -269,8 +260,7 @@ public class IntroCastleNpcs {
 
     static NpcDefinition generateBurningSkeleton() {
         ResourceLocation lootTierName = MKUltra.id("burning_skeleton");
-        return new NpcDefinitionBuilder(MKUltra.id("burning_skeleton"))
-                .type(MKUEntities.HYBOREAN_SKELETON_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("burning_skeleton"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.HYBOREAN_DEAD_NAME)
                 .size(1.0f)
                 .renderGroup(MKUSkeletons.BURNING_NAME)
@@ -311,8 +301,7 @@ public class IntroCastleNpcs {
     }
 
     static NpcDefinition generateDecayingZombiePiglin() {
-        return new NpcDefinitionBuilder(MKUltra.id("decaying_piglin"))
-                .type(MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("decaying_piglin"), MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
                 .faction(MKUFactions.IMPERIAL_DEAD_NAME)
                 .size(0.9f)
                 .renderGroup(MKUPiglins.ZOMBIE_PIG_NAME)
@@ -328,8 +317,7 @@ public class IntroCastleNpcs {
     }
 
     static NpcDefinition generateClericAcolyte() {
-        return new NpcDefinitionBuilder(MKUltra.id("solangian_acolyte"))
-                .type(MKUEntities.HUMAN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("solangian_acolyte"), MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
                 .size(1.05f)
                 .renderGroup(MKUHumans.CLERIC_1_NAME)
@@ -351,8 +339,7 @@ public class IntroCastleNpcs {
     }
 
     static NpcDefinition generateForlornGhost() {
-        return new NpcDefinitionBuilder(MKUltra.id("forlorn_ghost"))
-                .type(MKUEntities.HUMAN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("forlorn_ghost"), MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
                 .size(1.0f)
                 .renderGroup(MKUHumans.GHOST_1_NAME)

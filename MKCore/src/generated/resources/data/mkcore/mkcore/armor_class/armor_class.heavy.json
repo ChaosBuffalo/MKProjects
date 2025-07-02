@@ -1,0 +1,74 @@
+{
+  "display_name": {
+    "translate": "mkcore.armor_class.heavy.name"
+  },
+  "negative_modifiers": {
+    "minecraft:generic.attack_speed": {
+      "amount": -0.025,
+      "id": "mkcore:armor_class_negatives",
+      "operation": "add_multiplied_total"
+    },
+    "minecraft:generic.movement_speed": {
+      "amount": -0.025,
+      "id": "mkcore:armor_class_negatives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:casting_speed": {
+      "amount": -0.04,
+      "id": "mkcore:armor_class_negatives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:cooldown_rate": {
+      "amount": -0.04,
+      "id": "mkcore:armor_class_negatives",
+      "operation": "add_multiplied_total"
+    }
+  },
+  "positive_modifiers": {
+    "minecraft:generic.armor_toughness": {
+      "amount": 0.025,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    },
+    "minecraft:generic.attack_damage": {
+      "amount": 0.025,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    },
+    "minecraft:generic.max_health": {
+      "amount": 0.04,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:arcane_resistance": {
+      "amount": 0.015,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:fire_resistance": {
+      "amount": 0.015,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:frost_resistance": {
+      "amount": 0.015,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:max_poise": {
+      "amount": 0.03,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:nature_resistance": {
+      "amount": 0.015,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    },
+    "mkcore:poison_resistance": {
+      "amount": 0.015,
+      "id": "mkcore:armor_class_positives",
+      "operation": "add_multiplied_total"
+    }
+  }
+}

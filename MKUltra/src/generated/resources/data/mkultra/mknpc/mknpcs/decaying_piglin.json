@@ -3,7 +3,6 @@
   "name": "mkultra:decaying_piglin",
   "options": {
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -20,7 +19,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "mainhand": [
           {
@@ -39,27 +37,21 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 5
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:imperial_dead"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 0.9
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Decaying Zombie"
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "zombie_pig"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:hand_to_hand",
         "mkcore:one_hand_blunt",

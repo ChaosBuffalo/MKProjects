@@ -3,16 +3,13 @@
   "name": "mknpc:test2",
   "options": {
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkfaction:undead"
     },
     "mknpc:faction_name": {
-      "type": "mknpc:faction_name",
       "hasLastName": true,
       "title": "Chief"
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     }
   }

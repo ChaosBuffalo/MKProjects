@@ -1,10 +1,11 @@
-package com.chaosbuffalo.mkweapons.data;
+package com.chaosbuffalo.mkweapons.data.content;
 
 import com.chaosbuffalo.mkcore.data.providers.MKDataProvider;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
@@ -12,12 +13,11 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 public class MKWeaponTypesProvider extends MKDataProvider {
 
-    public MKWeaponTypesProvider(DataGenerator generator) {
-        super(generator, MKWeapons.MODID, "Weapon Types");
+    public MKWeaponTypesProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> registries) {
+        super(generator, registries, MKWeapons.MODID, "Weapon Types");
     }
 
     @Override
@@ -29,6 +29,6 @@ public class MKWeaponTypesProvider extends MKDataProvider {
                     JsonElement element = entry.getValue().serialize(JsonOps.INSTANCE);
                     Path path = outputFolder.resolve("data/" + key.getNamespace() + "/melee_weapon_types/" + key.getPath() + ".json");
                     return DataProvider.saveStable(pOutput, element, path);
-                }).collect(Collectors.toList()).toArray(CompletableFuture[]::new));
+                }).toArray(CompletableFuture[]::new));
     }
 }

@@ -29,8 +29,7 @@ public class ClericNpcs {
 
 
     static NpcDefinition generateCleric() {
-        return new NpcDefinitionBuilder(MKUltra.id("solangian_cleric"))
-                .type(MKUEntities.HUMAN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("solangian_cleric"), MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
                 .size(1.05f)
                 .renderGroup(MKUHumans.CLERIC_1_NAME)
@@ -58,8 +57,7 @@ public class ClericNpcs {
     }
 
     static NpcDefinition generateTempleGuard2() {
-        return new NpcDefinitionBuilder(MKUltra.id("solangian_temple_guard_2"))
-                .type(MKUEntities.HUMAN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("solangian_temple_guard_2"), MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
                 .renderGroup(MKUHumans.TEMPLE_GUARD_2_NAME)
                 .size(1.0f)
@@ -78,8 +76,7 @@ public class ClericNpcs {
     }
 
     static NpcDefinition generateTempleGuard() {
-        return new NpcDefinitionBuilder(MKUltra.id("solangian_temple_guard"))
-                .type(MKUEntities.HUMAN_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("solangian_temple_guard"), MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
                 .renderGroup(MKUHumans.TEMPLE_GUARD_1_NAME)
                 .size(1.0f)

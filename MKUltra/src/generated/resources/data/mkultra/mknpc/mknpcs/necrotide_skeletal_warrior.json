@@ -3,7 +3,6 @@
   "name": "mkultra:necrotide_skeletal_warrior",
   "options": {
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -20,7 +19,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "mainhand": [
           {
@@ -67,27 +65,21 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 30
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:necrotide_cultists"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.0
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Skeleton Warrior"
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "basic"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:one_hand_blunt",
         "mkcore:one_hand_pierce",

@@ -3,7 +3,6 @@
   "name": "mkultra:ancient_priest_ghost",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:heal",
@@ -23,7 +22,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -40,7 +38,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "chest": [
           {
@@ -85,33 +82,26 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 35
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkfaction:undead"
     },
     "mknpc:ghost": {
-      "type": "mknpc:ghost",
       "armor_translucency": 0.7,
       "ghost_armor": true,
       "ghost_translucency": 0.7
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.0
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "An Ancient Priest"
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "ghost_clean"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:alteration",
         "mkcore:restoration"

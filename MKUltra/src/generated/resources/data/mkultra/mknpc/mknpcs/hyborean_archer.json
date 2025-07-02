@@ -3,7 +3,6 @@
   "name": "mkultra:hyborean_archer",
   "options": {
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -20,7 +19,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "mainhand": [
           {
@@ -43,27 +41,21 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 25
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkfaction:undead"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 0.95
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Decaying Archer"
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "hyborean_archer"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:marksmanship"
       ],

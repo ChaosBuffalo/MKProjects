@@ -64,7 +64,7 @@ public class MKUArmorMaterial {
         defenses.put(ArmorItem.Type.HELMET, 3);
         defenses.put(ArmorItem.Type.BODY, 6);
     }), 15, SoundEvents.ARMOR_EQUIP_IRON, 0.0F, 0.0F, () -> Ingredient.of(Items.IRON_INGOT));
-    public static final int GREEN_KNOX_ARMOR_DURABILITY = 25;
+    public static final int GREEN_KNIGHT_ARMOR_DURABILITY = 25;
 
 
     public static Holder<ArmorMaterial> TROOPER_KNIGHT_ARMOR = register("trooper_knight", Util.make(new EnumMap<>(ArmorItem.Type.class), defenses -> {

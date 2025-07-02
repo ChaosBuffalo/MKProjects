@@ -3,7 +3,6 @@
   "name": "mkultra:ancient_apprentice_ghost",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:heal",
@@ -18,7 +17,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -35,7 +33,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "chest": [
           {
@@ -70,37 +67,29 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 10
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:ghosts_of_hyboria"
     },
     "mknpc:faction_name": {
-      "type": "mknpc:faction_name",
       "title": "Apprentice"
     },
     "mknpc:ghost": {
-      "type": "mknpc:ghost",
       "armor_translucency": 0.7,
       "ghost_armor": true,
       "ghost_translucency": 0.7
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 0.92
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "ghost_clean_short"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:one_hand_blunt",
         "mkcore:one_hand_pierce",

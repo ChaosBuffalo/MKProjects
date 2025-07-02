@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -44,19 +45,18 @@ public class CombatEventHandler {
 
         // Living is source
         if (trueSource instanceof LivingEntity livingSource) {
-            MKCore.getEntityData(livingSource).ifPresent(sourceData ->
-                    SpellTriggers.LIVING_HURT_ENTITY.onLivingHurtEntity(event, source, livingTarget, sourceData));
+            var sourceData = MKCore.getEntityDataOrThrow(livingSource);
+            SpellTriggers.LIVING_HURT_ENTITY.onLivingHurtEntity(event, source, livingTarget, sourceData);
 
-            if (DamageUtils.isMeleeDamage(source) && livingSource.getMainHandItem().isEmpty()) {
-                MKCore.getPlayer(trueSource).ifPresent(playerData -> {
-                    playerData.getSkills().tryScaledIncreaseSkill(MKAttributes.HAND_TO_HAND, 0.5);
-                });
+            if (livingSource instanceof ServerPlayer serverPlayer && DamageUtils.isMeleeDamage(source) && livingSource.getMainHandItem().isEmpty()) {
+                var playerData = MKCore.getPlayerOrThrow(serverPlayer);
+                playerData.getSkills().tryScaledIncreaseSkill(MKAttributes.HAND_TO_HAND, 0.5);
             }
         }
 
         // Living is victim
-        MKCore.getEntityData(livingTarget).ifPresent(targetData ->
-                SpellTriggers.ENTITY_HURT.onEntityHurtLiving(event, source, targetData));
+        var targetData = MKCore.getEntityDataOrThrow(livingTarget);
+        SpellTriggers.ENTITY_HURT.onEntityHurtLiving(event, source, targetData);
     }
 
     private static boolean canBlock(DamageSource source, LivingEntity entity) {
@@ -77,9 +77,7 @@ public class CombatEventHandler {
         if (target.level().isClientSide)
             return;
 
-        IMKEntityData targetData = MKCore.getEntityDataOrNull(target);
-        if (targetData == null)
-            return;
+        IMKEntityData targetData = MKCore.getEntityDataOrThrow(target);
 
         DamageSource dmgSource = event.getSource();
         Entity source = dmgSource.getEntity();
@@ -141,30 +139,29 @@ public class CombatEventHandler {
     @SubscribeEvent
     public static void onArrowImpact(ProjectileImpactEvent arrowEvent) {
         Entity shooter = arrowEvent.getProjectile().getOwner(); // getShooter
-        if (shooter != null && arrowEvent.getProjectile() instanceof AbstractArrow) {
-            MKCore.getEntityData(shooter).ifPresent(cap -> {
-                if (arrowEvent.getRayTraceResult().getType() == HitResult.Type.BLOCK) {
-                    cap.getCombatExtension().projectileMiss();
-                } else {
-                    cap.getCombatExtension().recordProjectileHit();
-                }
-            });
+        if (shooter instanceof LivingEntity livingShooter && arrowEvent.getProjectile() instanceof AbstractArrow) {
+            IMKEntityData entityData = MKCore.getEntityDataOrThrow(livingShooter);
+            if (arrowEvent.getRayTraceResult().getType() == HitResult.Type.BLOCK) {
+                entityData.getCombatExtension().projectileMiss();
+            } else {
+                entityData.getCombatExtension().recordProjectileHit();
+            }
         }
     }
 
     @SubscribeEvent
     public static void onEntityDeath(LivingDeathEvent event) {
-        MKCore.getEntityData(event.getEntity()).ifPresent(entityData ->
-                entityData.getAbilityExecutor().interruptCast(CastInterruptReason.Death));
+        var victimData = MKCore.getEntityDataOrThrow(event.getEntity());
+        victimData.getAbilityExecutor().interruptCast(CastInterruptReason.Death);
 
         DamageSource source = event.getSource();
         if (source.getEntity() instanceof LivingEntity killer) {
             if (killer.level().isClientSide) {
                 return;
             }
-            MKCore.getEntityData(killer).ifPresent(killerData -> {
-                SpellTriggers.LIVING_KILL_ENTITY.onEntityDeath(event, source, killerData);
-            });
+
+            var killerData = MKCore.getEntityDataOrThrow(killer);
+            SpellTriggers.LIVING_KILL_ENTITY.onEntityDeath(event, source, killerData);
         }
     }
 }

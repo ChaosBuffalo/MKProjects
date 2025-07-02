@@ -154,6 +154,7 @@
   "mkcore.gui.select_talent_tree": "Select a Talent Tree to inspect it.",
   "mkcore.gui.ultimates": "Ultimates",
   "mkcore.gui.xp_bar.name": "Next Talent:",
+  "mkcore.item_tooltip.grants_ability": "Grants Ability: %s",
   "mkcore.max_poise.description": "Max Poise: %.0f",
   "mkcore.particle_editor.add_track": "Add Track",
   "mkcore.particle_editor.choose_particle_type": "Choose Particle Type:",

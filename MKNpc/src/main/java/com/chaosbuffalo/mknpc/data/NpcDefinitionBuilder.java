@@ -10,9 +10,11 @@ import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
+import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.*;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
+import com.mojang.datafixers.util.Either;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -30,27 +32,27 @@ import java.util.Map;
 
 public class NpcDefinitionBuilder {
     private final ResourceLocation name;
-    private ResourceLocation parentName;
-    private Holder<EntityType<?>> entityType;
-    private final Map<ResourceLocation, NpcDefinitionOption> options = new HashMap<>();
+    private final Either<EntityType<?>, ResourceLocation> entityTypeOrParent;
+    private final Map<NpcOptionType<?>, NpcDefinitionOption> options = new HashMap<>();
     private float defaultDropChance;
-    private final ExperienceOption experienceOption;
 
-    public NpcDefinitionBuilder(ResourceLocation name) {
+    private NpcDefinitionBuilder(ResourceLocation name, Either<EntityType<?>, ResourceLocation> typeOrParent) {
         this.name = name;
+        this.entityTypeOrParent = typeOrParent;
         defaultDropChance = 0.0f;
-        experienceOption = new ExperienceOption(10);
-        index(experienceOption);
+        xp(10);
     }
 
-    public NpcDefinitionBuilder type(Holder<EntityType<?>> entityType) {
-        this.entityType = entityType;
-        return this;
+    public NpcDefinitionBuilder(ResourceLocation name, EntityType<?> entityType) {
+        this(name, Either.left(entityType));
     }
 
-    public NpcDefinitionBuilder parent(ResourceLocation parentName) {
-        this.parentName = parentName;
-        return this;
+    public NpcDefinitionBuilder(ResourceLocation name, Holder<EntityType<?>> entityType) {
+        this(name, entityType.value());
+    }
+
+    public NpcDefinitionBuilder(ResourceLocation name, ResourceLocation parentType) {
+        this(name, Either.right(parentType));
     }
 
     public NpcDefinitionBuilder faction(ResourceKey<MKFaction> faction) {
@@ -60,7 +62,7 @@ public class NpcDefinitionBuilder {
     }
 
     public NpcDefinitionBuilder attribute(Holder<Attribute> attribute, double value) {
-        AttributesOption opt = (AttributesOption) options.computeIfAbsent(AttributesOption.NAME,
+        AttributesOption opt = (AttributesOption) options.computeIfAbsent(NpcOptionTypes.ATTRIBUTES.get(),
                 key -> new AttributesOption());
         opt.addAttributeEntry(new NpcAttributeEntry(attribute, value));
         return this;
@@ -104,7 +106,7 @@ public class NpcDefinitionBuilder {
     }
 
     public NpcDefinitionBuilder equip(EquipmentSlot slot, ItemStack stack, double weight, float dropChance) {
-        EquipmentOption opt = (EquipmentOption) options.computeIfAbsent(EquipmentOption.NAME,
+        EquipmentOption opt = (EquipmentOption) options.computeIfAbsent(NpcOptionTypes.EQUIPMENT.get(),
                 key -> new EquipmentOption());
         opt.addItemChoice(slot, new NpcItemChoice(stack, weight, dropChance));
         return this;
@@ -166,14 +168,14 @@ public class NpcDefinitionBuilder {
     }
 
     public NpcDefinitionBuilder ghost(float translucency) {
-        GhostOption opt = (GhostOption) options.computeIfAbsent(GhostOption.NAME,
+        GhostOption opt = (GhostOption) options.computeIfAbsent(NpcOptionTypes.GHOST.get(),
                 key -> new GhostOption());
         opt.setGhostTranslucency(translucency);
         return this;
     }
 
     public NpcDefinitionBuilder ghost(float translucency, float armorTranslucency) {
-        GhostOption opt = (GhostOption) options.computeIfAbsent(GhostOption.NAME,
+        GhostOption opt = (GhostOption) options.computeIfAbsent(NpcOptionTypes.GHOST.get(),
                 key -> new GhostOption());
         opt.setGhostTranslucency(translucency);
         opt.setArmorTranslucency(armorTranslucency);
@@ -185,7 +187,7 @@ public class NpcDefinitionBuilder {
     }
 
     public NpcDefinitionBuilder ability(Holder<MKAbility> ability, int priority, double chance) {
-        AbilitiesOption opt = (AbilitiesOption) options.computeIfAbsent(AbilitiesOption.NAME,
+        AbilitiesOption opt = (AbilitiesOption) options.computeIfAbsent(NpcOptionTypes.ABILITIES.get(),
                 key -> new AbilitiesOption());
         opt.withAbilityOption(ability.value(), priority, chance);
         return this;
@@ -216,7 +218,7 @@ public class NpcDefinitionBuilder {
     }
 
     public NpcDefinitionBuilder trains(Holder<MKAbility> ability, AbilityTrainingRequirement... requirements) {
-        AbilityTrainingOption opt = (AbilityTrainingOption) options.computeIfAbsent(AbilityTrainingOption.NAME,
+        AbilityTrainingOption opt = (AbilityTrainingOption) options.computeIfAbsent(NpcOptionTypes.ABILITY_TRAINING.get(),
                 key -> new AbilityTrainingOption());
         opt.withTrainingOption(ability, requirements);
         return this;
@@ -245,28 +247,28 @@ public class NpcDefinitionBuilder {
     }
 
     public NpcDefinitionBuilder loot(LootSlot slot, ResourceLocation lootTier, double weight) {
-        ExtraLootOption opt = (ExtraLootOption) options.computeIfAbsent(ExtraLootOption.NAME,
+        ExtraLootOption opt = (ExtraLootOption) options.computeIfAbsent(NpcOptionTypes.EXTRA_LOOT.get(),
                 key -> new ExtraLootOption());
         opt.withLootOptions(new LootOptionEntry(lootTier, slot, weight));
         return this;
     }
 
     public NpcDefinitionBuilder lootDropChances(int chances) {
-        ExtraLootOption opt = (ExtraLootOption) options.computeIfAbsent(ExtraLootOption.NAME,
+        ExtraLootOption opt = (ExtraLootOption) options.computeIfAbsent(NpcOptionTypes.EXTRA_LOOT.get(),
                 key -> new ExtraLootOption());
         opt.withDropChances(chances);
         return this;
     }
 
     public NpcDefinitionBuilder noLootChance(double chance) {
-        ExtraLootOption opt = (ExtraLootOption) options.computeIfAbsent(ExtraLootOption.NAME,
+        ExtraLootOption opt = (ExtraLootOption) options.computeIfAbsent(NpcOptionTypes.EXTRA_LOOT.get(),
                 key -> new ExtraLootOption());
         opt.withNoLootChance(chance);
         return this;
     }
 
     public NpcDefinitionBuilder noLootChanceIncrease(double chance) {
-        ExtraLootOption opt = (ExtraLootOption) options.computeIfAbsent(ExtraLootOption.NAME,
+        ExtraLootOption opt = (ExtraLootOption) options.computeIfAbsent(NpcOptionTypes.EXTRA_LOOT.get(),
                 key -> new ExtraLootOption());
         opt.withNoLootIncrease(chance);
         return this;
@@ -279,12 +281,14 @@ public class NpcDefinitionBuilder {
     }
 
     public NpcDefinitionBuilder xp(int value) {
-        experienceOption.setBonusXp(value);
+        var opt = (ExperienceOption) options.computeIfAbsent(NpcOptionTypes.EXPERIENCE.get(),
+                key -> new ExperienceOption(0));
+        opt.setBonusXp(value);
         return this;
     }
 
     public NpcDefinitionBuilder bossStage(BossStage stage) {
-        BossStageOption opt = (BossStageOption) options.computeIfAbsent(BossStageOption.NAME,
+        BossStageOption opt = (BossStageOption) options.computeIfAbsent(NpcOptionTypes.BOSS_STAGE.get(),
                 key -> new BossStageOption());
         opt.withStage(stage);
         return this;
@@ -297,17 +301,10 @@ public class NpcDefinitionBuilder {
     }
 
     protected void index(NpcDefinitionOption option) {
-        options.put(option.getName(), option);
+        options.put(option.getType(), option);
     }
 
     public NpcDefinition build() {
-        if (parentName == null && entityType == null) {
-            throw new IllegalArgumentException("You must specify either parent or entity type");
-        }
-        var def = new NpcDefinition(name, entityType.getKey().location(), parentName);
-        for (var entry : options.entrySet()) {
-            def.addOption(entry.getValue());
-        }
-        return def;
+        return new NpcDefinition(name, entityTypeOrParent, options);
     }
 }

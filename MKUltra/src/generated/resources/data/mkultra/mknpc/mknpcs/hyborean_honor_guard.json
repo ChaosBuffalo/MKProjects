@@ -3,7 +3,6 @@
   "name": "mkultra:hyborean_honor_guard",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:natures_remedy",
@@ -18,7 +17,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -35,7 +33,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "feet": [
           {
@@ -118,32 +115,25 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 65
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkfaction:undead"
     },
     "mknpc:mk_combo": {
-      "type": "mknpc:mk_combo",
       "cooldown": 30,
       "count": 4
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.0
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Undying Honor Guard"
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "honor_guard"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:one_hand_blunt",
         "mkcore:one_hand_pierce",

@@ -3,7 +3,6 @@
   "name": "mkultra:skeletal_trooper_mage",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:fireball",
@@ -33,7 +32,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -50,7 +48,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "mainhand": [
           {
@@ -65,27 +62,21 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 15
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:imperial_dead"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.0
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Skeletal Magus"
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "destroyed_skeletal_mage"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",

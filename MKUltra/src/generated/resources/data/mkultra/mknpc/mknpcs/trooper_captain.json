@@ -3,7 +3,6 @@
   "name": "mkultra:trooper_captain",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:heal",
@@ -23,7 +22,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -40,7 +38,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "mainhand": [
           {
@@ -71,11 +68,9 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 25
     },
     "mknpc:extra_loot": {
-      "type": "mknpc:extra_loot",
       "dropChances": 2,
       "lootOptions": [
         {
@@ -92,37 +87,29 @@
       "noLootIncrease": 0.25
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:imperial_dead"
     },
     "mknpc:faction_name": {
-      "type": "mknpc:faction_name",
       "hasLastName": true,
       "title": "Captain"
     },
     "mknpc:lunge_speed": {
-      "type": "mknpc:lunge_speed",
       "lungeSpeed": 1.0
     },
     "mknpc:mk_combo": {
-      "type": "mknpc:mk_combo",
       "cooldown": 10,
       "count": 3
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.2
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "skeletal_trooper"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:one_hand_blunt",
         "mkcore:one_hand_pierce",

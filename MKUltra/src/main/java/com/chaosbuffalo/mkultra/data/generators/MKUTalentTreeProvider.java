@@ -11,6 +11,7 @@ import com.chaosbuffalo.mkcore.data.providers.TalentTreeProvider;
 import com.chaosbuffalo.mkcore.init.CoreTalents;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUTalents;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
@@ -23,8 +24,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class MKUTalentTreeProvider extends TalentTreeProvider {
 
-    public MKUTalentTreeProvider(DataGenerator generator) {
-        super(generator, MKUltra.MODID);
+    public MKUTalentTreeProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> registries) {
+        super(generator, registries, MKUltra.MODID);
     }
 
 

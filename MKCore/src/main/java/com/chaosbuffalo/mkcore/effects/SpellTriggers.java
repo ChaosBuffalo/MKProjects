@@ -53,9 +53,7 @@ public class SpellTriggers {
         }
 
         protected void runTrigger(LivingEntity entity, String tag, BiConsumer<TTrigger, MKActiveEffect> consumer) {
-            IMKEntityData entityData = MKCore.getEntityDataOrNull(entity);
-            if (entityData == null)
-                return;
+            IMKEntityData entityData = MKCore.getEntityDataOrThrow(entity);
             runTrigger(entityData, tag, consumer);
         }
 

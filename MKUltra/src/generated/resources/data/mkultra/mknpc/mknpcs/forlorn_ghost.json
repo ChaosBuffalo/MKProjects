@@ -3,7 +3,6 @@
   "name": "mkultra:forlorn_ghost",
   "options": {
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -20,37 +19,29 @@
       ]
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 10
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:see_of_solang"
     },
     "mknpc:ghost": {
-      "type": "mknpc:ghost",
       "armor_translucency": 0.7,
       "ghost_armor": true,
       "ghost_translucency": 0.7
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.0
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Forlorn Ghost"
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "ghost_1"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:hand_to_hand",
         "mkcore:one_hand_blunt",

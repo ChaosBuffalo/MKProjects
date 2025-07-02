@@ -3,7 +3,6 @@
   "name": "mkultra:themcromancer_librarian",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:shadow_bolt_dual_shotgun",
@@ -28,7 +27,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -45,7 +43,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "chest": [
           {
@@ -100,11 +97,9 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 100
     },
     "mknpc:extra_loot": {
-      "type": "mknpc:extra_loot",
       "lootOptions": [
         {
           "loot_slot": "mkweapons:main_hand",
@@ -115,27 +110,21 @@
       "noLootChance": 0.25
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:themcromancers"
     },
     "mknpc:faction_name": {
-      "type": "mknpc:faction_name",
       "title": "Librarian"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 0.92
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "default"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:conjuration",
         "mkcore:necromancy"

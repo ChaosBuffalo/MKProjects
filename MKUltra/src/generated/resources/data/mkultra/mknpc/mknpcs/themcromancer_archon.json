@@ -3,7 +3,6 @@
   "name": "mkultra:themcromancer_archon",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:shadow_bolt_dual_shotgun",
@@ -33,7 +32,6 @@
       ]
     },
     "mknpc:ability_trainings": {
-      "type": "mknpc:ability_trainings",
       "abilities": [
         {
           "ability": "mkultra:necrotide_warrior_summon",
@@ -83,7 +81,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -100,11 +97,9 @@
       ]
     },
     "mknpc:dialogue": {
-      "type": "mknpc:dialogue",
       "dialogueId": "mkultra:necro_default"
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "chest": [
           {
@@ -159,11 +154,9 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 150
     },
     "mknpc:extra_loot": {
-      "type": "mknpc:extra_loot",
       "lootOptions": [
         {
           "loot_slot": "mkweapons:rings",
@@ -179,33 +172,26 @@
       "noLootChance": 0.25
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:themcromancers"
     },
     "mknpc:faction_name": {
-      "type": "mknpc:faction_name",
       "title": "Archon"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.0
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:offer_quests": {
-      "type": "mknpc:offer_quests",
       "questIds": [
         "mkultra:necromancer_unlock_chain"
       ]
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "default"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:conjuration",
         "mkcore:necromancy"

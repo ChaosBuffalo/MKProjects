@@ -3,7 +3,6 @@
   "name": "mkultra:green_lady",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:skin_like_wood",
@@ -33,7 +32,6 @@
       ]
     },
     "mknpc:ability_trainings": {
-      "type": "mknpc:ability_trainings",
       "abilities": [
         {
           "ability": "mkultra:skin_like_wood",
@@ -83,7 +81,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -100,41 +97,32 @@
       ]
     },
     "mknpc:dialogue": {
-      "type": "mknpc:dialogue",
       "dialogueId": "mkultra:open_abilities"
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 250
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:green_knights"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.1
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Green Lady"
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:offer_quests": {
-      "type": "mknpc:offer_quests",
       "questIds": [
         "mkultra:intro_quest"
       ]
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "green_lady"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:alteration",
         "mkcore:restoration"

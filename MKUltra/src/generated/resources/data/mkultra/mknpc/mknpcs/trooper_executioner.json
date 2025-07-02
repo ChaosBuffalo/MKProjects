@@ -3,7 +3,6 @@
   "name": "mkultra:trooper_executioner",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:furious_brooding",
@@ -23,7 +22,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -40,7 +38,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "mainhand": [
           {
@@ -55,11 +52,9 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 20
     },
     "mknpc:extra_loot": {
-      "type": "mknpc:extra_loot",
       "dropChances": 2,
       "lootOptions": [
         {
@@ -76,35 +71,27 @@
       "noLootIncrease": 0.25
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:imperial_dead"
     },
     "mknpc:lunge_speed": {
-      "type": "mknpc:lunge_speed",
       "lungeSpeed": 0.75
     },
     "mknpc:mk_combo": {
-      "type": "mknpc:mk_combo",
       "count": 3
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.0
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Trooper Executioner"
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "destroyed_skeletal_trooper"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:hand_to_hand",
         "mkcore:one_hand_blunt",

@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkweapons.items;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
@@ -181,11 +180,6 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
         for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
             effect.addInformation(stack, player, tooltip);
         }
-        MKAbility ability = getAbility(stack);
-        if (ability != null) {
-            tooltip.add(Component.translatable("mkweapons.grants_ability",
-                    ability.getAbilityName()).withStyle(ChatFormatting.GOLD));
-        }
     }
 
 
@@ -196,17 +190,6 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
             return ConcatenatedListView.of(weaponEffects, stackEffects.effects());
         } else {
             return weaponEffects;
-        }
-    }
-
-    @Nullable
-    @Override
-    public MKAbility getAbility(ItemStack itemStack) {
-        var ability = itemStack.get(WeaponsComponents.WEAPON_ABILITY);
-        if (ability != null) {
-            return ability.abilityHolder().value();
-        } else {
-            return null;
         }
     }
 

@@ -26,8 +26,7 @@ public class GreenKnightNpcs {
     }
 
     static NpcDefinition generateGreenLadyGuard1() {
-        return new NpcDefinitionBuilder(MKUltra.id("green_lady_guard_1"))
-                .type(MKUEntities.ORC_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("green_lady_guard_1"), MKUEntities.ORC_TYPE)
                 .faction(MKUFactions.GREEN_KNIGHT_FACTION_NAME)
                 .name("Green Knight")
                 .size(1.1f)
@@ -54,8 +53,7 @@ public class GreenKnightNpcs {
     }
 
     static NpcDefinition generateGreenLadyGuard2() {
-        return new NpcDefinitionBuilder(MKUltra.id("green_lady_guard_2"))
-                .type(MKUEntities.ORC_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("green_lady_guard_2"), MKUEntities.ORC_TYPE)
                 .faction(MKUFactions.GREEN_KNIGHT_FACTION_NAME)
                 .name("Green Guardian")
                 .size(1.1f)
@@ -82,8 +80,7 @@ public class GreenKnightNpcs {
     }
 
     static NpcDefinition generateGreenLady() {
-        return new NpcDefinitionBuilder(MKUltra.id("green_lady"))
-                .type(MKUEntities.ORC_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("green_lady"), MKUEntities.ORC_TYPE)
                 .faction(MKUFactions.GREEN_KNIGHT_FACTION_NAME)
                 .name("Green Lady")
                 .size(1.1f)
@@ -110,8 +107,7 @@ public class GreenKnightNpcs {
     }
 
     static NpcDefinition generateGreenSmith() {
-        return new NpcDefinitionBuilder(MKUltra.id("green_smith"))
-                .type(MKUEntities.ORC_TYPE)
+        return new NpcDefinitionBuilder(MKUltra.id("green_smith"), MKUEntities.ORC_TYPE)
                 .faction(MKUFactions.GREEN_KNIGHT_FACTION_NAME)
                 .name("Green Smith")
                 .size(1.5f)

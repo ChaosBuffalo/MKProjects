@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
-import com.chaosbuffalo.mkweapons.data.LootTierProvider;
+import com.chaosbuffalo.mkweapons.data.providers.LootTierProvider;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.OnMeleeProcEffect;
 import com.chaosbuffalo.mkweapons.items.effects.accesory.ResetCooldownOnCastEffect;
@@ -18,6 +18,7 @@ import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotManager;
 import com.chaosbuffalo.mkweapons.items.randomization.templates.RandomizationTemplate;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.network.chat.Component;
@@ -31,8 +32,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class MKULootTierProvider extends LootTierProvider {
 
-    public MKULootTierProvider(DataGenerator generator) {
-        super(generator, MKUltra.MODID);
+    public MKULootTierProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> registries) {
+        super(generator, registries, MKUltra.MODID);
     }
 
 

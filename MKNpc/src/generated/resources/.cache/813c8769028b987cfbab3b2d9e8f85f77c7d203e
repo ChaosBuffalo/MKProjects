@@ -1,5 +1,5 @@
-// 1.21.1	2024-09-02T19:06:19.928413	Npc Definitions: mknpc
-ad621ddcb47c6f31892f7280944cff0ccd04b098 data/mknpc/mknpc/mknpcs/test.json
-6b72c14a90b065c2f7fa3c1360e5676e123f2b4e data/mknpc/mknpc/mknpcs/test2.json
-36fb024a182b81c67b732481ccc595577e530d93 data/mknpc/mknpc/mknpcs/test_ghost.json
-831c092b9eec2b123c0e70bd5f27d9fac01ec722 data/mknpc/mknpc/mknpcs/test_skeleton.json
+// 1.21.1	2025-07-01T01:27:19.0459449	Npc Definitions: mknpc
+4283ac02593e4ed2e1602d28af2470a2270a1725 data/mknpc/mknpc/mknpcs/test.json
+c65758de1425f3f61892810ceba9a9882fd2bfc4 data/mknpc/mknpc/mknpcs/test2.json
+1be1c5a6e5b47db3aecda7cf687a9dc6d0a4b26e data/mknpc/mknpc/mknpcs/test_ghost.json
+e554f330b2d07aba4def50a982ed7a26c9dacfb2 data/mknpc/mknpc/mknpcs/test_skeleton.json

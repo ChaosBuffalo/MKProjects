@@ -16,18 +16,15 @@ import java.util.function.Function;
 
 public abstract class QuestDefinitionProvider extends MKDataProvider {
 
-    CompletableFuture<HolderLookup.Provider> provider;
-
     public QuestDefinitionProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> provider, String modId) {
-        super(generator, modId, "Quest Definitions");
-        this.provider = provider;
+        super(generator, provider, modId, "Quest Definitions");
     }
 
     public CompletableFuture<?> writeDefinition(QuestDefinition definition, CachedOutput pOutput) {
         Path outputFolder = this.generator.getPackOutput().getOutputFolder();
         ResourceLocation key = definition.getName();
         Path path = outputFolder.resolve("data/" + key.getNamespace() + "/mkquests/" + key.getPath() + ".json");
-        return provider.thenCompose(registries -> {
+        return registries.thenCompose(registries -> {
             JsonElement element =  definition.serialize(JsonOps.INSTANCE, registries);
             return DataProvider.saveStable(pOutput, element, path);
         });
@@ -36,7 +33,7 @@ public abstract class QuestDefinitionProvider extends MKDataProvider {
     public CompletableFuture<?> writeDefinition(Function<HolderLookup.Provider, QuestDefinition> definitionProvider, CachedOutput pOutput) {
         Path outputFolder = this.generator.getPackOutput().getOutputFolder();
 
-        return provider.thenCompose(registries -> {
+        return registries.thenCompose(registries -> {
             var definition = definitionProvider.apply(registries);
             var regOps = registries.createSerializationContext(JsonOps.INSTANCE);
             ResourceLocation key = definition.getName();

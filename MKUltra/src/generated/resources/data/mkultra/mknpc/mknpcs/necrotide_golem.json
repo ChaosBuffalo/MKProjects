@@ -3,7 +3,6 @@
   "name": "mkultra:necrotide_golem",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:shadow_bolt",
@@ -18,7 +17,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -35,11 +33,9 @@
       ]
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 500
     },
     "mknpc:extra_loot": {
-      "type": "mknpc:extra_loot",
       "lootOptions": [
         {
           "loot_slot": "mkweapons:rings",
@@ -53,27 +49,21 @@
       ]
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:necrotide_cultists"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.25
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "A Necrotide Construction"
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "necrotide_golem"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:conjuration",
         "mkcore:necromancy"

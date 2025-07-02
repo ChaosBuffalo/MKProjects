@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.events;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.client.gui.IPlayerDataAwareScreen;
 import com.chaosbuffalo.mkcore.client.gui.ParticleEditorScreen;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
@@ -11,6 +12,8 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
+import com.chaosbuffalo.mkcore.item.CoreItemComponents;
+import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
 import com.chaosbuffalo.mkcore.network.ExecuteActiveAbilityPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.targeting_api.Targeting;
@@ -18,7 +21,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -26,6 +28,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
@@ -196,12 +199,22 @@ public class ClientEventHandler {
     }
 
     @SubscribeEvent
-    public static void doArmorClassTooltip(ItemTooltipEvent event) {
+    public static void addCustomTooltipItems(ItemTooltipEvent event) {
         // Don't do anything during the initial search tree population
         if (event.getEntity() == null)
             return;
 
         addArmorClassTooltip(event);
+        addGrantedAbilityTooltip(event.getItemStack(), event.getToolTip());
+    }
+
+    private static void addGrantedAbilityTooltip(ItemStack stack, List<Component> tooltip) {
+        ItemGrantedAbility itemAbility = stack.get(CoreItemComponents.ITEM_ABILITY);
+        if (itemAbility != null) {
+            MKAbility ability = itemAbility.ability().value();
+            tooltip.add(Component.translatable("mkcore.item_tooltip.grants_ability",
+                    ability.getAbilityName()).withStyle(ChatFormatting.GOLD));
+        }
     }
 
     private static void addArmorClassTooltip(ItemTooltipEvent event) {
@@ -216,17 +229,18 @@ public class ClientEventHandler {
 
             event.getToolTip().add(Component.translatable("mkcore.gui.item.armor_class.name")
                     .append(": ")
-                    .append(armorClass.getName()));
+                    .append(armorClass.getName())
+                    .withStyle(ChatFormatting.GRAY));
 
             if (MKConfig.CLIENT.showArmorClassEffectsOnTooltip.get()) {
                 List<Component> tooltip = event.getToolTip();
-                if (Screen.hasShiftDown()) {
+                if (event.getFlags().hasShiftDown()) {
                     armorClass.getPositiveModifierMap(armorItem.getEquipmentSlot())
                             .forEach(((attribute, modifier) -> addArmorClassAttributeToTooltip(tooltip, attribute, modifier, ChatFormatting.GREEN, event.getFlags())));
                     armorClass.getNegativeModifierMap(armorItem.getEquipmentSlot())
                             .forEach(((attribute, modifier) -> addArmorClassAttributeToTooltip(tooltip, attribute, modifier, ChatFormatting.RED, event.getFlags())));
                 } else {
-                    tooltip.add(Component.translatable("mkcore.gui.item.armor_class.effect_prompt"));
+                    tooltip.add(Component.translatable("mkcore.gui.item.armor_class.effect_prompt").withStyle(ChatFormatting.DARK_GRAY));
                 }
             }
         }

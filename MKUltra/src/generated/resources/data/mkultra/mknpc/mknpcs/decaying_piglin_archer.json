@@ -3,7 +3,6 @@
   "name": "mkultra:decaying_piglin_archer",
   "options": {
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -20,7 +19,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "mainhand": [
           {
@@ -35,27 +33,21 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 5
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:imperial_dead"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 0.85
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Shambling Archer"
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "zombie_pig"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "major_skills": [
         "mkcore:marksmanship"
       ],

@@ -3,7 +3,6 @@
   "name": "mkultra:burning_skeleton",
   "options": {
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -32,7 +31,6 @@
       ]
     },
     "mknpc:boss_stage": {
-      "type": "mknpc:boss_stage",
       "stages": [
         {
           "options": [
@@ -83,7 +81,6 @@
       ]
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "mainhand": [
           {
@@ -98,11 +95,9 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 50
     },
     "mknpc:extra_loot": {
-      "type": "mknpc:extra_loot",
       "lootOptions": [
         {
           "loot_slot": "mkweapons:main_hand",
@@ -122,23 +117,18 @@
       "noLootChance": 0.1
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:hyborean_dead"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 1.0
     },
     "mknpc:name": {
-      "type": "mknpc:name",
       "name": "Burning Revenant"
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:particle_effects": {
-      "type": "mknpc:particle_effects",
       "instances": [
         {
           "type": "mkcore:effect_instance.bone",
@@ -149,11 +139,9 @@
       ]
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "burning_skeleton"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",

@@ -3,7 +3,6 @@
   "name": "mkultra:nether_mage_initiate",
   "options": {
     "mknpc:abilities": {
-      "type": "mknpc:abilities",
       "abilities": [
         {
           "abilityId": "mkultra:ember",
@@ -23,7 +22,6 @@
       ]
     },
     "mknpc:ability_trainings": {
-      "type": "mknpc:ability_trainings",
       "abilities": [
         {
           "ability": "mkultra:ember",
@@ -46,7 +44,6 @@
       ]
     },
     "mknpc:attributes": {
-      "type": "mknpc:attributes",
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
@@ -63,11 +60,9 @@
       ]
     },
     "mknpc:dialogue": {
-      "type": "mknpc:dialogue",
       "dialogueId": "mkultra:intro_nether_mage_initiate"
     },
     "mknpc:equipment": {
-      "type": "mknpc:equipment",
       "equipment": {
         "mainhand": [
           {
@@ -82,37 +77,29 @@
       }
     },
     "mknpc:experience": {
-      "type": "mknpc:experience",
       "experience": 10
     },
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkultra:nether_mages"
     },
     "mknpc:faction_name": {
-      "type": "mknpc:faction_name",
       "title": "Initiate"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 0.9
     },
     "mknpc:notable": {
-      "type": "mknpc:notable",
       "isNotable": true
     },
     "mknpc:offer_quests": {
-      "type": "mknpc:offer_quests",
       "questIds": [
         "mkultra:nether_mage_intro"
       ]
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "nether_mage_1"
     },
     "mknpc:skills": {
-      "type": "mknpc:skills",
       "minor_skills": [
         "mkcore:abjuration",
         "mkcore:alteration",

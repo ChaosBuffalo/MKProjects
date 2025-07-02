@@ -3,15 +3,12 @@
   "name": "mknpc:test_skeleton",
   "options": {
     "mknpc:faction": {
-      "type": "mknpc:faction",
       "factionId": "mkfaction:undead"
     },
     "mknpc:mk_size": {
-      "type": "mknpc:mk_size",
       "scale": 0.25
     },
     "mknpc:render_group": {
-      "type": "mknpc:render_group",
       "renderGroup": "wither_king"
     }
   }

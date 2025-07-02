@@ -2,9 +2,9 @@ package com.chaosbuffalo.mkweapons.items.randomization.options;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.item.CoreItemComponents;
+import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.components.WeaponAbilityComponent;
-import com.chaosbuffalo.mkweapons.components.WeaponsComponents;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.IRandomizationSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotManager;
@@ -43,6 +43,6 @@ public class AddAbilityOption extends BaseRandomizationOption {
 
     @Override
     public void applyToItemStackForSlot(ItemStack stack, LootSlot slot, int slotIndex, double difficulty) {
-        stack.set(WeaponsComponents.WEAPON_ABILITY, new WeaponAbilityComponent(ability));
+        stack.set(CoreItemComponents.ITEM_ABILITY, new ItemGrantedAbility(ability));
     }
 }

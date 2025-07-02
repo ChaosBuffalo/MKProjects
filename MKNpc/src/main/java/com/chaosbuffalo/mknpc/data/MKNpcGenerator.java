@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.data.generators.tags.NpcBiomeTagsProvider;
 import com.chaosbuffalo.mknpc.data.generators.tags.NpcEntityTypeTagsProvider;
 import com.chaosbuffalo.mknpc.data.generators.tags.NpcStructureTagsProvider;
 import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
+import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
@@ -25,6 +26,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.util.InclusiveRange;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
@@ -82,8 +84,7 @@ public class MKNpcGenerator {
         }
 
         private NpcDefinition generateTestSkeleton() {
-            NpcDefinition def = new NpcDefinition(MKNpc.id("test_skeleton"),
-                    MKNpc.id("skeleton"));
+            NpcDefinition def = new NpcDefinition(MKNpc.id("test_skeleton"), MKNpcEntityTypes.SKELETON_TYPE);
             def.addOption(new FactionOption(MKFactions.UNDEAD));
             def.addOption(new MKSizeOption(0.25f));
             def.addOption(new RenderGroupOption("wither_king"));
@@ -91,8 +92,7 @@ public class MKNpcGenerator {
         }
 
         private NpcDefinition generateTestGhostSkeleton() {
-            NpcDefinition def = new NpcDefinition(MKNpc.id("test_ghost"),
-                    MKNpc.id("skeleton"));
+            NpcDefinition def = new NpcDefinition(MKNpc.id("test_ghost"), MKNpcEntityTypes.SKELETON_TYPE);
             def.addOption(new FactionOption(MKFactions.UNDEAD));
             def.addOption(new EquipmentOption()
                     .addItemChoice(EquipmentSlot.CHEST, new NpcItemChoice(new ItemStack(Items.IRON_CHESTPLATE), 5, 1.1f))
@@ -101,16 +101,17 @@ public class MKNpcGenerator {
             return def;
         }
 
+        private static final ResourceLocation TEST_LADY_ID = MKNpc.id("test");
+
         private NpcDefinition generateTestLady() {
-            NpcDefinition def = new NpcDefinition(MKNpc.id("test"),
-                    MKNpc.id("green_lady"));
+            NpcDefinition def = new NpcDefinition(TEST_LADY_ID, EntityType.VILLAGER);
             def.addOption(new NameOption("Test Lady"));
             def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 100)));
             def.addOption(new FactionOption(MKFactions.VILLAGERS));
             def.addOption(new DialogueOption(ResourceLocation.fromNamespaceAndPath(MKChat.MODID, "test")));
             def.addOption(new EquipmentOption()
                     .addItemChoice(EquipmentSlot.MAINHAND, new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(
-                             ResourceLocation.fromNamespaceAndPath(MKWeapons.MODID, "katana_iron"))), 5, 1.1f))
+                            ResourceLocation.fromNamespaceAndPath(MKWeapons.MODID, "katana_iron"))), 5, 1.1f))
                     .addItemChoice(EquipmentSlot.MAINHAND, new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(
                             ResourceLocation.fromNamespaceAndPath(MKWeapons.MODID, "dagger_iron"))), 10, 1.1f))
             );
@@ -118,7 +119,7 @@ public class MKNpcGenerator {
         }
 
         private NpcDefinition generateTestLady2() {
-            NpcDefinition def = new NpcDefinition(MKNpc.id("test2"), Optional.of(MKNpc.id("test")));
+            NpcDefinition def = NpcDefinition.derived(MKNpc.id("test2"), TEST_LADY_ID);
             def.addOption(new FactionOption(MKFactions.UNDEAD));
             def.addOption(new NotableOption());
             def.addOption(new FactionNameOption().setHasLastName(true).setTitle("Chief"));
