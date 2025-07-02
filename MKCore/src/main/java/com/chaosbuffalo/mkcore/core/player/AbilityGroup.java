@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
-import com.chaosbuffalo.mkcore.abilities.MKToggleAbility;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.sync.adapters.ResourceListUpdater;
@@ -149,13 +148,12 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
 
     protected void onAbilityAdded(MKAbilityInfo abilityInfo) {
         MKCore.LOGGER.debug("onAbilityAdded({})", abilityInfo);
+        abilityInfo.getAbility().onAbilityGroupAdded(playerData, abilityInfo);
     }
 
     protected void onAbilityRemoved(MKAbilityInfo abilityInfo) {
         MKCore.LOGGER.debug("onAbilityRemoved({})", abilityInfo);
-        if (abilityInfo.getAbility() instanceof MKToggleAbility toggleAbility) {
-            toggleAbility.removeEffect(playerData);
-        }
+        abilityInfo.getAbility().onAbilityGroupRemoved(playerData, abilityInfo);
     }
 
     private void setIndex(int index, ResourceLocation abilityId) {
@@ -272,17 +270,11 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     }
 
     protected void onPersonaActivatedAbility(@Nonnull MKAbilityInfo abilityInfo) {
-        if (abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
-            if (toggle.isEffectActive(playerData)) {
-                playerData.getAbilityExecutor().setToggleGroupAbility(toggle.getToggleGroupId(), toggle);
-            }
-        }
+        onAbilityAdded(abilityInfo);
     }
 
     protected void onPersonaDeactivatedAbility(@Nonnull MKAbilityInfo abilityInfo) {
-        if (abilityInfo.getAbility() instanceof MKToggleAbility toggle) {
-            toggle.removeEffect(playerData);
-        }
+        onAbilityRemoved(abilityInfo);
     }
 
     private void validateActiveAbilities() {

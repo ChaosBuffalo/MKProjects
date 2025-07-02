@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -32,7 +31,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.neoforged.neoforge.common.NeoForgeMod;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -386,5 +384,13 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     protected int getBuffDuration(IMKEntityData casterData, float level, int base, int scale) {
         int duration = Math.round((base + scale * level) * GameConstants.TICKS_PER_SECOND);
         return MKCombatFormulas.applyBuffDurationModifier(casterData, duration);
+    }
+
+    public void onAbilityGroupAdded(IMKEntityData targetData, MKAbilityInfo abilityInfo) {
+
+    }
+
+    public void onAbilityGroupRemoved(IMKEntityData targetData, MKAbilityInfo abilityInfo) {
+
     }
 }
