@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkweapons.items.weapon;
 
-import com.chaosbuffalo.mkcore.core.IMKAbilityProvider;
 import com.chaosbuffalo.mkcore.item.IMKEquipment;
 import com.chaosbuffalo.mkweapons.items.effects.IItemEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
@@ -10,7 +9,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
-public interface IMKWeapon extends IMKEquipment, IMKAbilityProvider {
+public interface IMKWeapon extends IMKEquipment {
 
     IMKTier getMKTier();
 

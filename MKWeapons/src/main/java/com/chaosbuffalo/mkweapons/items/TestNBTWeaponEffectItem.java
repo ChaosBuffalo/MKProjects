@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mkweapons.items;
 
+import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
 import com.chaosbuffalo.mkcore.test.MKTestAbilities;
 import com.chaosbuffalo.mkweapons.components.MeleeEffectsComponent;
-import com.chaosbuffalo.mkweapons.components.WeaponAbilityComponent;
 import com.chaosbuffalo.mkweapons.items.effects.melee.StunMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.google.common.collect.Lists;
@@ -29,7 +29,7 @@ public class TestNBTWeaponEffectItem extends Item {
             ItemStack offhand = playerIn.getOffhandItem();
             if (offhand.getItem() instanceof IMKMeleeWeapon) {
                 MeleeEffectsComponent.addEffect(offhand, new StunMeleeWeaponEffect(0.5, 2));
-                WeaponAbilityComponent.setAbility(offhand, MKTestAbilities.TEST_EMBER);
+                ItemGrantedAbility.setAbility(offhand, MKTestAbilities.TEST_EMBER);
                 ServerPlayer serverPlayer = (ServerPlayer) playerIn;
                 serverPlayer.connection.send(new ClientboundSetEquipmentPacket(playerIn.getId(),
                         Lists.newArrayList(Pair.of(EquipmentSlot.OFFHAND, playerIn.getOffhandItem()))));

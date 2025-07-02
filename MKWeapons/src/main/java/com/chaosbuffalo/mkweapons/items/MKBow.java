@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkweapons.items;
 
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
 import com.chaosbuffalo.mkweapons.components.RangedEffectsComponent;
@@ -138,17 +137,6 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
             return ConcatenatedListView.of(weaponEffects, stackEffects.effects());
         } else {
             return weaponEffects;
-        }
-    }
-
-    @Nullable
-    @Override
-    public MKAbility getAbility(ItemStack itemStack) {
-        var ability = itemStack.get(WeaponsComponents.WEAPON_ABILITY);
-        if (ability != null) {
-            return ability.abilityHolder().value();
-        } else {
-            return null;
         }
     }
 

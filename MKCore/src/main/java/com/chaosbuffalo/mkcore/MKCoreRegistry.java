@@ -12,6 +12,7 @@ import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.talents.MKTalent;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.init.*;
+import com.chaosbuffalo.mkcore.item.CoreItemComponents;
 import com.chaosbuffalo.mkcore.test.MKCoreTestItems;
 import com.chaosbuffalo.mkcore.test.MKCoreTestTalents;
 import com.chaosbuffalo.mkcore.test.MKTestAbilities;
@@ -120,6 +121,6 @@ public class MKCoreRegistry {
         AbilityClientStateTypes.register(modBus);
         MKAttributes.register(modBus);
         CoreAttachments.register(modBus);
-
+        CoreItemComponents.register(modBus);
     }
 }

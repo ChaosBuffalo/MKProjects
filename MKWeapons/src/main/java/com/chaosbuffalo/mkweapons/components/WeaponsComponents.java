@@ -31,11 +31,6 @@ public class WeaponsComponents {
                 return builder.persistent(AccessoryEffectsComponent.CODEC).networkSynchronized(AccessoryEffectsComponent.STREAM_CODEC);
             });
 
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<WeaponAbilityComponent>> WEAPON_ABILITY = COMPONENT_TYPES
-            .registerComponentType("weapon_ability", builder -> {
-                return builder.persistent(WeaponAbilityComponent.CODEC).networkSynchronized(WeaponAbilityComponent.STREAM_CODEC);
-            });
-
 
     public static void register(IEventBus modBus) {
         COMPONENT_TYPES.register(modBus);

@@ -2,15 +2,14 @@ package com.chaosbuffalo.mkcore.test;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
-import com.chaosbuffalo.mkcore.core.IMKAbilityProvider;
+import com.chaosbuffalo.mkcore.item.CoreItemComponents;
+import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.*;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.function.Supplier;
 
 public class MKCoreTestItems {
 
@@ -28,29 +27,20 @@ public class MKCoreTestItems {
             () -> new AbilityArmor(ArmorMaterials.IRON, ArmorItem.Type.BOOTS, new Item.Properties(), MKTestAbilities.TEST_EMBER));
 
 
-    public static class AbilityArmor extends ArmorItem implements IMKAbilityProvider {
-        private final Supplier<? extends MKAbility> ability;
+    public static class AbilityArmor extends ArmorItem {
 
-        public AbilityArmor(Holder<ArmorMaterial> materialIn, ArmorItem.Type slot, Properties builder, Supplier<? extends MKAbility> ability) {
-            super(materialIn, slot, builder);
-            this.ability = ability;
-        }
+        public AbilityArmor(Holder<ArmorMaterial> materialIn, ArmorItem.Type slot, Properties builder, Holder<MKAbility> ability) {
+            super(materialIn, slot, builder
+                    .component(CoreItemComponents.ITEM_ABILITY, new ItemGrantedAbility(ability)));
 
-        @Override
-        public MKAbility getAbility(ItemStack item) {
-            return ability.get();
         }
     }
 
-    public static class AbilitySword extends SwordItem implements IMKAbilityProvider {
+    public static class AbilitySword extends SwordItem {
 
         public AbilitySword() {
-            super(Tiers.IRON, (new Item.Properties()));
-        }
-
-        @Override
-        public MKAbility getAbility(ItemStack item) {
-            return MKTestAbilities.TEST_WHIRLWIND_BLADES.get();
+            super(Tiers.IRON, (new Item.Properties()
+                    .component(CoreItemComponents.ITEM_ABILITY, new ItemGrantedAbility(MKTestAbilities.TEST_WHIRLWIND_BLADES))));
         }
     }
 

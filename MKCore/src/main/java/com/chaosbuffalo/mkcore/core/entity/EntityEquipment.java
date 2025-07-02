@@ -13,12 +13,9 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.UUID;
-
 public class EntityEquipment {
 
     private final IMKEntityData entityData;
-    protected static final UUID UNARMED_SKILL_MODIFIER = UUID.fromString("bfd1de0f-440c-4029-bcbd-eb25dd89ee83");
     public static final ResourceLocation UNARMED_SKILL_ID = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "unarmed_skill_mod");
 
     protected static final float UNARMED_BASE_DAMAGE = 2.0f;
@@ -50,12 +47,10 @@ public class EntityEquipment {
 
     public void addUnarmedModifier() {
         AttributeInstance attr = entityData.getEntity().getAttribute(Attributes.ATTACK_DAMAGE);
-        if (attr != null) {
-            if (attr.getModifier(UNARMED_SKILL_ID) == null) {
-                float skillLevel = MKAbility.getSkillLevel(entityData.getEntity(), MKAttributes.HAND_TO_HAND);
-                attr.addTransientModifier(new AttributeModifier(UNARMED_SKILL_ID,
-                        skillLevel * UNARMED_BASE_DAMAGE, AttributeModifier.Operation.ADD_VALUE));
-            }
+        if (attr != null && !attr.hasModifier(UNARMED_SKILL_ID)) {
+            float skillLevel = MKAbility.getSkillLevel(entityData.getEntity(), MKAttributes.HAND_TO_HAND);
+            var modifier = new AttributeModifier(UNARMED_SKILL_ID, skillLevel * UNARMED_BASE_DAMAGE, AttributeModifier.Operation.ADD_VALUE);
+            attr.addOrUpdateTransientModifier(modifier);
         }
     }
 

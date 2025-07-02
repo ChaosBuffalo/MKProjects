@@ -22,8 +22,8 @@ import java.util.Map;
 
 public class ArmorClass {
 
-    public static final ResourceLocation ARMOR_CLASS_POSITIVES_ID = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "armor_class_positives");
-    public static final ResourceLocation ARMOR_CLASS_NEGATIVES_ID = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "armor_class_negatives");
+    public static final ResourceLocation ARMOR_CLASS_POSITIVES_ID = MKCore.id("armor_class_positives");
+    public static final ResourceLocation ARMOR_CLASS_NEGATIVES_ID = MKCore.id("armor_class_negatives");
 
     public static final ArmorClass ROBES = new ArmorClass(MKCore.makeRL("armor_class.robes"), CoreTags.Items.ROBES_ARMOR)
             .addPositiveEffect(Attributes.MOVEMENT_SPEED, 0.025, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
@@ -81,12 +81,18 @@ public class ArmorClass {
     }
 
     public ArmorClass addNegativeEffect(Holder<Attribute> attributeIn, double amount, AttributeModifier.Operation operation) {
+        if (negativeModifierMap.containsKey(attributeIn)) {
+            throw new IllegalArgumentException("Cannot add 2 modifiers for the same attribute '%s' to armor class '%s'".formatted(attributeIn, location));
+        }
         AttributeModifier attributemodifier = new AttributeModifier(ARMOR_CLASS_NEGATIVES_ID, amount, operation);
         this.negativeModifierMap.put(attributeIn, attributemodifier);
         return this;
     }
 
     public ArmorClass addPositiveEffect(Holder<Attribute> attributeIn, double amount, AttributeModifier.Operation operation) {
+        if (positiveModifierMap.containsKey(attributeIn)) {
+            throw new IllegalArgumentException("Cannot add 2 modifiers for the same attribute '%s' to armor class '%s'".formatted(attributeIn, location));
+        }
         AttributeModifier attributemodifier = new AttributeModifier(ARMOR_CLASS_POSITIVES_ID, amount, operation);
         this.positiveModifierMap.put(attributeIn, attributemodifier);
         return this;
