@@ -208,6 +208,7 @@ public class MKPlayerData implements IMKEntityData {
         editorModule.getSyncComponent().attach(engine);
         pets.getSyncComponent().attach(engine);
         riders.getSyncComponent().attach(engine);
+        equipment.getSyncComponent().attach(engine);
     }
 
     public <T extends IPersonaExtension> T getPersonaExtension(Class<T> clazz) {

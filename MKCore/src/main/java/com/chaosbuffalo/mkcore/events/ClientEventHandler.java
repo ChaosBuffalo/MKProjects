@@ -218,15 +218,16 @@ public class ClientEventHandler {
     }
 
     private static void addArmorClassTooltip(ItemTooltipEvent event) {
-        if (!MKConfig.CLIENT.showArmorClassOnTooltip.get())
+        if (!MKConfig.CLIENT.showArmorClassOnTooltip.get() || event.getEntity() == null)
             return;
 
         if (event.getItemStack().getItem() instanceof ArmorItem armorItem) {
-            ArmorClass armorClass = ArmorClass.getItemArmorClass(event.getItemStack());
-            if (armorClass == null) {
+            Holder<ArmorClass> holder = ArmorClass.getHolder(event.getItemStack());
+            if (holder == null) {
                 return;
             }
 
+            ArmorClass armorClass = holder.value();
             event.getToolTip().add(Component.translatable("mkcore.gui.item.armor_class.name")
                     .append(": ")
                     .append(armorClass.getName())
@@ -235,10 +236,13 @@ public class ClientEventHandler {
             if (MKConfig.CLIENT.showArmorClassEffectsOnTooltip.get()) {
                 List<Component> tooltip = event.getToolTip();
                 if (event.getFlags().hasShiftDown()) {
+                    var equip = MKCore.getPlayerOrThrow(event.getEntity()).getEquipment();
                     armorClass.getPositiveModifierMap(armorItem.getEquipmentSlot())
                             .forEach(((attribute, modifier) -> addArmorClassAttributeToTooltip(tooltip, attribute, modifier, ChatFormatting.GREEN, event.getFlags())));
-                    armorClass.getNegativeModifierMap(armorItem.getEquipmentSlot())
-                            .forEach(((attribute, modifier) -> addArmorClassAttributeToTooltip(tooltip, attribute, modifier, ChatFormatting.RED, event.getFlags())));
+                    if (!equip.isArmorClassMastered(holder)) {
+                        armorClass.getNegativeModifierMap(armorItem.getEquipmentSlot())
+                                .forEach(((attribute, modifier) -> addArmorClassAttributeToTooltip(tooltip, attribute, modifier, ChatFormatting.RED, event.getFlags())));
+                    }
                 } else {
                     tooltip.add(Component.translatable("mkcore.gui.item.armor_class.effect_prompt").withStyle(ChatFormatting.DARK_GRAY));
                 }
