@@ -287,8 +287,6 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
         }
 
         private ISyncObject handleUnhandled(String name, Tag tag) {
-            MKCore.LOGGER.info("tree unhandled {} {}", name, NbtUtils.prettyPrint(tag));
-
             ResourceLocation treeId = ResourceLocation.tryParse(name);
             if (treeId == null)
                 return null;

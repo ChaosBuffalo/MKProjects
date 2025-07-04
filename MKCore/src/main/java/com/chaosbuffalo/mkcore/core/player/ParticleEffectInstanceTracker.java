@@ -139,6 +139,9 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
 
         @Override
         public @Nullable Tag writeFullValue(SyncContext context) {
+            if (instanceMap.isEmpty())
+                return null;
+
             CompoundTag tag = new CompoundTag();
             ListTag effectsNbt = new ListTag();
             for (ParticleEffectInstance instance : instanceMap.values()) {
@@ -153,20 +156,29 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
 
         @Override
         public @Nullable Tag writeUpdateValue(SyncContext context) {
+            if (toRemoveDirty.isEmpty() && toAddDirty.isEmpty())
+                return null;
+
             CompoundTag tag = new CompoundTag();
-            ListTag toRemove = new ListTag();
-            for (UUID id : toRemoveDirty) {
-                toRemove.add(StringTag.valueOf(id.toString()));
+            if (!toRemoveDirty.isEmpty()) {
+                ListTag toRemove = new ListTag();
+                for (UUID id : toRemoveDirty) {
+                    toRemove.add(StringTag.valueOf(id.toString()));
+                }
+                tag.put("effectInstancesRemove", toRemove);
+                toRemoveDirty.clear();
             }
-            tag.put("effectInstancesRemove", toRemove);
-            toRemoveDirty.clear();
-            ListTag toAdd = new ListTag();
-            for (ParticleEffectInstance instance : toAddDirty) {
-                Tag etag = ParticleEffectInstance.CODEC.encodeStart(NbtOps.INSTANCE, instance).getOrThrow();
-                toAdd.add(etag);
+
+            if (!toAddDirty.isEmpty()) {
+                ListTag toAdd = new ListTag();
+                for (ParticleEffectInstance instance : toAddDirty) {
+                    Tag etag = ParticleEffectInstance.CODEC.encodeStart(NbtOps.INSTANCE, instance).getOrThrow();
+                    toAdd.add(etag);
+                }
+
+                tag.put("effectInstancesAdd", toAdd);
+                toAddDirty.clear();
             }
-            tag.put("effectInstancesAdd", toAdd);
-            toAddDirty.clear();
             return tag;
         }
 

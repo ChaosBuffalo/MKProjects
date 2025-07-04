@@ -100,6 +100,9 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
 
     @Override
     public @Nullable Tag writeFullValue(SyncContext context) {
+        if (backingMap.isEmpty())
+            return null;
+
         CompoundTag root = new CompoundTag();
         root.putBoolean("f", true);
         root.put("l", makeSyncMap(context.provider(), backingMap.keySet()));

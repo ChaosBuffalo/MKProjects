@@ -53,6 +53,9 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
 
     @Override
     public @Nullable Tag writeFullValue(SyncContext context) {
+        if (parent.isEmpty())
+            return null;
+
         CompoundTag root = new CompoundTag();
         root.putBoolean("f", true);
         ListTag list = new ListTag();
