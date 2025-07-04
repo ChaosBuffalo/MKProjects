@@ -2,22 +2,21 @@ package com.chaosbuffalo.mkcore.sync.types;
 
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import com.chaosbuffalo.mkcore.sync.SyncContext;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public class SyncString implements ISyncObject {
-    private final String name;
     private String value;
     private boolean dirty;
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
     @Nullable
     private Consumer<String> onSetCallback;
 
-    public SyncString(String name, String value) {
-        this.name = name;
+    public SyncString(String value) {
         set(value, false);
     }
 
@@ -52,25 +51,23 @@ public class SyncString implements ISyncObject {
     }
 
     @Override
-    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        if (tag.contains(name)) {
-            this.value = tag.getString(name);
+    public @Nullable Tag writeFullValue(SyncContext context) {
+        return StringTag.valueOf(value);
+    }
+
+    @Override
+    public @Nullable Tag writeUpdateValue(SyncContext context) {
+        dirty = false;
+        return writeFullValue(context);
+    }
+
+    @Override
+    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+        if (valueTag instanceof StringTag stringTag) {
+            value = stringTag.getAsString();
             if (onSetCallback != null) {
                 onSetCallback.accept(value);
             }
         }
-    }
-
-    @Override
-    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        if (dirty) {
-            serializeFull(provider, tag);
-            dirty = false;
-        }
-    }
-
-    @Override
-    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
-        tag.putString(name, value);
     }
 }

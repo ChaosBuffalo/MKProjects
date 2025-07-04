@@ -4,15 +4,14 @@ package com.chaosbuffalo.mkcore.network.packets;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.entities.ISyncControllerProvider;
+import com.chaosbuffalo.mkcore.sync.SyncContext;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -22,23 +21,14 @@ import java.util.EnumSet;
 
 public record EntityDataUpdatePacket(int entityId, CompoundTag updateTag, EnumSet<SyncVisibility> visibility) implements CustomPacketPayload {
 
-    public static final CustomPacketPayload.Type<EntityDataUpdatePacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "entity_data_update"));
+    public static final CustomPacketPayload.Type<EntityDataUpdatePacket> TYPE = new CustomPacketPayload.Type<>(MKCore.id("entity_data_update"));
 
-    public static final StreamCodec<ByteBuf, EnumSet<SyncVisibility>> ENUM_SET_STREAM_CODEC = StreamCodec.of((bytes, set) -> {
-        bytes.writeInt(set.size());
-        for (SyncVisibility visibility : set) {
-          bytes.writeByte(visibility.ordinal());
-      }
-    }, (bytes) -> {
-        EnumSet<SyncVisibility> visibility = EnumSet.noneOf(SyncVisibility.class);
-        int count = bytes.readInt();
-        for (int i = 0; i < count; i++) {
-            visibility.add(SyncVisibility.values()[bytes.readByte()]);
-        }
-        return visibility;
-    });
+    public static final StreamCodec<FriendlyByteBuf, EnumSet<SyncVisibility>> ENUM_SET_STREAM_CODEC = StreamCodec.of(
+            (bytes, set) -> bytes.writeEnumSet(set, SyncVisibility.class),
+            (bytes) -> bytes.readEnumSet(SyncVisibility.class)
+    );
 
-    public static final StreamCodec<ByteBuf, EntityDataUpdatePacket> STREAM_CODEC = StreamCodec.composite(
+    public static final StreamCodec<FriendlyByteBuf, EntityDataUpdatePacket> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.INT,
             EntityDataUpdatePacket::entityId,
             ByteBufCodecs.COMPOUND_TAG,
@@ -55,12 +45,7 @@ public record EntityDataUpdatePacket(int entityId, CompoundTag updateTag, EnumSe
 
 
     public static void handlePacket(final EntityDataUpdatePacket packet, IPayloadContext context) {
-        context.enqueueWork(() -> ClientHandler.handleClient(packet))
-                .exceptionally(e -> {
-                    // Handle exception
-                    context.disconnect(Component.translatable("mkcore.networking.failed", e.getMessage()));
-                    return null;
-                });
+        ClientHandler.handleClient(packet);
     }
 
     static class ClientHandler {
@@ -75,11 +60,12 @@ public record EntityDataUpdatePacket(int entityId, CompoundTag updateTag, EnumSe
                 return;
             }
 
+            var context = new SyncContext(target.registryAccess());
             if (target instanceof Player player) {
                 MKPlayerData data = MKCore.getPlayerOrThrow(player);
-                data.getSyncController().deserializeUpdate(target.registryAccess(), packet.updateTag, packet.visibility);
+                data.getSyncController().deserializeUpdate(context, packet.updateTag, packet.visibility);
             } else if (target instanceof ISyncControllerProvider provider) {
-                provider.getSyncController().deserializeUpdate(target.registryAccess(), packet.updateTag, packet.visibility);
+                provider.getSyncController().deserializeUpdate(context, packet.updateTag, packet.visibility);
             }
         }
     }

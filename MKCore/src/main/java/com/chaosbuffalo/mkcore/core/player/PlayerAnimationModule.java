@@ -37,7 +37,7 @@ public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
         castTicks = 0;
         castingAbility = null;
         effectInstanceTracker = ParticleEffectInstanceTracker.getTracker(playerData.getEntity());
-        addSyncPublic(effectInstanceTracker);
+        addSyncPublic("effects", effectInstanceTracker);
     }
 
     public ParticleEffectInstanceTracker getEffectInstanceTracker() {

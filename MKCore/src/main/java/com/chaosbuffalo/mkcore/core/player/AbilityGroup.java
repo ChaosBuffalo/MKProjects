@@ -6,8 +6,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
-import com.chaosbuffalo.mkcore.sync.adapters.ResourceListUpdater;
-import com.chaosbuffalo.mkcore.sync.adapters.SyncListUpdater;
+import com.chaosbuffalo.mkcore.sync.adapters.SyncArrayListUpdater;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
@@ -33,7 +32,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     protected final PlayerSyncComponent sync;
     protected final String name;
     private final List<ResourceLocation> activeAbilities;
-    private final SyncListUpdater<ResourceLocation> activeUpdater;
+    private final SyncArrayListUpdater<ResourceLocation> activeUpdater;
     private final SyncInt slots;
     protected final AbilityGroupId groupId;
 
@@ -44,10 +43,10 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         this.name = name;
         this.groupId = groupId;
         activeAbilities = NonNullList.withSize(groupId.getMaxSlots(), MKCoreRegistry.INVALID_ABILITY);
-        activeUpdater = new ResourceListUpdater("active", activeAbilities);
-        slots = new SyncInt("slots", groupId.getDefaultSlots());
-        addSyncPrivate(activeUpdater);
-        addSyncPrivate(slots);
+        activeUpdater = SyncArrayListUpdater.resourceLocations(activeAbilities);
+        slots = new SyncInt(groupId.getDefaultSlots());
+        addSyncPrivate("active", activeUpdater);
+        addSyncPrivate("slots", slots);
     }
 
     @Override

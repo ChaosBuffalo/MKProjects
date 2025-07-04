@@ -4,9 +4,11 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.packets.EntityDataUpdatePacket;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
+import com.chaosbuffalo.mkcore.sync.SyncContext;
 import com.chaosbuffalo.mkcore.sync.SyncGroup;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
@@ -43,13 +45,17 @@ public class EntitySyncController extends SyncController {
             return false;
         }
 
+        var context = new SyncContext(entity.registryAccess());
         for (SyncVisibility visibility : supportedVisibilities()) {
             SyncGroup group = getVisibilityGroup(visibility);
             if (group.isDirty()) {
-                CompoundTag tag = new CompoundTag();
-                group.serializeUpdate(entity.registryAccess(), tag);
+                CompoundTag tag = group.writeUpdateValue(context);
+                if (tag == null) {
+                    continue;
+                }
+
                 EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), tag, EnumSet.of(visibility));
-                MKCore.LOGGER.info("sending {} dirty update {} for {}", visibility, packet, entity);
+                MKCore.LOGGER.info("sending {} dirty update {} for {}\n{}", visibility, packet, entity, NbtUtils.prettyPrint(tag));
                 visibility.sendPacket(packet, entity);
             }
         }
@@ -63,18 +69,20 @@ public class EntitySyncController extends SyncController {
             return;
         }
 
-        CompoundTag tag = new CompoundTag();
-
-        EnumSet<SyncVisibility> visibilities = EnumSet.noneOf(SyncVisibility.class);
+        var context = new SyncContext(entity.registryAccess());
         for (SyncVisibility visibility : supportedVisibilities()) {
+            SyncGroup group = getVisibilityGroup(visibility);
             if (visibility.isVisibleTo(entity, otherPlayer)) {
-                getVisibilityGroup(visibility).serializeFull(entity.registryAccess(), tag);
-                visibilities.add(visibility);
+                CompoundTag tag = group.writeFullValue(context);
+                if (tag == null) {
+                    continue;
+                }
+
+                EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), tag, EnumSet.of(visibility));
+                MKCore.LOGGER.info("sending {} full update {} for {}\n{}", visibility, packet, entity, NbtUtils.prettyPrint(tag));
+
+                PacketHandler.sendMessage(packet, otherPlayer);
             }
         }
-
-        EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), tag, visibilities);
-        MKCore.LOGGER.info("sending full sync {} for {} to {}", packet, entity, otherPlayer);
-        PacketHandler.sendMessage(packet, otherPlayer);
     }
 }

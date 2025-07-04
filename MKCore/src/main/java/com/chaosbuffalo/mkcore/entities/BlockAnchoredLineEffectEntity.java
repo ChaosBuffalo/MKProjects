@@ -51,11 +51,11 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     @Nullable
     protected LivingEntity target;
 
-    protected final SyncBool hasEntity = new SyncBool("has_entity", false);
-    protected final SyncVec3 startPoint = new SyncVec3("start_point", Vec3.ZERO);
-    protected final SyncVec3 endPoint = new SyncVec3("end_point", Vec3.ZERO);
+    protected final SyncBool hasEntity = new SyncBool(false);
+    protected final SyncVec3 startPoint = new SyncVec3(Vec3.ZERO);
+    protected final SyncVec3 endPoint = new SyncVec3(Vec3.ZERO);
 
-    protected final SyncFloat beamSpeed = new SyncFloat("beam_speed", 2.5f);
+    protected final SyncFloat beamSpeed = new SyncFloat(2.5f);
 
     protected Vec3 prevEndPoint;
     protected int lastTickReceive;
@@ -64,9 +64,9 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
         super(entityType, world);
         engine = new EntitySyncController(this);
         targeting.attach(engine);
-        targeting.addPublic(hasEntity);
-        targeting.addPublic(startPoint);
-        targeting.addPublic(endPoint);
+        targeting.addPublic("has_entity", hasEntity);
+        targeting.addPublic("start_point", startPoint);
+        targeting.addPublic("end_point", endPoint);
         endPoint.setCallback(this::onEndPointUpdate);
     }
 

@@ -1,27 +1,39 @@
 package com.chaosbuffalo.mkcore.sync;
 
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 
+import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.BiFunction;
 
 public class SyncGroup implements ISyncObject {
-    protected final List<ISyncObject> components = new ArrayList<>();
-    protected final Set<ISyncObject> dirty = new HashSet<>();
+    protected final Map<String, ISyncObject> components = new HashMap<>();
+    protected final Set<String> dirtySet = new HashSet<>();
+    protected BiFunction<String, Tag, ISyncObject> unhandledKeyHandler;
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
     public SyncGroup() {
 
     }
 
-    public void add(ISyncObject sync) {
-        components.add(sync);
-        sync.setNotifier(this::childUpdated);
+    public void add(String name, ISyncObject sync) {
+        add(name, sync, true);
     }
 
-    public void remove(ISyncObject syncObject) {
-        components.remove(syncObject);
-        dirty.remove(syncObject);
+    public void add(String name, ISyncObject sync, boolean setDirty) {
+        components.put(name, sync);
+        sync.setNotifier(s -> {
+            childUpdated(name, s);
+        });
+        if (setDirty) {
+            childUpdated(name, sync);
+        }
+    }
+
+    public void remove(String name, ISyncObject syncObject) {
+        components.remove(name);
+        dirtySet.remove(name);
         syncObject.setNotifier(ISyncNotifier.NONE);
     }
 
@@ -30,8 +42,8 @@ public class SyncGroup implements ISyncObject {
         parentNotifier = notifier;
     }
 
-    public void childUpdated(ISyncObject syncObject) {
-        dirty.add(syncObject);
+    public void childUpdated(String name, ISyncObject syncObject) {
+        dirtySet.add(name);
         scheduleUpdate();
     }
 
@@ -41,71 +53,75 @@ public class SyncGroup implements ISyncObject {
 
     @Override
     public boolean isDirty() {
-        return !dirty.isEmpty();
-    }
-
-    protected CompoundTag extractGroupTag(CompoundTag tag) {
-        return tag;
-    }
-
-    protected void insertGroupTag(CompoundTag tag, CompoundTag filledRoot) {
-
+        return !dirtySet.isEmpty();
     }
 
     @Override
-    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        CompoundTag groupTag = extractGroupTag(tag);
-        readComponentUpdates(provider, groupTag);
-    }
-
-    protected void readComponentUpdates(HolderLookup.Provider provider, CompoundTag groupTag) {
-        if (groupTag.isEmpty() || components.isEmpty()) {
-            return;
-        }
-        components.forEach(c -> c.deserializeUpdate(provider, groupTag));
-    }
-
-    @Override
-    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        if (dirty.isEmpty()) {
+    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+        if (!(valueTag instanceof CompoundTag groupTag) || groupTag.isEmpty()) {
             return;
         }
 
-        CompoundTag groupTag = extractGroupTag(tag);
-        writeComponentUpdates(provider, groupTag, dirty);
-        if (!groupTag.isEmpty()) {
-            insertGroupTag(tag, groupTag);
+        if (components.isEmpty() && unhandledKeyHandler == null) {
+            // No registered members and no dynamic handler registered.
+            return;
         }
-        dirty.clear();
-    }
 
-    protected void writeComponentUpdates(HolderLookup.Provider provider, CompoundTag groupTag, Collection<ISyncObject> objects) {
-        for (ISyncObject object : objects) {
-            object.serializeUpdate(provider, groupTag);
+        for (var key : groupTag.getAllKeys()) {
+            ISyncObject sync = components.get(key);
+            Tag tag = groupTag.get(key);
+            if (sync != null) {
+                sync.handleUpdatePayload(context, tag);
+            } else if (unhandledKeyHandler != null) {
+                ISyncObject newSync = unhandledKeyHandler.apply(key, tag);
+                if (newSync != null) {
+                    newSync.handleUpdatePayload(context, tag);
+                    components.put(key, newSync);
+                }
+            }
         }
     }
 
     @Override
-    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
+    public CompoundTag writeFullValue(SyncContext context) {
         if (components.isEmpty()) {
-            return;
+            return null;
         }
 
-        CompoundTag groupTag = extractGroupTag(tag);
-        writeFullComponents(provider, groupTag, components);
-        if (!groupTag.isEmpty()) {
-            insertGroupTag(tag, groupTag);
+        CompoundTag holder = new CompoundTag();
+        for (var entry : components.entrySet()) {
+            String name = entry.getKey();
+            ISyncObject sync = entry.getValue();
+            Tag value = sync.writeFullValue(context);
+            if (value != null) {
+                holder.put(name, value);
+            }
         }
+
+        return holder;
     }
 
-    protected void writeFullComponents(HolderLookup.Provider provider, CompoundTag groupTag, Collection<ISyncObject> objects) {
-        for (ISyncObject object : objects) {
-            object.serializeFull(provider, groupTag);
+    @Override
+    public @Nullable CompoundTag writeUpdateValue(SyncContext context) {
+        if (dirtySet.isEmpty()) {
+            return null;
         }
+
+        CompoundTag holder = new CompoundTag();
+        for (String name : dirtySet) {
+            ISyncObject sync = components.get(name);
+            Tag value = sync.writeUpdateValue(context);
+            if (value != null) {
+                holder.put(name, value);
+            }
+        }
+
+        dirtySet.clear();
+        return holder;
     }
 
     @Override
     public String toString() {
-        return String.format("SyncGroup[components=%d, dirty=%d]", components.size(), dirty.size());
+        return String.format("SyncGroup[components=%d, dirty=%d]", components.size(), dirtySet.size());
     }
 }

@@ -33,9 +33,9 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
     public PlayerEquipment(MKPlayerData playerData) {
         super(playerData);
         this.playerData = playerData;
-        masteryClientInfo = new SyncString("masteries", ""); // TODO: better sync? this is pretty dumb
+        masteryClientInfo = new SyncString(""); // TODO: better sync? this is pretty dumb
         masteryClientInfo.setCallback(this::handleClientMasteryUpdate);
-        addSyncPrivate(masteryClientInfo);
+        addSyncPrivate("mastery", masteryClientInfo);
         playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
         playerData.events().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated);
     }

@@ -52,7 +52,7 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
 
     private void registerAbilityGroup(AbilityGroupId group, AbilityGroup abilityGroup) {
         abilityGroups.put(group, abilityGroup);
-        addSyncChild(abilityGroup);
+        addSyncChild(abilityGroup.name, abilityGroup);
     }
 
     public ItemAbilityGroup getItemGroup() {

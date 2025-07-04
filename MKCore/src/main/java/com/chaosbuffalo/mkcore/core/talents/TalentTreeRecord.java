@@ -3,11 +3,11 @@ package com.chaosbuffalo.mkcore.core.talents;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
+import com.chaosbuffalo.mkcore.sync.SyncContext;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -266,41 +266,26 @@ public class TalentTreeRecord {
         }
 
         @Override
-        public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-            CompoundTag root = tag.getCompound(getTreeDefinition().getTreeId().toString());
+        public @Nullable Tag writeFullValue(SyncContext context) {
+            CompoundTag root = new CompoundTag();
+            root.putBoolean("f", true);
 
-            if (root.getBoolean("f")) {
-                lines.clear();
-            }
+            CompoundTag updateTag = new CompoundTag();
 
-            if (root.contains("u")) {
-                CompoundTag updated = root.getCompound("u");
+            lines.values().forEach(line -> {
+                String lineName = line.getLineDefinition().getName();
+                ListTag list = line.getRecords().stream()
+                        .map(this::writeNode)
+                        .collect(Collectors.toCollection(ListTag::new));
+                updateTag.put(lineName, list);
+            });
 
-                for (String line : updated.getAllKeys()) {
-                    TalentLineRecord lineRecord = getLineRecord(line);
-                    if (lineRecord == null) {
-                        MKCore.LOGGER.warn("TalentTreeUpdater.deserializeUpdate unknown line {}", line);
-                        continue;
-                    }
-                    updated.getList(line, Tag.TAG_COMPOUND).forEach(nbt -> {
-                        int index = ((CompoundTag) nbt).getInt("i");
-                        TalentRecord record = lineRecord.getRecord(index);
-                        if (record != null) {
-                            record.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt));
-                        }
-                    });
-                }
-            }
-        }
-
-        private CompoundTag writeNode(TalentRecord rec) {
-            CompoundTag recTag = (CompoundTag) rec.serialize(NbtOps.INSTANCE);
-            recTag.putInt("i", rec.getNode().getIndex());
-            return recTag;
+            root.put("u", updateTag);
+            return root;
         }
 
         @Override
-        public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
+        public @Nullable Tag writeUpdateValue(SyncContext context) {
             CompoundTag root = new CompoundTag();
 
             CompoundTag updateTag = new CompoundTag();
@@ -318,30 +303,43 @@ public class TalentTreeRecord {
             });
 
             root.put("u", updateTag);
-            tag.put(getTreeDefinition().getTreeId().toString(), root);
 
             updatedLines.clear();
+            return root;
         }
 
         @Override
-        public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
-            CompoundTag root = new CompoundTag();
-            root.putBoolean("f", true);
+        public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+            if (valueTag instanceof CompoundTag root) {
+                if (root.getBoolean("f")) {
+                    lines.clear();
+                }
 
-            CompoundTag updateTag = new CompoundTag();
+                if (root.contains("u")) {
+                    CompoundTag updated = root.getCompound("u");
 
-            lines.values().forEach(line -> {
-                String lineName = line.getLineDefinition().getName();
-                ListTag list = line.getRecords().stream()
-                        .map(this::writeNode)
-                        .collect(Collectors.toCollection(ListTag::new));
-                updateTag.put(lineName, list);
-            });
+                    for (String line : updated.getAllKeys()) {
+                        TalentLineRecord lineRecord = getLineRecord(line);
+                        if (lineRecord == null) {
+                            MKCore.LOGGER.warn("TalentTreeUpdater.deserializeUpdate unknown line {}", line);
+                            continue;
+                        }
+                        updated.getList(line, Tag.TAG_COMPOUND).forEach(nbt -> {
+                            int index = ((CompoundTag) nbt).getInt("i");
+                            TalentRecord record = lineRecord.getRecord(index);
+                            if (record != null) {
+                                record.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt));
+                            }
+                        });
+                    }
+                }
+            }
+        }
 
-            root.put("u", updateTag);
-            tag.put(getTreeDefinition().getTreeId().toString(), root);
-
-            updatedLines.clear();
+        private CompoundTag writeNode(TalentRecord rec) {
+            CompoundTag recTag = (CompoundTag) rec.serialize(NbtOps.INSTANCE);
+            recTag.putInt("i", rec.getNode().getIndex());
+            return recTag;
         }
     }
 }

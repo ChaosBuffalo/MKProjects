@@ -4,10 +4,11 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ParticleEffectInstance;
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
-import net.minecraft.core.HolderLookup;
+import com.chaosbuffalo.mkcore.sync.SyncContext;
 import net.minecraft.nbt.*;
 import net.minecraft.world.entity.Entity;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class ParticleEffectInstanceTracker implements ISyncObject {
@@ -60,46 +61,46 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         return false;
     }
 
-
     @Override
-    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        if (tag.contains("effectInstances")) {
-            instanceMap.clear();
-            ListTag effectsNbt = tag.getList("effectInstances", Tag.TAG_COMPOUND);
-            for (Tag effNbt : effectsNbt) {
-                ParticleEffectInstance inst = ParticleEffectInstance.CODEC.parse(NbtOps.INSTANCE, effNbt).getOrThrow();
-                if (inst != null) {
-                    addParticleInstance(inst);
-                }
-            }
-        }
-        if (tag.contains("effectInstancesAdd")) {
-            ListTag effectsNbt = tag.getList("effectInstancesAdd", Tag.TAG_COMPOUND);
-            for (Tag effNbt : effectsNbt) {
-                ParticleEffectInstance inst = ParticleEffectInstance.CODEC.parse(NbtOps.INSTANCE, effNbt).getOrThrow();
-                if (inst != null) {
-                    addParticleInstance(inst);
-                }
-            }
-        }
-        if (tag.contains("effectInstancesRemove")) {
-            ListTag toRemoveNbt = tag.getList("effectInstancesRemove", Tag.TAG_STRING);
-            for (Tag inbt : toRemoveNbt) {
-                UUID id = UUID.fromString(inbt.getAsString());
-                removeParticleInstance(id);
-            }
-        }
-
+    public @Nullable Tag writeFullValue(SyncContext context) {
+        return ISyncObject.notImplementedByDesign(this);
     }
 
     @Override
-    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-
+    public @Nullable Tag writeUpdateValue(SyncContext context) {
+        return ISyncObject.notImplementedByDesign(this);
     }
 
     @Override
-    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
-
+    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+        if (valueTag instanceof CompoundTag tag) {
+            if (tag.contains("effectInstances")) {
+                instanceMap.clear();
+                ListTag effectsNbt = tag.getList("effectInstances", Tag.TAG_COMPOUND);
+                for (Tag effNbt : effectsNbt) {
+                    ParticleEffectInstance inst = ParticleEffectInstance.CODEC.parse(NbtOps.INSTANCE, effNbt).getOrThrow();
+                    if (inst != null) {
+                        addParticleInstance(inst);
+                    }
+                }
+            }
+            if (tag.contains("effectInstancesAdd")) {
+                ListTag effectsNbt = tag.getList("effectInstancesAdd", Tag.TAG_COMPOUND);
+                for (Tag effNbt : effectsNbt) {
+                    ParticleEffectInstance inst = ParticleEffectInstance.CODEC.parse(NbtOps.INSTANCE, effNbt).getOrThrow();
+                    if (inst != null) {
+                        addParticleInstance(inst);
+                    }
+                }
+            }
+            if (tag.contains("effectInstancesRemove")) {
+                ListTag toRemoveNbt = tag.getList("effectInstancesRemove", Tag.TAG_STRING);
+                for (Tag inbt : toRemoveNbt) {
+                    UUID id = UUID.fromString(inbt.getAsString());
+                    removeParticleInstance(id);
+                }
+            }
+        }
     }
 
 
@@ -137,7 +138,8 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         }
 
         @Override
-        public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
+        public @Nullable Tag writeFullValue(SyncContext context) {
+            CompoundTag tag = new CompoundTag();
             ListTag effectsNbt = new ListTag();
             for (ParticleEffectInstance instance : instanceMap.values()) {
                 Tag etag = ParticleEffectInstance.CODEC.encodeStart(NbtOps.INSTANCE, instance).getOrThrow();
@@ -146,10 +148,12 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
             tag.put("effectInstances", effectsNbt);
             toRemoveDirty.clear();
             toAddDirty.clear();
+            return tag;
         }
 
         @Override
-        public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
+        public @Nullable Tag writeUpdateValue(SyncContext context) {
+            CompoundTag tag = new CompoundTag();
             ListTag toRemove = new ListTag();
             for (UUID id : toRemoveDirty) {
                 toRemove.add(StringTag.valueOf(id.toString()));
@@ -163,6 +167,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
             }
             tag.put("effectInstancesAdd", toAdd);
             toAddDirty.clear();
+            return tag;
         }
 
         @Override
@@ -172,7 +177,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
     }
 
     public static ParticleEffectInstanceTracker getTracker(Entity entity) {
-        if (!entity.getCommandSenderWorld().isClientSide()) {
+        if (!entity.level().isClientSide()) {
             return new ParticleEffectInstanceTrackerServer(entity);
         } else {
             return new ParticleEffectInstanceTracker(entity);

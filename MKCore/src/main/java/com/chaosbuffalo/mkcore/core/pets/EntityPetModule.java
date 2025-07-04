@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 public class EntityPetModule implements IPlayerSyncComponentProvider {
     private final PlayerSyncComponent sync = new PlayerSyncComponent("petModule");
     protected final IMKEntityData entityData;
-    protected final SyncBool isPet = new SyncBool("isPet", false);
+    protected final SyncBool isPet = new SyncBool(false);
     protected final SyncEntity<LivingEntity> owner = new SyncEntity<>("owner", null, LivingEntity.class);
     protected final Map<ResourceLocation, MKPet<?>> pets = new HashMap<>();
     protected final Map<ResourceLocation, MKPet.ClientMKPet> clientPetMap = new HashMap<>();
-    protected final SyncMapUpdater<ResourceLocation, MKPet.ClientMKPet> clientPets = new SyncMapUpdater<>("clientPets",
+    protected final SyncMapUpdater<ResourceLocation, MKPet.ClientMKPet> clientPets = new SyncMapUpdater<>(
             clientPetMap, ResourceLocation::toString, ResourceLocation::tryParse, EntityPetModule::createClientPet);
 
     private static MKPet.ClientMKPet createClientPet(ResourceLocation petId) {
@@ -33,9 +33,9 @@ public class EntityPetModule implements IPlayerSyncComponentProvider {
 
     public EntityPetModule(IMKEntityData entityData) {
         this.entityData = entityData;
-        addSyncPublic(owner);
-        addSyncPublic(isPet);
-        addSyncPublic(clientPets);
+        addSyncPublic("owner", owner);
+        addSyncPublic("isPet", isPet);
+        addSyncPublic("clientPets", clientPets);
     }
 
     public void addPet(MKPet<?> pet) {

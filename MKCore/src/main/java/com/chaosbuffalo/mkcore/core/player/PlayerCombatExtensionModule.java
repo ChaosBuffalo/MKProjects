@@ -14,12 +14,12 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 public class PlayerCombatExtensionModule extends CombatExtensionModule implements IPlayerSyncComponentProvider {
     private static final ResourceLocation blockMaxPoiseBonusId = MKCore.id("block_skill_modifier");
     private final PlayerSyncComponent sync = new PlayerSyncComponent("combatExtension");
-    private final SyncInt currentProjectileHitCount = new SyncInt("projectileHits", 0);
+    private final SyncInt currentProjectileHitCount = new SyncInt(0);
 
 
     public PlayerCombatExtensionModule(MKPlayerData playerData) {
         super(playerData);
-        addSyncPrivate(currentProjectileHitCount);
+        addSyncPrivate("projectileHits", currentProjectileHitCount);
     }
 
     @Override

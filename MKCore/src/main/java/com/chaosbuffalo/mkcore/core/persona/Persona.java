@@ -38,9 +38,9 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         talents = new PlayerTalentKnowledge(this);
         loadout = new PlayerAbilityLoadout(this);
         entitlements = new PlayerEntitlements(this);
-        addSyncChild(abilities);
-        addSyncChild(talents);
-        addSyncChild(loadout);
+        addSyncChild("abilities", abilities);
+        addSyncChild("talents", talents);
+        addSyncChild("loadout", loadout);
         skills = new PlayerSkills(this);
     }
 

@@ -2,16 +2,16 @@ package com.chaosbuffalo.mkcore.sync.types;
 
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
+import com.chaosbuffalo.mkcore.sync.SyncContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.Entity;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class SyncEntity<T extends Entity> implements ISyncObject {
-    private final String name;
     @Nullable
     private T value;
     private final Class<T> clazz;
@@ -19,7 +19,6 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
     public SyncEntity(String name, T value, Class<T> clazz) {
-        this.name = name;
         this.clazz = clazz;
         set(value);
     }
@@ -58,9 +57,20 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
     }
 
     @Override
-    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        if (tag.contains(name)) {
-            int id = tag.getInt(name);
+    public @Nullable Tag writeFullValue(SyncContext context) {
+        return IntTag.valueOf(value != null ? value.getId() : -1);
+    }
+
+    @Override
+    public @Nullable Tag writeUpdateValue(SyncContext context) {
+        dirty = false;
+        return writeFullValue(context);
+    }
+
+    @Override
+    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+        if (valueTag instanceof IntTag intTag) {
+            int id = intTag.getId();
             if (id != -1) {
                 Entity ent = ClientHandler.handleClient(id);
                 if (clazz.isInstance(ent)) {
@@ -72,19 +82,6 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
                 value = null;
             }
         }
-    }
-
-    @Override
-    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        if (dirty) {
-            serializeFull(provider, tag);
-            dirty = false;
-        }
-    }
-
-    @Override
-    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
-        tag.putInt(name, value != null ? value.getId() : -1);
     }
 
     static class ClientHandler {
