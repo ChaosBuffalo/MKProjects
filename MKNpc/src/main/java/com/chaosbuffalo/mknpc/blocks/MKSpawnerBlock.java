@@ -29,13 +29,15 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 
-public class MKSpawnerBlock extends BaseEntityBlock implements IFirstUseBlock {
+public class MKSpawnerBlock extends BaseEntityBlock implements IFirstUseBlock, LiquidBlockContainer {
     public static final MapCodec<MKSpawnerBlock> CODEC = simpleCodec(MKSpawnerBlock::new);
 
     @Override
@@ -64,6 +66,18 @@ public class MKSpawnerBlock extends BaseEntityBlock implements IFirstUseBlock {
         }
         return InteractionResult.PASS;
     }
+
+
+    @Override
+    public boolean canPlaceLiquid(@org.jetbrains.annotations.Nullable Player player, BlockGetter blockGetter, BlockPos blockPos, BlockState blockState, Fluid fluid) {
+        return false;
+    }
+
+    @Override
+    public boolean placeLiquid(LevelAccessor levelAccessor, BlockPos blockPos, BlockState blockState, FluidState fluidState) {
+        return false;
+    }
+
 
     public enum MKSpawnerOrientation implements StringRepresentable {
         EAST("east", Direction.EAST),
