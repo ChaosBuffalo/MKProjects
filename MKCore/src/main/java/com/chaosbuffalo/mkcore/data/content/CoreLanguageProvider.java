@@ -50,6 +50,31 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.gui.memory_pool", "%d/%d");
         add("mkcore.gui.memory_pool_tooltip", "Memory Pool Slot Usage");
         add("mkcore.item_tooltip.grants_ability", "Grants Ability: %s");
+        add("key.hud.active_ability1", "Ability Slot 1");
+        add("key.hud.active_ability2", "Ability Slot 2");
+        add("key.hud.active_ability3", "Ability Slot 3");
+        add("key.hud.active_ability4", "Ability Slot 4");
+        add("key.hud.active_ability5", "Ability Slot 5");
+        add("key.hud.item_ability", "Item Ability");
+        add("key.hud.ultimate_ability1", "Ultimate Slot 1");
+        add("key.hud.ultimate_ability2", "Ultimate Slot 2");
+        add("key.hud.particle_editor", "Open Particle Editor");
+        add("key.hud.playermenu", "Open Character Sheet");
+        add("key.core.abilitybar", "Ability Bar");
+        add("key.mkcore.category", "MKCore");
+        add("mkcore.configuration.showMyCrits", "Show My Crits");
+        add("mkcore.configuration.showOthersCrits", "Show Other Crits");
+        add("mkcore.configuration.enablePlayerCastAnimations", "Enable Player Cast Animations");
+        add("mkcore.configuration.showArmorClassOnTooltip", "Show Armor Class On Tooltip");
+        add("mkcore.configuration.showArmorClassEffectsOnTooltip", "Show Armor Class Effects On Tooltip");
+        add("mkcore.configuration.disableAttackForFriend", "Disable Attack On Friendlies");
+        add("mkcore.configuration.gameplay", "Gameplay");
+        add("mkcore.configuration.general", "General");
+        add("mkcore.configuration.healsDamageUndead", "Heals Hurt Undead");
+        add("mkcore.configuration.undeadHealDamageMultiplier", "Undead Heal Damage Multiplier");
+        add("mkcore.configuration.enablePartyXpShare", "Enable Party XP Share");
+        add("mkcore.configuration.partyXpShareDistance", "XP Share Distance");
+        add("mkcore.configuration.enablePartyXpShareMending", "Party XP Trigger Mending");
     }
 
     private void addLegacy() {

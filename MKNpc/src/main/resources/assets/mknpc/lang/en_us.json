@@ -39,5 +39,7 @@
   "mknpc.ui.search": "Search",
   "block.mknpc.mk_spawner": "MK Spawner",
   "mknpc.objective.quest_loot_type_tag.desc": "Loot %s from %s (%s / %s)",
-  "mknpc.objective.quest_loot_type_tag.progress": "You found %s on the corpse of %s (%s / %s)."
+  "mknpc.objective.quest_loot_type_tag.progress": "You found %s on the corpse of %s (%s / %s).",
+  "key.mknpc.category": "MKNpc",
+  "key.hud.questmenu": "Open Quest Journal"
 }

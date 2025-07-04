@@ -57,7 +57,7 @@ public class MKConfig {
                     .define("showArmorClassEffectsOnTooltip", true);
             disableAutoattackForFriend = builder
                     .comment("Disables auto-attacking on friendly targets")
-                    .define("disableAutoattackForFriend", false);
+                    .define("disableAttackForFriend", false);
             builder.pop();
         }
     }

@@ -21,5 +21,8 @@
   "faction.mkfaction.illagers.name": "Illagers",
   "faction.mkfaction.monsters.name": "Monsters",
   "faction.mkfaction.neutral.name": "Neutrals",
-  "faction.mkfaction.invalid.name": "Invalid Faction"
+  "faction.mkfaction.invalid.name": "Invalid Faction",
+  "key.mkfaction.category": "MKFaction",
+  "key.mkfaction.con.desc": "Consider",
+  "key.mkfaction.panel.desc": "Open Faction Page"
 }
