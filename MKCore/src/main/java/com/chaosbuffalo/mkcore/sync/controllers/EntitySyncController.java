@@ -12,7 +12,8 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
-import java.util.EnumSet;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EntitySyncController extends SyncController {
 
@@ -54,7 +55,8 @@ public class EntitySyncController extends SyncController {
                     continue;
                 }
 
-                EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), tag, EnumSet.of(visibility));
+                var updateTag = new EntityDataUpdatePacket.UpdateTag(visibility, tag);
+                EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), List.of(updateTag));
                 MKCore.LOGGER.info("sending {} dirty update {} for {}\n{}", visibility, packet, entity, NbtUtils.prettyPrint(tag));
                 visibility.sendPacket(packet, entity);
             }
@@ -70,6 +72,7 @@ public class EntitySyncController extends SyncController {
         }
 
         var context = new SyncContext(entity.registryAccess());
+        List<EntityDataUpdatePacket.UpdateTag> updateTags = new ArrayList<>(2);
         for (SyncVisibility visibility : supportedVisibilities()) {
             SyncGroup group = getVisibilityGroup(visibility);
             if (visibility.isVisibleTo(entity, otherPlayer)) {
@@ -78,11 +81,22 @@ public class EntitySyncController extends SyncController {
                     continue;
                 }
 
-                EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), tag, EnumSet.of(visibility));
-                MKCore.LOGGER.info("sending {} full update {} for {}\n{}", visibility, packet, entity, NbtUtils.prettyPrint(tag));
-
-                PacketHandler.sendMessage(packet, otherPlayer);
+                updateTags.add(new EntityDataUpdatePacket.UpdateTag(visibility, tag));
             }
         }
+
+        if (updateTags.isEmpty()) {
+            return;
+        }
+
+        EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), updateTags);
+        if (MKCore.LOGGER.isDebugEnabled()) {
+            for (var updateTag : updateTags) {
+                MKCore.LOGGER.info("sending {} full update for {}\n{}", updateTag.visibility(), entity,
+                        NbtUtils.prettyPrint(updateTag.tag()));
+            }
+        }
+
+        PacketHandler.sendMessage(packet, otherPlayer);
     }
 }

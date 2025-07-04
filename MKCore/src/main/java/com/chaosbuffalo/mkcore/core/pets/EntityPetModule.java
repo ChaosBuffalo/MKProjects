@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class EntityPetModule implements IPlayerSyncComponentProvider {
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("petModule");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
     protected final IMKEntityData entityData;
     protected final SyncBool isPet = new SyncBool(false);
     protected final SyncEntity<LivingEntity> owner = new SyncEntity<>("owner", null, LivingEntity.class);

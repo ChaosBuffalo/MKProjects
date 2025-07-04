@@ -29,18 +29,15 @@ import java.util.stream.Stream;
 public class AbilityGroup implements IPlayerSyncComponentProvider {
     protected final Persona persona;
     protected final MKPlayerData playerData;
-    protected final PlayerSyncComponent sync;
-    protected final String name;
+    protected final PlayerSyncComponent sync = new PlayerSyncComponent();
     private final List<ResourceLocation> activeAbilities;
     private final SyncArrayListUpdater<ResourceLocation> activeUpdater;
     private final SyncInt slots;
     protected final AbilityGroupId groupId;
 
-    public AbilityGroup(Persona persona, String name, AbilityGroupId groupId) {
-        sync = new PlayerSyncComponent(name);
+    public AbilityGroup(Persona persona, AbilityGroupId groupId) {
         this.persona = persona;
         this.playerData = persona.getPlayerData();
-        this.name = name;
         this.groupId = groupId;
         activeAbilities = NonNullList.withSize(groupId.getMaxSlots(), MKCoreRegistry.INVALID_ABILITY);
         activeUpdater = SyncArrayListUpdater.resourceLocations(activeAbilities);

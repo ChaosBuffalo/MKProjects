@@ -19,7 +19,7 @@ public abstract class EntityStats implements IMKEntityStats, IPlayerSyncComponen
     protected final AbilityTracker abilityTracker;
     protected final SyncFloat mana = new SyncFloat(0f);
     protected final SyncFloat poise = new SyncFloat(0f);
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("stats");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
 
     public EntityStats(IMKEntityData data) {
         entityData = data;

@@ -202,14 +202,14 @@ public class MKPlayerData implements IMKEntityData {
     }
 
     public void attachUpdateEngine(SyncController engine) {
-        personaManager.getSyncComponent().attach(engine);
-        animationModule.getSyncComponent().attach(engine);
-        combatExtensionModule.getSyncComponent().attach(engine);
-        stats.getSyncComponent().attach(engine);
-        editorModule.getSyncComponent().attach(engine);
-        pets.getSyncComponent().attach(engine);
-        riders.getSyncComponent().attach(engine);
-        equipment.getSyncComponent().attach(engine);
+        personaManager.getSyncComponent().attach("persona", engine);
+        animationModule.getSyncComponent().attach("animation", engine);
+        combatExtensionModule.getSyncComponent().attach("combat", engine);
+        stats.getSyncComponent().attach("stats", engine);
+        editorModule.getSyncComponent().attach("editor", engine);
+        pets.getSyncComponent().attach("pets", engine);
+        riders.getSyncComponent().attach("riders", engine);
+        equipment.getSyncComponent().attach("equipment", engine);
     }
 
     public <T extends IPersonaExtension> T getPersonaExtension(Class<T> clazz) {

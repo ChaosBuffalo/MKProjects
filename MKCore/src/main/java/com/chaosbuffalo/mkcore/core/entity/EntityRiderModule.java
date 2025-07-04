@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EntityRiderModule implements IPlayerSyncComponentProvider {
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("riderModule");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
     protected final IMKEntityData entityData;
     protected final Map<Integer, EntityRider> riders = new HashMap<>();
     protected final SyncMapUpdater<Integer, EntityRider> riderSync = new SyncMapUpdater<>(riders,

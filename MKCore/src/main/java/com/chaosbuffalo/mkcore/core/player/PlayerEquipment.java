@@ -26,7 +26,7 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
     private static final UUID EV_ID = UUID.fromString("951a29de-b941-4c4d-9d01-dba4c68b7897");
 
     private final MKPlayerData playerData;
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("equipment");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
     private final SyncString masteryClientInfo;
     private final Set<ResourceLocation> masteredClasses = new HashSet<>();
 

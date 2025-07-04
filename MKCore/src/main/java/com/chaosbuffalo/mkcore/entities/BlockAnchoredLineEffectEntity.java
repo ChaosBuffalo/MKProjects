@@ -46,7 +46,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     private static final EntityDataAccessor<Float> RANGE = SynchedEntityData.defineId(
             BlockAnchoredLineEffectEntity.class, EntityDataSerializers.FLOAT);
     private final EntitySyncController engine;
-    private final PlayerSyncComponent targeting = new PlayerSyncComponent("targeting");
+    private final PlayerSyncComponent targeting = new PlayerSyncComponent();
 
     @Nullable
     protected LivingEntity target;
@@ -63,7 +63,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     public BlockAnchoredLineEffectEntity(EntityType<? extends BlockAnchoredLineEffectEntity> entityType, Level world) {
         super(entityType, world);
         engine = new EntitySyncController(this);
-        targeting.attach(engine);
+        targeting.attach("targeting", engine);
         targeting.addPublic("has_entity", hasEntity);
         targeting.addPublic("start_point", startPoint);
         targeting.addPublic("end_point", endPoint);

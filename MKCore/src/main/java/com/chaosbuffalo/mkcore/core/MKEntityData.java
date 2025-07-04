@@ -117,9 +117,9 @@ public class MKEntityData implements IMKEntityData {
     }
 
     public void attachUpdateEngine(SyncController engine) {
-        pets.getSyncComponent().attach(engine);
-        stats.getSyncComponent().attach(engine);
-        riders.getSyncComponent().attach(engine);
+        pets.getSyncComponent().attach("pets", engine);
+        stats.getSyncComponent().attach("stats", engine);
+        riders.getSyncComponent().attach("riders", engine);
     }
 
     @Override

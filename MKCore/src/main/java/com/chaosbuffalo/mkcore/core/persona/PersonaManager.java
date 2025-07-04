@@ -21,7 +21,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
     private static final List<IPersonaExtensionProvider> extensionProviders = new ArrayList<>(4);
     private final MKPlayerData playerData;
     private final Map<String, Persona> personas = new HashMap<>();
-    protected final PlayerSyncComponent sync = new PlayerSyncComponent("persona");
+    protected final PlayerSyncComponent sync = new PlayerSyncComponent();
     protected final SyncString activePersonaName = new SyncString(DEFAULT_PERSONA_NAME);
     protected Persona activePersona;
 

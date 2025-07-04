@@ -4,7 +4,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class SyncGroup implements ISyncObject {
     protected final Map<String, ISyncObject> components = new HashMap<>();

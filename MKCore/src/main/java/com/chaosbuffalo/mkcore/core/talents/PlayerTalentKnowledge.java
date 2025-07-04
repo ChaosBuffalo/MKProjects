@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 
 public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     private final MKPlayerData playerData;
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("talents");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
     private final SyncInt talentPoints = new SyncInt(0);
     private final SyncInt totalTalentPoints = new SyncInt(0);
     private final Map<ResourceLocation, TalentTreeRecord> talentTreeRecordMap = new HashMap<>();

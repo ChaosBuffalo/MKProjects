@@ -13,7 +13,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("loadout");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
 
     private final Map<AbilityGroupId, AbilityGroup> abilityGroups = new EnumMap<>(AbilityGroupId.class);
     private final PassiveAbilityGroup passiveAbilityGroup;
@@ -22,14 +22,14 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
     private final ItemAbilityGroup itemAbilityGroup;
 
     public PlayerAbilityLoadout(Persona persona) {
-        basicAbilityGroup = new AbilityGroup(persona, "basic", AbilityGroupId.Basic);
+        basicAbilityGroup = new AbilityGroup(persona, AbilityGroupId.Basic);
         passiveAbilityGroup = new PassiveAbilityGroup(persona);
-        ultimateAbilityGroup = new AbilityGroup(persona, "ultimate", AbilityGroupId.Ultimate);
+        ultimateAbilityGroup = new AbilityGroup(persona, AbilityGroupId.Ultimate);
         itemAbilityGroup = new ItemAbilityGroup(persona);
-        registerAbilityGroup(AbilityGroupId.Basic, basicAbilityGroup);
-        registerAbilityGroup(AbilityGroupId.Item, itemAbilityGroup);
-        registerAbilityGroup(AbilityGroupId.Passive, passiveAbilityGroup);
-        registerAbilityGroup(AbilityGroupId.Ultimate, ultimateAbilityGroup);
+        registerAbilityGroup("basic", AbilityGroupId.Basic, basicAbilityGroup);
+        registerAbilityGroup("item", AbilityGroupId.Item, itemAbilityGroup);
+        registerAbilityGroup("passive", AbilityGroupId.Passive, passiveAbilityGroup);
+        registerAbilityGroup("ultimate", AbilityGroupId.Ultimate, ultimateAbilityGroup);
     }
 
     @Override
@@ -50,9 +50,9 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
         return abilityGroups.values();
     }
 
-    private void registerAbilityGroup(AbilityGroupId group, AbilityGroup abilityGroup) {
+    private void registerAbilityGroup(String name, AbilityGroupId group, AbilityGroup abilityGroup) {
         abilityGroups.put(group, abilityGroup);
-        addSyncChild(abilityGroup.name, abilityGroup);
+        addSyncChild(name, abilityGroup);
     }
 
     public ItemAbilityGroup getItemGroup() {

@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 
 public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncComponentProvider {
     private final String name;
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("knowledge");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
     private final PlayerAbilityKnowledge abilities;
     private final PlayerTalentKnowledge talents;
     private final PlayerEntitlements entitlements;

@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 public class ItemAbilityGroup extends AbilityGroup {
 
     public ItemAbilityGroup(Persona persona) {
-        super(persona, "item", AbilityGroupId.Item);
+        super(persona, AbilityGroupId.Item);
     }
 
     @Override

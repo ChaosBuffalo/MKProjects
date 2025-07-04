@@ -10,14 +10,12 @@ public class PlayerSyncComponent {
 
     private final SyncGroup publicUpdater;
     private final SyncGroup privateUpdater;
-    private final String name;
 
     public interface UnhandledChildFunction {
         PlayerSyncComponent handle(String key, Tag valueTag, SyncVisibility visibility);
     }
 
-    public PlayerSyncComponent(String name) {
-        this.name = name;
+    public PlayerSyncComponent() {
         publicUpdater = new SyncGroup();
         privateUpdater = new SyncGroup();
     }
@@ -33,15 +31,15 @@ public class PlayerSyncComponent {
         });
     }
 
-    public void attach(SyncController engine) {
+    public void attach(String name, SyncController engine) {
         engine.add(name, publicUpdater, SyncVisibility.Public);
         engine.add(name, privateUpdater, SyncVisibility.Private);
     }
 
-    public void detach(SyncController engine) {
-        engine.remove(name, publicUpdater, SyncVisibility.Public);
-        engine.remove(name, privateUpdater, SyncVisibility.Private);
-    }
+//    public void detach(SyncController engine) {
+//        engine.remove(name, publicUpdater, SyncVisibility.Public);
+//        engine.remove(name, privateUpdater, SyncVisibility.Private);
+//    }
 
     public void addChild(String name, PlayerSyncComponent component) {
         addPublic(name, component.publicUpdater);

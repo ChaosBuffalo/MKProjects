@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncComponentProvider {
     private final Persona persona;
     private final MKPlayerData playerData;
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("abilities");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
     private final Map<ResourceLocation, PlayerKnownAbility> knownAbilities = new HashMap<>();
     private final SyncInt poolSize = new SyncInt(GameConstants.DEFAULT_ABILITY_POOL_SIZE);
     private final SyncMapUpdater<ResourceLocation, PlayerKnownAbility> knownAbilityUpdater =

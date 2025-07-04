@@ -15,28 +15,30 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.EnumSet;
+import java.util.List;
 
-public record EntityDataUpdatePacket(int entityId, CompoundTag updateTag, EnumSet<SyncVisibility> visibility) implements CustomPacketPayload {
+public record EntityDataUpdatePacket(int entityId, List<UpdateTag> updateTags) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<EntityDataUpdatePacket> TYPE = new CustomPacketPayload.Type<>(MKCore.id("entity_data_update"));
-
-    public static final StreamCodec<FriendlyByteBuf, EnumSet<SyncVisibility>> ENUM_SET_STREAM_CODEC = StreamCodec.of(
-            (bytes, set) -> bytes.writeEnumSet(set, SyncVisibility.class),
-            (bytes) -> bytes.readEnumSet(SyncVisibility.class)
-    );
 
     public static final StreamCodec<FriendlyByteBuf, EntityDataUpdatePacket> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.INT,
             EntityDataUpdatePacket::entityId,
-            ByteBufCodecs.COMPOUND_TAG,
-            EntityDataUpdatePacket::updateTag,
-            ENUM_SET_STREAM_CODEC,
-            EntityDataUpdatePacket::visibility,
+            UpdateTag.STREAM_CODEC.apply(ByteBufCodecs.list()),
+            EntityDataUpdatePacket::updateTags,
             EntityDataUpdatePacket::new
     );
+
+    public record UpdateTag(SyncVisibility visibility, CompoundTag tag) {
+        public static StreamCodec<FriendlyByteBuf, UpdateTag> STREAM_CODEC = StreamCodec.composite(
+                NeoForgeStreamCodecs.enumCodec(SyncVisibility.class), UpdateTag::visibility,
+                ByteBufCodecs.COMPOUND_TAG, UpdateTag::tag,
+                UpdateTag::new
+        );
+    }
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
@@ -63,9 +65,13 @@ public record EntityDataUpdatePacket(int entityId, CompoundTag updateTag, EnumSe
             var context = new SyncContext(target.registryAccess());
             if (target instanceof Player player) {
                 MKPlayerData data = MKCore.getPlayerOrThrow(player);
-                data.getSyncController().deserializeUpdate(context, packet.updateTag, packet.visibility);
+                for (var tag : packet.updateTags) {
+                    data.getSyncController().deserializeUpdate(context, tag.tag, tag.visibility);
+                }
             } else if (target instanceof ISyncControllerProvider provider) {
-                provider.getSyncController().deserializeUpdate(context, packet.updateTag, packet.visibility);
+                for (var tag : packet.updateTags) {
+                    provider.getSyncController().deserializeUpdate(context, tag.tag, tag.visibility);
+                }
             }
         }
     }

@@ -36,8 +36,8 @@ public abstract class SyncController {
         getVisibilityGroup(visibility).remove(name, syncObject);
     }
 
-    public void deserializeUpdate(SyncContext context, CompoundTag updateTag, Set<SyncVisibility> visibility) {
-        visibility.forEach(v -> getVisibilityGroup(v).handleUpdatePayload(context, updateTag));
+    public void deserializeUpdate(SyncContext context, CompoundTag updateTag, SyncVisibility visibility) {
+        getVisibilityGroup(visibility).handleUpdatePayload(context, updateTag);
     }
 
     public abstract boolean syncUpdates();

@@ -41,7 +41,7 @@ public final class PlayerSyncController extends EntitySyncController {
     }
 
     @Override
-    public void deserializeUpdate(SyncContext context, CompoundTag updateTag, Set<SyncVisibility> visibility) {
+    public void deserializeUpdate(SyncContext context, CompoundTag updateTag, SyncVisibility visibility) {
         super.deserializeUpdate(context, updateTag, visibility);
         NeoForge.EVENT_BUS.post(new PlayerDataEvent.Updated(playerData));
     }

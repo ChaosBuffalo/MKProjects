@@ -14,7 +14,7 @@ public class PassiveAbilityGroup extends AbilityGroup {
     private static final UUID EV_ID = UUID.fromString("137dc36b-c68b-4ace-8627-78c4dc1b6b85");
 
     public PassiveAbilityGroup(Persona persona) {
-        super(persona, "passive", AbilityGroupId.Passive);
+        super(persona, AbilityGroupId.Passive);
         persona.subscribe(PlayerEvents.SKILL_LEVEL_CHANGE, EV_ID, this::onSkillChange);
     }
 

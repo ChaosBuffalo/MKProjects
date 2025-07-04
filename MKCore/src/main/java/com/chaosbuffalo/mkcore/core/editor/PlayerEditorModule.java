@@ -9,7 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
 public class PlayerEditorModule implements IPlayerSyncComponentProvider {
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("editor");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
     private final ParticleEditorSyncComponent particleEditorData = new ParticleEditorSyncComponent();
     protected final MKPlayerData playerData;
 
