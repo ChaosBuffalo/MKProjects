@@ -5,16 +5,23 @@ import net.minecraft.nbt.Tag;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.BiFunction;
 
 public class SyncGroup implements ISyncObject {
     protected final Map<String, ISyncObject> components = new HashMap<>();
     protected final Set<String> dirtySet = new HashSet<>();
-    protected BiFunction<String, Tag, ISyncObject> unhandledKeyHandler;
+    protected UnhandledKeyHandlerFunction unhandledKeyHandler;
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
+
+    public interface UnhandledKeyHandlerFunction {
+        ISyncObject createSyncObject(String key, Tag valueTag);
+    }
 
     public SyncGroup() {
 
+    }
+
+    public void setUnhandledKeyHandler(UnhandledKeyHandlerFunction handler) {
+        this.unhandledKeyHandler = handler;
     }
 
     public void add(String name, ISyncObject sync) {
@@ -73,7 +80,7 @@ public class SyncGroup implements ISyncObject {
             if (sync != null) {
                 sync.handleUpdatePayload(context, tag);
             } else if (unhandledKeyHandler != null) {
-                ISyncObject newSync = unhandledKeyHandler.apply(key, tag);
+                ISyncObject newSync = unhandledKeyHandler.createSyncObject(key, tag);
                 if (newSync != null) {
                     newSync.handleUpdatePayload(context, tag);
                     components.put(key, newSync);

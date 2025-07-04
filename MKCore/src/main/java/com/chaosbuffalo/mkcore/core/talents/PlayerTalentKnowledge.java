@@ -283,7 +283,7 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
 
     class TreeSyncGroup extends SyncGroup {
         public TreeSyncGroup() {
-            unhandledKeyHandler = this::handleUnhandled;
+            setUnhandledKeyHandler(this::handleUnhandled);
         }
 
         private ISyncObject handleUnhandled(String name, Tag tag) {

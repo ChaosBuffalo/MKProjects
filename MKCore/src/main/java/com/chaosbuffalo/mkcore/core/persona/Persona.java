@@ -85,7 +85,8 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         return entitlements;
     }
 
-    void registerExtension(IPersonaExtension extension) {
+    void registerExtension(IPersonaExtensionProvider provider) {
+        var extension = provider.create(this);
         extensions.put(extension.getClass(), extension);
     }
 
@@ -95,7 +96,6 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     }
 
     public void activate() {
-        sync.attach(playerData.getSyncController());
         MKCore.LOGGER.debug("Persona.activate");
         entitlements.onPersonaActivated();
         talents.onPersonaActivated();
@@ -104,7 +104,6 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     }
 
     public void deactivate() {
-        sync.detach(playerData.getSyncController());
         MKCore.LOGGER.debug("Persona.deactivate");
         skills.onPersonaDeactivated();
         loadout.onPersonaDeactivated();

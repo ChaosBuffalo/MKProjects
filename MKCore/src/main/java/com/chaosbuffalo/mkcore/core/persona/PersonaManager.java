@@ -2,25 +2,37 @@ package com.chaosbuffalo.mkcore.core.persona;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
 import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
+import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
+import com.chaosbuffalo.mkcore.sync.types.SyncString;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.util.Lazy;
 
 import java.util.*;
 
-public class PersonaManager implements IMKSerializable<CompoundTag> {
+public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSyncComponentProvider {
     public static final String DEFAULT_PERSONA_NAME = "default";
     private static final List<IPersonaExtensionProvider> extensionProviders = new ArrayList<>(4);
     private final MKPlayerData playerData;
     private final Map<String, Persona> personas = new HashMap<>();
+    protected final PlayerSyncComponent sync = new PlayerSyncComponent("persona");
+    protected final SyncString activePersonaName = new SyncString(DEFAULT_PERSONA_NAME);
     protected Persona activePersona;
 
     public PersonaManager(MKPlayerData playerData) {
         this.playerData = playerData;
+        addSyncPrivate("#active", activePersonaName);
+    }
+
+    @Override
+    public PlayerSyncComponent getSyncComponent() {
+        return sync;
     }
 
     public Persona getActivePersona() {
@@ -29,6 +41,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
 
     protected void setActivePersona(Persona persona) {
         activePersona = Objects.requireNonNull(persona, "cannot activate a null persona");
+        activePersonaName.set(persona.getName());
     }
 
     public void onJoinWorld() {
@@ -45,14 +58,22 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
 
     private void loadPersona(String name) {
         // Look for the specified persona, or create a new persona if it does not exist
-        Persona persona = personas.computeIfAbsent(name, this::createNewPersona);
+        Persona persona = getOrCreatePersona(name);
 
         dispatchActivation(persona);
     }
 
+    protected Persona getOrCreatePersona(String name) {
+        return personas.computeIfAbsent(name, newName -> {
+            var newPersona = createNewPersona(newName);
+            addSyncChild(newName, newPersona);
+            return newPersona;
+        });
+    }
+
     protected Persona createNewPersona(String name) {
         Persona persona = new Persona(playerData, name);
-        extensionProviders.forEach(provider -> persona.registerExtension(provider.create(persona)));
+        extensionProviders.forEach(persona::registerExtension);
         return persona;
     }
 
@@ -78,7 +99,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
             return false;
         }
 
-        personas.put(name, createNewPersona(name));
+        getOrCreatePersona(name);
         return true;
     }
 
@@ -154,6 +175,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
                 continue;
             }
 
+            addSyncChild(name, persona);
             personas.put(name, persona);
         }
 
@@ -167,14 +189,25 @@ public class PersonaManager implements IMKSerializable<CompoundTag> {
 
     // The client only has a single persona that will be overwritten when the server changes
     public static class ClientPersonaManager extends PersonaManager {
+        private Lazy<Persona> personaSupplier;
 
         public ClientPersonaManager(MKPlayerData playerData) {
             super(playerData);
+            sync.setHandlerFunction((s, t, v) -> {
+                Persona persona = getOrCreatePersona(s);
+                return persona.getSyncComponent();
+            });
+            activePersonaName.setCallback(newName -> {
+                personaSupplier = Lazy.of(() -> getPersona(newName));
+            });
+            personaSupplier = Lazy.of(() -> {
+                throw new IllegalStateException("client tried to access active persona too early");
+            });
+        }
 
-            Persona single = createNewPersona("client_persona");
-
-            setActivePersona(single);
-            getActivePersona().getSyncComponent().attach(playerData.getSyncController());
+        @Override
+        public Persona getActivePersona() {
+            return personaSupplier.get();
         }
     }
 
