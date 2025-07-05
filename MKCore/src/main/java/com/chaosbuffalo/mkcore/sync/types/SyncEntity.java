@@ -57,6 +57,11 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
     }
 
     @Override
+    public void clearDirty() {
+        dirty = false;
+    }
+
+    @Override
     public @Nullable Tag writeFullValue(SyncContext context) {
         return IntTag.valueOf(value != null ? value.getId() : -1);
     }

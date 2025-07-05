@@ -44,6 +44,11 @@ public class SyncBool implements ISyncObject {
     }
 
     @Override
+    public void clearDirty() {
+        dirty = false;
+    }
+
+    @Override
     public @Nullable Tag writeFullValue(SyncContext context) {
         return ByteTag.valueOf(value);
     }

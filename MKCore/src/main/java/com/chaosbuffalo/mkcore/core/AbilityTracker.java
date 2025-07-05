@@ -230,6 +230,11 @@ public class AbilityTracker implements ISyncObject {
         }
 
         @Override
+        public void clearDirty() {
+            dirty.clear();
+        }
+
+        @Override
         public @Nullable Tag writeFullValue(SyncContext context) {
             CompoundTag root = new CompoundTag();
             iterateActiveEntries(e -> {
@@ -266,6 +271,11 @@ public class AbilityTracker implements ISyncObject {
     @Override
     public boolean isDirty() {
         return false;
+    }
+
+    @Override
+    public void clearDirty() {
+        ISyncObject.notImplementedByDesign(this);
     }
 
     @Override

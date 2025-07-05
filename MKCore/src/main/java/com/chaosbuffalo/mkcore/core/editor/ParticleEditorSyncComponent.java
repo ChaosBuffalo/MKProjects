@@ -44,6 +44,11 @@ public class ParticleEditorSyncComponent implements ISyncObject {
         return dirty;
     }
 
+    @Override
+    public void clearDirty() {
+        dirty = false;
+    }
+
     public void markDirty() {
         this.dirty = true;
     }

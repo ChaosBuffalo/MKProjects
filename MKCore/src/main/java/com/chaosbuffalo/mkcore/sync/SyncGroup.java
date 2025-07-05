@@ -67,6 +67,12 @@ public class SyncGroup implements ISyncObject {
     }
 
     @Override
+    public void clearDirty() {
+        components.values().forEach(ISyncObject::clearDirty);
+        dirtySet.clear();
+    }
+
+    @Override
     public void handleUpdatePayload(SyncContext context, Tag valueTag) {
         if (!(valueTag instanceof CompoundTag groupTag) || groupTag.isEmpty()) {
             return;

@@ -10,6 +10,8 @@ public interface ISyncObject {
 
     boolean isDirty();
 
+    void clearDirty();
+
     void handleUpdatePayload(SyncContext context, Tag valueTag);
 
     @Nullable

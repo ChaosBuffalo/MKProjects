@@ -62,6 +62,11 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
     }
 
     @Override
+    public void clearDirty() {
+        ISyncObject.notImplementedByDesign(this);
+    }
+
+    @Override
     public @Nullable Tag writeFullValue(SyncContext context) {
         return ISyncObject.notImplementedByDesign(this);
     }
@@ -135,6 +140,12 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         @Override
         public boolean isDirty() {
             return !toRemoveDirty.isEmpty() || !toAddDirty.isEmpty();
+        }
+
+        @Override
+        public void clearDirty() {
+            toAddDirty.clear();
+            toRemoveDirty.clear();
         }
 
         @Override

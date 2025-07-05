@@ -266,6 +266,11 @@ public class TalentTreeRecord {
         }
 
         @Override
+        public void clearDirty() {
+            updatedLines.clear();
+        }
+
+        @Override
         public @Nullable Tag writeFullValue(SyncContext context) {
             CompoundTag root = new CompoundTag();
             root.putBoolean("f", true);

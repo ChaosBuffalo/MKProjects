@@ -52,6 +52,11 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
     }
 
     @Override
+    public void clearDirty() {
+        dirtyEntries.clear();
+    }
+
+    @Override
     public @Nullable Tag writeFullValue(SyncContext context) {
         if (parent.isEmpty())
             return null;

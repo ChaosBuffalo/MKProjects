@@ -99,4 +99,12 @@ public class EntitySyncController extends SyncController {
 
         PacketHandler.sendMessage(packet, otherPlayer);
     }
+
+    public void onJoinLevel() {
+        // Clear all dirty elements to avoid pointless packets after spawn.
+        // Should be safe because no one has seen this entity yet.
+        if (!entity.isAddedToLevel()) {
+            rootGroups.values().forEach(SyncGroup::clearDirty);
+        }
+    }
 }

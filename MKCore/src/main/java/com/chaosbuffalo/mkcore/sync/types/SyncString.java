@@ -51,6 +51,11 @@ public class SyncString implements ISyncObject {
     }
 
     @Override
+    public void clearDirty() {
+        dirty = false;
+    }
+
+    @Override
     public @Nullable Tag writeFullValue(SyncContext context) {
         return StringTag.valueOf(value);
     }

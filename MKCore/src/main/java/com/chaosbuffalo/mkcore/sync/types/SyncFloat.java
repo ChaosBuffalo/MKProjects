@@ -48,6 +48,11 @@ public class SyncFloat implements ISyncObject {
     }
 
     @Override
+    public void clearDirty() {
+        dirty = false;
+    }
+
+    @Override
     public @Nullable Tag writeFullValue(SyncContext context) {
         return FloatTag.valueOf(value);
     }
