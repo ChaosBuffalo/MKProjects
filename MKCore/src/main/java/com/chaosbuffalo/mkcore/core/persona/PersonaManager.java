@@ -12,7 +12,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.util.Lazy;
 
 import java.util.*;
 
@@ -189,25 +188,22 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
 
     // The client only has a single persona that will be overwritten when the server changes
     public static class ClientPersonaManager extends PersonaManager {
-        private Lazy<Persona> personaSupplier;
 
         public ClientPersonaManager(MKPlayerData playerData) {
             super(playerData);
+            activePersona = getOrCreatePersona(DEFAULT_PERSONA_NAME);
             sync.setHandlerFunction((s, t, v) -> {
                 Persona persona = getOrCreatePersona(s);
                 return persona.getSyncComponent();
             });
             activePersonaName.setCallback(newName -> {
-                personaSupplier = Lazy.of(() -> getPersona(newName));
-            });
-            personaSupplier = Lazy.of(() -> {
-                throw new IllegalStateException("client tried to access active persona too early");
+                activePersona = getOrCreatePersona(newName);
             });
         }
 
         @Override
         public Persona getActivePersona() {
-            return personaSupplier.get();
+            return activePersona;
         }
     }
 

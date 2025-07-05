@@ -27,15 +27,16 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
 
     private final MKPlayerData playerData;
     private final PlayerSyncComponent sync = new PlayerSyncComponent();
-    private final SyncString masteryClientInfo;
-    private final Set<ResourceLocation> masteredClasses = new HashSet<>();
+    private final Set<ResourceLocation> armorMastery;
+    private final SyncString clientMasteryInfo;
 
     public PlayerEquipment(MKPlayerData playerData) {
         super(playerData);
         this.playerData = playerData;
-        masteryClientInfo = new SyncString(""); // TODO: better sync? this is pretty dumb
-        masteryClientInfo.setCallback(this::handleClientMasteryUpdate);
-        addSyncPrivate("mastery", masteryClientInfo);
+        this.armorMastery = new HashSet<>();
+        clientMasteryInfo = new SyncString(""); // TODO: better sync? this is pretty dumb
+        clientMasteryInfo.setCallback(this::handleClientMasteryUpdate);
+        addSyncPrivate("armor_mastery", clientMasteryInfo);
         playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
         playerData.events().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated);
     }
@@ -45,12 +46,31 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
         return sync;
     }
 
+    private void handleClientMasteryUpdate(String masteryInfo) {
+        armorMastery.clear();
+        Arrays.stream(masteryInfo.split("\\|")).map(ResourceLocation::parse).forEach(armorMastery::add);
+    }
+
+    public void enableArmorMastery(ResourceKey<ArmorClass> armorClassResourceKey, boolean enable) {
+        MKCore.LOGGER.info("enabling armor mastery for {} {}", armorClassResourceKey, enable);
+        if (enable) {
+            armorMastery.add(armorClassResourceKey.location());
+        } else {
+            armorMastery.remove(armorClassResourceKey.location());
+        }
+        // Inform the client about known mastery so tooltips work properly
+        updateClientMastery();
+        refreshAllArmorSlots();
+    }
+
     @Override
     protected void handleEquip(EquipmentSlot slot, ItemStack to) {
         super.handleEquip(slot, to);
         addItemAbility(slot, to);
         if (slot.isArmor()) {
-            applyArmorClassBonus(slot, to);
+            // Need to do refresh here so armor mastery is applied to the armor worn at login
+            // persona activate callback is done before equipment is ready
+            refreshArmorClassBonus(slot);
         }
     }
 
@@ -63,19 +83,7 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
         }
     }
 
-    public void enableArmorMastery(ResourceKey<ArmorClass> armorClassResourceKey, boolean enable) {
-        MKCore.LOGGER.info("enabling armor mastery for {} {}", armorClassResourceKey, enable);
-        if (enable) {
-            masteredClasses.add(armorClassResourceKey.location());
-        } else {
-            masteredClasses.remove(armorClassResourceKey.location());
-        }
-        updateClientMastery();
-    }
-
-    private void updateClientMastery() {
-        // Inform the client about known mastery so tooltips work properly
-        masteryClientInfo.set(String.join("|", masteredClasses.stream().map(ResourceLocation::toString).toList()));
+    private void refreshAllArmorSlots() {
         // For all armor, reapply effects to account for new mastery
         refreshArmorClassBonus(EquipmentSlot.HEAD);
         refreshArmorClassBonus(EquipmentSlot.CHEST);
@@ -83,19 +91,20 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
         refreshArmorClassBonus(EquipmentSlot.FEET);
     }
 
-    private void resetMastery() {
-        masteredClasses.clear();
-        updateClientMastery();
+    private void updateClientMastery() {
+        // Inform the client about known mastery so tooltips work properly
+        clientMasteryInfo.set(String.join("|", armorMastery.stream().map(ResourceLocation::toString).toList()));
     }
 
-    private void handleClientMasteryUpdate(String masteryInfo) {
-        masteredClasses.clear();
-        Arrays.stream(masteryInfo.split("\\|")).map(ResourceLocation::parse).forEach(masteredClasses::add);
+    private void resetArmorMastery() {
+        armorMastery.clear();
+        updateClientMastery();
+        refreshAllArmorSlots();
     }
 
     public boolean isArmorClassMastered(@Nonnull Holder<ArmorClass> armorClassHolder) {
         ResourceKey<ArmorClass> armorKey = armorClassHolder.getKey();
-        return armorKey != null && masteredClasses.contains(armorKey.location());
+        return armorKey != null && armorMastery.contains(armorKey.location());
     }
 
     private void applyArmorClassBonus(EquipmentSlot slot, ItemStack to) {
@@ -227,7 +236,7 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
     }
 
     public void onPersonaActivated(PlayerEvents.PersonaEvent event) {
-        updateClientMastery();
+        refreshAllArmorSlots();
         addItemAbility(EquipmentSlot.MAINHAND);
         addItemAbility(EquipmentSlot.HEAD);
         addItemAbility(EquipmentSlot.CHEST);
@@ -236,7 +245,7 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
     }
 
     private void onPersonaDeactivated(PlayerEvents.PersonaEvent event) {
-        resetMastery();
+        resetArmorMastery();
         removeItemAbility(EquipmentSlot.MAINHAND);
         removeItemAbility(EquipmentSlot.HEAD);
         removeItemAbility(EquipmentSlot.CHEST);

@@ -4,10 +4,17 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
+import javax.annotation.Nullable;
+
 public interface IPersonaExtension {
     ResourceLocation getName();
 
-    CompoundTag serialize(HolderLookup.Provider provider);
+    @Nullable
+    default CompoundTag serialize(HolderLookup.Provider provider) {
+        return null;
+    }
 
-    void deserialize(HolderLookup.Provider provider, CompoundTag tag);
+    default void deserialize(HolderLookup.Provider provider, CompoundTag tag) {
+
+    }
 }
