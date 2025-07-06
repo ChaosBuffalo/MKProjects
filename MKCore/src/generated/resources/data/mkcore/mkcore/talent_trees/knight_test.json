@@ -1,0 +1,19 @@
+{
+  "display_name": "Core Knight Test",
+  "is_default": false,
+  "lines": [
+    {
+      "line_name": "knight_1",
+      "talents": [
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.max_health",
+          "display_info": "mkcore:max_health",
+          "max_ranks": 1,
+          "per_rank": 1.0
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

@@ -4,13 +4,14 @@ import com.chaosbuffalo.mkcore.abilities.AbilityTranslations;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
-import com.chaosbuffalo.mkcore.core.talents.MKTalent;
 import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;
+import com.chaosbuffalo.mkcore.core.talents.talent_types.AttributeTalentType;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 
 public class MKLanguageProvider extends LanguageProvider {
@@ -45,13 +46,22 @@ public class MKLanguageProvider extends LanguageProvider {
         add(MKEntitlement.nameKey(entitlement.getKey().location()), name);
     }
 
-    public void talent(Holder<MKTalent> talent, String name, String description) {
-        add(MKTalent.getTalentNameKey(talent.getKey().location()), name);
-        add(MKTalent.getTalentDescriptionKey(talent.getKey().location()), description);
+    public void entitlement(Holder<MKEntitlement> entitlement, String name, String description) {
+        add(MKEntitlement.nameKey(entitlement.getKey().location()), name);
+        add(MKEntitlement.descriptionKey(entitlement.getKey().location()), description);
     }
 
     public void talentTree(ResourceLocation talentTreeId, String name) {
-        add(talentTreeId.getNamespace() + ".talent_tree." + talentTreeId.getPath() + ".name",  name);
+        add(TalentTreeDefinition.nameKey(talentTreeId), name);
+    }
+
+    public void attribute(Holder<Attribute> attributeHolder, String name) {
+        add(attributeHolder.value().getDescriptionId(), name);
+    }
+
+    public void attributeTalent(Holder<Attribute> attributeHolder, String name, String desc) {
+        add(AttributeTalentType.nameKey(attributeHolder.getKey().location()), name);
+        add(AttributeTalentType.descriptionKey(attributeHolder.getKey().location()), desc);
     }
 
 }

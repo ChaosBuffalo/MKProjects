@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkultra.data.generators;
 
 import com.chaosbuffalo.mkchat.dialogue.*;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import com.chaosbuffalo.mknpc.data.providers.QuestDefinitionProvider;
 import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
@@ -14,10 +15,7 @@ import com.chaosbuffalo.mknpc.quest.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.quest.rewards.*;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructures;
-import com.chaosbuffalo.mkultra.init.MKUAbilities;
-import com.chaosbuffalo.mkultra.init.MKUEntitlements;
-import com.chaosbuffalo.mkultra.init.MKUFactions;
-import com.chaosbuffalo.mkultra.init.MKUItems;
+import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
@@ -44,7 +42,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
     @Override
     public CompletableFuture<?> run(CachedOutput cache) {
         return CompletableFuture.allOf(
-                writeDefinition(generateIntroQuest(), cache),
+                writeDefinition(this::generateIntroQuest, cache),
                 writeDefinition(generateTrooperArmorQuest(), cache),
                 writeDefinition(generateIntroClericQuest(), cache),
                 writeDefinition(generateIntroMageQuest(), cache),
@@ -644,7 +642,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return def;
     }
 
-    private QuestDefinition generateIntroQuest() {
+    private QuestDefinition generateIntroQuest(HolderLookup.Provider provider) {
+        var talentTrees = provider.lookupOrThrow(MKCoreRegistry.TALENT_TREE_REGISTRY_KEY);
 
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         QuestBuilder.QuestNpc greenLady = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("green_lady"));
@@ -861,7 +860,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 )
                 .reward(new XpReward(100))
                 .reward(new GrantEntitlementReward(MKUEntitlements.GreenKnightTier3))
-                .reward(new TalentTreeReward(MKUltra.id("green_knight_talents")))
+                .reward(new TalentTreeReward(talentTrees.getOrThrow(MKUTalentTrees.GREEN_KNIGHT)))
                 .quest();
         def.addQuest(killBurning);
 

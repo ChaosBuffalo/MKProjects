@@ -22,7 +22,6 @@ public class MKUltra {
         MKUAbilities.register(modBus);
         MKUWorldGen.register(modBus);
         MKUEntitlements.register(modBus);
-        MKUTalents.register(modBus);
         MKUSounds.register(modBus);
         MKUItems.register(modBus);
         MKUArmorMaterial.register(modBus);

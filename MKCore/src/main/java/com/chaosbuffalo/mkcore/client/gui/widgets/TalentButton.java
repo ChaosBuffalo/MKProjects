@@ -2,18 +2,15 @@ package com.chaosbuffalo.mkcore.client.gui.widgets;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.core.talents.MKTalent;
+import com.chaosbuffalo.mkcore.core.talents.TalentNodeDisplay;
 import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
+import com.chaosbuffalo.mkcore.core.talents.TalentType;
 import com.chaosbuffalo.mkwidgets.client.gui.instructions.HoveringTextInstruction;
 import com.chaosbuffalo.mkwidgets.client.gui.math.Vec2i;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -38,18 +35,19 @@ public class TalentButton extends MKButton {
     public final int index;
     public final String line;
     public final TalentRecord record;
+    private final TalentNodeDisplay nodeDisplay;
 
     public TalentButton(IMKEntityData entityData, int index, String line, TalentRecord record,
                         int x, int y) {
-        super(x, y, WIDTH, HEIGHT, record.getNode().getTalent().getTalentName());
+        super(x, y, WIDTH, HEIGHT, "");
         this.index = index;
         this.line = line;
         this.record = record;
         this.tooltip = new ArrayList<>();
-        MKTalent talent = record.getNode().getTalent();
-        tooltip.add(talent.getTalentName());
-        tooltip.add(talent.getTypeDescription().withStyle(ChatFormatting.GOLD));
-        talent.describeTalent(entityData, record, tooltip::add);
+        nodeDisplay = record.getNode().getDisplay();
+
+        TalentType<?> talentType = record.getNode().getType();
+        talentType.buildTooltip(entityData, record, tooltip::add);
     }
 
 
@@ -80,9 +78,9 @@ public class TalentButton extends MKButton {
                     SLOT_WIDTH, SLOT_HEIGHT);
             ResourceLocation icon;
             if (record.getRank() > 0) {
-                icon = record.getNode().getTalent().getFilledIcon();
+                icon = nodeDisplay.getFilledIcon();
             } else {
-                icon = record.getNode().getTalent().getIcon();
+                icon = nodeDisplay.getIcon();
             }
 //            RenderSystem.setShaderTexture(0, icon);
             graphics.blit(icon, this.getX() + SLOT_X_OFFSET,

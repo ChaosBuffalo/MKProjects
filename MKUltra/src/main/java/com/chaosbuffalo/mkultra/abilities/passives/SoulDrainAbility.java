@@ -35,7 +35,8 @@ public class SoulDrainAbility extends MKPassiveAbility {
 
     @Override
     public Component getAbilityDescription(IMKEntityData entityData, AbilityContext context) {
-        float value = getDrainValue(context::getSkill);
-        return Component.translatable(getDescriptionTranslationKey(), value);
+        float skillLevel = context.getSkill(MKAttributes.EVOCATION);
+        Component valueStr = formatManaValue(entityData, base.value(), scale.value(), skillLevel,0f, 1f);
+        return Component.translatable(getDescriptionTranslationKey(), valueStr);
     }
 }

@@ -50,7 +50,7 @@ public class GrantEntitlementEffect extends DialogueEffect {
             MKCore.getPlayer(player).ifPresent(x -> x.getEntitlements()
                     .addEntitlement(new EntitlementInstance(entitlement.value(), UUID.randomUUID())));
             player.sendSystemMessage(Component.translatable("mknpc.grant_entitlement.message",
-                    entitlement.value().getDescription()).withStyle(ChatFormatting.GOLD));
+                    entitlement.value().getName()).withStyle(ChatFormatting.GOLD));
         }
     }
 }

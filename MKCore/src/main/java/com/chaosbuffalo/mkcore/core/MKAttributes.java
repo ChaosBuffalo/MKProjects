@@ -59,7 +59,7 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> RANGED_RESISTANCE = REGISTRY.register("ranaged_resistance", () ->
-            new MKRangedAttribute("attribute.name.mk.ranged_resistance", 0, -1.0, 1.0)
+            new MKPercentageAttribute("attribute.name.mk.ranged_resistance", 0, -1.0, 1.0)
             .setSyncType(AttributeSyncType.Private));
 
     // This is slightly confusing.
@@ -82,7 +82,7 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> ARCANE_RESISTANCE = REGISTRY.register("arcane_resistance", () ->
-            new MKRangedAttribute("attribute.name.mk.arcane_resistance", 0, -1.0, 1.0)
+            new MKPercentageAttribute("attribute.name.mk.arcane_resistance", 0, -1.0, 1.0)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> ARCANE_DAMAGE = REGISTRY.register("arcane_damage",
@@ -90,7 +90,7 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> FIRE_RESISTANCE = REGISTRY.register("fire_resistance", () ->
-            new MKRangedAttribute("attribute.name.mk.fire_resistance", 0, -1.0, 1.0)
+            new MKPercentageAttribute("attribute.name.mk.fire_resistance", 0, -1.0, 1.0)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> FIRE_DAMAGE = REGISTRY.register("fire_damage", () ->
@@ -98,7 +98,7 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> FROST_RESISTANCE = REGISTRY.register("frost_resistance", () ->
-            new MKRangedAttribute("attribute.name.mk.frost_resistance", 0, -1.0, 1.0)
+            new MKPercentageAttribute("attribute.name.mk.frost_resistance", 0, -1.0, 1.0)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> FROST_DAMAGE = REGISTRY.register("frost_damage", () ->
@@ -106,7 +106,7 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> SHADOW_RESISTANCE = REGISTRY.register("shadow_resistance", () ->
-            new MKRangedAttribute("attribute.name.mk.shadow_resistance", 0, -1.0, 1.0)
+            new MKPercentageAttribute("attribute.name.mk.shadow_resistance", 0, -1.0, 1.0)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> SHADOW_DAMAGE = REGISTRY.register("shadow_damage", () ->
@@ -114,7 +114,7 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> HOLY_RESISTANCE = REGISTRY.register("holy_resistance", () ->
-            new MKRangedAttribute("attribute.name.mk.holy_resistance", 0, -1.0, 1.0)
+            new MKPercentageAttribute("attribute.name.mk.holy_resistance", 0, -1.0, 1.0)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> HOLY_DAMAGE = REGISTRY.register("holy_damage", () ->
@@ -122,7 +122,7 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> NATURE_RESISTANCE = REGISTRY.register("nature_resistance", () ->
-            new MKRangedAttribute("attribute.name.mk.nature_resistance", 0, -1.0, 1.0)
+            new MKPercentageAttribute("attribute.name.mk.nature_resistance", 0, -1.0, 1.0)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> NATURE_DAMAGE = REGISTRY.register("nature_damage", () ->
@@ -130,7 +130,7 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> POISON_RESISTANCE = REGISTRY.register("poison_resistance", () ->
-            new MKRangedAttribute("attribute.name.mk.poison_resistance", 0, -1.0, 1.0)
+            new MKPercentageAttribute("attribute.name.mk.poison_resistance", 0, -1.0, 1.0)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> POISON_DAMAGE = REGISTRY.register("poison_damage", () ->
@@ -138,7 +138,7 @@ public class MKAttributes {
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> BLEED_RESISTANCE = REGISTRY.register("bleed_resistance", () ->
-            new MKRangedAttribute("attribute.name.mk.bleed_resistance", 0, -1.0, 1.0)
+            new MKPercentageAttribute("attribute.name.mk.bleed_resistance", 0, -1.0, 1.0)
             .setSyncType(AttributeSyncType.Private));
 
     public static final Holder<Attribute> BLEED_DAMAGE = REGISTRY.register("bleed_damage", () ->

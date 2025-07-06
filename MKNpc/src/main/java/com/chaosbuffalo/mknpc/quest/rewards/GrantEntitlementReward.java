@@ -34,7 +34,7 @@ public class GrantEntitlementReward extends QuestReward {
 
     @Override
     public Component getDescription() {
-        return Component.translatable("mknpc.quest_reward.entitlement.message", entitlement.value().getDescription());
+        return Component.translatable("mknpc.quest_reward.entitlement.message", entitlement.value().getName());
     }
 
     @Override
@@ -43,7 +43,7 @@ public class GrantEntitlementReward extends QuestReward {
             MKCore.getPlayer(player).ifPresent(x -> x.getEntitlements()
                     .addEntitlement(new EntitlementInstance(entitlement.value(), UUID.randomUUID())));
             player.sendSystemMessage(Component.translatable("mknpc.grant_entitlement.message",
-                    entitlement.value().getDescription()).withStyle(ChatFormatting.GOLD));
+                    entitlement.value().getName()).withStyle(ChatFormatting.GOLD));
         }
     }
 }

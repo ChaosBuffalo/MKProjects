@@ -889,7 +889,7 @@
         },
         {
           "type": "mknpc:talent_tree",
-          "tree_name": "mkultra:green_knight_talents"
+          "tree_name": "mkultra:green_knight"
         }
       ]
     }

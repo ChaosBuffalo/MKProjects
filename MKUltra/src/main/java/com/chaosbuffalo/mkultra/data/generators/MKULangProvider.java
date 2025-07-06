@@ -68,8 +68,6 @@ public class MKULangProvider extends NpcLanguageProvider {
         ability(MKUAbilities.HOLY_FIRE_FLURRY, "Holy Fire Flurry");
         ability(MKUAbilities.HOLY_WORD_BURST, "Holy Word (Burst)");
         ability(MKUAbilities.HOLY_CIRCLE_ABILITY, "Healing Circle", "Summons a ring of divine energy with radius %s at the location, after %s seconds it starts healing %s every %s seconds for %s seconds.");
-        talent(MKUTalents.SOUL_DRAIN_TALENT, "Soul Drain", "Grants the Soul Drain passive ability.");
-        talent(MKUTalents.LIFE_SIPHON_TALENT, "Life Siphon", "Grants the Life Siphon passive ability.");
         mkEffect(MKUEffects.FROZEN_GRASP, "Frozen Grasp");
         mkEffect(MKUEffects.FROZEN_GRASP_APPLIER, "Frozen Grasp (self)");
         ability(MKUAbilities.FROZEN_GRASP, "Frozen Grasp", "Causes your next %s hits to slow the targets casting, attack, and movement speed for %s seconds.");
@@ -77,7 +75,6 @@ public class MKULangProvider extends NpcLanguageProvider {
         ability(MKUAbilities.SHADOW_PUlSE_FLURRY, "Shadow Pulse Flurry");
         ability(MKUAbilities.SEAFURY, "Seafury", "Places a line of %s eruptions down at the target position %s blocks apart, causing %s after %s seconds to targets within %s blocks.");
         ability(MKUAbilities.GREEN_SOUL, "Green Soul", "Infuses you with the indomitable spirit of a Green Knight, increasing health and armor.");
-        talent(MKUTalents.GREEN_SOUL_TALENT, "Green Soul", "Grants the Green Soul passive ability.");
         talentTree(MKUltra.id("green_knight"), "Green Knight");
         ability(MKUAbilities.SHADOW_PULSE, "Shadow Pulse", "Summons a vortex of shadow with a radius of %s blocks, pulling nearby enemies in and dealing %s every %s seconds for %s seconds. When the effect ends, the vortex detonates dealing %s.");
         ability(MKUAbilities.SHADOW_BOLT, "Shadow Bolt", "Throws a magical ball of shadow, causing %s to the target.");

@@ -100,11 +100,6 @@ public class PacketHandler {
                 ResetAttackSwingPacket.STREAM_CODEC,
                 ResetAttackSwingPacket::handle
         );
-        registrar.playToClient(
-                TalentDefinitionSyncPacket.TYPE,
-                TalentDefinitionSyncPacket.STREAM_CODEC,
-                TalentDefinitionSyncPacket::handle
-        );
         registrar.playToServer(
                 TalentPointActionPacket.TYPE,
                 TalentPointActionPacket.STREAM_CODEC,

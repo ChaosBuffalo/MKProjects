@@ -1,0 +1,164 @@
+{
+  "display_name": {
+    "translate": "talent_tree.mkultra.knave.name"
+  },
+  "is_default": true,
+  "lines": [
+    {
+      "line_name": "a",
+      "talents": [
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:bleed_damage",
+          "display_info": "mkcore:bleed_damage",
+          "max_ranks": 1,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:bleed_resistance",
+          "display_info": "mkcore:bleed_resistance",
+          "max_ranks": 3,
+          "per_rank": 0.01
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:melee_crit_chance",
+          "display_info": "mkcore:melee_crit",
+          "max_ranks": 2,
+          "per_rank": 0.01
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:bleed_damage",
+          "display_info": "mkcore:bleed_damage",
+          "max_ranks": 1,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.max_health",
+          "display_info": "mkcore:max_health",
+          "max_ranks": 2,
+          "per_rank": 1.0
+        }
+      ]
+    },
+    {
+      "line_name": "b",
+      "talents": [
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.attack_damage",
+          "display_info": "mkcore:attack_damage",
+          "max_ranks": 1,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.max_health",
+          "display_info": "mkcore:max_health",
+          "max_ranks": 2,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.movement_speed",
+          "display_info": "mkcore:movement_speed",
+          "max_ranks": 3,
+          "per_rank": 0.01
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.attack_damage",
+          "display_info": "mkcore:attack_damage",
+          "max_ranks": 2,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.movement_speed",
+          "display_info": "mkcore:movement_speed",
+          "max_ranks": 4,
+          "per_rank": 0.01
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:max_mana",
+          "display_info": "mkcore:max_mana",
+          "max_ranks": 2,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.attack_damage",
+          "display_info": "mkcore:attack_damage",
+          "max_ranks": 3,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.armor",
+          "display_info": "mkcore:armor",
+          "max_ranks": 1,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:melee_crit_multiplier",
+          "display_info": "mkcore:melee_crit_multiplier",
+          "max_ranks": 5,
+          "per_rank": 0.1
+        }
+      ]
+    },
+    {
+      "line_name": "c",
+      "talents": [
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:max_mana",
+          "display_info": "mkcore:max_mana",
+          "max_ranks": 2,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:spell_crit_chance",
+          "display_info": "mkcore:spell_crit",
+          "max_ranks": 2,
+          "per_rank": 0.01
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.movement_speed",
+          "display_info": "mkcore:movement_speed",
+          "max_ranks": 3,
+          "per_rank": 0.01
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:bleed_damage",
+          "display_info": "mkcore:bleed_damage",
+          "max_ranks": 1,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:bleed_resistance",
+          "display_info": "mkcore:bleed_resistance",
+          "max_ranks": 2,
+          "per_rank": 0.01
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:melee_crit_chance",
+          "display_info": "mkcore:melee_crit",
+          "max_ranks": 3,
+          "per_rank": 0.01
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

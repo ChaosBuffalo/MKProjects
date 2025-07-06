@@ -12,6 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,11 +23,13 @@ import java.util.stream.Stream;
 
 public class TalentTreeRecord {
     private final TalentTreeDefinition tree;
+    private final ResourceKey<TalentTreeDefinition> treeId;
     private final Map<String, TalentLineRecord> lines = new HashMap<>();
     private final TalentTreeUpdater updater;
 
-    public TalentTreeRecord(TalentTreeDefinition tree) {
+    public TalentTreeRecord(TalentTreeDefinition tree, ResourceKey<TalentTreeDefinition> treeId) {
         this.tree = tree;
+        this.treeId = treeId;
         updater = new TalentTreeUpdater();
     }
 
@@ -40,9 +43,13 @@ public class TalentTreeRecord {
         return tree;
     }
 
+    public ResourceKey<TalentTreeDefinition> getTreeId() {
+        return treeId;
+    }
+
     public Stream<TalentRecord> getRecordStream() {
         return lines.values().stream()
-                .flatMap(e -> e.getRecords().stream());
+                .flatMap(e -> e.lineRecords.stream());
     }
 
     public int getPointsSpent() {
@@ -85,7 +92,7 @@ public class TalentTreeRecord {
             // trying to add
             if (index != 0) {
                 TalentRecord previous = lineRecord.getRecord(index - 1);
-                if (!previous.isKnown()) {
+                if (previous == null || !previous.isKnown()) {
                     MKCore.LOGGER.error("validatePointModification({}, {}, {}) - cannot learn talent if the previous is unknown", lineName, index, amount);
                     return false;
                 }
@@ -185,7 +192,7 @@ public class TalentTreeRecord {
     private TalentLineRecord createLineRecord(String name) {
         TalentLineDefinition lineDef = tree.getLine(name);
         if (lineDef != null) {
-            return new TalentLineRecord(lineDef);
+            return new TalentLineRecord(lineDef, this);
         }
         return null;
     }
@@ -194,11 +201,11 @@ public class TalentTreeRecord {
         private final TalentLineDefinition lineDefinition;
         private final List<TalentRecord> lineRecords;
 
-        public TalentLineRecord(TalentLineDefinition lineDefinition) {
+        public TalentLineRecord(TalentLineDefinition lineDefinition, TalentTreeRecord treeRecord) {
             this.lineDefinition = lineDefinition;
             this.lineRecords = lineDefinition.getNodes()
                     .stream()
-                    .map(TalentNode::createRecord)
+                    .map(node -> node.createRecord(treeRecord))
                     .collect(Collectors.toList());
         }
 
@@ -207,10 +214,6 @@ public class TalentTreeRecord {
                 return lineRecords.get(index);
             }
             return null;
-        }
-
-        public List<TalentRecord> getRecords() {
-            return Collections.unmodifiableList(lineRecords);
         }
 
         public int getLength() {
@@ -227,14 +230,13 @@ public class TalentTreeRecord {
         }
 
         public <T> boolean deserialize(Dynamic<T> dynamic) {
-            List<Dynamic<T>> entries = dynamic.asList(Function.identity());
-            int savedCount = entries.size();
-            if (savedCount != getLength())
+            List<Dynamic<T>> storedEntries = dynamic.asList(Function.identity());
+            if (storedEntries.size() != getLength())
                 return false;
 
-            for (int i = 0; i < savedCount; i++) {
-                TalentRecord record = getRecord(i);
-                if (!record.deserialize(entries.get(i))) {
+            for (int i = 0; i < lineRecords.size(); i++) {
+                TalentRecord record = lineRecords.get(i);
+                if (record == null || !record.deserialize(storedEntries.get(i))) {
                     return false;
                 }
             }
@@ -243,7 +245,7 @@ public class TalentTreeRecord {
     }
 
     private class TalentTreeUpdater implements ISyncObject {
-        private final HashMap<String, BitSet> updatedLines = new HashMap<>();
+        private final Map<String, BitSet> updatedLines = new HashMap<>();
         private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
         public void markUpdated(String lineName, int index) {
@@ -279,7 +281,7 @@ public class TalentTreeRecord {
 
             lines.values().forEach(line -> {
                 String lineName = line.getLineDefinition().getName();
-                ListTag list = line.getRecords().stream()
+                ListTag list = line.lineRecords.stream()
                         .map(this::writeNode)
                         .collect(Collectors.toCollection(ListTag::new));
                 updateTag.put(lineName, list);

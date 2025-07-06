@@ -1,0 +1,140 @@
+{
+  "display_name": {
+    "translate": "talent_tree.mkultra.green_knight.name"
+  },
+  "is_default": false,
+  "lines": [
+    {
+      "line_name": "a",
+      "talents": [
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.max_health",
+          "display_info": "mkcore:max_health",
+          "max_ranks": 3,
+          "per_rank": 4.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:max_poise",
+          "display_info": "mkcore:max_poise",
+          "max_ranks": 2,
+          "per_rank": 2.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:poise_regen",
+          "display_info": "mkcore:poise_regen",
+          "max_ranks": 2,
+          "per_rank": 0.25
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:poise_break_cd",
+          "display_info": "mkcore:poise_break_cd",
+          "max_ranks": 2,
+          "per_rank": -0.5
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:poise_regen",
+          "display_info": "mkcore:poise_regen",
+          "max_ranks": 2,
+          "per_rank": 0.25
+        }
+      ]
+    },
+    {
+      "line_name": "b",
+      "talents": [
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.max_health",
+          "display_info": "mkcore:max_health",
+          "max_ranks": 3,
+          "per_rank": 4.0
+        },
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:pool_count",
+          "entitlement": "mkcore:ability_pool.count",
+          "nodeId": "40525592-c013-46f7-84da-1543d5a28cfc"
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:max_poise",
+          "display_info": "mkcore:max_poise",
+          "max_ranks": 3,
+          "per_rank": 2.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:nature_damage",
+          "display_info": "mkcore:nature_damage",
+          "max_ranks": 5,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:heal_efficiency",
+          "display_info": "mkcore:heal_efficiency",
+          "max_ranks": 5,
+          "per_rank": 0.02
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.armor",
+          "display_info": "mkcore:armor",
+          "max_ranks": 5,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:ability_grant",
+          "ability": "mkultra:green_soul",
+          "display_info": "mkultra:green_soul"
+        }
+      ]
+    },
+    {
+      "line_name": "c",
+      "talents": [
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.max_health",
+          "display_info": "mkcore:max_health",
+          "max_ranks": 3,
+          "per_rank": 4.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:heal_bonus",
+          "display_info": "mkcore:heal_bonus",
+          "max_ranks": 2,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:max_mana",
+          "display_info": "mkcore:max_mana",
+          "max_ranks": 3,
+          "per_rank": 2.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:max_poise",
+          "display_info": "mkcore:max_poise",
+          "max_ranks": 2,
+          "per_rank": 2.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:mana_regen",
+          "display_info": "mkcore:mana_regen",
+          "max_ranks": 1,
+          "per_rank": 0.5
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

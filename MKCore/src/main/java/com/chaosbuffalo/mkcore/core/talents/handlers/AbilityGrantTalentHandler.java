@@ -3,10 +3,9 @@ package com.chaosbuffalo.mkcore.core.talents.handlers;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
-import com.chaosbuffalo.mkcore.core.talents.TalentNode;
 import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import com.chaosbuffalo.mkcore.core.talents.TalentTypeHandler;
-import com.chaosbuffalo.mkcore.core.talents.talent_types.AbilityGrantTalent;
+import com.chaosbuffalo.mkcore.core.talents.nodes.AbilityGrantTalentNode;
 
 public class AbilityGrantTalentHandler extends TalentTypeHandler {
     public AbilityGrantTalentHandler(Persona persona) {
@@ -15,25 +14,29 @@ public class AbilityGrantTalentHandler extends TalentTypeHandler {
 
     @Override
     public void onRecordUpdated(TalentRecord record) {
-        if (record.getNode().getTalent() instanceof AbilityGrantTalent grantTalent) {
-            MKAbility ability = grantTalent.getAbility();
+        if (record.getNode() instanceof AbilityGrantTalentNode abilityNode) {
+            MKAbility ability = abilityNode.getAbility();
             if (!record.isKnown()) {
-                persona.getAbilities().unlearnAbility(ability.getAbilityId(), AbilitySource.forTalent(record.getNode()));
+                persona.getAbilities().unlearnAbility(ability.getAbilityId(), nodeSource(record));
             } else {
-                tryLearn(record.getNode(), ability);
+                tryLearn(record, ability);
             }
         }
     }
 
     @Override
     public void onRecordLoaded(TalentRecord record) {
-        if (record.isKnown() && record.getNode().getTalent() instanceof AbilityGrantTalent grantTalent) {
-            MKAbility ability = grantTalent.getAbility();
-            tryLearn(record.getNode(), ability);
+        if (record.getNode() instanceof AbilityGrantTalentNode abilityNode) {
+            MKAbility ability = abilityNode.getAbility();
+            tryLearn(record, ability);
         }
     }
 
-    protected void tryLearn(TalentNode node, MKAbility ability) {
-        persona.getAbilities().learnAbility(ability, AbilitySource.forTalent(node));
+    private AbilitySource nodeSource(TalentRecord record) {
+        return AbilitySource.forTalent(record);
+    }
+
+    protected void tryLearn(TalentRecord record, MKAbility ability) {
+        persona.getAbilities().learnAbility(ability, nodeSource(record));
     }
 }

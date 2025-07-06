@@ -1,12 +1,13 @@
 package com.chaosbuffalo.mkcore.network;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceKey;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public class TalentPointActionPacket implements CustomPacketPayload {
@@ -17,20 +18,20 @@ public class TalentPointActionPacket implements CustomPacketPayload {
             TalentPointActionPacket::toBytes, TalentPointActionPacket::new
     );
 
-    private final ResourceLocation talentTree;
+    private final ResourceKey<TalentTreeDefinition> talentTree;
     private final String line;
     private final int index;
     private final Action action;
 
-    public TalentPointActionPacket(ResourceLocation tree, String line, int index, Action action) {
+    public TalentPointActionPacket(ResourceKey<TalentTreeDefinition> tree, String line, int index, Action action) {
         talentTree = tree;
         this.line = line;
         this.index = index;
         this.action = action;
     }
 
-    public TalentPointActionPacket(FriendlyByteBuf buffer) {
-        talentTree = buffer.readResourceLocation();
+    public TalentPointActionPacket(RegistryFriendlyByteBuf buffer) {
+        talentTree = buffer.readResourceKey(MKCoreRegistry.TALENT_TREE_REGISTRY_KEY);
         line = buffer.readUtf(1024);
         index = buffer.readVarInt();
         action = buffer.readEnum(Action.class);
@@ -42,21 +43,20 @@ public class TalentPointActionPacket implements CustomPacketPayload {
     }
 
     public void toBytes(FriendlyByteBuf buffer) {
-        buffer.writeResourceLocation(talentTree);
+        buffer.writeResourceKey(talentTree);
         buffer.writeUtf(line);
         buffer.writeVarInt(index);
         buffer.writeEnum(action);
     }
 
     public void handle(IPayloadContext context) {
-        Player entity = context.player();
-        MKCore.getPlayer(entity).ifPresent(cap -> {
-            if (action == Action.SPEND) {
-                cap.getTalents().spendTalentPoint(talentTree, line, index);
-            } else if (action == Action.REFUND) {
-                cap.getTalents().refundTalentPoint(talentTree, line, index);
+        var playerData = MKCore.getPlayerOrThrow(context.player());
+        switch (action) {
+            case SPEND -> playerData.getTalents().spendTalentPoint(talentTree, line, index);
+            case REFUND -> playerData.getTalents().refundTalentPoint(talentTree, line, index);
+            case null, default -> {
             }
-        });
+        }
     }
 
     public enum Action {

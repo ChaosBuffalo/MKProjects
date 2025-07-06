@@ -1,0 +1,150 @@
+{
+  "display_name": {
+    "translate": "talent_tree.mkultra.priest.name"
+  },
+  "is_default": true,
+  "lines": [
+    {
+      "line_name": "a",
+      "talents": [
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:max_mana",
+          "display_info": "mkcore:max_mana",
+          "max_ranks": 2,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:heal_bonus",
+          "display_info": "mkcore:heal_bonus",
+          "max_ranks": 1,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.movement_speed",
+          "display_info": "mkcore:movement_speed",
+          "max_ranks": 3,
+          "per_rank": 0.01
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:cooldown_rate",
+          "display_info": "mkcore:cooldown_reduction",
+          "max_ranks": 2,
+          "per_rank": 0.025
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:holy_damage",
+          "display_info": "mkcore:holy_damage",
+          "max_ranks": 5,
+          "per_rank": 1.0
+        }
+      ]
+    },
+    {
+      "line_name": "b",
+      "talents": [
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:max_mana",
+          "display_info": "mkcore:max_mana",
+          "max_ranks": 2,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:cooldown_rate",
+          "display_info": "mkcore:cooldown_reduction",
+          "max_ranks": 2,
+          "per_rank": 0.025
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:heal_bonus",
+          "display_info": "mkcore:heal_bonus",
+          "max_ranks": 1,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:mana_regen",
+          "display_info": "mkcore:mana_regen",
+          "max_ranks": 4,
+          "per_rank": 0.25
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:cooldown_rate",
+          "display_info": "mkcore:cooldown_reduction",
+          "max_ranks": 2,
+          "per_rank": 0.025
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:spell_crit_chance",
+          "display_info": "mkcore:spell_crit",
+          "max_ranks": 2,
+          "per_rank": 0.01
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:heal_bonus",
+          "display_info": "mkcore:heal_bonus",
+          "max_ranks": 2,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:cooldown_rate",
+          "display_info": "mkcore:cooldown_reduction",
+          "max_ranks": 2,
+          "per_rank": 0.025
+        }
+      ]
+    },
+    {
+      "line_name": "c",
+      "talents": [
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:max_mana",
+          "display_info": "mkcore:max_mana",
+          "max_ranks": 2,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:mana_regen",
+          "display_info": "mkcore:mana_regen",
+          "max_ranks": 2,
+          "per_rank": 0.25
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:nature_damage",
+          "display_info": "mkcore:nature_damage",
+          "max_ranks": 5,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:mana_regen",
+          "display_info": "mkcore:mana_regen",
+          "max_ranks": 4,
+          "per_rank": 0.25
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:heal_bonus",
+          "display_info": "mkcore:heal_bonus",
+          "max_ranks": 1,
+          "per_rank": 1.0
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

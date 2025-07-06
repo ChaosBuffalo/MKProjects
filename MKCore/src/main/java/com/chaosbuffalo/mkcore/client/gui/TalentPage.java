@@ -85,7 +85,6 @@ public class TalentPage extends PlayerPageBase {
         stackLayout.doSetChildWidth(true);
 
         playerData.getTalents().getKnownTrees().stream()
-                .map(treeId -> playerData.getTalents().getTree(treeId))
                 .sorted(Comparator.comparing(info -> info.getTreeDefinition().getName().getString()))
                 .forEach(record -> {
                     MKLayout talentEntry = new TalentListEntry(0, 0, 16, font, this, record);
