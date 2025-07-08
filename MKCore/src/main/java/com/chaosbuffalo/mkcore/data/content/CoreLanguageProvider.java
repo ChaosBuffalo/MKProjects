@@ -87,6 +87,8 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mk.core.party.inviter.accept.text", "%s accepted your party invite.");
         add("mk.core.party.name", "%s's Party");
         add("mk.core.party.info.name", "Party: %s");
+        add("mk.core.party.info.members", "Members: %s");
+        add("mk.core.party.info.none", "You are not in a party!");
     }
 
     private void addLegacy() {

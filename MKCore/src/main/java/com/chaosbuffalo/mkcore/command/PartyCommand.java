@@ -46,17 +46,21 @@ public class PartyCommand {
 
     private static int partyInfo(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
-        MinecraftServer server = player.getServer();
         PlayerTeam team = player.getTeam();
         if (team != null) {
-            String message = String.format("Party: %s", team.getName());
             ChatUtils.sendMessage(player, Component.translatable("mk.core.party.info.name", team.getDisplayName()));
-
-            message = String.format("Members: %s", String.join(", ", team.getMembershipCollection()));
-            self.sendMessage(new TextComponentString(message));
+            StringBuilder builder = new StringBuilder();
+            int i = 0;
+            for (String name : team.getPlayers()) {
+                builder.append(name);
+                if (i < team.getPlayers().size() - 1) {
+                    builder.append(", ");
+                }
+                i++;
+            }
+            ChatUtils.sendMessage(player, Component.translatable("mk.core.party.info.members", builder.toString()));
         } else {
-            String message = "You are not in a party!";
-            self.sendMessage(new TextComponentString(message));
+            ChatUtils.sendMessage(player, Component.translatable("mk.core.party.info.none"));
         }
         return Command.SINGLE_SUCCESS;
     }
