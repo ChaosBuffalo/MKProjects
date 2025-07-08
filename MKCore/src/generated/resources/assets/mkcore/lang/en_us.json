@@ -102,6 +102,7 @@
   "mk.core.party.info.members": "Members: %s",
   "mk.core.party.info.name": "Party: %s",
   "mk.core.party.info.none": "You are not in a party!",
+  "mk.core.party.invite_self": "You can't invite yourself to a party!",
   "mk.core.party.invitee.accept.text": "You accepted the party invite from %s.",
   "mk.core.party.invitee.decline.text": "You declined the party invite from %s.",
   "mk.core.party.invitee.text": "%s invited you to their party.",

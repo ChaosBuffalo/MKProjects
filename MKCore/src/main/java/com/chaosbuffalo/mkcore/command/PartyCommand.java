@@ -72,7 +72,7 @@ public class PartyCommand {
             ServerPlayer invited = EntityArgument.getPlayer(ctx, "player");
             MKCore.LOGGER.info("{} invited {}", player.getName(), invited.getName());
             if (player.equals(invited)) {
-                ChatUtils.sendMessage(player, "You can't invite yourself to a party!");
+                ChatUtils.sendMessage(player, Component.translatable("mk.core.party.invite_self"));
             } else {
                 PacketHandler.sendMessage(new PartyInvitePacket(player), invited);
                 ChatUtils.sendMessage(player, Component.translatable("mk.core.party.inviter.text", invited.getDisplayName()));
