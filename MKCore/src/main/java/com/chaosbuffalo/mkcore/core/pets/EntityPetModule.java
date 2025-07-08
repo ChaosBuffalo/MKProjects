@@ -107,5 +107,6 @@ public class EntityPetModule implements IPlayerSyncComponentProvider {
                 x.getEntity().remove(reason);
             }
         });
+        pets.clear();
     }
 }

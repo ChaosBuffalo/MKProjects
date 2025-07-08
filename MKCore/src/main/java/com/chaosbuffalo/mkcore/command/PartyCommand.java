@@ -1,4 +1,116 @@
 package com.chaosbuffalo.mkcore.command;
 
+import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.command.arguments.PlayersArgument;
+import com.chaosbuffalo.mkcore.network.PacketHandler;
+import com.chaosbuffalo.mkcore.network.PartyInvitePacket;
+import com.chaosbuffalo.mkcore.party.PartyManager;
+import com.chaosbuffalo.mkcore.utils.ChatUtils;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.scores.PlayerTeam;
+
+
 public class PartyCommand {
+
+    public static LiteralArgumentBuilder<CommandSourceStack> register() {
+        return Commands.literal("party")
+                .then(Commands.literal("invite")
+                        .then(Commands.argument("player", PlayersArgument.player())
+                                .executes(PartyCommand::partyInvite)
+                        )
+                ).then(Commands.literal("leave")
+                        .executes(PartyCommand::partyLeave)
+                ).then(Commands.literal("info")
+                        .executes(PartyCommand::partyInfo)
+                );
+
+    }
+
+    private static int partyLeave(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        MinecraftServer server = player.getServer();
+        if (server != null) {
+            PartyManager.removePlayerFromParty(server, player);
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int partyInfo(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        MinecraftServer server = player.getServer();
+        PlayerTeam team = player.getTeam();
+        if (team != null) {
+            String message = String.format("Party: %s", team.getName());
+            ChatUtils.sendMessage(player, Component.translatable("mk.core.party.info.name", team.getDisplayName()));
+
+            message = String.format("Members: %s", String.join(", ", team.getMembershipCollection()));
+            self.sendMessage(new TextComponentString(message));
+        } else {
+            String message = "You are not in a party!";
+            self.sendMessage(new TextComponentString(message));
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int partyInvite(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        MinecraftServer server = player.getServer();
+        if (server != null) {
+            ServerPlayer invited = EntityArgument.getPlayer(ctx, "player");
+            MKCore.LOGGER.info("{} invited {}", player.getName(), invited.getName());
+//            if (player.equals(invited)) {
+//                ChatUtils.sendMessage(player, "You can't invite yourself to a party!");
+//            } else {
+                PacketHandler.sendMessage(new PartyInvitePacket(player), invited);
+                ChatUtils.sendMessage(player, Component.translatable("mk.core.party.inviter.text", invited.getDisplayName()));
+                ChatUtils.sendMessage(invited, Component.translatable("mk.core.party.invitee.text", player.getDisplayName()));
+//            }
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+
+//    private static class InviteCommand extends CommandBase {
+//        @Override
+//        public void execute(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull String[] args) throws CommandException {
+//            if (args.length == 0) {
+//                throw new WrongUsageException(getUsage(sender));
+//            }
+//
+//            EntityPlayerMP target = getPlayer(server, sender, args[0]);
+//            EntityPlayer self = getCommandSenderAsPlayer(sender);
+//            MKUltra.packetHandler.sendTo(new PartyInvitePacket(self.getUniqueID(), self.getName()), target);
+//        }
+//
+//        @Override
+//        public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
+//            return true;
+//        }
+//
+//        @Override
+//        public boolean isUsernameIndex(String[] args, int index) {
+//            return index > 0;
+//        }
+//
+//        @Nonnull
+//        @Override
+//        public String getName() {
+//            return "invite";
+//        }
+//
+//        @Nonnull
+//        @Override
+//        public String getUsage(@Nonnull ICommandSender sender) {
+//            return "/party invite <player name>";
+//        }
+//    }
 }

@@ -115,6 +115,16 @@ public class PacketHandler {
                 WriteAnimationPacket.STREAM_CODEC,
                 WriteAnimationPacket::handle
         );
+        registrar.playToClient(
+                PartyInvitePacket.TYPE,
+                PartyInvitePacket.STREAM_CODEC,
+                PartyInvitePacket::handle
+        );
+        registrar.playToServer(
+                PartyInviteResponsePacket.TYPE,
+                PartyInviteResponsePacket.STREAM_CODEC,
+                PartyInviteResponsePacket::handle
+        );
     }
 
     public static void sendMessageToServer(CustomPacketPayload msg) {

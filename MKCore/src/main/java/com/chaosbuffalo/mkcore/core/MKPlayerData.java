@@ -142,6 +142,11 @@ public class MKPlayerData implements IMKEntityData {
         return editorModule;
     }
 
+    public void logout() {
+        getAbilityExecutor().interruptCast(CastInterruptReason.Logout);
+        getPets().onDeath(Entity.RemovalReason.UNLOADED_WITH_PLAYER);
+    }
+
     @Override
     public Optional<ParticleEffectInstanceTracker> getParticleEffectTracker() {
         return Optional.of(getAnimationModule().getEffectInstanceTracker());

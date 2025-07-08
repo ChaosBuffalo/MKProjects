@@ -43,7 +43,7 @@ public class EntityEventHandler {
     @SubscribeEvent
     public static void onPlayerLogOut(PlayerEvent.PlayerLoggedOutEvent event) {
         var playerData = MKCore.getPlayerOrThrow(event.getEntity());
-        playerData.getAbilityExecutor().interruptCast(CastInterruptReason.Logout);
+        playerData.logout();
     }
 
     @SubscribeEvent
