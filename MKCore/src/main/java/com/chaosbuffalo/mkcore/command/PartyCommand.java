@@ -71,50 +71,14 @@ public class PartyCommand {
         if (server != null) {
             ServerPlayer invited = EntityArgument.getPlayer(ctx, "player");
             MKCore.LOGGER.info("{} invited {}", player.getName(), invited.getName());
-//            if (player.equals(invited)) {
-//                ChatUtils.sendMessage(player, "You can't invite yourself to a party!");
-//            } else {
+            if (player.equals(invited)) {
+                ChatUtils.sendMessage(player, "You can't invite yourself to a party!");
+            } else {
                 PacketHandler.sendMessage(new PartyInvitePacket(player), invited);
                 ChatUtils.sendMessage(player, Component.translatable("mk.core.party.inviter.text", invited.getDisplayName()));
                 ChatUtils.sendMessage(invited, Component.translatable("mk.core.party.invitee.text", player.getDisplayName()));
-//            }
+            }
         }
         return Command.SINGLE_SUCCESS;
     }
-
-
-//    private static class InviteCommand extends CommandBase {
-//        @Override
-//        public void execute(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull String[] args) throws CommandException {
-//            if (args.length == 0) {
-//                throw new WrongUsageException(getUsage(sender));
-//            }
-//
-//            EntityPlayerMP target = getPlayer(server, sender, args[0]);
-//            EntityPlayer self = getCommandSenderAsPlayer(sender);
-//            MKUltra.packetHandler.sendTo(new PartyInvitePacket(self.getUniqueID(), self.getName()), target);
-//        }
-//
-//        @Override
-//        public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-//            return true;
-//        }
-//
-//        @Override
-//        public boolean isUsernameIndex(String[] args, int index) {
-//            return index > 0;
-//        }
-//
-//        @Nonnull
-//        @Override
-//        public String getName() {
-//            return "invite";
-//        }
-//
-//        @Nonnull
-//        @Override
-//        public String getUsage(@Nonnull ICommandSender sender) {
-//            return "/party invite <player name>";
-//        }
-//    }
 }
