@@ -30,6 +30,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
@@ -93,6 +96,11 @@ public class MKEntitySummonAbility extends MKAbility {
                 MKPet<MKEntity> pet = MKPet.makePetFromEntity(MKEntity.class, getAbilityId(), entity);
                 if (pet.getEntity() != null) {
                     casterData.getPets().addPet(pet);
+                    AttributeMap manager = pet.getEntity().getAttributes();
+                    AttributeInstance inst =  manager.getInstance(Attributes.MOVEMENT_SPEED);
+                    if (inst != null) {
+                        inst.setBaseValue(casterData.getEntity().getAttributeBaseValue(Attributes.MOVEMENT_SPEED) * 3.0);
+                    }
                     castingEntity.getCommandSenderWorld().addFreshEntity(pet.getEntity());
                     pet.getEntity().setNoncombatBehavior(new PetNonCombatBehavior(castingEntity));
                     pet.getEntity().setNonCombatMoveType(MKEntity.NonCombatMoveType.STATIONARY);
