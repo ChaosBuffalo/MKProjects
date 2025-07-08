@@ -41,5 +41,6 @@
   "mknpc.objective.quest_loot_type_tag.desc": "Loot %s from %s (%s / %s)",
   "mknpc.objective.quest_loot_type_tag.progress": "You found %s on the corpse of %s (%s / %s).",
   "key.mknpc.category": "MKNpc",
-  "key.hud.questmenu": "Open Quest Journal"
+  "key.hud.questmenu": "Open Quest Journal",
+  "mknpc.trade.desc": "Trade (Shift Right-Click on Npc) the Following:"
 }
