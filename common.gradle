@@ -22,6 +22,7 @@ repositories {
         name = "OctoStudios"
         url = uri("https://maven.octo-studios.com/releases")
     }
+    maven { url = "https://api.modrinth.com/maven" }
 }
 
 

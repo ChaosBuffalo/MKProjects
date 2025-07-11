@@ -12,6 +12,8 @@ import com.chaosbuffalo.mkcore.core.talents.TalentManager;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreAttachments;
 import com.chaosbuffalo.mkcore.init.CoreParticles;
+import com.chaosbuffalo.mkcore.utils.trace.ITraceExtensionProvider;
+import com.chaosbuffalo.mkcore.utils.trace.TraceManager;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -49,6 +51,7 @@ public class MKCore {
     private final ParticleAnimationManager particleAnimationManager;
     public static final String CORE_EXTENSION = "mk_core_extension";
     public static final String PERSONA_EXTENSION = "register_persona_extension";
+    public static final String MULTIPART_EXTENSION = "register_multipart_extension";
 
     public static MKCore INSTANCE;
 
@@ -106,6 +109,10 @@ public class MKCore {
                 MKCore.LOGGER.debug("IMC register persona extension from mod {} {}", m.senderModId(), m.method());
                 IPersonaExtensionProvider factory = (IPersonaExtensionProvider) m.messageSupplier().get();
                 PersonaManager.registerExtension(factory);
+            } else if (m.method().equals(MULTIPART_EXTENSION)) {
+                MKCore.LOGGER.debug("IMC register multipart from mod {} {}", m.senderModId(), m.method());
+                ITraceExtensionProvider factory = (ITraceExtensionProvider) m.messageSupplier().get();
+                TraceManager.registerExtension(factory);
             }
         });
     }
