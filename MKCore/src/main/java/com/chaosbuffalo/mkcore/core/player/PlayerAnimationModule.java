@@ -6,10 +6,9 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ParticleEffectInstance;
 
 import java.util.Collection;
-import java.util.function.BiConsumer;
 
 public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("anim");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
     private final MKPlayerData playerData;
     private final ParticleEffectInstanceTracker effectInstanceTracker;
     private int castAnimTimer;
@@ -37,7 +36,7 @@ public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
         castTicks = 0;
         castingAbility = null;
         effectInstanceTracker = ParticleEffectInstanceTracker.getTracker(playerData.getEntity());
-        addSyncPublic(effectInstanceTracker);
+        addSyncPublic("effects", effectInstanceTracker);
     }
 
     public ParticleEffectInstanceTracker getEffectInstanceTracker() {

@@ -4,12 +4,14 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
+import com.chaosbuffalo.mkcore.sync.SyncContext;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,30 +23,27 @@ import java.util.function.Function;
 
 public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implements ISyncObject {
 
-    private final String rootName;
     private final Map<K, V> backingMap;
     private final Function<K, String> keyEncoder;
     private final Function<String, K> keyDecoder;
     private final Set<K> dirty = new HashSet<>();
     private final Function<K, V> valueFactory;
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
-    private Consumer<K> OnRemoveCallback;
+    private Consumer<K> onRemoveCallback;
 
-    public SyncMapUpdater(String rootName,
-                          Map<K, V> mapSupplier,
+    public SyncMapUpdater(Map<K, V> mapSupplier,
                           Function<K, String> keyEncoder,
                           Function<String, K> keyDecoder,
                           Function<K, V> valueFactory) {
-        this.rootName = rootName;
         this.backingMap = mapSupplier;
         this.keyEncoder = keyEncoder;
         this.keyDecoder = keyDecoder;
         this.valueFactory = valueFactory;
-        OnRemoveCallback = null;
+        onRemoveCallback = null;
     }
 
     public void setOnRemoveCallback(Consumer<K> onRemoveCallback) {
-        OnRemoveCallback = onRemoveCallback;
+        this.onRemoveCallback = onRemoveCallback;
     }
 
     public void markDirty(K key) {
@@ -62,6 +61,12 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
         return !dirty.isEmpty();
     }
 
+    @Override
+    public void clearDirty() {
+        dirty.clear();
+    }
+
+    @Nullable
     private ListTag gatherDirtyRemovals() {
         if (dirty.isEmpty())
             return null;
@@ -86,32 +91,11 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
                 continue;
 
             K key = keyDecoder.apply(encodedKey);
-            if (OnRemoveCallback != null) {
-                OnRemoveCallback.accept(key);
+            if (onRemoveCallback != null) {
+                onRemoveCallback.accept(key);
             }
             backingMap.remove(key);
 //            MKCore.LOGGER.info("removing {} {} {} {}", encodedKey, key, old != null, backingMap.size());
-        }
-    }
-
-    @Override
-    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        CompoundTag root = tag.getCompound(rootName);
-
-        if (root.getBoolean("f")) {
-            backingMap.clear();
-        }
-
-        if (root.contains("r")) {
-            // server has deleted entries, so remove them from the local map
-            processDirtyRemovals(root.getList("r", Tag.TAG_STRING));
-        }
-
-        if (root.contains("l")) {
-            CompoundTag list = root.getCompound("l");
-            if (!list.isEmpty()) {
-                deserializeMap(list, (o, t) -> o.deserializeSync(provider, t));
-            }
         }
     }
 
@@ -120,9 +104,20 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     }
 
     @Override
-    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
+    public @Nullable Tag writeFullValue(SyncContext context) {
+        if (backingMap.isEmpty())
+            return null;
+
+        CompoundTag root = new CompoundTag();
+        root.putBoolean("f", true);
+        root.put("l", makeSyncMap(context.provider(), backingMap.keySet()));
+        return root;
+    }
+
+    @Override
+    public @Nullable Tag writeUpdateValue(SyncContext context) {
         if (dirty.isEmpty())
-            return;
+            return null;
 
         CompoundTag root = new CompoundTag();
         ListTag removals = gatherDirtyRemovals();
@@ -130,23 +125,34 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
             root.put("r", removals);
         }
 
-        CompoundTag updates = makeSyncMap(provider, dirty);
+        CompoundTag updates = makeSyncMap(context.provider(), dirty);
         if (!updates.isEmpty()) {
             root.put("l", updates);
         }
-        tag.put(rootName, root);
 
         dirty.clear();
+        return root;
     }
 
     @Override
-    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
-        CompoundTag root = new CompoundTag();
-        root.putBoolean("f", true);
-        root.put("l", makeSyncMap(provider, backingMap.keySet()));
-        tag.put(rootName, root);
+    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+        if (valueTag instanceof CompoundTag root) {
+            if (root.getBoolean("f")) {
+                backingMap.clear();
+            }
 
-        dirty.clear();
+            if (root.contains("r")) {
+                // server has deleted entries, so remove them from the local map
+                processDirtyRemovals(root.getList("r", Tag.TAG_STRING));
+            }
+
+            if (root.contains("l")) {
+                CompoundTag list = root.getCompound("l");
+                if (!list.isEmpty()) {
+                    deserializeMap(list, (o, t) -> o.deserializeSync(context.provider(), t));
+                }
+            }
+        }
     }
 
     private CompoundTag serializeMap(Collection<K> keyCollection,
@@ -202,6 +208,6 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
 
     @Override
     public String toString() {
-        return String.format("SyncMap[name='%s', dirty=%d, map=%s]", rootName, dirty.size(), backingMap);
+        return String.format("SyncMap[dirty=%d, map=%s]", dirty.size(), backingMap);
     }
 }

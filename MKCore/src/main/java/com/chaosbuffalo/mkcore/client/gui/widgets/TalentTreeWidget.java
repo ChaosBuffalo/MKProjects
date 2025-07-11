@@ -1,19 +1,17 @@
 package com.chaosbuffalo.mkcore.client.gui.widgets;
 
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.core.talents.TalentLineDefinition;
-import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
-import com.chaosbuffalo.mkcore.core.talents.TalentTreeRecord;
+import com.chaosbuffalo.mkcore.core.talents.*;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.TalentPointActionPacket;
 import com.chaosbuffalo.mkwidgets.client.gui.UIConstants;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
-import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -39,7 +37,8 @@ public class TalentTreeWidget extends MKLayout {
     }
 
     public void setup() {
-        if (getCurrent() == null) {
+        TalentTreeRecord current = getCurrent();
+        if (current == null) {
             MKText noSelectPrompt = new MKText(fontRenderer,
                     Component.translatable("mkcore.gui.select_talent_tree"));
             noSelectPrompt.setColor(0xffffffff);
@@ -47,12 +46,15 @@ public class TalentTreeWidget extends MKLayout {
             setWidth(originalWidth);
             setHeight(originalHeight);
         } else {
+            TalentTreeDefinition currentTree = current.getTreeDefinition();
+            ResourceKey<TalentTreeDefinition> treeId = current.getTreeId();
+
             int treeRenderingMarginX = getMarginRight() + getMarginLeft();
             int treeRenderingPaddingX = 5;
             int talentButtonHeight = TalentButton.HEIGHT;
             int talentButtonWidth = TalentButton.WIDTH;
             int talentButtonYMargin = getMarginTop();
-            Map<String, TalentLineDefinition> lineDefs = getCurrent().getTreeDefinition().getTalentLines();
+            Map<String, TalentLineDefinition> lineDefs = currentTree.getTalentLines();
             int count = lineDefs.size();
             int talentWidth = talentButtonWidth * count + treeRenderingMarginX + (count - 1) * treeRenderingPaddingX;
             int spacePerColumn = talentWidth / count;
@@ -66,11 +68,11 @@ public class TalentTreeWidget extends MKLayout {
             for (String name : keys) {
                 TalentLineDefinition lineDef = lineDefs.get(name);
                 for (int talentIndex = 0; talentIndex < lineDef.getLength(); talentIndex++) {
-                    TalentRecord record = getCurrent().getNodeRecord(name, talentIndex);
+                    TalentRecord record = current.getNodeRecord(name, talentIndex);
                     if (record == null) {
                         continue;
                     }
-                    TalentRecord nextRecord = getCurrent().getNodeRecord(name, talentIndex + 1);
+                    TalentRecord nextRecord = current.getNodeRecord(name, talentIndex + 1);
                     if (nextRecord != null) {
                         int lineColor = nextRecord.isKnown() ? 0x99ffffff : 0xff555555;
                         MKRectangle rect = new MKRectangle(
@@ -87,7 +89,14 @@ public class TalentTreeWidget extends MKLayout {
                             getX() + talentXOffset + spacePerColumn * i + columnOffsetTotal,
                             getY() + talentIndex * talentButtonHeight + talentButtonYMargin
                     );
-                    button.setPressedCallback(this::pressTalentButton);
+                    int cbIndex = talentIndex;
+                    button.setPressedCallback((b, mouseButton) -> {
+                        TalentPointActionPacket.Action action = mouseButton == UIConstants.MOUSE_BUTTON_RIGHT ?
+                                TalentPointActionPacket.Action.REFUND :
+                                TalentPointActionPacket.Action.SPEND;
+                        PacketHandler.sendMessageToServer(new TalentPointActionPacket(treeId, name, cbIndex, action));
+                        return true;
+                    });
                     addWidget(button);
                     if (talentIndex > largestIndex) {
                         largestIndex = talentIndex;
@@ -100,23 +109,6 @@ public class TalentTreeWidget extends MKLayout {
             setWidth(Math.max(talentWidth, originalWidth));
             setHeight(Math.max((largestIndex + 1) * talentButtonHeight + talentButtonYMargin, originalHeight));
         }
-    }
-
-    public boolean pressTalentButton(MKButton button, int mouseButton) {
-        TalentButton talentButton = (TalentButton) button;
-        if (mouseButton == UIConstants.MOUSE_BUTTON_RIGHT) {
-            PacketHandler.sendMessageToServer(new TalentPointActionPacket(
-                    getCurrent().getTreeDefinition().getTreeId(),
-                    talentButton.line, talentButton.index,
-                    TalentPointActionPacket.Action.REFUND));
-
-        } else if (mouseButton == UIConstants.MOUSE_BUTTON_LEFT) {
-            PacketHandler.sendMessageToServer(new TalentPointActionPacket(
-                    getCurrent().getTreeDefinition().getTreeId(),
-                    talentButton.line, talentButton.index,
-                    TalentPointActionPacket.Action.SPEND));
-        }
-        return true;
     }
 
     private TalentTreeRecord getCurrent() {

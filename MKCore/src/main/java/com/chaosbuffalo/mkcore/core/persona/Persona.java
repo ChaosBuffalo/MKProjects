@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 
 public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncComponentProvider {
     private final String name;
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("knowledge");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
     private final PlayerAbilityKnowledge abilities;
     private final PlayerTalentKnowledge talents;
     private final PlayerEntitlements entitlements;
@@ -38,9 +38,9 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         talents = new PlayerTalentKnowledge(this);
         loadout = new PlayerAbilityLoadout(this);
         entitlements = new PlayerEntitlements(this);
-        addSyncChild(abilities);
-        addSyncChild(talents);
-        addSyncChild(loadout);
+        addSyncChild("abilities", abilities);
+        addSyncChild("talents", talents);
+        addSyncChild("loadout", loadout);
         skills = new PlayerSkills(this);
     }
 
@@ -85,7 +85,8 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         return entitlements;
     }
 
-    void registerExtension(IPersonaExtension extension) {
+    void registerExtension(IPersonaExtensionProvider provider) {
+        var extension = provider.create(this);
         extensions.put(extension.getClass(), extension);
     }
 
@@ -95,7 +96,6 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     }
 
     public void activate() {
-        sync.attach(playerData.getSyncController());
         MKCore.LOGGER.debug("Persona.activate");
         entitlements.onPersonaActivated();
         talents.onPersonaActivated();
@@ -104,7 +104,6 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     }
 
     public void deactivate() {
-        sync.detach(playerData.getSyncController());
         MKCore.LOGGER.debug("Persona.deactivate");
         skills.onPersonaDeactivated();
         loadout.onPersonaDeactivated();
@@ -150,7 +149,7 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         CompoundTag tag = new CompoundTag();
         tag.putUUID("personaId", personaId);
         tag.put("abilities", abilities.serialize(provider));
-        tag.put("talents", talents.serializeNBT());
+        tag.put("talents", talents.serializeNBT(provider));
         tag.put("entitlements", entitlements.serialize());
         tag.put("skills", skills.serialize(provider));
         tag.put("loadout", loadout.serializeNBT());
@@ -162,7 +161,7 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
         personaId = tag.getUUID("personaId");
         abilities.deserialize(provider, tag.getCompound("abilities"));
-        talents.deserializeNBT(tag.get("talents"));
+        talents.deserializeNBT(provider, tag.get("talents"));
         entitlements.deserialize(tag.getCompound("entitlements"));
         skills.deserialize(provider, tag.getCompound("skills"));
         loadout.deserializeNBT(tag.getCompound("loadout"));

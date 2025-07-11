@@ -6,8 +6,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
-import com.chaosbuffalo.mkcore.sync.adapters.ResourceListUpdater;
-import com.chaosbuffalo.mkcore.sync.adapters.SyncListUpdater;
+import com.chaosbuffalo.mkcore.sync.adapters.SyncArrayListUpdater;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
@@ -30,24 +29,21 @@ import java.util.stream.Stream;
 public class AbilityGroup implements IPlayerSyncComponentProvider {
     protected final Persona persona;
     protected final MKPlayerData playerData;
-    protected final PlayerSyncComponent sync;
-    protected final String name;
+    protected final PlayerSyncComponent sync = new PlayerSyncComponent();
     private final List<ResourceLocation> activeAbilities;
-    private final SyncListUpdater<ResourceLocation> activeUpdater;
+    private final SyncArrayListUpdater<ResourceLocation> activeUpdater;
     private final SyncInt slots;
     protected final AbilityGroupId groupId;
 
-    public AbilityGroup(Persona persona, String name, AbilityGroupId groupId) {
-        sync = new PlayerSyncComponent(name);
+    public AbilityGroup(Persona persona, AbilityGroupId groupId) {
         this.persona = persona;
         this.playerData = persona.getPlayerData();
-        this.name = name;
         this.groupId = groupId;
         activeAbilities = NonNullList.withSize(groupId.getMaxSlots(), MKCoreRegistry.INVALID_ABILITY);
-        activeUpdater = new ResourceListUpdater("active", activeAbilities);
-        slots = new SyncInt("slots", groupId.getDefaultSlots());
-        addSyncPrivate(activeUpdater);
-        addSyncPrivate(slots);
+        activeUpdater = SyncArrayListUpdater.resourceLocations(activeAbilities);
+        slots = new SyncInt(groupId.getDefaultSlots());
+        addSyncPrivate("active", activeUpdater);
+        addSyncPrivate("slots", slots);
     }
 
     @Override
@@ -146,13 +142,13 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         return MKCoreRegistry.INVALID_ABILITY;
     }
 
-    protected void onAbilityAdded(MKAbilityInfo abilityInfo) {
-        MKCore.LOGGER.debug("onAbilityAdded({})", abilityInfo);
+    protected void onAbilityAdded(int index, MKAbilityInfo abilityInfo) {
+        MKCore.LOGGER.debug("onAbilityAdded({}, {})", index, abilityInfo);
         abilityInfo.getAbility().onAbilityGroupAdded(playerData, abilityInfo);
     }
 
-    protected void onAbilityRemoved(MKAbilityInfo abilityInfo) {
-        MKCore.LOGGER.debug("onAbilityRemoved({})", abilityInfo);
+    protected void onAbilityRemoved(int index, MKAbilityInfo abilityInfo) {
+        MKCore.LOGGER.debug("onAbilityRemoved({}, {})", index, abilityInfo);
         abilityInfo.getAbility().onAbilityGroupRemoved(playerData, abilityInfo);
     }
 
@@ -174,7 +170,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
 //            MKCore.LOGGER.info("setSlot - clearing {} from {}", index, currentAbilityId);
             MKAbilityInfo oldInfo = getAbilityInfo(index);
             setIndex(index, abilityId);
-            onAbilityRemoved(oldInfo);
+            onAbilityRemoved(index, oldInfo);
             return;
         }
 
@@ -196,16 +192,16 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         if (currentAbilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
             setIndex(index, abilityId);
             MKAbilityInfo newInfo = getAbilityInfo(index);
-            onAbilityAdded(newInfo);
+            onAbilityAdded(index, newInfo);
             return;
         }
 
         // New ability is not current slotted and is replacing an existing ability
         MKAbilityInfo oldInfo = getAbilityInfo(index);
         setIndex(index, abilityId);
-        onAbilityRemoved(oldInfo);
+        onAbilityRemoved(index, oldInfo);
         MKAbilityInfo newInfo = getAbilityInfo(index);
-        onAbilityAdded(newInfo);
+        onAbilityAdded(index, newInfo);
     }
 
     private boolean validateAbilityForSlot(int index, ResourceLocation abilityId) {
@@ -269,18 +265,23 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         clearAbility(info.getId());
     }
 
-    protected void onPersonaActivatedAbility(@Nonnull MKAbilityInfo abilityInfo) {
-        onAbilityAdded(abilityInfo);
+    protected void onPersonaActivatedAbility(int index, @Nonnull MKAbilityInfo abilityInfo) {
+        onAbilityAdded(index, abilityInfo);
     }
 
-    protected void onPersonaDeactivatedAbility(@Nonnull MKAbilityInfo abilityInfo) {
-        onAbilityRemoved(abilityInfo);
+    protected void onPersonaDeactivatedAbility(int index, @Nonnull MKAbilityInfo abilityInfo) {
+        onAbilityRemoved(index, abilityInfo);
     }
 
-    private void validateActiveAbilities() {
+    protected boolean clearLockedSlotsOnLoad() {
+        return true;
+    }
+
+    protected void validateActiveAbilities() {
         int current = getCurrentSlotCount();
+        boolean clearLocked = clearLockedSlotsOnLoad();
         for (int i = 0; i < getMaximumSlotCount(); i++) {
-            if (i >= current) {
+            if (clearLocked && i >= current) {
                 clearSlot(i);
                 continue;
             }
@@ -289,7 +290,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
             if (abilityInfo == null) {
                 clearSlot(i);
             } else {
-                onPersonaActivatedAbility(abilityInfo);
+                onPersonaActivatedAbility(i, abilityInfo);
             }
         }
     }
@@ -302,7 +303,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         for (int i = 0; i < getMaximumSlotCount(); i++) {
             MKAbilityInfo abilityInfo = getAbilityInfo(i);
             if (abilityInfo != null) {
-                onPersonaDeactivatedAbility(abilityInfo);
+                onPersonaDeactivatedAbility(i, abilityInfo);
             }
         }
     }

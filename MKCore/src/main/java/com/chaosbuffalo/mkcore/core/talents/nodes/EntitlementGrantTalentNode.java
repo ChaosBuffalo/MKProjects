@@ -1,41 +1,49 @@
 package com.chaosbuffalo.mkcore.core.talents.nodes;
 
-import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.core.entitlements.EntitlementInstance;
+import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.talents.TalentNode;
-import com.chaosbuffalo.mkcore.core.talents.talent_types.EntitlementGrantTalent;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.chaosbuffalo.mkcore.core.talents.TalentNodeDisplay;
+import com.chaosbuffalo.mkcore.core.talents.TalentType;
+import com.chaosbuffalo.mkcore.init.CoreTalentTypes;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
+import net.minecraft.core.UUIDUtil;
 
-import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 public class EntitlementGrantTalentNode extends TalentNode {
+    public static final MapCodec<EntitlementGrantTalentNode> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            MKCoreRegistry.ENTITLEMENTS.holderByNameCodec().fieldOf("entitlement").forGetter(EntitlementGrantTalentNode::getEntitlement),
+            TalentNodeDisplay.REFERENCE_CODEC.fieldOf("display_info").forGetter(i -> i.displayHolder),
+            UUIDUtil.STRING_CODEC.fieldOf("nodeId").forGetter(EntitlementGrantTalentNode::getNodeId)
+    ).apply(builder, EntitlementGrantTalentNode::new));
 
     private final UUID nodeId;
+    private final Holder<MKEntitlement> entitlement;
 
-    public EntitlementGrantTalentNode(EntitlementGrantTalent talent, Dynamic<?> entry) {
-        super(talent, entry);
-        this.nodeId = entry.get("nodeId").asString().map(UUID::fromString).result().orElseGet(UUID::randomUUID);
-    }
-
-    public EntitlementGrantTalentNode(Supplier<EntitlementGrantTalent> talent, UUID nodeId) {
-        super(talent.get());
+    public EntitlementGrantTalentNode(Holder<MKEntitlement> entitlement, Holder<TalentNodeDisplay> displayHolder, UUID nodeId) {
+        super(displayHolder, 1);
         this.nodeId = nodeId;
+        this.entitlement = entitlement;
     }
 
     @Override
-    public EntitlementGrantTalent getTalent() {
-        return (EntitlementGrantTalent) super.getTalent();
+    public TalentType<EntitlementGrantTalentNode> getType() {
+        return CoreTalentTypes.ENTITLEMENT_GRANT.get();
+    }
+
+    public Holder<MKEntitlement> getEntitlement() {
+        return entitlement;
     }
 
     public UUID getNodeId() {
         return nodeId;
     }
 
-    public <T> T serialize(DynamicOps<T> ops) {
-        T value = super.serialize(ops);
-        Optional<T> merged = ops.mergeToMap(value, ops.createString("nodeId"), ops.createString(nodeId.toString())).resultOrPartial(MKCore.LOGGER::error);
-        return merged.orElse(value);
+    public EntitlementInstance createInstance() {
+        return new EntitlementInstance(entitlement.value(), nodeId);
     }
 }

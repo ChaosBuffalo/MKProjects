@@ -1,27 +1,44 @@
 package com.chaosbuffalo.mkcore.core.talents.nodes;
 
 
-import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.talents.TalentNode;
-import com.chaosbuffalo.mkcore.core.talents.talent_types.AttributeTalent;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
-
-import java.util.Optional;
-import java.util.function.Supplier;
+import com.chaosbuffalo.mkcore.core.talents.*;
+import com.chaosbuffalo.mkcore.init.CoreTalentTypes;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
 public class AttributeTalentNode extends TalentNode {
+    public static final MapCodec<AttributeTalentNode> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("attribute").forGetter(AttributeTalentNode::getAttribute),
+            TalentNodeDisplay.REFERENCE_CODEC.fieldOf("display_info").forGetter(i -> i.displayHolder),
+            Codec.INT.fieldOf("max_ranks").forGetter(TalentNode::getMaxRanks),
+            Codec.DOUBLE.fieldOf("per_rank").forGetter(AttributeTalentNode::getPerRank),
+            AttributeModifier.Operation.CODEC.optionalFieldOf("operation", AttributeModifier.Operation.ADD_VALUE).forGetter(AttributeTalentNode::getOperation)
+    ).apply(builder, AttributeTalentNode::new));
 
     private final double perRank;
+    private final AttributeModifier.Operation operation;
+    private final Holder<Attribute> attribute;
 
-    public AttributeTalentNode(AttributeTalent talent, Dynamic<?> dynamic) {
-        super(talent, dynamic);
-        this.perRank = dynamic.get("value").asDouble(talent.getDefaultPerRank());
+    public AttributeTalentNode(Holder<Attribute> attribute, Holder<TalentNodeDisplay> displayHolder, int maxRanks, double perRank) {
+        this(attribute, displayHolder, maxRanks, perRank, AttributeModifier.Operation.ADD_VALUE);
     }
 
-    public AttributeTalentNode(Supplier<AttributeTalent> talent, int maxRanks, double perRank) {
-        super(talent.get(), maxRanks);
+    public AttributeTalentNode(Holder<Attribute> attribute, Holder<TalentNodeDisplay> displayHolder, int maxRanks, double perRank, AttributeModifier.Operation operation) {
+        super(displayHolder, maxRanks);
         this.perRank = perRank;
+        this.attribute = attribute;
+        this.operation = operation;
+    }
+
+    @Override
+    public TalentType<AttributeTalentNode> getType() {
+        return CoreTalentTypes.ATTRIBUTE.get();
     }
 
     public double getValue(int rank) {
@@ -32,17 +49,18 @@ public class AttributeTalentNode extends TalentNode {
         return perRank;
     }
 
-    @Override
-    public AttributeTalent getTalent() {
-        return (AttributeTalent) super.getTalent();
+    public Holder<Attribute> getAttribute() {
+        return attribute;
     }
 
-    public <T> T serialize(DynamicOps<T> ops) {
-        T value = super.serialize(ops);
-        Optional<T> merged = ops.mergeToMap(value,
-                        ops.createString("value"),
-                        ops.createDouble(perRank))
-                .resultOrPartial(MKCore.LOGGER::error);
-        return merged.orElse(value);
+    public AttributeModifier.Operation getOperation() {
+        return operation;
+    }
+
+    public AttributeModifier createModifier(TalentRecord record) {
+        ResourceLocation modId = record.getUniqueId().withSuffix("/%d".formatted(operation.ordinal()));
+
+        double value = getValue(record.getRank());
+        return new AttributeModifier(modId, value, operation);
     }
 }

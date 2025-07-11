@@ -24,11 +24,11 @@ import java.util.stream.Stream;
 public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncComponentProvider {
     private final Persona persona;
     private final MKPlayerData playerData;
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("abilities");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
     private final Map<ResourceLocation, PlayerKnownAbility> knownAbilities = new HashMap<>();
-    private final SyncInt poolSize = new SyncInt("poolSize", GameConstants.DEFAULT_ABILITY_POOL_SIZE);
+    private final SyncInt poolSize = new SyncInt(GameConstants.DEFAULT_ABILITY_POOL_SIZE);
     private final SyncMapUpdater<ResourceLocation, PlayerKnownAbility> knownAbilityUpdater =
-            new SyncMapUpdater<>("known",
+            new SyncMapUpdater<>(
                     knownAbilities,
                     ResourceLocation::toString,
                     ResourceLocation::tryParse,
@@ -38,8 +38,8 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
     public PlayerAbilityKnowledge(Persona persona) {
         this.persona = persona;
         this.playerData = persona.getPlayerData();
-        addSyncPrivate(knownAbilityUpdater);
-        addSyncPrivate(poolSize);
+        addSyncPrivate("known", knownAbilityUpdater);
+        addSyncPrivate("poolSize", poolSize);
     }
 
     @Override

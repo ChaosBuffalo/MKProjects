@@ -125,13 +125,12 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         public PersonaQuestData(Persona persona) {
             this.persona = persona;
             questChainUpdater = new SyncMapUpdater<>(
-                    "questChains",
                     questChains,
                     UUID::toString,
                     UUID::fromString,
                     this::createNewEntry
             );
-            persona.addSyncPrivate(questChainUpdater);
+            persona.addSyncPrivate("quests", questChainUpdater);
         }
 
         public Optional<PlayerQuestChainInstance> getChain(UUID questId) {

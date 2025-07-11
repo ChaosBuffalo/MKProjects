@@ -9,13 +9,15 @@ import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientStateType;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
-import com.chaosbuffalo.mkcore.core.talents.MKTalent;
+import com.chaosbuffalo.mkcore.core.talents.TalentNodeDisplay;
+import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;
+import com.chaosbuffalo.mkcore.core.talents.TalentType;
+import com.chaosbuffalo.mkcore.init.CoreTalentTypes;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.init.*;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
 import com.chaosbuffalo.mkcore.item.CoreItemComponents;
 import com.chaosbuffalo.mkcore.test.MKCoreTestItems;
-import com.chaosbuffalo.mkcore.test.MKCoreTestTalents;
 import com.chaosbuffalo.mkcore.test.MKTestAbilities;
 import com.chaosbuffalo.mkcore.test.MKTestEffects;
 import com.chaosbuffalo.mkcore.utils.location.LocationProviderType;
@@ -35,14 +37,14 @@ import javax.annotation.Nullable;
 @EventBusSubscriber
 public class MKCoreRegistry {
     public static final ResourceLocation INVALID_ABILITY = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "ability.invalid");
-    public static final ResourceLocation INVALID_TALENT = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "talent.invalid");
-    public static final ResourceLocation INVALID_ENTITLEMENT = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "entitlement.invalid");
 
     public static final ResourceKey<Registry<MKAbility>> ABILITY_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("abilities"));
     public static final ResourceKey<Registry<MKDamageType>> DAMAGE_TYPE_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("damage_types"));
     public static final ResourceKey<Registry<MKEffect>> EFFECT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("effects"));
     public static final ResourceKey<Registry<MKEntitlement>> ENTITLEMENT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("entitlements"));
-    public static final ResourceKey<Registry<MKTalent>> TALENT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("talents"));
+    public static final ResourceKey<Registry<TalentType<?>>> TALENT_TYPE_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("talent_types"));
+    public static final ResourceKey<Registry<TalentTreeDefinition>> TALENT_TREE_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("talent_trees"));
+    public static final ResourceKey<Registry<TalentNodeDisplay>> TALENT_NODE_DISPLAY_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("talent_node_display"));
     public static final ResourceKey<Registry<ArmorClass>> ARMOR_CLASS_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("armor_class"));
 
     public static final ResourceKey<Registry<LocationProviderType<?>>> LOC_PROVIDER_TYPES_NAME = ResourceKey.createRegistryKey(
@@ -61,21 +63,21 @@ public class MKCoreRegistry {
     public static final Registry<MKEffect> EFFECTS = new RegistryBuilder<>(EFFECT_REGISTRY_KEY)
             .sync(true)
             .create();
-    public static final Registry<MKTalent> TALENTS = new RegistryBuilder<>(TALENT_REGISTRY_KEY)
+    public static final Registry<TalentType<?>> TALENT_TYPES = new RegistryBuilder<>(TALENT_TYPE_REGISTRY_KEY)
             .sync(true)
             .create();
     public static final Registry<MKEntitlement> ENTITLEMENTS = new RegistryBuilder<>(ENTITLEMENT_REGISTRY_KEY)
             .sync(true)
             .create();
-    public static final Registry<LocationProviderType<?>> LOCATION_PROVIDER_TYPES;
-    public static final Registry<ProjectileCastBehaviorType<?>> CAST_BEHAVIOR_TYPES;
-    public static final Registry<AbilityClientStateType<?>> CLIENT_STATE_TYPES;
-
-    static {
-        LOCATION_PROVIDER_TYPES = new RegistryBuilder<>(LOC_PROVIDER_TYPES_NAME).create();
-        CLIENT_STATE_TYPES = new RegistryBuilder<>(CLIENT_STATE_TYPES_NAME).create();
-        CAST_BEHAVIOR_TYPES = new RegistryBuilder<>(CAST_BEHAVIOR_TYPES_NAME).create();
-    }
+    public static final Registry<LocationProviderType<?>> LOCATION_PROVIDER_TYPES= new RegistryBuilder<>(LOC_PROVIDER_TYPES_NAME)
+            .sync(true)
+            .create();
+    public static final Registry<ProjectileCastBehaviorType<?>> CAST_BEHAVIOR_TYPES= new RegistryBuilder<>(CAST_BEHAVIOR_TYPES_NAME)
+            .sync(true)
+            .create();
+    public static final Registry<AbilityClientStateType<?>> CLIENT_STATE_TYPES = new RegistryBuilder<>(CLIENT_STATE_TYPES_NAME)
+            .sync(true)
+            .create();
 
 
     @Nullable
@@ -98,7 +100,7 @@ public class MKCoreRegistry {
         event.register(ABILITIES);
         event.register(DAMAGE_TYPES);
         event.register(EFFECTS);
-        event.register(TALENTS);
+        event.register(TALENT_TYPES);
         event.register(ENTITLEMENTS);
         event.register(LOCATION_PROVIDER_TYPES);
         event.register(CLIENT_STATE_TYPES);
@@ -108,6 +110,8 @@ public class MKCoreRegistry {
     @SubscribeEvent
     public static void createDataPackRegistries(DataPackRegistryEvent.NewRegistry event) {
         event.dataPackRegistry(ARMOR_CLASS_REGISTRY_KEY, ArmorClass.DIRECT_CODEC, ArmorClass.DIRECT_CODEC);
+        event.dataPackRegistry(TALENT_NODE_DISPLAY_REGISTRY_KEY, TalentNodeDisplay.CODEC, TalentNodeDisplay.CODEC);
+        event.dataPackRegistry(TALENT_TREE_REGISTRY_KEY, TalentTreeDefinition.CODEC, TalentTreeDefinition.CODEC);
     }
 
     public static void register(IEventBus modBus) {
@@ -118,12 +122,11 @@ public class MKCoreRegistry {
         CoreEntitlements.register(modBus);
         CoreParticles.register(modBus);
         CoreSounds.register(modBus);
-        CoreTalents.register(modBus);
+        CoreTalentTypes.register(modBus);
         MKAbilityMemories.register(modBus);
         MKTestEffects.register(modBus);
         MKTestAbilities.register(modBus);
         MKCoreTestItems.register(modBus);
-        MKCoreTestTalents.register(modBus);
         LocationProviderTypes.register(modBus);
         ProjectileCastBehaviorTypes.register(modBus);
         AbilityClientStateTypes.register(modBus);

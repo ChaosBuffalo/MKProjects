@@ -17,15 +17,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EntityRiderModule implements IPlayerSyncComponentProvider {
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("riderModule");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
     protected final IMKEntityData entityData;
     protected final Map<Integer, EntityRider> riders = new HashMap<>();
-    protected final SyncMapUpdater<Integer, EntityRider> riderSync = new SyncMapUpdater<>("riders", riders, i -> Integer.toString(i), Integer::valueOf, EntityRider::createRider);;
+    protected final SyncMapUpdater<Integer, EntityRider> riderSync = new SyncMapUpdater<>(riders,
+            i -> Integer.toString(i),
+            Integer::valueOf,
+            EntityRider::createRider);
 
     public EntityRiderModule(IMKEntityData entityData) {
         this.entityData = entityData;
         riderSync.setOnRemoveCallback(this::onClientRemove);
-        addSyncPublic(riderSync);
+        addSyncPublic("riders", riderSync);
     }
 
     public void addRider(Entity rider) {

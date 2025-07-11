@@ -17,6 +17,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,12 +40,18 @@ public class ArmorClass {
     private final Map<Holder<Attribute>, AttributeModifier> positiveModifierMap = new HashMap<>();
     private final Map<Holder<Attribute>, AttributeModifier> negativeModifierMap = new HashMap<>();
 
-    public static ArmorClass getItemArmorClass(ItemStack item) {
-        var armorClassHolder = item.getItemHolder().getData(CoreDataMaps.ARMOR_CLASS_MAPPING);
+    @Nullable
+    public static ArmorClass get(ItemStack item) {
+        var armorClassHolder = getHolder(item);
         if (armorClassHolder != null) {
             return armorClassHolder.value();
         }
         return null;
+    }
+
+    @Nullable
+    public static Holder<ArmorClass> getHolder(ItemStack item) {
+        return item.getItemHolder().getData(CoreDataMaps.ARMOR_CLASS_MAPPING);
     }
 
     private ArmorClass(Component displayName, Map<Holder<Attribute>, AttributeModifier> posMap, Map<Holder<Attribute>, AttributeModifier> negMap) {

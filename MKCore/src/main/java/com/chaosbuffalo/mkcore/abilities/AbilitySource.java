@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.abilities;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.talents.TalentNode;
+import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -21,9 +21,8 @@ public class AbilitySource {
         return new AbilitySource(AbilitySourceType.ITEM, slot.name());
     }
 
-    public static AbilitySource forTalent(TalentNode node) {
-        String uniqueId = node.getPositionString();
-        return new AbilitySource(AbilitySourceType.TALENT, uniqueId);
+    public static AbilitySource forTalent(TalentRecord record) {
+        return new AbilitySource(AbilitySourceType.TALENT, record.getUniqueId().toString());
     }
 
     protected final AbilitySourceType sourceType;

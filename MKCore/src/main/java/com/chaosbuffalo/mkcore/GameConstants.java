@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mkcore;
 
+import net.minecraft.world.entity.EquipmentSlot;
+
 public class GameConstants {
     public static final int DEFAULT_PASSIVE_ABILITIES = 0;
     public static final int MAX_PASSIVE_ABILITIES = 3;
@@ -7,8 +9,8 @@ public class GameConstants {
     public static final int MAX_ULTIMATE_ABILITIES = 2;
     public static final int DEFAULT_BASIC_ABILITIES = 0;
     public static final int MAX_BASIC_ABILITIES = 5;
-    public static final int DEFAULT_ITEM_ABILITIES = 1;
-    public static final int MAX_ITEM_ABILITIES = 1;
+    public static final int DEFAULT_ITEM_ABILITIES = EquipmentSlot.values().length;
+    public static final int MAX_ITEM_ABILITIES = EquipmentSlot.values().length;
 
     public static final int ACTION_BAR_SIZE = MAX_BASIC_ABILITIES + MAX_ULTIMATE_ABILITIES;
 

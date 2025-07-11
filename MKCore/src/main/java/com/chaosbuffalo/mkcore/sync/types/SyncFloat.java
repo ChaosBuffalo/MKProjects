@@ -2,17 +2,18 @@ package com.chaosbuffalo.mkcore.sync.types;
 
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import com.chaosbuffalo.mkcore.sync.SyncContext;
+import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.Tag;
+
+import javax.annotation.Nullable;
 
 public class SyncFloat implements ISyncObject {
-    private final String name;
     private float value;
     private boolean dirty;
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
-    public SyncFloat(String name, float value) {
-        this.name = name;
+    public SyncFloat(float value) {
         set(value, false);
     }
 
@@ -47,22 +48,25 @@ public class SyncFloat implements ISyncObject {
     }
 
     @Override
-    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        if (tag.contains(name)) {
-            this.value = tag.getFloat(name);
-        }
+    public void clearDirty() {
+        dirty = false;
     }
 
     @Override
-    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        if (dirty) {
-            serializeFull(provider, tag);
-            dirty = false;
-        }
+    public @Nullable Tag writeFullValue(SyncContext context) {
+        return FloatTag.valueOf(value);
     }
 
     @Override
-    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
-        tag.putFloat(name, value);
+    public @Nullable Tag writeUpdateValue(SyncContext context) {
+        dirty = false;
+        return writeFullValue(context);
+    }
+
+    @Override
+    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+        if (valueTag instanceof FloatTag floatTag) {
+            value = floatTag.getAsFloat();
+        }
     }
 }

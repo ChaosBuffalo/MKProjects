@@ -80,13 +80,13 @@ public class PlayerFactionHandler implements IPlayerFaction {
 
         public PersonaFactionData(Persona persona) {
             this.persona = persona;
-            factionUpdater = new SyncMapUpdater<>("factions",
+            factionUpdater = new SyncMapUpdater<>(
                     factionMap,
                     ResourceLocation::toString,
                     ResourceLocation::tryParse,
                     this::createNewEntry
             );
-            persona.addSyncPrivate(factionUpdater);
+            persona.addSyncPrivate("factions", factionUpdater);
         }
 
         private PlayerFactionEntry createNewEntry(ResourceLocation factionId) {

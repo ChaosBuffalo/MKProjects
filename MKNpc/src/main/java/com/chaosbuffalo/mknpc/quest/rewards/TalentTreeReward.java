@@ -2,28 +2,26 @@ package com.chaosbuffalo.mknpc.quest.rewards;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
-import com.chaosbuffalo.mkcore.core.talents.TalentManager;
 import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
-import com.chaosbuffalo.mknpc.MKNpc;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.Objects;
+
 public class TalentTreeReward extends QuestReward {
-    public static final MapCodec<TalentTreeReward> MAP_CODEC = RecordCodecBuilder.<TalentTreeReward>mapCodec(builder ->
-            builder.group(
-                    ResourceLocation.CODEC.fieldOf("tree_name").forGetter(i -> i.tree)
-            ).apply(builder, TalentTreeReward::new)
-    );
+    public static final MapCodec<TalentTreeReward> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            TalentTreeDefinition.REFERENCE_CODEC.fieldOf("tree_name").forGetter(i -> i.treeHolder)
+    ).apply(builder, TalentTreeReward::new));
 
-    private final ResourceLocation tree;
+    private final Holder<TalentTreeDefinition> treeHolder;
 
-    public TalentTreeReward(ResourceLocation treeName) {
-        this.tree = treeName;
+    public TalentTreeReward(Holder<TalentTreeDefinition> definitionHolder) {
+        this.treeHolder = definitionHolder;
     }
 
     @Override
@@ -33,29 +31,22 @@ public class TalentTreeReward extends QuestReward {
 
     @Override
     public Component getDescription() {
-        TalentTreeDefinition def = MKCore.getTalentManager().getTalentTree(tree);
-        if (def != null) {
-            return Component.translatable("mknpc.quest_reward.talent_tree_grant.message", def.getName());
-        } else {
-            return Component.translatable("mknpc.quest_reward.talent_tree_grant.message.error");
-        }
+        return Component.translatable("mknpc.quest_reward.talent_tree_grant.message", treeHolder.value().getName());
     }
 
     @Override
     public void grantReward(Player player) {
-        if (tree.equals(TalentManager.INVALID_TREE)) {
-            MKNpc.LOGGER.warn("Failed to grant talent tree reward for player {}, talent tree is invalid.", player);
+        var treeKey = treeHolder.getKey();
+        Objects.requireNonNull(treeKey);
+
+        var playerData = MKCore.getPlayerOrThrow(player);
+        PlayerTalentKnowledge talentKnowledge = playerData.getTalents();
+        if (talentKnowledge.knowsTree(treeKey)) {
             return;
         }
-        MKCore.getPlayer(player).ifPresent(cap -> {
-            PlayerTalentKnowledge talentKnowledge = cap.getTalents();
-            if (talentKnowledge.knowsTree(tree)) {
-                return;
-            }
-            if (talentKnowledge.unlockTree(tree)) {
-                ChatUtils.sendMessage(player, Component.translatable("mknpc.quest_reward.talent_tree_grant",
-                        talentKnowledge.getTree(tree).getTreeDefinition().getName()).withStyle(ChatFormatting.GOLD));
-            }
-        });
+        if (talentKnowledge.unlockTree(treeKey)) {
+            ChatUtils.sendMessage(player, Component.translatable("mknpc.quest_reward.talent_tree_grant",
+                    treeHolder.value().getName()).withStyle(ChatFormatting.GOLD));
+        }
     }
 }

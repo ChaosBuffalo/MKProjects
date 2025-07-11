@@ -1,0 +1,237 @@
+{
+  "display_name": {
+    "translate": "talent_tree.mkultra.core.name"
+  },
+  "is_default": true,
+  "lines": [
+    {
+      "line_name": "a",
+      "talents": [
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:ability_slot",
+          "entitlement": "mkcore:ability_slot.basic",
+          "nodeId": "119917ea-b852-4cb5-8bfe-2cdad488f279"
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.max_health",
+          "display_info": "mkcore:max_health",
+          "max_ranks": 2,
+          "per_rank": 5.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:max_mana",
+          "display_info": "mkcore:max_mana",
+          "max_ranks": 2,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:ability_slot",
+          "entitlement": "mkcore:ability_slot.basic",
+          "nodeId": "121817fa-1cfc-4334-aa77-13c02ede83ff"
+        },
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:pool_count",
+          "entitlement": "mkcore:ability_pool.count",
+          "nodeId": "108549d0-7935-4386-bf38-2ca48329305e"
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:mana_regen",
+          "display_info": "mkcore:mana_regen",
+          "max_ranks": 2,
+          "per_rank": 0.25
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.max_health",
+          "display_info": "mkcore:max_health",
+          "max_ranks": 3,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:passive_ability_slot",
+          "entitlement": "mkcore:ability_slot.passive",
+          "nodeId": "95725b31-da3a-4a3e-b6cc-e5036a6e9a87"
+        },
+        {
+          "type": "mkcore:ability_grant",
+          "ability": "mkultra:life_siphon",
+          "display_info": "mkultra:life_siphon"
+        }
+      ]
+    },
+    {
+      "line_name": "b",
+      "talents": [
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:ability_slot",
+          "entitlement": "mkcore:ability_slot.basic",
+          "nodeId": "2e1ff629-b139-4303-831d-1c1bc5ebc21e"
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:max_mana",
+          "display_info": "mkcore:max_mana",
+          "max_ranks": 2,
+          "per_rank": 5.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:mana_regen",
+          "display_info": "mkcore:mana_regen",
+          "max_ranks": 2,
+          "per_rank": 0.25
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:max_mana",
+          "display_info": "mkcore:max_mana",
+          "max_ranks": 3,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:mana_regen",
+          "display_info": "mkcore:mana_regen",
+          "max_ranks": 2,
+          "per_rank": 0.25
+        },
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:ultimate_ability_slot",
+          "entitlement": "mkcore:ability_slot.ultimate",
+          "nodeId": "0c751a99-a186-439c-83f1-abb55f67b17e"
+        },
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:pool_count",
+          "entitlement": "mkcore:ability_pool.count",
+          "nodeId": "9b23bee2-d159-4d32-aca8-1d726de0f875"
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:mana_regen",
+          "display_info": "mkcore:mana_regen",
+          "max_ranks": 2,
+          "per_rank": 0.25
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:mana_regen",
+          "display_info": "mkcore:mana_regen",
+          "max_ranks": 2,
+          "per_rank": 0.25
+        },
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:passive_ability_slot",
+          "entitlement": "mkcore:ability_slot.passive",
+          "nodeId": "4818f37e-16c4-4010-ab7a-a664cab4ab97"
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.max_health",
+          "display_info": "mkcore:max_health",
+          "max_ranks": 3,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "minecraft:generic.max_health",
+          "display_info": "mkcore:max_health",
+          "max_ranks": 2,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:cooldown_rate",
+          "display_info": "mkcore:cooldown_reduction",
+          "max_ranks": 5,
+          "per_rank": 0.01
+        },
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:pool_count",
+          "entitlement": "mkcore:ability_pool.count",
+          "nodeId": "93de6f66-4d6d-4721-b774-b12ee92be288"
+        },
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:ultimate_ability_slot",
+          "entitlement": "mkcore:ability_slot.ultimate",
+          "nodeId": "ecfaa441-35c7-46ce-aa67-f8372bc4fd7d"
+        }
+      ]
+    },
+    {
+      "line_name": "c",
+      "talents": [
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:ability_slot",
+          "entitlement": "mkcore:ability_slot.basic",
+          "nodeId": "3a31b74d-cf08-451f-a483-8eb9e47ce89b"
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:mana_regen",
+          "display_info": "mkcore:mana_regen",
+          "max_ranks": 2,
+          "per_rank": 0.5
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:heal_bonus",
+          "display_info": "mkcore:heal_bonus",
+          "max_ranks": 2,
+          "per_rank": 2.0
+        },
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:ability_slot",
+          "entitlement": "mkcore:ability_slot.basic",
+          "nodeId": "de5a37a4-b7e5-4565-9217-2d5d8de5d448"
+        },
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:pool_count",
+          "entitlement": "mkcore:ability_pool.count",
+          "nodeId": "fbbab80a-c3f8-460f-81cf-5184a7c7f39a"
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:max_mana",
+          "display_info": "mkcore:max_mana",
+          "max_ranks": 3,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:attribute",
+          "attribute": "mkcore:heal_bonus",
+          "display_info": "mkcore:heal_bonus",
+          "max_ranks": 1,
+          "per_rank": 1.0
+        },
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:passive_ability_slot",
+          "entitlement": "mkcore:ability_slot.passive",
+          "nodeId": "05865420-0069-45e1-856e-331c9900f99c"
+        },
+        {
+          "type": "mkcore:ability_grant",
+          "ability": "mkultra:soul_drain",
+          "display_info": "mkultra:soul_drain"
+        }
+      ]
+    }
+  ],
+  "version": 2
+}

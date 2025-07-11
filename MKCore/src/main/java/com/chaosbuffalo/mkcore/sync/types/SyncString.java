@@ -1,0 +1,78 @@
+package com.chaosbuffalo.mkcore.sync.types;
+
+import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.ISyncObject;
+import com.chaosbuffalo.mkcore.sync.SyncContext;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+
+import javax.annotation.Nullable;
+import java.util.function.Consumer;
+
+public class SyncString implements ISyncObject {
+    private String value;
+    private boolean dirty;
+    private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
+    @Nullable
+    private Consumer<String> onSetCallback;
+
+    public SyncString(String value) {
+        set(value, false);
+    }
+
+    public void setCallback(Consumer<String> onSetCallback) {
+        this.onSetCallback = onSetCallback;
+    }
+
+    public void set(String value) {
+        set(value, true);
+    }
+
+    private void set(String value, boolean setDirty) {
+        this.value = value;
+        if (setDirty) {
+            this.dirty = true;
+            parentNotifier.notifyUpdate(this);
+        }
+    }
+
+    public String get() {
+        return value;
+    }
+
+    @Override
+    public void setNotifier(ISyncNotifier notifier) {
+        parentNotifier = notifier;
+    }
+
+    @Override
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    @Override
+    public void clearDirty() {
+        dirty = false;
+    }
+
+    @Override
+    public @Nullable Tag writeFullValue(SyncContext context) {
+        return StringTag.valueOf(value);
+    }
+
+    @Override
+    public @Nullable Tag writeUpdateValue(SyncContext context) {
+        dirty = false;
+        return writeFullValue(context);
+    }
+
+    @Override
+    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+        if (valueTag instanceof StringTag stringTag) {
+            value = stringTag.getAsString();
+            if (onSetCallback != null) {
+                onSetCallback.accept(value);
+            }
+        }
+    }
+}

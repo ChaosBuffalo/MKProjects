@@ -31,6 +31,6 @@ public class HasEntitlementRequirement extends AbilityTrainingRequirement {
     @Override
     public MutableComponent describe(MKPlayerData playerData) {
         return Component.literal("You must have earned: ")
-                .append(entitlement.getDescription());
+                .append(entitlement.getName());
     }
 }

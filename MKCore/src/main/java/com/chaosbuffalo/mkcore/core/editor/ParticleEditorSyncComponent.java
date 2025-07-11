@@ -6,20 +6,21 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.ParticleAnimationEditorSyncPacket;
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
+import com.chaosbuffalo.mkcore.sync.SyncContext;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+
+import javax.annotation.Nullable;
 
 public class ParticleEditorSyncComponent implements ISyncObject {
-    private final String name;
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
     private ParticleAnimation animation;
     private boolean dirty;
     private int currentFrame;
 
-    public ParticleEditorSyncComponent(String name) {
-        this.name = name;
+    public ParticleEditorSyncComponent() {
         this.currentFrame = -1;
         this.animation = null;
         this.dirty = false;
@@ -43,6 +44,11 @@ public class ParticleEditorSyncComponent implements ISyncObject {
         return dirty;
     }
 
+    @Override
+    public void clearDirty() {
+        dirty = false;
+    }
+
     public void markDirty() {
         this.dirty = true;
     }
@@ -63,9 +69,27 @@ public class ParticleEditorSyncComponent implements ISyncObject {
     }
 
     @Override
-    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        if (tag.contains(name)) {
-            CompoundTag syncTag = tag.getCompound(name);
+    public @Nullable Tag writeFullValue(SyncContext context) {
+        CompoundTag syncTag = new CompoundTag();
+        if (animation != null) {
+            syncTag.put("animation", animation.serialize(NbtOps.INSTANCE));
+        }
+        syncTag.putInt("currentKeyFrame", currentFrame);
+        return syncTag;
+    }
+
+    @Override
+    public @Nullable Tag writeUpdateValue(SyncContext context) {
+        if (isDirty()) {
+            dirty = false;
+            return writeFullValue(context);
+        }
+        return null;
+    }
+
+    @Override
+    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+        if (valueTag instanceof CompoundTag syncTag) {
             if (syncTag.contains("animation")) {
                 this.animation = ParticleAnimation.deserializeFromDynamic(
                         ParticleAnimationManager.RAW_EFFECT,
@@ -74,23 +98,5 @@ public class ParticleEditorSyncComponent implements ISyncObject {
                 this.animation = null;
             }
         }
-    }
-
-    @Override
-    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        if (isDirty()) {
-            serializeFull(provider, tag);
-        }
-    }
-
-    @Override
-    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
-        CompoundTag syncTag = new CompoundTag();
-        if (animation != null) {
-            syncTag.put("animation", animation.serialize(NbtOps.INSTANCE));
-        }
-        syncTag.putInt("currentKeyFrame", currentFrame);
-        tag.put(name, syncTag);
-        dirty = false;
     }
 }

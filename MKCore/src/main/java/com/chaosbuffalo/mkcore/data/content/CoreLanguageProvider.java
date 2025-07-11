@@ -1,9 +1,16 @@
 package com.chaosbuffalo.mkcore.data.content;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.data.providers.MKLanguageProvider;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.init.CoreEntitlements;
+import net.minecraft.core.Holder;
 import net.minecraft.data.PackOutput;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+
+import java.util.Locale;
 
 class CoreLanguageProvider extends MKLanguageProvider {
 
@@ -17,6 +24,81 @@ class CoreLanguageProvider extends MKLanguageProvider {
         addGui();
         addDamageTypes();
         addAttributes();
+        addEntitlements();
+        addTalents();
+    }
+
+    private void addEntitlements() {
+        // Entitlement grant talents use the name and description here
+
+        entitlement(CoreEntitlements.ABILITY_POOL_SIZE, "Ability Pool", "Expands your ability pool by 1");
+
+        entitlement(CoreEntitlements.BASIC_ABILITY_SLOT, "Basic Ability Slot", "Adds a basic ability slot to your loadout");
+        entitlement(CoreEntitlements.PASSIVE_ABILITY_SLOT, "Passive Ability Slot", "Adds a passive ability slot to your loadout");
+        entitlement(CoreEntitlements.ULTIMATE_ABILITY_SLOT, "Ultimate Ability Slot", "Adds an ultimate ability slot to your loadout");
+
+        entitlement(CoreEntitlements.ROBE_ARMOR_MASTERY, "Robes Armor Mastery", "Allows using robes without penalties");
+        entitlement(CoreEntitlements.LIGHT_ARMOR_MASTERY, "Light Armor Mastery", "Allows using light armor without penalties");
+        entitlement(CoreEntitlements.MEDIUM_ARMOR_MASTERY, "Medium Armor Mastery", "Allows using medium armor without penalties");
+        entitlement(CoreEntitlements.HEAVY_ARMOR_MASTERY, "Heavy Armor Mastery", "Allows using heavy without penalties");
+    }
+
+    private void addTalents() {
+        add("talent_type.mkcore.ability_grant.basic.name", "Basic Ability Talent");
+        add("talent_type.mkcore.ability_grant.passive.name", "Passive Ability Talent");
+        add("talent_type.mkcore.ability_grant.ultimate.name", "Ultimate Ability Talent");
+        add("talent_type.mkcore.ability_grant.description", "Grants the %s %s ability");
+        add("talent_type.mkcore.entitlement_grant.name", "Entitlement Grant");
+        add("talent_type.mkcore.attribute.name", "Attribute Bonus");
+
+        attributeTalent(Attributes.MAX_HEALTH, "Max Health", "Increases your total health by %s");
+        attributeTalent(Attributes.ARMOR, "Armor", "Increases your armor by %s");
+        attributeTalent(Attributes.MOVEMENT_SPEED, "Movement Speed", "Increases your movement speed by %s");
+        attributeTalent(Attributes.ATTACK_SPEED, "Attack Speed", "Increases your attack speed by %s");
+        attributeTalent(Attributes.ATTACK_DAMAGE, "Attack Damage", "Increases your attack damage by %s");
+
+
+        attributeTalent(MKAttributes.HEALTH_REGEN, "Health Regen", "Increases your health regen by %s");
+        attributeTalent(MKAttributes.MAX_MANA, "Max Mana", "Increases your total mana by %s");
+        attributeTalent(MKAttributes.MANA_REGEN, "Mana Regen", "Increases your mana regen by %s");
+        attributeTalent(MKAttributes.MELEE_CRIT, "Melee Critical Chance", "Increases your melee critical chance by %s");
+        attributeTalent(MKAttributes.MELEE_CRIT_MULTIPLIER, "Melee Critical Damage", "Increases your melee critical damage by %s");
+
+        attributeTalent(MKAttributes.SPELL_CRIT, "Spell Critical Chance", "Increases your spell critical chance by %s");
+        attributeTalent(MKAttributes.SPELL_CRIT_MULTIPLIER, "Spell Critical Damage", "Increases your spell critical damage by %s");
+
+
+        attributeTalent(MKAttributes.COOLDOWN, "Cooldown Reduction", "Increases your cooldown reduction by %s");
+        attributeTalent(MKAttributes.HEAL_BONUS, "Heal Bonus", "Increases your healing bonus by %s");
+        attributeTalent(MKAttributes.HEAL_EFFICIENCY, "Heal Efficiency", "Increases your healing efficiency by %s");
+
+
+        attributeTalent(MKAttributes.BLOCK_EFFICIENCY, "Block Efficiency", "Increases your block efficiency by %s");
+        attributeTalent(MKAttributes.MAX_POISE, "Max Poise", "Increases your max poise by %s");
+        attributeTalent(MKAttributes.POISE_REGEN, "Poise Regen", "Increases your poise regeneration by %s");
+        attributeTalent(MKAttributes.POISE_BREAK_CD, "Poise Break Cooldown", "Decreases your poise break cooldown by %s seconds");
+
+        damageAttrTalents(MKAttributes.RANGED_DAMAGE, MKAttributes.RANGED_RESISTANCE, "Ranged");
+
+        damageAttrTalents(MKAttributes.ARCANE_DAMAGE, MKAttributes.ARCANE_RESISTANCE, "Arcane");
+        damageAttrTalents(MKAttributes.FIRE_DAMAGE, MKAttributes.FIRE_RESISTANCE, "Fire");
+        damageAttrTalents(MKAttributes.FROST_DAMAGE, MKAttributes.FROST_RESISTANCE, "Frost");
+        damageAttrTalents(MKAttributes.SHADOW_DAMAGE, MKAttributes.SHADOW_RESISTANCE, "Shadow");
+        damageAttrTalents(MKAttributes.HOLY_DAMAGE, MKAttributes.HOLY_RESISTANCE, "Holy");
+        damageAttrTalents(MKAttributes.NATURE_DAMAGE, MKAttributes.NATURE_RESISTANCE, "Nature");
+
+        damageAttrTalents(MKAttributes.POISON_DAMAGE, MKAttributes.POISON_RESISTANCE, "Poison");
+        damageAttrTalents(MKAttributes.BLEED_DAMAGE, MKAttributes.BLEED_RESISTANCE, "Bleed");
+    }
+
+    protected void damageAttrTalents(Holder<Attribute> damageAttr, Holder<Attribute> resistAttr, String name) {
+        String damageName = String.format("%s Damage", name);
+        String damageDesc = String.format("Increases your %s damage by %%s", name.toLowerCase(Locale.ROOT));
+        attributeTalent(damageAttr, damageName, damageDesc);
+
+        String resistName = String.format("%s Resistance", name);
+        String resistDesc = String.format("Increases your %s resistance by %%s", name.toLowerCase(Locale.ROOT));
+        attributeTalent(resistAttr, resistName, resistDesc);
     }
 
     private void addGui() {
@@ -93,11 +175,6 @@ class CoreLanguageProvider extends MKLanguageProvider {
     }
 
     private void addLegacy() {
-        add("mkcore.talent_type.attribute.name", "Attribute");
-        add("mkcore.talent_type.passive.name", "Passive");
-        add("mkcore.talent_type.ultimate.name", "Ultimate");
-        add("mkcore.talent_type.tooltip_name_with_ability", "%s Ability Talent");
-        add("mkcore.talent_type.tooltip_name", "%s Talent");
         add("mkcore.talent_tree.knight.name", "Knight Tree");
         add("mkcore.ability.description.cast_time", "Cast Time: %s");
         add("mkcore.ability.description.cooldown", "Cooldown: %s seconds");
@@ -156,45 +233,7 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.anim_track.particle_anim.brownian_motion.name", "Brownian");
         add("mkcore.anim_track.particle_anim.particle_motion.name", "Inherit");
         add("mkcore.anim_track.particle_anim.linear_motion.name", "Linear");
-        add("talent.mkcore.max_health.name", "Max Health");
-        add("talent.mkcore.max_health.description", "Increases your total health by %s");
-        add("talent.mkcore.armor.name", "Armor");
-        add("talent.mkcore.armor.description", "Increases your armor by %s");
-        add("talent.mkcore.movement_speed.name", "Movement Speed");
-        add("talent.mkcore.movement_speed.description", "Increases your movement speed by %s");
-        add("talent.mkcore.attack_speed.name", "Attack Speed");
-        add("talent.mkcore.attack_speed.description", "Increases your attack speed by %s");
-        add("talent.mkcore.attack_damage.name", "Attack Damage");
-        add("talent.mkcore.attack_damage.description", "Increases your attack damage by %s");
-        add("talent.mkcore.max_mana.name", "Max Mana");
-        add("talent.mkcore.max_mana.description", "Increases your total mana by %s");
-        add("talent.mkcore.mana_regen.name", "Mana Regen");
-        add("talent.mkcore.mana_regen.description", "Increases your mana regen by %s");
-        add("talent.mkcore.melee_crit.name", "Melee Critical Chance");
-        add("talent.mkcore.melee_crit.description", "Increases your melee critical chance by %s");
-        add("talent.mkcore.spell_crit.name", "Spell Critical Chance");
-        add("talent.mkcore.spell_crit.description", "Increases your spell critical chance by %s");
-        add("talent.mkcore.melee_crit_multiplier.name", "Melee Critical Damage");
-        add("talent.mkcore.melee_crit_multiplier.description", "Increases your melee critical damage by %s");
-        add("talent.mkcore.spell_crit_multiplier.name", "Spell Critical Damage");
-        add("talent.mkcore.spell_crit_multiplier.description", "Increases your spell critical damage by %s");
-        add("talent.mkcore.cooldown_reduction.name", "Cooldown Reduction");
-        add("talent.mkcore.cooldown_reduction.description", "Increases your cooldown reduction by %s");
-        add("talent.mkcore.heal_bonus.name", "Heal Bonus");
-        add("talent.mkcore.heal_bonus.description", "Increases your healing bonus by %s");
-        add("talent.mkcore.ability_slot.name", "Ability Slot");
-        add("talent.mkcore.ability_slot.description", "Adds a basic ability slot to your loadout");
-        add("talent.mkcore.passive_ability_slot.name", "Passive Ability Slot");
-        add("talent.mkcore.passive_ability_slot.description", "Adds a passive ability slot to your character");
-        add("talent.mkcore.ultimate_ability_slot.name", "Ultimate Ability Slot");
-        add("talent.mkcore.ultimate_ability_slot.description", "Adds an ultimate ability slot to your loadout");
-        add("mkcore.talent_type.ultimate_slot.name", "Ultimate Slot");
-        add("mkcore.talent_type.passive_slot.name", "Passive Slot");
-        add("mkcore.talent_type.basic_slot.name", "Basic Slot");
         add("mkcore.subtitle.level_up", "An aetherial ding echoes in the area");
-        add("talent.mkcore.pool_count.name", "Ability Memory Slot");
-        add("talent.mkcore.pool_count.description", "Increases your ability memory pool by 1");
-        add("mkcore.talent_type.pool_slot.name", "Memory Pool");
         add("mkcore.ability.description.uses_pool", "Using Memory Slot");
         add("mkcore.block_efficiency.description", "Block Efficiency: %.2f%%");
         add("mkcore.max_poise.description", "Max Poise: %.0f");
@@ -211,134 +250,83 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.anim_track.particle_anim.flip_motion.name", "Flip");
         add("mkcore.ability_target.position_include_entities", "Single Target or Point In World");
         add("mkcore.spawn_pattern.particle_spawn_pattern.cone.name", "Cone");
-        add("talent.mkcore.max_poise.name", "Max Poise");
-        add("talent.mkcore.max_poise.description", "Increases your max poise by %s");
-        add("talent.mkcore.poise_regen.name", "Poise Regen");
-        add("talent.mkcore.poise_regen.description", "Increases your poise regeneration by %s");
-        add("talent.mkcore.block_efficiency.name", "Block Efficiency");
-        add("talent.mkcore.block_efficiency.description", "Increases your block efficiency by %s");
-        add("talent.mkcore.poise_break_cd.name", "Poise Break Cooldown");
-        add("talent.mkcore.poise_break_cd.description", "Decreases your poise break cooldown by %s seconds");
-        add("talent.mkcore.heal_efficiency.name", "Heal Efficiency");
-        add("talent.mkcore.heal_efficiency.description", "Increases your healing efficiency by %s");
-        add("talent.mkcore.nature_damage.name", "Nature Damage");
-        add("talent.mkcore.nature_damage.description", "Increases your nature damage by %s");
-        add("mkcore.talent.max_poise.name", "Max Poise");
-        add("mkcore.talent.max_poise.description", "Increases your max poise by %s");
-        add("mkcore.talent.poise_regen.name", "Poise Regen");
-        add("mkcore.talent.poise_regen.description", "Increases your poise regeneration by %s");
-        add("mkcore.talent.block_efficiency.name", "Block Efficiency");
-        add("mkcore.talent.block_efficiency.description", "Increases your block efficiency by %s");
-        add("mkcore.talent.poise_break_cd.name", "Poise Break Cooldown");
-        add("mkcore.talent.poise_break_cd.description", "Decreases your poise break cooldown by %s seconds");
-        add("mkcore.talent.heal_efficiency.name", "Heal Efficiency");
-        add("mkcore.talent.heal_efficiency.description", "Increases your healing efficiency by %s");
-        add("mkcore.talent.nature_damage.name", "Nature Damage");
-        add("mkcore.talent.nature_damage.description", "Increases your nature damage by %s");
         add("mkcore.ability.projectile.desc", "Behavior: %s");
         add("location_provider.single.desc", "a single projectile");
         add("projectile_behavior.simple", "Fires %s at end of cast.");
         add("location_provider.perpendicular_line", "%d projectiles in a perpendicular line");
         add("location_provider.circular", "%d projectiles in an arc from %s° to %s°");
         add("projectile_behavior.burst", "Fires %s, one after another over %s seconds.");
-        add("talent.mkcore.arcane_damage.name", "Arcane Damage");
-        add("talent.mkcore.arcane_damage.description", "Increases your arcane damage by %s");
-        add("talent.mkcore.bleed_damage.name", "Bleed Damage");
-        add("talent.mkcore.bleed_damage.description", "Increases your bleed damage by %s");
-        add("talent.mkcore.fire_damage.name", "Fire Damage");
-        add("talent.mkcore.fire_damage.description", "Increases your fire damage by %s");
-        add("talent.mkcore.frost_damage.name", "Frost Damage");
-        add("talent.mkcore.frost_damage.description", "Increases your frost damage by %s");
-        add("talent.mkcore.holy_damage.name", "Holy Damage");
-        add("talent.mkcore.holy_damage.description", "Increases your holy damage by %s");
-        add("talent.mkcore.poison_damage.name", "Poison Damage");
-        add("talent.mkcore.poison_damage.description", "Increases your poison damage by %s");
-        add("talent.mkcore.ranged_damage.name", "Ranged Damage");
-        add("talent.mkcore.ranged_damage.description", "Increases your ranged damage by %s");
-        add("talent.mkcore.shadow_damage.name", "Shadow Damage");
-        add("talent.mkcore.shadow_damage.description", "Increases your shadow damage by %s");
-        add("talent.mkcore.bleed_resistance.name", "Bleed Resistance");
-        add("talent.mkcore.bleed_resistance.description", "Increases your bleed resistance by %s");
-        add("talent.mkcore.shadow_resistance.name", "Shadow Resistance");
-        add("talent.mkcore.shadow_resistance.description", "Increases your shadow resistance by %s");
-        add("talent.mkcore.arcane_resistance.name", "Arcane Resistance");
-        add("talent.mkcore.arcane_resistance.description", "Increases your arcane resistance by %s");
-        add("talent.mkcore.fire_resistance.name", "Fire Resistance");
-        add("talent.mkcore.fire_resistance.description", "Increases your fire resistance by %s");
-        add("talent.mkcore.poison_resistance.name", "Poison Resistance");
-        add("talent.mkcore.poison_resistance.description", "Increases your poison resistance by %s");
-        add("talent.mkcore.ranged_resistance.name", "Ranged Resistance");
-        add("talent.mkcore.ranged_resistance.description", "Increases your ranged resistance by %s");
-        add("talent.mkcore.frost_resistance.name", "Frost Resistance");
-        add("talent.mkcore.frost_resistance.description", "Increases your frost resistance by %s");
-        add("talent.mkcore.holy_resistance.name", "Holy Resistance");
-        add("talent.mkcore.holy_resistance.description", "Increases your holy resistance by %s");
-        add("talent.mkcore.nature_resistance.name", "Nature Resistance");
-        add("talent.mkcore.nature_resistance.description", "Increases your nature resistance by %s");
-        add("talent.mkcore.health_regen.name", "Health Regen");
-        add("talent.mkcore.health_regen.description", "Increases your health regen by %s");
     }
 
 
     private void addAttributes() {
-        add("attribute.name.mk.mana_regen", "Mana Regen");
-        add("attribute.name.mk.max_mana", "Max Mana");
-        add("attribute.name.mk.melee_crit_chance", "Melee Crit Chance");
-        add("attribute.name.mk.spell_crit_chance", "Spell Crit Chance");
-        add("attribute.name.mk.spell_crit_multiplier", "Spell Crit Multiplier");
-        add("attribute.name.mk.melee_crit_multiplier", "Melee Crit Multiplier");
-        add("attribute.name.mk.ranged_damage", "Ranged Damage Bonus");
-        add("attribute.name.mk.ranged_resistance", "Ranged Damage Resistance");
-        add("attribute.name.mk.ranged_crit_chance", "Ranged Crit Chance");
-        add("attribute.name.mk.ranged_crit_multiplier", "Ranged Crit Multiplier");
-        add("attribute.name.mk.cooldown_rate", "Cooldown Rate");
-        add("attribute.name.mk.heal_bonus", "Heal Bonus");
-        add("attribute.name.mk.buff_duration", "Buff Duration");
-        add("attribute.name.mk.casting_speed", "Casting Speed");
-        add("attribute.name.mk.attack_reach", "Attack Reach");
-        add("attribute.name.mk.arcane_damage", "Arcane Damage");
-        add("attribute.name.mk.arcane_resistance", "Arcane Resistance");
-        add("attribute.name.mk.fire_damage", "Fire Damage");
-        add("attribute.name.mk.fire_resistance", "Fire Resistance");
-        add("attribute.name.mk.frost_damage", "Frost Damage");
-        add("attribute.name.mk.frost_resistance", "Frost Resistance");
-        add("attribute.name.mk.shadow_damage", "Shadow Damage");
-        add("attribute.name.mk.shadow_resistance", "Shadow Resistance");
-        add("attribute.name.mk.holy_damage", "Holy Damage");
-        add("attribute.name.mk.holy_resistance", "Holy Resistance");
-        add("attribute.name.mk.nature_damage", "Nature Damage");
-        add("attribute.name.mk.nature_resistance", "Nature Resistance");
-        add("attribute.name.mk.poison_damage", "Poison Damage");
-        add("attribute.name.mk.poison_resistance", "Poison Resistance");
-        add("attribute.name.mk.bleed_damage", "Bleed Damage");
-        add("attribute.name.mk.bleed_resistance", "Bleed Resistance");
-        add("attribute.name.mk.abjuration", "Abjuration");
-        add("attribute.name.mk.alteration", "Alteration");
-        add("attribute.name.mk.conjuration", "Conjuration");
-        add("attribute.name.mk.divination", "Divination");
-        add("attribute.name.mk.enchantment", "Enchantment");
-        add("attribute.name.mk.evocation", "Evocation");
-        add("attribute.name.mk.phantasm", "Phantasm");
-        add("attribute.name.mk.necromancy", "Necromancy");
-        add("attribute.name.mk.restoration", "Restoration");
-        add("attribute.name.mk.arete", "Arete");
-        add("attribute.name.mk.pneuma", "Pneuma");
-        add("attribute.name.mk.pankration", "Pankration");
-        add("attribute.name.mk.marksmanship", "Marksmanship");
-        add("attribute.name.mk.hand_to_hand", "Hand to Hand");
-        add("attribute.name.mk.poise_regen", "Poise Regen");
-        add("attribute.name.mk.max_poise", "Max Poise");
-        add("attribute.name.mk.poise_break_cd", "Poise Break Time");
-        add("attribute.name.mk.block_efficiency", "Block Efficiency");
-        add("attribute.name.mk.two_hand_slash", "2H Slash");
-        add("attribute.name.mk.one_hand_slash", "1H Slash");
-        add("attribute.name.mk.two_hand_blunt", "2H Blunt");
-        add("attribute.name.mk.one_hand_blunt", "1H Blunt");
-        add("attribute.name.mk.two_hand_pierce", "2H Pierce");
-        add("attribute.name.mk.one_hand_pierce", "1H Pierce");
-        add("attribute.name.mk.block", "Block");
-        add("attribute.name.mk.heal_efficiency", "Heal Efficiency");
-        add("attribute.name.mk.health_regen", "Health Regen");
+        // Base stats
+        attribute(MKAttributes.HEALTH_REGEN, "Health Regen");
+        attribute(MKAttributes.MANA_REGEN, "Mana Regen");
+        attribute(MKAttributes.MAX_MANA, "Max Mana");
+        attribute(MKAttributes.MAX_POISE, "Max Poise");
+        attribute(MKAttributes.POISE_REGEN, "Poise Regen");
+        attribute(MKAttributes.POISE_BREAK_CD, "Poise Break Time");
+        attribute(MKAttributes.COOLDOWN, "Cooldown Rate");
+        attribute(MKAttributes.BUFF_DURATION, "Buff Duration");
+        attribute(MKAttributes.CASTING_SPEED, "Casting Speed");
+        attribute(MKAttributes.HEAL_BONUS, "Heal Bonus");
+        attribute(MKAttributes.HEAL_EFFICIENCY, "Heal Efficiency");
+
+        // Crit chances
+        attribute(MKAttributes.MELEE_CRIT, "Melee Crit Chance");
+        attribute(MKAttributes.MELEE_CRIT_MULTIPLIER, "Melee Crit Multiplier");
+        attribute(MKAttributes.RANGED_CRIT, "Ranged Crit Chance");
+        attribute(MKAttributes.RANGED_CRIT_MULTIPLIER, "Ranged Crit Multiplier");
+        attribute(MKAttributes.SPELL_CRIT, "Spell Crit Chance");
+        attribute(MKAttributes.SPELL_CRIT_MULTIPLIER, "Spell Crit Multiplier");
+
+        // Damage types
+        attribute(MKAttributes.RANGED_DAMAGE, "Ranged Damage Bonus");
+        attribute(MKAttributes.RANGED_RESISTANCE, "Ranged Damage Resistance");
+        attribute(MKAttributes.ARCANE_DAMAGE, "Arcane Damage");
+        attribute(MKAttributes.ARCANE_RESISTANCE, "Arcane Resistance");
+        attribute(MKAttributes.FIRE_DAMAGE, "Fire Damage");
+        attribute(MKAttributes.FIRE_RESISTANCE, "Fire Resistance");
+        attribute(MKAttributes.FROST_DAMAGE, "Frost Damage");
+        attribute(MKAttributes.FROST_RESISTANCE, "Frost Resistance");
+        attribute(MKAttributes.SHADOW_DAMAGE, "Shadow Damage");
+        attribute(MKAttributes.SHADOW_RESISTANCE, "Shadow Resistance");
+        attribute(MKAttributes.HOLY_DAMAGE, "Holy Damage");
+        attribute(MKAttributes.HOLY_RESISTANCE, "Holy Resistance");
+        attribute(MKAttributes.NATURE_DAMAGE, "Nature Damage");
+        attribute(MKAttributes.NATURE_RESISTANCE, "Nature Resistance");
+        attribute(MKAttributes.POISON_DAMAGE, "Poison Damage");
+        attribute(MKAttributes.POISON_RESISTANCE, "Poison Resistance");
+        attribute(MKAttributes.BLEED_DAMAGE, "Bleed Damage");
+        attribute(MKAttributes.BLEED_RESISTANCE, "Bleed Resistance");
+
+        // Spell schools
+        attribute(MKAttributes.ABJURATION, "Abjuration");
+        attribute(MKAttributes.ALTERATON, "Alteration");
+        attribute(MKAttributes.CONJURATION, "Conjuration");
+        attribute(MKAttributes.DIVINATION, "Divination");
+        attribute(MKAttributes.ENCHANTMENT, "Enchantment");
+        attribute(MKAttributes.EVOCATION, "Evocation");
+        attribute(MKAttributes.PHANTASM, "Phantasm");
+        attribute(MKAttributes.NECROMANCY, "Necromancy");
+        attribute(MKAttributes.RESTORATION, "Restoration");
+        attribute(MKAttributes.ARETE, "Arete");
+        attribute(MKAttributes.PNEUMA, "Pneuma");
+        attribute(MKAttributes.PANKRATION, "Pankration");
+        attribute(MKAttributes.MARKSMANSHIP, "Marksmanship");
+
+
+        // Weapon skills
+        attribute(MKAttributes.HAND_TO_HAND, "Hand to Hand");
+        attribute(MKAttributes.TWO_HAND_SLASH, "2H Slash");
+        attribute(MKAttributes.ONE_HAND_SLASH, "1H Slash");
+        attribute(MKAttributes.TWO_HAND_BLUNT, "2H Blunt");
+        attribute(MKAttributes.ONE_HAND_BLUNT, "1H Blunt");
+        attribute(MKAttributes.TWO_HAND_PIERCE, "2H Pierce");
+        attribute(MKAttributes.ONE_HAND_PIERCE, "1H Pierce");
+        attribute(MKAttributes.BLOCK, "Block");
+        attribute(MKAttributes.BLOCK_EFFICIENCY, "Block Efficiency");
     }
 
     private void addDamageTypes() {

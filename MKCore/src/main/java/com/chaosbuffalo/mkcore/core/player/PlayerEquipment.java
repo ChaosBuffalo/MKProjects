@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.core.player;
 
-import com.chaosbuffalo.mkcore.abilities.AbilitySource;
+import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -8,83 +9,137 @@ import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
 import com.chaosbuffalo.mkcore.item.CoreItemComponents;
 import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
+import com.chaosbuffalo.mkcore.sync.types.SyncString;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.UUID;
+import javax.annotation.Nonnull;
+import java.util.*;
 
-public class PlayerEquipment extends EntityEquipment {
+public class PlayerEquipment extends EntityEquipment implements IPlayerSyncComponentProvider {
     private static final UUID EV_ID = UUID.fromString("951a29de-b941-4c4d-9d01-dba4c68b7897");
 
     private final MKPlayerData playerData;
-    private MKAbility currentMainAbility = null;
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+    private final Set<ResourceLocation> armorMastery;
+    private final SyncString clientMasteryInfo;
 
     public PlayerEquipment(MKPlayerData playerData) {
         super(playerData);
         this.playerData = playerData;
+        this.armorMastery = new HashSet<>();
+        clientMasteryInfo = new SyncString(""); // TODO: better sync? this is pretty dumb
+        clientMasteryInfo.setCallback(this::handleClientMasteryUpdate);
+        addSyncPrivate("armor_mastery", clientMasteryInfo);
         playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
         playerData.events().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated);
     }
 
     @Override
+    public PlayerSyncComponent getSyncComponent() {
+        return sync;
+    }
+
+    private void handleClientMasteryUpdate(String masteryInfo) {
+        armorMastery.clear();
+        Arrays.stream(masteryInfo.split("\\|")).map(ResourceLocation::parse).forEach(armorMastery::add);
+    }
+
+    public void enableArmorMastery(ResourceKey<ArmorClass> armorClassResourceKey, boolean enable) {
+        MKCore.LOGGER.info("enabling armor mastery for {} {}", armorClassResourceKey, enable);
+        if (enable) {
+            armorMastery.add(armorClassResourceKey.location());
+        } else {
+            armorMastery.remove(armorClassResourceKey.location());
+        }
+        // Inform the client about known mastery so tooltips work properly
+        updateClientMastery();
+        refreshAllArmorSlots();
+    }
+
+    @Override
     protected void handleEquip(EquipmentSlot slot, ItemStack to) {
         super.handleEquip(slot, to);
+        addItemAbility(slot, to);
         if (slot.isArmor()) {
-            applyArmorClassBonus(slot, to);
-            addItemAbility(slot, to);
-        } else if (slot == EquipmentSlot.MAINHAND) {
-            handleMainHandChange(to);
+            // Need to do refresh here so armor mastery is applied to the armor worn at login
+            // persona activate callback is done before equipment is ready
+            refreshArmorClassBonus(slot);
         }
     }
 
     @Override
     protected void handleRemoval(EquipmentSlot slot, ItemStack from) {
         super.handleRemoval(slot, from);
-        if (slot.isArmor() && !from.isEmpty()) {
+        removeItemAbility(slot, from);
+        if (slot.isArmor()) {
             removeArmorClassBonus(slot, from);
-            removeItemAbility(slot, from);
-        } else if (slot == EquipmentSlot.MAINHAND) {
-            clearItemAbility();
         }
     }
 
-    private void clearItemAbility() {
-        if (currentMainAbility != null) {
-            playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).clearSlot(0);
-            currentMainAbility = null;
-        }
+    private void refreshAllArmorSlots() {
+        // For all armor, reapply effects to account for new mastery
+        refreshArmorClassBonus(EquipmentSlot.HEAD);
+        refreshArmorClassBonus(EquipmentSlot.CHEST);
+        refreshArmorClassBonus(EquipmentSlot.LEGS);
+        refreshArmorClassBonus(EquipmentSlot.FEET);
     }
 
-    private void handleMainHandChange(ItemStack to) {
-        // Clear the current ability if present
-        clearItemAbility();
+    private void updateClientMastery() {
+        // Inform the client about known mastery so tooltips work properly
+        clientMasteryInfo.set(String.join("|", armorMastery.stream().map(ResourceLocation::toString).toList()));
+    }
 
-        ItemGrantedAbility itemAbility = to.get(CoreItemComponents.ITEM_ABILITY);
-        if (itemAbility != null) {
-            currentMainAbility = itemAbility.ability().value();
-            playerData.getLoadout().getAbilityGroup(AbilityGroupId.Item).setSlot(0, currentMainAbility.getAbilityId());
-        }
+    private void resetArmorMastery() {
+        armorMastery.clear();
+        updateClientMastery();
+        refreshAllArmorSlots();
+    }
+
+    public boolean isArmorClassMastered(@Nonnull Holder<ArmorClass> armorClassHolder) {
+        ResourceKey<ArmorClass> armorKey = armorClassHolder.getKey();
+        return armorKey != null && armorMastery.contains(armorKey.location());
     }
 
     private void applyArmorClassBonus(EquipmentSlot slot, ItemStack to) {
-        ArmorClass armorClass = ArmorClass.getItemArmorClass(to);
-        if (armorClass != null) {
-            armorClass.getPositiveModifierMap(slot).forEach((attr, mod) -> tryAddModifier(attr, slot, mod));
+        if (to.isEmpty())
+            return;
+
+        Holder<ArmorClass> holder = ArmorClass.getHolder(to);
+        if (holder == null)
+            return;
+
+        ArmorClass armorClass = holder.value();
+        armorClass.getPositiveModifierMap(slot).forEach((attr, mod) -> tryAddModifier(attr, slot, mod));
+        if (!isArmorClassMastered(holder)) {
             armorClass.getNegativeModifierMap(slot).forEach((attr, mod) -> tryAddModifier(attr, slot, mod));
         }
     }
 
     private void removeArmorClassBonus(EquipmentSlot slot, ItemStack from) {
-        ArmorClass itemClass = ArmorClass.getItemArmorClass(from);
-        if (itemClass != null) {
-            itemClass.getPositiveModifierMap(slot).forEach((attr, mod) -> tryRemoveModifier(attr, slot, mod));
-            itemClass.getNegativeModifierMap(slot).forEach((attr, mod) -> tryRemoveModifier(attr, slot, mod));
+        if (from.isEmpty())
+            return;
+
+        Holder<ArmorClass> holder = ArmorClass.getHolder(from);
+        if (holder == null)
+            return;
+
+        ArmorClass armorClass = holder.value();
+        armorClass.getPositiveModifierMap(slot).forEach((attr, mod) -> tryRemoveModifier(attr, slot, mod));
+        armorClass.getNegativeModifierMap(slot).forEach((attr, mod) -> tryRemoveModifier(attr, slot, mod));
+    }
+
+    private void refreshArmorClassBonus(EquipmentSlot slot) {
+        var item = playerData.getEntity().getItemBySlot(slot);
+        if (!item.isEmpty()) {
+            removeArmorClassBonus(slot, item);
+            applyArmorClassBonus(slot, item);
         }
     }
 
@@ -121,7 +176,9 @@ public class PlayerEquipment extends EntityEquipment {
         ItemGrantedAbility itemAbility = newItem.get(CoreItemComponents.ITEM_ABILITY);
         if (itemAbility != null) {
             MKAbility ability = itemAbility.ability().value();
-            playerData.getAbilities().learnAbility(ability, AbilitySource.forEquipmentSlot(slot));
+            playerData.getLoadout().getItemGroup().setSlot(slot, ability);
+        } else {
+            playerData.getLoadout().getItemGroup().clearSlot(slot);
         }
     }
 
@@ -136,8 +193,11 @@ public class PlayerEquipment extends EntityEquipment {
 
         ItemGrantedAbility itemAbility = oldItem.get(CoreItemComponents.ITEM_ABILITY);
         if (itemAbility != null) {
-            MKAbility ability = itemAbility.ability().value();
-            playerData.getAbilities().unlearnAbility(ability.getAbilityId(), AbilitySource.forEquipmentSlot(slot));
+            var existingAbilityId = playerData.getLoadout().getItemGroup().getSlot(slot);
+            if (!existingAbilityId.equals(MKCoreRegistry.INVALID_ABILITY) && !itemAbility.ability().is(existingAbilityId)) {
+                MKCore.LOGGER.warn("Player {} unequipping slot {} had differing item abilities! Found {}, expected {} on {}", playerData.getEntity(), slot, itemAbility.ability().value(), existingAbilityId, oldItem);
+            }
+            playerData.getLoadout().getItemGroup().clearSlot(slot);
         }
     }
 
@@ -176,9 +236,8 @@ public class PlayerEquipment extends EntityEquipment {
     }
 
     public void onPersonaActivated(PlayerEvents.PersonaEvent event) {
-        Player player = playerData.getEntity();
-        ItemStack mainHand = player.getItemBySlot(EquipmentSlot.MAINHAND);
-        handleMainHandChange(mainHand);
+        refreshAllArmorSlots();
+        addItemAbility(EquipmentSlot.MAINHAND);
         addItemAbility(EquipmentSlot.HEAD);
         addItemAbility(EquipmentSlot.CHEST);
         addItemAbility(EquipmentSlot.LEGS);
@@ -186,7 +245,8 @@ public class PlayerEquipment extends EntityEquipment {
     }
 
     private void onPersonaDeactivated(PlayerEvents.PersonaEvent event) {
-        handleMainHandChange(ItemStack.EMPTY);
+        resetArmorMastery();
+        removeItemAbility(EquipmentSlot.MAINHAND);
         removeItemAbility(EquipmentSlot.HEAD);
         removeItemAbility(EquipmentSlot.CHEST);
         removeItemAbility(EquipmentSlot.LEGS);

@@ -1,4 +1,14 @@
-// 1.21.1	2025-06-29T15:47:15.2159254	Registries
+// 1.21.1	2025-07-09T21:35:24.8701901	Registries
+dba8652d1ce629a390ca564c62ca55a8baf4b65f data/mkultra/mkcore/talent_node_display/green_soul.json
+1a77c1d90c37b4a011fb11c93110eae0fc4caf2a data/mkultra/mkcore/talent_node_display/life_siphon.json
+7553dbcd5cd98be74d3778debfc0488aa5819b63 data/mkultra/mkcore/talent_node_display/soul_drain.json
+f5dd7a49a4440a9f1e07ad41584046278b037100 data/mkultra/mkcore/talent_trees/core.json
+11d65a4228d00bd063f017b0788317c70164e77f data/mkultra/mkcore/talent_trees/green_knight.json
+a50b36ae6e0b6745d121e3aaea406160dec13aeb data/mkultra/mkcore/talent_trees/knave.json
+b1b7888ae76ab4c67ef3ca5e95335be8e6b0a495 data/mkultra/mkcore/talent_trees/knight.json
+8c005057ea15cddf26dec8ff51ee604eb599b955 data/mkultra/mkcore/talent_trees/mage.json
+69a5cdf6f0137518d897dae977dadee940c81ce0 data/mkultra/mkcore/talent_trees/priest.json
+fe4a6c3101ba46a9abaa9997921493a29e4b26c1 data/mkultra/mkcore/talent_trees/warrior.json
 0b739e12bccaa7c9c586b2dc4facb74dd402a283 data/mkultra/mkfaction/factions/ghosts_of_hyboria.json
 bf0d365b95ba8739f638eddf399289a5f83bed78 data/mkultra/mkfaction/factions/green_knights.json
 04de982d040acc593fee2e03ef8633bcf2102f90 data/mkultra/mkfaction/factions/hyborean_dead.json

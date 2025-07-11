@@ -36,7 +36,6 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.NpcConstants;
 import com.chaosbuffalo.targeting_api.ITargetingOwner;
 import com.chaosbuffalo.targeting_api.Targeting;
-import com.chaosbuffalo.targeting_api.TargetingAPI;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
@@ -94,7 +93,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private static final EntityDataAccessor<Float> GHOST_TRANSLUCENCY = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> HAS_GHOST_ARMOR = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> GHOST_ARMOR_TRANSLUCENCY = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
-    private final PlayerSyncComponent animSync = new PlayerSyncComponent("anim");
+    private final PlayerSyncComponent animSync = new PlayerSyncComponent();
     private int castAnimTimer;
     private VisualCastState visualCastState;
     private MKAbility castingAbility;
@@ -209,9 +208,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         blockDelay = GameConstants.TICKS_PER_SECOND / 2;
         blockHold = GameConstants.TICKS_PER_SECOND * 2;
         syncController = new EntitySyncController(this);
-        animSync.attach(syncController);
+        animSync.attach("anim", syncController);
         particleEffectTracker = ParticleEffectInstanceTracker.getTracker(this);
-        animSync.addPublic(particleEffectTracker);
+        animSync.addPublic("particles", particleEffectTracker);
         nonCombatMoveType = NonCombatMoveType.RANDOM_WANDER;
         combatMoveType = CombatMoveType.MELEE;
 
@@ -225,6 +224,14 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             entityDataCap.setInstanceTracker(particleEffectTracker);
             return entityDataCap;
         });
+    }
+
+    @Override
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
+        if (!level().isClientSide) {
+            syncController.onJoinLevel();
+        }
     }
 
     public MKEntityData getEntityDataCap() {

@@ -7,20 +7,21 @@ import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
 import com.chaosbuffalo.mkcore.core.talents.TalentRecord;
 import com.chaosbuffalo.mkcore.core.talents.TalentTypeHandler;
 import com.chaosbuffalo.mkcore.core.talents.nodes.AttributeTalentNode;
-import com.chaosbuffalo.mkcore.core.talents.talent_types.AttributeTalent;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class AttributeTalentHandler extends TalentTypeHandler {
     private static final UUID EV_ID = UUID.fromString("e542745d-aa57-4093-b734-3df4deb101ff");
 
     protected final MKPlayerData playerData;
-    private final Map<AttributeTalent, AttributeEntry> attributeEntryMap = new HashMap<>();
+    private final Map<AttributeTalentNode, AttributeModifier> modifierMap = new HashMap<>();
 
     public AttributeTalentHandler(Persona persona) {
         super(persona);
@@ -50,139 +51,47 @@ public class AttributeTalentHandler extends TalentTypeHandler {
     private void updateTalentRecord(TalentRecord record, boolean applyImmediately) {
         if (record.getNode() instanceof AttributeTalentNode node) {
 
-            AttributeEntry entry = getAttributeEntry(node.getTalent());
-            entry.updateTalent(record);
-            if (applyImmediately) {
-//                MKCore.LOGGER.info("AttributeTalentHandler.updateTalentRecord applying updated attribute {}", entry);
-                applyAttribute(entry);
+            if (record.isKnown()) {
+                AttributeModifier modifier = node.createModifier(record);
+                modifierMap.put(node, modifier);
+                if (applyImmediately) {
+                    applyAttribute(node.getAttribute(), modifier);
+                }
+            } else {
+                AttributeModifier existingModifier = modifierMap.remove(node);
+                if (existingModifier != null) {
+                    removeAttribute(node.getAttribute(), existingModifier.id());
+                }
             }
         }
     }
 
-    private void dumpAttrInstance(AttributeInstance instance) {
-        MKCore.LOGGER.info("\tAttribute {}", instance.getAttribute().value().getDescriptionId());
-        for (AttributeModifier modifier : instance.getModifiers()) {
-            MKCore.LOGGER.info("\t\tmodifier {}", modifier);
-        }
-    }
-
-    private void dumpAttributes(String location) {
-        MKCore.LOGGER.info("All Attributes @ {}", location);
-        AttributeMap map = playerData.getEntity().getAttributes();
-
-//        map.getAllAttributes().forEach(this::dumpAttrInstance);
-    }
-
-    private void dumpDirtyAttributes(String location) {
-        AttributeMap map = playerData.getEntity().getAttributes();
-
-        MKCore.LOGGER.info("Dirty Attributes @ {}", location);
-        map.getAttributesToSync().forEach(this::dumpAttrInstance);
-    }
-
-    private void applyAttribute(AttributeEntry entry) {
-        AttributeInstance instance = playerData.getEntity().getAttribute(entry.getAttribute());
+    private void applyAttribute(Holder<Attribute> attr, AttributeModifier modifier) {
+        AttributeInstance instance = playerData.getEntity().getAttribute(attr);
         if (instance == null) {
-            MKCore.LOGGER.error("PlayerTalentModule.applyAttribute player did not have attribute {}!", entry.getAttribute());
+            MKCore.LOGGER.error("PlayerTalentModule.applyAttribute player did not have attribute {}!", attr);
             return;
         }
 
-        instance.removeModifier(entry.getModifier());
-        instance.addTransientModifier(entry.getModifier());
-        if (entry.getAttributeTalent().requiresStatRefresh()) {
-            playerData.getStats().refreshStats();
-        }
-
-//        dumpDirtyAttributes("applyAttribute");
+        instance.addOrUpdateTransientModifier(modifier);
     }
 
-    private void removeAttribute(AttributeTalent attributeTalent) {
-        AttributeEntry entry = attributeEntryMap.get(attributeTalent);
-        if (entry != null) {
-            AttributeInstance instance = playerData.getEntity().getAttribute(entry.getAttribute());
-            if (instance != null) {
-                instance.removeModifier(entry.getModifier());
-            }
+    private void removeAttribute(Holder<Attribute> attr, ResourceLocation modifierId) {
+        AttributeInstance instance = playerData.getEntity().getAttribute(attr);
+        if (instance == null) {
+            MKCore.LOGGER.error("PlayerTalentModule.removeAttribute player did not have attribute {}!", attr);
+            return;
         }
+
+        instance.removeModifier(modifierId);
     }
 
     private void removeAllAttributeModifiers() {
-        attributeEntryMap.forEach((talent, entry) -> removeAttribute(talent));
-        attributeEntryMap.clear();
-
-//        dumpAttributes("clearAttributeModifiers");
-//        dumpDirtyAttributes("clearAttributeModifiers");
+        modifierMap.forEach((n, m) -> removeAttribute(n.getAttribute(), m.id()));
+        modifierMap.clear();
     }
-
 
     private void applyAllAttributeModifiers() {
-        attributeEntryMap.forEach((talent, entry) -> applyAttribute(entry));
-    }
-
-    private AttributeTalentHandler.AttributeEntry getAttributeEntry(AttributeTalent attribute) {
-        return attributeEntryMap.computeIfAbsent(attribute, AttributeEntry::new);
-    }
-
-    private static class AttributeEntry {
-        private final AttributeTalent attribute;
-        private final Set<TalentRecord> records = new HashSet<>();
-        private AttributeModifier modifier;
-        private double value;
-        private boolean dirty = true;
-
-        public AttributeEntry(AttributeTalent attribute) {
-            this.attribute = attribute;
-        }
-
-        public AttributeTalent getAttributeTalent() {
-            return attribute;
-        }
-
-        public UUID getUUID() {
-            return attribute.getUUID();
-        }
-
-        public Holder<Attribute> getAttribute() {
-            return attribute.getAttribute();
-        }
-
-        public Collection<TalentRecord> getRecords() {
-            return records;
-        }
-
-        public AttributeModifier getModifier() {
-            double rank = getTotalValue();
-            if (modifier == null || modifier.amount() != rank) {
-                modifier = attribute.createModifier(rank);
-            }
-            return modifier;
-        }
-
-        public double getTotalValue() {
-            if (dirty) {
-                value = calculateValue();
-                dirty = false;
-            }
-            return value;
-        }
-
-        private double calculateValue() {
-            return records.stream().mapToDouble(r -> ((AttributeTalentNode) r.getNode()).getValue(r.getRank())).sum();
-        }
-
-        public void updateTalent(TalentRecord record) {
-            boolean changed = records.add(record);
-            dirty = true;
-        }
-
-        @Override
-        public String toString() {
-            return "AttributeEntry{" +
-                    "attribute=" + attribute +
-                    ", value=" + getModifier().amount() +
-                    ", dirty=" + dirty +
-                    ", modifier=" + getModifier() +
-                    '}';
-        }
+        modifierMap.forEach((n, m) -> applyAttribute(n.getAttribute(), m));
     }
 }

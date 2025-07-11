@@ -5,15 +5,15 @@ import com.chaosbuffalo.mkcore.sync.ISyncObject;
 public interface IPlayerSyncComponentProvider {
     PlayerSyncComponent getSyncComponent();
 
-    default void addSyncChild(IPlayerSyncComponentProvider syncComponent) {
-        getSyncComponent().addChild(syncComponent.getSyncComponent());
+    default void addSyncChild(String name, IPlayerSyncComponentProvider syncComponent) {
+        getSyncComponent().addChild(name, syncComponent.getSyncComponent());
     }
 
-    default void addSyncPrivate(ISyncObject component) {
-        getSyncComponent().addPrivate(component);
+    default void addSyncPrivate(String name, ISyncObject component) {
+        getSyncComponent().addPrivate(name, component);
     }
 
-    default void addSyncPublic(ISyncObject component) {
-        getSyncComponent().addPublic(component);
+    default void addSyncPublic(String name, ISyncObject component) {
+        getSyncComponent().addPublic(name, component);
     }
 }

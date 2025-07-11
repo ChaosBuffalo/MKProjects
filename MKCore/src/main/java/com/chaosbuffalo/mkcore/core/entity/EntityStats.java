@@ -17,16 +17,16 @@ public abstract class EntityStats implements IMKEntityStats, IPlayerSyncComponen
     public static final ResourceLocation POISE_BREAK_TIMER = MKCore.id("timer.poise_break");
     protected final IMKEntityData entityData;
     protected final AbilityTracker abilityTracker;
-    protected final SyncFloat mana = new SyncFloat("mana", 0f);
-    protected final SyncFloat poise = new SyncFloat("poise", 0f);
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("stats");
+    protected final SyncFloat mana = new SyncFloat(0f);
+    protected final SyncFloat poise = new SyncFloat(0f);
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
 
     public EntityStats(IMKEntityData data) {
         entityData = data;
         abilityTracker = AbilityTracker.getTracker(data.getEntity());
-        addSyncPublic(mana);
-        addSyncPrivate(poise);
-        addSyncPrivate(abilityTracker);
+        addSyncPublic("mana", mana);
+        addSyncPrivate("poise", poise);
+        addSyncPrivate("timers", abilityTracker);
     }
 
     @Override

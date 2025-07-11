@@ -5,19 +5,35 @@ import com.chaosbuffalo.mkcore.core.records.IRecordType;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.resources.ResourceLocation;
 
 public class TalentRecord implements IRecordInstance<TalentRecord> {
 
-    private int currentRank;
     private final TalentNode node;
+    private final TalentTreeRecord treeRecord;
+    private int currentRank;
 
-    public TalentRecord(TalentNode node) {
+    public TalentRecord(TalentNode node, TalentTreeRecord treeRecord) {
         this.node = node;
+        this.treeRecord = treeRecord;
         currentRank = 0;
     }
 
     public TalentNode getNode() {
         return node;
+    }
+
+    public TalentTreeRecord getTreeRecord() {
+        return treeRecord;
+    }
+
+    public ResourceLocation getTreeId() {
+        return treeRecord.getTreeId().location();
+    }
+
+    public ResourceLocation getUniqueId() {
+        return getTreeId()
+                .withSuffix("/%s/%d".formatted(node.getLine().getName(), node.getIndex()));
     }
 
     public boolean isKnown() {
@@ -28,6 +44,10 @@ public class TalentRecord implements IRecordInstance<TalentRecord> {
         return currentRank;
     }
 
+    public void setRank(int value) {
+        currentRank = value;
+    }
+
     public boolean modifyRank(int value) {
         int next = currentRank + value;
         if (next >= 0 && next <= node.getMaxRanks()) {
@@ -35,10 +55,6 @@ public class TalentRecord implements IRecordInstance<TalentRecord> {
             return true;
         }
         return false;
-    }
-
-    public void setRank(int value) {
-        currentRank = value;
     }
 
     public <T> T serialize(DynamicOps<T> ops) {
@@ -62,6 +78,6 @@ public class TalentRecord implements IRecordInstance<TalentRecord> {
 
     @Override
     public IRecordType<TalentRecord> getRecordType() {
-        return node.getTalent().getTalentType();
+        return node.getType();
     }
 }

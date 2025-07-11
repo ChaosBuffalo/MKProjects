@@ -24,10 +24,6 @@ public class CoreCommands {
             () -> ArgumentTypeInfos.registerByClass(LoadoutCommand.AbilityGroupArgument.class,
                     SingletonArgumentInfo.contextFree(LoadoutCommand.AbilityGroupArgument::abilityGroup)));
 
-    public static final Holder<ArgumentTypeInfo<?, ?>> TALENT_ID = ARGUMENT_TYPES.register("talent_id",
-            () -> ArgumentTypeInfos.registerByClass(TalentIdArgument.class,
-                    SingletonArgumentInfo.contextFree(TalentIdArgument::talentId)));
-
     public static final Holder<ArgumentTypeInfo<?, ?>> TALENT_TREE = ARGUMENT_TYPES.register("talent_tree_id",
             () -> ArgumentTypeInfos.registerByClass(TalentTreeIdArgument.class,
                     SingletonArgumentInfo.contextFree(TalentTreeIdArgument::talentTreeId)));

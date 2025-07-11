@@ -3,17 +3,19 @@ package com.chaosbuffalo.mkcore.core.editor;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
 import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
+import com.chaosbuffalo.mkcore.sync.SyncContext;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 
 public class PlayerEditorModule implements IPlayerSyncComponentProvider {
-    private final PlayerSyncComponent sync = new PlayerSyncComponent("editor");
-    private final ParticleEditorSyncComponent particleEditorData = new ParticleEditorSyncComponent("particle_editor");
+    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+    private final ParticleEditorSyncComponent particleEditorData = new ParticleEditorSyncComponent();
     protected final MKPlayerData playerData;
 
     public PlayerEditorModule(MKPlayerData playerData) {
         this.playerData = playerData;
-        addSyncPrivate(particleEditorData);
+        addSyncPrivate("particle_editor", particleEditorData);
     }
 
     @Override
@@ -27,16 +29,19 @@ public class PlayerEditorModule implements IPlayerSyncComponentProvider {
 
     public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-        CompoundTag particlesTag = new CompoundTag();
-        particleEditorData.serializeFull(provider, particlesTag);
-        tag.put("particleEditor", particlesTag);
+        var context = new SyncContext(provider);
+        Tag particlesTag = particleEditorData.writeFullValue(context);
+        if (particlesTag != null) {
+            tag.put("particleEditor", particlesTag);
+        }
         return tag;
     }
 
     public void deserialize(HolderLookup.Provider provider, CompoundTag nbt) {
         if (nbt.contains("particleEditor")) {
             CompoundTag particlesTag = nbt.getCompound("particleEditor");
-            particleEditorData.deserializeUpdate(provider, particlesTag);
+            var context = new SyncContext(provider);
+            particleEditorData.handleUpdatePayload(context, particlesTag);
             particleEditorData.markDirty();
         }
     }

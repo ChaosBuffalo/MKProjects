@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.sync;
 
-import com.chaosbuffalo.mkcore.network.packets.EntityDataUpdatePacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
+import com.chaosbuffalo.mkcore.network.packets.EntityDataUpdatePacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 

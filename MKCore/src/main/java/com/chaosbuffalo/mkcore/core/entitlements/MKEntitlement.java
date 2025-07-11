@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core.entitlements;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 public abstract class MKEntitlement {
@@ -21,13 +22,21 @@ public abstract class MKEntitlement {
 
     public abstract EntitlementType getEntitlementType();
 
-    public Component getDescription() {
+    public MutableComponent getName() {
+        return Component.translatable(nameKey(getId()));
+    }
+
+    public MutableComponent getDescription() {
         ResourceLocation id = getId();
-        return Component.translatable(String.format("%s.entitlement.%s.name", id.getNamespace(), id.getPath()));
+        return Component.translatable(descriptionKey(id));
     }
 
     public static String nameKey(ResourceLocation id) {
-        return String.format("%s.entitlement.%s.name", id.getNamespace(), id.getPath());
+        return id.toLanguageKey("entitlement", "name");
+    }
+
+    public static String descriptionKey(ResourceLocation id) {
+        return id.toLanguageKey("entitlement", "description");
     }
 
 }

@@ -8,7 +8,6 @@ import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtensionProvider;
 import com.chaosbuffalo.mkcore.core.persona.PersonaManager;
-import com.chaosbuffalo.mkcore.core.talents.TalentManager;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreAttachments;
 import com.chaosbuffalo.mkcore.init.CoreParticles;
@@ -47,7 +46,6 @@ public class MKCore {
     // Directly reference a log4j logger.
     public static final Logger LOGGER = LogUtils.getLogger();
     private final AbilityManager abilityManager;
-    private final TalentManager talentManager;
     private final ParticleAnimationManager particleAnimationManager;
     public static final String CORE_EXTENSION = "mk_core_extension";
     public static final String PERSONA_EXTENSION = "register_persona_extension";
@@ -65,7 +63,6 @@ public class MKCore {
         MKCoreRegistry.register(modBus);
         // Register ourselves for server and other game events we are interested in
         NeoForge.EVENT_BUS.register(this);
-        talentManager = new TalentManager();
         abilityManager = new AbilityManager();
         particleAnimationManager = new ParticleAnimationManager();
         AbilityManager.setupDeserializers();
@@ -97,7 +94,6 @@ public class MKCore {
     @SubscribeEvent
     public void addReloadListeners(AddReloadListenerEvent event) {
         event.addListener(abilityManager);
-        event.addListener(talentManager);
         event.addListener(particleAnimationManager);
     }
 
@@ -179,10 +175,6 @@ public class MKCore {
             return Optional.of(entity.getData(CoreAttachments.ENTITY_DATA_ATTACHMENT));
         }
         return Optional.empty();
-    }
-
-    public static TalentManager getTalentManager() {
-        return INSTANCE.talentManager;
     }
 
     public static AbilityManager getAbilityManager() {

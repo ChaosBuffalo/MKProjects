@@ -1,7 +1,8 @@
 package com.chaosbuffalo.mkcore.sync;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+
+import javax.annotation.Nullable;
 
 public interface ISyncObject {
 
@@ -9,9 +10,17 @@ public interface ISyncObject {
 
     boolean isDirty();
 
-    void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag);
+    void clearDirty();
 
-    void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag);
+    void handleUpdatePayload(SyncContext context, Tag valueTag);
 
-    void serializeFull(HolderLookup.Provider provider, CompoundTag tag);
+    @Nullable
+    Tag writeFullValue(SyncContext context);
+
+    @Nullable
+    Tag writeUpdateValue(SyncContext context);
+
+    static Tag notImplementedByDesign(Object self) {
+        throw new IllegalStateException("object '%s' does not implement sync method".formatted(self));
+    }
 }

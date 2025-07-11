@@ -1,61 +1,40 @@
 package com.chaosbuffalo.mkcore.core.talents;
 
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.records.IRecordType;
-import com.chaosbuffalo.mkcore.core.talents.handlers.AbilityGrantTalentHandler;
-import com.chaosbuffalo.mkcore.core.talents.handlers.AttributeTalentHandler;
-import com.chaosbuffalo.mkcore.core.talents.handlers.EntitlementGrantTalentTypeHandler;
-import com.chaosbuffalo.mkcore.init.CoreEntitlements;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-import java.util.function.Function;
+import java.util.function.Consumer;
 
-public class TalentType implements IRecordType<TalentRecord> {
-    public static final TalentType ATTRIBUTE =
-            new TalentType("mkcore.talent_type.attribute.name", AttributeTalentHandler::new);
-    public static final TalentType PASSIVE =
-            new TalentType("mkcore.talent_type.passive.name", AbilityGrantTalentHandler::new)
-                    .setDisplayName("mkcore.talent_type.tooltip_name_with_ability");
-    public static final TalentType ULTIMATE =
-            new TalentType("mkcore.talent_type.ultimate.name", AbilityGrantTalentHandler::new)
-                    .setDisplayName("mkcore.talent_type.tooltip_name_with_ability");
-    public static final TalentType BASIC_SLOT =
-            new TalentType("mkcore.talent_type.basic_slot.name",
-                    persona -> new EntitlementGrantTalentTypeHandler(persona, CoreEntitlements.BASIC_ABILITY_SLOT));
-    public static final TalentType PASSIVE_SLOT =
-            new TalentType("mkcore.talent_type.passive_slot.name",
-                    persona -> new EntitlementGrantTalentTypeHandler(persona, CoreEntitlements.PASSIVE_ABILITY_SLOT));
-    public static final TalentType ULTIMATE_SLOT =
-            new TalentType("mkcore.talent_type.ultimate_slot.name",
-                    persona -> new EntitlementGrantTalentTypeHandler(persona, CoreEntitlements.ULTIMATE_ABILITY_SLOT));
-    public static final TalentType POOL_COUNT =
-            new TalentType("mkcore.talent_type.pool_slot.name",
-                    persona -> new EntitlementGrantTalentTypeHandler(persona, CoreEntitlements.ABILITY_POOL_SIZE));
+public abstract class TalentType<T extends TalentNode> implements IRecordType<TalentRecord> {
 
-    private final String name;
-    private String displayNameKey = "mkcore.talent_type.tooltip_name";
-    private final Function<Persona, TalentTypeHandler> factory;
+    public abstract MapCodec<T> codec();
 
-    private TalentType(String name, Function<Persona, TalentTypeHandler> factory) {
-        this.name = name;
-        this.factory = factory;
+    public abstract TalentTypeHandler createTypeHandler(Persona persona);
+
+    public abstract MutableComponent getTalentNodeName(TalentRecord record);
+
+    public abstract MutableComponent getTypeDisplayName(TalentRecord record);
+
+    public abstract MutableComponent getTalentDescription(TalentRecord record);
+
+    /* Tooltip
+    [NodeName] - default getTalentNameKey, uses talentId
+    [TypeDisplayName]
+    [Description]
+    <extra additions by describeTalent>
+     */
+    public void buildTooltip(IMKEntityData entityData, TalentRecord record, Consumer<Component> consumer) {
+        consumer.accept(getTalentNodeName(record));
+        consumer.accept(getTypeDisplayName(record).withStyle(ChatFormatting.GOLD));
+        describeTalent(entityData, record, consumer);
     }
 
-    public TalentType setDisplayName(String tooltipKey) {
-        this.displayNameKey = tooltipKey;
-        return this;
-    }
-
-    public MutableComponent getName() {
-        return Component.translatable(name);
-    }
-
-    public MutableComponent getDisplayName() {
-        return Component.translatable(displayNameKey, getName());
-    }
-
-    public TalentTypeHandler createTypeHandler(Persona persona) {
-        return factory.apply(persona);
+    public void describeTalent(IMKEntityData entityData, TalentRecord record, Consumer<Component> consumer) {
+        consumer.accept(getTalentDescription(record).withStyle(ChatFormatting.GRAY));
     }
 }

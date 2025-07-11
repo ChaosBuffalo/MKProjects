@@ -2,13 +2,15 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.ISyncObject;
-import net.minecraft.core.HolderLookup;
+import com.chaosbuffalo.mkcore.sync.SyncContext;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -162,7 +164,7 @@ public class AbilityTracker implements ISyncObject {
         }
     }
 
-    private static class TimerEntry {
+    public static class TimerEntry {
         private final int createTicks;
         private final int expireTicks;
         private final boolean local;
@@ -228,23 +230,27 @@ public class AbilityTracker implements ISyncObject {
         }
 
         @Override
-        public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-            CompoundTag root = new CompoundTag();
-            dirty.forEach(id -> root.putInt(id.toString(), getTimerTicksRemaining(id)));
-            tag.put("cooldowns", root);
+        public void clearDirty() {
             dirty.clear();
         }
 
         @Override
-        public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
+        public @Nullable Tag writeFullValue(SyncContext context) {
             CompoundTag root = new CompoundTag();
             iterateActiveEntries(e -> {
                 return !e.getValue().isLocal();
             }, (entry, cd) -> {
                 root.putInt(entry.getKey().toString(), cd);
             });
-            tag.put("cooldowns", root);
+            return root;
+        }
+
+        @Override
+        public @Nullable Tag writeUpdateValue(SyncContext context) {
+            CompoundTag root = new CompoundTag();
+            dirty.forEach(id -> root.putInt(id.toString(), getTimerTicksRemaining(id)));
             dirty.clear();
+            return root;
         }
     }
 
@@ -268,18 +274,25 @@ public class AbilityTracker implements ISyncObject {
     }
 
     @Override
-    public void deserializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-        deserializeList(tag.getCompound("cooldowns"), false);
+    public void clearDirty() {
+        ISyncObject.notImplementedByDesign(this);
     }
 
     @Override
-    public void serializeUpdate(HolderLookup.Provider provider, CompoundTag tag) {
-
+    public @Nullable Tag writeFullValue(SyncContext context) {
+        return ISyncObject.notImplementedByDesign(this);
     }
 
     @Override
-    public void serializeFull(HolderLookup.Provider provider, CompoundTag tag) {
+    public @Nullable Tag writeUpdateValue(SyncContext context) {
+        return ISyncObject.notImplementedByDesign(this);
+    }
 
+    @Override
+    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+        if (valueTag instanceof CompoundTag groupTag) {
+            deserializeList(groupTag, false);
+        }
     }
 
     public static class ExternalEventsTracker extends AbilityTracker {
