@@ -1,12 +1,17 @@
 package com.chaosbuffalo.mkcore.utils;
 
+import net.minecraft.client.renderer.block.model.multipart.MultiPart;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.*;
+import net.neoforged.neoforge.entity.PartEntity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -25,11 +30,18 @@ public class RayTraceUtils {
         return vec.cross(cVec);
     }
 
+    public static <E extends Entity> boolean multipartAwarePickable(E entity) {
+        if (entity instanceof EnderDragon enderDragon) {
+            return Arrays.stream(enderDragon.getParts()).anyMatch(Entity::isPickable);
+        }
+        return entity.isPickable();
+    }
+
     public static <E extends Entity> HitResult getLookingAt(Class<E> clazz, final Entity mainEntity, double distance, final Predicate<E> entityPredicate) {
 
         Predicate<E> finalFilter = e -> e != mainEntity &&
                 defaultFilter.test(e) &&
-                e.isPickable() &&
+                multipartAwarePickable(e) &&
                 entityPredicate.test(e);
 
         HitResult position = null;
@@ -78,6 +90,22 @@ public class RayTraceUtils {
                 if (dist < distance || distance == 0.0D) {
                     nearest = entity;
                     distance = dist;
+                }
+            }
+        }
+
+        for (PartEntity<?> p : world.getPartEntities()) {
+            EntityTypeTest<Entity, E> typeTest = EntityTypeTest.forClass(clazz);
+            E t = typeTest.tryCast(p.getParent());
+            AABB entityBB = p.getBoundingBox().inflate(entityExpansion);
+            if (t != null && entityBB.intersects(bb) && predicate.test(t)) {
+                Optional<Vec3> intercept = entityBB.clip(from, to);
+                if (intercept.isPresent()) {
+                    double dist = from.distanceTo(intercept.get());
+                    if (dist < distance || distance == 0.0D) {
+                        nearest = t;
+                        distance = dist;
+                    }
                 }
             }
         }
