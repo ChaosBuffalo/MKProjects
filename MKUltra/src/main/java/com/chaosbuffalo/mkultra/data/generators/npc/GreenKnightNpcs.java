@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkultra.data.generators.npc;
 
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.training.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
@@ -22,7 +23,7 @@ public class GreenKnightNpcs {
     public static void bootstrap(BootstrapContext<NpcDefinition> context) {
         context.register(green_lady_guard_1, generateGreenLadyGuard1(green_lady_guard_1));
         context.register(green_lady_guard_2, generateGreenLadyGuard2(green_lady_guard_2));
-        context.register(green_lady, generateGreenLady(green_lady));
+        context.register(green_lady, generateGreenLady(green_lady, context));
         context.register(green_smith, generateGreenSmith(green_smith));
     }
 
@@ -81,7 +82,9 @@ public class GreenKnightNpcs {
                 .build();
     }
 
-    static NpcDefinition generateGreenLady(ResourceKey<NpcDefinition> key) {
+    static NpcDefinition generateGreenLady(ResourceKey<NpcDefinition> key, BootstrapContext<NpcDefinition> context) {
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
+
         return new NpcDefinitionBuilder(key, MKUEntities.ORC_TYPE)
                 .faction(MKUFactions.GREEN_KNIGHT_FACTION_NAME)
                 .name("Green Lady")
@@ -100,11 +103,11 @@ public class GreenKnightNpcs {
                 .xp(250)
                 .quests(MKUQuests.INTRO_QUEST)
                 .skillClass(NpcGenUtils.NpcSkillClass.CLERIC)
-                .trains(MKUAbilities.SKIN_LIKE_WOOD, new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier1.get()))
-                .trains(MKUAbilities.NATURES_REMEDY, new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier1.get()))
-                .trains(MKUAbilities.SPIRIT_BOMB, new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier2.get()))
-                .trains(MKUAbilities.CLEANSING_SEED, new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier2.get()))
-                .trains(MKUAbilities.EXPLOSIVE_GROWTH, new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier3.get()))
+                .trains(MKUAbilities.SKIN_LIKE_WOOD, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.GreenKnightTier1)))
+                .trains(MKUAbilities.NATURES_REMEDY, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.GreenKnightTier1)))
+                .trains(MKUAbilities.SPIRIT_BOMB, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.GreenKnightTier2)))
+                .trains(MKUAbilities.CLEANSING_SEED, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.GreenKnightTier2)))
+                .trains(MKUAbilities.EXPLOSIVE_GROWTH, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.GreenKnightTier3)))
                 .build();
     }
 

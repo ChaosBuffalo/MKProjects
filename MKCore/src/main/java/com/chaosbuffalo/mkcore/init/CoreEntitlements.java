@@ -9,40 +9,53 @@ import com.chaosbuffalo.mkcore.core.entitlements.AbilitySlotEntitlement;
 import com.chaosbuffalo.mkcore.core.entitlements.ArmorClassMasteryEntitlement;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import com.chaosbuffalo.mkcore.item.ArmorClass;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class CoreEntitlements {
+    private static ResourceKey<MKEntitlement> key(String id) {
+        return ResourceKey.create(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY, MKCore.id(id));
+    }
 
-    public static final DeferredRegister<MKEntitlement> ENTITLEMENTS =
-            DeferredRegister.create(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY, MKCore.MOD_ID);
+    public static final ResourceKey<MKEntitlement> BASIC_ABILITY_SLOT = key("ability_slot.basic");
+    public static final ResourceKey<MKEntitlement> PASSIVE_ABILITY_SLOT = key("ability_slot.passive");
+    public static final ResourceKey<MKEntitlement> ULTIMATE_ABILITY_SLOT = key("ability_slot.ultimate");
 
-    public static final DeferredHolder<MKEntitlement, AbilitySlotEntitlement> BASIC_ABILITY_SLOT = ENTITLEMENTS.register("ability_slot.basic",
-            () -> new AbilitySlotEntitlement(AbilityGroupId.Basic));
+    public static final ResourceKey<MKEntitlement> ABILITY_POOL_SIZE = key("ability_pool.count");
 
-    public static final DeferredHolder<MKEntitlement, AbilitySlotEntitlement> PASSIVE_ABILITY_SLOT = ENTITLEMENTS.register("ability_slot.passive",
-            () -> new AbilitySlotEntitlement(AbilityGroupId.Passive));
+    public static final ResourceKey<MKEntitlement> ROBE_ARMOR_MASTERY = key("armor_mastery.robes");
+    public static final ResourceKey<MKEntitlement> LIGHT_ARMOR_MASTERY = key("armor_mastery.light");
+    public static final ResourceKey<MKEntitlement> MEDIUM_ARMOR_MASTERY = key("armor_mastery.medium");
+    public static final ResourceKey<MKEntitlement> HEAVY_ARMOR_MASTERY = key("armor_mastery.heavy");
 
-    public static final DeferredHolder<MKEntitlement, AbilitySlotEntitlement> ULTIMATE_ABILITY_SLOT = ENTITLEMENTS.register("ability_slot.ultimate",
-            () -> new AbilitySlotEntitlement(AbilityGroupId.Ultimate));
 
-    public static final DeferredHolder<MKEntitlement, AbilityPoolEntitlement> ABILITY_POOL_SIZE = ENTITLEMENTS.register("ability_pool.count",
-            () -> new AbilityPoolEntitlement(GameConstants.MAX_ABILITY_POOL_SIZE - GameConstants.DEFAULT_ABILITY_POOL_SIZE));
+    public static void bootstrap(BootstrapContext<MKEntitlement> context) {
 
-    public static final DeferredHolder<MKEntitlement, ArmorClassMasteryEntitlement> ROBE_ARMOR_MASTERY = ENTITLEMENTS.register("armor_mastery.robes",
-            () -> new ArmorClassMasteryEntitlement(CoreArmorClasses.ROBES_ARMOR));
+        Function<AbilityGroupId, BiFunction<Component,Component, MKEntitlement>> slot =
+                (a) -> (Component n, Component d) -> new AbilitySlotEntitlement(n, d, a);
+        register(context, BASIC_ABILITY_SLOT, slot.apply(AbilityGroupId.Basic));
+        register(context, PASSIVE_ABILITY_SLOT, slot.apply(AbilityGroupId.Passive));
+        register(context, ULTIMATE_ABILITY_SLOT, slot.apply(AbilityGroupId.Ultimate));
 
-    public static final DeferredHolder<MKEntitlement, ArmorClassMasteryEntitlement> LIGHT_ARMOR_MASTERY = ENTITLEMENTS.register("armor_mastery.light",
-            () -> new ArmorClassMasteryEntitlement(CoreArmorClasses.LIGHT_ARMOR));
+        register(context, ABILITY_POOL_SIZE, (n, d) ->
+                new AbilityPoolEntitlement(n, d, GameConstants.MAX_ABILITY_POOL_SIZE - GameConstants.DEFAULT_ABILITY_POOL_SIZE));
 
-    public static final DeferredHolder<MKEntitlement, ArmorClassMasteryEntitlement> MEDIUM_ARMOR_MASTERY = ENTITLEMENTS.register("armor_mastery.medium",
-            () -> new ArmorClassMasteryEntitlement(CoreArmorClasses.MEDIUM_ARMOR));
+        Function<ResourceKey<ArmorClass>, BiFunction<Component,Component, MKEntitlement>> armor =
+                (a) -> (Component n, Component d) -> new ArmorClassMasteryEntitlement(n, d, a);
+        register(context, ROBE_ARMOR_MASTERY,  armor.apply(CoreArmorClasses.ROBES_ARMOR));
+        register(context, LIGHT_ARMOR_MASTERY,  armor.apply(CoreArmorClasses.LIGHT_ARMOR));
+        register(context, MEDIUM_ARMOR_MASTERY,  armor.apply(CoreArmorClasses.MEDIUM_ARMOR));
+        register(context, HEAVY_ARMOR_MASTERY,  armor.apply(CoreArmorClasses.HEAVY_ARMOR));
+    }
 
-    public static final DeferredHolder<MKEntitlement, ArmorClassMasteryEntitlement> HEAVY_ARMOR_MASTERY = ENTITLEMENTS.register("armor_mastery.heavy",
-            () -> new ArmorClassMasteryEntitlement(CoreArmorClasses.HEAVY_ARMOR));
-
-    public static void register(IEventBus modBus) {
-        ENTITLEMENTS.register(modBus);
+    private static void register(BootstrapContext<MKEntitlement> context, ResourceKey<MKEntitlement> key, BiFunction<Component,Component, MKEntitlement> builder) {
+        var name = Component.translatable(MKEntitlement.nameKey(key.location()));
+        var desc = Component.translatable(MKEntitlement.descriptionKey(key.location()));
+        context.register(key, builder.apply(name, desc));
     }
 }

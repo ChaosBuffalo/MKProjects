@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkultra.data.generators;
 
 import com.chaosbuffalo.mkchat.dialogue.*;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
 import com.chaosbuffalo.mknpc.quest.DialogueBuilder;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasEntitlementCondition;
@@ -14,10 +15,10 @@ public class MKUDialogueProvider {
 
     public static void bootstrap(BootstrapContext<DialogueTree> context) {
         context.register(MKUDialogues.OPEN_ABILITIES, getAlphaMovePrompt(MKUDialogues.OPEN_ABILITIES));
-        context.register(MKUDialogues.intro_nether_mage_initiate, getNetherMageInitiateDefault(MKUDialogues.intro_nether_mage_initiate));
-        context.register(MKUDialogues.intro_cleric_acolyte, getClericAcolyteDefault(MKUDialogues.intro_cleric_acolyte));
-        context.register(MKUDialogues.cleric_default, clericDefault(MKUDialogues.cleric_default));
-        context.register(MKUDialogues.necro_default, necroDefault(MKUDialogues.necro_default));
+        context.register(MKUDialogues.intro_nether_mage_initiate, getNetherMageInitiateDefault(MKUDialogues.intro_nether_mage_initiate, context));
+        context.register(MKUDialogues.intro_cleric_acolyte, getClericAcolyteDefault(MKUDialogues.intro_cleric_acolyte, context));
+        context.register(MKUDialogues.cleric_default, clericDefault(MKUDialogues.cleric_default, context));
+        context.register(MKUDialogues.necro_default, necroDefault(MKUDialogues.necro_default, context));
     }
 
     private static DialogueTree getAlphaMovePrompt(ResourceKey<DialogueTree> key) {
@@ -48,14 +49,15 @@ public class MKUDialogueProvider {
         return treeBuilder.build();
     }
 
-    private static DialogueTree getNetherMageInitiateDefault(ResourceKey<DialogueTree> key) {
+    private static DialogueTree getNetherMageInitiateDefault(ResourceKey<DialogueTree> key, BootstrapContext<DialogueTree> context) {
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
         DialogueTree tree = new DialogueTree(key);
 
         DialogueNode open_training = new DialogueNode("open_training", "Let me see what I can teach you.");
         open_training.addEffect(new OpenLearnAbilitiesEffect());
         DialoguePrompt openTraining = new DialoguePrompt("open_training", "teach me", "Will you teach me?", "teach you");
         DialogueResponse resp = new DialogueResponse(open_training);
-        resp.addCondition(new HasEntitlementCondition(MKUEntitlements.IntroNetherMageTier1));
+        resp.addCondition(new HasEntitlementCondition(entitlements.getOrThrow(MKUEntitlements.IntroNetherMageTier1)));
         openTraining.addResponse(new DialogueResponse(open_training));
 
 
@@ -75,7 +77,7 @@ public class MKUDialogueProvider {
         DialogueResponse hailWoResp = new DialogueResponse(hail_wo_ability);
 
         DialogueResponse hailWResp = new DialogueResponse(hail_w_ability);
-        hailWResp.addCondition(new HasEntitlementCondition(MKUEntitlements.IntroNetherMageTier1));
+        hailWResp.addCondition(new HasEntitlementCondition(entitlements.getOrThrow(MKUEntitlements.IntroNetherMageTier1)));
 
         hailPrompt.addResponse(hailWResp);
         hailPrompt.addResponse(hailWoResp);
@@ -91,7 +93,9 @@ public class MKUDialogueProvider {
         return tree;
     }
 
-    private static DialogueTree getClericAcolyteDefault(ResourceKey<DialogueTree> key) {
+    private static DialogueTree getClericAcolyteDefault(ResourceKey<DialogueTree> key, BootstrapContext<DialogueTree> context) {
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
+
         var treeBuilder = DialogueTree.builder(key);
 
         var openN = treeBuilder.newNode("open_training")
@@ -117,7 +121,7 @@ public class MKUDialogueProvider {
 
         var hailP = treeBuilder.newPrompt("hail")
                 .respondWith(new DialogueResponse(hailW)
-                        .addCondition(new HasEntitlementCondition(MKUEntitlements.IntroClericTier1)))
+                        .addCondition(new HasEntitlementCondition(entitlements.getOrThrow(MKUEntitlements.IntroClericTier1))))
                 .respondWith(hailWO)
                 .build();
 
@@ -125,10 +129,12 @@ public class MKUDialogueProvider {
         return treeBuilder.build();
     }
 
-    private static DialogueTree clericDefault(ResourceKey<DialogueTree> key) {
+    private static DialogueTree clericDefault(ResourceKey<DialogueTree> key, BootstrapContext<DialogueTree> context) {
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
+
         var treeBuilder = DialogueBuilder.hailWithCondition("Hail and well met {player}, are you in need of [training|I need training]?",
                         "I am {name}, Solang's Servant for this temple. May His Light guide you.",
-                new HasEntitlementCondition(MKUEntitlements.ClericTier1))
+                new HasEntitlementCondition(entitlements.getOrThrow(MKUEntitlements.ClericTier1)))
                 .effectNode("training", "Let's see what I can teach you", new OpenLearnAbilitiesEffect())
                 .context("name", DialogueContexts.ENTITY_NAME_CONTEXT)
                 .context("player", DialogueContexts.PLAYER_NAME_CONTEXT);
@@ -136,10 +142,12 @@ public class MKUDialogueProvider {
         return treeBuilder.build().buildStandalone(key);
     }
 
-    private static DialogueTree necroDefault(ResourceKey<DialogueTree> key) {
+    private static DialogueTree necroDefault(ResourceKey<DialogueTree> key, BootstrapContext<DialogueTree> context) {
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
+
         var treeBuilder = DialogueBuilder.hailWithCondition("Darkness has brought you here {player}, what do you hear in the [whispers|whisper|They whisper to me of strength and decay.]?",
                         "The necromantic arts can sap strength from sinew and carve flesh with ease.",
-                        new HasEntitlementCondition(MKUEntitlements.ThemcromancerTier1))
+                        new HasEntitlementCondition(entitlements.getOrThrow(MKUEntitlements.ThemcromancerTier1)))
                 .effectNode("whisper", "The power we receive from darkness is beyond the ken of mortals.", new OpenLearnAbilitiesEffect())
                 .context("name", DialogueContexts.ENTITY_NAME_CONTEXT)
                 .context("player", DialogueContexts.PLAYER_NAME_CONTEXT);

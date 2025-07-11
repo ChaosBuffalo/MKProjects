@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.quest.rewards;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.entitlements.EntitlementInstance;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.mojang.serialization.MapCodec;
@@ -14,12 +13,9 @@ import net.minecraft.world.entity.player.Player;
 import java.util.UUID;
 
 public class GrantEntitlementReward extends QuestReward {
-    public static final MapCodec<GrantEntitlementReward> MAP_CODEC =
-            RecordCodecBuilder.<GrantEntitlementReward>mapCodec(builder ->
-                    builder.group(
-                            MKCoreRegistry.ENTITLEMENTS.holderByNameCodec().fieldOf("entitlement").forGetter(i -> i.entitlement)
-                    ).apply(builder, GrantEntitlementReward::new)
-            );
+    public static final MapCodec<GrantEntitlementReward> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            MKEntitlement.REFERENCE_CODEC.fieldOf("entitlement").forGetter(i -> i.entitlement)
+    ).apply(builder, GrantEntitlementReward::new));
 
     private final Holder<MKEntitlement> entitlement;
 
@@ -41,7 +37,7 @@ public class GrantEntitlementReward extends QuestReward {
     public void grantReward(Player player) {
         if (entitlement != null) {
             MKCore.getPlayer(player).ifPresent(x -> x.getEntitlements()
-                    .addEntitlement(new EntitlementInstance(entitlement.value(), UUID.randomUUID())));
+                    .addEntitlement(new EntitlementInstance(entitlement, UUID.randomUUID())));
             player.sendSystemMessage(Component.translatable("mknpc.grant_entitlement.message",
                     entitlement.value().getName()).withStyle(ChatFormatting.GOLD));
         }

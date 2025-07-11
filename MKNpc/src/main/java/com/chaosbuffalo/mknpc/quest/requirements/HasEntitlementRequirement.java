@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.quest.requirements;
 
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasEntitlementCondition;
 import com.mojang.serialization.MapCodec;
@@ -12,7 +11,7 @@ import net.minecraft.world.entity.player.Player;
 
 public class HasEntitlementRequirement extends QuestRequirement {
     public static final MapCodec<HasEntitlementRequirement> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
-            MKCoreRegistry.ENTITLEMENTS.holderByNameCodec().fieldOf("entitlement").forGetter(i -> i.entitlement)
+            MKEntitlement.REFERENCE_CODEC.fieldOf("entitlement").forGetter(i -> i.entitlement)
     ).apply(builder, HasEntitlementRequirement::new));
 
 

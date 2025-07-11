@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkultra.data.generators.npc;
 
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.training.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
@@ -19,13 +20,15 @@ public class ClericNpcs {
 
 
     public static void bootstrap(BootstrapContext<NpcDefinition> context) {
-        context.register(solangian_cleric, generateCleric(solangian_cleric));
+        context.register(solangian_cleric, generateCleric(solangian_cleric, context));
         context.register(solangian_temple_guard, generateTempleGuard(solangian_temple_guard));
         context.register(solangian_temple_guard_2, generateTempleGuard2(solangian_temple_guard_2));
     }
 
 
-    static NpcDefinition generateCleric(ResourceKey<NpcDefinition> key) {
+    static NpcDefinition generateCleric(ResourceKey<NpcDefinition> key, BootstrapContext<NpcDefinition> context) {
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
+
         return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
                 .size(1.05f)
@@ -43,11 +46,11 @@ public class ClericNpcs {
                 .dialogue(MKUDialogues.cleric_default)
                 .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.GOLD_TIER, MeleeWeaponTypes.MACE_TYPE).orElseThrow(), 1.0)
                 .quests(MKUQuests.CLERIC_UNLOCK_CHAIN)
-                .trains(MKUAbilities.HEAL, new HasEntitlementRequirement(MKUEntitlements.ClericTier1.get()))
-                .trains(MKUAbilities.SMITE, new HasEntitlementRequirement(MKUEntitlements.ClericTier1.get()))
-                .trains(MKUAbilities.GALVANIZE, new HasEntitlementRequirement(MKUEntitlements.ClericTier2.get()))
-                .trains(MKUAbilities.POWER_WORD_SUMMON, new HasEntitlementRequirement(MKUEntitlements.ClericTier2.get()))
-                .trains(MKUAbilities.INSPIRE, new HasEntitlementRequirement(MKUEntitlements.ClericTier3.get()))
+                .trains(MKUAbilities.HEAL, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.ClericTier1)))
+                .trains(MKUAbilities.SMITE, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.ClericTier1)))
+                .trains(MKUAbilities.GALVANIZE, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.ClericTier2)))
+                .trains(MKUAbilities.POWER_WORD_SUMMON, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.ClericTier2)))
+                .trains(MKUAbilities.INSPIRE, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.ClericTier3)))
                 .skillClass(NpcGenUtils.NpcSkillClass.CLERIC)
                 .xp(100)
                 .build();

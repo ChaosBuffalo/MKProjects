@@ -3,7 +3,6 @@ package com.chaosbuffalo.mknpc.quest.dialogue.conditions;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueConditionType;
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
 import com.mojang.serialization.MapCodec;
@@ -14,7 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 
 public class HasEntitlementCondition extends DialogueCondition {
     public static final MapCodec<HasEntitlementCondition> MAP_CODEC = RecordCodecBuilder.<HasEntitlementCondition>mapCodec(builder -> builder.group(
-            MKCoreRegistry.ENTITLEMENTS.holderByNameCodec().fieldOf("entitlement").forGetter(i -> i.entitlement)
+            MKEntitlement.REFERENCE_CODEC.fieldOf("entitlement").forGetter(i -> i.entitlement)
     ).apply(builder, HasEntitlementCondition::new));
 
     private final Holder<MKEntitlement> entitlement;

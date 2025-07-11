@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkultra.data.generators.npc;
 
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.training.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
@@ -14,6 +15,7 @@ import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 public class ThemcromancerNpcs {
@@ -29,7 +31,7 @@ public class ThemcromancerNpcs {
     public static void bootstrap(BootstrapContext<NpcDefinition> context) {
         context.register(themcromancer_acolyte, generateThemnianAcolyte(themcromancer_acolyte));
         context.register(themcromancer_neophyte, generateThemnianNeophyte(themcromancer_neophyte));
-        context.register(themcromancer_archon, generateThemnianArchon(themcromancer_archon));
+        context.register(themcromancer_archon, generateThemnianArchon(themcromancer_archon, context));
         context.register(themcromancer_librarian, generateThemnianLibrarian(themcromancer_librarian));
         context.register(a_skeletal_gatekeeper, generateSkeletalGatekeeper(a_skeletal_gatekeeper));
         context.register(a_skeletal_guard, generateSkeletalGuard(a_skeletal_guard));
@@ -82,7 +84,9 @@ public class ThemcromancerNpcs {
                 .build();
     }
 
-    static NpcDefinition generateThemnianArchon(ResourceKey<NpcDefinition> key) {
+    static NpcDefinition generateThemnianArchon(ResourceKey<NpcDefinition> key, BootstrapContext<NpcDefinition> context) {
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
+
         return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
                 .renderGroup(MKUHumans.DEFAULT_NAME)
@@ -108,11 +112,11 @@ public class ThemcromancerNpcs {
                 .boots(MKUItems.themnianLeaderBoots)
                 .chestplate(MKUItems.themnianLeaderChestplate)
                 .leggings(MKUItems.themnianLeaderLeggings)
-                .trains(MKUAbilities.NECROTIDE_WARRIOR_SUMMON, new HasEntitlementRequirement(MKUEntitlements.ThemcromancerTier1.get()))
-                .trains(MKUAbilities.ENGULFING_DARKNESS, new HasEntitlementRequirement(MKUEntitlements.ThemcromancerTier1.get()))
-                .trains(MKUAbilities.SHADOW_BOLT, new HasEntitlementRequirement(MKUEntitlements.ThemcromancerTier2.get()))
-                .trains(MKUAbilities.SHADOW_PULSE, new HasEntitlementRequirement(MKUEntitlements.ThemcromancerTier2.get()))
-                .trains(MKUAbilities.LIFE_SPIKE, new HasEntitlementRequirement(MKUEntitlements.ThemcromancerTier3.get()))
+                .trains(MKUAbilities.NECROTIDE_WARRIOR_SUMMON, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.ThemcromancerTier1)))
+                .trains(MKUAbilities.ENGULFING_DARKNESS, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.ThemcromancerTier1)))
+                .trains(MKUAbilities.SHADOW_BOLT, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.ThemcromancerTier2)))
+                .trains(MKUAbilities.SHADOW_PULSE, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.ThemcromancerTier2)))
+                .trains(MKUAbilities.LIFE_SPIKE, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.ThemcromancerTier3)))
                 .skillClass(NpcGenUtils.NpcSkillClass.NECROMANCER)
                 .dialogue(MKUDialogues.necro_default)
                 .xp(150)

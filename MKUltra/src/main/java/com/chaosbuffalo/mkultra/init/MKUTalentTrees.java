@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkultra.init;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.talents.TalentLineDefinition;
 import com.chaosbuffalo.mkcore.core.talents.TalentNodeDisplay;
 import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;
@@ -154,6 +155,10 @@ public class MKUTalentTrees {
 
     static Holder<TalentNodeDisplay> nodeDisplay(BootstrapContext<TalentTreeDefinition> context, ResourceKey<TalentNodeDisplay> displayKey) {
         return context.lookup(MKCoreRegistry.TALENT_NODE_DISPLAY_REGISTRY_KEY).getOrThrow(displayKey);
+    }
+
+    static Holder<MKEntitlement> entitlement(BootstrapContext<TalentTreeDefinition> context, ResourceKey<MKEntitlement> key) {
+        return context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY).getOrThrow(key);
     }
 
     static AttributeTalentNode attrNode(BootstrapContext<TalentTreeDefinition> context, Template template, int maxRanks, double perRank) {
@@ -324,7 +329,8 @@ public class MKUTalentTrees {
 
         TalentLineDefinition soul = new TalentLineDefinition(tree, "b");
         soul.addNode(attrNode(context, MAX_HEALTH, 3, 4.0));
-        soul.addNode(new EntitlementGrantTalentNode(CoreEntitlements.ABILITY_POOL_SIZE,
+        soul.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.ABILITY_POOL_SIZE),
                 nodeDisplay(context, CoreTalentDisplayNodes.POOL_COUNT),
                 UUID.fromString("40525592-c013-46f7-84da-1543d5a28cfc")));
         soul.addNode(attrNode(context, MAX_POISE, 3, 2.0));
@@ -388,20 +394,24 @@ public class MKUTalentTrees {
         tree.setDefault(true);
 
         TalentLineDefinition line = new TalentLineDefinition(tree, "a");
-        line.addNode(new EntitlementGrantTalentNode(CoreEntitlements.BASIC_ABILITY_SLOT,
+        line.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.BASIC_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.ABILITY_SLOT),
                 UUID.fromString("119917ea-b852-4cb5-8bfe-2cdad488f279")));
         line.addNode(attrNode(context, MAX_HEALTH, 2, 5.0));
         line.addNode(attrNode(context, MAX_MANA, 2, 1.0));
-        line.addNode(new EntitlementGrantTalentNode(CoreEntitlements.BASIC_ABILITY_SLOT,
+        line.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.BASIC_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.ABILITY_SLOT),
                 UUID.fromString("121817fa-1cfc-4334-aa77-13c02ede83ff")));
-        line.addNode(new EntitlementGrantTalentNode(CoreEntitlements.ABILITY_POOL_SIZE,
+        line.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.ABILITY_POOL_SIZE),
                 nodeDisplay(context, CoreTalentDisplayNodes.POOL_COUNT),
                 UUID.fromString("108549d0-7935-4386-bf38-2ca48329305e")));
         line.addNode(attrNode(context, MANA_REGEN, 2, 0.25));
         line.addNode(attrNode(context, MAX_HEALTH, 3, 1.0));
-        line.addNode(new EntitlementGrantTalentNode(CoreEntitlements.PASSIVE_ABILITY_SLOT,
+        line.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.PASSIVE_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.PASSIVE_ABILITY_SLOT),
                 UUID.fromString("95725b31-da3a-4a3e-b6cc-e5036a6e9a87")));
         line.addNode(new AbilityGrantTalentNode(MKUAbilities.LIFE_SIPHON,
@@ -409,50 +419,60 @@ public class MKUTalentTrees {
         tree.addLine(line);
 
         TalentLineDefinition magic = new TalentLineDefinition(tree, "b");
-        magic.addNode(new EntitlementGrantTalentNode(CoreEntitlements.BASIC_ABILITY_SLOT,
+        magic.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.BASIC_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.ABILITY_SLOT),
                 UUID.fromString("2e1ff629-b139-4303-831d-1c1bc5ebc21e")));
         magic.addNode(attrNode(context, MAX_MANA, 2, 5.0));
         magic.addNode(attrNode(context, MANA_REGEN, 2, 0.25));
         magic.addNode(attrNode(context, MAX_MANA, 3, 1.0));
         magic.addNode(attrNode(context, MANA_REGEN, 2, 0.25));
-        magic.addNode(new EntitlementGrantTalentNode(CoreEntitlements.ULTIMATE_ABILITY_SLOT,
+        magic.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.ULTIMATE_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.ULTIMATE_ABILITY_SLOT),
                 UUID.fromString("0c751a99-a186-439c-83f1-abb55f67b17e")));
-        magic.addNode(new EntitlementGrantTalentNode(CoreEntitlements.ABILITY_POOL_SIZE,
+        magic.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.ABILITY_POOL_SIZE),
                 nodeDisplay(context, CoreTalentDisplayNodes.POOL_COUNT),
                 UUID.fromString("9b23bee2-d159-4d32-aca8-1d726de0f875")));
         magic.addNode(attrNode(context, MANA_REGEN, 2, 0.25));
         magic.addNode(attrNode(context, MANA_REGEN, 2, 0.25));
-        magic.addNode(new EntitlementGrantTalentNode(CoreEntitlements.PASSIVE_ABILITY_SLOT,
+        magic.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.PASSIVE_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.PASSIVE_ABILITY_SLOT),
                 UUID.fromString("4818f37e-16c4-4010-ab7a-a664cab4ab97")));
         magic.addNode(attrNode(context, MAX_HEALTH, 3, 1.0));
         magic.addNode(attrNode(context, MAX_HEALTH, 2, 1.0));
         magic.addNode(attrNode(context, COOLDOWN_REDUCTION, 5, 0.01));
-        magic.addNode(new EntitlementGrantTalentNode(CoreEntitlements.ABILITY_POOL_SIZE,
+        magic.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.ABILITY_POOL_SIZE),
                 nodeDisplay(context, CoreTalentDisplayNodes.POOL_COUNT),
                 UUID.fromString("93de6f66-4d6d-4721-b774-b12ee92be288")));
-        magic.addNode(new EntitlementGrantTalentNode(CoreEntitlements.ULTIMATE_ABILITY_SLOT,
+        magic.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.ULTIMATE_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.ULTIMATE_ABILITY_SLOT),
                 UUID.fromString("ecfaa441-35c7-46ce-aa67-f8372bc4fd7d")));
         tree.addLine(magic);
 
         TalentLineDefinition heal = new TalentLineDefinition(tree, "c");
-        heal.addNode(new EntitlementGrantTalentNode(CoreEntitlements.BASIC_ABILITY_SLOT,
+        heal.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.BASIC_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.ABILITY_SLOT),
                 UUID.fromString("3a31b74d-cf08-451f-a483-8eb9e47ce89b")));
         heal.addNode(attrNode(context, MANA_REGEN, 2, 0.5));
         heal.addNode(attrNode(context, HEAL_BONUS, 2, 2.0));
-        heal.addNode(new EntitlementGrantTalentNode(CoreEntitlements.BASIC_ABILITY_SLOT,
+        heal.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.BASIC_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.ABILITY_SLOT),
                 UUID.fromString("de5a37a4-b7e5-4565-9217-2d5d8de5d448")));
-        heal.addNode(new EntitlementGrantTalentNode(CoreEntitlements.ABILITY_POOL_SIZE,
+        heal.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.ABILITY_POOL_SIZE),
                 nodeDisplay(context, CoreTalentDisplayNodes.POOL_COUNT),
                 UUID.fromString("fbbab80a-c3f8-460f-81cf-5184a7c7f39a")));
         heal.addNode(attrNode(context, MAX_MANA, 3, 1.0));
         heal.addNode(attrNode(context, HEAL_BONUS, 1, 1.0));
-        heal.addNode(new EntitlementGrantTalentNode(CoreEntitlements.PASSIVE_ABILITY_SLOT,
+        heal.addNode(new EntitlementGrantTalentNode(
+                entitlement(context, CoreEntitlements.PASSIVE_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.PASSIVE_ABILITY_SLOT),
                 UUID.fromString("05865420-0069-45e1-856e-331c9900f99c")));
         heal.addNode(new AbilityGrantTalentNode(MKUAbilities.SOUL_DRAIN,

@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.abilities.projectiles.ProjectileCastBehaviorTypes
 import com.chaosbuffalo.mkcore.abilities.client_state.AbilityClientStateType;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
+import com.chaosbuffalo.mkcore.core.entitlements.EntitlementType;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.talents.TalentNodeDisplay;
 import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;
@@ -42,6 +43,7 @@ public class MKCoreRegistry {
     public static final ResourceKey<Registry<MKDamageType>> DAMAGE_TYPE_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("damage_types"));
     public static final ResourceKey<Registry<MKEffect>> EFFECT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("effects"));
     public static final ResourceKey<Registry<MKEntitlement>> ENTITLEMENT_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("entitlements"));
+    public static final ResourceKey<Registry<EntitlementType<?>>> ENTITLEMENT_TYPE_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("entitlement_types"));
     public static final ResourceKey<Registry<TalentType<?>>> TALENT_TYPE_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("talent_types"));
     public static final ResourceKey<Registry<TalentTreeDefinition>> TALENT_TREE_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("talent_trees"));
     public static final ResourceKey<Registry<TalentNodeDisplay>> TALENT_NODE_DISPLAY_REGISTRY_KEY = ResourceKey.createRegistryKey(MKCore.id("talent_node_display"));
@@ -66,7 +68,7 @@ public class MKCoreRegistry {
     public static final Registry<TalentType<?>> TALENT_TYPES = new RegistryBuilder<>(TALENT_TYPE_REGISTRY_KEY)
             .sync(true)
             .create();
-    public static final Registry<MKEntitlement> ENTITLEMENTS = new RegistryBuilder<>(ENTITLEMENT_REGISTRY_KEY)
+    public static final Registry<EntitlementType<?>> ENTITLEMENT_TYPES = new RegistryBuilder<>(ENTITLEMENT_TYPE_REGISTRY_KEY)
             .sync(true)
             .create();
     public static final Registry<LocationProviderType<?>> LOCATION_PROVIDER_TYPES= new RegistryBuilder<>(LOC_PROVIDER_TYPES_NAME)
@@ -90,18 +92,13 @@ public class MKCoreRegistry {
         return DAMAGE_TYPES.get(damageTypeId);
     }
 
-    @Nullable
-    public static MKEntitlement getEntitlement(ResourceLocation entitlementId) {
-        return ENTITLEMENTS.get(entitlementId);
-    }
-
     @SubscribeEvent
     public static void createRegistries(NewRegistryEvent event) {
         event.register(ABILITIES);
         event.register(DAMAGE_TYPES);
         event.register(EFFECTS);
         event.register(TALENT_TYPES);
-        event.register(ENTITLEMENTS);
+        event.register(ENTITLEMENT_TYPES);
         event.register(LOCATION_PROVIDER_TYPES);
         event.register(CLIENT_STATE_TYPES);
         event.register(CAST_BEHAVIOR_TYPES);
@@ -112,6 +109,7 @@ public class MKCoreRegistry {
         event.dataPackRegistry(ARMOR_CLASS_REGISTRY_KEY, ArmorClass.DIRECT_CODEC, ArmorClass.DIRECT_CODEC);
         event.dataPackRegistry(TALENT_NODE_DISPLAY_REGISTRY_KEY, TalentNodeDisplay.CODEC, TalentNodeDisplay.CODEC);
         event.dataPackRegistry(TALENT_TREE_REGISTRY_KEY, TalentTreeDefinition.CODEC, TalentTreeDefinition.CODEC);
+        event.dataPackRegistry(ENTITLEMENT_REGISTRY_KEY, MKEntitlement.DIRECT_CODEC, MKEntitlement.DIRECT_CODEC);
     }
 
     public static void register(IEventBus modBus) {
@@ -119,7 +117,7 @@ public class MKCoreRegistry {
         CoreDamageTypes.register(modBus);
         CoreEffects.register(modBus);
         CoreEntities.register(modBus);
-        CoreEntitlements.register(modBus);
+        CoreEntitlementTypes.register(modBus);
         CoreParticles.register(modBus);
         CoreSounds.register(modBus);
         CoreTalentTypes.register(modBus);

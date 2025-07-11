@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkultra.data.generators.npc;
 
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.training.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
@@ -52,10 +53,10 @@ public class IntroCastleNpcs {
         context.register(decaying_piglin_archer, generateDecayingZombieArcher(decaying_piglin_archer));
         context.register(trooper_executioner, generateTrooperExecution(trooper_executioner));
         context.register(solangian_apprentice, generateClericApprentice(solangian_apprentice));
-        context.register(nether_mage_initiate, generateNetherMageInitiate(nether_mage_initiate));
+        context.register(nether_mage_initiate, generateNetherMageInitiate(nether_mage_initiate, context));
         context.register(burning_skeleton, generateBurningSkeleton(burning_skeleton));
         context.register(decaying_piglin, generateDecayingZombiePiglin(decaying_piglin));
-        context.register(solangian_acolyte, generateClericAcolyte(solangian_acolyte));
+        context.register(solangian_acolyte, generateClericAcolyte(solangian_acolyte, context));
         context.register(forlorn_ghost, generateForlornGhost(forlorn_ghost));
     }
 
@@ -242,7 +243,9 @@ public class IntroCastleNpcs {
                 .build();
     }
 
-    static NpcDefinition generateNetherMageInitiate(ResourceKey<NpcDefinition> key) {
+    static NpcDefinition generateNetherMageInitiate(ResourceKey<NpcDefinition> key, BootstrapContext<NpcDefinition> context) {
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
+
         return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.NETHER_MAGE_NAME)
                 .size(0.90f)
@@ -256,8 +259,8 @@ public class IntroCastleNpcs {
                 .ability(MKUAbilities.EMBER, 1, 1.0)
                 .ability(MKUAbilities.FIREBALL, 2, 1.0)
                 .ability(MKUAbilities.FLAME_WAVE, 3, 1.0)
-                .trains(MKUAbilities.EMBER, new HasEntitlementRequirement(MKUEntitlements.IntroNetherMageTier1.get()))
-                .trains(MKUAbilities.FIRE_ARMOR, new HasEntitlementRequirement(MKUEntitlements.IntroNetherMageTier1.get()))
+                .trains(MKUAbilities.EMBER, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.IntroNetherMageTier1)))
+                .trains(MKUAbilities.FIRE_ARMOR, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.IntroNetherMageTier1)))
                 .dialogue(MKUDialogues.intro_nether_mage_initiate)
                 .quests(MKUQuests.NETHER_MAGE_INTRO)
                 .skillClass(NpcGenUtils.NpcSkillClass.MAGE)
@@ -321,7 +324,9 @@ public class IntroCastleNpcs {
                 .build();
     }
 
-    static NpcDefinition generateClericAcolyte(ResourceKey<NpcDefinition> key) {
+    static NpcDefinition generateClericAcolyte(ResourceKey<NpcDefinition> key, BootstrapContext<NpcDefinition> context) {
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
+
         return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
                 .size(1.05f)
@@ -337,8 +342,8 @@ public class IntroCastleNpcs {
                 .ability(MKUAbilities.GALVANIZE, 3, 1.0)
                 .dialogue(MKUDialogues.intro_cleric_acolyte)
                 .quests(MKUQuests.CLERIC_INTRO)
-                .trains(MKUAbilities.HEAL, new HasEntitlementRequirement(MKUEntitlements.IntroClericTier1.get()))
-                .trains(MKUAbilities.SMITE, new HasEntitlementRequirement(MKUEntitlements.IntroClericTier1.get()))
+                .trains(MKUAbilities.HEAL, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.IntroClericTier1)))
+                .trains(MKUAbilities.SMITE, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.IntroClericTier1)))
                 .skillClass(NpcGenUtils.NpcSkillClass.CLERIC)
                 .build();
     }

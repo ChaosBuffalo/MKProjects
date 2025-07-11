@@ -1,0 +1,10 @@
+{
+  "type": "mkcore:ability_slot",
+  "ability_group": "ultimate",
+  "description": {
+    "translate": "entitlement.mkcore.ability_slot.ultimate.description"
+  },
+  "display_name": {
+    "translate": "entitlement.mkcore.ability_slot.ultimate.name"
+  }
+}

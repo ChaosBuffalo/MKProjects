@@ -336,11 +336,12 @@ public class WorldNpcDataHandler implements IWorldNpcData {
 
     @Override
     public CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        var regOps = provider.createSerializationContext(NbtOps.INSTANCE);
         CompoundTag tag = new CompoundTag();
         CompoundTag spawnConfig = new CompoundTag();
         for (UUID entityId : worldPermanentSpawnConfigurations.keySet()) {
             WorldPermanentSpawnConfiguration config = worldPermanentSpawnConfigurations.get(entityId);
-            spawnConfig.put(entityId.toString(), config.serialize(NbtOps.INSTANCE));
+            spawnConfig.put(entityId.toString(), config.serialize(regOps));
         }
         tag.put("spawnConfigs", spawnConfig);
         ListTag structuresNbt = new ListTag();

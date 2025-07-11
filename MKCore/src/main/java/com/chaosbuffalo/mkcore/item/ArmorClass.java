@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.RegistryFixedCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -32,6 +33,7 @@ public class ArmorClass {
 
     public static final Codec<Holder<ArmorClass>> CODEC = RegistryFileCodec.create(MKCoreRegistry.ARMOR_CLASS_REGISTRY_KEY, DIRECT_CODEC);
     public static final Codec<Holder<ArmorClass>> REFERENCE_CODEC = RegistryFixedCodec.create(MKCoreRegistry.ARMOR_CLASS_REGISTRY_KEY);
+    public static final Codec<ResourceKey<ArmorClass>> KEY_CODEC = ResourceKey.codec(MKCoreRegistry.ARMOR_CLASS_REGISTRY_KEY);
 
     public static final ResourceLocation ARMOR_CLASS_POSITIVES_ID = MKCore.id("armor_class_positives");
     public static final ResourceLocation ARMOR_CLASS_NEGATIVES_ID = MKCore.id("armor_class_negatives");

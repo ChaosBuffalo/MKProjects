@@ -1,0 +1,10 @@
+{
+  "type": "mkcore:armor_class_mastery",
+  "armor_class": "mkcore:armor_class.heavy",
+  "description": {
+    "translate": "entitlement.mkcore.armor_mastery.heavy.description"
+  },
+  "display_name": {
+    "translate": "entitlement.mkcore.armor_mastery.heavy.name"
+  }
+}

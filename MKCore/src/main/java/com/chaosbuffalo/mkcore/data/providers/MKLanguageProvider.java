@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkcore.effects.MKEffect;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.neoforged.neoforge.common.data.LanguageProvider;
@@ -46,9 +47,18 @@ public class MKLanguageProvider extends LanguageProvider {
         add(MKEntitlement.nameKey(entitlement.getKey().location()), name);
     }
 
+    public void entitlement(ResourceKey<MKEntitlement> entitlement, String name) {
+        add(MKEntitlement.nameKey(entitlement.location()), name);
+    }
+
     public void entitlement(Holder<MKEntitlement> entitlement, String name, String description) {
         add(MKEntitlement.nameKey(entitlement.getKey().location()), name);
         add(MKEntitlement.descriptionKey(entitlement.getKey().location()), description);
+    }
+
+    public void entitlement(ResourceKey<MKEntitlement> entitlement, String name, String description) {
+        add(MKEntitlement.nameKey(entitlement.location()), name);
+        add(MKEntitlement.descriptionKey(entitlement.location()), description);
     }
 
     public void talentTree(ResourceLocation talentTreeId, String name) {

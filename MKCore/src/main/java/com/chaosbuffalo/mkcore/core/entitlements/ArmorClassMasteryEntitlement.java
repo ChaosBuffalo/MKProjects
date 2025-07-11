@@ -1,28 +1,31 @@
 package com.chaosbuffalo.mkcore.core.entitlements;
 
 import com.chaosbuffalo.mkcore.core.persona.Persona;
+import com.chaosbuffalo.mkcore.init.CoreEntitlementTypes;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceKey;
 
 public class ArmorClassMasteryEntitlement extends MKEntitlement {
-
-    public static final EntitlementType TYPE = new EntitlementType() {
-        @Override
-        public EntitlementTypeHandler createTypeHandler(Persona persona) {
-            return new ArmorClassMasteryHandler(persona);
-        }
-    };
+    public static final MapCodec<ArmorClassMasteryEntitlement> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            ComponentSerialization.CODEC.fieldOf("display_name").forGetter(MKEntitlement::getName),
+            ComponentSerialization.CODEC.fieldOf("description").forGetter(MKEntitlement::getDescription),
+            ArmorClass.KEY_CODEC.fieldOf("armor_class").forGetter(i -> i.armorClassKey)
+    ).apply(builder, ArmorClassMasteryEntitlement::new));
 
     private final ResourceKey<ArmorClass> armorClassKey;
 
-    public ArmorClassMasteryEntitlement(ResourceKey<ArmorClass> armorClassKey) {
-        super(1);
+    public ArmorClassMasteryEntitlement(Component displayName, Component description, ResourceKey<ArmorClass> armorClassKey) {
+        super(displayName, description, 1);
         this.armorClassKey = armorClassKey;
     }
 
     @Override
-    public EntitlementType getEntitlementType() {
-        return TYPE;
+    public EntitlementType<ArmorClassMasteryEntitlement> getEntitlementType() {
+        return CoreEntitlementTypes.ARMOR_CLASS_MASTERY.get();
     }
 
     public static class ArmorClassMasteryHandler extends EntitlementTypeHandler {
@@ -39,7 +42,7 @@ public class ArmorClassMasteryEntitlement extends MKEntitlement {
 
         @Override
         public void onRecordUpdated(EntitlementInstance record) {
-            if (record.entitlement() instanceof ArmorClassMasteryEntitlement slotEntitlement) {
+            if (record.entitlement().value() instanceof ArmorClassMasteryEntitlement slotEntitlement) {
                 updateMastery(slotEntitlement);
             }
         }

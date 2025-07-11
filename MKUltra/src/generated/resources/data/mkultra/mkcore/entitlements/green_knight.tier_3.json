@@ -1,0 +1,9 @@
+{
+  "type": "mkcore:player_flag",
+  "description": {
+    "translate": "entitlement.mkultra.green_knight.tier_3.description"
+  },
+  "display_name": {
+    "translate": "entitlement.mkultra.green_knight.tier_3.name"
+  }
+}
