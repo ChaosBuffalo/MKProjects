@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TradeItemsObjective extends QuestObjective<UUIDInstanceData> implements ITradeObjectiveHandler {
     public static final MapCodec<TradeItemsObjective> MAP_CODEC = RecordCodecBuilder.<TradeItemsObjective>mapCodec(builder -> {
@@ -56,8 +57,8 @@ public class TradeItemsObjective extends QuestObjective<UUIDInstanceData> implem
 
     @Override
     public List<Component> getDescription(IWorldNpcData worldData) {
-        return neededItems.stream()
-                .map(x -> Component.translatable("mknpc.trade.item_needed", x.getCount(), x.getHoverName()))
+        return Stream.concat(Stream.of(Component.translatable("mknpc.trade.desc")),neededItems.stream()
+                .map(x -> Component.translatable("mknpc.trade.item_needed", x.getCount(), x.getHoverName())))
                 .collect(Collectors.toList());
     }
 

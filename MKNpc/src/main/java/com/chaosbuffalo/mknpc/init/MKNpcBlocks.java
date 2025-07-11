@@ -23,7 +23,7 @@ public class MKNpcBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MKNpc.MODID);
     public static final DeferredBlock<MKSpawnerBlock> MK_SPAWNER_BLOCK = BLOCKS.register("mk_spawner",
             () -> new MKSpawnerBlock(Block.Properties.of().mapColor(MapColor.NONE)
-                    .pushReaction(PushReaction.IGNORE).noOcclusion()));
+                    .pushReaction(PushReaction.IGNORE).noOcclusion().strength(-1.0F, 3600000.0F)));
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MKNpc.MODID);
     public static final DeferredItem<BlockItem> MK_SPAWNER_ITEM = ITEMS.register("mk_spawner",
             () -> new FirstUseBlockItem(MK_SPAWNER_BLOCK.get(), new Item.Properties()));

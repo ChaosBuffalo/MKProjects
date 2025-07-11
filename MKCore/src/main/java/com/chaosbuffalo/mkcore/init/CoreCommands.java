@@ -48,6 +48,9 @@ public class CoreCommands {
             () -> ArgumentTypeInfos.registerByClass(AbilitySourceTypeArgument.class,
                     SingletonArgumentInfo.contextFree(AbilitySourceTypeArgument::abilitySourceType)));
 
+    public static final Holder<ArgumentTypeInfo<?, ?>> PLAYER_TYPE = ARGUMENT_TYPES.register("players",
+            () -> ArgumentTypeInfos.registerByClass(PlayersArgument.class, new PlayersArgument.Info()));
+
     public static void register(IEventBus modBus) {
         ARGUMENT_TYPES.register(modBus);
     }

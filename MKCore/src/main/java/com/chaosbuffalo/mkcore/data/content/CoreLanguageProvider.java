@@ -75,6 +75,21 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.configuration.enablePartyXpShare", "Enable Party XP Share");
         add("mkcore.configuration.partyXpShareDistance", "XP Share Distance");
         add("mkcore.configuration.enablePartyXpShareMending", "Party XP Trigger Mending");
+        add("mk.core.gui.party_invite.desc", "%s is inviting you to their party. Will you accept?");
+        add("mk.core.gui.party_invite.accept", "Accept");
+        add("mk.core.gui.party_invite.reject", "Reject");
+        add("mk.core.party.invitee.text", "%s invited you to their party.");
+        add("mk.core.party.inviter.text", "You invited %s to your party.");
+        add("mk.core.gui.party_invite.title", "Party Invite");
+        add("mk.core.party.invitee.decline.text", "You declined the party invite from %s.");
+        add("mk.core.party.inviter.decline.text", "%s declined your party invite.");
+        add("mk.core.party.invitee.accept.text", "You accepted the party invite from %s.");
+        add("mk.core.party.inviter.accept.text", "%s accepted your party invite.");
+        add("mk.core.party.name", "%s's Party");
+        add("mk.core.party.info.name", "Party: %s");
+        add("mk.core.party.info.members", "Members: %s");
+        add("mk.core.party.info.none", "You are not in a party!");
+        add("mk.core.party.invite_self", "You can't invite yourself to a party!");
     }
 
     private void addLegacy() {

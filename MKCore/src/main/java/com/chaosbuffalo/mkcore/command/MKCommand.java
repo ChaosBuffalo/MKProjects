@@ -19,5 +19,6 @@ public class MKCommand {
                 .then(LoadoutCommand.register())
                 .then(ParticleEffectsCommand.register());
         dispatcher.register(builder);
+        dispatcher.register(PartyCommand.register());
     }
 }
