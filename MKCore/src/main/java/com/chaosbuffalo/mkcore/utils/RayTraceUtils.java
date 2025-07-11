@@ -1,19 +1,14 @@
 package com.chaosbuffalo.mkcore.utils;
 
-import net.minecraft.client.renderer.block.model.multipart.MultiPart;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.entity.PartEntity;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class RayTraceUtils {
@@ -30,18 +25,10 @@ public class RayTraceUtils {
         return vec.cross(cVec);
     }
 
-    public static <E extends Entity> boolean multipartAwarePickable(E entity) {
-        if (entity instanceof EnderDragon enderDragon) {
-            return Arrays.stream(enderDragon.getParts()).anyMatch(Entity::isPickable);
-        }
-        return entity.isPickable();
-    }
-
     public static <E extends Entity> HitResult getLookingAt(Class<E> clazz, final Entity mainEntity, double distance, final Predicate<E> entityPredicate) {
 
         Predicate<E> finalFilter = e -> e != mainEntity &&
                 defaultFilter.test(e) &&
-                multipartAwarePickable(e) &&
                 entityPredicate.test(e);
 
         HitResult position = null;
@@ -50,7 +37,7 @@ public class RayTraceUtils {
             Vec3 look = mainEntity.getLookAngle().scale(distance);
             Vec3 from = mainEntity.position().add(0, mainEntity.getEyeHeight(), 0);
             Vec3 to = from.add(look);
-            position = rayTraceBlocksAndEntities(clazz, mainEntity, from, to, false, finalFilter);
+            position = rayTraceBlocksAndEntities(clazz, mainEntity, from, to, false, finalFilter, true);
         }
         return position;
     }
@@ -62,8 +49,8 @@ public class RayTraceUtils {
     }
 
     public static HitResult rayTraceEntities(Level world, Vec3 from, Vec3 to, Vec3 aaExpansion, float aaGrowth,
-                                             float entityExpansion, final Predicate<Entity> filter) {
-        return rayTraceEntities(Entity.class, world, from, to, aaExpansion, aaGrowth, entityExpansion, filter);
+                                             float entityExpansion, final Predicate<Entity> filter, boolean testPickable) {
+        return rayTraceEntities(Entity.class, world, from, to, aaExpansion, aaGrowth, entityExpansion, filter, testPickable);
     }
 
     public static <E extends Entity> EntityHitResult rayTraceEntities(Class<E> clazz, Level world,
@@ -71,7 +58,8 @@ public class RayTraceUtils {
                                                                       Vec3 aaExpansion,
                                                                       float aaGrowth,
                                                                       float entityExpansion,
-                                                                      final Predicate<E> filter) {
+                                                                      final Predicate<E> filter,
+                                                                      boolean testPickable) {
 
         Predicate<E> predicate = input -> defaultFilter.test(input) && filter.test(input);
 
@@ -83,6 +71,9 @@ public class RayTraceUtils {
                 .inflate(aaGrowth);
         List<E> entities = world.getEntitiesOfClass(clazz, bb, predicate);
         for (Entity entity : entities) {
+            if (testPickable && !entity.isPickable()) {
+                continue;
+            }
             AABB entityBB = entity.getBoundingBox().inflate(entityExpansion);
             Optional<Vec3> intercept = entityBB.clip(from, to);
             if (intercept.isPresent()) {
@@ -93,8 +84,10 @@ public class RayTraceUtils {
                 }
             }
         }
-
         for (PartEntity<?> p : world.getPartEntities()) {
+            if (testPickable && !p.isPickable()) {
+                continue;
+            }
             EntityTypeTest<Entity, E> typeTest = EntityTypeTest.forClass(clazz);
             E t = typeTest.tryCast(p.getParent());
             AABB entityBB = p.getBoundingBox().inflate(entityExpansion);
@@ -136,17 +129,35 @@ public class RayTraceUtils {
                 finalEnt.add(new EntityCollectionRayTraceResult.TraceEntry<>(entity, dist, intercept.get()));
             }
         }
+        Set<E> seenParts = new HashSet<>();
+        for (PartEntity<?> p : world.getPartEntities()) {
+            EntityTypeTest<Entity, E> typeTest = EntityTypeTest.forClass(clazz);
+            E t = typeTest.tryCast(p.getParent());
+            if (seenParts.contains(t)) {
+                continue;
+            }
+            AABB entityBB = p.getBoundingBox().inflate(entityExpansion);
+            if (t != null && entityBB.intersects(bb) && predicate.test(t)) {
+                Optional<Vec3> intercept = entityBB.clip(from, to);
+                if (intercept.isPresent()) {
+                    double dist = from.distanceTo(intercept.get());
+                    finalEnt.add(new EntityCollectionRayTraceResult.TraceEntry<>(t, dist, intercept.get()));
+                    seenParts.add(t);
+                }
+            }
+        }
+
         return new EntityCollectionRayTraceResult<>(finalEnt);
     }
 
     private static <E extends Entity> HitResult rayTraceBlocksAndEntities(Class<E> clazz, Entity mainEntity,
                                                                           Vec3 from, Vec3 to, boolean stopOnLiquid,
-                                                                          final Predicate<E> entityFilter) {
+                                                                          final Predicate<E> entityFilter, boolean testPickable) {
         BlockHitResult block = rayTraceBlocks(mainEntity, from, to, stopOnLiquid);
         if (block.getType() == HitResult.Type.BLOCK)
             to = block.getLocation();
 
-        EntityHitResult entity = rayTraceEntities(clazz, mainEntity.getCommandSenderWorld(), from, to, Vec3.ZERO, 0.5f, 0.5f, entityFilter);
+        EntityHitResult entity = rayTraceEntities(clazz, mainEntity.getCommandSenderWorld(), from, to, Vec3.ZERO, 0.5f, 0.5f, entityFilter, testPickable);
 
         if (block.getType() == HitResult.Type.MISS) {
             return entity;
