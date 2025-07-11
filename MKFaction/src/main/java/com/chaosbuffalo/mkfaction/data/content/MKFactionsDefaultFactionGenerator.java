@@ -112,7 +112,8 @@ public class MKFactionsDefaultFactionGenerator extends FactionDefaultDataMapProv
                 "minecraft:shulker",
                 "minecraft:silverfish",
                 "minecraft:slime",
-                "minecraft:phantom"
+                "minecraft:phantom",
+                "iceandfire:sea_serpent"
         );
         entityGroup(monsterFaction,
                 EntityType.HOGLIN,

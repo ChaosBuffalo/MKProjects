@@ -2,6 +2,8 @@ package com.chaosbuffalo.mkcore;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityManager;
 import com.chaosbuffalo.mkcore.command.MKCommand;
+import com.chaosbuffalo.mkcore.compat.CoreCompatHooks;
+import com.chaosbuffalo.mkcore.compat.iaf.IAFTraceHandler;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
@@ -24,6 +26,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
@@ -111,6 +114,8 @@ public class MKCore {
                 TraceManager.registerExtension(factory);
             }
         });
+        CoreCompatHooks.registerCompat();
+
     }
 
     private void internalIMCStageSetup() {

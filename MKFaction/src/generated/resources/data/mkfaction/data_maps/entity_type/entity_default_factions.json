@@ -2,6 +2,7 @@
   "values": {
     "#minecraft:illager": "mkfaction:illagers",
     "#minecraft:undead": "mkfaction:undead",
+    "iceandfire:sea_serpent": "mkfaction:monsters",
     "minecraft:allay": "mkfaction:wild_animals",
     "minecraft:armadillo": "mkfaction:wild_animals",
     "minecraft:axolotl": "mkfaction:wild_animals",

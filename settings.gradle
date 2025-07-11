@@ -35,5 +35,4 @@ include 'MKFaction'
 include 'MKWeapons'
 include 'MKNpc'
 include 'MKUltra'
-include 'MKIAFCompat'
 

@@ -1,6 +1,5 @@
-package com.chaosbuffalo.mkiafcompat.trace;
+package com.chaosbuffalo.mkcore.compat.iaf;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.utils.EntityCollectionRayTraceResult;
 import com.chaosbuffalo.mkcore.utils.trace.ITraceExtensionProvider;
 import com.iafenvoy.iceandfire.entity.EntityMultipartPart;
@@ -9,7 +8,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.fml.InterModComms;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -49,9 +47,5 @@ public class IAFTraceHandler implements ITraceExtensionProvider {
             }
         }
         return new EntityCollectionRayTraceResult<>(finalEnt);
-    }
-
-    public static void registerTraceHandler() {
-        InterModComms.sendTo(MKCore.MOD_ID, MKCore.MULTIPART_EXTENSION, IAFTraceHandler::new);
     }
 }
