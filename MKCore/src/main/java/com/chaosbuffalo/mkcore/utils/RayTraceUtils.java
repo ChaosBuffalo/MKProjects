@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mkcore.utils;
 
+import com.chaosbuffalo.mkcore.utils.trace.ITraceExtensionProvider;
+import com.chaosbuffalo.mkcore.utils.trace.TraceManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.level.ClipContext;
@@ -84,20 +86,35 @@ public class RayTraceUtils {
                 }
             }
         }
-        for (PartEntity<?> p : world.getPartEntities()) {
-            if (testPickable && !p.isPickable()) {
-                continue;
+        if (!world.getPartEntities().isEmpty()) {
+            for (PartEntity<?> p : world.getPartEntities()) {
+                if (testPickable && !p.isPickable()) {
+                    continue;
+                }
+                EntityTypeTest<Entity, E> typeTest = EntityTypeTest.forClass(clazz);
+                E t = typeTest.tryCast(p.getParent());
+                AABB entityBB = p.getBoundingBox().inflate(entityExpansion);
+                if (t != null && entityBB.intersects(bb) && predicate.test(t)) {
+                    Optional<Vec3> intercept = entityBB.clip(from, to);
+                    if (intercept.isPresent()) {
+                        double dist = from.distanceTo(intercept.get());
+                        if (dist < distance || distance == 0.0D) {
+                            nearest = t;
+                            distance = dist;
+                        }
+                    }
+                }
             }
-            EntityTypeTest<Entity, E> typeTest = EntityTypeTest.forClass(clazz);
-            E t = typeTest.tryCast(p.getParent());
-            AABB entityBB = p.getBoundingBox().inflate(entityExpansion);
-            if (t != null && entityBB.intersects(bb) && predicate.test(t)) {
-                Optional<Vec3> intercept = entityBB.clip(from, to);
-                if (intercept.isPresent()) {
-                    double dist = from.distanceTo(intercept.get());
-                    if (dist < distance || distance == 0.0D) {
-                        nearest = t;
-                        distance = dist;
+        }
+
+        if (!TraceManager.getExtensionProviders().isEmpty()) {
+            for (ITraceExtensionProvider provider : TraceManager.getExtensionProviders()) {
+                EntityCollectionRayTraceResult<E> results = provider.getCustomTraces(clazz, world,
+                        from, to, aaExpansion, aaGrowth, entityExpansion, filter, testPickable);
+                for (EntityCollectionRayTraceResult.TraceEntry<E> result : results.getEntities()) {
+                    if (result.distance < distance || distance == 0.0D) {
+                        nearest = result.entity;
+                        distance = result.distance;
                     }
                 }
             }
@@ -129,23 +146,34 @@ public class RayTraceUtils {
                 finalEnt.add(new EntityCollectionRayTraceResult.TraceEntry<>(entity, dist, intercept.get()));
             }
         }
-        Set<E> seenParts = new HashSet<>();
-        for (PartEntity<?> p : world.getPartEntities()) {
-            EntityTypeTest<Entity, E> typeTest = EntityTypeTest.forClass(clazz);
-            E t = typeTest.tryCast(p.getParent());
-            if (seenParts.contains(t)) {
-                continue;
-            }
-            AABB entityBB = p.getBoundingBox().inflate(entityExpansion);
-            if (t != null && entityBB.intersects(bb) && predicate.test(t)) {
-                Optional<Vec3> intercept = entityBB.clip(from, to);
-                if (intercept.isPresent()) {
-                    double dist = from.distanceTo(intercept.get());
-                    finalEnt.add(new EntityCollectionRayTraceResult.TraceEntry<>(t, dist, intercept.get()));
-                    seenParts.add(t);
+        if (!world.getPartEntities().isEmpty()) {
+            Set<E> seenParts = new HashSet<>();
+            for (PartEntity<?> p : world.getPartEntities()) {
+                EntityTypeTest<Entity, E> typeTest = EntityTypeTest.forClass(clazz);
+                E t = typeTest.tryCast(p.getParent());
+                if (seenParts.contains(t)) {
+                    continue;
+                }
+                AABB entityBB = p.getBoundingBox().inflate(entityExpansion);
+                if (t != null && entityBB.intersects(bb) && predicate.test(t)) {
+                    Optional<Vec3> intercept = entityBB.clip(from, to);
+                    if (intercept.isPresent()) {
+                        double dist = from.distanceTo(intercept.get());
+                        finalEnt.add(new EntityCollectionRayTraceResult.TraceEntry<>(t, dist, intercept.get()));
+                        seenParts.add(t);
+                    }
                 }
             }
         }
+
+        if (!TraceManager.getExtensionProviders().isEmpty()) {
+            for (ITraceExtensionProvider provider : TraceManager.getExtensionProviders()) {
+                EntityCollectionRayTraceResult<E> results = provider.getCustomTraces(clazz, world,
+                        from, to, aaExpansion, aaGrowth, entityExpansion, filter, false);
+                finalEnt.addAll(results.getEntities());
+            }
+        }
+
 
         return new EntityCollectionRayTraceResult<>(finalEnt);
     }

@@ -7,6 +7,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -71,6 +72,13 @@ public class MKFactionsDefaultFactionGenerator extends FactionDefaultDataMapProv
                 EntityType.SNIFFER
         );
 
+        entityGroup(wildAnimals,
+                "iceandfire:hippogryph",
+                "iceandfire:pixie",
+                "iceandfire:hippocampus",
+                "iceandfire:amphithere"
+        );
+
 
         var hostileAnimals = new EntityDefaultFaction(MKFactions.HOSTILE_ANIMALS);
         entityGroup(hostileAnimals,
@@ -112,8 +120,35 @@ public class MKFactionsDefaultFactionGenerator extends FactionDefaultDataMapProv
                 "minecraft:shulker",
                 "minecraft:silverfish",
                 "minecraft:slime",
-                "minecraft:phantom"
+                "minecraft:phantom",
+                "iceandfire:sea_serpent",
+                "iceandfire:fire_dragon",
+                "iceandfire:ice_dragon",
+                "iceandfire:lightning_dragon",
+                "iceandfire:gorgon",
+                "iceandfire:cyclops",
+                "iceandfire:siren",
+                "iceandfire:deathworm",
+                "iceandfire:cockatrice",
+                "iceandfire:stymphalian_bird",
+                "iceandfire:troll",
+                "iceandfire:myrmex_worker",
+                "iceandfire:myrmex_soldier",
+                "iceandfire:myrmex_sentinel",
+                "iceandfire:myrmex_royal",
+                "iceandfire:myrmex_queen",
+                "iceandfire:myrmex_swarmer",
+                "iceandfire:dread_thrall",
+                "iceandfire:dread_ghoul",
+                "iceandfire:dread_beast",
+                "iceandfire:dread_scuttler",
+                "iceandfire:dread_lich",
+                "iceandfire:dread_knight",
+                "iceandfire_dread_horse",
+                "iceandfire:hydra",
+                "iceandfire:ghost"
         );
+
         entityGroup(monsterFaction,
                 EntityType.HOGLIN,
                 EntityType.WARDEN,

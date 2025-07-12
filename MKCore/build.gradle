@@ -14,3 +14,9 @@ project.ext.dependentProjects = [
 ]
 
 apply from: '../common.gradle'
+
+dependencies {
+    compileOnly "maven.modrinth:uranus:fOkq6VwW"
+    compileOnly "maven.modrinth:jupiter:6FVn8sRM"
+    compileOnly "maven.modrinth:iceandfire-ce:vS8ELZ5k"
+}
