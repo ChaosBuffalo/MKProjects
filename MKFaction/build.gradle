@@ -23,6 +23,9 @@ dependencies {
             implementation "maven.modrinth:uranus:fOkq6VwW"
             implementation "maven.modrinth:jupiter:6FVn8sRM"
             implementation "maven.modrinth:iceandfire-ce:vS8ELZ5k"
+            implementation "maven.modrinth:geckolib:DTo3uxPN"
+            implementation "maven.modrinth:mowzies-mobs:P2hiyNDT"
         }
     }
+
 }

@@ -95,6 +95,21 @@
     "minecraft:wandering_trader": "mkfaction:villagers",
     "minecraft:warden": "mkfaction:monsters",
     "minecraft:witch": "mkfaction:illagers",
-    "minecraft:wolf": "mkfaction:wild_animals"
+    "minecraft:wolf": "mkfaction:wild_animals",
+    "mowziesmobs:baby_foliaath": "mkfaction:monsters",
+    "mowziesmobs:bluff": "mkfaction:monsters",
+    "mowziesmobs:ferrous_wroughtnaut": "mkfaction:monsters",
+    "mowziesmobs:foliaath": "mkfaction:monsters",
+    "mowziesmobs:frostmaw": "mkfaction:monsters",
+    "mowziesmobs:grottol": "mkfaction:wild_animals",
+    "mowziesmobs:lantern": "mkfaction:wild_animals",
+    "mowziesmobs:naga": "mkfaction:monsters",
+    "mowziesmobs:sculptor": "mkfaction:wild_animals",
+    "mowziesmobs:umvuthana": "mkfaction:hostile_animals",
+    "mowziesmobs:umvuthana_crane_player": "mkfaction:domesticated_animals",
+    "mowziesmobs:umvuthana_follower_player": "mkfaction:domesticated_animals",
+    "mowziesmobs:umvuthana_follower_raptor": "mkfaction:hostile_animals",
+    "mowziesmobs:umvuthana_raptor": "mkfaction:hostile_animals",
+    "mowziesmobs:umvuthi": "mkfaction:monsters"
   }
 }
