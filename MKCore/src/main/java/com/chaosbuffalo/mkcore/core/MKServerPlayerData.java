@@ -32,7 +32,9 @@ public final class MKServerPlayerData extends MKPlayerData {
     }
 
     public void initialSync() {
-        MKCore.LOGGER.debug("Sending initial sync for {}", player);
+        if (MKCore.DEV_LOGGING) {
+            MKCore.LOGGER.debug("Sending initial sync for {}", player);
+        }
         attributeMonitor.syncInitial();
         syncController.onJoinLevel();
         syncController.sendFullSync(getEntity());

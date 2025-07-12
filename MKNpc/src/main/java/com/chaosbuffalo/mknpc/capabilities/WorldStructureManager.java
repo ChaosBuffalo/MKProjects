@@ -147,8 +147,10 @@ public class WorldStructureManager {
         });
         if (struct.visit(player)) {
             handler.getStructureData(structureId).ifPresent(entry -> {
-                MKNpc.LOGGER.debug("Player {} entering structure {} (ID: {})",
-                        player, entry.getStructureName(), structureId);
+                if (MKNpc.DEV_LOGGING) {
+                    MKNpc.LOGGER.debug("Player {} entering structure {} (ID: {})",
+                            player, entry.getStructureName(), structureId);
+                }
                 entry.getStructure().ifPresent(structure -> {
                     structure.onPlayerEnter(player, entry, struct);
                 });
@@ -160,8 +162,10 @@ public class WorldStructureManager {
         Optional<MKStructureEntry> entry = handler.getStructureData(activeStructure.getStructureId());
         if (player != null) {
             entry.ifPresent(structureEntry -> {
-                MKNpc.LOGGER.debug("Player {} exiting structure {} (ID: {})",
-                        player, structureEntry.getStructureName(), activeStructure.getStructureId());
+                if (MKNpc.DEV_LOGGING) {
+                    MKNpc.LOGGER.debug("Player {} exiting structure {} (ID: {})",
+                            player, structureEntry.getStructureName(), activeStructure.getStructureId());
+                }
                 structureEntry.getStructure().ifPresent(structure -> {
                     structure.onPlayerExit(player, structureEntry, activeStructure);
                 });

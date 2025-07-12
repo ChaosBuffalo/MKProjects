@@ -84,7 +84,6 @@ public class PlayerEntitlements {
     }
 
     public void onPersonaActivated() {
-        MKCore.LOGGER.debug("PlayerEntitlements.onPersonaActivated");
         dispatcher.onPersonaActivated();
     }
 }

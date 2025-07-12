@@ -106,7 +106,6 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
 
     @Override
     public boolean learnAbility(MKAbility ability, AbilitySource source) {
-        MKCore.LOGGER.debug("learnAbility {} {}", ability, source);
         PlayerKnownAbility knownAbility = getKnownAbility(ability.getAbilityId());
         if (knownAbility != null) {
             if (knownAbility.hasSource(source)) {

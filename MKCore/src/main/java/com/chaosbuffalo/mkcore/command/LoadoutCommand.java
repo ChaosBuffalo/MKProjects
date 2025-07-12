@@ -65,14 +65,11 @@ public class LoadoutCommand {
         AbilityGroupId group = ctx.getArgument("group", AbilityGroupId.class);
         int count = IntegerArgumentType.getInteger(ctx, "count");
 
-        MKCore.getPlayer(player).ifPresent(playerData -> {
-            AbilityGroup abilityGroup = playerData.getLoadout().getAbilityGroup(group);
-            if (abilityGroup.setBonusSlots(count)) {
-                MKCore.LOGGER.info("Updated slot count for {}", group);
-            } else {
-                MKCore.LOGGER.error("Failed to update slot count for {}", group);
-            }
-        });
+        var playerData = MKCore.getPlayerOrThrow(player);
+        AbilityGroup abilityGroup = playerData.getLoadout().getAbilityGroup(group);
+        if (!abilityGroup.setBonusSlots(count)) {
+            MKCore.LOGGER.error("Failed to update slot count for {}", group);
+        }
 
         return Command.SINGLE_SUCCESS;
     }

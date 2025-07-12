@@ -169,14 +169,18 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             }
         }
         if (entry.getQuestId() != null) {
-            MKNpc.LOGGER.debug("Adding offering for start quest {} to {}", entry.getQuestDef(), entity);
+            if (MKNpc.DEV_LOGGING) {
+                MKNpc.LOGGER.debug("Adding offering for start quest {} to {}", entry.getQuestDef(), entity);
+            }
             addQuestOffering(entry.getQuestDef(), entry.getQuestId());
             if (entry.getTree() == null) {
                 MKNpc.LOGGER.error("{} has quest offering for {} but no dialogue tree, dialogue won't be assigned. " +
                         "There is probably a bug in this quest.", entity, entry.getQuestDef());
             }
             if (entry.getTree() != null) {
-                MKNpc.LOGGER.debug("Adding dialogue offering for start quest {} to {}", entry.getQuestDef(), entity);
+                if (MKNpc.DEV_LOGGING) {
+                    MKNpc.LOGGER.debug("Adding dialogue offering for start quest {} to {}", entry.getQuestDef(), entity);
+                }
                 INpcDialogue.get(entity).ifPresent(chat -> chat.addAdditionalDialogueTree(entry.getTree()));
             }
         } else {
@@ -201,7 +205,9 @@ public class EntityNpcDataHandler implements IEntityNpcData {
 
     @Override
     public void requestQuest(QuestOfferingEntry entry) {
-        MKNpc.LOGGER.debug("Adding quest request for {} to {}", entry.getQuestDef(), entity);
+        if (MKNpc.DEV_LOGGING) {
+            MKNpc.LOGGER.debug("Adding quest request for {} to {}", entry.getQuestDef(), entity);
+        }
         questRequests.add(entry);
     }
 

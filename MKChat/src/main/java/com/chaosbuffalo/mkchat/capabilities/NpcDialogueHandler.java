@@ -50,14 +50,18 @@ public class NpcDialogueHandler implements INpcDialogue {
 
         private void updateRelevantTrees(ServerPlayer player, LivingEntity speaker) {
             relevantTrees = trees.stream().filter(tree -> {
-                MKChat.LOGGER.debug("Checking Dialogue Tree {} relevance for player {}", tree.getDialogueName(), player);
+                if (MKChat.DEV_LOGGING) {
+                    MKChat.LOGGER.debug("Checking Dialogue Tree {} relevance for player {}", tree.getDialogueName(), player);
+                }
                 DialoguePrompt hailPrompt = tree.getHailPrompt();
                 return hailPrompt != null && hailPrompt.willHandle(player, speaker);
             }).collect(Collectors.toList());
 
-            MKChat.LOGGER.debug("Calculated relevant trees for player: {}", player);
-            for (DialogueTree tree : relevantTrees) {
-                MKChat.LOGGER.debug("Added: {}", tree.getDialogueName());
+            if (MKChat.DEV_LOGGING) {
+                MKChat.LOGGER.debug("Calculated relevant trees for player: {}", player);
+                for (DialogueTree tree : relevantTrees) {
+                    MKChat.LOGGER.debug("Added: {}", tree.getDialogueName());
+                }
             }
         }
 

@@ -66,7 +66,6 @@ public class SyncWeaponTypesPacket implements CustomPacketPayload {
     }
 
     public static void handle(final SyncWeaponTypesPacket packet, IPayloadContext context) {
-        MKCore.LOGGER.debug("Handling weapon type update packet");
         context.enqueueWork(() -> {
             ClientHandlerWeaponPacket.handlePacket(packet);
         });
@@ -78,7 +77,6 @@ public class SyncWeaponTypesPacket implements CustomPacketPayload {
             for (Map.Entry<ResourceLocation, CompoundTag> meleeWeaponPair : packet.data.entrySet()) {
                 IMeleeWeaponType weaponType = MeleeWeaponTypes.getWeaponType(meleeWeaponPair.getKey());
                 if (weaponType != null) {
-                    MKCore.LOGGER.debug("Updating melee weapon type with server data: {}", meleeWeaponPair.getKey());
                     weaponType.deserialize(new Dynamic<>(NbtOps.INSTANCE, meleeWeaponPair.getValue()));
                 } else {
                     MKCore.LOGGER.warn("Skipping melee weapon type update for {}", meleeWeaponPair.getKey());

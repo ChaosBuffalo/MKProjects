@@ -52,7 +52,9 @@ public class EntityEffectHandler {
         }
 
         private void removeEffectInstance(MKActiveEffect expiredInstance) {
-            MKCore.LOGGER.debug("EntityEffectHandler.removeEffectInstance {} from {}", expiredInstance, entityData.getEntity());
+            if (MKCore.DEV_LOGGING) {
+                MKCore.LOGGER.debug("EntityEffectHandler.removeEffectInstance {} from {}", expiredInstance, entityData.getEntity());
+            }
             activeEffectMap.remove(expiredInstance.getEffect());
             // Run the callbacks after removal, so they won't see the effect as active
             onEffectRemoved(expiredInstance);
@@ -140,7 +142,6 @@ public class EntityEffectHandler {
         }
 
         public void clearEffects() {
-            MKCore.LOGGER.debug("EntityEffectHandler.clearEffects");
             List<MKActiveEffect> remove = new ArrayList<>(activeEffectMap.values());
             remove.forEach(this::removeEffectInstance);
         }
@@ -164,7 +165,6 @@ public class EntityEffectHandler {
         }
 
         public void onDeath() {
-            MKCore.LOGGER.debug("EffectSource.onDeath {} {}", activeEffectMap.size(), sourceId);
             activeEffectMap.clear();
         }
 
@@ -257,7 +257,6 @@ public class EntityEffectHandler {
     }
 
     public void onDeath() {
-        MKCore.LOGGER.debug("EntityEventHandler.onDeath");
         if (hasEffects()) {
             sources.values().forEach(EffectSource::onDeath);
         }

@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 public class MKChat {
     // Directly reference a log4j logger.
     public static final Logger LOGGER = LogManager.getLogger();
+    public static final boolean DEV_LOGGING = false;
     public static final String MODID = "mkchat";
     public static final String REGISTER_DIALOGUE_EXTENSION = "register_dialogue_extension";
     private final DialogueManager dialogueManager;
@@ -52,7 +53,6 @@ public class MKChat {
     }
 
     private void processIMC(final InterModProcessEvent event) {
-        MKChat.LOGGER.debug("MKChat.processIMC");
         event.getIMCStream().forEach(m -> {
             if (m.method().equals(REGISTER_DIALOGUE_EXTENSION)) {
                 MKChat.LOGGER.debug("IMC register dialogue extension from mod {} {}", m.senderModId(),

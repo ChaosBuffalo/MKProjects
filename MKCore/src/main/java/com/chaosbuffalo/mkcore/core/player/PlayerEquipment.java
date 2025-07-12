@@ -52,7 +52,6 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
     }
 
     public void enableArmorMastery(ResourceKey<ArmorClass> armorClassResourceKey, boolean enable) {
-        MKCore.LOGGER.info("enabling armor mastery for {} {}", armorClassResourceKey, enable);
         if (enable) {
             armorMastery.add(armorClassResourceKey.location());
         } else {

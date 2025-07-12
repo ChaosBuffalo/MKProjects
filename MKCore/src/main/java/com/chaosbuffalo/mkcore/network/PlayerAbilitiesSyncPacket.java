@@ -64,7 +64,9 @@ public class PlayerAbilitiesSyncPacket implements CustomPacketPayload{
         for (Entry<ResourceLocation, CompoundTag> abilityData : packet.data.entrySet()) {
             MKAbility ability = MKCoreRegistry.ABILITIES.get(abilityData.getKey());
             if (ability != null) {
-                MKCore.LOGGER.debug("Updating ability with server data: {}", abilityData.getKey());
+                if (MKCore.DEV_LOGGING) {
+                    MKCore.LOGGER.debug("Updating ability with server data: {}", abilityData.getKey());
+                }
                 ability.deserializeDynamic(new Dynamic<>(NbtOps.INSTANCE, abilityData.getValue()));
             } else {
                 MKCore.LOGGER.warn("Skipping ability update for {}", abilityData.getKey());

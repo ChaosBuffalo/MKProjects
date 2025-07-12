@@ -150,12 +150,16 @@ public class EntityHandler {
         if (event.getEntity().level().isClientSide) {
             return;
         }
-        MKNpc.LOGGER.debug("Setting up dialogue between {} and {}", event.getSpeaker(), event.getEntity());
+        if (MKNpc.DEV_LOGGING) {
+            MKNpc.LOGGER.debug("Setting up dialogue between {} and {}", event.getSpeaker(), event.getEntity());
+        }
         MKNpc.getPlayerQuestData(event.getEntity()).ifPresent(x -> x.getQuestChains().forEach(
                 pQuestChain -> {
                     QuestChainInstance questChainInstance = ContentDB.getQuestInstance(pQuestChain.getQuestId());
                     if (questChainInstance != null) {
-                        MKNpc.LOGGER.debug("Adding quest chain dialogue for {}", questChainInstance.getDefinition().getName());
+                        if (MKNpc.DEV_LOGGING) {
+                            MKNpc.LOGGER.debug("Adding quest chain dialogue for {}", questChainInstance.getDefinition().getName());
+                        }
                         questChainInstance.getTreeForEntity(event.getSpeaker()).ifPresent(event::addTree);
                     }
                 }));

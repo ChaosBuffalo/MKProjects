@@ -66,7 +66,6 @@ public class WorldStructureHandler {
         server.registryAccess().registry(Registries.STRUCTURE).ifPresent(registry -> {
             MK_STRUCTURE_INDEX.clear();
             registry.holders().filter(r -> r.value() instanceof MKStructure).forEach(r -> {
-                MKNpc.LOGGER.info("Caching MK Structure {}", r.key().location());
                 MK_STRUCTURE_INDEX.put(r.key().location(), (MKStructure) r.value());
             });
         });

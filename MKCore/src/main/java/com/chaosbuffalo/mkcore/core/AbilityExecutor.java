@@ -152,7 +152,7 @@ public class AbilityExecutor {
         if (!isCasting())
             return;
 
-        MKCore.LOGGER.debug("{} interrupted by {} for {}", currentCast.getAbility(), reason, entityData.getEntity());
+//        MKCore.LOGGER.debug("{} interrupted by {} for {}", currentCast.getAbility(), reason, entityData.getEntity());
 
         if (reason.cannotBeBypassed() || currentCast.getAbility().isInterruptedBy(entityData, reason)) {
             currentCast.interrupt(reason);

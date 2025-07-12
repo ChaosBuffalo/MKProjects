@@ -39,11 +39,9 @@ public class WeaponTypeManager extends SimpleJsonResourceReloadListener {
     }
 
     public void onDataPackSync(OnDatapackSyncEvent event) {
-        MKWeapons.LOGGER.debug("WeaponTypeManager.onDataPackSync");
         SyncWeaponTypesPacket updatePacket = new SyncWeaponTypesPacket(MeleeWeaponTypes.WEAPON_TYPES.values());
         if (event.getPlayer() != null) {
             // sync to single player
-            MKWeapons.LOGGER.debug("Sending {} weapon definition update packet", event.getPlayer());
             PacketDistributor.sendToPlayer(event.getPlayer(), updatePacket);
         } else {
             // sync to playerlist
@@ -63,11 +61,7 @@ public class WeaponTypeManager extends SimpleJsonResourceReloadListener {
 
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> objectIn, ResourceManager resourceManagerIn, ProfilerFiller profilerIn) {
-        MKWeapons.LOGGER.debug("Loading melee weapon type definitions from Json");
-
         for (Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
-            ResourceLocation resourcelocation = entry.getKey();
-            MKWeapons.LOGGER.debug("Found file: {}", resourcelocation);
             parse(entry.getKey(), entry.getValue().getAsJsonObject());
         }
     }

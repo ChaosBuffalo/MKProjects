@@ -197,11 +197,9 @@ public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
 
     @SubscribeEvent
     public void onDataPackSync(OnDatapackSyncEvent event) {
-        MKCore.LOGGER.debug("ParticleAnimationManager.onDataPackSync");
         ParticleAnimationsSyncPacket updatePacket = new ParticleAnimationsSyncPacket(ANIMATIONS);
         if (event.getPlayer() != null) {
             // sync to single player
-            MKCore.LOGGER.info("Sending {} particle animation sync packet", event.getPlayer());
             PacketHandler.sendMessage(updatePacket, event.getPlayer());
         } else {
             // sync to playerlist

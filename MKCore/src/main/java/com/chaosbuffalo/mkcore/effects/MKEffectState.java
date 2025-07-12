@@ -24,13 +24,11 @@ public abstract class MKEffectState {
     }
 
     public void combine(MKActiveEffect existing, MKActiveEffect otherInstance) {
-        MKCore.LOGGER.debug("MKEffectState.combine {} + {}", existing, otherInstance);
         if (otherInstance.getDuration() > existing.getDuration()) {
             existing.setDuration(otherInstance.getDuration());
         }
         int newStacks = clampMaxStacks(existing.getStackCount() + otherInstance.getStackCount());
         existing.setStackCount(newStacks);
-        MKCore.LOGGER.debug("MKEffectState.combine result {}", existing);
     }
 
     public abstract boolean performEffect(IMKEntityData targetData, MKActiveEffect instance);

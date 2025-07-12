@@ -291,7 +291,6 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     }
 
     public void onPersonaActivated() {
-        MKCore.LOGGER.debug("PlayerTalentKnowledge.onPersonaActivated");
         dispatcher.onPersonaActivated();
     }
 

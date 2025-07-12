@@ -57,7 +57,9 @@ public class EntitySyncController extends SyncController {
 
                 var updateTag = new EntityDataUpdatePacket.UpdateTag(visibility, tag);
                 EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), List.of(updateTag));
-                MKCore.LOGGER.info("sending {} dirty update {} for {}\n{}", visibility, packet, entity, NbtUtils.prettyPrint(tag));
+                if (MKCore.DEV_LOGGING) {
+                    MKCore.LOGGER.info("sending {} dirty update {} for {}\n{}", visibility, packet, entity, NbtUtils.prettyPrint(tag));
+                }
                 visibility.sendPacket(packet, entity);
             }
         }
@@ -90,7 +92,7 @@ public class EntitySyncController extends SyncController {
         }
 
         EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), updateTags);
-        if (MKCore.LOGGER.isDebugEnabled()) {
+        if (MKCore.DEV_LOGGING) {
             for (var updateTag : updateTags) {
                 MKCore.LOGGER.info("sending {} full update for {}\n{}", updateTag.visibility(), entity,
                         NbtUtils.prettyPrint(updateTag.tag()));

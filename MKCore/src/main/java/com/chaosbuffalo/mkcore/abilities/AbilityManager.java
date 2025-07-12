@@ -60,11 +60,9 @@ public class AbilityManager extends SimpleJsonResourceReloadListener {
 
     @SubscribeEvent
     public void onDataPackSync(OnDatapackSyncEvent event) {
-        MKCore.LOGGER.debug("AbilityManager.onDataPackSync");
         PlayerAbilitiesSyncPacket updatePacket = new PlayerAbilitiesSyncPacket(MKCoreRegistry.ABILITIES);
         if (event.getPlayer() != null) {
             // sync to single player
-            MKCore.LOGGER.debug("Sending {} ability definition update packet", event.getPlayer());
             PacketHandler.sendMessage(updatePacket, event.getPlayer());
         } else {
             // sync to playerlist
@@ -79,7 +77,9 @@ public class AbilityManager extends SimpleJsonResourceReloadListener {
     }
 
     private boolean parse(ResourceLocation abilityId, JsonObject json) {
-        MKCore.LOGGER.debug("Parsing Ability Json for {}", abilityId);
+        if (MKCore.DEV_LOGGING) {
+            MKCore.LOGGER.debug("Parsing Ability Json for {}", abilityId);
+        }
         MKAbility ability = MKCoreRegistry.getAbility(abilityId);
         if (ability == null) {
             MKCore.LOGGER.warn("Failed to parse ability data for : {}", abilityId);

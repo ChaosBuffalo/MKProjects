@@ -39,6 +39,7 @@ import java.util.Optional;
 @Mod(MKNpc.MODID)
 public class MKNpc {
     public static final Logger LOGGER = LogManager.getLogger();
+    public static final boolean DEV_LOGGING = false;
     public static final String MODID = "mknpc";
     public static final String REGISTER_NPC_OPTIONS_EXTENSION = "register_npc_extension";
     private final NpcDefinitionManager npcDefinitionManager;
@@ -85,7 +86,6 @@ public class MKNpc {
     }
 
     private void processIMC(final InterModProcessEvent event) {
-        LOGGER.info("MKNpc.processIMC");
         event.getIMCStream().forEach(m -> {
             if (m.method().equals(REGISTER_NPC_OPTIONS_EXTENSION)) {
                 LOGGER.info("IMC register npc option extension from mod {} {}", m.senderModId(),

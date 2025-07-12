@@ -103,13 +103,13 @@ public abstract class MKEffect {
 
     // Entity not yet in world when this is called. Called during deserialization from NBT
     public void onInstanceLoaded(IMKEntityData targetData, MKActiveEffect activeInstance) {
-        MKCore.LOGGER.debug("MKEffect.onInstanceLoaded {}", activeInstance);
+//        MKCore.LOGGER.debug("MKEffect.onInstanceLoaded {}", activeInstance);
     }
 
     // Entity is about to be added to the world, but has NOT been added to the UUID map
     // Do not attempt to locate other entities here
     public void onInstanceReady(IMKEntityData targetData, MKActiveEffect activeInstance) {
-        MKCore.LOGGER.debug("MKEffect.onInstanceReady {}", activeInstance);
+//        MKCore.LOGGER.debug("MKEffect.onInstanceReady {}", activeInstance);
     }
 
     public MKEffectBuilder<?> builder(UUID sourceId) {

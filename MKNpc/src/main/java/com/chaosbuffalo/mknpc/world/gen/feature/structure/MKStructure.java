@@ -107,7 +107,9 @@ public abstract class MKStructure extends Structure {
     }
 
     public void onStructureActivate(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
-        MKNpc.LOGGER.debug("Activating structure {} (ID: {})", entry.getStructureName(), entry.getStructureId());
+        if (MKNpc.DEV_LOGGING) {
+            MKNpc.LOGGER.debug("Activating structure {} (ID: {})", entry.getStructureName(), entry.getStructureId());
+        }
         for (Map.Entry<String, StructureEvent> ev : events.entrySet()) {
             entry.getCooldownTracker().subscribeToAdded(ev.getValue().getTimerName(),
                     (ticks, local) -> ev.getValue().onTimerStart(entry, activeStructure, ticks));
@@ -126,7 +128,9 @@ public abstract class MKStructure extends Structure {
     }
 
     public void onStructureDeactivate(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
-        MKNpc.LOGGER.debug("Deactivating structure {} (ID: {})", entry.getStructureName(), entry.getStructureId());
+        if (MKNpc.DEV_LOGGING) {
+            MKNpc.LOGGER.debug("Deactivating structure {} (ID: {})", entry.getStructureName(), entry.getStructureId());
+        }
         for (String key : entry.getActiveEvents()) {
             StructureEvent ev = events.get(key);
             if (ev != null && ev.canTrigger(StructureEvent.EventTrigger.ON_DEACTIVATE)) {

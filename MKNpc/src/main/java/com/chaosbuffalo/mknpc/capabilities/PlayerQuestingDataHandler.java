@@ -80,7 +80,9 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
     public void startQuest(IWorldNpcData worldHandler, UUID questId) {
         QuestChainInstance chain = ContentDB.getQuestInstance(questId);
         if (chain != null) {
-            MKNpc.LOGGER.info("Player {} started quest {}", getPlayer(), chain);
+            if (MKNpc.DEV_LOGGING) {
+                MKNpc.LOGGER.info("Player {} started quest {}", getPlayer(), chain);
+            }
             getPersonaData().startQuest(playerData.getEntity(), worldHandler, chain);
         } else {
             MKNpc.LOGGER.warn("Tried to start quest with id {} but it doesn't exist in the world data", questId);
@@ -277,9 +279,6 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
     public static void registerPersonaExtension() {
         IPersonaExtensionProvider factory = PlayerQuestingDataHandler::createNewPersonaData;
         // some example code to dispatch IMC to another mod
-        InterModComms.sendTo("mkcore", "register_persona_extension", () -> {
-            MKNpc.LOGGER.info("MK NPC register player quest persona by IMC");
-            return factory;
-        });
+        InterModComms.sendTo("mkcore", "register_persona_extension", () -> factory);
     }
 }

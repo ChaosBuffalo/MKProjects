@@ -48,7 +48,9 @@ public class AbilityTargeting {
     }
 
     private static AbilityContext selectSelf(IMKEntityData entityData, MKAbilityInfo abilityInfo) {
-        MKCore.LOGGER.debug("AbilityTargeting.SELF {} {}", abilityInfo.getId(), entityData.getEntity());
+        if (MKCore.DEV_LOGGING) {
+            MKCore.LOGGER.debug("AbilityTargeting.SELF {} {}", abilityInfo.getId(), entityData.getEntity());
+        }
         return AbilityContext.selfTarget(entityData, abilityInfo);
     }
 
@@ -57,7 +59,9 @@ public class AbilityTargeting {
         LivingEntity targetEntity = TargetUtil.getSingleLivingTarget(entityData.getEntity(),
                 ability.getDistance(entityData.getEntity()),
                 ability::isValidTarget);
-        MKCore.LOGGER.debug("AbilityTargeting.SINGLE_TARGET {} {} {}", abilityInfo.getId(), entityData.getEntity(), targetEntity);
+        if (MKCore.DEV_LOGGING) {
+            MKCore.LOGGER.debug("AbilityTargeting.SINGLE_TARGET {} {} {}", abilityInfo.getId(), entityData.getEntity(), targetEntity);
+        }
         return AbilityContext.singleTarget(entityData, targetEntity, abilityInfo);
     }
 
@@ -66,8 +70,10 @@ public class AbilityTargeting {
         LivingEntity targetEntity = TargetUtil.getSingleLivingTargetOrSelf(entityData.getEntity(),
                 ability.getDistance(entityData.getEntity()),
                 ability::isValidTarget);
-        MKCore.LOGGER.debug("AbilityTargeting.SINGLE_TARGET_OR_SELF {} {} {}", abilityInfo.getId(),
-                entityData.getEntity(), targetEntity);
+        if (MKCore.DEV_LOGGING) {
+            MKCore.LOGGER.debug("AbilityTargeting.SINGLE_TARGET_OR_SELF {} {} {}", abilityInfo.getId(),
+                    entityData.getEntity(), targetEntity);
+        }
         return AbilityContext.singleTarget(entityData, targetEntity, abilityInfo);
     }
 
@@ -75,8 +81,10 @@ public class AbilityTargeting {
         MKAbility ability = abilityInfo.getAbility();
         TargetUtil.LivingOrPosition targetPos = TargetUtil.getPositionTarget(entityData.getEntity(), ability.getDistance(entityData.getEntity()),
                 ability::isValidTarget);
-        MKCore.LOGGER.debug("AbilityTargeting.POSITION_INCLUDE_ENTITIES {} {} {}", abilityInfo.getId(),
-                entityData.getEntity(), targetPos != null ? targetPos : "EMPTY");
+        if (MKCore.DEV_LOGGING) {
+            MKCore.LOGGER.debug("AbilityTargeting.POSITION_INCLUDE_ENTITIES {} {} {}", abilityInfo.getId(),
+                    entityData.getEntity(), targetPos != null ? targetPos : "EMPTY");
+        }
         return AbilityContext.singleOrPositionTarget(entityData, abilityInfo, targetPos);
     }
 }

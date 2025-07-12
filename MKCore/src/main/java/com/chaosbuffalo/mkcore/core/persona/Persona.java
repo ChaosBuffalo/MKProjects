@@ -96,7 +96,6 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     }
 
     public void activate() {
-        MKCore.LOGGER.debug("Persona.activate");
         entitlements.onPersonaActivated();
         talents.onPersonaActivated();
         skills.onPersonaActivated();
@@ -104,7 +103,6 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     }
 
     public void deactivate() {
-        MKCore.LOGGER.debug("Persona.deactivate");
         skills.onPersonaDeactivated();
         loadout.onPersonaDeactivated();
     }

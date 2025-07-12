@@ -95,7 +95,9 @@ public class DialoguePrompt extends DialogueObject {
                 return true;
             }
         }
-        MKChat.LOGGER.debug("No responses meet conditions for dialogue for player {}", player);
+        if (MKChat.DEV_LOGGING) {
+            MKChat.LOGGER.debug("No responses meet conditions for dialogue for player {}", player);
+        }
         return false;
     }
 

@@ -143,12 +143,12 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     }
 
     protected void onAbilityAdded(int index, MKAbilityInfo abilityInfo) {
-        MKCore.LOGGER.debug("onAbilityAdded({}, {})", index, abilityInfo);
+//        MKCore.LOGGER.debug("onAbilityAdded({}, {})", index, abilityInfo);
         abilityInfo.getAbility().onAbilityGroupAdded(playerData, abilityInfo);
     }
 
     protected void onAbilityRemoved(int index, MKAbilityInfo abilityInfo) {
-        MKCore.LOGGER.debug("onAbilityRemoved({}, {})", index, abilityInfo);
+//        MKCore.LOGGER.debug("onAbilityRemoved({}, {})", index, abilityInfo);
         abilityInfo.getAbility().onAbilityGroupRemoved(playerData, abilityInfo);
     }
 
@@ -158,7 +158,7 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     }
 
     public void setSlot(int index, ResourceLocation abilityId) {
-        MKCore.LOGGER.debug("AbilityGroup.setSlot({}, {}, {})", groupId, index, abilityId);
+//        MKCore.LOGGER.debug("AbilityGroup.setSlot({}, {}, {})", groupId, index, abilityId);
 
         ResourceLocation currentAbilityId = activeAbilities.get(index);
         // No need to do anything if it's already in the target slot

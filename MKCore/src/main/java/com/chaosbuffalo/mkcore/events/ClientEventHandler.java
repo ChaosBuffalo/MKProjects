@@ -134,7 +134,7 @@ public class ClientEventHandler {
             return;
 
         if (player.getAbilityExecutor().clientSimulateAbility(group, slot)) {
-            MKCore.LOGGER.debug("sending execute ability {} {}", group, slot);
+//            MKCore.LOGGER.debug("sending execute ability {} {}", group, slot);
             PacketHandler.sendMessageToServer(new ExecuteActiveAbilityPacket(group, slot));
             player.getAbilityExecutor().startGlobalCooldown();
         }

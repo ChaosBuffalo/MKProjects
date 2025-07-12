@@ -25,7 +25,7 @@ public class ParticleEffects {
                                            Vec3 position, Vec3 radii,
                                            Vec3 heading, Level theWorld) {
         double[] posAndMotion;
-        MKCore.LOGGER.debug("Spawning {} particles", count);
+//        MKCore.LOGGER.debug("Spawning {} particles", count);
         for (int i = 0; i < count; i++) {
             posAndMotion = getPositionAndMotion(motionType, data, position,
                     speed, i, count, radii, heading);
@@ -42,7 +42,7 @@ public class ParticleEffects {
                                              Vec3 position, Vec3 radii,
                                              Vec3 heading, Level theWorld, ParticleAnimation anim) {
         double[] posAndMotion;
-        MKCore.LOGGER.debug("Spawning {} MK particles", count);
+//        MKCore.LOGGER.debug("Spawning {} MK particles", count);
         for (int i = 0; i < count; i++) {
             posAndMotion = getPositionAndMotion(motionType, data, position,
                     speed, i, count, radii, heading);

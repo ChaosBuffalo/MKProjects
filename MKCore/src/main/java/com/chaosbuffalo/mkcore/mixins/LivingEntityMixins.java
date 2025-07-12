@@ -47,10 +47,7 @@ public abstract class LivingEntityMixins {
         if (DamageUtils.isMeleeDamage(damageSource) && damageSource.getDirectEntity() != null
                 && !DamageUtils.wasAlreadyPartiallyBlocked(damageSource)
                 && !EntityUtils.isInFrontOf(instance, damageSource.getDirectEntity())) {
-            MKCore.LOGGER.info("Performing knockback");
             original.call(instance, strength, x, z);
-        } else {
-            MKCore.LOGGER.info("skipping knockback");
         }
     }
 
