@@ -10,6 +10,7 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.RegistryFixedCodec;
@@ -19,25 +20,26 @@ import net.minecraft.world.entity.LivingEntity;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
 public class MKFaction {
-    public static final Codec<MKFaction> DIRECT_CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.<MKFaction>mapCodec(builder -> builder.group(
+    public static final Codec<MKFaction> DIRECT_CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            ComponentSerialization.CODEC.fieldOf("display_name").forGetter(i -> i.displayName),
             Codec.INT.fieldOf("defaultPlayerScore").forGetter(i -> i.defaultPlayerScore),
             RegistryCodecs.homogeneousList(MKFactionRegistry.FACTION_REGISTRY_KEY, true).fieldOf("allies").forGetter(i -> i.allySet),
             RegistryCodecs.homogeneousList(MKFactionRegistry.FACTION_REGISTRY_KEY, true).fieldOf("enemies").forGetter(i -> i.enemySet),
             CommonCodecs.sortedSet(Codec.STRING, String::compareToIgnoreCase).fieldOf("firstNames").forGetter(i -> i.firstNames),
             CommonCodecs.sortedSet(Codec.STRING, String::compareToIgnoreCase).fieldOf("lastNames").forGetter(i -> i.lastNames),
             FactionGreetings.CODEC.fieldOf("messages").forGetter(i -> i.greetings)
-    ).apply(builder, MKFaction::new)).codec());
+    ).apply(builder, MKFaction::new));
 
     public static final Codec<Holder<MKFaction>> CODEC = RegistryFileCodec.create(MKFactionRegistry.FACTION_REGISTRY_KEY, DIRECT_CODEC);
     public static final Codec<Holder<MKFaction>> REFERENCE_CODEC = RegistryFixedCodec.create(MKFactionRegistry.FACTION_REGISTRY_KEY);
 
 
     public static final ResourceLocation INVALID_FACTION = MKFactionMod.id("faction.invalid");
+    private final Component displayName;
     private final HolderSet<MKFaction> allySet;
     private final HolderSet<MKFaction> enemySet;
     private final Set<String> firstNames;
@@ -45,9 +47,10 @@ public class MKFaction {
     private final int defaultPlayerScore;
     private final FactionGreetings greetings;
 
-    private MKFaction(int defaultPlayerScore, HolderSet<MKFaction> allySet,
-                      HolderSet<MKFaction> enemySet,
+    private MKFaction(Component displayName, int defaultPlayerScore,
+                      HolderSet<MKFaction> allySet, HolderSet<MKFaction> enemySet,
                       Set<String> firstNames, Set<String> lastNames, FactionGreetings greetings) {
+        this.displayName = displayName;
         this.defaultPlayerScore = defaultPlayerScore;
         this.allySet = allySet;
         this.enemySet = enemySet;
@@ -56,26 +59,12 @@ public class MKFaction {
         this.greetings = greetings;
     }
 
-    public MKFaction(int defaultPlayerScore) {
-        this.defaultPlayerScore = defaultPlayerScore;
-        allySet = HolderSet.empty();
-        enemySet = HolderSet.empty();
-        this.firstNames = new HashSet<>();
-        this.lastNames = new HashSet<>();
-        greetings = new FactionGreetings();
+    public MutableComponent getDisplayName() {
+        return displayName.copy();
     }
-
 
     public FactionGreetings getGreetings() {
         return greetings;
-    }
-
-    public static MutableComponent getDisplayName(ResourceLocation factionId) {
-        return Component.translatable(factionId.toLanguageKey("faction", "name"));
-    }
-
-    public static MutableComponent getDisplayName(ResourceKey<MKFaction> factionId) {
-        return getDisplayName(factionId.location());
     }
 
     public MutableComponent getStatusName(PlayerFactionStatus status) {
@@ -184,8 +173,9 @@ public class MKFaction {
             return HolderSet.direct(lookup::getOrThrow, set);
         }
 
-        public MKFaction build(BootstrapContext<MKFaction> context) {
-            return new MKFaction(defaultPlayerScore,
+        public MKFaction build(BootstrapContext<MKFaction> context, ResourceKey<MKFaction> factionKey) {
+            Component displayName = Component.translatable(nameKey(factionKey.location()));
+            return new MKFaction(displayName, defaultPlayerScore,
                     holderSet(allies, context),
                     holderSet(enemies, context),
                     firstNames,
@@ -194,5 +184,9 @@ public class MKFaction {
         }
 
 
+    }
+
+    public static String nameKey(ResourceLocation factionId) {
+        return factionId.toLanguageKey("faction", "name");
     }
 }

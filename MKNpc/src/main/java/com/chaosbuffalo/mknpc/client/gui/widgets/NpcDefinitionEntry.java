@@ -29,7 +29,7 @@ public class NpcDefinitionEntry extends MKLayout {
             text = Component.empty()
                     .append(definition.getName())
                     .append(" (")
-                    .append(MKFaction.getDisplayName(definition.getFaction()))
+                    .append(faction.getDisplayName())
                     .append(") ")
                     .append(definition.getDefinitionName().toString());
         } else {

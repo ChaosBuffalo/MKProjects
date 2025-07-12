@@ -23,8 +23,8 @@ public class PlayerFactionEntry implements IMKSerializable<CompoundTag> {
         reset();
     }
 
-    public MKFaction getFaction() {
-        return faction.value();
+    public Holder<MKFaction> getFaction() {
+        return faction;
     }
 
     public int getFactionScore() {
@@ -38,7 +38,7 @@ public class PlayerFactionEntry implements IMKSerializable<CompoundTag> {
     }
 
     public MutableComponent getDisplayName() {
-        return MKFaction.getDisplayName(faction.getKey());
+        return faction.value().getDisplayName();
     }
 
     public void reset() {

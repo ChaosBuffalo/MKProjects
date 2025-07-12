@@ -20,6 +20,7 @@ import net.neoforged.fml.InterModComms;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class PlayerFactionHandler implements IPlayerFaction {
@@ -34,7 +35,7 @@ public class PlayerFactionHandler implements IPlayerFaction {
     }
 
     @Override
-    public Map<ResourceLocation, PlayerFactionEntry> getFactionMap() {
+    public Map<Holder<MKFaction>, PlayerFactionEntry> getFactionMap() {
         return getPersonaData().getFactionMap();
     }
 
@@ -72,60 +73,54 @@ public class PlayerFactionHandler implements IPlayerFaction {
     }
 
     public static class PersonaFactionData implements IPersonaExtension {
-        final static ResourceLocation NAME = MKFactionMod.id("faction_data");
+        static final ResourceLocation NAME = MKFactionMod.id("faction_data");
 
-        private final Map<ResourceLocation, PlayerFactionEntry> factionMap = new HashMap<>();
-        private final SyncMapUpdater<ResourceLocation, PlayerFactionEntry> factionUpdater;
+        private final Map<Holder<MKFaction>, PlayerFactionEntry> factionMap = new HashMap<>();
+        private final SyncMapUpdater<Holder<MKFaction>, PlayerFactionEntry> factionUpdater;
         private final Persona persona;
 
         public PersonaFactionData(Persona persona) {
             this.persona = persona;
             factionUpdater = new SyncMapUpdater<>(
                     factionMap,
-                    ResourceLocation::toString,
-                    ResourceLocation::tryParse,
+                    this::holderToId,
+                    this::idToHolder,
                     this::createNewEntry
             );
             persona.addSyncPrivate("factions", factionUpdater);
         }
 
-        private PlayerFactionEntry createNewEntry(ResourceLocation factionId) {
-            if (factionId.equals(MKFaction.INVALID_FACTION)) {
-                return null;
-            }
-
-            return MKFactionRegistry.getFactionHolder(persona.getEntity().registryAccess(), factionId)
-                    .map(h -> new PlayerFactionEntry(h, this::onDirtyEntry)).orElseThrow();
-        }
-
-        public Map<ResourceLocation, PlayerFactionEntry> getFactionMap() {
-            return factionMap;
+        private <T> String holderToId(Holder<T> factionHolder) {
+            return Objects.requireNonNull(factionHolder.getKey()).location().toString();
         }
 
         @Nullable
-        private PlayerFactionEntry getFactionEntry(ResourceLocation factionName) {
-            if (factionName.equals(MKFaction.INVALID_FACTION))
+        private Holder<MKFaction> idToHolder(String key) {
+            var factionKey = ResourceLocation.tryParse(key);
+            if (factionKey == null)
                 return null;
+            return MKFactionRegistry.getFactionHolder(persona.getEntity().registryAccess(), factionKey)
+                    .orElse(null);
+        }
 
+        private PlayerFactionEntry createNewEntry(Holder<MKFaction> faction) {
+            return new PlayerFactionEntry(faction, this::onDirtyEntry);
+        }
+
+        public Map<Holder<MKFaction>, PlayerFactionEntry> getFactionMap() {
+            return factionMap;
+        }
+
+        private PlayerFactionEntry getFactionEntry(Holder<MKFaction> factionName) {
             return getFactionMap().computeIfAbsent(factionName, name -> {
                 PlayerFactionEntry newEntry = createNewEntry(name);
-                if (newEntry == null)
-                    return null;
                 newEntry.reset();
                 return newEntry;
             });
         }
 
-        @Nullable
-        private PlayerFactionEntry getFactionEntry(Holder<MKFaction> factionName) {
-            return getFactionEntry(factionName.getKey().location());
-        }
-
         private void onDirtyEntry(PlayerFactionEntry entry) {
-            // TODO: better sync for datapack-keyed elements
-            ResourceLocation factionId = persona.getEntity().registryAccess()
-                    .registryOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY).getKey(entry.getFaction());
-            factionUpdater.markDirty(factionId);
+            factionUpdater.markDirty(entry.getFaction());
         }
 
         @Override

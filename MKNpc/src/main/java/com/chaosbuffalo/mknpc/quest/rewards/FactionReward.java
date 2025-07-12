@@ -31,7 +31,7 @@ public class FactionReward extends QuestReward {
 
     @Override
     public Component getDescription() {
-        return Component.translatable("mknpc.quest_reward.faction.name", factionAmount, MKFaction.getDisplayName(faction.getKey()));
+        return Component.translatable("mknpc.quest_reward.faction.name", factionAmount, faction.value().getDisplayName());
     }
 
     @Override
@@ -40,8 +40,8 @@ public class FactionReward extends QuestReward {
 
         playerFaction.getFactionEntry(faction).ifPresent(r -> r.incrementFaction(factionAmount));
 
-        player.sendSystemMessage(Component.translatable("mknpc.quest_reward.faction.message", factionAmount, MKFaction.getDisplayName(faction.getKey()))
-                .withStyle(ChatFormatting.GOLD));
+        player.sendSystemMessage(Component.translatable("mknpc.quest_reward.faction.message",
+                factionAmount, faction.value().getDisplayName().withStyle(ChatFormatting.GOLD)));
     }
 }
 

@@ -3,6 +3,9 @@
     "mkfaction:undead"
   ],
   "defaultPlayerScore": -5000,
+  "display_name": {
+    "translate": "faction.mkultra.imperial_dead.name"
+  },
   "enemies": [
     "mkfaction:domesticated_animals",
     "mkfaction:villagers",

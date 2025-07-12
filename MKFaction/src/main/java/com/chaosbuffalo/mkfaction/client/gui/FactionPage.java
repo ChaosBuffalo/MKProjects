@@ -48,7 +48,6 @@ public class FactionPage extends PlayerPageBase {
     }
 
     public MKLayout getFactionEntryLayout(PlayerFactionEntry entry, int width) {
-        MKFaction faction = entry.getFaction();
         MKLayout entryLayout = new MKLayout(0, 0, width, font.lineHeight + 10);
         entryLayout.setMargins(5, 5, 5, 5);
 

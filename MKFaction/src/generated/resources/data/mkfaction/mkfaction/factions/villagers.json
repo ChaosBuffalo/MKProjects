@@ -3,6 +3,9 @@
     "mkfaction:domesticated_animals"
   ],
   "defaultPlayerScore": 1000,
+  "display_name": {
+    "translate": "faction.mkfaction.villagers.name"
+  },
   "enemies": [
     "mkfaction:hostile_animals",
     "mkfaction:illagers",

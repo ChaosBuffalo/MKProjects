@@ -1,6 +1,9 @@
 {
   "allies": [],
   "defaultPlayerScore": 0,
+  "display_name": {
+    "translate": "faction.mkultra.ghosts_of_hyboria.name"
+  },
   "enemies": [],
   "firstNames": [
     "Achilles",
