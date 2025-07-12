@@ -37,6 +37,7 @@ public class MKWeaponModelProvider extends ItemModelProvider {
         makeSimpleJewelry(MKWeaponsItems.SilverRing.get());
         makeSimpleJewelry(MKWeaponsItems.SilverEarring.get());
         makeSimpleJewelry(MKWeaponsItems.CopperEarring.get());
+        basicItem(MKWeaponsItems.Haft.get());
     }
 
     protected ResourceLocation getBaseLoc(String name) {

@@ -26,6 +26,7 @@ import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -33,6 +34,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.RegisterEvent;
@@ -521,6 +523,62 @@ public final class MKUItems {
             BOWS.add(bow);
             event.register(Registries.ITEM,
                     MKUltra.id(String.format("longbow_%s", mat.getA())), () -> bow);
+        }
+    }
+
+    @SubscribeEvent
+    public static void buildContents(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.COMBAT) {
+            for (MKBow bow : BOWS) {
+                event.accept(bow);
+            }
+            for (MKMeleeWeapon weapon : WEAPONS) {
+                event.accept(weapon);
+            }
+            event.accept(seawovenBoots.get());
+            event.accept(seawovenChestplate.get());
+            event.accept(seawovenHelmet.get());
+            event.accept(seawovenLeggings.get());
+            event.accept(greenKnightBoots.get());
+            event.accept(greenKnightChestplate.get());
+            event.accept(greenKnightHelmet.get());
+            event.accept(greenKnightLeggings.get());
+            event.accept(ancientBronzeBoots.get());
+            event.accept(ancientBronzeChestplate.get());
+            event.accept(ancientBronzeHelmet.get());
+            event.accept(ancientBronzeLeggings.get());
+            event.accept(ancientPriestBoots.get());
+            event.accept(ancientPriestChestplate.get());
+            event.accept(ancientPriestHelmet.get());
+            event.accept(ancientPriestLeggings.get());
+            event.accept(ancientCardinalBoots.get());
+            event.accept(ancientCardinalHelmet.get());
+            event.accept(ancientCardinalLeggings.get());
+            event.accept(ancientCardinalChestplate.get());
+            event.accept(trooperKnightBoots.get());
+            event.accept(trooperKnightChestplate.get());
+            event.accept(trooperKnightHelmet.get());
+            event.accept(trooperKnightLeggings.get());
+            event.accept(themnianBoots.get());
+            event.accept(themnianChestplate.get());
+            event.accept(themnianHelmet.get());
+            event.accept(themnianLeggings.get());
+            event.accept(themnianLeaderBoots.get());
+            event.accept(themnianLeaderChestplate.get());
+            event.accept(themnianLeaderHelmet.get());
+            event.accept(themnianLeaderLeggings.get());
+        } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
+            event.accept(seawovenScrap.get());
+            event.accept(destroyedTrooperBoots.get());
+            event.accept(destroyedTrooperChestplate.get());
+            event.accept(destroyedTrooperHelmet.get());
+            event.accept(destroyedTrooperLeggings.get());
+            event.accept(corruptedPigIronPlate.get());
+        } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES)
+        {
+            event.accept(necrotideBand.get());
+            event.accept(corruptedGauntlets.get());
+            event.accept(themcromancerArchonRing.get());
         }
     }
 

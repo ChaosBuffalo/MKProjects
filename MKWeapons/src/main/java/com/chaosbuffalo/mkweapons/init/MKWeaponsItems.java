@@ -22,6 +22,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
@@ -29,6 +30,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.RegisterEvent;
@@ -166,6 +168,27 @@ public class MKWeaponsItems {
         TestNBTWeaponEffectItem testNBTWeaponEffectItem = new TestNBTWeaponEffectItem(new Item.Properties());
         event.register(Registries.ITEM,
                 MKWeapons.id("test_nbt_effect"), () -> testNBTWeaponEffectItem);
+    }
+
+    @SubscribeEvent
+    public static void buildContents(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.COMBAT) {
+            for (MKBow bow : BOWS) {
+                event.accept(bow);
+            }
+            for (MKMeleeWeapon weapon : WEAPONS) {
+                event.accept(weapon);
+            }
+        } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+            event.accept(Haft.get());
+            event.accept(GoldEarring.get());
+            event.accept(RoseGoldRing.get());
+            event.accept(SilverRing.get());
+            event.accept(SilverEarring.get());
+            event.accept(CopperRing.get());
+            event.accept(CopperEarring.get());
+            event.accept(GoldRing.get());
+        }
     }
 
 }
