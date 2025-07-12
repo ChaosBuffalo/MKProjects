@@ -1,5 +1,16 @@
 package com.chaosbuffalo.mkfaction.data.content;
 
+import com.bobmowzie.mowziesmobs.MMCommon;
+import com.bobmowzie.mowziesmobs.server.entity.bluff.EntityBluff;
+import com.bobmowzie.mowziesmobs.server.entity.foliaath.EntityBabyFoliaath;
+import com.bobmowzie.mowziesmobs.server.entity.foliaath.EntityFoliaath;
+import com.bobmowzie.mowziesmobs.server.entity.frostmaw.EntityFrostmaw;
+import com.bobmowzie.mowziesmobs.server.entity.grottol.EntityGrottol;
+import com.bobmowzie.mowziesmobs.server.entity.lantern.EntityLantern;
+import com.bobmowzie.mowziesmobs.server.entity.naga.EntityNaga;
+import com.bobmowzie.mowziesmobs.server.entity.sculptor.EntitySculptor;
+import com.bobmowzie.mowziesmobs.server.entity.umvuthana.*;
+import com.bobmowzie.mowziesmobs.server.entity.wroughtnaut.EntityWroughtnaut;
 import com.chaosbuffalo.mkfaction.data.providers.FactionDefaultDataMapProvider;
 import com.chaosbuffalo.mkfaction.faction.EntityDefaultFaction;
 import com.chaosbuffalo.mkfaction.init.MKFactions;
@@ -8,6 +19,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.neoforged.fml.ModList;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -72,12 +84,8 @@ public class MKFactionsDefaultFactionGenerator extends FactionDefaultDataMapProv
                 EntityType.SNIFFER
         );
 
-        entityGroup(wildAnimals,
-                "iceandfire:hippogryph",
-                "iceandfire:pixie",
-                "iceandfire:hippocampus",
-                "iceandfire:amphithere"
-        );
+
+
 
 
         var hostileAnimals = new EntityDefaultFaction(MKFactions.HOSTILE_ANIMALS);
@@ -120,34 +128,75 @@ public class MKFactionsDefaultFactionGenerator extends FactionDefaultDataMapProv
                 "minecraft:shulker",
                 "minecraft:silverfish",
                 "minecraft:slime",
-                "minecraft:phantom",
-                "iceandfire:sea_serpent",
-                "iceandfire:fire_dragon",
-                "iceandfire:ice_dragon",
-                "iceandfire:lightning_dragon",
-                "iceandfire:gorgon",
-                "iceandfire:cyclops",
-                "iceandfire:siren",
-                "iceandfire:deathworm",
-                "iceandfire:cockatrice",
-                "iceandfire:stymphalian_bird",
-                "iceandfire:troll",
-                "iceandfire:myrmex_worker",
-                "iceandfire:myrmex_soldier",
-                "iceandfire:myrmex_sentinel",
-                "iceandfire:myrmex_royal",
-                "iceandfire:myrmex_queen",
-                "iceandfire:myrmex_swarmer",
-                "iceandfire:dread_thrall",
-                "iceandfire:dread_ghoul",
-                "iceandfire:dread_beast",
-                "iceandfire:dread_scuttler",
-                "iceandfire:dread_lich",
-                "iceandfire:dread_knight",
-                "iceandfire_dread_horse",
-                "iceandfire:hydra",
-                "iceandfire:ghost"
+                "minecraft:phantom"
         );
+
+        if (ModList.get().isLoaded("iceandfire")) {
+            entityGroup(wildAnimals,
+                    "iceandfire:hippogryph",
+                    "iceandfire:pixie",
+                    "iceandfire:hippocampus",
+                    "iceandfire:amphithere"
+            );
+            entityGroup(monsterFaction,
+                    "iceandfire:sea_serpent",
+                    "iceandfire:fire_dragon",
+                    "iceandfire:ice_dragon",
+                    "iceandfire:lightning_dragon",
+                    "iceandfire:gorgon",
+                    "iceandfire:cyclops",
+                    "iceandfire:siren",
+                    "iceandfire:deathworm",
+                    "iceandfire:cockatrice",
+                    "iceandfire:stymphalian_bird",
+                    "iceandfire:troll",
+                    "iceandfire:myrmex_worker",
+                    "iceandfire:myrmex_soldier",
+                    "iceandfire:myrmex_sentinel",
+                    "iceandfire:myrmex_royal",
+                    "iceandfire:myrmex_queen",
+                    "iceandfire:myrmex_swarmer",
+                    "iceandfire:dread_thrall",
+                    "iceandfire:dread_ghoul",
+                    "iceandfire:dread_beast",
+                    "iceandfire:dread_scuttler",
+                    "iceandfire:dread_lich",
+                    "iceandfire:dread_knight",
+                    "iceandfire_dread_horse",
+                    "iceandfire:hydra",
+                    "iceandfire:ghost"
+            );
+        }
+
+        if (ModList.get().isLoaded("mowziesmobs")) {
+            entityGroup(monsterFaction,
+                    "mowziesmobs:foliaath",
+                    "mowziesmobs:baby_foliaath",
+                    "mowziesmobs:ferrous_wroughtnaut",
+                    "mowziesmobs:umvuthi",
+                    "mowziesmobs:frostmaw",
+                    "mowziesmobs:naga",
+                    "mowziesmobs:bluff"
+            );
+            entityGroup(domesticatedAnimals,
+
+                    "mowziesmobs:umvuthana_follower_player",
+                    "mowziesmobs:umvuthana_crane_player"
+            );
+
+            entityGroup(hostileAnimals,
+                    "mowziesmobs:umvuthana_follower_raptor",
+                    "mowziesmobs:umvuthana",
+                    "mowziesmobs:umvuthana_raptor",
+                    "mowzibesmobs:umvuthana_crane"
+            );
+
+            entityGroup(wildAnimals,
+                    "mowziesmobs:grottol",
+                    "mowziesmobs:lantern",
+                    "mowziesmobs:sculptor"
+            );
+        }
 
         entityGroup(monsterFaction,
                 EntityType.HOGLIN,
