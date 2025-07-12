@@ -3,6 +3,9 @@
     "mkultra:themcromancer_gatekeepers"
   ],
   "defaultPlayerScore": -5000,
+  "display_name": {
+    "translate": "faction.mkultra.themcromancers.name"
+  },
   "enemies": [
     "mkfaction:domesticated_animals",
     "mkfaction:villagers"

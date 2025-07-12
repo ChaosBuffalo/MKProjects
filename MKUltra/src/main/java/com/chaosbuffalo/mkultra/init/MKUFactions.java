@@ -41,20 +41,20 @@ public class MKUFactions {
                 .addEnemy(HYBOREAN_DEAD_NAME)
                 .addEnemy(IMPERIAL_DEAD_NAME)
                 .addEnemy(NECROTIDE_CULTISTS_NAME)
-                .build(context));
+                .build(context, GREEN_KNIGHT_FACTION_NAME));
 
         context.register(HYBOREAN_DEAD_NAME, new MKFaction.Builder(FactionConstants.ENEMY_THRESHOLD)
                 .addEnemy(defGoodSet)
                 .addEnemy(GREEN_KNIGHT_FACTION_NAME)
                 .addAlly(MKFactions.UNDEAD)
-                .build(context));
+                .build(context, HYBOREAN_DEAD_NAME));
 
         context.register(IMPERIAL_DEAD_NAME, setupRomanNames(
                 new MKFaction.Builder(FactionConstants.ENEMY_THRESHOLD))
                 .addEnemy(defGoodSet)
                 .addEnemy(GREEN_KNIGHT_FACTION_NAME)
                 .addAlly(MKFactions.UNDEAD)
-                .build(context));
+                .build(context, IMPERIAL_DEAD_NAME));
 
         context.register(SEE_OF_SOLANG_NAME, setupItalianFirstNames(
                 new MKFaction.Builder(FactionConstants.FRIENDLY_THRESHOLD))
@@ -63,29 +63,29 @@ public class MKUFactions {
                 .addAlly(GREEN_KNIGHT_FACTION_NAME)
                 .addEnemy(HYBOREAN_DEAD_NAME)
                 .addEnemy(IMPERIAL_DEAD_NAME)
-                .build(context));
+                .build(context, SEE_OF_SOLANG_NAME));
 
         context.register(GHOSTS_OF_HYBORIA_NAME, setupGreekNames(new MKFaction.Builder(FactionConstants.TRUE_NEUTRAL))
-                .build(context));
+                .build(context, GHOSTS_OF_HYBORIA_NAME));
 
         context.register(NETHER_MAGE_NAME, setupMongolianNames(
                 new MKFaction.Builder(FactionConstants.FRIENDLY_THRESHOLD))
                 .addAlly(defGoodSet)
                 .addEnemy(defBadSet)
-                .build(context));
+                .build(context, NETHER_MAGE_NAME));
 
         context.register(NECROTIDE_CULTISTS_NAME, setupNecrotideGreetings(setupMongolianNames(
                 new MKFaction.Builder(FactionConstants.ENEMY_THRESHOLD)))
                 .addEnemy(defGoodSet)
-                .build(context));
+                .build(context, NECROTIDE_CULTISTS_NAME));
 
         context.register(THEMCROMANCERS_NAME, setupGreekNames(new MKFaction.Builder(FactionConstants.ENEMY_THRESHOLD))
                 .addEnemy(defGoodSet)
                 .addAlly(THEMCROMANCER_GATEKEEPER_NAME)
-                .build(context));
+                .build(context, THEMCROMANCERS_NAME));
 
         context.register(THEMCROMANCER_GATEKEEPER_NAME, setupGreekNames(new MKFaction.Builder(FactionConstants.TRUE_NEUTRAL))
-                .build(context));
+                .build(context, THEMCROMANCER_GATEKEEPER_NAME));
     }
 
     protected static Set<ResourceKey<MKFaction>> getDefaultGoodFactionSet() {

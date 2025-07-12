@@ -1,6 +1,9 @@
 {
   "allies": [],
   "defaultPlayerScore": -5000,
+  "display_name": {
+    "translate": "faction.mkfaction.monsters.name"
+  },
   "enemies": [],
   "firstNames": [],
   "lastNames": [],

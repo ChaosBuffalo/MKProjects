@@ -1,9 +1,9 @@
-// 1.21.1	2025-07-02T08:44:49.8393224	Registries
-71ad85fb6d07815d16434888cf9aa100f59ec810 data/mkfaction/mkfaction/factions/domesticated_animals.json
-4823c96090bd5d18d00dc06fa2869d1179fc8629 data/mkfaction/mkfaction/factions/hostile_animals.json
-4823c96090bd5d18d00dc06fa2869d1179fc8629 data/mkfaction/mkfaction/factions/illagers.json
-4823c96090bd5d18d00dc06fa2869d1179fc8629 data/mkfaction/mkfaction/factions/monsters.json
-71ad85fb6d07815d16434888cf9aa100f59ec810 data/mkfaction/mkfaction/factions/neutral.json
-ab3e1ab5f4b86eb8727bf1c8b72d33997abc0958 data/mkfaction/mkfaction/factions/undead.json
-578f4f3622d731ea964d75d4e816c83effe78b60 data/mkfaction/mkfaction/factions/villagers.json
-71ad85fb6d07815d16434888cf9aa100f59ec810 data/mkfaction/mkfaction/factions/wild_animals.json
+// 1.21.1	2025-07-11T16:40:48.5739768	Registries
+f333049b32f8fcb8aa259115467cc161fc383365 data/mkfaction/mkfaction/factions/domesticated_animals.json
+afea4acd51604b8d5b64fc982ddef595460cece0 data/mkfaction/mkfaction/factions/hostile_animals.json
+2a09e44d6ba70410c6c42731940347af1d9c0710 data/mkfaction/mkfaction/factions/illagers.json
+03bdfbebe9491e7ccbd08ee5c0edc643c6bd7cf1 data/mkfaction/mkfaction/factions/monsters.json
+8bb6d8fd2fc9cb60e30fd4be1c620dc471eb9e57 data/mkfaction/mkfaction/factions/neutral.json
+8ce293e77cad0755a40791c9485f75cba92ef3cc data/mkfaction/mkfaction/factions/undead.json
+bb75970466400f198f6462bbf7ae9f1b27a64bad data/mkfaction/mkfaction/factions/villagers.json
+a3b89f1a99cab959ff18fb7202ace21af4ee0ea4 data/mkfaction/mkfaction/factions/wild_animals.json

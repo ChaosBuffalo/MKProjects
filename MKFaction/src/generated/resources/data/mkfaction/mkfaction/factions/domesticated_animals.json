@@ -1,6 +1,9 @@
 {
   "allies": [],
   "defaultPlayerScore": 0,
+  "display_name": {
+    "translate": "faction.mkfaction.domesticated_animals.name"
+  },
   "enemies": [],
   "firstNames": [],
   "lastNames": [],

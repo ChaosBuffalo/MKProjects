@@ -5,6 +5,9 @@
     "mkultra:green_knights"
   ],
   "defaultPlayerScore": 1000,
+  "display_name": {
+    "translate": "faction.mkultra.see_of_solang.name"
+  },
   "enemies": [
     "mkfaction:hostile_animals",
     "mkfaction:illagers",

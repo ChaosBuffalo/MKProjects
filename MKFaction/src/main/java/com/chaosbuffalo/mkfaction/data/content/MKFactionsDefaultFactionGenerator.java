@@ -16,7 +16,7 @@ public class MKFactionsDefaultFactionGenerator extends FactionDefaultDataMapProv
     }
 
     @Override
-    protected void gather() {
+    protected void gather(HolderLookup.Provider provider) {
         // #undead = #skeletons + #zombies + wither + phantom
         var undead = new EntityDefaultFaction(MKFactions.UNDEAD);
         tagGroup(undead, EntityTypeTags.UNDEAD);

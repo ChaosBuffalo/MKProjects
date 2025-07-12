@@ -4,6 +4,9 @@
     "mkfaction:villagers"
   ],
   "defaultPlayerScore": 1000,
+  "display_name": {
+    "translate": "faction.mkultra.nether_mages.name"
+  },
   "enemies": [
     "mkfaction:hostile_animals",
     "mkfaction:illagers",

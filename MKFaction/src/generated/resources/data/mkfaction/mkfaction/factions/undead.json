@@ -1,6 +1,9 @@
 {
   "allies": [],
   "defaultPlayerScore": -5000,
+  "display_name": {
+    "translate": "faction.mkfaction.undead.name"
+  },
   "enemies": [
     "mkfaction:villagers"
   ],

@@ -1,6 +1,9 @@
 {
   "allies": [],
   "defaultPlayerScore": -5000,
+  "display_name": {
+    "translate": "faction.mkultra.necrotide_cultists.name"
+  },
   "enemies": [
     "mkfaction:domesticated_animals",
     "mkfaction:villagers"
