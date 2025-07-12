@@ -16,6 +16,7 @@ public class CoreDataMaps {
                     MKCore.id("armor_class_mapping"),
                     Registries.ITEM,
                     ArmorClass.REFERENCE_CODEC)
+            .synced(ArmorClass.REFERENCE_CODEC, false)
             .build();
 
 
