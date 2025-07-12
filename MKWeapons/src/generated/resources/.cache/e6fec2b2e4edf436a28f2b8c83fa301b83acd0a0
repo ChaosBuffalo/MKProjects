@@ -1,4 +1,4 @@
-// 1.21.1	2024-09-02T17:38:24.732993	Item Models: mkweapons
+// 1.21.1	2025-07-12T09:56:45.0915739	Item Models: mkweapons
 50b772990b5b58ab56ad92d52e1330cb1b3b86b3 assets/mkweapons/models/item/battleaxe_diamond.json
 deed237260c8f7f80d7775e0daf14aa08481154f assets/mkweapons/models/item/battleaxe_diamond_blocking.json
 4d1508772de4261bb8db21dcafbd06e8ffe5f44f assets/mkweapons/models/item/battleaxe_gold.json
@@ -39,6 +39,7 @@ db0e0f4dc4c66e0dcd70d39dac0699fca2b025eb assets/mkweapons/models/item/greatsword
 b6dd69e23ec3f0813823553e0a85f4d680e8801b assets/mkweapons/models/item/greatsword_stone_blocking.json
 c299408b055817092f871cd8f8ac2186116566cc assets/mkweapons/models/item/greatsword_wood.json
 11cd78316f7cfdd2cb33b498d2d4a23391d69950 assets/mkweapons/models/item/greatsword_wood_blocking.json
+6256a7bbb33c24aa64d68af80da875bcbf8340a5 assets/mkweapons/models/item/haft.json
 dcee48e6601c305d361680b60c93924083c542bd assets/mkweapons/models/item/katana_diamond.json
 ecf6e2dfef2bd7811a79b93f8165866a1fe1f0c7 assets/mkweapons/models/item/katana_diamond_blocking.json
 37e7c74fa633525598d0614b11010b4378ad84bf assets/mkweapons/models/item/katana_gold.json
