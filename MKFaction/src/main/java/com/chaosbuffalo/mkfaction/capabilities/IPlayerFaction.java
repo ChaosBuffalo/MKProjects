@@ -18,7 +18,7 @@ public interface IPlayerFaction extends INBTSerializable<CompoundTag> {
 
     Player getPlayer();
 
-    Map<ResourceLocation, PlayerFactionEntry> getFactionMap();
+    Map<Holder<MKFaction>, PlayerFactionEntry> getFactionMap();
 
     Optional<PlayerFactionEntry> getFactionEntry(Holder<MKFaction> factionHolder);
 

@@ -23,8 +23,8 @@ public class PlayerFactionEntry implements IMKSerializable<CompoundTag> {
         reset();
     }
 
-    public MKFaction getFaction() {
-        return faction.value();
+    public Holder<MKFaction> getFaction() {
+        return faction;
     }
 
     public int getFactionScore() {

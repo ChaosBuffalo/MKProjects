@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkfaction.command;
 
+import com.chaosbuffalo.mkcore.command.arguments.PlayersArgument;
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
 import com.chaosbuffalo.mkfaction.capabilities.IPlayerFaction;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
@@ -27,13 +28,19 @@ public class FactionCommand {
                         .then(Commands.literal("show")
                                 .then(Commands.argument("faction", FactionIdArgument.factionId(context))
                                         .executes(FactionCommand::showFaction)
+                                        .then(Commands.argument("player", PlayersArgument.player())
+                                                .executes(FactionCommand::showOtherFaction))
                                 )
                                 .executes(FactionCommand::showAllFactions)
+                                .then(Commands.argument("player", PlayersArgument.player())
+                                        .executes(FactionCommand::showAllFactionsOther))
                         )
                         .then(Commands.literal("add")
                                 .then(Commands.argument("faction", FactionIdArgument.factionId(context))
                                         .then(Commands.argument("amount", IntegerArgumentType.integer())
                                                 .executes(FactionCommand::addFaction)
+                                                .then(Commands.argument("player", PlayersArgument.player())
+                                                        .executes(FactionCommand::addFactionOther))
                                         )
                                 )
                         )
@@ -41,6 +48,8 @@ public class FactionCommand {
                                 .then(Commands.argument("faction", FactionIdArgument.factionId(context))
                                         .then(Commands.argument("amount", IntegerArgumentType.integer())
                                                 .executes(FactionCommand::setFaction)
+                                                .then(Commands.argument("player", PlayersArgument.player())
+                                                        .executes(FactionCommand::setFactionOther))
                                         )
                                 )
                         )
@@ -58,6 +67,15 @@ public class FactionCommand {
 
     static int addFaction(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
+        return doAddFaction(ctx, player);
+    }
+
+    static int addFactionOther(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = PlayersArgument.getPlayer(ctx, "player");
+        return doAddFaction(ctx, player);
+    }
+
+    private static int doAddFaction(CommandContext<CommandSourceStack> ctx, ServerPlayer player) throws CommandSyntaxException {
         Holder<MKFaction> faction = FactionIdArgument.getFaction(ctx, "faction");
         int amount = IntegerArgumentType.getInteger(ctx, "amount");
 
@@ -73,6 +91,15 @@ public class FactionCommand {
 
     static int setFaction(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
+        return doSetFaction(ctx, player);
+    }
+
+    static int setFactionOther(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = PlayersArgument.getPlayer(ctx, "player");
+        return doSetFaction(ctx, player);
+    }
+
+    private static int doSetFaction(CommandContext<CommandSourceStack> ctx, ServerPlayer player) throws CommandSyntaxException {
         Holder<MKFaction> faction = FactionIdArgument.getFaction(ctx, "faction");
         int amount = IntegerArgumentType.getInteger(ctx, "amount");
 
@@ -88,6 +115,15 @@ public class FactionCommand {
 
     static int showFaction(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
+        return doShowFaction(ctx, player);
+    }
+
+    static int showOtherFaction(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = PlayersArgument.getPlayer(ctx, "player");
+        return doShowFaction(ctx, player);
+    }
+
+    static int doShowFaction(CommandContext<CommandSourceStack> ctx, ServerPlayer player) throws CommandSyntaxException {
         Holder<MKFaction> faction = FactionIdArgument.getFaction(ctx, "faction");
 
         IPlayerFaction playerFaction = IPlayerFaction.getOrThrow(player);
@@ -102,7 +138,15 @@ public class FactionCommand {
 
     static int showAllFactions(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
+        return doShowAllFactions(player);
+    }
 
+    static int showAllFactionsOther(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = PlayersArgument.getPlayer(ctx, "player");
+        return doShowAllFactions(player);
+    }
+
+    private static int doShowAllFactions(ServerPlayer player) {
         IPlayerFaction playerFaction = IPlayerFaction.getOrThrow(player);
         playerFaction.getFactionMap().forEach((name, entry) -> {
             Component line = describeEntry(entry);
