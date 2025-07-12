@@ -15,3 +15,14 @@ project.ext.dependentProjects = [
 ]
 
 apply from: '../common.gradle'
+
+dependencies {
+
+    gradle.taskGraph.whenReady { graph ->
+        if (graph.hasTask(runData)) {
+            implementation "maven.modrinth:uranus:fOkq6VwW"
+            implementation "maven.modrinth:jupiter:6FVn8sRM"
+            implementation "maven.modrinth:iceandfire-ce:vS8ELZ5k"
+        }
+    }
+}
