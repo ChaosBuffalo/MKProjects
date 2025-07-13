@@ -271,7 +271,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         if (attrCount > 1) {
             total /= attrCount;
         }
-        return total + 1.f;
+        return (0.6f * total) + 1.f;
     }
 
     protected void setManaCost(float cost) {

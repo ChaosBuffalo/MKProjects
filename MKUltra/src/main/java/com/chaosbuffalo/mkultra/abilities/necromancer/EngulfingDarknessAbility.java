@@ -46,7 +46,7 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
     public EngulfingDarknessAbility() {
         super();
         setCooldownSeconds(4);
-        setManaCost(5);
+        setManaCost(3);
         setCastTime((GameConstants.TICKS_PER_SECOND * 3) / 2);
         addAttributes(baseDuration, scaleDuration, baseDot, scaleDot, dotModifierScaling,
                 castParticles, dotCastParticles, shadowbringerChance, shadowbringerDuration);

@@ -36,7 +36,7 @@ public class ShadowBoltAbility extends ProjectileAbility {
     public ShadowBoltAbility() {
         super(MKAttributes.EVOCATION);
         setCooldownSeconds(8);
-        setManaCost(7);
+        setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND);
         baseDamage.setDefaultValue(8.0f);
         scaleDamage.setDefaultValue(4.0f);

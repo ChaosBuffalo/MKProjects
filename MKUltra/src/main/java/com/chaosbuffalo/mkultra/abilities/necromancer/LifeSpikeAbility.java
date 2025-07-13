@@ -36,7 +36,7 @@ public class LifeSpikeAbility extends MKAbility {
     public LifeSpikeAbility() {
         super();
         setCooldownSeconds(30);
-        setManaCost(10);
+        setManaCost(8);
         setCastTime(GameConstants.TICKS_PER_SECOND * 2);
         addAttributes(base, scale, modifierScaling, cast_particles, healScaling, healModScaling);
         addSkillAttribute(MKAttributes.NECROMANCY);
