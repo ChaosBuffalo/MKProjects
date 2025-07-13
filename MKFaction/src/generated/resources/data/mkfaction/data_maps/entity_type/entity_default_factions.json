@@ -2,35 +2,267 @@
   "values": {
     "#minecraft:illager": "mkfaction:illagers",
     "#minecraft:undead": "mkfaction:undead",
-    "iceandfire:amphithere": "mkfaction:wild_animals",
-    "iceandfire:cockatrice": "mkfaction:monsters",
-    "iceandfire:cyclops": "mkfaction:monsters",
-    "iceandfire:deathworm": "mkfaction:monsters",
-    "iceandfire:dread_beast": "mkfaction:monsters",
-    "iceandfire:dread_ghoul": "mkfaction:monsters",
-    "iceandfire:dread_knight": "mkfaction:monsters",
-    "iceandfire:dread_lich": "mkfaction:monsters",
-    "iceandfire:dread_scuttler": "mkfaction:monsters",
-    "iceandfire:dread_thrall": "mkfaction:monsters",
-    "iceandfire:fire_dragon": "mkfaction:monsters",
-    "iceandfire:ghost": "mkfaction:monsters",
-    "iceandfire:gorgon": "mkfaction:monsters",
-    "iceandfire:hippocampus": "mkfaction:wild_animals",
-    "iceandfire:hippogryph": "mkfaction:wild_animals",
-    "iceandfire:hydra": "mkfaction:monsters",
-    "iceandfire:ice_dragon": "mkfaction:monsters",
-    "iceandfire:lightning_dragon": "mkfaction:monsters",
-    "iceandfire:myrmex_queen": "mkfaction:monsters",
-    "iceandfire:myrmex_royal": "mkfaction:monsters",
-    "iceandfire:myrmex_sentinel": "mkfaction:monsters",
-    "iceandfire:myrmex_soldier": "mkfaction:monsters",
-    "iceandfire:myrmex_swarmer": "mkfaction:monsters",
-    "iceandfire:myrmex_worker": "mkfaction:monsters",
-    "iceandfire:pixie": "mkfaction:wild_animals",
-    "iceandfire:sea_serpent": "mkfaction:monsters",
-    "iceandfire:siren": "mkfaction:monsters",
-    "iceandfire:stymphalian_bird": "mkfaction:monsters",
-    "iceandfire:troll": "mkfaction:monsters",
+    "iceandfire:amphithere": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:wild_animals"
+    },
+    "iceandfire:cockatrice": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:cyclops": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:deathworm": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:dread_beast": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:dread_ghoul": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:dread_knight": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:dread_lich": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:dread_scuttler": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:dread_thrall": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:fire_dragon": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:ghost": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:gorgon": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:hippocampus": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:wild_animals"
+    },
+    "iceandfire:hippogryph": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:wild_animals"
+    },
+    "iceandfire:hydra": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:ice_dragon": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:lightning_dragon": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:myrmex_queen": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:myrmex_royal": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:myrmex_sentinel": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:myrmex_soldier": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:myrmex_swarmer": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:myrmex_worker": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:pixie": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:wild_animals"
+    },
+    "iceandfire:sea_serpent": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:siren": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:stymphalian_bird": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "iceandfire:troll": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
     "minecraft:allay": "mkfaction:wild_animals",
     "minecraft:armadillo": "mkfaction:wild_animals",
     "minecraft:axolotl": "mkfaction:wild_animals",
@@ -60,6 +292,15 @@
     "minecraft:guardian": "mkfaction:monsters",
     "minecraft:hoglin": "mkfaction:monsters",
     "minecraft:horse": "mkfaction:domesticated_animals",
+    "minecraft:iceandfire_dread_horse": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "iceandfire"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
     "minecraft:iron_golem": "mkfaction:villagers",
     "minecraft:llama": "mkfaction:domesticated_animals",
     "minecraft:magma_cube": "mkfaction:monsters",
@@ -96,20 +337,149 @@
     "minecraft:warden": "mkfaction:monsters",
     "minecraft:witch": "mkfaction:illagers",
     "minecraft:wolf": "mkfaction:wild_animals",
-    "mowziesmobs:baby_foliaath": "mkfaction:monsters",
-    "mowziesmobs:bluff": "mkfaction:monsters",
-    "mowziesmobs:ferrous_wroughtnaut": "mkfaction:monsters",
-    "mowziesmobs:foliaath": "mkfaction:monsters",
-    "mowziesmobs:frostmaw": "mkfaction:monsters",
-    "mowziesmobs:grottol": "mkfaction:wild_animals",
-    "mowziesmobs:lantern": "mkfaction:wild_animals",
-    "mowziesmobs:naga": "mkfaction:monsters",
-    "mowziesmobs:sculptor": "mkfaction:wild_animals",
-    "mowziesmobs:umvuthana": "mkfaction:hostile_animals",
-    "mowziesmobs:umvuthana_crane_player": "mkfaction:domesticated_animals",
-    "mowziesmobs:umvuthana_follower_player": "mkfaction:domesticated_animals",
-    "mowziesmobs:umvuthana_follower_raptor": "mkfaction:hostile_animals",
-    "mowziesmobs:umvuthana_raptor": "mkfaction:hostile_animals",
-    "mowziesmobs:umvuthi": "mkfaction:monsters"
+    "mowzibesmobs:umvuthana_crane": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:hostile_animals"
+    },
+    "mowziesmobs:baby_foliaath": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "mowziesmobs:bluff": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "mowziesmobs:ferrous_wroughtnaut": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "mowziesmobs:foliaath": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "mowziesmobs:frostmaw": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "mowziesmobs:grottol": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:wild_animals"
+    },
+    "mowziesmobs:lantern": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:wild_animals"
+    },
+    "mowziesmobs:naga": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    },
+    "mowziesmobs:sculptor": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:wild_animals"
+    },
+    "mowziesmobs:umvuthana": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:hostile_animals"
+    },
+    "mowziesmobs:umvuthana_crane_player": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:domesticated_animals"
+    },
+    "mowziesmobs:umvuthana_follower_player": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:domesticated_animals"
+    },
+    "mowziesmobs:umvuthana_follower_raptor": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:hostile_animals"
+    },
+    "mowziesmobs:umvuthana_raptor": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:hostile_animals"
+    },
+    "mowziesmobs:umvuthi": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mowziesmobs"
+        }
+      ],
+      "neoforge:value": "mkfaction:monsters"
+    }
   }
 }
