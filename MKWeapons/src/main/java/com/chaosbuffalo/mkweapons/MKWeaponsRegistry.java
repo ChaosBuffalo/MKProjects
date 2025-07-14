@@ -27,6 +27,6 @@ public class MKWeaponsRegistry {
     }
 
     public static void createDataPackRegistries(DataPackRegistryEvent.NewRegistry event) {
-        event.dataPackRegistry(LOOT_TIER_REGISTRY_KEY, LootTier.CODEC);
+        event.dataPackRegistry(LOOT_TIER_REGISTRY_KEY, LootTier.DIRECT_CODEC);
     }
 }

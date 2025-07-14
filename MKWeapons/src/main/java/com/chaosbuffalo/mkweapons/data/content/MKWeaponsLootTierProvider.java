@@ -40,7 +40,7 @@ public class MKWeaponsLootTierProvider {
     }
 
     private static LootTier generateTierOne(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         List<IMKTier> weaponTiers = List.of(MKWeaponsItems.STONE_TIER, MKWeaponsItems.WOOD_TIER);
 
         LootItemTemplate weaponTemplate = new LootItemTemplate(LootSlotManager.MAIN_HAND);

@@ -68,7 +68,7 @@ public class MKULootTiers {
     }
 
     private static LootTier themcromancerArchon(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         LootItemTemplate archonRingTemplate = new LootItemTemplate(LootSlotManager.RINGS);
         archonRingTemplate.addItem(MKUItems.themcromancerArchonRing.get());
         AccessoryEffectOption option = new AccessoryEffectOption(RandomizationSlotManager.EFFECT_SLOT);
@@ -95,7 +95,7 @@ public class MKULootTiers {
     }
 
     private static LootTier themcromancerLibrarian(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         LootItemTemplate shadowTouchedTemplate = new LootItemTemplate(LootSlotManager.MAIN_HAND);
         shadowTouchedTemplate.addItem(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE, MKUltra.MODID).orElseThrow().value());
         shadowTouchedTemplate.addItem(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.DAGGER_TYPE, MKUltra.MODID).orElseThrow().value());
@@ -123,7 +123,7 @@ public class MKULootTiers {
     }
 
     private static LootTier seafuryWeapon(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         LootItemTemplate weaponTemplate = new LootItemTemplate(LootSlotManager.MAIN_HAND);
         weaponTemplate.addItem(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.KATANA_TYPE));
         weaponTemplate.addItem(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.LONGSWORD_TYPE));
@@ -158,7 +158,7 @@ public class MKULootTiers {
 
 
     private static LootTier necrotideGolem(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         LootItemTemplate template = new LootItemTemplate(LootSlotManager.HANDS);
         template.addItem(MKUItems.corruptedGauntlets.get());
         var onHitEffect = new OnMeleeProcEffect(0.05, 0.15, 0.0f, 100.0f, MKUAbilities.ENGULFING_DARKNESS);
@@ -190,7 +190,7 @@ public class MKULootTiers {
     }
 
     private static LootTier burningSkeletonLoot(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         addBloodyRing(tierKey, tier, 10);
         addEarringOfFireDamage(tierKey, tier, 10);
         addSacrificialDagger(tierKey, tier, 10);
@@ -250,7 +250,7 @@ public class MKULootTiers {
     }
 
     private static LootTier trooperKnightLootTier(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         LootItemTemplate headTemp = new LootItemTemplate(LootSlotManager.HEAD);
         headTemp.addItem(MKUItems.trooperKnightHelmet.get());
         LootItemTemplate chestTemp = new LootItemTemplate(LootSlotManager.CHEST);
@@ -358,14 +358,14 @@ public class MKULootTiers {
     }
 
     private static LootTier hyboreanSorcQueenTier(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         addEarringOfSpellDamage(tierKey, tier, 10);
         addFlameWaveStaff(tierKey, tier, 10);
         return tier;
     }
 
     private static LootTier ancientKingTier(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         addRingOfSpellCrit(tierKey, tier, 10);
         addEarringOfCritDamage(tierKey, tier, 10);
         addRingOfKeenness(tierKey, tier, 10);
@@ -465,7 +465,7 @@ public class MKULootTiers {
     }
 
     private static LootTier trooperCaptain(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         LootItemTemplate katana = new LootItemTemplate(LootSlotManager.MAIN_HAND);
         katana.addItem(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.KATANA_TYPE));
         MeleeEffectOption meleeEffect = new MeleeEffectOption();
@@ -484,7 +484,7 @@ public class MKULootTiers {
     }
 
     private static LootTier burningStaff(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         LootItemTemplate staff = new LootItemTemplate(LootSlotManager.MAIN_HAND);
         staff.addItem(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.STAFF_TYPE));
         AddAbilityOption abilityOption = new AddAbilityOption(MKUAbilities.FIREBALL, RandomizationSlotManager.ABILITY_SLOT);
@@ -501,14 +501,14 @@ public class MKULootTiers {
     }
 
     private static LootTier trooperMagus(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         addRingOfMinorMana(tierKey, tier, 10);
         addEarringOfMinorManaRegen(tierKey, tier, 10);
         return tier;
     }
 
     private static LootTier trooperExecutioner(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         LootItemTemplate executionersBlade = new LootItemTemplate(LootSlotManager.MAIN_HAND);
         executionersBlade.addItem(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.GREATSWORD_TYPE));
         executionersBlade.addItem(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.WARHAMMER_TYPE));
@@ -528,7 +528,7 @@ public class MKULootTiers {
     }
 
     private static LootTier seawovenSkeletonTier(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         LootItemTemplate pigLoot = new LootItemTemplate(LootSlotManager.ITEMS);
         pigLoot.addItemStack(new ItemStack(MKUItems.seawovenScrap.get()), 1.0);
         pigLoot.addTemplate(new RandomizationTemplate(MKUltra.id("empty")), 1.0);
@@ -538,7 +538,7 @@ public class MKULootTiers {
     }
 
     private static LootTier zombieTrooperTier(ResourceKey<LootTier> tierKey) {
-        LootTier tier = new LootTier(tierKey.location());
+        LootTier tier = new LootTier();
         LootItemTemplate pigLoot = new LootItemTemplate(LootSlotManager.ITEMS);
         pigLoot.addItemStack(new ItemStack(MKUItems.corruptedPigIronPlate.get()), 10.0);
         pigLoot.addItemStack(new ItemStack(MKUItems.destroyedTrooperBoots.get()), 1.0);

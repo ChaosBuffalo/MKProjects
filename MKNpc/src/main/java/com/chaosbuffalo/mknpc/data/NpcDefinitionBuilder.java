@@ -247,18 +247,10 @@ public class NpcDefinitionBuilder {
         return this;
     }
 
-    @Deprecated
-    public NpcDefinitionBuilder loot(LootSlot slot, ResourceLocation lootTier, double weight) {
-        ExtraLootOption opt = (ExtraLootOption) options.computeIfAbsent(NpcOptionTypes.EXTRA_LOOT.get(),
-                key -> new ExtraLootOption());
-        opt.withLootOptions(new LootOptionEntry(lootTier, slot, weight));
-        return this;
-    }
-
     public NpcDefinitionBuilder loot(LootSlot slot, ResourceKey<LootTier> lootTier, double weight) {
         ExtraLootOption opt = (ExtraLootOption) options.computeIfAbsent(NpcOptionTypes.EXTRA_LOOT.get(),
                 key -> new ExtraLootOption());
-        opt.withLootOptions(new LootOptionEntry(lootTier.location(), slot, weight));
+        opt.withLootOptions(new LootOptionEntry(lootTier, slot, weight));
         return this;
     }
 

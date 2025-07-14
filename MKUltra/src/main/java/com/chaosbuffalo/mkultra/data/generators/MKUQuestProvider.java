@@ -16,7 +16,10 @@ import com.chaosbuffalo.mknpc.quest.rewards.*;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructures;
 import com.chaosbuffalo.mkultra.init.*;
+import com.chaosbuffalo.mkweapons.MKWeaponsRegistry;
+import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
@@ -43,9 +46,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
     public CompletableFuture<?> run(CachedOutput cache) {
         return CompletableFuture.allOf(
                 writeDefinition(this::generateIntroQuest, cache),
-                writeDefinition(generateTrooperArmorQuest(), cache),
+                writeDefinition(this::generateTrooperArmorQuest, cache),
                 writeDefinition(generateIntroClericQuest(), cache),
-                writeDefinition(generateIntroMageQuest(), cache),
+                writeDefinition(this::generateIntroMageQuest, cache),
                 writeDefinition(this::generateClericQuestChain, cache),
                 writeDefinition(this::generateJoinThemcromancers, cache),
                 writeDefinition(this::generateThemcromancerChain, cache)
@@ -362,7 +365,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return def;
     }
 
-    private QuestDefinition generateIntroMageQuest() {
+    private QuestDefinition generateIntroMageQuest(HolderLookup.Provider provider) {
+        Holder<LootTier> burning_staff = provider.lookupOrThrow(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY).getOrThrow(MKULootTiers.burning_staff);
+
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         QuestBuilder.QuestNpc initiate = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("nether_mage_initiate"));
         QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("imperial_magus"));
@@ -409,7 +414,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                         killZombies,
                         null
                 )
-                .reward(new MKLootReward(MKUltra.id("burning_staff"),
+                .reward(new MKLootReward(burning_staff,
                         LootSlotManager.MAIN_HAND,
                         Component.translatable("mkultra.quest_reward.receive_item.name", Component.literal("Burning Staff"))))
                 .reward(new XpReward(25))
@@ -543,7 +548,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return def;
     }
 
-    private QuestDefinition generateTrooperArmorQuest() {
+    private QuestDefinition generateTrooperArmorQuest(HolderLookup.Provider provider) {
+        Holder<LootTier> trooper_knight_armor = provider.lookupOrThrow(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY).getOrThrow(MKULootTiers.trooper_knight_armor);
+
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         ResourceLocation greenSmith = MKUltra.id("green_smith");
 
@@ -580,9 +587,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 ));
         helmet.addObjective(helmetTrade);
         helmet.addReward(new XpReward(25));
-        helmet.addReward(new MKLootReward(MKUltra.id("trooper_knight_armor"),
+        helmet.addReward(new MKLootReward(trooper_knight_armor,
                 LootSlotManager.HEAD,
-                Component.translatable("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightHelmet.get().getDescription())));
+                MKUItems.trooperKnightHelmet));
         def.addQuest(helmet);
 
         Quest leggings = new Quest("tradeLeggings", text("The Green Smith needs " +
@@ -598,9 +605,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 ));
         leggings.addObjective(leggingsTrade);
         leggings.addReward(new XpReward(25));
-        leggings.addReward(new MKLootReward(MKUltra.id("trooper_knight_armor"),
+        leggings.addReward(new MKLootReward(trooper_knight_armor,
                 LootSlotManager.LEGS,
-                Component.translatable("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightLeggings.get().getDescription())));
+                MKUItems.trooperKnightLeggings));
         def.addQuest(leggings);
 
         Quest boots = new Quest("tradeBoots", text("The Green Smith needs " +
@@ -616,9 +623,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 ));
         boots.addObjective(bootTrade);
         boots.addReward(new XpReward(25));
-        boots.addReward(new MKLootReward(MKUltra.id("trooper_knight_armor"),
+        boots.addReward(new MKLootReward(trooper_knight_armor,
                 LootSlotManager.FEET,
-                Component.translatable("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightBoots.get().getDescription())));
+                MKUItems.trooperKnightBoots));
         def.addQuest(boots);
 
         Quest chestplate = new Quest("tradeChestplate", text("The Green Smith needs " +
@@ -634,9 +641,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 ));
         chestplate.addObjective(chestplateTrade);
         chestplate.addReward(new XpReward(25));
-        chestplate.addReward(new MKLootReward(MKUltra.id("trooper_knight_armor"),
+        chestplate.addReward(new MKLootReward(trooper_knight_armor,
                 LootSlotManager.CHEST,
-                Component.translatable("mkultra.quest_reward.receive_item.name", MKUItems.trooperKnightChestplate.get().getDescription())));
+                MKUItems.trooperKnightChestplate));
         def.addQuest(chestplate);
 
         return def;
