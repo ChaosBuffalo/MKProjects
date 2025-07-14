@@ -15,7 +15,7 @@
                   "minValue": 5.0,
                   "modifier": {
                     "amount": 5.0,
-                    "id": "mkweapons:mod_mkweapons_tier_one",
+                    "id": "mkweapons:mod_tier_one",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -31,7 +31,7 @@
                   "minValue": 0.5,
                   "modifier": {
                     "amount": 0.5,
-                    "id": "mkweapons:mod_mkweapons_tier_one",
+                    "id": "mkweapons:mod_tier_one",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -188,7 +188,7 @@
                   "minValue": 5.0,
                   "modifier": {
                     "amount": 5.0,
-                    "id": "mkweapons:mod_mkweapons_tier_one",
+                    "id": "mkweapons:mod_tier_one",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -204,7 +204,7 @@
                   "minValue": 0.5,
                   "modifier": {
                     "amount": 0.5,
-                    "id": "mkweapons:mod_mkweapons_tier_one",
+                    "id": "mkweapons:mod_tier_one",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"

@@ -8,10 +8,10 @@ import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUSkeletons;
+import com.chaosbuffalo.mkultra.init.MKULootTiers;
 import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import net.minecraft.data.CachedOutput;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 import java.util.concurrent.CompletableFuture;
@@ -41,7 +41,6 @@ public class SeawovenNpcs {
     }
 
     static NpcDefinition generateSeawovenSkeleton() {
-        ResourceLocation lootTierName = MKUltra.id("seawoven_skeleton");
         return new NpcDefinitionBuilder(MKUltra.id("seawoven_skeleton"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .renderGroup(MKUSkeletons.SEAWOVEN_NAME)
@@ -56,7 +55,7 @@ public class SeawovenNpcs {
                 .noLootChanceIncrease(.25)
                 .noLootChance(.25)
                 .xp(50)
-                .loot(LootSlotManager.ITEMS, lootTierName, 1.0)
+                .loot(LootSlotManager.ITEMS, MKULootTiers.seawoven_skeleton, 1.0)
                 .build();
     }
 }

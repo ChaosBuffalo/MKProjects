@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkultra.client.render.styling.MKUSkeletons;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUEntities;
 import com.chaosbuffalo.mkultra.init.MKUItems;
+import com.chaosbuffalo.mkultra.init.MKULootTiers;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
@@ -82,7 +83,6 @@ public class HyboreanNpcs {
     }
 
     static NpcDefinition generateAncientKing() {
-        ResourceLocation lootTierName = MKUltra.id("ancient_king");
         return new NpcDefinitionBuilder(MKUltra.id("an_ancient_king"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .name("An Ancient King")
@@ -110,8 +110,8 @@ public class HyboreanNpcs {
                 .ability(MKUAbilities.POWER_WORD_SUMMON, 4, 0.5)
                 .ability(MKUAbilities.EXPLOSIVE_GROWTH, 5, 0.5)
                 .ability(MKUAbilities.FIREBALL, 6, 0.5)
-                .loot(LootSlotManager.RINGS, lootTierName, 1.0)
-                .loot(LootSlotManager.EARRINGS, lootTierName, 3.0)
+                .loot(LootSlotManager.RINGS, MKULootTiers.ancient_king, 1.0)
+                .loot(LootSlotManager.EARRINGS, MKULootTiers.ancient_king, 3.0)
                 .lootDropChances(2)
                 .noLootChance(0.2)
                 .noLootChanceIncrease(0.25)
@@ -123,7 +123,6 @@ public class HyboreanNpcs {
     }
 
     static NpcDefinition generateHyboreanSorcererQueen() {
-        ResourceLocation lootTierName = MKUltra.id("hyborean_sorcerer_queen");
         return new NpcDefinitionBuilder(MKUltra.id("hyborean_sorcerer_queen"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .name("Hyborean Sorcerer Queen")
                 .faction(MKFactions.UNDEAD)
@@ -141,8 +140,8 @@ public class HyboreanNpcs {
                 .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.KATANA_TYPE).orElseThrow())
                 .dropChance(1.1f)
                 .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.KATANA_TYPE, MKUltra.MODID).orElseThrow())
-                .loot(LootSlotManager.MAIN_HAND, lootTierName, 1.0)
-                .loot(LootSlotManager.EARRINGS, lootTierName, 3.0)
+                .loot(LootSlotManager.MAIN_HAND, MKULootTiers.hyborean_sorcerer_queen, 1.0)
+                .loot(LootSlotManager.EARRINGS, MKULootTiers.hyborean_sorcerer_queen, 3.0)
                 .lootDropChances(2)
                 .noLootChance(0.2)
                 .noLootChanceIncrease(0.25)

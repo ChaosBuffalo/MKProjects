@@ -2,7 +2,7 @@ package com.chaosbuffalo.mkweapons.data.content;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkweapons.MKWeapons;
-import com.chaosbuffalo.mkweapons.data.providers.LootTierProvider;
+import com.chaosbuffalo.mkweapons.MKWeaponsRegistry;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.randomization.LootItemTemplate;
@@ -12,10 +12,9 @@ import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.RandomizationSlotManager;
 import com.chaosbuffalo.mkweapons.items.randomization.templates.RandomizationTemplate;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -25,21 +24,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
-public class MKWeaponsLootTierProvider extends LootTierProvider {
+public class MKWeaponsLootTierProvider {
 
-    public MKWeaponsLootTierProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> registries) {
-        super(generator, registries, MKWeapons.MODID);
+
+    static ResourceKey<LootTier> key(String name) {
+        return ResourceKey.create(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY, MKWeapons.id(name));
     }
 
-    @Override
-    public CompletableFuture<?> run(CachedOutput pOutput) {
-        return writeLootTier(this::generateTierOne, pOutput);
+    public static final ResourceKey<LootTier> TIER_ONE = key("tier_one");
+
+
+    public static void bootstrap(BootstrapContext<LootTier> context) {
+        context.register(TIER_ONE, generateTierOne(TIER_ONE));
     }
 
-    private LootTier generateTierOne(HolderLookup.Provider registries) {
-        LootTier tier = new LootTier(MKWeapons.id("tier_one"));
+    private static LootTier generateTierOne(ResourceKey<LootTier> tierKey) {
+        LootTier tier = new LootTier(tierKey.location());
         List<IMKTier> weaponTiers = List.of(MKWeaponsItems.STONE_TIER, MKWeaponsItems.WOOD_TIER);
 
         LootItemTemplate weaponTemplate = new LootItemTemplate(LootSlotManager.MAIN_HAND);
@@ -56,7 +57,7 @@ public class MKWeaponsLootTierProvider extends LootTierProvider {
             }
         }
 
-        ResourceLocation modifierId = MKWeapons.id("mod_" + tier.getName().getNamespace() + "_" + tier.getName().getPath());
+        ResourceLocation modifierId = tierKey.location().withPrefix("mod_");
 
         AttributeOption healthAttribute = new AttributeOption();
         healthAttribute.addAttributeModifier(Attributes.MAX_HEALTH, modifierId,

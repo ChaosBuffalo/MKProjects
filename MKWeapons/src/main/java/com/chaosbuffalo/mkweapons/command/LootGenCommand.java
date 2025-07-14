@@ -1,9 +1,9 @@
 package com.chaosbuffalo.mkweapons.command;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkweapons.MKWeaponsRegistry;
 import com.chaosbuffalo.mkweapons.items.randomization.LootConstructor;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
-import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.mojang.brigadier.Command;
@@ -40,20 +40,24 @@ public class LootGenCommand {
 
     static CompletableFuture<Suggestions> suggestLootTiers(final CommandContext<CommandSourceStack> context,
                                                            final SuggestionsBuilder builder) {
-        return SharedSuggestionProvider.suggest(LootTierManager.LOOT_TIERS.keySet().stream()
-                .map(ResourceLocation::toString), builder);
+        return context.getSource() instanceof SharedSuggestionProvider provider
+                ? provider.suggestRegistryElements(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS, builder, context)
+                : builder.buildFuture();
     }
 
     static CompletableFuture<Suggestions> suggestLootSlotsForTier(final CommandContext<CommandSourceStack> context,
                                                                   final SuggestionsBuilder builder) {
         ResourceLocation tierName = context.getArgument("loot_tier", ResourceLocation.class);
 
-        LootTier tier = LootTierManager.getTierFromName(tierName);
-        if (tier != null) {
-            return SharedSuggestionProvider.suggest(tier.getSlots().stream()
-                    .map(LootSlot::getName)
-                    .map(ResourceLocation::toString), builder);
+        if (context.getSource() instanceof SharedSuggestionProvider provider) {
+            LootTier tier = provider.registryAccess().registryOrThrow(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY).get(tierName);
+            if (tier != null) {
+                return SharedSuggestionProvider.suggest(tier.getSlots().stream()
+                        .map(LootSlot::getName)
+                        .map(ResourceLocation::toString), builder);
+            }
         }
+
         return SharedSuggestionProvider.suggest(LootSlotManager.SLOTS.keySet().stream()
                 .map(ResourceLocation::toString), builder);
     }
@@ -63,28 +67,53 @@ public class LootGenCommand {
         ResourceLocation tierName = ctx.getArgument("loot_tier", ResourceLocation.class);
         ResourceLocation slotName = ctx.getArgument("loot_slot", ResourceLocation.class);
         double difficulty = ctx.getArgument("difficulty", Double.class);
-        LootTier tier = LootTierManager.getTierFromName(tierName);
-        LootSlot slot = LootSlotManager.getSlotFromName(slotName);
-        if (tier != null) {
-            if (slot != null) {
-                LootConstructor constructor = tier.generateConstructorForSlot(player.getRandom(), slot);
-                if (constructor != null) {
-                    ItemStack stack = constructor.constructItem(player.getRandom(), difficulty);
-                    if (!stack.isEmpty()) {
-                        boolean wasAdded = player.addItem(stack);
-                        if (!wasAdded) {
-                            player.drop(stack, false);
+
+        if (ctx.getSource() instanceof SharedSuggestionProvider provider) {
+            LootTier tier = provider.registryAccess().registryOrThrow(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY).get(tierName);
+            LootSlot slot = LootSlotManager.getSlotFromName(slotName);
+            if (tier != null) {
+                if (slot != null) {
+                    LootConstructor constructor = tier.generateConstructorForSlot(player.getRandom(), slot);
+                    if (constructor != null) {
+                        ItemStack stack = constructor.constructItem(player.getRandom(), difficulty);
+                        if (!stack.isEmpty()) {
+                            boolean wasAdded = player.addItem(stack);
+                            if (!wasAdded) {
+                                player.drop(stack, false);
+                            }
                         }
+                    } else {
+                        player.sendSystemMessage(Component.literal("No LootConstructor generated."));
                     }
                 } else {
-                    player.sendSystemMessage(Component.literal("No LootConstructor generated."));
+                    player.sendSystemMessage(Component.literal("Loot Slot Not Found."));
                 }
             } else {
-                player.sendSystemMessage(Component.literal("Loot Slot Not Found."));
+                player.sendSystemMessage(Component.literal("Loot Tier Not Found."));
             }
-        } else {
-            player.sendSystemMessage(Component.literal("Loot Tier Not Found."));
         }
+//        LootTier tier = LootTierManager.getTierFromName(tierName);
+//        LootSlot slot = LootSlotManager.getSlotFromName(slotName);
+//        if (tier != null) {
+//            if (slot != null) {
+//                LootConstructor constructor = tier.generateConstructorForSlot(player.getRandom(), slot);
+//                if (constructor != null) {
+//                    ItemStack stack = constructor.constructItem(player.getRandom(), difficulty);
+//                    if (!stack.isEmpty()) {
+//                        boolean wasAdded = player.addItem(stack);
+//                        if (!wasAdded) {
+//                            player.drop(stack, false);
+//                        }
+//                    }
+//                } else {
+//                    player.sendSystemMessage(Component.literal("No LootConstructor generated."));
+//                }
+//            } else {
+//                player.sendSystemMessage(Component.literal("Loot Slot Not Found."));
+//            }
+//        } else {
+//            player.sendSystemMessage(Component.literal("Loot Tier Not Found."));
+//        }
         return Command.SINGLE_SUCCESS;
     }
 }

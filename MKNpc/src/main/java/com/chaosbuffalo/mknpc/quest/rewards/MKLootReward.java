@@ -1,9 +1,9 @@
 package com.chaosbuffalo.mknpc.quest.rewards;
 
 import com.chaosbuffalo.mkcore.utils.WorldUtils;
+import com.chaosbuffalo.mkweapons.MKWeaponsRegistry;
 import com.chaosbuffalo.mkweapons.items.randomization.LootConstructor;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
-import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -43,7 +43,8 @@ public class MKLootReward extends QuestReward {
 
     @Override
     public void grantReward(Player player) {
-        LootTier tier = LootTierManager.getTierFromName(lootTier);
+        LootTier tier = player.registryAccess().registryOrThrow(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY)
+                .get(lootTier);
         if (tier != null) {
             LootConstructor constructor = tier.generateConstructorForSlot(player.getRandom(), lootSlot);
             if (constructor != null) {

@@ -13,6 +13,7 @@ import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.*;
+import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.core.Holder;
@@ -246,10 +247,18 @@ public class NpcDefinitionBuilder {
         return this;
     }
 
+    @Deprecated
     public NpcDefinitionBuilder loot(LootSlot slot, ResourceLocation lootTier, double weight) {
         ExtraLootOption opt = (ExtraLootOption) options.computeIfAbsent(NpcOptionTypes.EXTRA_LOOT.get(),
                 key -> new ExtraLootOption());
         opt.withLootOptions(new LootOptionEntry(lootTier, slot, weight));
+        return this;
+    }
+
+    public NpcDefinitionBuilder loot(LootSlot slot, ResourceKey<LootTier> lootTier, double weight) {
+        ExtraLootOption opt = (ExtraLootOption) options.computeIfAbsent(NpcOptionTypes.EXTRA_LOOT.get(),
+                key -> new ExtraLootOption());
+        opt.withLootOptions(new LootOptionEntry(lootTier.location(), slot, weight));
         return this;
     }
 
