@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.abilities.ai.conditions.SummonPetCondition;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.pets.MKPet;
 import com.chaosbuffalo.mkcore.core.pets.PetNonCombatBehavior;
@@ -16,6 +17,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
+import com.chaosbuffalo.mknpc.init.MKNpcAttributes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
@@ -33,6 +35,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
@@ -96,11 +99,21 @@ public class MKEntitySummonAbility extends MKAbility {
                 MKPet<MKEntity> pet = MKPet.makePetFromEntity(MKEntity.class, getAbilityId(), entity);
                 if (pet.getEntity() != null) {
                     casterData.getPets().addPet(pet);
-                    AttributeMap manager = pet.getEntity().getAttributes();
-                    AttributeInstance inst =  manager.getInstance(Attributes.MOVEMENT_SPEED);
-                    if (inst != null) {
-                        inst.setBaseValue(casterData.getEntity().getAttributeBaseValue(Attributes.MOVEMENT_SPEED) * 3.0);
+                    if (castingEntity instanceof Player) {
+                        // if its a player pet we should make some manipulations
+                        AttributeMap manager = pet.getEntity().getAttributes();
+                        AttributeInstance inst =  manager.getInstance(Attributes.MOVEMENT_SPEED);
+                        if (inst != null) {
+                            // player and npc movement speeds are very different
+                            inst.setBaseValue(casterData.getEntity().getAttributeBaseValue(Attributes.MOVEMENT_SPEED) * 3.0);
+                        }
+                        AttributeInstance aggroRange = manager.getInstance(MKNpcAttributes.AGGRO_RANGE);
+                        if (aggroRange != null) {
+                            // better aggro range for non npc pets
+                            aggroRange.setBaseValue(15.0);
+                        }
                     }
+
                     castingEntity.getCommandSenderWorld().addFreshEntity(pet.getEntity());
                     pet.getEntity().setNoncombatBehavior(new PetNonCombatBehavior(castingEntity));
                     pet.getEntity().setNonCombatMoveType(MKEntity.NonCombatMoveType.STATIONARY);

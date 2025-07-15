@@ -652,6 +652,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     @Override
     public void addThreat(LivingEntity entity, float value, boolean propagate) {
+        if (Targeting.isValidFriendly(this, entity)) {
+            return;
+        }
         Map<LivingEntity, ThreatMapEntry> newMap = brain.getMemory(MKMemoryModuleTypes.THREAT_MAP.get())
                 .orElseGet(HashMap::new);
         newMap.put(entity, newMap.getOrDefault(entity, new ThreatMapEntry()).addThreat(value));
