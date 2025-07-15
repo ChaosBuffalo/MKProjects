@@ -27,6 +27,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
     public PersonaManager(MKPlayerData playerData) {
         this.playerData = playerData;
         addSyncPrivate("#active", activePersonaName);
+        activePersona = getOrCreatePersona(activePersonaName.get());
     }
 
     @Override
@@ -44,22 +45,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
     }
 
     public void onJoinWorld() {
-        ensurePersonaLoaded();
-    }
-
-    private void ensurePersonaLoaded() {
-        if (activePersona == null) {
-            // When creating a new character it comes to serialize first, so create the default persona here if none is active
-            loadPersona(DEFAULT_PERSONA_NAME);
-        }
-        Objects.requireNonNull(activePersona, "Persona was required but not loaded");
-    }
-
-    private void loadPersona(String name) {
-        // Look for the specified persona, or create a new persona if it does not exist
-        Persona persona = getOrCreatePersona(name);
-
-        dispatchActivation(persona);
+        dispatchActivation(getActivePersona());
     }
 
     protected Persona getOrCreatePersona(String name) {
@@ -153,8 +139,6 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
 
     @Override
     public CompoundTag serialize(HolderLookup.Provider provider) {
-        ensurePersonaLoaded();
-
         CompoundTag tag = new CompoundTag();
         CompoundTag personaRoot = new CompoundTag();
         personas.forEach((name, persona) -> personaRoot.put(name, persona.serialize(provider)));
@@ -182,16 +166,19 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
                 tag.getString("activePersona") :
                 DEFAULT_PERSONA_NAME;
 
-        loadPersona(activePersonaName);
+        Persona pendingActive = getPersona(activePersonaName);
+        if (pendingActive == null) {
+            MKCore.LOGGER.error("Player {} tried to load an invalid persona '{}', resetting to default", playerData.getEntity(), activePersonaName);
+            pendingActive = getOrCreatePersona(DEFAULT_PERSONA_NAME);
+        }
+        setActivePersona(pendingActive);
         return true;
     }
 
-    // The client only has a single persona that will be overwritten when the server changes
     public static class ClientPersonaManager extends PersonaManager {
 
         public ClientPersonaManager(MKPlayerData playerData) {
             super(playerData);
-            activePersona = getOrCreatePersona(DEFAULT_PERSONA_NAME);
             sync.setHandlerFunction((s, t, v) -> {
                 Persona persona = getOrCreatePersona(s);
                 return persona.getSyncComponent();
@@ -199,11 +186,6 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
             activePersonaName.setCallback(newName -> {
                 activePersona = getOrCreatePersona(newName);
             });
-        }
-
-        @Override
-        public Persona getActivePersona() {
-            return activePersona;
         }
     }
 
