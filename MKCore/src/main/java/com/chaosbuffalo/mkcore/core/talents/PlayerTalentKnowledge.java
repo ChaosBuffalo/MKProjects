@@ -48,8 +48,7 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
         addSyncPrivate("xp", talentXp);
         treeGroup = new TreeSyncGroup();
         addSyncPrivate("trees", treeGroup);
-
-        unlockDefaultTrees(playerData);
+        unlockDefaultTrees();
     }
 
     public int getTalentXp() {
@@ -144,12 +143,12 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
         return record;
     }
 
-    private void unlockDefaultTrees(MKPlayerData playerData) {
+    private void unlockDefaultTrees() {
         if (playerData.isClientSide())
             return;
 
-        for (var treeId : TalentManager.getDefaultTrees(playerData.getEntity().registryAccess())) {
-            if (!unlockTree(treeId, false)) {
+        for (ResourceKey<TalentTreeDefinition> treeId : TalentManager.getDefaultTrees(playerData.getEntity().registryAccess())) {
+            if (!unlockTree(treeId)) {
                 MKCore.LOGGER.error("Failed to unlock default talent tree: {}", treeId);
             }
         }

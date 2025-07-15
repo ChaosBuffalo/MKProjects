@@ -1,5 +1,4 @@
 {
-  "name": "mkultra:trooper_executioner",
   "slotItems": {
     "mkweapons:main_hand": [
       {
@@ -8,11 +7,11 @@
           "options": [
             {
               "type": "mkweapons:option.ability",
-              "ability": "mkultra:sever_tendon"
+              "ability": "mkultra:fireball"
             },
             {
-              "type": "mkweapons:prefix_name",
-              "name": "Executioner's"
+              "type": "mkweapons:name",
+              "name": "Burning Staff"
             },
             {
               "type": "mkweapons:attributes",
@@ -23,7 +22,7 @@
                   "minValue": 2.0,
                   "modifier": {
                     "amount": 2.0,
-                    "id": "mkultra:trooper_executioner",
+                    "id": "mkultra:burning_staff",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -39,7 +38,7 @@
                   "minValue": 2.0,
                   "modifier": {
                     "amount": 2.0,
-                    "id": "mkultra:trooper_executioner",
+                    "id": "mkultra:burning_staff",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -55,7 +54,7 @@
                   "minValue": 0.25,
                   "modifier": {
                     "amount": 0.25,
-                    "id": "mkultra:trooper_executioner",
+                    "id": "mkultra:burning_staff",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -71,7 +70,7 @@
                   "minValue": 0.05,
                   "modifier": {
                     "amount": 0.05,
-                    "id": "mkultra:trooper_executioner",
+                    "id": "mkultra:burning_staff",
                     "operation": "add_multiplied_total"
                   },
                   "slot": "mainhand"
@@ -87,7 +86,7 @@
                   "minValue": 1.0,
                   "modifier": {
                     "amount": 1.0,
-                    "id": "mkultra:trooper_executioner",
+                    "id": "mkultra:burning_staff",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -103,7 +102,7 @@
                   "minValue": 1.0,
                   "modifier": {
                     "amount": 1.0,
-                    "id": "mkultra:trooper_executioner",
+                    "id": "mkultra:burning_staff",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -119,7 +118,7 @@
                   "minValue": 1.0,
                   "modifier": {
                     "amount": 1.0,
-                    "id": "mkultra:trooper_executioner",
+                    "id": "mkultra:burning_staff",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -131,19 +130,7 @@
             {
               "item": {
                 "count": 1,
-                "id": "mkweapons:greatsword_iron"
-              }
-            },
-            {
-              "item": {
-                "count": 1,
-                "id": "mkweapons:warhammer_iron"
-              }
-            },
-            {
-              "item": {
-                "count": 1,
-                "id": "mkweapons:battleaxe_iron"
+                "id": "mkweapons:staff_iron"
               }
             }
           ],
@@ -167,56 +154,6 @@
                   "mkweapons:randomization.attributes"
                 ]
               }
-            }
-          ]
-        },
-        "weight": 5.0
-      }
-    ],
-    "mkweapons:rings": [
-      {
-        "template": {
-          "lootSlot": "mkweapons:rings",
-          "options": [
-            {
-              "type": "mkweapons:attributes",
-              "modifiers": [
-                {
-                  "attribute": "minecraft:generic.max_health",
-                  "maxValue": 20.0,
-                  "minValue": 4.0,
-                  "modifier": {
-                    "amount": 4.0,
-                    "id": "mkultra:trooper_executioner",
-                    "operation": "add_value"
-                  },
-                  "slot": "armor"
-                }
-              ]
-            },
-            {
-              "type": "mkweapons:name",
-              "name": "Ring of Minor Health"
-            }
-          ],
-          "potentialItems": [
-            {
-              "item": {
-                "count": 1,
-                "id": "mkweapons:gold_ring"
-              }
-            }
-          ],
-          "templates": [
-            {
-              "template": {
-                "name": "mkultra:ring",
-                "slots": [
-                  "mkweapons:randomization.attributes",
-                  "mkweapons:randomization.name"
-                ]
-              },
-              "weight": 15.0
             }
           ]
         },

@@ -14,9 +14,9 @@ import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
+import com.chaosbuffalo.mkweapons.MKWeaponsRegistry;
 import com.chaosbuffalo.mkweapons.items.randomization.LootConstructor;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
-import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -129,7 +129,8 @@ public class EntityNpcDataHandler implements IEntityNpcData {
                 if (rolls.size() > 0) {
                     LootOptionEntry selected = rolls.next(entity.getRandom());
                     LootSlot lootSlot = selected.lootSlot();
-                    LootTier lootTier = LootTierManager.getTierFromName(selected.lootTierName());
+                    LootTier lootTier = entity.registryAccess().registryOrThrow(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY)
+                                    .get(selected.lootTierName());
                     if (lootSlot != null && lootTier != null) {
                         LootConstructor constructor = lootTier.generateConstructorForSlot(entity.getRandom(), lootSlot);
                         if (constructor != null) {

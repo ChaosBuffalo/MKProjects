@@ -48,7 +48,7 @@ public class MKCore {
     public static final String MOD_ID = "mkcore";
     // Directly reference a log4j logger.
     public static final Logger LOGGER = LogUtils.getLogger();
-    public static final boolean DEV_LOGGING = false;
+    public static final boolean DEV_LOGGING = Boolean.parseBoolean(System.getProperty("mkcore.enable_debug_log", "false"));
     private final AbilityManager abilityManager;
     private final ParticleAnimationManager particleAnimationManager;
     public static final String CORE_EXTENSION = "mk_core_extension";

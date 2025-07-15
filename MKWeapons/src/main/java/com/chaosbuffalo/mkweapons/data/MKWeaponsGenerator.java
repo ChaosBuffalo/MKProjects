@@ -23,11 +23,13 @@ public class MKWeaponsGenerator {
     public static void gatherData(GatherDataEvent event) {
         DataGenerator gen = event.getGenerator();
         ExistingFileHelper helper = event.getExistingFileHelper();
-        var lookup = event.getLookupProvider();
+
+        var weaponSets = new WeaponsRegistrySets(gen.getPackOutput(), event.getLookupProvider());
+        gen.addProvider(true, weaponSets);
+        var lookup = weaponSets.getRegistryProvider();
 
         gen.addProvider(event.includeServer(), new MKWeaponRecipeProvider(gen.getPackOutput(), lookup));
         gen.addProvider(event.includeServer(), new MKWeaponTypesProvider(gen, lookup));
-        gen.addProvider(event.includeServer(), new MKWeaponsLootTierProvider(gen, lookup));
         MKCoreGenerators.MKBlockTagsProvider blockTagsProvider = new MKCoreGenerators.MKBlockTagsProvider(
                 gen.getPackOutput(), lookup, MKWeapons.MODID, helper);
         gen.addProvider(event.includeServer(), blockTagsProvider);

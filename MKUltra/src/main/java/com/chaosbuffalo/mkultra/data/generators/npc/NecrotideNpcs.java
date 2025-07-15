@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUGolems;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUHumans;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUSkeletons;
+import com.chaosbuffalo.mkultra.init.MKULootTiers;
 import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
@@ -72,7 +73,6 @@ public class NecrotideNpcs {
     }
 
     static NpcDefinition generateNecrotideGolem() {
-        ResourceLocation lootTierName = MKUltra.id("necrotide_golem");
         return new NpcDefinitionBuilder(MKUltra.id("necrotide_golem"), MKUEntities.GOLEM_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
                 .renderGroup(MKUGolems.NECROTIDE_GOLEM_NAME)
@@ -85,8 +85,8 @@ public class NecrotideNpcs {
                 .ability(MKUAbilities.NECROTIDE_GOLEM_BEAM, 1, 1.0)
                 .skillClass(NpcGenUtils.NpcSkillClass.NECROMANCER)
                 .notable()
-                .loot(LootSlotManager.RINGS, lootTierName, 3.0)
-                .loot(LootSlotManager.HANDS, lootTierName, 1.0)
+                .loot(LootSlotManager.RINGS, MKULootTiers.necrotide_golem, 3.0)
+                .loot(LootSlotManager.HANDS, MKULootTiers.necrotide_golem, 1.0)
                 .lootDropChances(1)
                 .noLootChance(0.0)
                 .noLootChanceIncrease(0.0)

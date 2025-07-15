@@ -28,5 +28,9 @@ public class LootSlotArgument implements ArgumentType<ResourceLocation> {
         return SharedSuggestionProvider.suggest(LootSlotManager.SLOTS.keySet().stream()
                 .map(ResourceLocation::toString), builder);
     }
+
+    public static <S> ResourceLocation get(CommandContext<S> context, String name) {
+        return context.getArgument(name, ResourceLocation.class);
+    }
 }
 

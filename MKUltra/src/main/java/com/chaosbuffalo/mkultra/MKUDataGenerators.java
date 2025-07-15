@@ -41,7 +41,6 @@ public class MKUDataGenerators {
         generator.addProvider(event.includeServer(), new UltraEntityTypeTagsProvider(packOutput, datapackLookup, fileHelper));
 
         generator.addProvider(event.includeServer(), new MKUDialogueProvider(generator));
-        generator.addProvider(event.includeServer(), new MKULootTierProvider(generator, datapackLookup));
         generator.addProvider(event.includeServer(), new MKUQuestProvider(generator, datapackLookup));
         generator.addProvider(event.includeServer(), new MKUNpcProvider(generator, datapackLookup));
         generator.addProvider(event.includeServer(), new MKAbilityProvider.FromMod(generator, MKUltra.MODID));

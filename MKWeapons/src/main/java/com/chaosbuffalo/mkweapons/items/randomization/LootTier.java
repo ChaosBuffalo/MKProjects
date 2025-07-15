@@ -1,35 +1,34 @@
 package com.chaosbuffalo.mkweapons.items.randomization;
 
 import com.chaosbuffalo.mkcore.utils.RandomCollection;
+import com.chaosbuffalo.mkweapons.MKWeaponsRegistry;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.templates.LootItemTemplateEntry;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.RegistryFixedCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
 public class LootTier {
-    public static final Codec<LootTier> CODEC = RecordCodecBuilder.create(builder -> builder.group(
-            ResourceLocation.CODEC.fieldOf("name").forGetter(i -> i.name),
+    public static final Codec<LootTier> DIRECT_CODEC = RecordCodecBuilder.create(builder -> builder.group(
             Codec.unboundedMap(LootSlot.CODEC, LootItemTemplateEntry.CODEC.listOf()).fieldOf("slotItems").forGetter(LootTier::stableSortedMap)
     ).apply(builder, LootTier::new));
 
-    private static final List<LootItemTemplateEntry> EMPTY_CHOICES = List.of();
-    private final ResourceLocation name;
+    public static final Codec<Holder<LootTier>> REFERENCE_CODEC = RegistryFixedCodec.create(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY);
+    public static final Codec<ResourceKey<LootTier>> KEY_CODEC = ResourceKey.codec(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY);
+
     private final Map<LootSlot, List<LootItemTemplateEntry>> potentialItemsForSlot;
 
-    private LootTier(ResourceLocation name, Map<LootSlot, List<LootItemTemplateEntry>> map) {
-        this.name = name;
+    private LootTier(Map<LootSlot, List<LootItemTemplateEntry>> map) {
         this.potentialItemsForSlot = map;
     }
 
-    public LootTier(ResourceLocation name) {
-        this.name = name;
+    public LootTier() {
         this.potentialItemsForSlot = new HashMap<>();
     }
 
@@ -42,8 +41,8 @@ public class LootTier {
 
     @Nullable
     public LootItemTemplate chooseItemTemplate(RandomSource random, LootSlot slot) {
-        List<LootItemTemplateEntry> slotOptions = potentialItemsForSlot.getOrDefault(slot, EMPTY_CHOICES);
-        if (slotOptions.isEmpty()) {
+        List<LootItemTemplateEntry> slotOptions = potentialItemsForSlot.get(slot);
+        if (slotOptions == null || slotOptions.isEmpty()) {
             return null;
         } else {
             RandomCollection<LootItemTemplate> choices = new RandomCollection<>();
@@ -69,19 +68,7 @@ public class LootTier {
                 .add(new LootItemTemplateEntry(template, weight));
     }
 
-    public ResourceLocation getName() {
-        return name;
-    }
-
     public Set<LootSlot> getSlots() {
         return Collections.unmodifiableSet(potentialItemsForSlot.keySet());
-    }
-
-    public <D> D serialize(DynamicOps<D> ops) {
-        return CODEC.encodeStart(ops, this).getOrThrow();
-    }
-
-    public static <D> LootTier deserialize(Dynamic<D> dynamic) {
-        return CODEC.parse(dynamic).getOrThrow();
     }
 }

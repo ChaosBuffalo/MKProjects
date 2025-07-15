@@ -1,18 +1,72 @@
 {
-  "name": "mkultra:burning_staff",
   "slotItems": {
+    "mkweapons:earrings": [
+      {
+        "template": {
+          "lootSlot": "mkweapons:earrings",
+          "options": [
+            {
+              "type": "mkweapons:attributes",
+              "modifiers": [
+                {
+                  "attribute": "minecraft:generic.max_health",
+                  "maxValue": 20.0,
+                  "minValue": 4.0,
+                  "modifier": {
+                    "amount": 4.0,
+                    "id": "mkultra:trooper_captain",
+                    "operation": "add_value"
+                  },
+                  "slot": "armor"
+                }
+              ]
+            },
+            {
+              "type": "mkweapons:name",
+              "name": "Earring of Minor Health"
+            }
+          ],
+          "potentialItems": [
+            {
+              "item": {
+                "count": 1,
+                "id": "mkweapons:gold_earring"
+              }
+            }
+          ],
+          "templates": [
+            {
+              "template": {
+                "name": "mkultra:earring",
+                "slots": [
+                  "mkweapons:randomization.attributes",
+                  "mkweapons:randomization.name"
+                ]
+              },
+              "weight": 15.0
+            }
+          ]
+        },
+        "weight": 10.0
+      }
+    ],
     "mkweapons:main_hand": [
       {
         "template": {
           "lootSlot": "mkweapons:main_hand",
           "options": [
             {
-              "type": "mkweapons:option.ability",
-              "ability": "mkultra:fireball"
+              "type": "mkweapons:melee_effect",
+              "effects": [
+                {
+                  "type": "mkweapons:weapon_effect.undead_damage",
+                  "multiplier": 1.25
+                }
+              ]
             },
             {
               "type": "mkweapons:name",
-              "name": "Burning Staff"
+              "name": "Stinging Blade"
             },
             {
               "type": "mkweapons:attributes",
@@ -23,7 +77,7 @@
                   "minValue": 2.0,
                   "modifier": {
                     "amount": 2.0,
-                    "id": "mkultra:burning_staff",
+                    "id": "mkultra:trooper_captain",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -39,7 +93,7 @@
                   "minValue": 2.0,
                   "modifier": {
                     "amount": 2.0,
-                    "id": "mkultra:burning_staff",
+                    "id": "mkultra:trooper_captain",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -55,7 +109,7 @@
                   "minValue": 0.25,
                   "modifier": {
                     "amount": 0.25,
-                    "id": "mkultra:burning_staff",
+                    "id": "mkultra:trooper_captain",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -71,7 +125,7 @@
                   "minValue": 0.05,
                   "modifier": {
                     "amount": 0.05,
-                    "id": "mkultra:burning_staff",
+                    "id": "mkultra:trooper_captain",
                     "operation": "add_multiplied_total"
                   },
                   "slot": "mainhand"
@@ -87,7 +141,7 @@
                   "minValue": 1.0,
                   "modifier": {
                     "amount": 1.0,
-                    "id": "mkultra:burning_staff",
+                    "id": "mkultra:trooper_captain",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -103,7 +157,7 @@
                   "minValue": 1.0,
                   "modifier": {
                     "amount": 1.0,
-                    "id": "mkultra:burning_staff",
+                    "id": "mkultra:trooper_captain",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -119,7 +173,7 @@
                   "minValue": 1.0,
                   "modifier": {
                     "amount": 1.0,
-                    "id": "mkultra:burning_staff",
+                    "id": "mkultra:trooper_captain",
                     "operation": "add_value"
                   },
                   "slot": "mainhand"
@@ -131,7 +185,7 @@
             {
               "item": {
                 "count": 1,
-                "id": "mkweapons:staff_iron"
+                "id": "mkweapons:katana_iron"
               }
             }
           ],
@@ -140,7 +194,7 @@
               "template": {
                 "name": "mkultra:blade",
                 "slots": [
-                  "mkweapons:randomization.ability",
+                  "mkweapons:randomization.effect",
                   "mkweapons:randomization.name"
                 ]
               },
@@ -150,7 +204,7 @@
               "template": {
                 "name": "mkultra:blade_crit",
                 "slots": [
-                  "mkweapons:randomization.ability",
+                  "mkweapons:randomization.effect",
                   "mkweapons:randomization.name",
                   "mkweapons:randomization.attributes"
                 ]
@@ -158,7 +212,7 @@
             }
           ]
         },
-        "weight": 10.0
+        "weight": 5.0
       }
     ]
   }

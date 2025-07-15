@@ -50,7 +50,6 @@ public class IntroCastleNpcs {
     }
 
     static NpcDefinition generateCrumblingTrooper() {
-        ResourceLocation lootTierName = MKUltra.id("zombie_trooper");
         return new NpcDefinitionBuilder(MKUltra.id("crumbling_trooper"), MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
                 .faction(MKUFactions.IMPERIAL_DEAD_NAME)
                 .size(1.1f)
@@ -65,7 +64,7 @@ public class IntroCastleNpcs {
                 .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.MACE_TYPE).orElseThrow())
                 .ability(MKUAbilities.SEVER_TENDON, 3, 1.0)
                 .ability(MKUAbilities.EMBER, 2, 0.5)
-                .loot(LootSlotManager.ITEMS, lootTierName, 1.0)
+                .loot(LootSlotManager.ITEMS, MKULootTiers.zombie_trooper, 1.0)
                 .lootDropChances(2)
                 .noLootChance(.1)
                 .noLootChanceIncrease(.25)
@@ -95,7 +94,6 @@ public class IntroCastleNpcs {
     }
 
     static NpcDefinition generateTrooperCaptain() {
-        ResourceLocation lootTierName = MKUltra.id("trooper_captain");
         return new NpcDefinitionBuilder(MKUltra.id("trooper_captain"), MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
                 .renderGroup(MKUPiglins.SKELETAL_TROOPER_NAME)
                 .faction(MKUFactions.IMPERIAL_DEAD_NAME)
@@ -113,8 +111,8 @@ public class IntroCastleNpcs {
                 .ability(MKUAbilities.HEAL, 2, 1.0)
                 .ability(MKUAbilities.FURIOUS_BROODING, 3, 1.0)
                 .ability(MKUAbilities.SMITE, 1, 1.0)
-                .loot(LootSlotManager.MAIN_HAND, lootTierName, 1.0)
-                .loot(LootSlotManager.EARRINGS, lootTierName, 3.0)
+                .loot(LootSlotManager.MAIN_HAND, MKULootTiers.trooper_captain, 1.0)
+                .loot(LootSlotManager.EARRINGS, MKULootTiers.trooper_captain, 3.0)
                 .lootDropChances(2)
                 .noLootChance(0.2)
                 .noLootChanceIncrease(0.25)
@@ -124,7 +122,6 @@ public class IntroCastleNpcs {
     }
 
     static NpcDefinition generateImperialMagus() {
-        ResourceLocation lootTierName = MKUltra.id("trooper_magus");
         return new NpcDefinitionBuilder(MKUltra.id("imperial_magus"), MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
                 .faction(MKUFactions.IMPERIAL_DEAD_NAME)
                 .size(1.0f)
@@ -143,9 +140,9 @@ public class IntroCastleNpcs {
                 .ability(MKUAbilities.HEAL, 1, 1.0)
                 .ability(MKUAbilities.NATURES_REMEDY, 2, 1.0)
                 .ability(MKUAbilities.POWER_WORD_SUMMON, 7, 1.0)
-                .loot(LootSlotManager.MAIN_HAND, lootTierName, 1.0)
-                .loot(LootSlotManager.RINGS, lootTierName, 2.0)
-                .loot(LootSlotManager.EARRINGS, lootTierName, 1.0)
+                .loot(LootSlotManager.MAIN_HAND, MKULootTiers.trooper_magus, 1.0)
+                .loot(LootSlotManager.RINGS, MKULootTiers.trooper_magus, 2.0)
+                .loot(LootSlotManager.EARRINGS, MKULootTiers.trooper_magus, 1.0)
                 .lootDropChances(2)
                 .noLootChance(0.2)
                 .noLootChanceIncrease(0.25)
@@ -166,7 +163,7 @@ public class IntroCastleNpcs {
                 .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.DAGGER_TYPE).orElseThrow())
                 .ability(MKUAbilities.FIREBALL, 1, 1.0)
                 .ability(MKUAbilities.EMBER, 2, 0.5)
-                .loot(LootSlotManager.ITEMS, MKUltra.id("zombie_trooper"), 1.0)
+                .loot(LootSlotManager.ITEMS, MKULootTiers.zombie_trooper, 1.0)
                 .lootDropChances(2)
                 .noLootChance(0.1)
                 .noLootChanceIncrease(0.25)
@@ -192,7 +189,6 @@ public class IntroCastleNpcs {
     }
 
     static NpcDefinition generateTrooperExecution() {
-        ResourceLocation lootTierName = MKUltra.id("trooper_executioner");
         return new NpcDefinitionBuilder(MKUltra.id("trooper_executioner"), MKUEntities.ZOMBIFIED_PIGLIN_TYPE)
                 .faction(MKUFactions.IMPERIAL_DEAD_NAME)
                 .size(1.0f)
@@ -208,8 +204,8 @@ public class IntroCastleNpcs {
                 .ability(MKUAbilities.FURIOUS_BROODING, 3, 1.0)
                 .ability(MKUAbilities.WHIRLWIND_BLADES, 1, 1.0)
                 .ability(MKUAbilities.YANK, 2, 1.0)
-                .loot(LootSlotManager.MAIN_HAND, lootTierName, 1.0)
-                .loot(LootSlotManager.RINGS, lootTierName, 3.0)
+                .loot(LootSlotManager.MAIN_HAND, MKULootTiers.trooper_executioner, 1.0)
+                .loot(LootSlotManager.RINGS, MKULootTiers.trooper_executioner, 3.0)
                 .lootDropChances(2)
                 .noLootChance(0.2)
                 .noLootChanceIncrease(0.25)
@@ -259,7 +255,6 @@ public class IntroCastleNpcs {
     }
 
     static NpcDefinition generateBurningSkeleton() {
-        ResourceLocation lootTierName = MKUltra.id("burning_skeleton");
         return new NpcDefinitionBuilder(MKUltra.id("burning_skeleton"), MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.HYBOREAN_DEAD_NAME)
                 .size(1.0f)
@@ -290,9 +285,9 @@ public class IntroCastleNpcs {
                         new BoneEffectInstance(UUID.fromString("3e7496f1-f5bf-45e6-b8e5-64192633ae9f"),
                                 MKUltra.id("burning_skeleton_head"), BipedSkeleton.HEAD_BONE_NAME)
                 )
-                .loot(LootSlotManager.MAIN_HAND, lootTierName, 1.0)
-                .loot(LootSlotManager.RINGS, lootTierName, 3.0)
-                .loot(LootSlotManager.EARRINGS, lootTierName, 2.0)
+                .loot(LootSlotManager.MAIN_HAND, MKULootTiers.burning_skeleton, 1.0)
+                .loot(LootSlotManager.RINGS, MKULootTiers.burning_skeleton, 3.0)
+                .loot(LootSlotManager.EARRINGS, MKULootTiers.burning_skeleton, 2.0)
                 .dropChance(1)
                 .noLootChance(0.1)
                 .noLootChanceIncrease(0.0)

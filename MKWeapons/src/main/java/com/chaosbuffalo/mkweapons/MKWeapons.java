@@ -1,14 +1,8 @@
 package com.chaosbuffalo.mkweapons;
 
-import com.chaosbuffalo.mkweapons.capabilities.WeaponsAttachments;
-import com.chaosbuffalo.mkweapons.components.WeaponsComponents;
 import com.chaosbuffalo.mkweapons.event.MKWeaponsEventHandler;
-import com.chaosbuffalo.mkweapons.init.MKWeaponEffects;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsCommands;
-import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
-import com.chaosbuffalo.mkweapons.init.MKWeaponsParticles;
 import com.chaosbuffalo.mkweapons.items.effects.IWeaponEffectsExtension;
-import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.WeaponTypeManager;
 import com.chaosbuffalo.mkweapons.network.PacketHandler;
 import net.minecraft.resources.ResourceLocation;
@@ -30,25 +24,14 @@ public class MKWeapons {
     public static final String MODID = "mkweapons";
     public static final String REGISTER_MK_WEAPONS_EXTENSION = "register_mk_weapons_extension";
     public final WeaponTypeManager weaponTypeManager;
-    public final LootTierManager lootTierManager;
 
     public MKWeapons(IEventBus modBus) {
         NeoForge.EVENT_BUS.register(this);
         modBus.addListener(this::setup);
         modBus.addListener(this::processIMC);
         modBus.addListener(PacketHandler::register);
-        setupRegistries(modBus);
+        MKWeaponsRegistry.setup(modBus);
         weaponTypeManager = new WeaponTypeManager();
-        lootTierManager = new LootTierManager();
-    }
-
-    private void setupRegistries(IEventBus modBus) {
-        MKWeaponsParticles.register(modBus);
-        MKWeaponsItems.register(modBus);
-        MKWeaponsCommands.register(modBus);
-        MKWeaponEffects.register(modBus);
-        WeaponsAttachments.register(modBus);
-        WeaponsComponents.register(modBus);
     }
 
     private void setup(final FMLCommonSetupEvent event) {
