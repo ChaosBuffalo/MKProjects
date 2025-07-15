@@ -126,12 +126,12 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     protected Component getCooldownDescription(IMKEntityData casterData) {
-        float seconds = (float) casterData.getStats().getAbilityCooldown(this) / GameConstants.TICKS_PER_SECOND;
+        float seconds = (float) casterData.getAbilityExecutor().getAbilityCooldown(this) / GameConstants.TICKS_PER_SECOND;
         return Component.translatable("mkcore.ability.description.cooldown", NUMBER_FORMATTER.format(seconds));
     }
 
     protected Component getCastTimeDescription(IMKEntityData casterData) {
-        int castTicks = casterData.getStats().getAbilityCastTime(this);
+        int castTicks = casterData.getAbilityExecutor().getAbilityCastTime(this);
         float seconds = (float) castTicks / GameConstants.TICKS_PER_SECOND;
         Component time = castTicks > 0 ?
                 Component.translatable("mkcore.ability.description.seconds", NUMBER_FORMATTER.format(seconds)) :
@@ -279,8 +279,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     }
 
     public boolean meetsCastingRequirements(IMKEntityData casterData, MKAbilityInfo abilityInfo) {
-        return casterData.getAbilityExecutor().canActivateAbility(abilityInfo) &&
-                casterData.getStats().canActivateAbility(abilityInfo);
+        return casterData.getAbilityExecutor().canActivateAbility(abilityInfo);
     }
 
     public <T> T serializeDynamic(DynamicOps<T> ops) {

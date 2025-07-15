@@ -59,7 +59,7 @@ public class ResetCooldownOnCastEffect extends BaseAccessoryEffect {
             if (ability.getSkillAttributes().contains(getSkill())) {
                 double roll = entityData.getEntity().getRandom().nextDouble();
                 if (roll >= (1.0 - getChance())) {
-                    playerData.getAbilityExecutor().setCooldown(ability.getAbilityId(), 0);
+                    playerData.getAbilityExecutor().setCooldown(ability, 0);
                     playerData.getEntity().sendSystemMessage(Component.translatable(
                             "mkweapons.accessory_effect.reset_cooldown.message",
                             stack.getHoverName()));

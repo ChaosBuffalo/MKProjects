@@ -20,7 +20,7 @@ public class ShadowbringerEffect extends MKEffect {
     @Override
     public void onInstanceAdded(IMKEntityData targetData, MKActiveEffect newInstance) {
         super.onInstanceAdded(targetData, newInstance);
-        targetData.getAbilityExecutor().setCooldown(MKUAbilities.SHADOW_BOLT.getId(), 0);
+        targetData.getAbilityExecutor().setCooldown(MKUAbilities.SHADOW_BOLT.get(), 0);
     }
 
     @Override

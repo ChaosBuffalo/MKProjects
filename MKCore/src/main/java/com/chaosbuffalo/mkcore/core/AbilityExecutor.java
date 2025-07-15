@@ -91,6 +91,11 @@ public class AbilityExecutor {
         if (isOnGlobalCooldown())
             return false;
 
+        float cost = getAbilityManaCost(abilityInfo);
+        if (cost > entityData.getStats().getMana()) {
+            return false;
+        }
+
         return getCurrentAbilityCooldown(abilityInfo.getId()) <= 0;
     }
 
@@ -98,12 +103,26 @@ public class AbilityExecutor {
         updateCurrentCast();
     }
 
-    public void setCooldown(ResourceLocation id, int ticks) {
-//        MKCore.LOGGER.debug("setCooldown({}, {})", id, ticks);
+    public void setCooldown(MKAbility ability, int ticks) {
+        ResourceLocation id = ability.getAbilityId();
+        entityData.getStats().setTimer(id, ticks);
+    }
 
-        if (!id.equals(MKCoreRegistry.INVALID_ABILITY)) {
-            entityData.getStats().setTimer(id, ticks);
-        }
+    public float getAbilityManaCost(MKAbilityInfo abilityInfo) {
+        float manaCost = abilityInfo.getAbility().getManaCost(entityData);
+        return MKCombatFormulas.applyManaCostReduction(entityData, manaCost);
+    }
+
+    public int getAbilityCastTime(MKAbility ability) {
+        int ticks = ability.getCastTime(entityData);
+        return ability.canApplyCastingSpeedModifier() ?
+                MKCombatFormulas.applyCastTimeModifier(entityData, ticks) :
+                ticks;
+    }
+
+    public int getAbilityCooldown(MKAbility ability) {
+        int ticks = ability.getCooldown(entityData);
+        return MKCombatFormulas.applyCooldownReduction(entityData, ticks);
     }
 
     public int getCurrentAbilityCooldown(ResourceLocation abilityId) {
@@ -197,7 +216,7 @@ public class AbilityExecutor {
         }
 
         startGlobalCooldown();
-        int castTime = entityData.getStats().getAbilityCastTime(ability);
+        int castTime = getAbilityCastTime(ability);
         startCast(context, abilityInfo, castTime);
         if (castTime > 0) {
             return true;
@@ -214,8 +233,8 @@ public class AbilityExecutor {
         if (completeAbilityCallback != null) {
             completeAbilityCallback.accept(ability);
         }
-        int cooldown = entityData.getStats().getAbilityCooldown(ability);
-        setCooldown(abilityInfo.getId(), cooldown);
+        int cooldown = getAbilityCooldown(ability);
+        setCooldown(abilityInfo.getAbility(), cooldown);
         SoundEvent sound = ability.getSpellCompleteSoundEvent();
         if (sound != null) {
             SoundUtils.serverPlaySoundAtEntity(entityData.getEntity(), sound, entityData.getEntity().getSoundSource());
@@ -386,7 +405,7 @@ public class AbilityExecutor {
         // ability will be the same as current
         if (current != null && current != ability) {
             current.removeEffect(entityData);
-            setCooldown(current.getAbilityId(), entityData.getStats().getAbilityCooldown(current));
+            setCooldown(current, getAbilityCooldown(current));
         }
         activeToggleMap.put(groupId, ability);
     }
