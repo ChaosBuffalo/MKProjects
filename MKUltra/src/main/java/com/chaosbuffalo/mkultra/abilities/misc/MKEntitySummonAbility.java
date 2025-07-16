@@ -11,13 +11,11 @@ import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribut
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
-import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.targeting_api.Targeting;
@@ -36,16 +34,15 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
-import java.util.function.Function;
 
 public class MKEntitySummonAbility extends MKAbility {
-    protected final ResourceLocationAttribute npcDefintion = new ResourceLocationAttribute("npc", NpcDefinitionManager.INVALID_NPC_DEF);
+    protected final ResourceLocationAttribute npcDefintion;
     protected final Holder<Attribute> summoningSkill;
 
 
     public MKEntitySummonAbility(ResourceLocation npcDef, Holder<Attribute> skillAttribute) {
         super();
-        npcDefintion.setDefaultValue(npcDef);
+        npcDefintion = new ResourceLocationAttribute("npc", npcDef);
         addAttribute(npcDefintion);
         setCastTime(5 * GameConstants.TICKS_PER_SECOND);
         setUseCondition(new SummonPetCondition(this));

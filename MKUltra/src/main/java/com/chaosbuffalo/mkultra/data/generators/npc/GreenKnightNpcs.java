@@ -96,7 +96,7 @@ public class GreenKnightNpcs {
                 .manaRegen(10.0)
                 .notable()
                 .xp(250)
-                .quests(MKUltra.id("intro_quest"))
+                .quests(MKUQuests.INTRO_QUEST)
                 .skillClass(NpcGenUtils.NpcSkillClass.CLERIC)
                 .trains(MKUAbilities.SKIN_LIKE_WOOD, new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier1.get()))
                 .trains(MKUAbilities.NATURES_REMEDY, new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier1.get()))
@@ -120,7 +120,7 @@ public class GreenKnightNpcs {
                 .xp(100)
                 .notable()
                 .mainHand(BuiltInRegistries.ITEM.getHolder(ResourceLocation.parse("mkweapons:warhammer_iron")).get())
-                .quests(MKUltra.id("trooper_armor"))
+                .quests(MKUQuests.TROOPER_ARMOR)
                 .skillClass(NpcGenUtils.NpcSkillClass.PALADIN)
                 .build();
     }

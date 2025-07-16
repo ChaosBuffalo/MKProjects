@@ -5,27 +5,27 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:shadow_bolt_dual_shotgun",
+          "ability": "mkultra:shadow_bolt_dual_shotgun",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:engulfing_darkness",
+          "ability": "mkultra:engulfing_darkness",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:life_spike",
+          "ability": "mkultra:life_spike",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityId": "mkultra:wrath_beam",
+          "ability": "mkultra:wrath_beam",
           "chance": 1.0,
           "priority": 4
         },
         {
-          "abilityId": "mkultra:shadow_pulse_flurry",
+          "ability": "mkultra:shadow_pulse_flurry",
           "chance": 1.0,
           "priority": 5
         }
@@ -84,15 +84,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 300.0
+          "base_value": 300.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 300.0
+          "base_value": 300.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 3.0
+          "base_value": 3.0
         }
       ]
     },

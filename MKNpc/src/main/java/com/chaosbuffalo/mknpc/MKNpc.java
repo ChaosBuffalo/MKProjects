@@ -12,7 +12,6 @@ import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
 import com.chaosbuffalo.mknpc.init.*;
 import com.chaosbuffalo.mknpc.npc.*;
-import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.QuestRegistries;
 import com.chaosbuffalo.mknpc.quest.dialogue.NpcDialogueUtils;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueEffectTypes;
@@ -39,11 +38,9 @@ import java.util.Optional;
 @Mod(MKNpc.MODID)
 public class MKNpc {
     public static final Logger LOGGER = LogManager.getLogger();
-    public static final boolean DEV_LOGGING = false;
+    public static final boolean DEV_LOGGING = Boolean.parseBoolean(System.getProperty("mknpc.enable_debug_log", "false"));
     public static final String MODID = "mknpc";
     public static final String REGISTER_NPC_OPTIONS_EXTENSION = "register_npc_extension";
-    private final NpcDefinitionManager npcDefinitionManager;
-    private final QuestDefinitionManager questDefinitionManager;
 
     public MKNpc(IEventBus modBus) {
         modBus.addListener(this::setup);
@@ -53,8 +50,6 @@ public class MKNpc {
         setupRegistries(modBus);
         NeoForge.EVENT_BUS.register(this);
         NpcDialogueUtils.setupMKNpcHandlers();
-        npcDefinitionManager = new NpcDefinitionManager();
-        questDefinitionManager = new QuestDefinitionManager();
     }
 
     private void setupRegistries(IEventBus modBus) {
@@ -74,7 +69,6 @@ public class MKNpc {
         NpcRegistries.register(modBus);
         NpcOptionTypes.register(modBus);
         NpcOptionEntryTypes.register(modBus);
-        NpcDefinitionManager.setupDeserializers();
         StructureEventManager.setupDeserializers();
         NpcComponents.register(modBus);
 

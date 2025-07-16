@@ -1,5 +1,4 @@
 {
-  "additionalNotables": [],
   "dialogue": {
     "dialogueId": "mknpc:give_quest.mkultra.cleric_unlock_chain",
     "hailPromptId": "hail",
@@ -88,12 +87,13 @@
       }
     ]
   },
-  "questMode": 0,
-  "questName": "\"Seeking the Light\"",
+  "questMode": "linear",
+  "questName": "Seeking the Light",
+  "questTemplateId": "mkultra:cleric_unlock_chain",
   "quests": [
     {
       "autoComplete": true,
-      "description": "\"The Temple of Solang desires a donation of gold.\"",
+      "description": "The Temple of Solang desires a donation of gold.",
       "objectives": [
         {
           "type": "mknpc:trade_with_npc",
@@ -125,7 +125,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Return to the Cleric\"",
+      "description": "Return to the Cleric",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
@@ -220,7 +220,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Cull the dead that walk amongst the living.\"",
+      "description": "Cull the dead that walk amongst the living.",
       "objectives": [
         {
           "type": "mknpc:kill_type_tag",
@@ -240,7 +240,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Return to the Cleric\"",
+      "description": "Return to the Cleric",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
@@ -349,7 +349,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Destroy the Greater Dead\"",
+      "description": "Destroy the Greater Dead",
       "objectives": [
         {
           "type": "mknpc:kill_one_of_notables",
@@ -392,7 +392,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Return to the Cleric\"",
+      "description": "Return to the Cleric",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",

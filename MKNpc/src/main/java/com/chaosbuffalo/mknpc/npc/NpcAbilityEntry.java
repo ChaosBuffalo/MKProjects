@@ -1,33 +1,29 @@
 package com.chaosbuffalo.mknpc.npc;
 
-import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
 
 public class NpcAbilityEntry {
-    public static final Codec<NpcAbilityEntry> CODEC = RecordCodecBuilder.<NpcAbilityEntry>mapCodec(builder -> {
-        return builder.group(
-                ResourceLocation.CODEC.fieldOf("abilityId").forGetter(NpcAbilityEntry::getAbilityId),
-                Codec.INT.fieldOf("priority").forGetter(NpcAbilityEntry::getPriority),
-                Codec.DOUBLE.fieldOf("chance").forGetter(NpcAbilityEntry::getChance)
-        ).apply(builder, NpcAbilityEntry::new);
-    }).codec();
+    public static final Codec<NpcAbilityEntry> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            MKCoreRegistry.ABILITIES.byNameCodec().fieldOf("ability").forGetter(NpcAbilityEntry::getAbility),
+            Codec.INT.fieldOf("priority").forGetter(NpcAbilityEntry::getPriority),
+            Codec.DOUBLE.fieldOf("chance").forGetter(NpcAbilityEntry::getChance)
+    ).apply(builder, NpcAbilityEntry::new));
 
-    private final ResourceLocation abilityId;
+    private final MKAbility ability;
     private final int priority;
     private final double chance;
 
-    public NpcAbilityEntry(ResourceLocation abilityId, int priority, double chance) {
+    public NpcAbilityEntry(MKAbility ability, int priority, double chance) {
         this.priority = priority;
-        this.abilityId = abilityId;
+        this.ability = ability;
         this.chance = chance;
     }
 
-    public ResourceLocation getAbilityId() {
-        return abilityId;
+    public MKAbility getAbility() {
+        return ability;
     }
 
     public int getPriority() {
@@ -36,13 +32,5 @@ public class NpcAbilityEntry {
 
     public double getChance() {
         return chance;
-    }
-
-    public <D> D serialize(DynamicOps<D> ops) {
-        return CODEC.encodeStart(ops, this).getOrThrow();
-    }
-
-    public static <D> NpcAbilityEntry deserialize(DynamicOps<D> ops, D instance) {
-        return CODEC.parse(new Dynamic<>(ops, instance)).getOrThrow();
     }
 }

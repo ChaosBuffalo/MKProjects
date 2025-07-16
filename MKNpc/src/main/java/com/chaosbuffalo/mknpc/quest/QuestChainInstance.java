@@ -17,6 +17,7 @@ import com.mojang.serialization.Dynamic;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -164,7 +165,8 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         questId = nbt.getUUID("questId");
-        definition = QuestDefinitionManager.getDefinition(ResourceLocation.parse(nbt.getString("definitionId")));
+        var questKey = ResourceKey.create(QuestRegistries.QUEST_DEFINITIONS, ResourceLocation.parse(nbt.getString("definitionId")));
+        definition = provider.lookupOrThrow(QuestRegistries.QUEST_DEFINITIONS).getOrThrow(questKey).value();
         deserializeQuestParameters(provider, nbt.getCompound("questData"));
         if (nbt.contains("questSource")) {
             questSourceNpc = nbt.getUUID("questSource");

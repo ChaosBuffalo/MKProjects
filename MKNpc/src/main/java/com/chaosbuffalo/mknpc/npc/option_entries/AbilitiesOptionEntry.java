@@ -1,21 +1,14 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
 import com.chaosbuffalo.mknpc.npc.NpcOptionEntryTypes;
-import com.chaosbuffalo.mknpc.npc.options.AbilitiesOption;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -36,11 +29,6 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
     }
 
     @Override
-    public ResourceLocation getOptionId() {
-        return AbilitiesOption.NAME;
-    }
-
-    @Override
     public void applyToEntity(Entity entity) {
         if (entity instanceof LivingEntity livingEntity) {
             MKCore.getEntitySpecificData(livingEntity).ifPresent((cap) -> {
@@ -52,7 +40,7 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
                     cap.getAbilities().unlearnAbility(loc, AbilitySource.TRAINED);
                 }
                 for (NpcAbilityEntry entry : abilities) {
-                    MKAbility ability = MKCoreRegistry.getAbility(entry.getAbilityId());
+                    MKAbility ability = entry.getAbility();
                     if (ability != null) {
                         cap.getAbilities().learnAbility(ability, entry.getPriority());
                     }
@@ -64,26 +52,5 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
     @Override
     public NpcOptionEntryType<? extends INpcOptionEntry> getType() {
         return NpcOptionEntryTypes.ABILITIES.get();
-    }
-
-    @Override
-    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
-        CompoundTag tag = new CompoundTag();
-        ListTag abilitiesList = new ListTag();
-        for (NpcAbilityEntry entry : abilities) {
-            abilitiesList.add(entry.serialize(NbtOps.INSTANCE));
-        }
-        tag.put("abilities", abilitiesList);
-        return tag;
-    }
-
-    @Override
-    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
-        ListTag abilitiesList = nbt.getList("abilities", Tag.TAG_COMPOUND);
-        abilities.clear();
-        for (Tag tag : abilitiesList) {
-            NpcAbilityEntry entry = NpcAbilityEntry.deserialize(NbtOps.INSTANCE, tag);
-            abilities.add(entry);
-        }
     }
 }

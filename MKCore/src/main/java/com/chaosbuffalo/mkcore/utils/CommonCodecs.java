@@ -6,11 +6,7 @@ import com.mojang.datafixers.kinds.K1;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
@@ -20,10 +16,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 public class CommonCodecs {
-    public static final Codec<EquipmentSlot> EQUIPMENT_SLOT_CODEC = EquipmentSlot.CODEC;
-
-    // ItemStack.CODEC does not include capabilities, so we need this workaround
-//    public static final Codec<ItemStack> ITEM_STACK_WITH_CAPS_CODEC = CompoundTag.CODEC.xmap(ItemStack::of, i -> i.save(new CompoundTag()));
 
     public static final Codec<ItemStack> ITEM_STACK = ItemStack.CODEC;
 

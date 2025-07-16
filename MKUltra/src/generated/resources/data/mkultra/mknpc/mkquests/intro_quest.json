@@ -1,5 +1,4 @@
 {
-  "additionalNotables": [],
   "dialogue": {
     "dialogueId": "mknpc:give_quest.mkultra.intro_quest",
     "hailPromptId": "hail",
@@ -58,12 +57,13 @@
       }
     ]
   },
-  "questMode": 0,
-  "questName": "\"The Green Knights\"",
+  "questMode": "linear",
+  "questName": "The Green Knights",
+  "questTemplateId": "mkultra:intro_quest",
   "quests": [
     {
       "autoComplete": true,
-      "description": "\"The Green Lady wants you to go talk to the smith and equip yourself for an unknown task.\"",
+      "description": "The Green Lady wants you to go talk to the smith and equip yourself for an unknown task.",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
@@ -118,7 +118,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"The Green Smith points you towards a chest in his workshop.\"",
+      "description": "The Green Smith points you towards a chest in his workshop.",
       "objectives": [
         {
           "type": "mknpc:loot_chest",
@@ -173,7 +173,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Use the Green Smith's supplies to craft your desired weapon and perhaps some armor for the battle ahead.\"",
+      "description": "Use the Green Smith's supplies to craft your desired weapon and perhaps some armor for the battle ahead.",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
@@ -240,7 +240,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Talk to the Green Lady to learn more about developing your magical abilities\"",
+      "description": "Talk to the Green Lady to learn more about developing your magical abilities",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
@@ -295,7 +295,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"The Green Lady wants you to learn about spending talent points.\"",
+      "description": "The Green Lady wants you to learn about spending talent points.",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
@@ -387,7 +387,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Talk to the Green Lady and learn your first ability, then speak to her again.\"",
+      "description": "Talk to the Green Lady and learn your first ability, then speak to her again.",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
@@ -479,7 +479,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"The Green Lady wants you to clear out some of the zombies on the first floor of the castle\"",
+      "description": "The Green Lady wants you to clear out some of the zombies on the first floor of the castle",
       "objectives": [
         {
           "type": "mknpc:kill_npc_def",
@@ -563,7 +563,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"The Green Lady wants you to find and kill the Piglin Captain\"",
+      "description": "The Green Lady wants you to find and kill the Piglin Captain",
       "objectives": [
         {
           "type": "mknpc:kill_notable_npc",
@@ -647,7 +647,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"The Green Lady wants you to seek out a spirit in the depths.\"",
+      "description": "The Green Lady wants you to seek out a spirit in the depths.",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
@@ -807,7 +807,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"The Forlorn Ghost has asked you you to kill the Burning Revenant\"",
+      "description": "The Forlorn Ghost has asked you you to kill the Burning Revenant",
       "objectives": [
         {
           "type": "mknpc:kill_notable_npc",

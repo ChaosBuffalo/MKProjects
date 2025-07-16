@@ -58,7 +58,7 @@ public class AttributesOption extends NpcDefinitionOption {
             for (NpcAttributeEntry entry : attributes) {
                 AttributeInstance instance = manager.getInstance(entry.getAttribute());
                 if (instance != null) {
-                    instance.setBaseValue(entry.getValue());
+                    instance.setBaseValue(entry.getBaseValue());
                 }
             }
         }

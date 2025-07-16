@@ -6,27 +6,27 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 250.0
+          "base_value": 250.0
         },
         {
           "attribute": "minecraft:generic.armor",
-          "value": 10.0
+          "base_value": 10.0
         },
         {
           "attribute": "minecraft:generic.attack_damage",
-          "value": 5.0
+          "base_value": 5.0
         },
         {
           "attribute": "mkcore:bleed_resistance",
-          "value": 1.25
+          "base_value": 1.25
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 250.0
+          "base_value": 250.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 2.0
+          "base_value": 2.0
         }
       ]
     },
@@ -38,17 +38,17 @@
               "type": "mknpc:temp_abilities",
               "abilities": [
                 {
-                  "abilityId": "mkultra:fire_armor",
+                  "ability": "mkultra:fire_armor",
                   "chance": 1.0,
                   "priority": 3
                 },
                 {
-                  "abilityId": "mkultra:fireball",
+                  "ability": "mkultra:fireball",
                   "chance": 1.0,
                   "priority": 2
                 },
                 {
-                  "abilityId": "mkultra:wrath_beam",
+                  "ability": "mkultra:wrath_beam",
                   "chance": 1.0,
                   "priority": 1
                 }
@@ -62,12 +62,12 @@
               "type": "mknpc:temp_abilities",
               "abilities": [
                 {
-                  "abilityId": "mkultra:fireball",
+                  "ability": "mkultra:fireball",
                   "chance": 1.0,
                   "priority": 3
                 },
                 {
-                  "abilityId": "mkultra:wrath_beam_flurry",
+                  "ability": "mkultra:wrath_beam_flurry",
                   "chance": 1.0,
                   "priority": 1
                 }

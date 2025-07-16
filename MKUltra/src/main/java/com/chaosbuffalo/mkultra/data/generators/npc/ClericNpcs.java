@@ -7,10 +7,7 @@ import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUHumans;
-import com.chaosbuffalo.mkultra.init.MKUAbilities;
-import com.chaosbuffalo.mkultra.init.MKUEntities;
-import com.chaosbuffalo.mkultra.init.MKUEntitlements;
-import com.chaosbuffalo.mkultra.init.MKUFactions;
+import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import net.minecraft.data.CachedOutput;
@@ -45,7 +42,7 @@ public class ClericNpcs {
                 .ability(MKUAbilities.INSPIRE, 5, 1.0)
                 .dialogue(MKUltra.id("cleric_default"))
                 .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.GOLD_TIER, MeleeWeaponTypes.MACE_TYPE).orElseThrow(), 1.0)
-                .quests(MKUltra.id("cleric_unlock_chain"))
+                .quests(MKUQuests.CLERIC_UNLOCK_CHAIN)
                 .trains(MKUAbilities.HEAL, new HasEntitlementRequirement(MKUEntitlements.ClericTier1.get()))
                 .trains(MKUAbilities.SMITE, new HasEntitlementRequirement(MKUEntitlements.ClericTier1.get()))
                 .trains(MKUAbilities.GALVANIZE, new HasEntitlementRequirement(MKUEntitlements.ClericTier2.get()))

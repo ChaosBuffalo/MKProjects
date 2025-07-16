@@ -13,6 +13,7 @@ import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
 import com.chaosbuffalo.mknpc.npc.NpcOptionTypes;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.*;
+import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.mojang.datafixers.util.Either;
@@ -206,8 +207,9 @@ public class NpcDefinitionBuilder {
         return this;
     }
 
-    public NpcDefinitionBuilder quests(ResourceLocation... questIds) {
-        var opt = new QuestOfferingOption(Arrays.stream(questIds).toList());
+    @SafeVarargs
+    public final NpcDefinitionBuilder quests(ResourceKey<QuestDefinition>... questIds) {
+        var opt = new QuestOfferingOption(Arrays.asList(questIds));
         index(opt);
         return this;
     }

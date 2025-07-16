@@ -99,6 +99,7 @@ neoForge {
             logLevel = org.slf4j.event.Level.DEBUG
 
             systemProperty "mkcore.enable_debug_log", "true"
+            systemProperty "mknpc.enable_debug_log", "true"
         }
     }
 

@@ -5,7 +5,7 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:frozen_grasp",
+          "ability": "mkultra:frozen_grasp",
           "chance": 1.0,
           "priority": 1
         }
@@ -15,15 +15,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 35.0
+          "base_value": 35.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 35.0
+          "base_value": 35.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 2.0
+          "base_value": 2.0
         }
       ]
     },

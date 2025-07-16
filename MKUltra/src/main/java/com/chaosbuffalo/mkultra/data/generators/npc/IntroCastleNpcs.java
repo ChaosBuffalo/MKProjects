@@ -249,7 +249,7 @@ public class IntroCastleNpcs {
                 .trains(MKUAbilities.EMBER, new HasEntitlementRequirement(MKUEntitlements.IntroNetherMageTier1.get()))
                 .trains(MKUAbilities.FIRE_ARMOR, new HasEntitlementRequirement(MKUEntitlements.IntroNetherMageTier1.get()))
                 .dialogue(MKUltra.id("intro_nether_mage_initiate"))
-                .quests(MKUltra.id("nether_mage_intro"))
+                .quests(MKUQuests.NETHER_MAGE_INTRO)
                 .skillClass(NpcGenUtils.NpcSkillClass.MAGE)
                 .build();
     }
@@ -326,7 +326,7 @@ public class IntroCastleNpcs {
                 .ability(MKUAbilities.SMITE, 2, 1.0)
                 .ability(MKUAbilities.GALVANIZE, 3, 1.0)
                 .dialogue(MKUltra.id("intro_cleric_acolyte"))
-                .quests(MKUltra.id("cleric_intro"))
+                .quests(MKUQuests.CLERIC_INTRO)
                 .trains(MKUAbilities.HEAL, new HasEntitlementRequirement(MKUEntitlements.IntroClericTier1.get()))
                 .trains(MKUAbilities.SMITE, new HasEntitlementRequirement(MKUEntitlements.IntroClericTier1.get()))
                 .skillClass(NpcGenUtils.NpcSkillClass.CLERIC)

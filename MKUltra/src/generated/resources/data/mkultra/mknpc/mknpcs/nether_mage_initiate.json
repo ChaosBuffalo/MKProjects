@@ -5,17 +5,17 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:ember",
+          "ability": "mkultra:ember",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:fireball",
+          "ability": "mkultra:fireball",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:flame_wave",
+          "ability": "mkultra:flame_wave",
           "chance": 1.0,
           "priority": 3
         }
@@ -47,15 +47,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 150.0
+          "base_value": 150.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 150.0
+          "base_value": 150.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 3.0
+          "base_value": 3.0
         }
       ]
     },

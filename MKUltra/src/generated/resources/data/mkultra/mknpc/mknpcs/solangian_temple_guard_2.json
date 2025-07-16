@@ -5,17 +5,17 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:heal",
+          "ability": "mkultra:heal",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:smite",
+          "ability": "mkultra:smite",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:sever_tendon",
+          "ability": "mkultra:sever_tendon",
           "chance": 1.0,
           "priority": 3
         }
@@ -25,15 +25,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 300.0
+          "base_value": 300.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 300.0
+          "base_value": 300.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 4.0
+          "base_value": 4.0
         }
       ]
     },

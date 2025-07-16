@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.quest.rewards.QuestRewardTypes;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 
@@ -24,6 +25,8 @@ public class QuestRegistries {
     public static final Registry<QuestObjectiveType<?>> QUEST_OBJECTIVES = new RegistryBuilder<>(QUEST_OBJECTIVE_TYPES_REGISTRY_NAME)
             .create();
 
+    public static final ResourceKey<Registry<QuestDefinition>> QUEST_DEFINITIONS = ResourceKey.createRegistryKey(MKNpc.id("mkquests"));
+
 
     public static void createRegistries(NewRegistryEvent event) {
         event.register(QUEST_REWARDS);
@@ -31,8 +34,13 @@ public class QuestRegistries {
         event.register(QUEST_OBJECTIVES);
     }
 
+    public static void createDataRegistries(DataPackRegistryEvent.NewRegistry event) {
+        event.dataPackRegistry(QUEST_DEFINITIONS, QuestDefinition.CODEC);
+    }
+
     public static void register(IEventBus modBus) {
         modBus.addListener(QuestRegistries::createRegistries);
+        modBus.addListener(QuestRegistries::createDataRegistries);
         QuestRewardTypes.REGISTRY.register(modBus);
         QuestRequirementTypes.REGISTRY.register(modBus);
         QuestObjectiveTypes.REGISTRY.register(modBus);

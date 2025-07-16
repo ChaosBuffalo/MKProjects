@@ -5,12 +5,12 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:sever_tendon",
+          "ability": "mkultra:sever_tendon",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:furious_brooding",
+          "ability": "mkultra:furious_brooding",
           "chance": 1.0,
           "priority": 2
         }
@@ -20,15 +20,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 100.0
+          "base_value": 100.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 100.0
+          "base_value": 100.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 2.0
+          "base_value": 2.0
         }
       ]
     },

@@ -6,15 +6,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 30.0
+          "base_value": 30.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 30.0
+          "base_value": 30.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 1.0
+          "base_value": 1.0
         }
       ]
     },

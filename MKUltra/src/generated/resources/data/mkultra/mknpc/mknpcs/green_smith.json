@@ -5,12 +5,12 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:skin_like_wood",
+          "ability": "mkultra:skin_like_wood",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:natures_remedy",
+          "ability": "mkultra:natures_remedy",
           "chance": 1.0,
           "priority": 2
         }
@@ -20,15 +20,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 400.0
+          "base_value": 400.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 400.0
+          "base_value": 400.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 4.0
+          "base_value": 4.0
         }
       ]
     },

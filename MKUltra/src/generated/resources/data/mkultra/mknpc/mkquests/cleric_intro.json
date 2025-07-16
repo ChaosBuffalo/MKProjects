@@ -1,5 +1,4 @@
 {
-  "additionalNotables": [],
   "dialogue": {
     "dialogueId": "mknpc:give_quest.mkultra.cleric_intro",
     "hailPromptId": "hail",
@@ -103,12 +102,13 @@
       }
     ]
   },
-  "questMode": 0,
-  "questName": "\"A Missing Apprentice\"",
+  "questMode": "linear",
+  "questName": "A Missing Apprentice",
+  "questTemplateId": "mkultra:cleric_intro",
   "quests": [
     {
       "autoComplete": true,
-      "description": "\"You need to find the Apprentice somewhere in the castle. Perhaps near the library..\"",
+      "description": "You need to find the Apprentice somewhere in the castle. Perhaps near the library..",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
@@ -178,7 +178,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"The Apprentice wants you to retrieve their necklace from a zombie in the library.\"",
+      "description": "The Apprentice wants you to retrieve their necklace from a zombie in the library.",
       "objectives": [
         {
           "type": "mknpc:quest_loot_notable",
@@ -201,7 +201,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Return the necklace to the Apprentice\"",
+      "description": "Return the necklace to the Apprentice",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
@@ -256,7 +256,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Return to the Acolyte and let them know the Apprentice is safe.\"",
+      "description": "Return to the Acolyte and let them know the Apprentice is safe.",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",

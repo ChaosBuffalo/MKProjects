@@ -8,7 +8,6 @@ import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
-import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.CanStartQuestCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
@@ -17,6 +16,7 @@ import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
@@ -24,34 +24,32 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class QuestOfferingEntry {
-    public static final Codec<QuestOfferingEntry> CODEC = RecordCodecBuilder.<QuestOfferingEntry>mapCodec(builder -> {
-        return builder.group(
-                ResourceLocation.CODEC.fieldOf("questDefinitionId").forGetter(i -> i.questDef),
-                UUIDUtil.STRING_CODEC.optionalFieldOf("questId").forGetter(i -> Optional.ofNullable(i.questId)),
-                DialogueTree.CODEC.optionalFieldOf("tree").forGetter(i -> Optional.ofNullable(i.tree))
-        ).apply(builder, QuestOfferingEntry::new);
-    }).codec();
+    public static final Codec<QuestOfferingEntry> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            QuestDefinition.KEY_CODEC.fieldOf("questDefinitionId").forGetter(i -> i.questDef),
+            UUIDUtil.STRING_CODEC.optionalFieldOf("questId").forGetter(i -> Optional.ofNullable(i.questId)),
+            DialogueTree.CODEC.optionalFieldOf("tree").forGetter(i -> Optional.ofNullable(i.tree))
+    ).apply(builder, QuestOfferingEntry::new));
 
 
-    private final ResourceLocation questDef;
+    private final ResourceKey<QuestDefinition> questDef;
     @Nullable
     private UUID questId;
     @Nullable
     private DialogueTree tree;
 
-    private QuestOfferingEntry(ResourceLocation questDef, Optional<UUID> questId, Optional<DialogueTree> tree) {
+    private QuestOfferingEntry(ResourceKey<QuestDefinition> questDef, Optional<UUID> questId, Optional<DialogueTree> tree) {
         this.questDef = questDef;
         this.questId = questId.orElse(null);
         this.tree = tree.orElse(null);
     }
 
-    public QuestOfferingEntry(ResourceLocation questDef) {
+    public QuestOfferingEntry(ResourceKey<QuestDefinition> questDef) {
         this.questDef = questDef;
         this.questId = null;
     }
 
     public ResourceLocation getQuestDef() {
-        return questDef;
+        return questDef.location();
     }
 
     @Nullable
@@ -91,8 +89,7 @@ public class QuestOfferingEntry {
         return specializedTree;
     }
 
-    public void setupDialogue(QuestChainBuildResult buildResult) {
-        QuestDefinition definition = QuestDefinitionManager.getDefinition(questDef);
+    public void setupDialogue(QuestDefinition definition, QuestChainBuildResult buildResult) {
         UUID questId = buildResult.instance.getQuestId();
 
         DialogueTree startTree = specializeTree(definition, buildResult);

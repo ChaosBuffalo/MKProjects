@@ -114,7 +114,7 @@ public class ThemcromancerNpcs {
                 .skillClass(NpcGenUtils.NpcSkillClass.NECROMANCER)
                 .dialogue(MKUltra.id("necro_default"))
                 .xp(150)
-                .quests(MKUltra.id("necromancer_unlock_chain"))
+                .quests(MKUQuests.NECROMANCER_UNLOCK_CHAIN)
                 .build();
     }
 
@@ -158,7 +158,7 @@ public class ThemcromancerNpcs {
                 .attribute(MKAttributes.MANA_REGEN, 2.0)
                 .name("a skeletal gatekeeper")
                 .notable()
-                .quests(MKUltra.id("unlock_themcromancers"))
+                .quests(MKUQuests.UNLOCK_THEMCROMANCERS)
                 .skillClass(NpcGenUtils.NpcSkillClass.WARRIOR)
                 .xp(100)
                 .build();

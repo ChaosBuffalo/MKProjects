@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
-import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mkcore.utils.RandomCollection;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -23,10 +22,8 @@ import java.util.Map;
 
 public class EquipmentOption extends WorldPermanentOption {
     public static final ResourceLocation NAME = MKNpc.id("equipment");
-    public static final Codec<EquipmentOption> CODEC = Codec.unboundedMap(CommonCodecs.EQUIPMENT_SLOT_CODEC, NpcItemChoice.CODEC.listOf())
-            .xmap(EquipmentOption::new, i -> i.itemChoices);
     public static final MapCodec<EquipmentOption> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
-            Codec.unboundedMap(CommonCodecs.EQUIPMENT_SLOT_CODEC, NpcItemChoice.CODEC.listOf())
+            Codec.unboundedMap(EquipmentSlot.CODEC, NpcItemChoice.CODEC.listOf())
                     .fieldOf("equipment").forGetter(i -> i.itemChoices)
     ).apply(builder, EquipmentOption::new));
 

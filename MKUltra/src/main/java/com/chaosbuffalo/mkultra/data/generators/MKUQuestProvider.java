@@ -47,7 +47,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return CompletableFuture.allOf(
                 writeDefinition(this::generateIntroQuest, cache),
                 writeDefinition(this::generateTrooperArmorQuest, cache),
-                writeDefinition(generateIntroClericQuest(), cache),
+                writeDefinition(this::generateIntroClericQuest, cache),
                 writeDefinition(this::generateIntroMageQuest, cache),
                 writeDefinition(this::generateClericQuestChain, cache),
                 writeDefinition(this::generateJoinThemcromancers, cache),
@@ -65,7 +65,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         QuestBuilder.QuestNpc solangTempleGuard = new QuestBuilder.QuestNpc(solangTemple, MKUltra.id("solangian_temple_guard_2"));
 
 
-        QuestDefinition def = new QuestDefinition(MKUltra.id("necromancer_unlock_chain"));
+        QuestDefinition def = new QuestDefinition(MKUQuests.NECROMANCER_UNLOCK_CHAIN);
         def.setRepeatable(false);
         def.setQuestName(Component.literal("Path to Them"));
 
@@ -188,7 +188,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         QuestBuilder.QuestNpc gatekeeper = new QuestBuilder.QuestNpc(lair, MKUltra.id("a_skeletal_gatekeeper"));
         QuestBuilder.QuestNpc archon = new QuestBuilder.QuestNpc(lair, MKUltra.id("themcromancer_archon"));
 
-        QuestDefinition def = new QuestDefinition(MKUltra.id("unlock_themcromancers"));
+        QuestDefinition def = new QuestDefinition(MKUQuests.UNLOCK_THEMCROMANCERS);
         def.setRepeatable(false);
         def.setQuestName(Component.literal("Supplying Materials"));
 
@@ -250,7 +250,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         QuestBuilder.QuestNpc sorcerer_queen = new QuestBuilder.QuestNpc(tomb, MKUltra.id("hyborean_sorcerer_queen"));
         QuestBuilder.QuestNpc ancient_king = new QuestBuilder.QuestNpc(tomb, MKUltra.id("an_ancient_king"));
 
-        QuestDefinition def = new QuestDefinition(MKUltra.id("cleric_unlock_chain"));
+        QuestDefinition def = new QuestDefinition(MKUQuests.CLERIC_UNLOCK_CHAIN);
         def.setRepeatable(false);
         def.setQuestName(Component.literal("Seeking the Light"));
 
@@ -372,7 +372,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         QuestBuilder.QuestNpc initiate = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("nether_mage_initiate"));
         QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("imperial_magus"));
 
-        QuestDefinition def = new QuestDefinition(MKUltra.id("nether_mage_intro"));
+        QuestDefinition def = new QuestDefinition(MKUQuests.NETHER_MAGE_INTRO);
         def.setRepeatable(false);
         def.setQuestName(Component.literal("Helping the Nether Mage"));
 
@@ -454,13 +454,13 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return Component.literal(literal);
     }
 
-    private QuestDefinition generateIntroClericQuest() {
+    private QuestDefinition generateIntroClericQuest(HolderLookup.Provider provider) {
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         QuestBuilder.QuestNpc acolyte = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("solangian_acolyte"));
         QuestBuilder.QuestNpc apprentice = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("solangian_apprentice"));
         QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("imperial_magus"));
 
-        QuestDefinition def = new QuestDefinition(MKUltra.id("cleric_intro"));
+        QuestDefinition def = new QuestDefinition(MKUQuests.CLERIC_INTRO);
         def.setRepeatable(false);
         def.setQuestName(Component.literal("A Missing Apprentice"));
 
@@ -554,7 +554,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         ResourceLocation greenSmith = MKUltra.id("green_smith");
 
-        QuestDefinition def = new QuestDefinition(MKUltra.id("trooper_armor"));
+        QuestDefinition def = new QuestDefinition(MKUQuests.TROOPER_ARMOR);
         def.addRequirement(new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier1));
         def.setRepeatable(true);
         def.setQuestName(text("Salvaged Trooper Armor"));
@@ -659,7 +659,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         QuestBuilder.QuestNpc forlornGhost = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("forlorn_ghost"));
         QuestBuilder.QuestNpc burningRevenant = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("burning_skeleton"));
 
-        QuestDefinition def = new QuestDefinition(MKUltra.id("intro_quest"));
+        QuestDefinition def = new QuestDefinition(MKUQuests.INTRO_QUEST);
         def.setQuestName(text("The Green Knights"));
 
         DialogueBuilder hail = DialogueBuilder.hail(

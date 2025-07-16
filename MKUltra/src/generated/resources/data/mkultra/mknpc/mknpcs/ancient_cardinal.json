@@ -6,27 +6,27 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 350.0
+          "base_value": 350.0
         },
         {
           "attribute": "minecraft:generic.armor",
-          "value": 20.0
+          "base_value": 20.0
         },
         {
           "attribute": "minecraft:generic.attack_damage",
-          "value": 6.0
+          "base_value": 6.0
         },
         {
           "attribute": "mkcore:holy_resistance",
-          "value": 1.25
+          "base_value": 1.25
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 350.0
+          "base_value": 350.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 6.0
+          "base_value": 6.0
         }
       ]
     },
@@ -38,17 +38,17 @@
               "type": "mknpc:temp_abilities",
               "abilities": [
                 {
-                  "abilityId": "mkultra:holy_fire",
+                  "ability": "mkultra:holy_fire",
                   "chance": 1.0,
                   "priority": 1
                 },
                 {
-                  "abilityId": "mkultra:holy_word_shotgun",
+                  "ability": "mkultra:holy_word_shotgun",
                   "chance": 1.0,
                   "priority": 2
                 },
                 {
-                  "abilityId": "mkultra:holy_word",
+                  "ability": "mkultra:holy_word",
                   "chance": 1.0,
                   "priority": 3
                 }
@@ -62,27 +62,27 @@
               "type": "mknpc:temp_abilities",
               "abilities": [
                 {
-                  "abilityId": "mkultra:holy_fire_flurry",
+                  "ability": "mkultra:holy_fire_flurry",
                   "chance": 1.0,
                   "priority": 1
                 },
                 {
-                  "abilityId": "mkultra:holy_fire",
+                  "ability": "mkultra:holy_fire",
                   "chance": 1.0,
                   "priority": 2
                 },
                 {
-                  "abilityId": "mkultra:holy_word_burst",
+                  "ability": "mkultra:holy_word_burst",
                   "chance": 1.0,
                   "priority": 3
                 },
                 {
-                  "abilityId": "mkultra:holy_word_shotgun",
+                  "ability": "mkultra:holy_word_shotgun",
                   "chance": 1.0,
                   "priority": 4
                 },
                 {
-                  "abilityId": "mkultra:holy_word",
+                  "ability": "mkultra:holy_word",
                   "chance": 1.0,
                   "priority": 5
                 }

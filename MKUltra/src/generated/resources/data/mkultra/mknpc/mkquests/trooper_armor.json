@@ -1,5 +1,4 @@
 {
-  "additionalNotables": [],
   "dialogue": {
     "dialogueId": "mknpc:give_quest.mkultra.trooper_armor",
     "hailPromptId": "hail",
@@ -58,12 +57,13 @@
       }
     ]
   },
-  "questMode": 1,
-  "questName": "\"Salvaged Trooper Armor\"",
+  "questMode": "unsorted",
+  "questName": "Salvaged Trooper Armor",
+  "questTemplateId": "mkultra:trooper_armor",
   "quests": [
     {
       "autoComplete": true,
-      "description": "\"The Green Smith needs some scrap metal and a helmet from the pigs in the castle.\"",
+      "description": "The Green Smith needs some scrap metal and a helmet from the pigs in the castle.",
       "objectives": [
         {
           "type": "mknpc:trade_with_npc",
@@ -108,7 +108,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"The Green Smith needs some scrap metal and a pair of leggings from the pigs in the castle.\"",
+      "description": "The Green Smith needs some scrap metal and a pair of leggings from the pigs in the castle.",
       "objectives": [
         {
           "type": "mknpc:trade_with_npc",
@@ -153,7 +153,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"The Green Smith needs some scrap metal and a pair of boots from the pigs in the castle.\"",
+      "description": "The Green Smith needs some scrap metal and a pair of boots from the pigs in the castle.",
       "objectives": [
         {
           "type": "mknpc:trade_with_npc",
@@ -198,7 +198,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"The Green Smith needs some scrap metal and the chestplate from the pigs in the castle.\"",
+      "description": "The Green Smith needs some scrap metal and the chestplate from the pigs in the castle.",
       "objectives": [
         {
           "type": "mknpc:trade_with_npc",

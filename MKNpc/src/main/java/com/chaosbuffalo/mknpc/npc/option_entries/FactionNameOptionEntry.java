@@ -1,40 +1,34 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
 import com.chaosbuffalo.mknpc.npc.NpcOptionEntryTypes;
-import com.chaosbuffalo.mknpc.npc.options.FactionNameOption;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
 
 public class FactionNameOptionEntry implements INpcOptionEntry, INameEntry {
-    public static final Codec<FactionNameOptionEntry> CODEC = Codec.STRING.xmap(FactionNameOptionEntry::new, i -> i.name);
     public static final MapCodec<FactionNameOptionEntry> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
-            Codec.STRING.fieldOf("name").forGetter(i -> i.name)
+            ComponentSerialization.CODEC.fieldOf("name").forGetter(i -> i.displayName)
     ).apply(builder, FactionNameOptionEntry::new));
 
-    private String name;
+    private final Component displayName;
 
     public FactionNameOptionEntry(String name) {
-        this.name = name;
+        this.displayName = Component.literal(name);
     }
 
-    @Override
-    public ResourceLocation getOptionId() {
-        return FactionNameOption.NAME;
+    public FactionNameOptionEntry(Component name) {
+        this.displayName = name;
     }
 
     @Override
     public void applyToEntity(Entity entity) {
-        if (!name.isEmpty() && entity instanceof LivingEntity) {
-            entity.setCustomName(getName());
+        if (entity instanceof LivingEntity) {
+            entity.setCustomName(displayName);
         }
     }
 
@@ -44,19 +38,7 @@ public class FactionNameOptionEntry implements INpcOptionEntry, INameEntry {
     }
 
     @Override
-    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
-        CompoundTag nbt = new CompoundTag();
-        nbt.putString("name", name);
-        return nbt;
-    }
-
-    @Override
-    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
-        this.name = nbt.getString("name");
-    }
-
-    @Override
     public MutableComponent getName() {
-        return Component.literal(name);
+        return displayName.copy();
     }
 }

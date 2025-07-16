@@ -5,22 +5,22 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:shadow_bolt",
+          "ability": "mkultra:shadow_bolt",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:drown",
+          "ability": "mkultra:drown",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:shadow_pulse",
+          "ability": "mkultra:shadow_pulse",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityId": "mkultra:necrotide_warrior_summon",
+          "ability": "mkultra:necrotide_warrior_summon",
           "chance": 1.0,
           "priority": 4
         }
@@ -30,15 +30,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 125.0
+          "base_value": 125.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 125.0
+          "base_value": 125.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 3.0
+          "base_value": 3.0
         }
       ]
     },

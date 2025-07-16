@@ -38,7 +38,7 @@ public class AbilitiesOption extends WorldPermanentOption {
     }
 
     public AbilitiesOption withAbilityOption(MKAbility ability, int priority, double chance) {
-        abilities.add(new NpcAbilityEntry(ability.getAbilityId(), priority, chance));
+        abilities.add(new NpcAbilityEntry(ability, priority, chance));
         return this;
     }
 

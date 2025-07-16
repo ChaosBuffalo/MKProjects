@@ -5,17 +5,17 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:furious_brooding",
+          "ability": "mkultra:furious_brooding",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityId": "mkultra:whirlwind_blades",
+          "ability": "mkultra:whirlwind_blades",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:yank",
+          "ability": "mkultra:yank",
           "chance": 1.0,
           "priority": 2
         }
@@ -25,15 +25,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 180.0
+          "base_value": 180.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 180.0
+          "base_value": 180.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 2.0
+          "base_value": 2.0
         }
       ]
     },
