@@ -245,6 +245,7 @@
   "mkcore.configuration.showArmorClassOnTooltip": "Show Armor Class On Tooltip",
   "mkcore.configuration.showMyCrits": "Show My Crits",
   "mkcore.configuration.showOthersCrits": "Show Other Crits",
+  "mkcore.configuration.skillScalingMultiplier": "Weapon Skill Scaling Multiplier",
   "mkcore.configuration.undeadHealDamageMultiplier": "Undead Heal Damage Multiplier",
   "mkcore.crit.ability.other": "%s's %s spell just crit %s for %s",
   "mkcore.crit.ability.self": "Your %s spell just crit %s for %s",

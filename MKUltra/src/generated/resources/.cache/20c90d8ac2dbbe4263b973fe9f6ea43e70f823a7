@@ -1,6 +1,9 @@
-// 1.21.1	2025-06-11T15:23:51.5108724	MKUltra armor class item tags
+// 1.21.1	2025-07-19T10:04:09.6151429	MKUltra armor class item tags
 455dc022a7ee69295bad64faf6476596f15df448 data/curios/tags/item/hands.json
 6e27458bfc54d69bbe68af36953421c2cf20c13f data/curios/tags/item/ring.json
+32a878c022b032a28f2a1179fe8ceff7e4ecf699 data/minecraft/tags/item/enchantable/armor.json
+9eb8ad5394d5c5655909c38f4416a2159d5aefbb data/minecraft/tags/item/enchantable/bow.json
+595d13787f6cfdc40f20630abf10c6360cc38bcb data/minecraft/tags/item/enchantable/sword.json
 e7e8466d2ece419231eeecec31a6c554a59e5d27 data/mkcore/tags/item/armor/heavy.json
 b1b289fb0adaf9778634c942e7257fe9478ef9d3 data/mkcore/tags/item/armor/medium.json
 165bc0fd9f74ff632fa2606c3f9b2663becc324e data/mkcore/tags/item/armor/robes.json

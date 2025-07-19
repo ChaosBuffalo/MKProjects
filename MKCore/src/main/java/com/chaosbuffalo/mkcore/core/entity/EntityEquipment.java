@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.core.entity;
 
+import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -49,7 +50,8 @@ public class EntityEquipment {
         AttributeInstance attr = entityData.getEntity().getAttribute(Attributes.ATTACK_DAMAGE);
         if (attr != null && !attr.hasModifier(UNARMED_SKILL_ID)) {
             float skillLevel = MKAbility.getSkillLevel(entityData.getEntity(), MKAttributes.HAND_TO_HAND);
-            var modifier = new AttributeModifier(UNARMED_SKILL_ID, skillLevel * UNARMED_BASE_DAMAGE, AttributeModifier.Operation.ADD_VALUE);
+            var modifier = new AttributeModifier(UNARMED_SKILL_ID, skillLevel * UNARMED_BASE_DAMAGE *
+                    MKConfig.SERVER.skillScalingMultiplier.getAsDouble(), AttributeModifier.Operation.ADD_VALUE);
             attr.addOrUpdateTransientModifier(modifier);
         }
     }

@@ -3,6 +3,9 @@ package com.chaosbuffalo.mkultra.data.generators.tags;
 import com.chaosbuffalo.mkcore.init.CoreTags;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUItems;
+import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
+import com.chaosbuffalo.mkweapons.items.MKBow;
+import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.ItemTagsProvider;
@@ -48,6 +51,21 @@ public class UltraItemTagsProvider extends ItemTagsProvider {
         tag(accessory("ring"))
                 .add(MKUItems.necrotideBand.get())
                 .add(MKUItems.themcromancerArchonRing.get());
+        for (MKMeleeWeapon weapon : MKUItems.WEAPONS) {
+            tag(ItemTags.SWORD_ENCHANTABLE).add(weapon);
+        }
+        for (MKBow bow : MKUItems.BOWS) {
+            tag(ItemTags.BOW_ENCHANTABLE).add(bow);
+        }
+        tag(ItemTags.ARMOR_ENCHANTABLE)
+                .add(MKUItems.greenKnightBoots.get(), MKUItems.greenKnightHelmet.get(), MKUItems.greenKnightChestplate.get(), MKUItems.greenKnightLeggings.get())
+                .add(MKUItems.seawovenBoots.get(), MKUItems.seawovenHelmet.get(), MKUItems.seawovenChestplate.get(), MKUItems.seawovenLeggings.get())
+                .add(MKUItems.ancientPriestChestplate.get(), MKUItems.ancientPriestLeggings.get(), MKUItems.ancientPriestBoots.get(), MKUItems.ancientPriestHelmet.get())
+                .add(MKUItems.ancientCardinalChestplate.get(), MKUItems.ancientCardinalLeggings.get(), MKUItems.ancientCardinalBoots.get(), MKUItems.ancientCardinalHelmet.get())
+                .add(MKUItems.themnianChestplate.get(), MKUItems.themnianLeggings.get(), MKUItems.themnianBoots.get(), MKUItems.themnianHelmet.get())
+                .add(MKUItems.themnianLeaderChestplate.get(), MKUItems.themnianLeaderLeggings.get(), MKUItems.themnianLeaderBoots.get(), MKUItems.themnianLeaderHelmet.get())
+                .add(MKUItems.trooperKnightLeggings.get(), MKUItems.trooperKnightBoots.get(), MKUItems.trooperKnightHelmet.get(), MKUItems.trooperKnightChestplate.get())
+                .add(MKUItems.ancientBronzeBoots.get(), MKUItems.ancientBronzeChestplate.get(), MKUItems.ancientBronzeLeggings.get(), MKUItems.ancientBronzeHelmet.get());
 
     }
 
