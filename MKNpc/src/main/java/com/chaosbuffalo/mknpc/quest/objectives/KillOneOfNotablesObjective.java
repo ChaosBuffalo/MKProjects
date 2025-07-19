@@ -17,7 +17,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
@@ -28,18 +28,16 @@ import java.util.Optional;
 import java.util.Set;
 
 public class KillOneOfNotablesObjective extends QuestObjective<UUIDInstanceData> implements IKillObjectiveHandler {
-    public static final MapCodec<KillOneOfNotablesObjective> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> {
-        return builder.group(
-                Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
-                QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
-                CommonCodecs.sortedSet(ResourceLocation.CODEC, ResourceLocation::compareNamespaced).fieldOf("npcDefinition").forGetter(i -> i.npcDefinitions)
-        ).apply(builder, KillOneOfNotablesObjective::new);
-    });
+    public static final MapCodec<KillOneOfNotablesObjective> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
+            QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
+            CommonCodecs.sortedSet(NpcDefinition.KEY_CODEC, ResourceKey::compareTo).fieldOf("npcDefinition").forGetter(i -> i.npcDefinitions)
+    ).apply(builder, KillOneOfNotablesObjective::new));
 
 
-    private final Set<ResourceLocation> npcDefinitions;
+    private final Set<ResourceKey<NpcDefinition>> npcDefinitions;
 
-    public KillOneOfNotablesObjective(String name, QuestStructureLocation structureLocation, Set<ResourceLocation> npcDef) {
+    public KillOneOfNotablesObjective(String name, QuestStructureLocation structureLocation, Set<ResourceKey<NpcDefinition>> npcDef) {
         super(name, structureLocation);
         npcDefinitions = npcDef;
     }

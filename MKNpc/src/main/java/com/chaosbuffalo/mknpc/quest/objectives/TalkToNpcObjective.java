@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
@@ -23,6 +24,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
@@ -32,28 +34,26 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class TalkToNpcObjective extends QuestObjective<UUIDInstanceData> {
-    public static final MapCodec<TalkToNpcObjective> MAP_CODEC = RecordCodecBuilder.<TalkToNpcObjective>mapCodec(builder -> {
-        return builder.group(
-                Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
-                QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
-                ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
-                ComponentSerialization.CODEC.listOf().fieldOf("description").forGetter(i -> i.description),
-                DialogueTree.CODEC.fieldOf("dialogue").forGetter(i -> i.tree)
-        ).apply(builder, TalkToNpcObjective::new);
-    });
+    public static final MapCodec<TalkToNpcObjective> MAP_CODEC = RecordCodecBuilder.<TalkToNpcObjective>mapCodec(builder -> builder.group(
+            Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
+            QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
+            NpcDefinition.KEY_CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
+            ComponentSerialization.CODEC.listOf().fieldOf("description").forGetter(i -> i.description),
+            DialogueTree.CODEC.fieldOf("dialogue").forGetter(i -> i.tree)
+    ).apply(builder, TalkToNpcObjective::new));
 
-    protected final ResourceLocation npcDefinition;
+    protected final ResourceKey<NpcDefinition> npcDefinition;
     protected final List<Component> description;
     protected final DialogueTree tree;
 
-    private TalkToNpcObjective(String name, QuestStructureLocation structureLocation, ResourceLocation npcDefinition, List<Component> description, DialogueTree tree) {
+    private TalkToNpcObjective(String name, QuestStructureLocation structureLocation, ResourceKey<NpcDefinition> npcDefinition, List<Component> description, DialogueTree tree) {
         super(name, structureLocation);
         this.npcDefinition = npcDefinition;
         this.description = ImmutableList.copyOf(description);
         this.tree = tree;
     }
 
-    public TalkToNpcObjective(String name, QuestStructureLocation structureLocation, ResourceLocation npcDefinition, Component description) {
+    public TalkToNpcObjective(String name, QuestStructureLocation structureLocation, ResourceKey<NpcDefinition> npcDefinition, Component description) {
         super(name, structureLocation);
         this.npcDefinition = npcDefinition;
         this.description = List.of(description);
@@ -68,7 +68,7 @@ public class TalkToNpcObjective extends QuestObjective<UUIDInstanceData> {
         return QuestObjectiveTypes.TALK_TO_NPC.get();
     }
 
-    public ResourceLocation getNpcDefinition() {
+    public ResourceKey<NpcDefinition> getNpcDefinition() {
         return npcDefinition;
     }
 
@@ -139,7 +139,7 @@ public class TalkToNpcObjective extends QuestObjective<UUIDInstanceData> {
         return specializedTree;
     }
 
-    public DialogueTree generateDialogueForNpc(Quest quest, QuestChainInstance questChain, ResourceLocation npcDefinitionName,
+    public DialogueTree generateDialogueForNpc(Quest quest, QuestChainInstance questChain, ResourceKey<NpcDefinition> npcDefinitionName,
                                                UUID npcId, DialogueTree tree,
                                                Map<QuestStructureLocation, MKStructureEntry> questStructures,
                                                QuestDefinition definition) {

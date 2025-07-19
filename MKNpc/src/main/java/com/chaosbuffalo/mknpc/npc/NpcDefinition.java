@@ -14,6 +14,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -31,16 +32,17 @@ import java.util.function.Supplier;
 
 public class NpcDefinition {
     private static final ResourceLocation HEALTH_SCALING_MOD_ID = MKNpc.id("health_difficulty_scaling");
-    public static final Codec<NpcDefinition> CODEC = RecordCodecBuilder.<NpcDefinition>mapCodec(builder -> builder.group(
-            ResourceLocation.CODEC.fieldOf("name").forGetter(NpcDefinition::getDefinitionName),
+    public static final Codec<ResourceKey<NpcDefinition>> KEY_CODEC = ResourceKey.codec(NpcRegistries.NPC_DEFINITIONS);
+    public static final Codec<NpcDefinition> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            KEY_CODEC.fieldOf("name").forGetter(NpcDefinition::getDefinitionKey),
             NeoForgeExtraCodecs.xor(
                     BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("entityType"),
                     ResourceLocation.CODEC.fieldOf("parent")
             ).forGetter(i -> i.parentName != null ? Either.right(i.parentName) : Either.left(i.entityType)),
             NpcDefinitionOption.OPTION_MAP_CODEC.fieldOf("options").forGetter(i -> i.options)
-    ).apply(builder, NpcDefinition::new)).codec();
+    ).apply(builder, NpcDefinition::new));
 
-    private final ResourceLocation definitionName;
+    private final ResourceKey<NpcDefinition> definitionName;
     @Nullable
     private final ResourceLocation parentName;
     @Nullable
@@ -48,16 +50,16 @@ public class NpcDefinition {
     private NpcDefinition parent;
     private final Map<NpcOptionType<?>, NpcDefinitionOption> options;
 
-    public NpcDefinition(ResourceLocation definitionName, EntityType<?> entityType) {
+    public NpcDefinition(ResourceKey<NpcDefinition> definitionName, EntityType<?> entityType) {
         this(definitionName, Either.left(entityType), new HashMap<>());
     }
 
-    public NpcDefinition(ResourceLocation definitionName, Holder<EntityType<?>> entityType) {
+    public NpcDefinition(ResourceKey<NpcDefinition> definitionName, Holder<EntityType<?>> entityType) {
         this(definitionName, entityType.value());
     }
 
-    public NpcDefinition(ResourceLocation definitionName, Either<EntityType<?>, ResourceLocation> either,
-                          Map<NpcOptionType<?>, NpcDefinitionOption> options) {
+    public NpcDefinition(ResourceKey<NpcDefinition> definitionName, Either<EntityType<?>, ResourceLocation> either,
+                         Map<NpcOptionType<?>, NpcDefinitionOption> options) {
         this.definitionName = definitionName;
 
         this.entityType = either.left().orElse(null);
@@ -65,11 +67,15 @@ public class NpcDefinition {
         this.options = new HashMap<>(options);
     }
 
-    public static NpcDefinition derived(ResourceLocation definitionName, ResourceLocation parentName) {
-        return new NpcDefinition(definitionName, Either.right(parentName), Map.of());
+    public static NpcDefinition derived(ResourceKey<NpcDefinition> definitionName, ResourceKey<NpcDefinition> parentName) {
+        return new NpcDefinition(definitionName, Either.right(parentName.location()), Map.of());
     }
 
     public ResourceLocation getDefinitionName() {
+        return definitionName.location();
+    }
+
+    public ResourceKey<NpcDefinition> getDefinitionKey() {
         return definitionName;
     }
 

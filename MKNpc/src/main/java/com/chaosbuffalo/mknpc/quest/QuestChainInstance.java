@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
@@ -55,9 +56,9 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
 
     public void generateDialogue(Map<QuestStructureLocation, MKStructureEntry> questStructures) {
         ResourceLocation dialogueName = getDialogueTreeName();
-        Map<ResourceLocation, UUID> speakingRoles = getSpeakingRoles();
+        Map<ResourceKey<NpcDefinition>, UUID> speakingRoles = getSpeakingRoles();
 
-        for (Map.Entry<ResourceLocation, UUID> entry : speakingRoles.entrySet()) {
+        for (Map.Entry<ResourceKey<NpcDefinition>, UUID> entry : speakingRoles.entrySet()) {
             DialogueTree tree = new DialogueTree(dialogueName);
             DialoguePrompt hailPrompt = new DialoguePrompt("hail");
             tree.addPrompt(hailPrompt);
@@ -74,8 +75,8 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         this.questSourceNpc = questSourceNpc;
     }
 
-    public Map<ResourceLocation, UUID> getSpeakingRoles() {
-        Map<ResourceLocation, UUID> speakingRoles = new HashMap<>();
+    public Map<ResourceKey<NpcDefinition>, UUID> getSpeakingRoles() {
+        Map<ResourceKey<NpcDefinition>, UUID> speakingRoles = new HashMap<>();
         for (Quest quest : definition.getQuestChain()) {
             QuestData questData = getQuestData(quest);
             for (QuestObjective<?> obj : quest.getObjectives()) {

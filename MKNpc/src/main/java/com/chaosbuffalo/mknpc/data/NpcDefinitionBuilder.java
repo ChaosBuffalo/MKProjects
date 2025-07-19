@@ -33,28 +33,24 @@ import java.util.Map;
 
 
 public class NpcDefinitionBuilder {
-    private final ResourceLocation name;
+    private final ResourceKey<NpcDefinition> name;
     private final Either<EntityType<?>, ResourceLocation> entityTypeOrParent;
     private final Map<NpcOptionType<?>, NpcDefinitionOption> options = new HashMap<>();
     private float defaultDropChance;
 
-    private NpcDefinitionBuilder(ResourceLocation name, Either<EntityType<?>, ResourceLocation> typeOrParent) {
+    private NpcDefinitionBuilder(ResourceKey<NpcDefinition> name, Either<EntityType<?>, ResourceLocation> typeOrParent) {
         this.name = name;
         this.entityTypeOrParent = typeOrParent;
         defaultDropChance = 0.0f;
         xp(10);
     }
 
-    public NpcDefinitionBuilder(ResourceLocation name, EntityType<?> entityType) {
+    public NpcDefinitionBuilder(ResourceKey<NpcDefinition> name, EntityType<?> entityType) {
         this(name, Either.left(entityType));
     }
 
-    public NpcDefinitionBuilder(ResourceLocation name, Holder<EntityType<?>> entityType) {
+    public NpcDefinitionBuilder(ResourceKey<NpcDefinition> name, Holder<EntityType<?>> entityType) {
         this(name, entityType.value());
-    }
-
-    public NpcDefinitionBuilder(ResourceLocation name, ResourceLocation parentType) {
-        this(name, Either.right(parentType));
     }
 
     public NpcDefinitionBuilder faction(ResourceKey<MKFaction> faction) {

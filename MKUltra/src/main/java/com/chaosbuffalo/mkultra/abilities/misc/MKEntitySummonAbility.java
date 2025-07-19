@@ -23,6 +23,7 @@ import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -40,9 +41,9 @@ public class MKEntitySummonAbility extends MKAbility {
     protected final Holder<Attribute> summoningSkill;
 
 
-    public MKEntitySummonAbility(ResourceLocation npcDef, Holder<Attribute> skillAttribute) {
+    public MKEntitySummonAbility(ResourceKey<NpcDefinition> npcDef, Holder<Attribute> skillAttribute) {
         super();
-        npcDefintion = new ResourceLocationAttribute("npc", npcDef);
+        npcDefintion = new ResourceLocationAttribute("npc", npcDef.location());
         addAttribute(npcDefintion);
         setCastTime(5 * GameConstants.TICKS_PER_SECOND);
         setUseCondition(new SummonPetCondition(this));

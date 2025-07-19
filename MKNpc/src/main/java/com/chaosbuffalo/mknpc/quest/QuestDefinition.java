@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.CanStartQuestCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
@@ -39,10 +40,10 @@ public class QuestDefinition {
         }
     }
 
-    public record AdditionalNotable(QuestStructureLocation location, ResourceLocation notableDef) {
+    public record AdditionalNotable(QuestStructureLocation location, ResourceKey<NpcDefinition> notableDef) {
         public static final Codec<AdditionalNotable> CODEC = RecordCodecBuilder.create(builder -> builder.group(
                 QuestStructureLocation.CODEC.fieldOf("location").forGetter(AdditionalNotable::location),
-                ResourceLocation.CODEC.fieldOf("notableDefs").forGetter(AdditionalNotable::notableDef)
+                NpcDefinition.KEY_CODEC.fieldOf("notableDefs").forGetter(AdditionalNotable::notableDef)
         ).apply(builder, AdditionalNotable::new));
     }
 
@@ -102,7 +103,7 @@ public class QuestDefinition {
         startQuestTree.setHailPrompt(hailPrompt);
     }
 
-    public void addAdditionalNotable(QuestStructureLocation location, ResourceLocation notable) {
+    public void addAdditionalNotable(QuestStructureLocation location, ResourceKey<NpcDefinition> notable) {
         additionalNotables.add(new AdditionalNotable(location, notable));
     }
 

@@ -1,10 +1,10 @@
 package com.chaosbuffalo.mknpc.quest.objectives;
 
-import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestStructureLocation;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
@@ -16,7 +16,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -32,19 +32,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TradeItemsObjective extends QuestObjective<UUIDInstanceData> implements ITradeObjectiveHandler {
-    public static final MapCodec<TradeItemsObjective> MAP_CODEC = RecordCodecBuilder.<TradeItemsObjective>mapCodec(builder -> {
-        return builder.group(
-                Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
-                QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
-                ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
-                CommonCodecs.ITEM_STACK.listOf().fieldOf("items").forGetter(i -> i.neededItems)
-        ).apply(builder, TradeItemsObjective::new);
-    });
+    public static final MapCodec<TradeItemsObjective> MAP_CODEC = RecordCodecBuilder.<TradeItemsObjective>mapCodec(builder -> builder.group(
+            Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
+            QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
+            NpcDefinition.KEY_CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
+            ItemStack.CODEC.listOf().fieldOf("items").forGetter(i -> i.neededItems)
+    ).apply(builder, TradeItemsObjective::new));
 
     private final List<ItemStack> neededItems;
-    private final ResourceLocation npcDefinition;
+    private final ResourceKey<NpcDefinition> npcDefinition;
 
-    public TradeItemsObjective(String name, QuestStructureLocation structureLocation, ResourceLocation npcDefinition, List<ItemStack> items) {
+    public TradeItemsObjective(String name, QuestStructureLocation structureLocation, ResourceKey<NpcDefinition> npcDefinition, List<ItemStack> items) {
         super(name, structureLocation);
         this.npcDefinition = npcDefinition;
         neededItems = ImmutableList.copyOf(items);

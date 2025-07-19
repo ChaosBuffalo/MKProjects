@@ -3,10 +3,8 @@ package com.chaosbuffalo.mkultra.data.generators.npc;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
-import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUGolems;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUHumans;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUSkeletons;
@@ -16,28 +14,32 @@ import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.CachedOutput;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
-import java.util.concurrent.CompletableFuture;
-
 public class NecrotideNpcs {
 
-    public static CompletableFuture<?> writeDefinitions(NpcDefinitionProvider provider, CachedOutput cache) {
-        return CompletableFuture.allOf(
-                provider.writeDefinition(generateNecrotideCultistAcolyte(), cache),
-                provider.writeDefinition(generateNecrotideCultist(), cache),
-                provider.writeDefinition(generateSkeletalLock(), cache),
-                provider.writeDefinition(generateNecrotideGolem(), cache),
-                provider.writeDefinition(generateNecrotideSkeletalArcher(), cache),
-                provider.writeDefinition(generateNecrotideSkeletalWarrior(), cache)
-        );
+    public static final ResourceKey<NpcDefinition> necrotide_cultist = MKUNpcs.key("necrotide_cultist");
+    public static final ResourceKey<NpcDefinition> skeletal_lock = MKUNpcs.key("skeletal_lock");
+    public static final ResourceKey<NpcDefinition> necrotide_golem = MKUNpcs.key("necrotide_golem");
+    public static final ResourceKey<NpcDefinition> necrotide_acolyte = MKUNpcs.key("necrotide_acolyte");
+    public static final ResourceKey<NpcDefinition> necrotide_skeletal_warrior = MKUNpcs.key("necrotide_skeletal_warrior");
+    public static final ResourceKey<NpcDefinition> necrotide_skeletal_archer = MKUNpcs.key("necrotide_skeletal_archer");
+
+
+    public static void bootstrap(BootstrapContext<NpcDefinition> context) {
+        context.register(necrotide_cultist, generateNecrotideCultist(necrotide_cultist));
+        context.register(skeletal_lock, generateSkeletalLock(skeletal_lock));
+        context.register(necrotide_golem, generateNecrotideGolem(necrotide_golem));
+        context.register(necrotide_acolyte, generateNecrotideCultistAcolyte(necrotide_acolyte));
+        context.register(necrotide_skeletal_warrior, generateNecrotideSkeletalWarrior(necrotide_skeletal_warrior));
+        context.register(necrotide_skeletal_archer, generateNecrotideSkeletalArcher(necrotide_skeletal_archer));
     }
 
-    static NpcDefinition generateNecrotideCultist() {
-
-        return new NpcDefinitionBuilder(MKUltra.id("necrotide_cultist"), MKUEntities.HUMAN_TYPE)
+    static NpcDefinition generateNecrotideCultist(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
                 .renderGroup(MKUHumans.NECROTIDE_CULTIST_SKULL_1_NAME)
                 .size(1.05f)
@@ -55,8 +57,8 @@ public class NecrotideNpcs {
                 .build();
     }
 
-    static NpcDefinition generateSkeletalLock() {
-        return new NpcDefinitionBuilder(MKUltra.id("skeletal_lock"), MKUEntities.HYBOREAN_SKELETON_TYPE)
+    static NpcDefinition generateSkeletalLock(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
                 .renderGroup(MKUSkeletons.BASIC_NAME)
                 .size(1.0f)
@@ -72,8 +74,8 @@ public class NecrotideNpcs {
                 .build();
     }
 
-    static NpcDefinition generateNecrotideGolem() {
-        return new NpcDefinitionBuilder(MKUltra.id("necrotide_golem"), MKUEntities.GOLEM_TYPE)
+    static NpcDefinition generateNecrotideGolem(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.GOLEM_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
                 .renderGroup(MKUGolems.NECROTIDE_GOLEM_NAME)
                 .size(1.25f)
@@ -94,8 +96,8 @@ public class NecrotideNpcs {
                 .build();
     }
 
-    static NpcDefinition generateNecrotideCultistAcolyte() {
-        return new NpcDefinitionBuilder(MKUltra.id("necrotide_acolyte"), MKUEntities.HUMAN_TYPE)
+    static NpcDefinition generateNecrotideCultistAcolyte(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
                 .renderGroup(MKUHumans.NECROTIDE_CULTIST_1_NAME)
                 .size(0.95f)
@@ -112,8 +114,8 @@ public class NecrotideNpcs {
                 .build();
     }
 
-    static NpcDefinition generateNecrotideSkeletalWarrior() {
-        return new NpcDefinitionBuilder(MKUltra.id("necrotide_skeletal_warrior"), MKUEntities.HYBOREAN_SKELETON_TYPE)
+    static NpcDefinition generateNecrotideSkeletalWarrior(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
                 .renderGroup(MKUSkeletons.BASIC_NAME)
                 .size(1.0f)
@@ -131,8 +133,8 @@ public class NecrotideNpcs {
                 .build();
     }
 
-    static NpcDefinition generateNecrotideSkeletalArcher() {
-        return new NpcDefinitionBuilder(MKUltra.id("necrotide_skeletal_archer"), MKUEntities.HYBOREAN_SKELETON_TYPE)
+    static NpcDefinition generateNecrotideSkeletalArcher(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
                 .renderGroup(MKUSkeletons.HYBOREAN_ARCHER_NAME)
                 .size(0.95f)

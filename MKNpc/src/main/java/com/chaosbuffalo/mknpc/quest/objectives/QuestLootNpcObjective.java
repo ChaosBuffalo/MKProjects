@@ -22,6 +22,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -33,26 +34,24 @@ import java.util.List;
 import java.util.Map;
 
 public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> implements IKillObjectiveHandler {
-    public static final MapCodec<QuestLootNpcObjective> MAP_CODEC = RecordCodecBuilder.<QuestLootNpcObjective>mapCodec(builder -> {
-        return builder.group(
-                Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
-                QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
-                ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
-                Codec.DOUBLE.optionalFieldOf("chance", 1.0).forGetter(i -> i.chanceToFind),
-                Codec.INT.optionalFieldOf("count", 1).forGetter(i -> i.requiredCount),
-                ComponentSerialization.CODEC.fieldOf("itemDescription").forGetter(i -> i.itemDescription)
-        ).apply(builder, QuestLootNpcObjective::new);
-    });
+    public static final MapCodec<QuestLootNpcObjective> MAP_CODEC = RecordCodecBuilder.<QuestLootNpcObjective>mapCodec(builder -> builder.group(
+            Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
+            QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
+            NpcDefinition.KEY_CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
+            Codec.DOUBLE.optionalFieldOf("chance", 1.0).forGetter(i -> i.chanceToFind),
+            Codec.INT.optionalFieldOf("count", 1).forGetter(i -> i.requiredCount),
+            ComponentSerialization.CODEC.fieldOf("itemDescription").forGetter(i -> i.itemDescription)
+    ).apply(builder, QuestLootNpcObjective::new));
 
     public static final ResourceLocation NAME = MKNpc.id("objective.quest_loot_npc");
-    protected ResourceLocation npcDefinition;
+    protected ResourceKey<NpcDefinition> npcDefinition;
     protected double chanceToFind;
     private final int requiredCount;
     protected Component itemDescription;
     protected List<Component> description = new ArrayList<>();
 
 
-    public QuestLootNpcObjective(String name, QuestStructureLocation structureLocation, ResourceLocation npcDefinition,
+    public QuestLootNpcObjective(String name, QuestStructureLocation structureLocation, ResourceKey<NpcDefinition> npcDefinition,
                                  double chance, int count, Component itemDescription) {
         super(name, structureLocation);
         this.npcDefinition = npcDefinition;
@@ -90,7 +89,7 @@ public class QuestLootNpcObjective extends QuestObjective<UUIDInstanceData> impl
             boolean applies = IEntityNpcData.get(event.getEntity())
                     .map(x -> x.getStructureId().map(structId -> structId.equals(objData.getUUID())).orElse(false))
                     .orElse(false)
-                    && def != null && def.getDefinitionName().equals(npcDefinition);
+                    && def != null && def.getDefinitionKey().equals(npcDefinition);
             if (applies && MathUtils.rollLuck(player, chanceToFind)) {
                 int currentCount = objectiveData.getInt("lootCount");
                 currentCount++;

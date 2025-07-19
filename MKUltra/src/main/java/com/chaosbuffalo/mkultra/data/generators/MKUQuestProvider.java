@@ -14,6 +14,7 @@ import com.chaosbuffalo.mknpc.quest.objectives.TradeItemsObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.quest.rewards.*;
 import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.data.generators.npc.*;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructures;
 import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.MKWeaponsRegistry;
@@ -61,8 +62,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         QuestStructureLocation temple = new QuestStructureLocation(UltraStructures.THEMCROMANCERS_LAIR.location(), "0");
         QuestStructureLocation obelisk = new QuestStructureLocation(UltraStructures.DEEPSLATE_OBELISK.location(), "0");
         QuestStructureLocation solangTemple = new QuestStructureLocation(UltraStructures.DESERT_TEMPLE_VILLAGE.location(), "0");
-        QuestBuilder.QuestNpc archon = new QuestBuilder.QuestNpc(temple, MKUltra.id("themcromancer_archon"));
-        QuestBuilder.QuestNpc solangTempleGuard = new QuestBuilder.QuestNpc(solangTemple, MKUltra.id("solangian_temple_guard_2"));
+        QuestBuilder.QuestNpc archon = new QuestBuilder.QuestNpc(temple, ThemcromancerNpcs.themcromancer_archon);
+        QuestBuilder.QuestNpc solangTempleGuard = new QuestBuilder.QuestNpc(solangTemple, ClericNpcs.solangian_temple_guard_2);
 
 
         QuestDefinition def = new QuestDefinition(MKUQuests.NECROMANCER_UNLOCK_CHAIN);
@@ -120,9 +121,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         Quest remnants = new QuestBuilder("collect_remnants",
                 Component.literal("Collect the remnants of the sea."))
                 .autoComplete(true)
-                .questLootFromDef("whispers", obelisk, MKUltra.id("seawoven_wretch"),
+                .questLootFromDef("whispers", obelisk, SeawovenNpcs.seawoven_wretch,
                         0.50, 5, Component.literal("Whispers of Sea Foam"))
-                .questLootFromDef("echoes", obelisk, MKUltra.id("seawoven_skeleton"),
+                .questLootFromDef("echoes", obelisk, SeawovenNpcs.seawoven_skeleton,
                         0.50, 4, Component.literal("Echoes of Dead Waves"))
                 .reward(new XpReward(250))
                 .quest();
@@ -185,8 +186,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
     private QuestDefinition generateJoinThemcromancers(HolderLookup.Provider provider) {
         var factionReg = provider.lookupOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY);
         QuestStructureLocation lair = new QuestStructureLocation(UltraStructures.THEMCROMANCERS_LAIR.location(), "0");
-        QuestBuilder.QuestNpc gatekeeper = new QuestBuilder.QuestNpc(lair, MKUltra.id("a_skeletal_gatekeeper"));
-        QuestBuilder.QuestNpc archon = new QuestBuilder.QuestNpc(lair, MKUltra.id("themcromancer_archon"));
+        QuestBuilder.QuestNpc gatekeeper = new QuestBuilder.QuestNpc(lair, ThemcromancerNpcs.a_skeletal_gatekeeper);
+        QuestBuilder.QuestNpc archon = new QuestBuilder.QuestNpc(lair, ThemcromancerNpcs.themcromancer_archon);
 
         QuestDefinition def = new QuestDefinition(MKUQuests.UNLOCK_THEMCROMANCERS);
         def.setRepeatable(false);
@@ -246,9 +247,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
 
         QuestStructureLocation temple = new QuestStructureLocation(UltraStructures.DESERT_TEMPLE_VILLAGE.location(), "0");
         QuestStructureLocation tomb = new QuestStructureLocation(UltraStructures.HYBOREAN_CRYPT.location(), "0");
-        QuestBuilder.QuestNpc cleric = new QuestBuilder.QuestNpc(temple, MKUltra.id("solangian_cleric"));
-        QuestBuilder.QuestNpc sorcerer_queen = new QuestBuilder.QuestNpc(tomb, MKUltra.id("hyborean_sorcerer_queen"));
-        QuestBuilder.QuestNpc ancient_king = new QuestBuilder.QuestNpc(tomb, MKUltra.id("an_ancient_king"));
+        QuestBuilder.QuestNpc cleric = new QuestBuilder.QuestNpc(temple, ClericNpcs.solangian_cleric);
+        QuestBuilder.QuestNpc sorcerer_queen = new QuestBuilder.QuestNpc(tomb, HyboreanNpcs.hyborean_sorcerer_queen);
+        QuestBuilder.QuestNpc ancient_king = new QuestBuilder.QuestNpc(tomb, HyboreanNpcs.an_ancient_king);
 
         QuestDefinition def = new QuestDefinition(MKUQuests.CLERIC_UNLOCK_CHAIN);
         def.setRepeatable(false);
@@ -338,9 +339,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
                 Component.literal("Destroy the Greater Dead"))
                 .autoComplete(true)
                 .killOneOfNotables("kill_greater", tomb, List.of(ancient_king.npcDef, sorcerer_queen.npcDef))
-                .killNpc("kill_warriors", MKUltra.id("hyborean_warrior"), 8)
-                .killNpc("kill_honor_guard", MKUltra.id("hyborean_honor_guard"), 4)
-                .killNpc("kill_sorcerers", MKUltra.id("hyborean_sorcerer"), 4)
+                .killNpc("kill_warriors", HyboreanNpcs.hyborean_warrior, 8)
+                .killNpc("kill_honor_guard", HyboreanNpcs.hyborean_honor_guard, 4)
+                .killNpc("kill_sorcerers", HyboreanNpcs.hyborean_sorcerer, 4)
                 .reward(new XpReward(100))
                 .quest();
 
@@ -369,8 +370,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         Holder<LootTier> burning_staff = provider.lookupOrThrow(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY).getOrThrow(MKULootTiers.burning_staff);
 
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
-        QuestBuilder.QuestNpc initiate = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("nether_mage_initiate"));
-        QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("imperial_magus"));
+        QuestBuilder.QuestNpc initiate = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.nether_mage_initiate);
+        QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.imperial_magus);
 
         QuestDefinition def = new QuestDefinition(MKUQuests.NETHER_MAGE_INTRO);
         def.setRepeatable(false);
@@ -456,9 +457,9 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
 
     private QuestDefinition generateIntroClericQuest(HolderLookup.Provider provider) {
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
-        QuestBuilder.QuestNpc acolyte = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("solangian_acolyte"));
-        QuestBuilder.QuestNpc apprentice = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("solangian_apprentice"));
-        QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("imperial_magus"));
+        QuestBuilder.QuestNpc acolyte = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.solangian_acolyte);
+        QuestBuilder.QuestNpc apprentice = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.solangian_apprentice);
+        QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.imperial_magus);
 
         QuestDefinition def = new QuestDefinition(MKUQuests.CLERIC_INTRO);
         def.setRepeatable(false);
@@ -552,7 +553,6 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         Holder<LootTier> trooper_knight_armor = provider.lookupOrThrow(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY).getOrThrow(MKULootTiers.trooper_knight_armor);
 
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
-        ResourceLocation greenSmith = MKUltra.id("green_smith");
 
         QuestDefinition def = new QuestDefinition(MKUQuests.TROOPER_ARMOR);
         def.addRequirement(new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier1));
@@ -580,7 +580,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         TradeItemsObjective helmetTrade = new TradeItemsObjective(
                 "tradeHelmetObj",
                 introCastle,
-                greenSmith,
+                GreenKnightNpcs.green_smith,
                 List.of(
                         new ItemStack(MKUItems.corruptedPigIronPlate.get(), 2),
                         new ItemStack(MKUItems.destroyedTrooperHelmet.get())
@@ -598,7 +598,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         TradeItemsObjective leggingsTrade = new TradeItemsObjective(
                 "tradeHelmetObj",
                 introCastle,
-                greenSmith,
+                GreenKnightNpcs.green_smith,
                 List.of(
                         new ItemStack(MKUItems.corruptedPigIronPlate.get(), 6),
                         new ItemStack(MKUItems.destroyedTrooperLeggings.get())
@@ -616,7 +616,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         TradeItemsObjective bootTrade = new TradeItemsObjective(
                 "tradeLeggingsObj",
                 introCastle,
-                greenSmith,
+                GreenKnightNpcs.green_smith,
                 List.of(
                         new ItemStack(MKUItems.corruptedPigIronPlate.get(), 4),
                         new ItemStack(MKUItems.destroyedTrooperBoots.get())
@@ -634,7 +634,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         TradeItemsObjective chestplateTrade = new TradeItemsObjective(
                 "tradeChestObj",
                 introCastle,
-                greenSmith,
+                GreenKnightNpcs.green_smith,
                 List.of(
                         new ItemStack(MKUItems.corruptedPigIronPlate.get(), 8),
                         new ItemStack(MKUItems.destroyedTrooperChestplate.get())
@@ -653,11 +653,11 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         var talentTrees = provider.lookupOrThrow(MKCoreRegistry.TALENT_TREE_REGISTRY_KEY);
 
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
-        QuestBuilder.QuestNpc greenLady = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("green_lady"));
-        QuestBuilder.QuestNpc piglinCaptain = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("trooper_captain"));
-        QuestBuilder.QuestNpc greenSmith = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("green_smith"));
-        QuestBuilder.QuestNpc forlornGhost = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("forlorn_ghost"));
-        QuestBuilder.QuestNpc burningRevenant = new QuestBuilder.QuestNpc(introCastle, MKUltra.id("burning_skeleton"));
+        QuestBuilder.QuestNpc greenLady = new QuestBuilder.QuestNpc(introCastle, GreenKnightNpcs.green_lady);
+        QuestBuilder.QuestNpc piglinCaptain = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.trooper_captain);
+        QuestBuilder.QuestNpc greenSmith = new QuestBuilder.QuestNpc(introCastle, GreenKnightNpcs.green_smith);
+        QuestBuilder.QuestNpc forlornGhost = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.forlorn_ghost);
+        QuestBuilder.QuestNpc burningRevenant = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.burning_skeleton);
 
         QuestDefinition def = new QuestDefinition(MKUQuests.INTRO_QUEST);
         def.setQuestName(text("The Green Knights"));
@@ -786,8 +786,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         Quest killQuest = new QuestBuilder("first_kill",
                 text("The Green Lady wants you to clear out some of the zombies on the first floor of the castle"))
                 .autoComplete(true)
-                .killNpc("kill_zombies", MKUltra.id("decaying_piglin"), 4)
-                .killNpc("kill_archers", MKUltra.id("decaying_piglin_archer"), 4)
+                .killNpc("kill_zombies", IntroCastleNpcs.decaying_piglin, 4)
+                .killNpc("kill_archers", IntroCastleNpcs.decaying_piglin_archer, 4)
                 .hailWithObjectives("after_kill",
                         text("Talk to the Green Lady after completing the other objectives."),
                         greenLady,

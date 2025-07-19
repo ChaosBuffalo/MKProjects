@@ -4,25 +4,27 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
-public class NpcDeathCountCondition extends StructureEventCondition{
-    public final static ResourceLocation TYPE_NAME = MKNpc.id("struct_condition.npc_death_count");
+public class NpcDeathCountCondition extends StructureEventCondition {
+    public static final ResourceLocation TYPE_NAME = MKNpc.id("struct_condition.npc_death_count");
     public static final MapCodec<NpcDeathCountCondition> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
-            ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
+            NpcDefinition.KEY_CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
             Codec.INT.fieldOf("count").forGetter(i -> i.count),
             Codec.STRING.fieldOf("name").forGetter(i -> i.name)
     ).apply(builder, NpcDeathCountCondition::new));
 
-    private final ResourceLocation npcDefinition;
+    private final ResourceKey<NpcDefinition> npcDefinition;
     private final int count;
     private final String name;
 
-    public NpcDeathCountCondition(ResourceLocation npcDefinition, int count, String name) {
+    public NpcDeathCountCondition(ResourceKey<NpcDefinition> npcDefinition, int count, String name) {
         super(TYPE_NAME);
         this.npcDefinition = npcDefinition;
         this.name = name;
@@ -32,7 +34,7 @@ public class NpcDeathCountCondition extends StructureEventCondition{
     @Override
     public void onNpcDeath(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, IEntityNpcData entityData) {
         super.onNpcDeath(entry, activeStructure, entityData);
-        if (entityData.getDefinition() != null && entityData.getDefinition().getDefinitionName().equals(npcDefinition)) {
+        if (entityData.getDefinition() != null && entityData.getDefinition().getDefinitionName().equals(npcDefinition.location())) {
             entry.getCustomData().incrementInt(name, 1);
         }
     }

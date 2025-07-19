@@ -5,10 +5,6 @@ import com.mojang.datafixers.Products;
 import com.mojang.datafixers.kinds.K1;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.ItemStack;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -16,17 +12,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 public class CommonCodecs {
-
-    public static final Codec<ItemStack> ITEM_STACK = ItemStack.CODEC;
-
-    public static final Codec<AttributeModifier> ATTRIBUTE_MODIFIER_CODEC = RecordCodecBuilder.<AttributeModifier>mapCodec(builder -> {
-        return builder.group(
-                ResourceLocation.CODEC.fieldOf("name").forGetter(AttributeModifier::id),
-                Codec.DOUBLE.fieldOf("amount").forGetter(AttributeModifier::amount),
-                AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(AttributeModifier::operation)
-        ).apply(builder, AttributeModifier::new);
-    }).codec();
-
 
     public static <K, V> Codec<V> createMapBackedDispatch(Codec<K> keyCodec,
                                                           Map<K, MapCodec<? extends V>> codecMap,

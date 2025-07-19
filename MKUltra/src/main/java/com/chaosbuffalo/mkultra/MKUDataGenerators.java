@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkultra;
 import com.chaosbuffalo.mkcore.data.providers.MKAbilityProvider;
 import com.chaosbuffalo.mkcore.data.content.MKCoreGenerators;
 import com.chaosbuffalo.mkultra.data.generators.*;
-import com.chaosbuffalo.mkultra.data.generators.MKUNpcProvider;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraBiomeTagsProvider;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraEntityTypeTagsProvider;
 import com.chaosbuffalo.mkultra.data.generators.tags.UltraItemTagsProvider;
@@ -42,7 +41,6 @@ public class MKUDataGenerators {
 
         generator.addProvider(event.includeServer(), new MKUDialogueProvider(generator));
         generator.addProvider(event.includeServer(), new MKUQuestProvider(generator, datapackLookup));
-        generator.addProvider(event.includeServer(), new MKUNpcProvider(generator, datapackLookup));
         generator.addProvider(event.includeServer(), new MKAbilityProvider.FromMod(generator, MKUltra.MODID));
         generator.addProvider(event.includeServer(), new MKURecipeProvider(packOutput, datapackLookup));
 

@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.quest.objectives;
 
-import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
@@ -25,15 +24,13 @@ import java.util.Map;
 import java.util.Optional;
 
 public class LootChestObjective extends QuestObjective<UUIDInstanceData> implements IContainerObjectiveHandler {
-    public static final MapCodec<LootChestObjective> MAP_CODEC = RecordCodecBuilder.<LootChestObjective>mapCodec(builder -> {
-        return builder.group(
-                Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
-                QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
-                Codec.STRING.fieldOf("chestTag").forGetter(i -> i.chestTag),
-                CommonCodecs.ITEM_STACK.listOf().fieldOf("items").forGetter(i -> i.itemsToAdd),
-                ComponentSerialization.CODEC.listOf().fieldOf("description").forGetter(i -> i.description)
-        ).apply(builder, LootChestObjective::new);
-    });
+    public static final MapCodec<LootChestObjective> MAP_CODEC = RecordCodecBuilder.<LootChestObjective>mapCodec(builder -> builder.group(
+            Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
+            QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
+            Codec.STRING.fieldOf("chestTag").forGetter(i -> i.chestTag),
+            ItemStack.CODEC.listOf().fieldOf("items").forGetter(i -> i.itemsToAdd),
+            ComponentSerialization.CODEC.listOf().fieldOf("description").forGetter(i -> i.description)
+    ).apply(builder, LootChestObjective::new));
 
     private final List<ItemStack> itemsToAdd;
     private final String chestTag;

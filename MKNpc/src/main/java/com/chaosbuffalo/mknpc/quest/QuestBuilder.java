@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.DialogueResponse;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.dialogue.NpcDialogueUtils;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.ObjectivesCompleteCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
@@ -11,7 +12,7 @@ import com.chaosbuffalo.mknpc.quest.objectives.*;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
 import com.chaosbuffalo.mknpc.quest.rewards.XpReward;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
@@ -55,7 +56,7 @@ public class QuestBuilder {
         return this;
     }
 
-    public QuestBuilder killOneOfNotables(String objectiveName, QuestStructureLocation location, List<ResourceLocation> npcDefs) {
+    public QuestBuilder killOneOfNotables(String objectiveName, QuestStructureLocation location, List<ResourceKey<NpcDefinition>> npcDefs) {
 
         KillOneOfNotablesObjective kill = new KillOneOfNotablesObjective(objectiveName, location, new HashSet<>(npcDefs));
         objective(kill);
@@ -68,7 +69,7 @@ public class QuestBuilder {
         return this;
     }
 
-    public QuestBuilder killNpc(String objectiveName, ResourceLocation npcDef, int count) {
+    public QuestBuilder killNpc(String objectiveName, ResourceKey<NpcDefinition> npcDef, int count) {
         KillNpcDefObjective kill = new KillNpcDefObjective(objectiveName, npcDef, count);
         objective(kill);
         return this;
@@ -95,7 +96,7 @@ public class QuestBuilder {
     }
 
     public QuestBuilder questLootFromDef(String objectiveName, QuestStructureLocation location,
-                                         ResourceLocation definition, double chance, int count, Component itemDesc) {
+                                         ResourceKey<NpcDefinition> definition, double chance, int count, Component itemDesc) {
         QuestLootNpcObjective obj = new QuestLootNpcObjective(objectiveName, location, definition, chance, count, itemDesc);
         objective(obj);
         return this;
@@ -183,15 +184,15 @@ public class QuestBuilder {
 
     public static class QuestNpc {
         public final QuestStructureLocation location;
-        public final ResourceLocation npcDef;
+        public final ResourceKey<NpcDefinition> npcDef;
 
-        public QuestNpc(QuestStructureLocation location, ResourceLocation npcDef) {
+        public QuestNpc(QuestStructureLocation location, ResourceKey<NpcDefinition> npcDef) {
             this.location = location;
             this.npcDef = npcDef;
         }
 
         public String getDialogueLink() {
-            return NpcDialogueUtils.getNotableNpcRaw(location.getStructureId(), location.getName(), npcDef);
+            return NpcDialogueUtils.getNotableNpcRaw(location.getStructureId(), location.getName(), npcDef.location());
         }
     }
 }

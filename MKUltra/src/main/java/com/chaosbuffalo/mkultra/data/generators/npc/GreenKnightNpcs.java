@@ -2,31 +2,34 @@ package com.chaosbuffalo.mkultra.data.generators.npc;
 
 import com.chaosbuffalo.mkcore.abilities.training.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
-import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUOrcs;
 import com.chaosbuffalo.mkultra.init.*;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.CachedOutput;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-
-import java.util.concurrent.CompletableFuture;
 
 public class GreenKnightNpcs {
 
-    public static CompletableFuture<?> writeDefinitions(NpcDefinitionProvider provider, CachedOutput cache) {
-        return CompletableFuture.allOf(
-                provider.writeDefinition(generateGreenLady(), cache),
-                provider.writeDefinition(generateGreenLadyGuard1(), cache),
-                provider.writeDefinition(generateGreenLadyGuard2(), cache),
-                provider.writeDefinition(generateGreenSmith(), cache)
-        );
+    public static final ResourceKey<NpcDefinition> green_lady_guard_1 = MKUNpcs.key("green_lady_guard_1");
+    public static final ResourceKey<NpcDefinition> green_lady_guard_2 = MKUNpcs.key("green_lady_guard_2");
+    public static final ResourceKey<NpcDefinition> green_lady = MKUNpcs.key("green_lady");
+    public static final ResourceKey<NpcDefinition> green_smith = MKUNpcs.key("green_smith");
+
+
+    public static void bootstrap(BootstrapContext<NpcDefinition> context) {
+        context.register(green_lady_guard_1, generateGreenLadyGuard1(green_lady_guard_1));
+        context.register(green_lady_guard_2, generateGreenLadyGuard2(green_lady_guard_2));
+        context.register(green_lady, generateGreenLady(green_lady));
+        context.register(green_smith, generateGreenSmith(green_smith));
     }
 
-    static NpcDefinition generateGreenLadyGuard1() {
-        return new NpcDefinitionBuilder(MKUltra.id("green_lady_guard_1"), MKUEntities.ORC_TYPE)
+
+    static NpcDefinition generateGreenLadyGuard1(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.ORC_TYPE)
                 .faction(MKUFactions.GREEN_KNIGHT_FACTION_NAME)
                 .name("Green Knight")
                 .size(1.1f)
@@ -52,8 +55,8 @@ public class GreenKnightNpcs {
                 .build();
     }
 
-    static NpcDefinition generateGreenLadyGuard2() {
-        return new NpcDefinitionBuilder(MKUltra.id("green_lady_guard_2"), MKUEntities.ORC_TYPE)
+    static NpcDefinition generateGreenLadyGuard2(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.ORC_TYPE)
                 .faction(MKUFactions.GREEN_KNIGHT_FACTION_NAME)
                 .name("Green Guardian")
                 .size(1.1f)
@@ -79,8 +82,8 @@ public class GreenKnightNpcs {
                 .build();
     }
 
-    static NpcDefinition generateGreenLady() {
-        return new NpcDefinitionBuilder(MKUltra.id("green_lady"), MKUEntities.ORC_TYPE)
+    static NpcDefinition generateGreenLady(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.ORC_TYPE)
                 .faction(MKUFactions.GREEN_KNIGHT_FACTION_NAME)
                 .name("Green Lady")
                 .size(1.1f)
@@ -106,8 +109,8 @@ public class GreenKnightNpcs {
                 .build();
     }
 
-    static NpcDefinition generateGreenSmith() {
-        return new NpcDefinitionBuilder(MKUltra.id("green_smith"), MKUEntities.ORC_TYPE)
+    static NpcDefinition generateGreenSmith(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.ORC_TYPE)
                 .faction(MKUFactions.GREEN_KNIGHT_FACTION_NAME)
                 .name("Green Smith")
                 .size(1.5f)

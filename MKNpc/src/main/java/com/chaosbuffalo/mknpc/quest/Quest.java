@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
@@ -18,7 +19,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -81,7 +82,7 @@ public class Quest {
         return autoComplete;
     }
 
-    public DialogueTree generateDialogueForNpc(QuestChainInstance questChain, ResourceLocation npcDefinitionName,
+    public DialogueTree generateDialogueForNpc(QuestChainInstance questChain, ResourceKey<NpcDefinition> npcDefinitionName,
                                                UUID npcId, DialogueTree tree,
                                                Map<QuestStructureLocation, MKStructureEntry> questStructures,
                                                QuestDefinition definition) {

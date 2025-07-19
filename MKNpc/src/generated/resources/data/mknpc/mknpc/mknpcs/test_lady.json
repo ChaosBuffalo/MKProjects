@@ -1,6 +1,6 @@
 {
   "entityType": "minecraft:villager",
-  "name": "mknpc:test",
+  "name": "mknpc:test_lady",
   "options": {
     "mknpc:attributes": {
       "attributes": [

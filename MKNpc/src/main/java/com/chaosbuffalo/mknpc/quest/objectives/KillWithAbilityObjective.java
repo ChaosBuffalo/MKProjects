@@ -25,13 +25,11 @@ import java.util.List;
 import java.util.Map;
 
 public class KillWithAbilityObjective extends QuestObjective<EmptyInstanceData> implements IKillObjectiveHandler {
-    public static final MapCodec<KillWithAbilityObjective> CODEC = RecordCodecBuilder.mapCodec(builder -> {
-        return builder.group(
-                Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
-                MKCoreRegistry.ABILITIES.byNameCodec().fieldOf("ability").forGetter(i -> i.ability),
-                Codec.INT.fieldOf("count").forGetter(i -> i.requiredCount)
-        ).apply(builder, KillWithAbilityObjective::new);
-    });
+    public static final MapCodec<KillWithAbilityObjective> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
+            MKCoreRegistry.ABILITIES.byNameCodec().fieldOf("ability").forGetter(i -> i.ability),
+            Codec.INT.fieldOf("count").forGetter(i -> i.requiredCount)
+    ).apply(builder, KillWithAbilityObjective::new));
 
     private final MKAbility ability;
     private final int requiredCount;
