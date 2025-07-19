@@ -114,7 +114,7 @@ public class ThemcromancerNpcs {
                 .trains(MKUAbilities.SHADOW_PULSE, new HasEntitlementRequirement(MKUEntitlements.ThemcromancerTier2.get()))
                 .trains(MKUAbilities.LIFE_SPIKE, new HasEntitlementRequirement(MKUEntitlements.ThemcromancerTier3.get()))
                 .skillClass(NpcGenUtils.NpcSkillClass.NECROMANCER)
-                .dialogue(MKUltra.id("necro_default"))
+                .dialogue(MKUDialogues.necro_default)
                 .xp(150)
                 .quests(MKUQuests.NECROMANCER_UNLOCK_CHAIN)
                 .build();

@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkcore.abilities.training.requirements.HasEntitlementReq
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUOrcs;
 import com.chaosbuffalo.mkultra.init.*;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -93,7 +92,7 @@ public class GreenKnightNpcs {
                 .ability(MKUAbilities.EXPLOSIVE_GROWTH, 3, 1.0)
                 .ability(MKUAbilities.SPIRIT_BOMB, 4, 1.0)
                 .ability(MKUAbilities.CLEANSING_SEED, 5, 1.0)
-                .dialogue(MKUltra.id("open_abilities"))
+                .dialogue(MKUDialogues.OPEN_ABILITIES)
                 .health(400)
                 .mana(400)
                 .manaRegen(10.0)

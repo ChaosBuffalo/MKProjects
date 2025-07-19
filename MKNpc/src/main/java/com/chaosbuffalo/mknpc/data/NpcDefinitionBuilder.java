@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.data;
 
 
+import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingRequirement;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
@@ -210,7 +211,7 @@ public class NpcDefinitionBuilder {
         return this;
     }
 
-    public NpcDefinitionBuilder dialogue(ResourceLocation dialogueId) {
+    public NpcDefinitionBuilder dialogue(ResourceKey<DialogueTree> dialogueId) {
         var opt = new DialogueOption(dialogueId);
         index(opt);
         return this;

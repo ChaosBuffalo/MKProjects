@@ -8,7 +8,7 @@ import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -42,7 +42,7 @@ public class DialogueBuilder {
             this.hailResponses = hailResponses;
         }
 
-        public DialogueTree buildStandalone(ResourceLocation id) {
+        public DialogueTree buildStandalone(ResourceKey<DialogueTree> id) {
             DialogueTree tree = new DialogueTree(id);
             DialoguePrompt hailResp = new DialoguePrompt("hail");
             for (var hail : hailNodes) {

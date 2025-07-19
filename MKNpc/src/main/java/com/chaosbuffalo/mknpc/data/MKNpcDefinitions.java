@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.data;
 
 import com.chaosbuffalo.mkchat.MKChat;
+import com.chaosbuffalo.mkchat.data.MKChatGenerator;
 import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
@@ -62,7 +63,7 @@ public class MKNpcDefinitions {
         def.addOption(new NameOption("Test Lady"));
         def.addOption(new AttributesOption().addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 100)));
         def.addOption(new FactionOption(MKFactions.VILLAGERS));
-        def.addOption(new DialogueOption(ResourceLocation.fromNamespaceAndPath(MKChat.MODID, "test")));
+        def.addOption(new DialogueOption(MKChatGenerator.Dialogues.TEST_TREE));
         def.addOption(new EquipmentOption()
                 .addItemChoice(EquipmentSlot.MAINHAND, new NpcItemChoice(new ItemStack(BuiltInRegistries.ITEM.get(
                         ResourceLocation.fromNamespaceAndPath(MKWeapons.MODID, "katana_iron"))), 5, 1.1f))

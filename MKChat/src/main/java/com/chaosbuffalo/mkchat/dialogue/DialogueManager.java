@@ -1,58 +1,22 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
 import com.chaosbuffalo.mkchat.ChatRegistries;
-import com.chaosbuffalo.mkchat.MKChat;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.JsonOps;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.resources.ResourceKey;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DialogueManager extends SimpleJsonResourceReloadListener {
-    public static final String DEFINITION_FOLDER = "dialogues";
-
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-    private static final Map<ResourceLocation, DialogueTree> trees = new HashMap<>();
-
-    public DialogueManager() {
-        super(GSON, DEFINITION_FOLDER);
-    }
-
-    public static Map<ResourceLocation, DialogueTree> getTrees() {
-        return trees;
-    }
+public class DialogueManager {
 
     @Nullable
-    public static DialogueTree getDialogueTree(ResourceLocation name) {
-        return trees.get(name);
-    }
-
-    @Override
-    protected void apply(Map<ResourceLocation, JsonElement> objectIn,
-                         @Nullable ResourceManager resourceManagerIn,
-                         @Nullable ProfilerFiller profilerIn) {
-        trees.clear();
-        for (Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
-            ResourceLocation resourcelocation = entry.getKey();
-            MKChat.LOGGER.info("Found dialogue tree file: {}", resourcelocation);
-            DialogueTree tree = DialogueTree.deserialize(entry.getKey(),
-                    new Dynamic<>(JsonOps.INSTANCE, entry.getValue()));
-            trees.put(tree.getDialogueName(), tree);
-        }
+    public static DialogueTree getDialogueTree(RegistryAccess registryAccess, ResourceKey<DialogueTree> name) {
+        return registryAccess.registryOrThrow(ChatRegistries.DIALOGUE_TREES).get(name);
     }
 
     // Matches {namespace:target}, allowed chars [a-zA-Z0-9_-.] allowed chars for target also include : so that we can

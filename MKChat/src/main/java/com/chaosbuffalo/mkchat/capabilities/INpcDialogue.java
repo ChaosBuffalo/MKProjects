@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkchat.capabilities;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.init.ChatAttachments;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -24,19 +24,16 @@ public interface INpcDialogue extends INBTSerializable<CompoundTag> {
 
     void startDialogue(ServerPlayer player);
 
-    @Deprecated
-    void startDialogue(ServerPlayer player, boolean suppressHail);
-
     default void hail(ServerPlayer player) {
         startDialogue(player);
     }
 
-    void setDialogueTree(ResourceLocation treeName);
+    void setDialogueTree(ResourceKey<DialogueTree> treeName);
 
     LivingEntity getEntity();
 
     @Nullable
-    ResourceLocation getDialogueTreeName();
+    ResourceKey<DialogueTree> getDialogueTreeName();
 
     static Optional<INpcDialogue> get(Entity entity) {
         if (entity instanceof LivingEntity livingEntity) {

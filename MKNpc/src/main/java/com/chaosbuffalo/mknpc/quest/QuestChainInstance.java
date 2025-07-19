@@ -14,7 +14,6 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
-import com.mojang.serialization.Dynamic;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -132,6 +131,8 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
 
     @Override
     public CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        var ops = provider.createSerializationContext(NbtOps.INSTANCE);
+
         CompoundTag nbt = new CompoundTag();
         nbt.putUUID("questId", questId);
         nbt.putString("definitionId", definition.getName().toString());
@@ -141,7 +142,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         }
         CompoundTag dialogueNbt = new CompoundTag();
         for (Map.Entry<UUID, DialogueTree> entry : dialogueTrees.entrySet()) {
-            dialogueNbt.put(entry.getKey().toString(), entry.getValue().serialize(NbtOps.INSTANCE));
+            dialogueNbt.put(entry.getKey().toString(), DialogueTree.CODEC.encodeStart(ops, entry.getValue()).getOrThrow());
         }
         nbt.put("dialogueTrees", dialogueNbt);
         return nbt;
@@ -165,6 +166,8 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+        var ops = provider.createSerializationContext(NbtOps.INSTANCE);
+
         questId = nbt.getUUID("questId");
         var questKey = ResourceKey.create(QuestRegistries.QUEST_DEFINITIONS, ResourceLocation.parse(nbt.getString("definitionId")));
         definition = provider.lookupOrThrow(QuestRegistries.QUEST_DEFINITIONS).getOrThrow(questKey).value();
@@ -176,7 +179,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         dialogueTrees.clear();
         for (String key : dialogueNbt.getAllKeys()) {
             UUID npcId = UUID.fromString(key);
-            DialogueTree newTree = DialogueTree.deserialize(new Dynamic<>(NbtOps.INSTANCE, dialogueNbt.get(key)));
+            DialogueTree newTree = DialogueTree.CODEC.parse(ops, dialogueNbt.get(key)).getOrThrow();
             dialogueTrees.put(npcId, newTree);
         }
     }

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkultra.data.generators;
 
+import com.chaosbuffalo.mkchat.ChatRegistries;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
@@ -29,7 +30,8 @@ public class MKURegistrySets extends DatapackBuiltinEntriesProvider {
             .add(MKCoreRegistry.TALENT_TREE_REGISTRY_KEY, MKUTalentTrees::bootstrap)
             .add(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY, MKULootTiers::bootstrap)
             .add(NpcRegistries.NPC_DEFINITIONS, MKUNpcs::bootstrap)
-            .add(QuestRegistries.QUEST_DEFINITIONS, MKUQuests::bootstrap);
+            .add(QuestRegistries.QUEST_DEFINITIONS, MKUQuests::bootstrap)
+            .add(ChatRegistries.DIALOGUE_TREES, MKUDialogues::bootstrap);
 
     public MKURegistrySets(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         super(output, registries, BUILDER, Collections.singleton(MKUltra.MODID));
