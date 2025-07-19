@@ -3,6 +3,8 @@ package com.chaosbuffalo.mkultra.init;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestRegistries;
 import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.data.generators.MKUQuestProvider;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 
 public class MKUQuests {
@@ -18,4 +20,9 @@ public class MKUQuests {
     public static final ResourceKey<QuestDefinition> NETHER_MAGE_INTRO = key("nether_mage_intro");
     public static final ResourceKey<QuestDefinition> UNLOCK_THEMCROMANCERS = key("unlock_themcromancers");
     public static final ResourceKey<QuestDefinition> NECROMANCER_UNLOCK_CHAIN = key("necromancer_unlock_chain");
+
+
+    public static void bootstrap(BootstrapContext<QuestDefinition> context) {
+        MKUQuestProvider.bootstrap(context);
+    }
 }

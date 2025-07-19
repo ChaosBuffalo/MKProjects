@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkultra.data.generators;
 import com.chaosbuffalo.mkchat.dialogue.*;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
-import com.chaosbuffalo.mknpc.data.providers.QuestDefinitionProvider;
 import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
 import com.chaosbuffalo.mknpc.quest.*;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasSpentTalentPointsCondition;
@@ -13,7 +12,6 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.objectives.TradeItemsObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.quest.rewards.*;
-import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.data.generators.npc.*;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructures;
 import com.chaosbuffalo.mkultra.init.*;
@@ -21,12 +19,10 @@ import com.chaosbuffalo.mkweapons.MKWeaponsRegistry;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -35,29 +31,21 @@ import net.minecraft.world.level.block.Blocks;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
-public class MKUQuestProvider extends QuestDefinitionProvider {
+public class MKUQuestProvider {
 
-    public MKUQuestProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> provider) {
-        super(generator, provider, MKUltra.MODID);
+    public static void bootstrap(BootstrapContext<QuestDefinition> context) {
+        context.register(MKUQuests.INTRO_QUEST, generateIntroQuest(MKUQuests.INTRO_QUEST, context));
+        context.register(MKUQuests.TROOPER_ARMOR, generateTrooperArmorQuest(MKUQuests.TROOPER_ARMOR, context));
+        context.register(MKUQuests.CLERIC_INTRO, generateIntroClericQuest(MKUQuests.CLERIC_INTRO, context));
+        context.register(MKUQuests.NETHER_MAGE_INTRO, generateIntroMageQuest(MKUQuests.NETHER_MAGE_INTRO, context));
+        context.register(MKUQuests.CLERIC_UNLOCK_CHAIN, generateClericQuestChain(MKUQuests.CLERIC_UNLOCK_CHAIN, context));
+        context.register(MKUQuests.UNLOCK_THEMCROMANCERS, generateJoinThemcromancers(MKUQuests.UNLOCK_THEMCROMANCERS, context));
+        context.register(MKUQuests.NECROMANCER_UNLOCK_CHAIN, generateThemcromancerChain(MKUQuests.NECROMANCER_UNLOCK_CHAIN, context));
     }
 
-    @Override
-    public CompletableFuture<?> run(CachedOutput cache) {
-        return CompletableFuture.allOf(
-                writeDefinition(this::generateIntroQuest, cache),
-                writeDefinition(this::generateTrooperArmorQuest, cache),
-                writeDefinition(this::generateIntroClericQuest, cache),
-                writeDefinition(this::generateIntroMageQuest, cache),
-                writeDefinition(this::generateClericQuestChain, cache),
-                writeDefinition(this::generateJoinThemcromancers, cache),
-                writeDefinition(this::generateThemcromancerChain, cache)
-        );
-    }
-
-    private QuestDefinition generateThemcromancerChain(HolderLookup.Provider provider) {
-        var factionReg = provider.lookupOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY);
+    private static QuestDefinition generateThemcromancerChain(ResourceKey<QuestDefinition> key, BootstrapContext<QuestDefinition> context) {
+        var factionReg = context.lookup(MKFactionRegistry.FACTION_REGISTRY_KEY);
 
         QuestStructureLocation temple = new QuestStructureLocation(UltraStructures.THEMCROMANCERS_LAIR.location(), "0");
         QuestStructureLocation obelisk = new QuestStructureLocation(UltraStructures.DEEPSLATE_OBELISK.location(), "0");
@@ -66,7 +54,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         QuestBuilder.QuestNpc solangTempleGuard = new QuestBuilder.QuestNpc(solangTemple, ClericNpcs.solangian_temple_guard_2);
 
 
-        QuestDefinition def = new QuestDefinition(MKUQuests.NECROMANCER_UNLOCK_CHAIN);
+        QuestDefinition def = new QuestDefinition(key);
         def.setRepeatable(false);
         def.setQuestName(Component.literal("Path to Them"));
 
@@ -183,13 +171,13 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return def;
     }
 
-    private QuestDefinition generateJoinThemcromancers(HolderLookup.Provider provider) {
-        var factionReg = provider.lookupOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY);
+    private static QuestDefinition generateJoinThemcromancers(ResourceKey<QuestDefinition> key, BootstrapContext<QuestDefinition> context) {
+        var factionReg = context.lookup(MKFactionRegistry.FACTION_REGISTRY_KEY);
         QuestStructureLocation lair = new QuestStructureLocation(UltraStructures.THEMCROMANCERS_LAIR.location(), "0");
         QuestBuilder.QuestNpc gatekeeper = new QuestBuilder.QuestNpc(lair, ThemcromancerNpcs.a_skeletal_gatekeeper);
         QuestBuilder.QuestNpc archon = new QuestBuilder.QuestNpc(lair, ThemcromancerNpcs.themcromancer_archon);
 
-        QuestDefinition def = new QuestDefinition(MKUQuests.UNLOCK_THEMCROMANCERS);
+        QuestDefinition def = new QuestDefinition(key);
         def.setRepeatable(false);
         def.setQuestName(Component.literal("Supplying Materials"));
 
@@ -242,8 +230,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return def;
     }
 
-    private QuestDefinition generateClericQuestChain(HolderLookup.Provider provider) {
-        var factionReg = provider.lookupOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY);
+    private static QuestDefinition generateClericQuestChain(ResourceKey<QuestDefinition> key, BootstrapContext<QuestDefinition> context) {
+        var factionReg = context.lookup(MKFactionRegistry.FACTION_REGISTRY_KEY);
 
         QuestStructureLocation temple = new QuestStructureLocation(UltraStructures.DESERT_TEMPLE_VILLAGE.location(), "0");
         QuestStructureLocation tomb = new QuestStructureLocation(UltraStructures.HYBOREAN_CRYPT.location(), "0");
@@ -251,7 +239,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         QuestBuilder.QuestNpc sorcerer_queen = new QuestBuilder.QuestNpc(tomb, HyboreanNpcs.hyborean_sorcerer_queen);
         QuestBuilder.QuestNpc ancient_king = new QuestBuilder.QuestNpc(tomb, HyboreanNpcs.an_ancient_king);
 
-        QuestDefinition def = new QuestDefinition(MKUQuests.CLERIC_UNLOCK_CHAIN);
+        QuestDefinition def = new QuestDefinition(key);
         def.setRepeatable(false);
         def.setQuestName(Component.literal("Seeking the Light"));
 
@@ -366,14 +354,14 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return def;
     }
 
-    private QuestDefinition generateIntroMageQuest(HolderLookup.Provider provider) {
-        Holder<LootTier> burning_staff = provider.lookupOrThrow(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY).getOrThrow(MKULootTiers.burning_staff);
+    private static QuestDefinition generateIntroMageQuest(ResourceKey<QuestDefinition> key, BootstrapContext<QuestDefinition> context) {
+        Holder<LootTier> burning_staff = context.lookup(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY).getOrThrow(MKULootTiers.burning_staff);
 
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         QuestBuilder.QuestNpc initiate = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.nether_mage_initiate);
         QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.imperial_magus);
 
-        QuestDefinition def = new QuestDefinition(MKUQuests.NETHER_MAGE_INTRO);
+        QuestDefinition def = new QuestDefinition(key);
         def.setRepeatable(false);
         def.setQuestName(Component.literal("Helping the Nether Mage"));
 
@@ -451,17 +439,17 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return def;
     }
 
-    private MutableComponent text(String literal) {
+    private static MutableComponent text(String literal) {
         return Component.literal(literal);
     }
 
-    private QuestDefinition generateIntroClericQuest(HolderLookup.Provider provider) {
+    private static QuestDefinition generateIntroClericQuest(ResourceKey<QuestDefinition> key, BootstrapContext<QuestDefinition> context) {
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         QuestBuilder.QuestNpc acolyte = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.solangian_acolyte);
         QuestBuilder.QuestNpc apprentice = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.solangian_apprentice);
         QuestBuilder.QuestNpc magus = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.imperial_magus);
 
-        QuestDefinition def = new QuestDefinition(MKUQuests.CLERIC_INTRO);
+        QuestDefinition def = new QuestDefinition(key);
         def.setRepeatable(false);
         def.setQuestName(Component.literal("A Missing Apprentice"));
 
@@ -549,12 +537,12 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return def;
     }
 
-    private QuestDefinition generateTrooperArmorQuest(HolderLookup.Provider provider) {
-        Holder<LootTier> trooper_knight_armor = provider.lookupOrThrow(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY).getOrThrow(MKULootTiers.trooper_knight_armor);
+    private static QuestDefinition generateTrooperArmorQuest(ResourceKey<QuestDefinition> key, BootstrapContext<QuestDefinition> context) {
+        Holder<LootTier> trooper_knight_armor = context.lookup(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY).getOrThrow(MKULootTiers.trooper_knight_armor);
 
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
 
-        QuestDefinition def = new QuestDefinition(MKUQuests.TROOPER_ARMOR);
+        QuestDefinition def = new QuestDefinition(key);
         def.addRequirement(new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier1));
         def.setRepeatable(true);
         def.setQuestName(text("Salvaged Trooper Armor"));
@@ -649,8 +637,8 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         return def;
     }
 
-    private QuestDefinition generateIntroQuest(HolderLookup.Provider provider) {
-        var talentTrees = provider.lookupOrThrow(MKCoreRegistry.TALENT_TREE_REGISTRY_KEY);
+    private static QuestDefinition generateIntroQuest(ResourceKey<QuestDefinition> key, BootstrapContext<QuestDefinition> context) {
+        var talentTrees = context.lookup(MKCoreRegistry.TALENT_TREE_REGISTRY_KEY);
 
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         QuestBuilder.QuestNpc greenLady = new QuestBuilder.QuestNpc(introCastle, GreenKnightNpcs.green_lady);
@@ -659,7 +647,7 @@ public class MKUQuestProvider extends QuestDefinitionProvider {
         QuestBuilder.QuestNpc forlornGhost = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.forlorn_ghost);
         QuestBuilder.QuestNpc burningRevenant = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.burning_skeleton);
 
-        QuestDefinition def = new QuestDefinition(MKUQuests.INTRO_QUEST);
+        QuestDefinition def = new QuestDefinition(key);
         def.setQuestName(text("The Green Knights"));
 
         DialogueBuilder hail = DialogueBuilder.hail(

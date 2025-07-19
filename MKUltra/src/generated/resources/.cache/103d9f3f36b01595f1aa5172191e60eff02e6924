@@ -1,4 +1,4 @@
-// 1.21.1	2025-07-18T18:08:42.255381	Registries
+// 1.21.1	2025-07-19T12:25:55.0241781	Registries
 dba8652d1ce629a390ca564c62ca55a8baf4b65f data/mkultra/mkcore/talent_node_display/green_soul.json
 1a77c1d90c37b4a011fb11c93110eae0fc4caf2a data/mkultra/mkcore/talent_node_display/life_siphon.json
 7553dbcd5cd98be74d3778debfc0488aa5819b63 data/mkultra/mkcore/talent_node_display/soul_drain.json
@@ -61,6 +61,13 @@ c0d189cb78118c15d7c1dd78a4d2088f1b278d52 data/mkultra/mknpc/mknpcs/themcromancer
 657dba41f87a7a920260f64fb6449201060b7ab1 data/mkultra/mknpc/mknpcs/themcromancer_neophyte.json
 2e1209865a77def3bdc78c34dc495704ae90fdc7 data/mkultra/mknpc/mknpcs/trooper_captain.json
 f741f8f375d3bc8d407de49b27a0386609c33bdb data/mkultra/mknpc/mknpcs/trooper_executioner.json
+543b4156ea43a108eeb7f0e2cc1d14647fc4bc9e data/mkultra/mknpc/mkquests/cleric_intro.json
+c977e65ae593f4b29274cc1608e0069d4c238a5f data/mkultra/mknpc/mkquests/cleric_unlock_chain.json
+d1f1b3beb850481bd9bf282fea947d8440ab0d6d data/mkultra/mknpc/mkquests/intro_quest.json
+897d98a2b24b5023cbf7ce8d7c31360785787832 data/mkultra/mknpc/mkquests/necromancer_unlock_chain.json
+5a6c9bdad71e216b99d590f40d3bcb1df707ced5 data/mkultra/mknpc/mkquests/nether_mage_intro.json
+e81b32b62b5976becf61529b4364d1b20ed83055 data/mkultra/mknpc/mkquests/trooper_armor.json
+48d431df2ccfe4f635c41a56f1d9eb6e159444af data/mkultra/mknpc/mkquests/unlock_themcromancers.json
 4c9a6eacdc1eec18b1a09d5087301cf204efef08 data/mkultra/mkweapons/loot_tier/ancient_king.json
 e8bcfb9101262eb7987a11ddc5a82874e93ef614 data/mkultra/mkweapons/loot_tier/burning_skeleton.json
 6b239f12afd8fda79dd0f59a7999874a687b36f8 data/mkultra/mkweapons/loot_tier/burning_staff.json

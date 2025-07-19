@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkultra.data.generators;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
+import com.chaosbuffalo.mknpc.quest.QuestRegistries;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructurePools;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructureSets;
@@ -27,7 +28,8 @@ public class MKURegistrySets extends DatapackBuiltinEntriesProvider {
             .add(MKCoreRegistry.TALENT_NODE_DISPLAY_REGISTRY_KEY, MKUTalentDisplayNodes::bootstrap)
             .add(MKCoreRegistry.TALENT_TREE_REGISTRY_KEY, MKUTalentTrees::bootstrap)
             .add(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY, MKULootTiers::bootstrap)
-            .add(NpcRegistries.NPC_DEFINITIONS, MKUNpcs::bootstrap);
+            .add(NpcRegistries.NPC_DEFINITIONS, MKUNpcs::bootstrap)
+            .add(QuestRegistries.QUEST_DEFINITIONS, MKUQuests::bootstrap);
 
     public MKURegistrySets(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         super(output, registries, BUILDER, Collections.singleton(MKUltra.MODID));
