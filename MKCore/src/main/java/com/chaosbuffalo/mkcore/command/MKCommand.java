@@ -17,6 +17,7 @@ public class MKCommand {
                 .then(PersonaCommand.register())
                 .then(TalentCommand.register())
                 .then(LoadoutCommand.register())
+                .then(EntitlementCommand.register())
                 .then(ParticleEffectsCommand.register());
         dispatcher.register(builder);
         dispatcher.register(PartyCommand.register());

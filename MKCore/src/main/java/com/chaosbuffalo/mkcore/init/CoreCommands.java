@@ -32,6 +32,10 @@ public class CoreCommands {
             () -> ArgumentTypeInfos.registerByClass(TalentLineIdArgument.class,
                     SingletonArgumentInfo.contextFree(TalentLineIdArgument::talentLine)));
 
+    public static final Holder<ArgumentTypeInfo<?, ?>> ENTITLEMENT = ARGUMENT_TYPES.register("entitlement_id",
+            () -> ArgumentTypeInfos.registerByClass(EntitlementIdArgument.class,
+                    SingletonArgumentInfo.contextFree(EntitlementIdArgument::entitlementId)));
+
     public static final Holder<ArgumentTypeInfo<?, ?>> BONE_ID = ARGUMENT_TYPES.register("bone_id",
             () -> ArgumentTypeInfos.registerByClass(BipedBoneArgument.class,
                     SingletonArgumentInfo.contextFree(BipedBoneArgument::bipedBone)));
