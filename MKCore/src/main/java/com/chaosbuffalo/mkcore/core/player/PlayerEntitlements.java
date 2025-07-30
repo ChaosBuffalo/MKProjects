@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.core.entitlements.EntitlementInstance;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.records.PlayerRecordDispatcher;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -28,8 +29,12 @@ public class PlayerEntitlements {
         return entitlements.values().stream();
     }
 
-    public boolean hasEntitlement(MKEntitlement entitlement) {
-        return getEntitlementLevel(entitlement) > 0;
+    public boolean hasEntitlement(Holder<MKEntitlement> entitlement) {
+        return getInstanceStream().anyMatch(instance -> instance.entitlement().value().equals(entitlement.value()));
+    }
+
+    public boolean hasEntitlementInstance(UUID instanceId) {
+        return entitlements.containsKey(instanceId);
     }
 
     public void addEntitlement(EntitlementInstance instance) {

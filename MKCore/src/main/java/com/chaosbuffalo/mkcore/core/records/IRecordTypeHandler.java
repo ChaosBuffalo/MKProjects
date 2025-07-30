@@ -9,4 +9,8 @@ public interface IRecordTypeHandler<T extends IRecordInstance<T>> {
     default void onRecordLoaded(T record) {
 
     }
+
+    default void onRecordLoadingFinished() {
+
+    }
 }

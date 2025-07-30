@@ -1,16 +1,19 @@
-// 1.21.1	2025-07-11T02:12:51.0712665	Registries
+// 1.21.1	2025-07-30T00:01:47.5993949	Registries
 6777d591e45330ca87aacb74d98cc6603e1e407b data/mkcore/mkcore/armor_class/armor_class.heavy.json
 c9777411648c0b54588371b8dd5a1ea705b20081 data/mkcore/mkcore/armor_class/armor_class.light.json
 79d4f41a36d3a14aeb3eed0757779ee08da4765d data/mkcore/mkcore/armor_class/armor_class.medium.json
 3c4ae30e4a994bbbd94fafbed5db1c3dbfb75f87 data/mkcore/mkcore/armor_class/armor_class.robes.json
 1a68c6f4da909afcce9a6207fb708e760d2adfb7 data/mkcore/mkcore/entitlements/ability_pool.count.json
+05e407f44d746d371418f513c8a735cee439fc71 data/mkcore/mkcore/entitlements/ability_pool.count.test.json
 1e169dd3a6dbabd9804784f5803ef52865ce1b23 data/mkcore/mkcore/entitlements/ability_slot.basic.json
+7c3016639832ab7f61279362c206de8618274484 data/mkcore/mkcore/entitlements/ability_slot.basic.test.json
 089127f54983c089ba09f35f23bfdc85f62376fe data/mkcore/mkcore/entitlements/ability_slot.passive.json
 311bb9e22cb29840c844cb119b0f129f37d96e08 data/mkcore/mkcore/entitlements/ability_slot.ultimate.json
 de0fdd6a68b63fc67ff1db782f9d3357ec70bb4b data/mkcore/mkcore/entitlements/armor_mastery.heavy.json
 34ea5f20731f24aa98b31de0885faaf2645afa75 data/mkcore/mkcore/entitlements/armor_mastery.light.json
 fe24d6d1f861b4b4506dc51e70e04ef2e3fc5343 data/mkcore/mkcore/entitlements/armor_mastery.medium.json
 6c3c7de312c8aeae1f3ea20ee187cdbf88bcc30d data/mkcore/mkcore/entitlements/armor_mastery.robes.json
+72a1d13cb78ec9cdf28a7c3f72f790bd6039e40d data/mkcore/mkcore/entitlements/armor_mastery.robes.test.json
 b676bd088f663d6009c53b88fbf384f12868a547 data/mkcore/mkcore/talent_node_display/ability_slot.json
 62beaae428af67cdc06e20d7fd9334e160d9ae8f data/mkcore/mkcore/talent_node_display/arcane_damage.json
 9518d0416069f2b973f36294b2f75fdc90d8540f data/mkcore/mkcore/talent_node_display/arcane_resistance.json

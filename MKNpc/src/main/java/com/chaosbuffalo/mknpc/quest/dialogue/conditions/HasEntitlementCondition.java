@@ -32,7 +32,7 @@ public class HasEntitlementCondition extends DialogueCondition {
         if (entitlement == null) {
             return false;
         }
-        return MKCore.getPlayer(serverPlayerEntity).map(x -> x.getEntitlements().hasEntitlement(entitlement.value())).orElse(false);
+        return MKCore.getPlayer(serverPlayerEntity).map(x -> x.getEntitlements().hasEntitlement(entitlement)).orElse(false);
     }
 
     @Override

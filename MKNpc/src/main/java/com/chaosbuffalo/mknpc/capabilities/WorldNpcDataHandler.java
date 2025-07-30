@@ -359,10 +359,11 @@ public class WorldNpcDataHandler implements IWorldNpcData {
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+        var regOps = provider.createSerializationContext(NbtOps.INSTANCE);
         CompoundTag spawnConfigNbt = nbt.getCompound("spawnConfigs");
         for (String idKey : spawnConfigNbt.getAllKeys()) {
             UUID entityId = UUID.fromString(idKey);
-            WorldPermanentSpawnConfiguration config = WorldPermanentSpawnConfiguration.deserialize(NbtOps.INSTANCE, spawnConfigNbt.get(idKey));
+            WorldPermanentSpawnConfiguration config = WorldPermanentSpawnConfiguration.deserialize(regOps, spawnConfigNbt.get(idKey));
             worldPermanentSpawnConfigurations.put(entityId, config);
         }
         ListTag structuresNbt = nbt.getList("structures", Tag.TAG_COMPOUND);

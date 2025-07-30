@@ -26,7 +26,7 @@ public class HasEntitlementRequirement extends AbilityTrainingRequirement {
 
     @Override
     public boolean check(MKPlayerData playerData, MKAbility ability) {
-        return playerData.getEntitlements().hasEntitlement(entitlement.value());
+        return playerData.getEntitlements().hasEntitlement(entitlement);
     }
 
     @Override

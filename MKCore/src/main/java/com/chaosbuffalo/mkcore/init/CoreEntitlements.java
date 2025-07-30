@@ -23,12 +23,15 @@ public class CoreEntitlements {
     }
 
     public static final ResourceKey<MKEntitlement> BASIC_ABILITY_SLOT = key("ability_slot.basic");
+    public static final ResourceKey<MKEntitlement> BASIC_ABILITY_SLOT_TEST = key("ability_slot.basic.test");
     public static final ResourceKey<MKEntitlement> PASSIVE_ABILITY_SLOT = key("ability_slot.passive");
     public static final ResourceKey<MKEntitlement> ULTIMATE_ABILITY_SLOT = key("ability_slot.ultimate");
 
     public static final ResourceKey<MKEntitlement> ABILITY_POOL_SIZE = key("ability_pool.count");
+    public static final ResourceKey<MKEntitlement> ABILITY_POOL_SIZE_TEST = key("ability_pool.count.test");
 
     public static final ResourceKey<MKEntitlement> ROBE_ARMOR_MASTERY = key("armor_mastery.robes");
+    public static final ResourceKey<MKEntitlement> ROBE_ARMOR_MASTERY_TEST = key("armor_mastery.robes.test");
     public static final ResourceKey<MKEntitlement> LIGHT_ARMOR_MASTERY = key("armor_mastery.light");
     public static final ResourceKey<MKEntitlement> MEDIUM_ARMOR_MASTERY = key("armor_mastery.medium");
     public static final ResourceKey<MKEntitlement> HEAVY_ARMOR_MASTERY = key("armor_mastery.heavy");
@@ -39,15 +42,19 @@ public class CoreEntitlements {
         Function<AbilityGroupId, BiFunction<Component,Component, MKEntitlement>> slot =
                 (a) -> (Component n, Component d) -> new AbilitySlotEntitlement(n, d, a);
         register(context, BASIC_ABILITY_SLOT, slot.apply(AbilityGroupId.Basic));
+        register(context, BASIC_ABILITY_SLOT_TEST, slot.apply(AbilityGroupId.Basic));
         register(context, PASSIVE_ABILITY_SLOT, slot.apply(AbilityGroupId.Passive));
         register(context, ULTIMATE_ABILITY_SLOT, slot.apply(AbilityGroupId.Ultimate));
 
         register(context, ABILITY_POOL_SIZE, (n, d) ->
                 new AbilityPoolEntitlement(n, d, GameConstants.MAX_ABILITY_POOL_SIZE - GameConstants.DEFAULT_ABILITY_POOL_SIZE));
+        register(context, ABILITY_POOL_SIZE_TEST, (n, d) ->
+                new AbilityPoolEntitlement(n, d, GameConstants.MAX_ABILITY_POOL_SIZE - GameConstants.DEFAULT_ABILITY_POOL_SIZE));
 
         Function<ResourceKey<ArmorClass>, BiFunction<Component,Component, MKEntitlement>> armor =
                 (a) -> (Component n, Component d) -> new ArmorClassMasteryEntitlement(n, d, a);
         register(context, ROBE_ARMOR_MASTERY,  armor.apply(CoreArmorClasses.ROBES_ARMOR));
+        register(context, ROBE_ARMOR_MASTERY_TEST,  armor.apply(CoreArmorClasses.ROBES_ARMOR));
         register(context, LIGHT_ARMOR_MASTERY,  armor.apply(CoreArmorClasses.LIGHT_ARMOR));
         register(context, MEDIUM_ARMOR_MASTERY,  armor.apply(CoreArmorClasses.MEDIUM_ARMOR));
         register(context, HEAVY_ARMOR_MASTERY,  armor.apply(CoreArmorClasses.HEAVY_ARMOR));

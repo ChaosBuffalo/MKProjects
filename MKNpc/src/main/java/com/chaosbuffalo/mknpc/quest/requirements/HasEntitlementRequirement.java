@@ -31,7 +31,7 @@ public class HasEntitlementRequirement extends QuestRequirement {
         if (entitlement == null) {
             return false;
         }
-        return MKCore.getPlayer(player).map(x -> x.getEntitlements().hasEntitlement(entitlement.value())).orElse(false);
+        return MKCore.getPlayer(player).map(x -> x.getEntitlements().hasEntitlement(entitlement)).orElse(false);
     }
 
     @Override

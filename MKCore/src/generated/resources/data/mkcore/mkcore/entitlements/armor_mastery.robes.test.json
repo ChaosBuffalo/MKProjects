@@ -1,0 +1,10 @@
+{
+  "type": "mkcore:armor_class_mastery",
+  "armor_class": "mkcore:armor_class.robes",
+  "description": {
+    "translate": "entitlement.mkcore.armor_mastery.robes.test.description"
+  },
+  "display_name": {
+    "translate": "entitlement.mkcore.armor_mastery.robes.test.name"
+  }
+}

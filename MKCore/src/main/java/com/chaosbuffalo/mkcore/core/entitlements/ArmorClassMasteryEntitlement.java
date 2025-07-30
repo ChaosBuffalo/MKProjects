@@ -5,9 +5,13 @@ import com.chaosbuffalo.mkcore.init.CoreEntitlementTypes;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceKey;
+
+import java.util.stream.Collectors;
 
 public class ArmorClassMasteryEntitlement extends MKEntitlement {
     public static final MapCodec<ArmorClassMasteryEntitlement> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
@@ -30,26 +34,44 @@ public class ArmorClassMasteryEntitlement extends MKEntitlement {
 
     public static class ArmorClassMasteryHandler extends EntitlementTypeHandler {
         private final Persona persona;
+        private final Object2IntMap<ArmorClassMasteryEntitlement> levelsByEntitlement = new Object2IntArrayMap<>();
 
         public ArmorClassMasteryHandler(Persona persona) {
             this.persona = persona;
         }
 
-        private void updateMastery(ArmorClassMasteryEntitlement entitlement) {
-            int count = persona.getEntitlements().getEntitlementLevel(entitlement);
-            persona.getPlayerData().getEquipment().enableArmorMastery(entitlement.armorClassKey, count > 0);
+        private void applyEffects() {
+            levelsByEntitlement.object2IntEntrySet().stream().collect(Collectors.groupingBy(
+                    k -> k.getKey().armorClassKey,
+                    Collectors.summingInt(Object2IntMap.Entry::getIntValue)
+            )).forEach((ac, count) -> {
+                persona.getPlayerData().getEquipment().enableArmorMastery(ac, count > 0);
+            });
         }
 
-        @Override
-        public void onRecordUpdated(EntitlementInstance record) {
+        private void updateRecord(EntitlementInstance record, boolean apply) {
             if (record.entitlement().value() instanceof ArmorClassMasteryEntitlement slotEntitlement) {
-                updateMastery(slotEntitlement);
+                int count = persona.getEntitlements().getEntitlementLevel(slotEntitlement);
+                levelsByEntitlement.put(slotEntitlement, count);
+                if (apply) {
+                    applyEffects();
+                }
             }
         }
 
         @Override
+        public void onRecordUpdated(EntitlementInstance record) {
+            updateRecord(record, true);
+        }
+
+        @Override
         public void onRecordLoaded(EntitlementInstance record) {
-            onRecordUpdated(record);
+            updateRecord(record, false);
+        }
+
+        @Override
+        public void onRecordLoadingFinished() {
+            applyEffects();
         }
     }
 }
