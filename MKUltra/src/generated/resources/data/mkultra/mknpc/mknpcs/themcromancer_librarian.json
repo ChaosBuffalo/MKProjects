@@ -5,22 +5,22 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:shadow_bolt_dual_shotgun",
+          "ability": "mkultra:shadow_bolt_dual_shotgun",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:shadow_pulse_flurry",
+          "ability": "mkultra:shadow_pulse_flurry",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:fireball_burst",
+          "ability": "mkultra:fireball_burst",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityId": "mkultra:necrotide_warrior_summon",
+          "ability": "mkultra:necrotide_warrior_summon",
           "chance": 1.0,
           "priority": 3
         }
@@ -30,15 +30,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 250.0
+          "base_value": 250.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 250.0
+          "base_value": 250.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 5.0
+          "base_value": 5.0
         }
       ]
     },

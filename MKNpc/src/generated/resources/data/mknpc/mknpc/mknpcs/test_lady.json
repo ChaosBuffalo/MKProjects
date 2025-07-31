@@ -1,12 +1,12 @@
 {
   "entityType": "minecraft:villager",
-  "name": "mknpc:test",
+  "name": "mknpc:test_lady",
   "options": {
     "mknpc:attributes": {
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 100.0
+          "base_value": 100.0
         }
       ]
     },

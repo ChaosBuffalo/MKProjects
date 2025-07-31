@@ -1,5 +1,5 @@
-// 1.21.1	2025-07-27T09:19:07.6228729	MK Weapons Item Tags
+// 1.21.1	2025-07-31T08:38:12.9794812	MK Weapons Item Tags
 7cef40d4c10d14cd72ea6a01efc9dee474408ceb data/curios/tags/item/earring.json
 349943faaff4502fd09934310bc3ed0e1e1852b9 data/curios/tags/item/ring.json
-2dc91caf03c748aaeedca110e3678ecc7b055e25 data/minecraft/tags/item/enchantable/bow.json
-0a18c852575e703c77edc6bab9791497939a9f20 data/minecraft/tags/item/enchantable/sword.json
+abd6dc90a7d60d733850f55fce8b37c60f75e8f7 data/minecraft/tags/item/enchantable/bow.json
+8394fc88d8b3a9e70a868a88569f341fa8a7776c data/minecraft/tags/item/enchantable/sword.json

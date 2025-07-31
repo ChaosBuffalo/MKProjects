@@ -14,10 +14,8 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructure;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.common.util.INBTSerializable;
@@ -32,7 +30,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
     private final List<NotableChestEntry> notableChests;
     private final List<NotableNpcEntry> notables;
     private final Map<String, List<PointOfInterestEntry>> pois;
-    private final Set<ResourceLocation> mobs;
+    private final Set<ResourceKey<NpcDefinition>> mobs;
     private final Set<ResourceLocation> factions;
     @Nullable
     private StructureData structureData;
@@ -100,47 +98,47 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         return notableChests.stream().anyMatch(x -> x.getLabel() != null && x.getLabel().equals(tag));
     }
 
-    public boolean hasNotableOfType(ResourceLocation npcDef, RegistryAccess registryAccess) {
+    public boolean hasNotableOfType(ResourceKey<NpcDefinition> npcDef, RegistryAccess registryAccess) {
         return notables.stream().anyMatch(x -> {
             var definition = x.getDefinition(registryAccess);
-            return definition != null && definition.getDefinitionName().equals(npcDef);
+            return definition != null && definition.getDefinitionKey().equals(npcDef);
         });
     }
 
-    public Optional<NotableNpcEntry> getFirstNotableOfType(ResourceLocation npcDef, RegistryAccess registryAccess) {
+    public Optional<NotableNpcEntry> getFirstNotableOfType(ResourceKey<NpcDefinition> npcDef, RegistryAccess registryAccess) {
         return notables.stream().filter(x -> {
             var definition = x.getDefinition(registryAccess);
-            return definition != null && definition.getDefinitionName().equals(npcDef);
+            return definition != null && definition.getDefinitionKey().equals(npcDef);
         }).findFirst();
     }
 
-    public boolean hasAnyNotableOfTypes(Set<ResourceLocation> defs, RegistryAccess registryAccess) {
+    public boolean hasAnyNotableOfTypes(Set<ResourceKey<NpcDefinition>> defs, RegistryAccess registryAccess) {
         return notables.stream().anyMatch(x -> {
             var definition = x.getDefinition(registryAccess);
-            return definition != null && defs.contains(definition.getDefinitionName());
+            return definition != null && defs.contains(definition.getDefinitionKey());
         });
     }
 
-    public boolean hasNpc(ResourceLocation npcDef, RegistryAccess registryAccess) {
+    public boolean hasNpc(ResourceKey<NpcDefinition> npcDef, RegistryAccess registryAccess) {
         return mobs.contains(npcDef);
     }
 
-    public List<NotableNpcEntry> getNotablesOfTypes(Set<ResourceLocation> defs, RegistryAccess registryAccess) {
+    public List<NotableNpcEntry> getNotablesOfTypes(Set<ResourceKey<NpcDefinition>> defs, RegistryAccess registryAccess) {
         return notables.stream().filter(x -> {
             var definition = x.getDefinition(registryAccess);
-            return definition != null && defs.contains(definition.getDefinitionName());
+            return definition != null && defs.contains(definition.getDefinitionKey());
         }).collect(Collectors.toList());
     }
 
-    public Optional<NotableNpcEntry> getRandomNotableFromTypes(Set<ResourceLocation> defs, RegistryAccess registryAccess) {
+    public Optional<NotableNpcEntry> getRandomNotableFromTypes(Set<ResourceKey<NpcDefinition>> defs, RegistryAccess registryAccess) {
         var matches = getNotablesOfTypes(defs, registryAccess);
         return matches.isEmpty() ? Optional.empty() : Optional.of(matches.get(getWorldData().getWorld().getRandom().nextInt(matches.size())));
     }
 
-    public List<NotableNpcEntry> getAllNotablesOfType(ResourceLocation npcDef, RegistryAccess registryAccess) {
+    public List<NotableNpcEntry> getAllNotablesOfType(ResourceKey<NpcDefinition> npcDef, RegistryAccess registryAccess) {
         return notables.stream().filter(x -> {
             var definition = x.getDefinition(registryAccess);
-            return definition != null && definition.getDefinitionName().equals(npcDef);
+            return definition != null && definition.getDefinitionKey().equals(npcDef);
         }).collect(Collectors.toList());
     }
 
@@ -173,7 +171,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
                 notables.add(entry);
                 spawner.putNotableId(def.getDefinitionName(), entry.getNotableId());
             } else {
-                mobs.add(def.getDefinitionName());
+                mobs.add(def.getDefinitionKey());
             }
             factions.add(def.getFactionName());
         }
@@ -218,6 +216,8 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
 
     @Override
     public CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        var ops = provider.createSerializationContext(NbtOps.INSTANCE);
+
         CompoundTag tag = new CompoundTag();
         tag.putString("structureName", structureName.toString());
         tag.putUUID("structureId", structureId);
@@ -227,8 +227,8 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         }
         tag.put("notables", notablesNbt);
         ListTag mobNbt = new ListTag();
-        for (ResourceLocation mob : mobs) {
-            mobNbt.add(StringTag.valueOf(mob.toString()));
+        for (ResourceKey<NpcDefinition> mob : mobs) {
+            mobNbt.add(NpcDefinition.KEY_CODEC.encodeStart(ops, mob).getOrThrow());
         }
         tag.put("mobs", mobNbt);
         ListTag factionNbt = new ListTag();
@@ -262,6 +262,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+        var ops = provider.createSerializationContext(NbtOps.INSTANCE);
         structureName = ResourceLocation.parse(nbt.getString("structureName"));
         structureId = nbt.getUUID("structureId");
         ListTag notablesNbt = nbt.getList("notables", Tag.TAG_COMPOUND);
@@ -273,7 +274,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundTag> {
         }
         ListTag mobNbt = nbt.getList("mobs", Tag.TAG_STRING);
         for (Tag mobName : mobNbt) {
-            ResourceLocation mobLoc = ResourceLocation.parse(mobName.getAsString());
+            ResourceKey<NpcDefinition> mobLoc = NpcDefinition.KEY_CODEC.parse(ops, mobName).getOrThrow();
             mobs.add(mobLoc);
         }
         ListTag factionNbt = nbt.getList("factions", Tag.TAG_STRING);

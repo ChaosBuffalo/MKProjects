@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
@@ -44,7 +43,7 @@ public class TempAbilitiesOption extends NpcDefinitionOption {
     }
 
     public TempAbilitiesOption withAbilityOption(MKAbility ability, int priority, double chance) {
-        addAbilityEntry(new NpcAbilityEntry(ability.getAbilityId(), priority, chance));
+        addAbilityEntry(new NpcAbilityEntry(ability, priority, chance));
         return this;
     }
 
@@ -70,7 +69,7 @@ public class TempAbilitiesOption extends NpcDefinitionOption {
                     cap.getAbilities().unlearnAbility(loc, AbilitySource.TRAINED);
                 }
                 for (NpcAbilityEntry entry : abilities) {
-                    MKAbility ability = MKCoreRegistry.getAbility(entry.getAbilityId());
+                    MKAbility ability = entry.getAbility();
                     if (ability != null && entity.getRandom().nextDouble() <= entry.getChance()) {
                         cap.getAbilities().learnAbility(ability, entry.getPriority());
                     }

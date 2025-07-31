@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkultra.data.generators.npc;
 import com.chaosbuffalo.mkcore.abilities.training.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
-import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -13,27 +12,32 @@ import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
-import net.minecraft.data.CachedOutput;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-
-import java.util.concurrent.CompletableFuture;
 
 public class ThemcromancerNpcs {
 
-    public static CompletableFuture<?> writeDefinitions(NpcDefinitionProvider provider, CachedOutput cache) {
-        return CompletableFuture.allOf(
-                provider.writeDefinition(generateThemnianAcolyte(), cache),
-                provider.writeDefinition(generateThemnianNeophyte(), cache),
-                provider.writeDefinition(generateThemnianArchon(), cache),
-                provider.writeDefinition(generateSkeletalGatekeeper(), cache),
-                provider.writeDefinition(generateSkeletalGuard(), cache),
-                provider.writeDefinition(generateThemnianLibrarian(), cache)
-        );
+    public static final ResourceKey<NpcDefinition> themcromancer_acolyte = MKUNpcs.key("themcromancer_acolyte");
+    public static final ResourceKey<NpcDefinition> themcromancer_neophyte = MKUNpcs.key("themcromancer_neophyte");
+    public static final ResourceKey<NpcDefinition> themcromancer_archon = MKUNpcs.key("themcromancer_archon");
+    public static final ResourceKey<NpcDefinition> themcromancer_librarian = MKUNpcs.key("themcromancer_librarian");
+    public static final ResourceKey<NpcDefinition> a_skeletal_gatekeeper = MKUNpcs.key("a_skeletal_gatekeeper");
+    public static final ResourceKey<NpcDefinition> a_skeletal_guard = MKUNpcs.key("a_skeletal_guard");
+
+
+    public static void bootstrap(BootstrapContext<NpcDefinition> context) {
+        context.register(themcromancer_acolyte, generateThemnianAcolyte(themcromancer_acolyte));
+        context.register(themcromancer_neophyte, generateThemnianNeophyte(themcromancer_neophyte));
+        context.register(themcromancer_archon, generateThemnianArchon(themcromancer_archon));
+        context.register(themcromancer_librarian, generateThemnianLibrarian(themcromancer_librarian));
+        context.register(a_skeletal_gatekeeper, generateSkeletalGatekeeper(a_skeletal_gatekeeper));
+        context.register(a_skeletal_guard, generateSkeletalGuard(a_skeletal_guard));
     }
 
-    static NpcDefinition generateThemnianAcolyte() {
 
-        return new NpcDefinitionBuilder(MKUltra.id("themcromancer_acolyte"), MKUEntities.HUMAN_TYPE)
+    static NpcDefinition generateThemnianAcolyte(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
                 .renderGroup(MKUHumans.DEFAULT_NAME)
                 .size(0.92f)
@@ -56,9 +60,8 @@ public class ThemcromancerNpcs {
                 .build();
     }
 
-    static NpcDefinition generateThemnianNeophyte() {
-
-        return new NpcDefinitionBuilder(MKUltra.id("themcromancer_neophyte"), MKUEntities.HUMAN_TYPE)
+    static NpcDefinition generateThemnianNeophyte(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
                 .renderGroup(MKUHumans.DEFAULT_NAME)
                 .size(0.85f)
@@ -79,9 +82,8 @@ public class ThemcromancerNpcs {
                 .build();
     }
 
-    static NpcDefinition generateThemnianArchon() {
-
-        return new NpcDefinitionBuilder(MKUltra.id("themcromancer_archon"), MKUEntities.HUMAN_TYPE)
+    static NpcDefinition generateThemnianArchon(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
                 .renderGroup(MKUHumans.DEFAULT_NAME)
                 .size(1.0f)
@@ -112,15 +114,14 @@ public class ThemcromancerNpcs {
                 .trains(MKUAbilities.SHADOW_PULSE, new HasEntitlementRequirement(MKUEntitlements.ThemcromancerTier2.get()))
                 .trains(MKUAbilities.LIFE_SPIKE, new HasEntitlementRequirement(MKUEntitlements.ThemcromancerTier3.get()))
                 .skillClass(NpcGenUtils.NpcSkillClass.NECROMANCER)
-                .dialogue(MKUltra.id("necro_default"))
+                .dialogue(MKUDialogues.necro_default)
                 .xp(150)
-                .quests(MKUltra.id("necromancer_unlock_chain"))
+                .quests(MKUQuests.NECROMANCER_UNLOCK_CHAIN)
                 .build();
     }
 
-    static NpcDefinition generateThemnianLibrarian() {
-
-        return new NpcDefinitionBuilder(MKUltra.id("themcromancer_librarian"), MKUEntities.HUMAN_TYPE)
+    static NpcDefinition generateThemnianLibrarian(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
                 .renderGroup(MKUHumans.DEFAULT_NAME)
                 .size(0.92f)
@@ -148,8 +149,8 @@ public class ThemcromancerNpcs {
                 .build();
     }
 
-    static NpcDefinition generateSkeletalGatekeeper() {
-        return new NpcDefinitionBuilder(MKUltra.id("a_skeletal_gatekeeper"), MKUEntities.HYBOREAN_SKELETON_TYPE)
+    static NpcDefinition generateSkeletalGatekeeper(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.THEMCROMANCER_GATEKEEPER_NAME)
                 .renderGroup(MKUSkeletons.BASIC_NAME)
                 .size(1.0f)
@@ -158,14 +159,14 @@ public class ThemcromancerNpcs {
                 .attribute(MKAttributes.MANA_REGEN, 2.0)
                 .name("a skeletal gatekeeper")
                 .notable()
-                .quests(MKUltra.id("unlock_themcromancers"))
+                .quests(MKUQuests.UNLOCK_THEMCROMANCERS)
                 .skillClass(NpcGenUtils.NpcSkillClass.WARRIOR)
                 .xp(100)
                 .build();
     }
 
-    static NpcDefinition generateSkeletalGuard() {
-        return new NpcDefinitionBuilder(MKUltra.id("a_skeletal_guard"), MKUEntities.HYBOREAN_SKELETON_TYPE)
+    static NpcDefinition generateSkeletalGuard(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
                 .renderGroup(MKUSkeletons.BASIC_NAME)
                 .size(1.1f)

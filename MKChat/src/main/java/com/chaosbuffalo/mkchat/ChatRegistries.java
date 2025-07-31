@@ -11,6 +11,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 
@@ -23,6 +24,7 @@ import java.util.function.Function;
 public class ChatRegistries {
     public static final ResourceKey<Registry<DialogueEffectType<?>>> EFFECT_TYPES_REGISTRY_NAME = ResourceKey.createRegistryKey(MKChat.id("dialogue_effect_types"));
     public static final ResourceKey<Registry<DialogueConditionType<?>>> CONDITION_TYPES_REGISTRY_NAME = ResourceKey.createRegistryKey(MKChat.id("dialogue_condition_types"));
+    public static final ResourceKey<Registry<DialogueTree>> DIALOGUE_TREES = ResourceKey.createRegistryKey(MKChat.id("dialogue_trees"));
     public static final Registry<DialogueEffectType<?>> DIALOGUE_EFFECTS = new RegistryBuilder<>(EFFECT_TYPES_REGISTRY_NAME).create();
     public static final Registry<DialogueConditionType<?>> DIALOGUE_CONDITIONS = new RegistryBuilder<>(CONDITION_TYPES_REGISTRY_NAME).create();
 
@@ -61,8 +63,13 @@ public class ChatRegistries {
         event.register(DIALOGUE_CONDITIONS);
     }
 
+    public static void createDatapackRegistries(DataPackRegistryEvent.NewRegistry event) {
+        event.dataPackRegistry(DIALOGUE_TREES, DialogueTree.CODEC);
+    }
+
     public static void register(IEventBus modBus) {
         modBus.addListener(ChatRegistries::createRegistries);
+        modBus.addListener(ChatRegistries::createDatapackRegistries);
         DialogueEffectTypes.REGISTRY.register(modBus);
         DialogueConditionTypes.REGISTRY.register(modBus);
     }

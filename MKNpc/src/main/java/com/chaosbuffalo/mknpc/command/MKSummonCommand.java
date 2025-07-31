@@ -1,47 +1,33 @@
 package com.chaosbuffalo.mknpc.command;
 
-import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-
-import java.util.concurrent.CompletableFuture;
 
 public class MKSummonCommand {
 
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("mksummon")
                 .then(Commands.argument("npc_definition", NpcDefinitionIdArgument.definition())
-                        .suggests(MKSummonCommand::suggestNpcDefinitions)
                         .then(Commands.argument("difficulty_value", DoubleArgumentType.doubleArg(0.0, 200.0))
                                 .executes(MKSummonCommand::summon)));
     }
 
-    static CompletableFuture<Suggestions> suggestNpcDefinitions(final CommandContext<CommandSourceStack> context,
-                                                                final SuggestionsBuilder builder) {
-        return SharedSuggestionProvider.suggest(context.getSource().registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).keySet().stream()
-                .map(ResourceLocation::toString), builder);
-    }
-
     static int summon(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
-        ResourceLocation definition_id = ctx.getArgument("npc_definition", ResourceLocation.class);
+        ResourceKey<NpcDefinition> definitionId = NpcDefinitionIdArgument.get(ctx, "npc_definition");
         double difficulty_value = DoubleArgumentType.getDouble(ctx, "difficulty_value");
-        NpcDefinition definition = ctx.getSource().registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(definition_id);
+        NpcDefinition definition = ctx.getSource().registryAccess().registryOrThrow(NpcRegistries.NPC_DEFINITIONS).get(definitionId);
         if (definition != null) {
             Entity entity = definition.createEntity(player.level(), player.position(), difficulty_value);
             if (entity != null) {
@@ -52,8 +38,7 @@ public class MKSummonCommand {
 //                            player.blockPosition(), MobSpawnType.COMMAND, null, null);
 //                }
             } else {
-                player.sendSystemMessage(Component.literal(String.format("Failed to summon: %s",
-                        definition_id.toString())));
+                player.sendSystemMessage(Component.literal(String.format("Failed to summon: %s", definitionId)));
             }
         } else {
             player.sendSystemMessage(Component.literal("Definition not found."));

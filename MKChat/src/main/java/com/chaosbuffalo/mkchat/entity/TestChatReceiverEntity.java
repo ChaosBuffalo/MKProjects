@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkchat.entity;
 
-import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.capabilities.INpcDialogue;
+import com.chaosbuffalo.mkchat.data.MKChatGenerator;
 import com.chaosbuffalo.mkchat.init.ChatEntityTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,7 +29,7 @@ public class TestChatReceiverEntity extends Pig {
     @Override
     public void onAddedToLevel() {
         super.onAddedToLevel();
-        INpcDialogue.get(this).ifPresent(cap -> cap.setDialogueTree(MKChat.id("test")));
+        INpcDialogue.get(this).ifPresent(cap -> cap.setDialogueTree(MKChatGenerator.Dialogues.TEST_TREE));
     }
 
     @Override

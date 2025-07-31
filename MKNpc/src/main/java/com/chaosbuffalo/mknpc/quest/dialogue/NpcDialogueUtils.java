@@ -2,8 +2,11 @@ package com.chaosbuffalo.mknpc.quest.dialogue;
 
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestStructureLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
@@ -37,8 +40,9 @@ public class NpcDialogueUtils {
         ResourceLocation structureName = ResourceLocation.parse(splitArgs[0]);
         String name = splitArgs[1];
         ResourceLocation defName = ResourceLocation.parse(splitArgs[2]);
+        ResourceKey<NpcDefinition> defKey = ResourceKey.create(NpcRegistries.NPC_DEFINITIONS, defName);
         Optional<NotableNpcEntry> npc = parseData.questStructures.get(new QuestStructureLocation(structureName, name))
-                .getFirstNotableOfType(defName, parseData.questChain.getLevel().registryAccess());
+                .getFirstNotableOfType(defKey, parseData.questChain.getLevel().registryAccess());
         return npc.map(x -> String.format("{notable:%s}", x.getNotableId())).orElse("#notable.not_found#");
     }
 

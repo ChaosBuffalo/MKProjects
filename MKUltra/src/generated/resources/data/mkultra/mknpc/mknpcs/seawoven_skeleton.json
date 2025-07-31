@@ -5,7 +5,7 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:seafury",
+          "ability": "mkultra:seafury",
           "chance": 1.0,
           "priority": 1
         }
@@ -15,15 +15,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 45.0
+          "base_value": 45.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 45.0
+          "base_value": 45.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 2.0
+          "base_value": 2.0
         }
       ]
     },

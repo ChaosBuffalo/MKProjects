@@ -20,6 +20,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -31,25 +32,23 @@ import java.util.Map;
 import java.util.Optional;
 
 public class QuestLootNotableObjective extends QuestObjective<UUIDInstanceData> implements IKillObjectiveHandler {
-    public static final MapCodec<QuestLootNotableObjective> MAP_CODEC = RecordCodecBuilder.<QuestLootNotableObjective>mapCodec(builder -> {
-        return builder.group(
-                Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
-                QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
-                ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
-                Codec.DOUBLE.optionalFieldOf("chance", 1.0).forGetter(i -> i.chanceToFind),
-                Codec.INT.optionalFieldOf("count", 1).forGetter(i -> i.requiredCount),
-                ComponentSerialization.CODEC.fieldOf("itemDescription").forGetter(i -> i.itemDescription)
-        ).apply(builder, QuestLootNotableObjective::new);
-    });
+    public static final MapCodec<QuestLootNotableObjective> MAP_CODEC = RecordCodecBuilder.<QuestLootNotableObjective>mapCodec(builder -> builder.group(
+            Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
+            QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
+            NpcDefinition.KEY_CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
+            Codec.DOUBLE.optionalFieldOf("chance", 1.0).forGetter(i -> i.chanceToFind),
+            Codec.INT.optionalFieldOf("count", 1).forGetter(i -> i.requiredCount),
+            ComponentSerialization.CODEC.fieldOf("itemDescription").forGetter(i -> i.itemDescription)
+    ).apply(builder, QuestLootNotableObjective::new));
 
 
     public static final ResourceLocation NAME = MKNpc.id("objective.quest_loot_notable");
     protected Component itemDescription;
-    private final ResourceLocation npcDefinition;
+    private final ResourceKey<NpcDefinition> npcDefinition;
     private final double chanceToFind;
     private final int requiredCount;
 
-    public QuestLootNotableObjective(String name, QuestStructureLocation structureLocation, ResourceLocation npcDefinition,
+    public QuestLootNotableObjective(String name, QuestStructureLocation structureLocation, ResourceKey<NpcDefinition> npcDefinition,
                                      double chance, int count, Component itemDescription) {
         super(name, structureLocation);
         this.npcDefinition = npcDefinition;

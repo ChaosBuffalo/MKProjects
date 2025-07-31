@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
@@ -14,26 +15,43 @@ import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
-import net.minecraft.core.HolderLookup;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.ResourceKey;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Quest {
+    public static final Codec<Quest> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            Codec.STRING.fieldOf("questName").forGetter(i -> i.questName),
+            QuestObjective.CODEC.listOf().fieldOf("objectives").forGetter(i -> i.objectives),
+            ComponentSerialization.CODEC.fieldOf("description").forGetter(i -> i.description),
+            Codec.BOOL.fieldOf("autoComplete").forGetter(i -> i.autoComplete),
+            QuestReward.CODEC.listOf().fieldOf("rewards").forGetter(i -> i.rewards)
+    ).apply(builder, Quest::new));
 
     private boolean autoComplete;
     private final List<QuestObjective<?>> objectives;
     private final Map<String, QuestObjective<?>> objectiveIndex;
     private final List<QuestReward> rewards;
     private final List<QuestRequirement> requirements;
-    private String questName;
-    private Component description;
+    private final String questName;
+    private final Component description;
     public static final Component defaultDescription = Component.literal("Placeholder Quest Description");
+
+    private Quest(String questName, List<QuestObjective<?>> objectives, Component description, boolean autoComplete, List<QuestReward> rewards) {
+        this.questName = questName;
+        this.objectives = objectives;
+        this.description = description;
+        this.autoComplete = autoComplete;
+        this.rewards = rewards;
+        objectiveIndex = new HashMap<>(objectives.size());
+        this.objectives.forEach(o -> objectiveIndex.put(o.getObjectiveName(), o));
+        this.requirements = List.of();
+    }
 
     public Quest(String questName, Component description) {
         this.questName = questName;
@@ -64,7 +82,7 @@ public class Quest {
         return autoComplete;
     }
 
-    public DialogueTree generateDialogueForNpc(QuestChainInstance questChain, ResourceLocation npcDefinitionName,
+    public DialogueTree generateDialogueForNpc(QuestChainInstance questChain, ResourceKey<NpcDefinition> npcDefinitionName,
                                                UUID npcId, DialogueTree tree,
                                                Map<QuestStructureLocation, MKStructureEntry> questStructures,
                                                QuestDefinition definition) {
@@ -131,30 +149,5 @@ public class Quest {
         for (QuestReward reward : rewards) {
             reward.grantReward(playerData.getPlayer());
         }
-    }
-
-    public <D> D serialize(DynamicOps<D> ops, HolderLookup.Provider provider) {
-        ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
-        builder.put(ops.createString("questName"), ops.createString(questName));
-        builder.put(ops.createString("objectives"), ops.createList(objectives.stream().flatMap(x -> QuestObjective.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
-        builder.put(ops.createString("description"), ops.createString(Component.Serializer.toJson(description, provider)));
-        builder.put(ops.createString("autoComplete"), ops.createBoolean(autoComplete));
-        builder.put(ops.createString("rewards"), ops.createList(rewards.stream().flatMap(x -> QuestReward.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
-        return ops.createMap(builder.build());
-    }
-
-    public <D> void deserialize(Dynamic<D> dynamic, HolderLookup.Provider provider) {
-        questName = dynamic.get("questName").asString("default");
-        autoComplete = dynamic.get("autoComplete").asBoolean(false);
-        description = Component.Serializer.fromJson(
-                dynamic.get("description").asString(Component.Serializer.toJson(defaultDescription, provider)), provider);
-
-        dynamic.get("objectives").asStream().forEach(x -> {
-            QuestObjective.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addObjective);
-        });
-
-        dynamic.get("rewards").asStream().forEach(x -> {
-            QuestReward.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addReward);
-        });
     }
 }

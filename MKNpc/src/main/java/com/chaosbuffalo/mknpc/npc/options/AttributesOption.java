@@ -56,9 +56,9 @@ public class AttributesOption extends NpcDefinitionOption {
         if (entity instanceof LivingEntity living) {
             AttributeMap manager = living.getAttributes();
             for (NpcAttributeEntry entry : attributes) {
-                AttributeInstance instance = manager.getInstance(entry.getAttribute());
+                AttributeInstance instance = manager.getInstance(entry.attribute());
                 if (instance != null) {
-                    instance.setBaseValue(entry.getValue());
+                    instance.setBaseValue(entry.baseValue());
                 }
             }
         }

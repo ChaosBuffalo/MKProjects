@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkchat;
 
 import com.chaosbuffalo.mkchat.command.ChatCommands;
-import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
 import com.chaosbuffalo.mkchat.dialogue.IDialogueExtension;
 import com.chaosbuffalo.mkchat.init.ChatAttachments;
 import com.chaosbuffalo.mkchat.init.ChatEntityTypes;
@@ -12,7 +11,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +22,6 @@ public class MKChat {
     public static final boolean DEV_LOGGING = false;
     public static final String MODID = "mkchat";
     public static final String REGISTER_DIALOGUE_EXTENSION = "register_dialogue_extension";
-    private final DialogueManager dialogueManager;
 
 
     public MKChat(IEventBus modBus) {
@@ -35,17 +32,11 @@ public class MKChat {
         ChatAttachments.register(modBus);
 
         NeoForge.EVENT_BUS.register(this);
-        dialogueManager = new DialogueManager();
     }
 
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
         ChatCommands.register(event.getDispatcher());
-    }
-
-    @SubscribeEvent
-    public void addReloadListeners(AddReloadListenerEvent event) {
-        event.addListener(dialogueManager);
     }
 
     private void setup(final FMLCommonSetupEvent event) {

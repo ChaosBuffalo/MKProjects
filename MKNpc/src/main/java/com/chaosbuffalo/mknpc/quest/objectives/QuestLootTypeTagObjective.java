@@ -33,16 +33,14 @@ import java.util.List;
 import java.util.Map;
 
 public class QuestLootTypeTagObjective extends QuestObjective<EmptyInstanceData> implements IKillObjectiveHandler {
-    public static final MapCodec<QuestLootTypeTagObjective> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> {
-        return builder.group(
-                Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
-                TagKey.codec(BuiltInRegistries.ENTITY_TYPE.key()).fieldOf("tag").forGetter(i -> i.tag),
-                Codec.DOUBLE.optionalFieldOf("chance", 1.0).forGetter(i -> i.chanceToFind),
-                Codec.INT.optionalFieldOf("count", 1).forGetter(i -> i.requiredCount),
-                ComponentSerialization.CODEC.fieldOf("itemDescription").forGetter(i -> i.itemDescription),
-                Codec.STRING.fieldOf("tagDesc").forGetter(i -> i.tagDesc)
-        ).apply(builder, QuestLootTypeTagObjective::new);
-    });
+    public static final MapCodec<QuestLootTypeTagObjective> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
+            TagKey.codec(BuiltInRegistries.ENTITY_TYPE.key()).fieldOf("tag").forGetter(i -> i.tag),
+            Codec.DOUBLE.optionalFieldOf("chance", 1.0).forGetter(i -> i.chanceToFind),
+            Codec.INT.optionalFieldOf("count", 1).forGetter(i -> i.requiredCount),
+            ComponentSerialization.CODEC.fieldOf("itemDescription").forGetter(i -> i.itemDescription),
+            Codec.STRING.fieldOf("tagDesc").forGetter(i -> i.tagDesc)
+    ).apply(builder, QuestLootTypeTagObjective::new));
 
     private final TagKey<EntityType<?>> tag;
     public static final ResourceLocation NAME = MKNpc.id("objective.quest_loot_type_tag");

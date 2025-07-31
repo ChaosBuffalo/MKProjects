@@ -1,10 +1,10 @@
 {
   "values": [
-    "mkweapons:longbow_gold",
-    "mkweapons:longbow_wood",
-    "mkweapons:longbow_iron",
-    "mkweapons:longbow_diamond",
+    "mkweapons:longbow_netherite",
     "mkweapons:longbow_stone",
-    "mkweapons:longbow_netherite"
+    "mkweapons:longbow_diamond",
+    "mkweapons:longbow_iron",
+    "mkweapons:longbow_wood",
+    "mkweapons:longbow_gold"
   ]
 }

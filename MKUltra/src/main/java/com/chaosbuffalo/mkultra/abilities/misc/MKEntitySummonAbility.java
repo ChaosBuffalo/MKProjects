@@ -12,14 +12,12 @@ import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribut
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
-import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.init.MKNpcAttributes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.targeting_api.Targeting;
@@ -27,6 +25,7 @@ import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -39,16 +38,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
-import java.util.function.Function;
 
 public class MKEntitySummonAbility extends MKAbility {
-    protected final ResourceLocationAttribute npcDefintion = new ResourceLocationAttribute("npc", NpcDefinitionManager.INVALID_NPC_DEF);
+    protected final ResourceLocationAttribute npcDefintion;
     protected final Holder<Attribute> summoningSkill;
 
 
-    public MKEntitySummonAbility(ResourceLocation npcDef, Holder<Attribute> skillAttribute) {
+    public MKEntitySummonAbility(ResourceKey<NpcDefinition> npcDef, Holder<Attribute> skillAttribute) {
         super();
-        npcDefintion.setDefaultValue(npcDef);
+        npcDefintion = new ResourceLocationAttribute("npc", npcDef.location());
         addAttribute(npcDefintion);
         setCastTime(5 * GameConstants.TICKS_PER_SECOND);
         setUseCondition(new SummonPetCondition(this));

@@ -5,12 +5,12 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:shadow_bolt",
+          "ability": "mkultra:shadow_bolt",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:necrotide_golem_beam",
+          "ability": "mkultra:necrotide_golem_beam",
           "chance": 1.0,
           "priority": 1
         }
@@ -20,15 +20,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 500.0
+          "base_value": 500.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 500.0
+          "base_value": 500.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 5.0
+          "base_value": 5.0
         }
       ]
     },

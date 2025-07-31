@@ -1,15 +1,15 @@
 package com.chaosbuffalo.mkultra.data.generators;
 
+import com.chaosbuffalo.mkchat.ChatRegistries;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
+import com.chaosbuffalo.mknpc.npc.NpcRegistries;
+import com.chaosbuffalo.mknpc.quest.QuestRegistries;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructurePools;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructureSets;
 import com.chaosbuffalo.mkultra.data.registries.UltraStructures;
-import com.chaosbuffalo.mkultra.init.MKUFactions;
-import com.chaosbuffalo.mkultra.init.MKULootTiers;
-import com.chaosbuffalo.mkultra.init.MKUTalentDisplayNodes;
-import com.chaosbuffalo.mkultra.init.MKUTalentTrees;
+import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.MKWeaponsRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistrySetBuilder;
@@ -28,7 +28,10 @@ public class MKURegistrySets extends DatapackBuiltinEntriesProvider {
             .add(MKFactionRegistry.FACTION_REGISTRY_KEY, MKUFactions::bootstrap)
             .add(MKCoreRegistry.TALENT_NODE_DISPLAY_REGISTRY_KEY, MKUTalentDisplayNodes::bootstrap)
             .add(MKCoreRegistry.TALENT_TREE_REGISTRY_KEY, MKUTalentTrees::bootstrap)
-            .add(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY, MKULootTiers::bootstrap);
+            .add(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY, MKULootTiers::bootstrap)
+            .add(NpcRegistries.NPC_DEFINITIONS, MKUNpcs::bootstrap)
+            .add(QuestRegistries.QUEST_DEFINITIONS, MKUQuests::bootstrap)
+            .add(ChatRegistries.DIALOGUE_TREES, MKUDialogues::bootstrap);
 
     public MKURegistrySets(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         super(output, registries, BUILDER, Collections.singleton(MKUltra.MODID));

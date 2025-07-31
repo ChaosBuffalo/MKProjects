@@ -1,5 +1,4 @@
 {
-  "additionalNotables": [],
   "dialogue": {
     "dialogueId": "mknpc:give_quest.mkultra.nether_mage_intro",
     "hailPromptId": "hail",
@@ -88,12 +87,13 @@
       }
     ]
   },
-  "questMode": 0,
-  "questName": "\"Helping the Nether Mage\"",
+  "questMode": "linear",
+  "questName": "Helping the Nether Mage",
+  "questTemplateId": "mkultra:nether_mage_intro",
   "quests": [
     {
       "autoComplete": true,
-      "description": "\"The Nether Mage Initiate wants you to retrieve a staff from the library.\"",
+      "description": "The Nether Mage Initiate wants you to retrieve a staff from the library.",
       "objectives": [
         {
           "type": "mknpc:quest_loot_notable",
@@ -111,7 +111,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Return to the Initiate with the Magic Staff\"",
+      "description": "Return to the Initiate with the Magic Staff",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
@@ -192,7 +192,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Land Killing Blows with the Fireball Ability granted by the Initiate's Staff\"",
+      "description": "Land Killing Blows with the Fireball Ability granted by the Initiate's Staff",
       "objectives": [
         {
           "type": "mknpc:kill_with_ability",
@@ -211,7 +211,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Return to the Initiate\"",
+      "description": "Return to the Initiate",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",

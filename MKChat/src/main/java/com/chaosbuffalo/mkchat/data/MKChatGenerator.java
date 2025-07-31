@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkchat.data;
 
+import com.chaosbuffalo.mkchat.ChatRegistries;
 import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.dialogue.*;
 import com.chaosbuffalo.mkchat.dialogue.conditions.HasFlagCondition;
@@ -7,19 +8,25 @@ import com.chaosbuffalo.mkchat.dialogue.conditions.InvertCondition;
 import com.chaosbuffalo.mkchat.dialogue.effects.AddFlagEffect;
 import com.chaosbuffalo.mkchat.dialogue.effects.AddLevelEffect;
 import net.minecraft.DetectedVersion;
-import net.minecraft.data.CachedOutput;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.data.metadata.PackMetadataGenerator;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.util.InclusiveRange;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 @EventBusSubscriber
@@ -27,7 +34,7 @@ public class MKChatGenerator {
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {
         DataGenerator gen = event.getGenerator();
-        gen.addProvider(event.includeServer(), new MKChatDialogueProvider(gen));
+        gen.addProvider(event.includeServer(), new MKChatRegistrySets(gen.getPackOutput(), event.getLookupProvider()));
 
         // pack.mcmeta
         gen.addProvider(true, new PackMetadataGenerator(gen.getPackOutput())
@@ -39,19 +46,30 @@ public class MKChatGenerator {
         );
     }
 
-    public static class MKChatDialogueProvider extends DialogueProvider {
 
-        public MKChatDialogueProvider(DataGenerator generator) {
-            super(generator, MKChat.MODID);
+    static class MKChatRegistrySets extends DatapackBuiltinEntriesProvider {
+        public static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
+                .add(ChatRegistries.DIALOGUE_TREES, Dialogues::bootstrap);
+
+        public MKChatRegistrySets(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+            super(output, registries, BUILDER, Set.of(MKChat.MODID));
+        }
+    }
+
+    public static class Dialogues {
+
+        static ResourceKey<DialogueTree> key(String path) {
+            return ResourceKey.create(ChatRegistries.DIALOGUE_TREES, MKChat.id(path));
         }
 
-        @Override
-        public CompletableFuture<?> run(CachedOutput pOutput) {
-            return CompletableFuture.allOf(writeDialogue(getTestTree(), pOutput));
+        public static final ResourceKey<DialogueTree> TEST_TREE = key("test");
+
+        public static void bootstrap(BootstrapContext<DialogueTree> context) {
+            context.register(TEST_TREE, getTestTree(TEST_TREE));
         }
 
-        private DialogueTree getTestTree() {
-            DialogueTree tree = new DialogueTree(MKChat.id("test"));
+        private static DialogueTree getTestTree(ResourceKey<DialogueTree> key) {
+            DialogueTree tree = new DialogueTree(key);
             DialogueNode grantLevel = new DialogueNode("grant_level", "Here is 1 level.");
             grantLevel.addEffect(new AddLevelEffect(1));
             ResourceLocation levelFlag = MKChat.id("grant_level");

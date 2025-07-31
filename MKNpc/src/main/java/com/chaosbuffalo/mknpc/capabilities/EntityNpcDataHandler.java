@@ -12,7 +12,7 @@ import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
-import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
+import com.chaosbuffalo.mknpc.quest.QuestRegistries;
 import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
 import com.chaosbuffalo.mkweapons.MKWeaponsRegistry;
 import com.chaosbuffalo.mkweapons.items.randomization.LootConstructor;
@@ -23,6 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionHand;
@@ -152,20 +153,20 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             return;
         }
         MinecraftServer server = getEntity().getServer();
-        QuestDefinition npcDef = QuestDefinitionManager.getDefinition(entry.getQuestDef());
-        if (npcDef == null) {
+        QuestDefinition questDef = entity.registryAccess().registryOrThrow(QuestRegistries.QUEST_DEFINITIONS).get(entry.getQuestDef());
+        if (questDef == null) {
             MKNpc.LOGGER.debug("Can't find definition for quest {}", entry.getQuestDef());
             questRequests.add(entry);
             return;
         }
         if (server != null && entry.getQuestId() == null) {
-            Optional<QuestChainBuildResult> quest = ContentDB.getQuestDB().buildQuest(npcDef, getSpawnPos());
+            Optional<QuestChainBuildResult> quest = ContentDB.getQuestDB().buildQuest(questDef, getSpawnPos());
             if (quest.isPresent()) {
                 QuestChainBuildResult result = quest.get();
                 QuestChainInstance newQuest = result.instance;
                 MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getNotableUUID()));
                 MKNpc.LOGGER.debug("Assigning quest {}({}) to {}", newQuest.getDefinition().getName(), newQuest.getQuestId(), entity);
-                entry.setupDialogue(result);
+                entry.setupDialogue(questDef, result);
                 entry.setQuestId(newQuest.getQuestId());
             }
         }
@@ -372,10 +373,9 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         }
         if (nbt.contains("npc_definition")) {
             ResourceLocation defName = ResourceLocation.parse(nbt.getString("npc_definition"));
-            if (getEntity().getServer() != null) {
-                this.definition =  getEntity().getServer().registryAccess().registry(NpcRegistries.NPC_DEFINITIONS).orElseThrow().get(defName);
-                needsDefinitionApplied = true;
-            }
+            var defKey = ResourceKey.create(NpcRegistries.NPC_DEFINITIONS, defName);
+            this.definition =  provider.lookupOrThrow(NpcRegistries.NPC_DEFINITIONS).getOrThrow(defKey).value();
+            needsDefinitionApplied = true;
         }
         if (nbt.contains("difficulty_value")) {
             difficultyValue = nbt.getDouble("difficulty_value");

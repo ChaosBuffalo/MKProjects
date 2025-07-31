@@ -5,27 +5,27 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:skin_like_wood",
+          "ability": "mkultra:skin_like_wood",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:natures_remedy",
+          "ability": "mkultra:natures_remedy",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:explosive_growth",
+          "ability": "mkultra:explosive_growth",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityId": "mkultra:spirit_bomb",
+          "ability": "mkultra:spirit_bomb",
           "chance": 1.0,
           "priority": 4
         },
         {
-          "abilityId": "mkultra:cleansing_seed",
+          "ability": "mkultra:cleansing_seed",
           "chance": 1.0,
           "priority": 5
         }
@@ -39,10 +39,6 @@
             {
               "type": "mkcore:training_req.has_entitlement",
               "entitlement": "mkultra:green_knight.tier_1"
-            },
-            {
-              "type": "mkcore:training_req.has_entitlement",
-              "entitlement": "mkultra:cleric.tier_1"
             }
           ]
         },
@@ -88,15 +84,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 400.0
+          "base_value": 400.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 400.0
+          "base_value": 400.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 10.0
+          "base_value": 10.0
         }
       ]
     },

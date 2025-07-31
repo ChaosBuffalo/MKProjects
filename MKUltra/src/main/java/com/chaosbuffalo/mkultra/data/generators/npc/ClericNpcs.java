@@ -2,34 +2,31 @@ package com.chaosbuffalo.mkultra.data.generators.npc;
 
 import com.chaosbuffalo.mkcore.abilities.training.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
-import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUHumans;
-import com.chaosbuffalo.mkultra.init.MKUAbilities;
-import com.chaosbuffalo.mkultra.init.MKUEntities;
-import com.chaosbuffalo.mkultra.init.MKUEntitlements;
-import com.chaosbuffalo.mkultra.init.MKUFactions;
+import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
-import net.minecraft.data.CachedOutput;
-
-import java.util.concurrent.CompletableFuture;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.ResourceKey;
 
 public class ClericNpcs {
 
-    public static CompletableFuture<?> writeDefinitions(NpcDefinitionProvider provider, CachedOutput cache) {
-        return CompletableFuture.allOf(
-                provider.writeDefinition(generateTempleGuard(), cache),
-                provider.writeDefinition(generateTempleGuard2(), cache),
-                provider.writeDefinition(generateCleric(), cache)
-        );
+    public static final ResourceKey<NpcDefinition> solangian_cleric = MKUNpcs.key("solangian_cleric");
+    public static final ResourceKey<NpcDefinition> solangian_temple_guard = MKUNpcs.key("solangian_temple_guard");
+    public static final ResourceKey<NpcDefinition> solangian_temple_guard_2 = MKUNpcs.key("solangian_temple_guard_2");
+
+
+    public static void bootstrap(BootstrapContext<NpcDefinition> context) {
+        context.register(solangian_cleric, generateCleric(solangian_cleric));
+        context.register(solangian_temple_guard, generateTempleGuard(solangian_temple_guard));
+        context.register(solangian_temple_guard_2, generateTempleGuard2(solangian_temple_guard_2));
     }
 
 
-    static NpcDefinition generateCleric() {
-        return new NpcDefinitionBuilder(MKUltra.id("solangian_cleric"), MKUEntities.HUMAN_TYPE)
+    static NpcDefinition generateCleric(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
                 .size(1.05f)
                 .renderGroup(MKUHumans.CLERIC_1_NAME)
@@ -43,9 +40,9 @@ public class ClericNpcs {
                 .ability(MKUAbilities.GALVANIZE, 3, 1.0)
                 .ability(MKUAbilities.POWER_WORD_SUMMON, 4, 1.0)
                 .ability(MKUAbilities.INSPIRE, 5, 1.0)
-                .dialogue(MKUltra.id("cleric_default"))
+                .dialogue(MKUDialogues.cleric_default)
                 .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.GOLD_TIER, MeleeWeaponTypes.MACE_TYPE).orElseThrow(), 1.0)
-                .quests(MKUltra.id("cleric_unlock_chain"))
+                .quests(MKUQuests.CLERIC_UNLOCK_CHAIN)
                 .trains(MKUAbilities.HEAL, new HasEntitlementRequirement(MKUEntitlements.ClericTier1.get()))
                 .trains(MKUAbilities.SMITE, new HasEntitlementRequirement(MKUEntitlements.ClericTier1.get()))
                 .trains(MKUAbilities.GALVANIZE, new HasEntitlementRequirement(MKUEntitlements.ClericTier2.get()))
@@ -56,8 +53,8 @@ public class ClericNpcs {
                 .build();
     }
 
-    static NpcDefinition generateTempleGuard2() {
-        return new NpcDefinitionBuilder(MKUltra.id("solangian_temple_guard_2"), MKUEntities.HUMAN_TYPE)
+    static NpcDefinition generateTempleGuard2(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
                 .renderGroup(MKUHumans.TEMPLE_GUARD_2_NAME)
                 .size(1.0f)
@@ -75,8 +72,8 @@ public class ClericNpcs {
                 .build();
     }
 
-    static NpcDefinition generateTempleGuard() {
-        return new NpcDefinitionBuilder(MKUltra.id("solangian_temple_guard"), MKUEntities.HUMAN_TYPE)
+    static NpcDefinition generateTempleGuard(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
                 .renderGroup(MKUHumans.TEMPLE_GUARD_1_NAME)
                 .size(1.0f)

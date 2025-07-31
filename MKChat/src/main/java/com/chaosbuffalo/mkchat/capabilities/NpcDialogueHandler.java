@@ -11,7 +11,7 @@ import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -99,7 +99,8 @@ public class NpcDialogueHandler implements INpcDialogue {
     private final LivingEntity entity;
     private final Map<UUID, Conversation> conversations;
     private final List<DialogueTree> secondaryTrees = new ArrayList<>();
-    private ResourceLocation primaryDialogueTreeName;
+    @Nullable
+    private ResourceKey<DialogueTree> primaryDialogueTreeName;
 
     public NpcDialogueHandler(LivingEntity attached) {
         this.entity = attached;
@@ -120,9 +121,11 @@ public class NpcDialogueHandler implements INpcDialogue {
     @Nullable
     public Conversation createConversation(ServerPlayer player) {
         List<DialogueTree> trees = new ArrayList<>();
-        DialogueTree primaryTree = DialogueManager.getDialogueTree(primaryDialogueTreeName);
-        if (primaryTree != null) {
-            trees.add(primaryTree);
+        if (primaryDialogueTreeName != null) {
+            DialogueTree primaryTree = DialogueManager.getDialogueTree(player.registryAccess(), primaryDialogueTreeName);
+            if (primaryTree != null) {
+                trees.add(primaryTree);
+            }
         }
         trees.addAll(secondaryTrees);
         NeoForge.EVENT_BUS.post(new PlayerNpcDialogueTreeGatherEvent(player, getEntity(), trees));
@@ -167,13 +170,6 @@ public class NpcDialogueHandler implements INpcDialogue {
         entry.converse(player, entity);
     }
 
-    // Use single-argument version
-    @Deprecated
-    @Override
-    public void startDialogue(ServerPlayer player, boolean suppressHail) {
-        startDialogue(player);
-    }
-
     private void sendHailMessage(ServerPlayer player) {
         MinecraftServer server = player.getServer();
         if (server == null)
@@ -187,7 +183,7 @@ public class NpcDialogueHandler implements INpcDialogue {
     }
 
     @Override
-    public void setDialogueTree(ResourceLocation treeName) {
+    public void setDialogueTree(ResourceKey<DialogueTree> treeName) {
         primaryDialogueTreeName = treeName;
         conversations.clear();
     }
@@ -199,7 +195,7 @@ public class NpcDialogueHandler implements INpcDialogue {
 
     @Nullable
     @Override
-    public ResourceLocation getDialogueTreeName() {
+    public ResourceKey<DialogueTree> getDialogueTreeName() {
         return primaryDialogueTreeName;
     }
 

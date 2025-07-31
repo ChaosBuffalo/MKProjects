@@ -16,7 +16,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
@@ -26,17 +26,15 @@ import java.util.Map;
 import java.util.Optional;
 
 public class KillNotableNpcObjective extends QuestObjective<UUIDInstanceData> implements IKillObjectiveHandler {
-    public static final MapCodec<KillNotableNpcObjective> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> {
-        return builder.group(
-                Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
-                QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
-                ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition)
-        ).apply(builder, KillNotableNpcObjective::new);
-    });
+    public static final MapCodec<KillNotableNpcObjective> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
+            QuestStructureLocation.CODEC.fieldOf("structure").forGetter(i -> i.location),
+            NpcDefinition.KEY_CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition)
+    ).apply(builder, KillNotableNpcObjective::new));
 
-    private final ResourceLocation npcDefinition;
+    private final ResourceKey<NpcDefinition> npcDefinition;
 
-    public KillNotableNpcObjective(String name, QuestStructureLocation structureLocation, ResourceLocation npcDef) {
+    public KillNotableNpcObjective(String name, QuestStructureLocation structureLocation, ResourceKey<NpcDefinition> npcDef) {
         super(name, structureLocation);
         npcDefinition = npcDef;
     }

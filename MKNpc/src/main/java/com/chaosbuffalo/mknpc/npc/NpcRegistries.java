@@ -21,7 +21,7 @@ public class NpcRegistries {
     public static final Registry<NpcOptionEntryType<?>> NPC_OPTION_ENTRY_TYPES = new RegistryBuilder<>(NPC_OPTION_ENTRY_TYPE_REGISTRY_KEY)
             .create();
 
-    public static ResourceKey<Registry<NpcDefinition>> NPC_DEFINITIONS = ResourceKey.createRegistryKey(MKNpc.id("mknpcs"));
+    public static final ResourceKey<Registry<NpcDefinition>> NPC_DEFINITIONS = ResourceKey.createRegistryKey(MKNpc.id("mknpcs"));
 
     public static void createRegistries(NewRegistryEvent event) {
         event.register(NPC_OPTION_TYPES);

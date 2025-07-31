@@ -3,30 +3,29 @@ package com.chaosbuffalo.mkultra.data.generators.npc;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
-import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUSkeletons;
 import com.chaosbuffalo.mkultra.init.MKULootTiers;
 import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
-import net.minecraft.data.CachedOutput;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-
-import java.util.concurrent.CompletableFuture;
 
 public class SeawovenNpcs {
 
-    public static CompletableFuture<?> writeDefinitions(NpcDefinitionProvider provider, CachedOutput cache) {
-        return CompletableFuture.allOf(
-                provider.writeDefinition(generateSeawovenSkeleton(), cache),
-                provider.writeDefinition(generateSeawovenWretch(), cache)
-        );
+    public static final ResourceKey<NpcDefinition> seawoven_wretch = MKUNpcs.key("seawoven_wretch");
+    public static final ResourceKey<NpcDefinition> seawoven_skeleton = MKUNpcs.key("seawoven_skeleton");
+
+
+    public static void bootstrap(BootstrapContext<NpcDefinition> context) {
+        context.register(seawoven_wretch, generateSeawovenWretch(seawoven_wretch));
+        context.register(seawoven_skeleton, generateSeawovenSkeleton(seawoven_skeleton));
     }
 
-    static NpcDefinition generateSeawovenWretch() {
-        return new NpcDefinitionBuilder(MKUltra.id("seawoven_wretch"), MKUEntities.HYBOREAN_SKELETON_TYPE)
+    static NpcDefinition generateSeawovenWretch(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .renderGroup(MKUSkeletons.SEAWOVEN_WRTECH_NAME)
                 .size(0.92f)
@@ -40,8 +39,8 @@ public class SeawovenNpcs {
                 .build();
     }
 
-    static NpcDefinition generateSeawovenSkeleton() {
-        return new NpcDefinitionBuilder(MKUltra.id("seawoven_skeleton"), MKUEntities.HYBOREAN_SKELETON_TYPE)
+    static NpcDefinition generateSeawovenSkeleton(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .renderGroup(MKUSkeletons.SEAWOVEN_NAME)
                 .size(0.98f)

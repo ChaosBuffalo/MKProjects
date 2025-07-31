@@ -2,8 +2,6 @@ package com.chaosbuffalo.mkcore.core.entity;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
-import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
 import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
@@ -206,31 +204,6 @@ public abstract class EntityStats implements IMKEntityStats, IPlayerSyncComponen
             setPoise(poise - blockPortion);
             return new BlockResult(remainder, false);
         }
-    }
-
-    @Override
-    public float getAbilityManaCost(MKAbilityInfo abilityInfo) {
-        float manaCost = abilityInfo.getAbility().getManaCost(entityData);
-        return MKCombatFormulas.applyManaCostReduction(entityData, manaCost);
-    }
-
-    @Override
-    public int getAbilityCooldown(MKAbility ability) {
-        int ticks = ability.getCooldown(entityData);
-        return MKCombatFormulas.applyCooldownReduction(entityData, ticks);
-    }
-
-    @Override
-    public int getAbilityCastTime(MKAbility ability) {
-        int ticks = ability.getCastTime(entityData);
-        return ability.canApplyCastingSpeedModifier() ?
-                MKCombatFormulas.applyCastTimeModifier(entityData, ticks) :
-                ticks;
-    }
-
-    @Override
-    public boolean canActivateAbility(MKAbilityInfo abilityInfo) {
-        return getMana() >= getAbilityManaCost(abilityInfo);
     }
 
     @Override

@@ -17,6 +17,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -26,19 +27,17 @@ import java.util.List;
 import java.util.Map;
 
 public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> implements IKillObjectiveHandler {
-    public static final MapCodec<KillNpcDefObjective> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> {
-        return builder.group(
-                Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
-                ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
-                Codec.INT.fieldOf("count").forGetter(i -> i.requiredCount)
-        ).apply(builder, KillNpcDefObjective::new);
-    });
+    public static final MapCodec<KillNpcDefObjective> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            Codec.STRING.fieldOf("objectiveName").forGetter(i -> i.objectiveName),
+            NpcDefinition.KEY_CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
+            Codec.INT.fieldOf("count").forGetter(i -> i.requiredCount)
+    ).apply(builder, KillNpcDefObjective::new));
 
     public static final ResourceLocation NAME = MKNpc.id("objective.kill_npc_def");
-    private final ResourceLocation npcDefinition;
+    private final ResourceKey<NpcDefinition> npcDefinition;
     private final int requiredCount;
 
-    public KillNpcDefObjective(String name, ResourceLocation definition, int count) {
+    public KillNpcDefObjective(String name, ResourceKey<NpcDefinition> definition, int count) {
         super(name);
         npcDefinition = definition;
         requiredCount = count;
@@ -80,7 +79,7 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
     @Override
     public boolean onPlayerKillNpcDefEntity(Player player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
                                             LivingDeathEvent event, QuestData questData, PlayerQuestChainInstance playerChain) {
-        if (def != null && def.getDefinitionName().equals(npcDefinition) && !isComplete(objectiveData)) {
+        if (def != null && def.getDefinitionKey().equals(npcDefinition) && !isComplete(objectiveData)) {
             int currentCount = objectiveData.getInt("killCount");
             currentCount++;
             objectiveData.putInt("killCount", currentCount);

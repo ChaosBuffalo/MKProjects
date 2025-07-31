@@ -5,25 +5,22 @@ import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
 import com.chaosbuffalo.mkchat.dialogue.DialogueResponse;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
-import com.chaosbuffalo.mkcore.utils.CommonCodecs;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.CanStartQuestCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
-import com.chaosbuffalo.mkweapons.components.RangedEffectsComponent;
-import com.chaosbuffalo.mkweapons.items.effects.ranged.IRangedWeaponEffect;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.RegistryFixedCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
@@ -31,18 +28,38 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class QuestDefinition {
-    public enum QuestMode {
+    public enum QuestMode implements StringRepresentable {
         LINEAR,
-        UNSORTED
+        UNSORTED;
+
+        public static final Codec<QuestMode> CODEC = StringRepresentable.fromValues(QuestMode::values);
+
+        @Override
+        public String getSerializedName() {
+            return name().toLowerCase(Locale.ROOT);
+        }
     }
 
-    public record AdditionalNotable(QuestStructureLocation location, ResourceLocation notableDef) {
+    public record AdditionalNotable(QuestStructureLocation location, ResourceKey<NpcDefinition> notableDef) {
         public static final Codec<AdditionalNotable> CODEC = RecordCodecBuilder.create(builder -> builder.group(
                 QuestStructureLocation.CODEC.fieldOf("location").forGetter(AdditionalNotable::location),
-                ResourceLocation.CODEC.fieldOf("notableDefs").forGetter(AdditionalNotable::notableDef)
+                NpcDefinition.KEY_CODEC.fieldOf("notableDefs").forGetter(AdditionalNotable::notableDef)
         ).apply(builder, AdditionalNotable::new));
     }
 
+    public static final Codec<QuestDefinition> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            ResourceLocation.CODEC.fieldOf("questTemplateId").forGetter(i -> i.name),
+            ComponentSerialization.CODEC.fieldOf("questName").forGetter(i -> i.questName),
+            Quest.CODEC.listOf().fieldOf("quests").forGetter(i -> i.questChain),
+            Codec.BOOL.fieldOf("repeatable").forGetter(i -> i.repeatable),
+            QuestRequirement.CODEC.listOf().fieldOf("requirements").forGetter(i -> i.requirements),
+            QuestMode.CODEC.fieldOf("questMode").forGetter(i -> i.mode),
+            DialogueTree.CODEC.fieldOf("dialogue").forGetter(i -> i.startQuestTree),
+            AdditionalNotable.CODEC.listOf().optionalFieldOf("additionalNotables", List.of()).forGetter(i -> i.additionalNotables)
+    ).apply(builder, QuestDefinition::new));
+
+    public static final Codec<Holder<QuestDefinition>> REFERENCE_CODEC = RegistryFixedCodec.create(QuestRegistries.QUEST_DEFINITIONS);
+    public static final Codec<ResourceKey<QuestDefinition>> KEY_CODEC = ResourceKey.codec(QuestRegistries.QUEST_DEFINITIONS);
 
     private final ResourceLocation name;
     private final List<Quest> questChain;
@@ -52,14 +69,27 @@ public class QuestDefinition {
     private static final Component defaultQuestName = Component.literal("Default");
     private final List<QuestRequirement> requirements;
     private QuestMode mode;
-    private DialogueTree startQuestTree;
-
+    private final DialogueTree startQuestTree;
     private final List<AdditionalNotable> additionalNotables;
 
 
-
-    public QuestDefinition(ResourceLocation name) {
+    private QuestDefinition(ResourceLocation name, Component questName, List<Quest> quests, boolean repeatable,
+                            List<QuestRequirement> requirements, QuestMode mode, DialogueTree startQuestTree,
+                            List<AdditionalNotable> additionalNotables) {
         this.name = name;
+        this.questName = questName;
+        this.questChain = quests;
+        this.repeatable = repeatable;
+        this.requirements = requirements;
+        this.mode = mode;
+        this.startQuestTree = startQuestTree;
+        this.additionalNotables = additionalNotables;
+        questIndex = new HashMap<>(quests.size());
+        quests.forEach(quest -> questIndex.put(quest.getQuestName(), quest));
+    }
+
+    public QuestDefinition(ResourceKey<QuestDefinition> name) {
+        this.name = name.location();
         this.questChain = new ArrayList<>();
         this.questIndex = new HashMap<>();
         this.requirements = new ArrayList<>();
@@ -67,13 +97,13 @@ public class QuestDefinition {
         this.repeatable = false;
         this.mode = QuestMode.LINEAR;
         this.questName = defaultQuestName;
-        startQuestTree = new DialogueTree(makeTreeId(name));
+        startQuestTree = new DialogueTree(makeTreeId(name.location()));
         DialoguePrompt hailPrompt = new DialoguePrompt("hail");
         startQuestTree.addPrompt(hailPrompt);
         startQuestTree.setHailPrompt(hailPrompt);
     }
 
-    public void addAdditionalNotable(QuestStructureLocation location, ResourceLocation notable) {
+    public void addAdditionalNotable(QuestStructureLocation location, ResourceKey<NpcDefinition> notable) {
         additionalNotables.add(new AdditionalNotable(location, notable));
     }
 
@@ -186,45 +216,6 @@ public class QuestDefinition {
 
     public ResourceLocation getName() {
         return name;
-    }
-
-
-    public <D> D serialize(DynamicOps<D> ops, HolderLookup.Provider provider) {
-        ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
-        builder.put(ops.createString("quests"), ops.createList(questChain.stream().map(x -> x.serialize(ops, provider))));
-        builder.put(ops.createString("repeatable"), ops.createBoolean(isRepeatable()));
-        builder.put(ops.createString("questName"), ops.createString(Component.Serializer.toJson(questName, provider)));
-        builder.put(ops.createString("requirements"), ops.createList(requirements.stream().flatMap(x -> QuestRequirement.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
-        builder.put(ops.createString("questMode"), ops.createInt(getMode().ordinal()));
-        builder.put(ops.createString("dialogue"), startQuestTree.serialize(ops));
-        builder.put(ops.createString("additionalNotables"), ops.createList(additionalNotables.stream().flatMap(x -> AdditionalNotable.CODEC.encodeStart(ops, x).resultOrPartial(MKNpc.LOGGER::error).stream())));
-        return ops.createMap(builder.build());
-    }
-
-    public <D> void deserialize(Dynamic<D> dynamic, HolderLookup.Provider provider) {
-        List<Quest> dQuests = dynamic.get("quests").asList(d -> {
-            Quest q = new Quest();
-            q.deserialize(d, provider);
-            return q;
-        });
-        questIndex.clear();
-        questChain.clear();
-        repeatable = dynamic.get("repeatable").asBoolean(false);
-        for (Quest quest : dQuests) {
-            addQuest(quest);
-        }
-        questName = Component.Serializer.fromJson(
-                dynamic.get("questName").asString(Component.Serializer.toJson(defaultQuestName, provider)), provider);
-        mode = QuestMode.values()[dynamic.get("questMode").asInt(0)];
-        dynamic.get("requirements").asStream().forEach(x -> {
-            QuestRequirement.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(this::addRequirement);
-        });
-        dynamic.get("additionalNotables").asStream().forEach(x -> {
-            AdditionalNotable.CODEC.parse(x).resultOrPartial(MKNpc.LOGGER::error).ifPresent(not -> addAdditionalNotable(not.location, not.notableDef));
-        });
-        startQuestTree = DialogueTree.deserialize(makeTreeId(getName()),
-                dynamic.get("dialogue").result().orElseThrow(() -> new IllegalStateException(String.format(
-                        "QuestDefinition: %s missing start quest dialogue", getName().toString()))));
     }
 
     public Set<QuestStructureLocation> getStructuresNeeded() {

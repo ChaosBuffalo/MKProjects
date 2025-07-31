@@ -5,12 +5,12 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:fireball",
+          "ability": "mkultra:fireball",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:ember",
+          "ability": "mkultra:ember",
           "chance": 0.5,
           "priority": 2
         }
@@ -20,15 +20,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 30.0
+          "base_value": 30.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 30.0
+          "base_value": 30.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 1.0
+          "base_value": 1.0
         }
       ]
     },

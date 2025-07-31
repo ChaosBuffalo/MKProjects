@@ -1,10 +1,11 @@
 package com.chaosbuffalo.mkchat.dialogue;
 
-import com.chaosbuffalo.mkchat.MKChat;
+import com.chaosbuffalo.mkchat.ChatRegistries;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.RegistryFixedCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -13,21 +14,22 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class DialogueTree {
-    public static final Codec<DialogueTree> CODEC = RecordCodecBuilder.<DialogueTree>mapCodec(builder -> {
-        return builder.group(
-                ResourceLocation.CODEC.fieldOf("dialogueId").forGetter(i -> i.dialogueName),
-                Codec.list(DialogueNode.CODEC).fieldOf("nodes").forGetter(i -> List.copyOf(i.nodes.values())),
-                Codec.list(DialoguePrompt.CODEC).fieldOf("prompts").forGetter(i -> List.copyOf(i.prompts.values())),
-                Codec.STRING.optionalFieldOf("hailPromptId").forGetter(i -> Optional.ofNullable(i.hailPromptId))
-        ).apply(builder, DialogueTree::new);
-    }).codec();
+    public static final Codec<ResourceKey<DialogueTree>> KEY_CODEC = ResourceKey.codec(ChatRegistries.DIALOGUE_TREES);
+    public static final Codec<DialogueTree> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            KEY_CODEC.fieldOf("dialogueId").forGetter(i -> i.dialogueName),
+            DialogueNode.CODEC.listOf().fieldOf("nodes").forGetter(i -> List.copyOf(i.nodes.values())),
+            DialoguePrompt.CODEC.listOf().fieldOf("prompts").forGetter(i -> List.copyOf(i.prompts.values())),
+            Codec.STRING.optionalFieldOf("hailPromptId").forGetter(i -> Optional.ofNullable(i.hailPromptId))
+    ).apply(builder, DialogueTree::new));
 
-    private final ResourceLocation dialogueName;
+    public static final Codec<Holder<DialogueTree>> REFERENCE_CODEC = RegistryFixedCodec.create(ChatRegistries.DIALOGUE_TREES);
+
+    private final ResourceKey<DialogueTree> dialogueName;
     private final Map<String, DialogueNode> nodes;
     private final Map<String, DialoguePrompt> prompts;
     private String hailPromptId;
 
-    private DialogueTree(ResourceLocation dialogueName, Collection<DialogueNode> nodes, Collection<DialoguePrompt> prompts, Optional<String> hail) {
+    private DialogueTree(ResourceKey<DialogueTree> dialogueName, Collection<DialogueNode> nodes, Collection<DialoguePrompt> prompts, Optional<String> hail) {
         this(dialogueName);
         nodes.forEach(this::addNode);
         prompts.forEach(this::addPrompt);
@@ -35,6 +37,13 @@ public class DialogueTree {
     }
 
     public DialogueTree(ResourceLocation dialogueName) {
+        this.dialogueName = ResourceKey.create(ChatRegistries.DIALOGUE_TREES, dialogueName);
+        this.nodes = new HashMap<>();
+        this.prompts = new HashMap<>();
+        hailPromptId = null;
+    }
+
+    public DialogueTree(ResourceKey<DialogueTree> dialogueName) {
         this.dialogueName = dialogueName;
         this.nodes = new HashMap<>();
         this.prompts = new HashMap<>();
@@ -52,7 +61,7 @@ public class DialogueTree {
     }
 
     public ResourceLocation getDialogueName() {
-        return dialogueName;
+        return dialogueName.location();
     }
 
     @Nullable
@@ -75,7 +84,7 @@ public class DialogueTree {
     }
 
     public DialogueTree copy() {
-        return copy(dialogueName);
+        return copy(dialogueName.location());
     }
 
     public void addPrompt(DialoguePrompt prompt) {
@@ -136,22 +145,6 @@ public class DialogueTree {
         return false;
     }
 
-    public <D> D serialize(DynamicOps<D> ops) {
-        return CODEC.encodeStart(ops, this).getOrThrow();
-    }
-
-    public static <D> DialogueTree deserialize(ResourceLocation name, Dynamic<D> dynamic) {
-        DialogueTree tree = deserialize(dynamic);
-        if (tree.getDialogueName().compareTo(name) != 0) {
-            MKChat.LOGGER.warn("Dialogue tree {} did not match expected tree name {}", tree.dialogueName, name);
-        }
-        return tree;
-    }
-
-    public static <D> DialogueTree deserialize(Dynamic<D> dynamic) {
-        return CODEC.parse(dynamic).getOrThrow();
-    }
-
     protected void internalMerge(DialogueTree other) {
         for (DialogueNode node : other.getNodes().values()) {
             addNode(node.copy());
@@ -177,14 +170,14 @@ public class DialogueTree {
         return newTree;
     }
 
-    public static Builder builder(ResourceLocation treeId) {
+    public static Builder builder(ResourceKey<DialogueTree> treeId) {
         return new Builder(treeId);
     }
 
     public static class Builder {
         private final DialogueTree tree;
 
-        public Builder(ResourceLocation treeId) {
+        public Builder(ResourceKey<DialogueTree> treeId) {
             tree = new DialogueTree(treeId);
         }
 

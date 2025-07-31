@@ -22,6 +22,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
@@ -37,21 +38,21 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
     public final static ResourceLocation TYPE_NAME = MKNpc.id("struct_event.spawn_npc");
     public static final MapCodec<SpawnNpcDefinitionEvent> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> {
         return CommonCodecs.and(commonCodec(builder), builder.group(
-                ResourceLocation.CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
+                NpcDefinition.KEY_CODEC.fieldOf("npcDefinition").forGetter(i -> i.npcDefinition),
                 Codec.STRING.fieldOf("poiTag").forGetter(i -> i.poiTag),
                 Codec.STRING.fieldOf("faceTag").forGetter(i -> i.faceTag),
                 MKEntity.NonCombatMoveType.CODEC.fieldOf("moveType").forGetter(i -> i.moveType)
         )).apply(builder, SpawnNpcDefinitionEvent::new);
     });
 
-    protected final ResourceLocation npcDefinition;
+    protected final ResourceKey<NpcDefinition> npcDefinition;
     protected final String poiTag;
     protected final String faceTag;
     protected final MKEntity.NonCombatMoveType moveType;
 
     private SpawnNpcDefinitionEvent(String eventName, int cooldown, Set<EventTrigger> triggers,
                                     List<StructureEventRequirement> requirementList, List<StructureEventCondition> conditions,
-                                    ResourceLocation npcDef, String poiTag, String faceTag, MKEntity.NonCombatMoveType moveType) {
+                                    ResourceKey<NpcDefinition> npcDef, String poiTag, String faceTag, MKEntity.NonCombatMoveType moveType) {
         super(TYPE_NAME, eventName, cooldown, triggers, requirementList, conditions);
         this.npcDefinition = npcDef;
         this.poiTag = poiTag;
@@ -62,18 +63,18 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
         addRequirement(new StructureHasPoiRequirement(faceTag));
     }
 
-    public SpawnNpcDefinitionEvent(String eventName, ResourceLocation npcDef, String spawnLocation, String faceTagIn,
+    public SpawnNpcDefinitionEvent(String eventName, ResourceKey<NpcDefinition> npcDef, String spawnLocation, String faceTagIn,
                                    MKEntity.NonCombatMoveType moveType) {
         this(eventName, DEFAULT_COOLDOWN, new HashSet<>(), List.of(), List.of(), npcDef, spawnLocation, faceTagIn, moveType);
     }
 
-    public SpawnNpcDefinitionEvent addNotableDeadCondition(ResourceLocation notable, boolean killAll) {
+    public SpawnNpcDefinitionEvent addNotableDeadCondition(ResourceKey<NpcDefinition> notable, boolean killAll) {
         addRequirement(new StructureHasNotableRequirement(notable));
         addCondition(new NotableDeadCondition(notable, killAll));
         return this;
     }
 
-    public SpawnNpcDefinitionEvent addNpcDeathCountCondition(ResourceLocation npcDefinition, int count, String name) {
+    public SpawnNpcDefinitionEvent addNpcDeathCountCondition(ResourceKey<NpcDefinition> npcDefinition, int count, String name) {
         addRequirement(new StructureHasNpcRequirement(npcDefinition));
         addCondition(new NpcDeathCountCondition(npcDefinition, count, name));
         return this;

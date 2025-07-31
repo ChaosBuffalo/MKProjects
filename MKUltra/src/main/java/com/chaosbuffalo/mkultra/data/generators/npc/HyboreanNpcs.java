@@ -2,40 +2,42 @@ package com.chaosbuffalo.mkultra.data.generators.npc;
 
 import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
-import com.chaosbuffalo.mknpc.data.providers.NpcDefinitionProvider;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUSkeletons;
-import com.chaosbuffalo.mkultra.init.MKUAbilities;
-import com.chaosbuffalo.mkultra.init.MKUEntities;
-import com.chaosbuffalo.mkultra.init.MKUItems;
-import com.chaosbuffalo.mkultra.init.MKULootTiers;
+import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.CachedOutput;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 
-import java.util.concurrent.CompletableFuture;
-
 public class HyboreanNpcs {
 
-    public static CompletableFuture<?> writeDefinitions(NpcDefinitionProvider provider, CachedOutput cache) {
-        return CompletableFuture.allOf(
-                provider.writeDefinition(generateHyboreanWarrior(), cache),
-                provider.writeDefinition(generateHyboreanHonorGuard(), cache),
-                provider.writeDefinition(generateHyboreanArcher(), cache),
-                provider.writeDefinition(generateHyboreanSorcerer(), cache),
-                provider.writeDefinition(generateAncientKing(), cache),
-                provider.writeDefinition(generateHyboreanSorcererQueen(), cache)
-        );
+    public static final ResourceKey<NpcDefinition> hyborean_honor_guard = MKUNpcs.key("hyborean_honor_guard");
+    public static final ResourceKey<NpcDefinition> hyborean_sorcerer = MKUNpcs.key("hyborean_sorcerer");
+    public static final ResourceKey<NpcDefinition> an_ancient_king = MKUNpcs.key("an_ancient_king");
+    public static final ResourceKey<NpcDefinition> hyborean_sorcerer_queen = MKUNpcs.key("hyborean_sorcerer_queen");
+    public static final ResourceKey<NpcDefinition> hyborean_archer = MKUNpcs.key("hyborean_archer");
+    public static final ResourceKey<NpcDefinition> hyborean_warrior = MKUNpcs.key("hyborean_warrior");
+
+
+    public static void bootstrap(BootstrapContext<NpcDefinition> context) {
+        context.register(hyborean_honor_guard, generateHyboreanHonorGuard(hyborean_honor_guard));
+        context.register(hyborean_sorcerer, generateHyboreanSorcerer(hyborean_sorcerer));
+        context.register(an_ancient_king, generateAncientKing(an_ancient_king));
+        context.register(hyborean_sorcerer_queen, generateHyboreanSorcererQueen(hyborean_sorcerer_queen));
+        context.register(hyborean_archer, generateHyboreanArcher(hyborean_archer));
+        context.register(hyborean_warrior, generateHyboreanWarrior(hyborean_warrior));
     }
 
-    static NpcDefinition generateHyboreanHonorGuard() {
-        return new NpcDefinitionBuilder(MKUltra.id("hyborean_honor_guard"), MKUEntities.HYBOREAN_SKELETON_TYPE)
+
+    static NpcDefinition generateHyboreanHonorGuard(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .name("Undying Honor Guard")
                 .size(1.0f)
@@ -62,8 +64,8 @@ public class HyboreanNpcs {
                 .build();
     }
 
-    static NpcDefinition generateHyboreanSorcerer() {
-        return new NpcDefinitionBuilder(MKUltra.id("hyborean_sorcerer"), MKUEntities.HYBOREAN_SKELETON_TYPE)
+    static NpcDefinition generateHyboreanSorcerer(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .name("Hyborean Sorcerer")
                 .size(0.9f)
@@ -82,8 +84,8 @@ public class HyboreanNpcs {
                 .build();
     }
 
-    static NpcDefinition generateAncientKing() {
-        return new NpcDefinitionBuilder(MKUltra.id("an_ancient_king"), MKUEntities.HYBOREAN_SKELETON_TYPE)
+    static NpcDefinition generateAncientKing(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .name("An Ancient King")
                 .size(1.15f)
@@ -122,8 +124,8 @@ public class HyboreanNpcs {
                 .build();
     }
 
-    static NpcDefinition generateHyboreanSorcererQueen() {
-        return new NpcDefinitionBuilder(MKUltra.id("hyborean_sorcerer_queen"), MKUEntities.HYBOREAN_SKELETON_TYPE)
+    static NpcDefinition generateHyboreanSorcererQueen(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .name("Hyborean Sorcerer Queen")
                 .faction(MKFactions.UNDEAD)
                 .size(1.1f)
@@ -152,8 +154,8 @@ public class HyboreanNpcs {
                 .build();
     }
 
-    static NpcDefinition generateHyboreanArcher() {
-        return new NpcDefinitionBuilder(MKUltra.id("hyborean_archer"), MKUEntities.HYBOREAN_SKELETON_TYPE)
+    static NpcDefinition generateHyboreanArcher(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .name("Decaying Archer")
                 .faction(MKFactions.UNDEAD)
                 .size(0.95f)
@@ -171,8 +173,8 @@ public class HyboreanNpcs {
                 .build();
     }
 
-    static NpcDefinition generateHyboreanWarrior() {
-        return new NpcDefinitionBuilder(MKUltra.id("hyborean_warrior"), MKUEntities.HYBOREAN_SKELETON_TYPE)
+    static NpcDefinition generateHyboreanWarrior(ResourceKey<NpcDefinition> key) {
+        return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
                 .size(1.0f)
                 .renderGroup(MKUSkeletons.HYBOREAN_WARRIOR_NAME)

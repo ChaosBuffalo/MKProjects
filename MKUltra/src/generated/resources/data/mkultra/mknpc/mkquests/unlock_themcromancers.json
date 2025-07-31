@@ -81,12 +81,13 @@
       }
     ]
   },
-  "questMode": 0,
-  "questName": "\"Supplying Materials\"",
+  "questMode": "linear",
+  "questName": "Supplying Materials",
+  "questTemplateId": "mkultra:unlock_themcromancers",
   "quests": [
     {
       "autoComplete": true,
-      "description": "\"You must deliver a grisly harvest to the skeletal gatekeeper.\"",
+      "description": "You must deliver a grisly harvest to the skeletal gatekeeper.",
       "objectives": [
         {
           "type": "mknpc:trade_with_npc",
@@ -123,7 +124,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Return to the gatekeeper\"",
+      "description": "Return to the gatekeeper",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",

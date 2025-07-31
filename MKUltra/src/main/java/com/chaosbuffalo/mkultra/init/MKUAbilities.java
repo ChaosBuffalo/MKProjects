@@ -16,8 +16,8 @@ import com.chaosbuffalo.mkultra.abilities.passives.LifeSiphonAbility;
 import com.chaosbuffalo.mkultra.abilities.passives.SoulDrainAbility;
 import com.chaosbuffalo.mkultra.abilities.structure.NecrotideGolemBeam;
 import com.chaosbuffalo.mkultra.abilities.wet_wizard.DrownAbility;
-import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import com.chaosbuffalo.mkultra.data.generators.npc.HyboreanNpcs;
+import com.chaosbuffalo.mkultra.data.generators.npc.NecrotideNpcs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -54,10 +54,10 @@ public class MKUAbilities {
 
     //necromancer
     public static final DeferredHolder<MKAbility, MKEntitySummonAbility> TEST_SUMMON = REGISTRY.register("test_summon",
-            () -> new MKEntitySummonAbility(MKUltra.id("hyborean_sorcerer_queen"), MKAttributes.NECROMANCY));
+            () -> new MKEntitySummonAbility(HyboreanNpcs.hyborean_sorcerer_queen, MKAttributes.NECROMANCY));
 
     public static final DeferredHolder<MKAbility, MKEntitySummonAbility> NECROTIDE_WARRIOR_SUMMON = REGISTRY.register("necrotide_warrior_summon",
-            () -> new MKEntitySummonAbility(MKUltra.id("necrotide_skeletal_warrior"), MKAttributes.NECROMANCY));
+            () -> new MKEntitySummonAbility(NecrotideNpcs.necrotide_skeletal_warrior, MKAttributes.NECROMANCY));
     public static final DeferredHolder<MKAbility, ShadowPulseAbility> SHADOW_PULSE = REGISTRY.register("shadow_pulse", ShadowPulseAbility::new);
     public static final DeferredHolder<MKAbility, ShadowBoltAbility> SHADOW_BOLT = REGISTRY.register("shadow_bolt", ShadowBoltAbility::new);
     public static final DeferredHolder<MKAbility, LifeSpikeAbility> LIFE_SPIKE = REGISTRY.register("life_spike", LifeSpikeAbility::new);

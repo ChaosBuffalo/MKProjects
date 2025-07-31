@@ -5,27 +5,27 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:heal",
+          "ability": "mkultra:heal",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:smite",
+          "ability": "mkultra:smite",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:galvanize",
+          "ability": "mkultra:galvanize",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityId": "mkultra:power_word_summon",
+          "ability": "mkultra:power_word_summon",
           "chance": 1.0,
           "priority": 4
         },
         {
-          "abilityId": "mkultra:inspire",
+          "ability": "mkultra:inspire",
           "chance": 1.0,
           "priority": 5
         }
@@ -84,15 +84,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 500.0
+          "base_value": 500.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 500.0
+          "base_value": 500.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 5.0
+          "base_value": 5.0
         }
       ]
     },

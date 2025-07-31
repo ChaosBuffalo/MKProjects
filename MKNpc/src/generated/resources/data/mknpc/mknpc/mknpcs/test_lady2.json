@@ -1,6 +1,6 @@
 {
-  "parent": "mknpc:test",
-  "name": "mknpc:test2",
+  "parent": "mknpc:test_lady",
+  "name": "mknpc:test_lady2",
   "options": {
     "mknpc:faction": {
       "factionId": "mkfaction:undead"

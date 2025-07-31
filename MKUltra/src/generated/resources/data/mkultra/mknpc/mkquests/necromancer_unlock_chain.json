@@ -1,5 +1,4 @@
 {
-  "additionalNotables": [],
   "dialogue": {
     "dialogueId": "mknpc:give_quest.mkultra.necromancer_unlock_chain",
     "hailPromptId": "hail",
@@ -73,12 +72,13 @@
       }
     ]
   },
-  "questMode": 0,
-  "questName": "\"Path to Them\"",
+  "questMode": "linear",
+  "questName": "Path to Them",
+  "questTemplateId": "mkultra:necromancer_unlock_chain",
   "quests": [
     {
       "autoComplete": true,
-      "description": "\"The Archon has provided you with a shopping list. Destroy undead in the wilderness and collect their parts.\"",
+      "description": "The Archon has provided you with a shopping list. Destroy undead in the wilderness and collect their parts.",
       "objectives": [
         {
           "type": "mknpc:quest_loot_type_tag",
@@ -122,7 +122,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Return to the Archon\"",
+      "description": "Return to the Archon",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
@@ -217,7 +217,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Collect the remnants of the sea.\"",
+      "description": "Collect the remnants of the sea.",
       "objectives": [
         {
           "type": "mknpc:quest_loot_npc",
@@ -254,7 +254,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Return to the Archon\"",
+      "description": "Return to the Archon",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",
@@ -353,7 +353,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Eliminate the Temple Guard\"",
+      "description": "Eliminate the Temple Guard",
       "objectives": [
         {
           "type": "mknpc:kill_notable_npc",
@@ -380,7 +380,7 @@
     },
     {
       "autoComplete": true,
-      "description": "\"Return to the Archon\"",
+      "description": "Return to the Archon",
       "objectives": [
         {
           "type": "mknpc:talk_to_npc",

@@ -6,6 +6,8 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.event.SpawnNpcDefinitionEvent;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.data.UltraTags;
+import com.chaosbuffalo.mkultra.data.generators.npc.DecayingChurchNpcs;
+import com.chaosbuffalo.mkultra.data.generators.npc.NecrotideNpcs;
 import com.chaosbuffalo.mkultra.world.gen.feature.structure.*;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
@@ -68,9 +70,9 @@ public class UltraStructures {
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE),
                         templates.getOrThrow(NecrotideAlterPools.BASE))
                         .addEvent(new SpawnNpcDefinitionEvent("summon_golem",
-                                MKUltra.id("necrotide_golem"),
+                                NecrotideNpcs.necrotide_golem,
                                 "golem_spawn", "golem_look", MKEntity.NonCombatMoveType.STATIONARY)
-                                .addNotableDeadCondition(MKUltra.id("skeletal_lock"), true)
+                                .addNotableDeadCondition(NecrotideNpcs.skeletal_lock, true)
                                 .addTrigger(StructureEvent.EventTrigger.ON_DEATH)
                                 .addTrigger(StructureEvent.EventTrigger.ON_ACTIVATE)
                         ).build());
@@ -95,10 +97,10 @@ public class UltraStructures {
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.BEARD_THIN),
                         templates.getOrThrow(DecayingChurchPools.BASE))
                         .addEvent(new SpawnNpcDefinitionEvent("summon_cardinal",
-                                MKUltra.id("ancient_cardinal"),
+                                DecayingChurchNpcs.ancient_cardinal,
                                 "cardinal_spawn", "cardinal_facing",
                                 MKEntity.NonCombatMoveType.STATIONARY)
-                                .addNpcDeathCountCondition(MKUltra.id("ancient_priest_ghost"), 4, "priest_kills")
+                                .addNpcDeathCountCondition(DecayingChurchNpcs.ancient_priest_ghost, 4, "priest_kills")
                                 .addTrigger(StructureEvent.EventTrigger.ON_ACTIVATE)
                                 .addTrigger(StructureEvent.EventTrigger.ON_DEATH))
                         .build());

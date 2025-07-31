@@ -5,32 +5,32 @@
     "mknpc:abilities": {
       "abilities": [
         {
-          "abilityId": "mkultra:natures_remedy",
+          "ability": "mkultra:natures_remedy",
           "chance": 1.0,
           "priority": 2
         },
         {
-          "abilityId": "mkultra:sever_tendon",
+          "ability": "mkultra:sever_tendon",
           "chance": 1.0,
           "priority": 3
         },
         {
-          "abilityId": "mkultra:heal",
+          "ability": "mkultra:heal",
           "chance": 1.0,
           "priority": 1
         },
         {
-          "abilityId": "mkultra:power_word_summon",
+          "ability": "mkultra:power_word_summon",
           "chance": 0.5,
           "priority": 4
         },
         {
-          "abilityId": "mkultra:explosive_growth",
+          "ability": "mkultra:explosive_growth",
           "chance": 0.5,
           "priority": 5
         },
         {
-          "abilityId": "mkultra:fireball",
+          "ability": "mkultra:fireball",
           "chance": 0.5,
           "priority": 6
         }
@@ -40,15 +40,15 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "value": 165.0
+          "base_value": 165.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "value": 165.0
+          "base_value": 165.0
         },
         {
           "attribute": "mkcore:mana_regen",
-          "value": 3.0
+          "base_value": 3.0
         }
       ]
     },

@@ -268,7 +268,7 @@ public class MKOverlay implements LayeredDraw.Layer {
             return;
         }
 
-        int castTime = data.getStats().getAbilityCastTime(ability);
+        int castTime = executor.getAbilityCastTime(ability);
         if (castTime == 0) {
             return;
         }
@@ -338,7 +338,7 @@ public class MKOverlay implements LayeredDraw.Layer {
 
             MKAbility ability = abilityInfo.getAbility();
 
-            float manaCost = data.getStats().getAbilityManaCost(abilityInfo);
+            float manaCost = executor.getAbilityManaCost(abilityInfo);
             if (!executor.isCasting() && data.getStats().getMana() >= manaCost) {
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             } else {

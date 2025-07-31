@@ -7,16 +7,17 @@ import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.content.ContentDB;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
-import com.mojang.serialization.Dynamic;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -54,9 +55,9 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
 
     public void generateDialogue(Map<QuestStructureLocation, MKStructureEntry> questStructures) {
         ResourceLocation dialogueName = getDialogueTreeName();
-        Map<ResourceLocation, UUID> speakingRoles = getSpeakingRoles();
+        Map<ResourceKey<NpcDefinition>, UUID> speakingRoles = getSpeakingRoles();
 
-        for (Map.Entry<ResourceLocation, UUID> entry : speakingRoles.entrySet()) {
+        for (Map.Entry<ResourceKey<NpcDefinition>, UUID> entry : speakingRoles.entrySet()) {
             DialogueTree tree = new DialogueTree(dialogueName);
             DialoguePrompt hailPrompt = new DialoguePrompt("hail");
             tree.addPrompt(hailPrompt);
@@ -73,8 +74,8 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         this.questSourceNpc = questSourceNpc;
     }
 
-    public Map<ResourceLocation, UUID> getSpeakingRoles() {
-        Map<ResourceLocation, UUID> speakingRoles = new HashMap<>();
+    public Map<ResourceKey<NpcDefinition>, UUID> getSpeakingRoles() {
+        Map<ResourceKey<NpcDefinition>, UUID> speakingRoles = new HashMap<>();
         for (Quest quest : definition.getQuestChain()) {
             QuestData questData = getQuestData(quest);
             for (QuestObjective<?> obj : quest.getObjectives()) {
@@ -130,6 +131,8 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
 
     @Override
     public CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        var ops = provider.createSerializationContext(NbtOps.INSTANCE);
+
         CompoundTag nbt = new CompoundTag();
         nbt.putUUID("questId", questId);
         nbt.putString("definitionId", definition.getName().toString());
@@ -139,7 +142,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         }
         CompoundTag dialogueNbt = new CompoundTag();
         for (Map.Entry<UUID, DialogueTree> entry : dialogueTrees.entrySet()) {
-            dialogueNbt.put(entry.getKey().toString(), entry.getValue().serialize(NbtOps.INSTANCE));
+            dialogueNbt.put(entry.getKey().toString(), DialogueTree.CODEC.encodeStart(ops, entry.getValue()).getOrThrow());
         }
         nbt.put("dialogueTrees", dialogueNbt);
         return nbt;
@@ -163,8 +166,11 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+        var ops = provider.createSerializationContext(NbtOps.INSTANCE);
+
         questId = nbt.getUUID("questId");
-        definition = QuestDefinitionManager.getDefinition(ResourceLocation.parse(nbt.getString("definitionId")));
+        var questKey = ResourceKey.create(QuestRegistries.QUEST_DEFINITIONS, ResourceLocation.parse(nbt.getString("definitionId")));
+        definition = provider.lookupOrThrow(QuestRegistries.QUEST_DEFINITIONS).getOrThrow(questKey).value();
         deserializeQuestParameters(provider, nbt.getCompound("questData"));
         if (nbt.contains("questSource")) {
             questSourceNpc = nbt.getUUID("questSource");
@@ -173,7 +179,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         dialogueTrees.clear();
         for (String key : dialogueNbt.getAllKeys()) {
             UUID npcId = UUID.fromString(key);
-            DialogueTree newTree = DialogueTree.deserialize(new Dynamic<>(NbtOps.INSTANCE, dialogueNbt.get(key)));
+            DialogueTree newTree = DialogueTree.CODEC.parse(ops, dialogueNbt.get(key)).getOrThrow();
             dialogueTrees.put(npcId, newTree);
         }
     }
