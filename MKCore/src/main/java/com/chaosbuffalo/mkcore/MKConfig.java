@@ -69,6 +69,8 @@ public class MKConfig {
         public final ModConfigSpec.IntValue partyXpShareDistance;
         public final ModConfigSpec.BooleanValue enablePartyXpShareMending;
         public final ModConfigSpec.DoubleValue skillScalingMultiplier;
+        public final ModConfigSpec.IntValue worldDifficultyBandSize;
+        public final ModConfigSpec.DoubleValue difficultyBandIncrease;
 
         public Server(ModConfigSpec.Builder builder) {
             builder.comment("Gameplay settings").push("gameplay");
@@ -90,6 +92,12 @@ public class MKConfig {
             skillScalingMultiplier = builder
                     .comment("The amount of the skill scaling multiplier that will apply")
                     .defineInRange("skillScalingMultiplier", 0.75, 0.0, 1.0);
+            worldDifficultyBandSize = builder
+                    .comment("The size of the difficulty band")
+                    .defineInRange("worldDifficultyBandSize", 2000, 100, 10000);
+            difficultyBandIncrease = builder
+                    .comment("The amount difficulty goes up each band")
+                    .defineInRange("difficultyBandIncrease", 10.0, 0.0, 100.0);
 
             builder.pop();
         }

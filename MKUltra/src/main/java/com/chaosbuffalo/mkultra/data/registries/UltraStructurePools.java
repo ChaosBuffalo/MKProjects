@@ -24,5 +24,6 @@ public class UltraStructurePools {
         DeepslateObeliskPools.registerPools(pContext);
         DecayingChurchPools.registerPools(pContext);
         ThemcromancersLairPools.registerPools(pContext);
+        FireShrinePools.registerPools(pContext);
     }
 }

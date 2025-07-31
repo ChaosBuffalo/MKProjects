@@ -39,6 +39,10 @@
             {
               "type": "mkcore:training_req.has_entitlement",
               "entitlement": "mkultra:green_knight.tier_1"
+            },
+            {
+              "type": "mkcore:training_req.has_entitlement",
+              "entitlement": "mkultra:cleric.tier_1"
             }
           ]
         },

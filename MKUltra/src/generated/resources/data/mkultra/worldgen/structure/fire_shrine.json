@@ -1,6 +1,6 @@
 {
   "type": "mknpc:mk_jigsaw",
-  "biomes": "#mkultra:has_desert_temple_village",
+  "biomes": "#mkultra:has_fire_shrine",
   "max_distance_from_center": 80,
   "project_start_to_heightmap": "WORLD_SURFACE_WG",
   "size": 7,
@@ -13,7 +13,7 @@
   "start_height": {
     "absolute": 0
   },
-  "start_pool": "mkultra:desert_temples",
+  "start_pool": "mkultra:fire_shrine/centers",
   "step": "surface_structures",
   "structure_events": {},
   "use_expansion_hack": true

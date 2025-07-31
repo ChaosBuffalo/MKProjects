@@ -21,6 +21,7 @@ public class UltraStructureSets {
     public static final ResourceKey<StructureSet> HYBOREAN_CRYPT = createKey("hyborean_crypt");
     public static final ResourceKey<StructureSet> DECAYING_CHURCH = createKey("decaying_church");
     public static final ResourceKey<StructureSet> THEMCROMANCERS_LAIR = createKey("themcromancers_lair");
+    public static final ResourceKey<StructureSet> FIRE_SHRINE = createKey("fire_shrine");
 
     public static ResourceKey<StructureSet> createKey(String name) {
         return ResourceKey.create(Registries.STRUCTURE_SET, MKUltra.id(name));
@@ -58,5 +59,9 @@ public class UltraStructureSets {
         context.register(THEMCROMANCERS_LAIR,
                 new StructureSet(structures.getOrThrow(UltraStructures.THEMCROMANCERS_LAIR),
                         new RandomSpreadStructurePlacement(72, 32, RandomSpreadType.LINEAR, 69420)));
+
+        context.register(FIRE_SHRINE,
+                new StructureSet(structures.getOrThrow(UltraStructures.FIRE_SHRINE),
+                        new RandomSpreadStructurePlacement(55, 25, RandomSpreadType.LINEAR, 3)));
     }
 }

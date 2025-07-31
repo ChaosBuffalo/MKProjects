@@ -1,0 +1,31 @@
+{
+  "elements": [
+    {
+      "element": {
+        "bWaterLog": false,
+        "element_type": "mknpc:mk_single_jigsaw",
+        "location": "mkultra:fire_shrine/gazebo",
+        "override_liquid_settings": "ignore_waterlogging",
+        "processors": {
+          "processors": []
+        },
+        "projection": "rigid"
+      },
+      "weight": 1
+    },
+    {
+      "element": {
+        "bWaterLog": false,
+        "element_type": "mknpc:mk_single_jigsaw",
+        "location": "mkultra:fire_shrine/lava_fountain",
+        "override_liquid_settings": "ignore_waterlogging",
+        "processors": {
+          "processors": []
+        },
+        "projection": "rigid"
+      },
+      "weight": 1
+    }
+  ],
+  "fallback": "minecraft:empty"
+}

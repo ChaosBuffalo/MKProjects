@@ -40,6 +40,8 @@ public class UltraStructures {
 
     public static ResourceKey<Structure> THEMCROMANCERS_LAIR = createKey("themcromancers_lair");
 
+    public static ResourceKey<Structure> FIRE_SHRINE = createKey("fire_shrine");
+
     public static ResourceKey<Structure> createKey(String name) {
         return ResourceKey.create(Registries.STRUCTURE, MKUltra.id(name));
     }
@@ -58,7 +60,7 @@ public class UltraStructures {
                 new MKJigsawBuilder(
                         emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_DESERT_TEMPLE_VILLAGE),
                                 GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE),
-                        templates.getOrThrow(DesertTempleVillagePools.DESERT_TEMPLE_VILLAGE_BASE)).build());
+                        templates.getOrThrow(DesertTempleVillagePools.DESERT_TEMPLES)).build());
 
         context.register(NECROTIDE_ALTER,
                 new MKJigsawBuilder(
@@ -106,6 +108,13 @@ public class UltraStructures {
                         GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.BEARD_THIN),
                 templates.getOrThrow(ThemcromancersLairPools.GATE_POOL))
                         .setMaxDistFromCenter(100)
+                        .build());
+
+        context.register(FIRE_SHRINE,
+                new MKJigsawBuilder(
+                        emptySpawnsStructure(biomes.getOrThrow(UltraTags.Biomes.HAS_FIRE_SHRINE),
+                                GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE),
+                        templates.getOrThrow(FireShrinePools.CENTER))
                         .build());
     }
 
