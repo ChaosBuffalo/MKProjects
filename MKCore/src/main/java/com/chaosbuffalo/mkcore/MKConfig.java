@@ -68,6 +68,7 @@ public class MKConfig {
         public final ModConfigSpec.BooleanValue enablePartyXpShare;
         public final ModConfigSpec.IntValue partyXpShareDistance;
         public final ModConfigSpec.BooleanValue enablePartyXpShareMending;
+        public final ModConfigSpec.DoubleValue skillScalingMultiplier;
 
         public Server(ModConfigSpec.Builder builder) {
             builder.comment("Gameplay settings").push("gameplay");
@@ -86,6 +87,9 @@ public class MKConfig {
             enablePartyXpShareMending = builder
                     .comment("Whether shared XP triggers the Mending enchantment")
                     .define("enablePartyXpShareMending", true);
+            skillScalingMultiplier = builder
+                    .comment("The amount of the skill scaling multiplier that will apply")
+                    .defineInRange("skillScalingMultiplier", 0.75, 0.0, 1.0);
 
             builder.pop();
         }

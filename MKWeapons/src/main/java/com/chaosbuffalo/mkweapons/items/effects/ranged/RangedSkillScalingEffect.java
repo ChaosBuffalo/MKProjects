@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkweapons.items.effects.ranged;
 
+import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
@@ -67,7 +68,7 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
         tooltip.add(Component.translatable(skill.value().getDescriptionId()).withStyle(color));
         if (Screen.hasShiftDown()) {
             float skillLevel = player != null ? MKAbility.getSkillLevel(player, skill) : 0.0f;
-            double bonus = skillLevel * baseDamage;
+            double bonus = skillLevel * baseDamage * MKConfig.SERVER.skillScalingMultiplier.getAsDouble();
             tooltip.add(Component.translatable("mkweapons.weapon_effect.ranged_skill_scaling.description",
                     Component.translatable(skill.value().getDescriptionId()), MKAbility.NUMBER_FORMATTER.format(bonus)));
         }
@@ -79,7 +80,7 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
         AttributeInstance attr = entity.getAttribute(MKAttributes.RANGED_DAMAGE);
         if (attr != null) {
             if (attr.getModifier(skillScaling) == null) {
-                attr.addTransientModifier(new AttributeModifier(skillScaling, skillLevel * baseDamage, AttributeModifier.Operation.ADD_VALUE));
+                attr.addTransientModifier(new AttributeModifier(skillScaling, skillLevel * baseDamage * MKConfig.SERVER.skillScalingMultiplier.getAsDouble(), AttributeModifier.Operation.ADD_VALUE));
             }
         }
     }
