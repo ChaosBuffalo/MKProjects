@@ -2,9 +2,11 @@ package com.chaosbuffalo.mkcore.init;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.datamaps.AdvancedDataMapType;
 import net.neoforged.neoforge.registries.datamaps.DataMapType;
@@ -19,6 +21,12 @@ public class CoreDataMaps {
             .synced(ArmorClass.REFERENCE_CODEC, false)
             .build();
 
+    public static final DataMapType<Level, Double> DIMENSION_DIFFICULTY_BONUSES = AdvancedDataMapType.builder(
+                    MKCore.id("dimension_difficulty_bonuses"),
+                    Registries.DIMENSION,
+                    Codec.DOUBLE)
+            .build();
+
 
     public static void register(IEventBus modBus) {
         modBus.addListener(CoreDataMaps::registerDataMapTypes);
@@ -26,5 +34,6 @@ public class CoreDataMaps {
 
     private static void registerDataMapTypes(RegisterDataMapTypesEvent event) {
         event.register(ARMOR_CLASS_MAPPING);
+        event.register(DIMENSION_DIFFICULTY_BONUSES);
     }
 }
