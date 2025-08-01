@@ -26,8 +26,12 @@ public class WorldUtils {
         difficultyBonuses.put(worldKey, value);
     }
 
-    public static double getDifficultyForGlobalPos(GlobalPos pos) {
-        double diffOffset = difficultyBonuses.getOrDefault(pos.dimension(), 0.0);
+    public static double getDifficultyForGlobalPos(Level level, GlobalPos pos) {
+        Double diffOffset = level.registryAccess().registryOrThrow(pos.dimension().registryKey())
+                .getHolderOrThrow(pos.dimension()).getData(CoreDataMaps.DIMENSION_DIFFICULTY_BONUSES);
+        if (diffOffset == null) {
+            diffOffset = 0.0;
+        }
         int manhattenDist = pos.pos().distManhattan(CENTER);
         int divisions = manhattenDist / MKConfig.SERVER.worldDifficultyBandSize.get();
         return Math.min(Math.max(GameConstants.MIN_DIFFICULTY,

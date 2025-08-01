@@ -274,7 +274,7 @@ public class MKSpawnerBlockEntity extends BlockEntity implements IStructurePlace
         if (getLevel() != null) {
             NpcDefinition definition = randomSpawns.next(getLevel().getRandom());
             Vec3 spawnPos = Vec3.atLowerCornerOf(getBlockPos()).add(0.5, 0.125, 0.5);
-            double difficultyValue = WorldUtils.getDifficultyForGlobalPos(
+            double difficultyValue = WorldUtils.getDifficultyForGlobalPos(getLevel(),
                     GlobalPos.of(getLevel().dimension(), getBlockPos()));
             switch (getLevel().getDifficulty()) {
                 case EASY:

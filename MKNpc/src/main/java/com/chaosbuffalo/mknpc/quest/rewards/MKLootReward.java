@@ -52,7 +52,7 @@ public class MKLootReward extends QuestReward {
         LootTier tier = lootTier.value();
         LootConstructor constructor = tier.generateConstructorForSlot(player.getRandom(), lootSlot);
         if (constructor != null) {
-            double diff = WorldUtils.getDifficultyForGlobalPos(GlobalPos.of(player.level().dimension(), player.blockPosition()));
+            double diff = WorldUtils.getDifficultyForGlobalPos(player.level(), GlobalPos.of(player.level().dimension(), player.blockPosition()));
             ItemStack loot = constructor.constructItem(player.getRandom(), diff);
             player.getInventory().placeItemBackInInventory(loot, true);
         }

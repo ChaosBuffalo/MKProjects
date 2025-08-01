@@ -104,7 +104,7 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
         entry.getFirstPoiWithTag(poiTag).ifPresent(x -> {
             UUID npcId = entry.getCustomData().computeUUID(getEventName());
             Vec3 pos = Vec3.atBottomCenterOf(x.getLocation().pos());
-            double difficultyValue = WorldUtils.getDifficultyForGlobalPos(x.getLocation());
+            double difficultyValue = WorldUtils.getDifficultyForGlobalPos(level, x.getLocation());
             Entity entity = def.createEntity(level, pos, npcId, difficultyValue);
             if (entity != null) {
                 entry.getFirstPoiWithTag(faceTag).ifPresent(face -> {
