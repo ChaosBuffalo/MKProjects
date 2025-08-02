@@ -1,0 +1,18 @@
+{
+  "elements": [
+    {
+      "element": {
+        "bWaterLog": true,
+        "element_type": "mknpc:mk_single_jigsaw",
+        "location": "mkultra:fire_shrine/corner_west",
+        "override_liquid_settings": "apply_waterlogging",
+        "processors": {
+          "processors": []
+        },
+        "projection": "rigid"
+      },
+      "weight": 1
+    }
+  ],
+  "fallback": "minecraft:empty"
+}

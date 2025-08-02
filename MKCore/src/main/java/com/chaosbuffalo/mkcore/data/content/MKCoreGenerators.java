@@ -46,6 +46,7 @@ public class MKCoreGenerators {
                     datapackLookup, blockTagsProvider, event.getExistingFileHelper()));
             generator.addProvider(true, new CoreParticleProvider(generator));
             generator.addProvider(true, new CoreArmorClassProvider(packOutput, datapackLookup));
+            generator.addProvider(true, new CoreDimensionDifficultyProvider(packOutput, datapackLookup));
 
             new CoreAbilityLanguageProvider(languageProvider).run();
         }

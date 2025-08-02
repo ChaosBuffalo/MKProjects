@@ -19,6 +19,8 @@ public class UltraTags {
 
         public static final TagKey<Biome> HAS_HYBOREAN_CRYPT = tag("has_hyborean_crypt");
 
+        public static final TagKey<Biome> HAS_FIRE_SHRINE = tag("has_fire_shrine");
+
         public static final TagKey<Biome> HAS_DECAYING_CHURCH = tag("has_decaying_church");
         public static final TagKey<Biome> HAS_THEMCROMANCER_LAIR = tag("has_themcromancer_lair");
 
@@ -37,6 +39,7 @@ public class UltraTags {
 
         public static final TagKey<Structure> DECAYING_CHURCH = tag("decaying_church");
         public static final TagKey<Structure> THEMCROMANCER_LAIR = tag("themcromancer_lair");
+        public static final TagKey<Structure> FIRE_SHRINE = tag("fire_shrine");
 
         private static TagKey<Structure> tag(String name) {
             return TagKey.create(Registries.STRUCTURE, MKUltra.id(name));

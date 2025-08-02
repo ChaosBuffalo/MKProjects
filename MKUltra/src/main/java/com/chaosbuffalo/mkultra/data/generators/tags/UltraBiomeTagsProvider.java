@@ -6,6 +6,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.BiomeTagsProvider;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.world.level.biome.Biomes;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,5 +50,12 @@ public class UltraBiomeTagsProvider extends BiomeTagsProvider {
                 .addTag(BiomeTags.HAS_VILLAGE_PLAINS)
                 .addTag(BiomeTags.IS_SAVANNA)
                 .addTag(BiomeTags.IS_FOREST);
+        tag(UltraTags.Biomes.HAS_FIRE_SHRINE);
+//                .addTag(BiomeTags.IS_MOUNTAIN)
+//                .addTag(BiomeTags.IS_SAVANNA)
+//                .addTag(BiomeTags.IS_JUNGLE)
+//                .addTag(BiomeTags.IS_FOREST)
+//                .addTag(BiomeTags.IS_BADLANDS)
+//                .add(Biomes.DESERT);
     }
 }

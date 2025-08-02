@@ -20,4 +20,9 @@ public class CoreArmorClassProvider extends ArmorClassDataMapProvider {
         itemTag(CoreTags.Items.MEDIUM_ARMOR, CoreArmorClasses.MEDIUM_ARMOR);
         itemTag(CoreTags.Items.HEAVY_ARMOR, CoreArmorClasses.HEAVY_ARMOR);
     }
+
+    @Override
+    public String getName() {
+        return "MKCore Armor Class Provider";
+    }
 }

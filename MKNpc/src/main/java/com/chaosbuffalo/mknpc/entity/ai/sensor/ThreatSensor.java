@@ -35,12 +35,13 @@ public class ThreatSensor extends Sensor<MKEntity> {
         Optional<List<LivingEntity>> enemyOpt = entityIn.getBrain().getMemory(MKMemoryModuleTypes.VISIBLE_ENEMIES.get());
         Map<LivingEntity, ThreatMapEntry> threatMap = entityIn.getBrain().getMemory(MKMemoryModuleTypes.THREAT_MAP.get())
                 .orElseGet(HashMap::new);
+        boolean isPet = entityIn.getEntityDataCap().getPets().isPet();
         Optional<LivingEntity> targetOpt = entityIn.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         Optional<Boolean> isReturningOpt = entityIn.getBrain().getMemory(MKMemoryModuleTypes.IS_RETURNING.get());
-        if (targetOpt.isPresent() && (!targetOpt.get().isAlive() || isReturningOpt.isPresent())) {
+        if (targetOpt.isPresent() && (!targetOpt.get().isAlive() || (!isPet && isReturningOpt.isPresent()))) {
             entityIn.getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         }
-        if (enemyOpt.isPresent() && isReturningOpt.isEmpty()) {
+        if (enemyOpt.isPresent() && (isPet || isReturningOpt.isEmpty())) {
             List<LivingEntity> enemies = enemyOpt.get();
             for (LivingEntity enemy : enemies) {
                 double dist2 = entityIn.distanceToSqr(enemy);
@@ -75,9 +76,9 @@ public class ThreatSensor extends Sensor<MKEntity> {
                     entityIn.callForHelp(ent.getKey(), ent.getValue().getCurrentThreat());
                 }
                 entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_TARGET.get(), ent.getKey());
+
             } else {
                 entityIn.getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
-
             }
         }
     }

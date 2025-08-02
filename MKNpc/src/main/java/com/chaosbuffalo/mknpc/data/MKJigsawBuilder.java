@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.heightproviders.ConstantHeight;
@@ -27,6 +28,8 @@ public class MKJigsawBuilder {
     private boolean useExpansionHack;
     private Optional<Heightmap.Types> heightmapTypes;
     private int maxDistFromCenter;
+    private boolean fillFloor;
+    private Optional<BlockState> fillState;
 
     private final HashMap<String, StructureEvent> events = new HashMap<>();
 
@@ -40,6 +43,9 @@ public class MKJigsawBuilder {
         useExpansionHack = true;
         heightmapTypes = Optional.of(Heightmap.Types.WORLD_SURFACE_WG);
         maxDistFromCenter = 80;
+        fillState = Optional.empty();
+        fillFloor = false;
+
     }
 
     public MKJigsawBuilder setStartJigsawName(Optional<ResourceLocation> startJigsawName) {
@@ -81,10 +87,21 @@ public class MKJigsawBuilder {
         return this;
     }
 
+    public MKJigsawBuilder setFillFloor(boolean fillFloor) {
+        this.fillFloor = fillFloor;
+        return this;
+    }
+
+    public MKJigsawBuilder setFillState(Optional<BlockState> fillState) {
+        this.fillState = fillState;
+        return this;
+    }
+
     public MKJigsawStructure build() {
         var struct = new MKJigsawStructure(settings, templatePool, startJigsawName, maxDepth, heightProvider,
                 useExpansionHack, heightmapTypes, maxDistFromCenter, List.of(),
-                JigsawStructure.DEFAULT_DIMENSION_PADDING, JigsawStructure.DEFAULT_LIQUID_SETTINGS, new CompoundTag());
+                JigsawStructure.DEFAULT_DIMENSION_PADDING, JigsawStructure.DEFAULT_LIQUID_SETTINGS, new CompoundTag(),
+                fillFloor, fillState);
         for (var entry : events.entrySet()) {
             struct.addEvent(entry.getValue());
         }

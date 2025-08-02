@@ -5,6 +5,11 @@
     "mknpc:abilities": {
       "abilities": [
         {
+          "ability": "mkultra:shadow_pulse_flurry",
+          "chance": 1.0,
+          "priority": 3
+        },
+        {
           "ability": "mkultra:shadow_bolt",
           "chance": 1.0,
           "priority": 2
@@ -20,11 +25,11 @@
       "attributes": [
         {
           "attribute": "minecraft:generic.max_health",
-          "base_value": 500.0
+          "base_value": 750.0
         },
         {
           "attribute": "mkcore:max_mana",
-          "base_value": 500.0
+          "base_value": 750.0
         },
         {
           "attribute": "mkcore:mana_regen",

@@ -21,7 +21,7 @@ public class MKGolemEntity extends MKEntity {
     public static AttributeSupplier.Builder registerAttributes(double attackDamage, double movementSpeed) {
         return MKEntity.registerAttributes(attackDamage, movementSpeed)
                 .add(MKAttributes.SHADOW_RESISTANCE, 0.25)
-                .add(MKAttributes.BLEED_RESISTANCE, 0.25)
+                .add(MKAttributes.BLEED_RESISTANCE, 0.50)
                 .add(MKAttributes.RANGED_RESISTANCE, 0.25)
                 .add(MKAttributes.POISON_RESISTANCE, 0.75)
                 .add(MKAttributes.HOLY_RESISTANCE, 0.50)
@@ -29,7 +29,7 @@ public class MKGolemEntity extends MKEntity {
                 .add(MKAttributes.ARCANE_RESISTANCE, 0.25)
                 .add(MKAttributes.FROST_RESISTANCE, 0.25)
                 .add(MKAttributes.NATURE_RESISTANCE, 0.25)
-                .add(Attributes.ARMOR, 10);
+                .add(Attributes.ARMOR, 15);
     }
 
 

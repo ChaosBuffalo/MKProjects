@@ -527,7 +527,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     public boolean killedEntity(ServerLevel level, LivingEntity victim) {
         super.killedEntity(level, victim);
-        enterNonCombatMovementState();
+        returnToDefaultMovementState();
         return true;
     }
 

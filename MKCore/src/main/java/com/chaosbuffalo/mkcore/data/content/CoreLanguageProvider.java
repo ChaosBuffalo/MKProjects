@@ -174,6 +174,8 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mk.core.party.info.none", "You are not in a party!");
         add("mk.core.party.invite_self", "You can't invite yourself to a party!");
         add("mkcore.configuration.skillScalingMultiplier", "Weapon Skill Scaling Multiplier");
+        add("mkcore.configuration.difficultyBandIncrease", "Difficulty Band Increase");
+        add("mkcore.configuration.worldDifficultyBandSize", "World Difficulty Band Size");
     }
 
     private void addCommands() {

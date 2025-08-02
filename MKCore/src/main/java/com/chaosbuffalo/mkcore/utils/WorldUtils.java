@@ -1,35 +1,39 @@
 package com.chaosbuffalo.mkcore.utils;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import net.minecraft.core.GlobalPos;
-import net.minecraft.core.Vec3i;
+import com.chaosbuffalo.mkcore.MKConfig;
+import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.init.CoreDataMaps;
+import net.minecraft.core.*;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.registries.datamaps.DataMapsUpdatedEvent;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@EventBusSubscriber(modid= MKCore.MOD_ID)
 public class WorldUtils {
-
     private static final Map<ResourceKey<Level>, Double> difficultyBonuses = new HashMap<>();
     private static final Vec3i CENTER = new Vec3i(0, 0, 0);
-    private static final int DIFFICULTY_BAND_SIZE = 2500;
-    private static final double DIFFICULTY_SCORE_PER_BAND = 10.0;
 
-    static {
-        difficultyBonuses.put(Level.OVERWORLD, 0.0);
-        difficultyBonuses.put(Level.NETHER, 25.0);
-        difficultyBonuses.put(Level.END, 40.0);
-    }
 
-    public static void putDifficultyBonus(ResourceKey<Level> worldKey, double value) {
-        difficultyBonuses.put(worldKey, value);
+    @SubscribeEvent
+    public static void onDataMapsUpdated(DataMapsUpdatedEvent event) {
+        event.ifRegistry(Registries.DIMENSION, (registry) -> {
+            difficultyBonuses.clear();
+            difficultyBonuses.putAll(registry.getDataMap(CoreDataMaps.DIMENSION_DIFFICULTY_BONUSES));
+        });
     }
 
     public static double getDifficultyForGlobalPos(GlobalPos pos) {
         double diffOffset = difficultyBonuses.getOrDefault(pos.dimension(), 0.0);
         int manhattenDist = pos.pos().distManhattan(CENTER);
-        int divisions = manhattenDist / DIFFICULTY_BAND_SIZE;
-        return Math.min(Math.max(GameConstants.MIN_DIFFICULTY, (divisions * DIFFICULTY_SCORE_PER_BAND) + diffOffset), GameConstants.MAX_DIFFICULTY);
+        int divisions = manhattenDist / MKConfig.SERVER.worldDifficultyBandSize.get();
+        return Math.min(Math.max(GameConstants.MIN_DIFFICULTY,
+                (divisions * MKConfig.SERVER.difficultyBandIncrease.get()) + diffOffset), GameConstants.MAX_DIFFICULTY);
     }
 }
