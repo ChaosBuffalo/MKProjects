@@ -5,47 +5,70 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.entitlements.SimpleEntitlement;
 import com.chaosbuffalo.mkultra.MKUltra;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 
 
 public class MKUEntitlements {
 
-    public static final DeferredRegister<MKEntitlement> REGISTRY =
-            DeferredRegister.create(MKCoreRegistry.ENTITLEMENTS, MKUltra.MODID);
+    static ResourceKey<MKEntitlement> key(String id) {
+        return ResourceKey.create(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY, MKUltra.id(id));
+    }
 
-    public static DeferredHolder<MKEntitlement, MKEntitlement> GreenKnightTier1 = REGISTRY.register("green_knight.tier_1",
-            () -> new SimpleEntitlement(1));
-    public static DeferredHolder<MKEntitlement, MKEntitlement> GreenKnightTier2 = REGISTRY.register("green_knight.tier_2",
-            () -> new SimpleEntitlement(1));
-    public static DeferredHolder<MKEntitlement, MKEntitlement> GreenKnightTier3 = REGISTRY.register("green_knight.tier_3",
-            () -> new SimpleEntitlement(1));
-    public static DeferredHolder<MKEntitlement, MKEntitlement> ClericTier1 = REGISTRY.register("cleric.tier_1",
-            () -> new SimpleEntitlement(1));
-    public static DeferredHolder<MKEntitlement, MKEntitlement> ClericTier2 = REGISTRY.register("cleric.tier_2",
-            () -> new SimpleEntitlement(1));
-    public static DeferredHolder<MKEntitlement, MKEntitlement> ClericTier3 = REGISTRY.register("cleric.tier_3",
-            () -> new SimpleEntitlement(1));
-    public static DeferredHolder<MKEntitlement, MKEntitlement> IntroClericTier1 = REGISTRY.register("cleric.intro.tier_1",
-            () -> new SimpleEntitlement(1));
-    public static DeferredHolder<MKEntitlement, MKEntitlement> NetherMageTier1 = REGISTRY.register("nether_mage.tier_1",
-            () -> new SimpleEntitlement(1));
-    public static DeferredHolder<MKEntitlement, MKEntitlement> NetherMageTier2 = REGISTRY.register("nether_mage.tier_2",
-            () -> new SimpleEntitlement(1));
-    public static DeferredHolder<MKEntitlement, MKEntitlement> NetherMageTier3 = REGISTRY.register("nether_mage.tier_3",
-            () -> new SimpleEntitlement(1));
-    public static DeferredHolder<MKEntitlement, MKEntitlement> IntroNetherMageTier1 = REGISTRY.register("nether_mage.intro.tier_1",
-            () -> new SimpleEntitlement(1));
-    public static DeferredHolder<MKEntitlement, MKEntitlement> ThemcromancerTier1 = REGISTRY.register("themcromancer.tier_1",
-            () -> new SimpleEntitlement(1));
-    public static DeferredHolder<MKEntitlement, MKEntitlement> ThemcromancerTier2 = REGISTRY.register("themcromancer.tier_2",
-            () -> new SimpleEntitlement(1));
-    public static DeferredHolder<MKEntitlement, MKEntitlement> ThemcromancerTier3 = REGISTRY.register("themcromancer.tier_3",
-            () -> new SimpleEntitlement(1));
+    public static ResourceKey<MKEntitlement> GreenKnightTier1 = key("green_knight.tier_1");
+
+    public static ResourceKey<MKEntitlement> GreenKnightTier2 = key("green_knight.tier_2");
+
+    public static ResourceKey<MKEntitlement> GreenKnightTier3 = key("green_knight.tier_3");
+
+    public static ResourceKey<MKEntitlement> ClericTier1 = key("cleric.tier_1");
+
+    public static ResourceKey<MKEntitlement> ClericTier2 = key("cleric.tier_2");
+
+    public static ResourceKey<MKEntitlement> ClericTier3 = key("cleric.tier_3");
+
+    public static ResourceKey<MKEntitlement> IntroClericTier1 = key("cleric.intro.tier_1");
+
+    public static ResourceKey<MKEntitlement> NetherMageTier1 = key("nether_mage.tier_1");
+
+    public static ResourceKey<MKEntitlement> NetherMageTier2 = key("nether_mage.tier_2");
+
+    public static ResourceKey<MKEntitlement> NetherMageTier3 = key("nether_mage.tier_3");
+
+    public static ResourceKey<MKEntitlement> IntroNetherMageTier1 = key("nether_mage.intro.tier_1");
+
+    public static ResourceKey<MKEntitlement> ThemcromancerTier1 = key("themcromancer.tier_1");
+
+    public static ResourceKey<MKEntitlement> ThemcromancerTier2 = key("themcromancer.tier_2");
+
+    public static ResourceKey<MKEntitlement> ThemcromancerTier3 = key("themcromancer.tier_3");
+
+    private static void registerPlayerFlag(BootstrapContext<MKEntitlement> context, ResourceKey<MKEntitlement> key) {
+        var name = Component.translatable(MKEntitlement.nameKey(key.location()));
+        var desc = Component.translatable(MKEntitlement.descriptionKey(key.location()));
+        var value = new SimpleEntitlement(name, desc);
+        context.register(key, value);
+    }
 
 
-    public static void register(IEventBus modBus) {
-        REGISTRY.register(modBus);
+    public static void bootstrap(BootstrapContext<MKEntitlement> context) {
+        registerPlayerFlag(context, GreenKnightTier1);
+        registerPlayerFlag(context, GreenKnightTier2);
+        registerPlayerFlag(context, GreenKnightTier3);
+
+        registerPlayerFlag(context, ClericTier1);
+        registerPlayerFlag(context, ClericTier2);
+        registerPlayerFlag(context, ClericTier3);
+        registerPlayerFlag(context, IntroClericTier1);
+
+        registerPlayerFlag(context, NetherMageTier1);
+        registerPlayerFlag(context, NetherMageTier2);
+        registerPlayerFlag(context, NetherMageTier3);
+        registerPlayerFlag(context, IntroNetherMageTier1);
+
+        registerPlayerFlag(context, ThemcromancerTier1);
+        registerPlayerFlag(context, ThemcromancerTier2);
+        registerPlayerFlag(context, ThemcromancerTier3);
     }
 }

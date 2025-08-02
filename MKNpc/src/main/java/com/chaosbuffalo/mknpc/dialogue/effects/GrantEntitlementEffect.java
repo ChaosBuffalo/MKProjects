@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffectType;
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.entitlements.EntitlementInstance;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueEffectTypes;
@@ -19,12 +18,9 @@ import net.minecraft.world.entity.LivingEntity;
 import java.util.UUID;
 
 public class GrantEntitlementEffect extends DialogueEffect {
-    public static final MapCodec<GrantEntitlementEffect> MAP_CODEC =
-            RecordCodecBuilder.<GrantEntitlementEffect>mapCodec(builder ->
-                    builder.group(
-                            MKCoreRegistry.ENTITLEMENTS.holderByNameCodec().fieldOf("entitlement").forGetter(i -> i.entitlement)
-                    ).apply(builder, GrantEntitlementEffect::new)
-            );
+    public static final MapCodec<GrantEntitlementEffect> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+            MKEntitlement.REFERENCE_CODEC.fieldOf("entitlement").forGetter(i -> i.entitlement)
+    ).apply(builder, GrantEntitlementEffect::new));
 
 
     private final Holder<MKEntitlement> entitlement;
@@ -48,7 +44,7 @@ public class GrantEntitlementEffect extends DialogueEffect {
     public void applyEffect(ServerPlayer player, LivingEntity livingEntity, DialogueNode dialogueNode) {
         if (entitlement != null) {
             MKCore.getPlayer(player).ifPresent(x -> x.getEntitlements()
-                    .addEntitlement(new EntitlementInstance(entitlement.value(), UUID.randomUUID())));
+                    .addEntitlement(new EntitlementInstance(entitlement, UUID.randomUUID())));
             player.sendSystemMessage(Component.translatable("mknpc.grant_entitlement.message",
                     entitlement.value().getName()).withStyle(ChatFormatting.GOLD));
         }

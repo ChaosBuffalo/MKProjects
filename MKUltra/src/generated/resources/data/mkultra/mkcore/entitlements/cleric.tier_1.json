@@ -1,0 +1,9 @@
+{
+  "type": "mkcore:player_flag",
+  "description": {
+    "translate": "entitlement.mkultra.cleric.tier_1.description"
+  },
+  "display_name": {
+    "translate": "entitlement.mkultra.cleric.tier_1.name"
+  }
+}

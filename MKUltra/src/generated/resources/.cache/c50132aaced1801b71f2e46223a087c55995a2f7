@@ -1,4 +1,4 @@
-// 1.21.1	2025-07-13T09:05:31.8698473	MK Abilities: mkultra
+// 1.21.1	2025-08-02T16:04:13.309077	MK Abilities: mkultra
 8f06670fae5893f8c3cdc2b51911b94eec3cf287 data/mkultra/player_abilities/cleansing_seed.json
 25bc9079c333533ceae36aca0ded4e323afcbd81 data/mkultra/player_abilities/drown.json
 cc5322c19e3793af8e9a3a52c580c412530df12f data/mkultra/player_abilities/ember.json
@@ -24,7 +24,7 @@ da26df9f5a2c3bdb2d9494c7ad5fa42b9610adb0 data/mkultra/player_abilities/inspire.j
 4caa045c62e3e927b6472f2cab4ef78ac900f6df data/mkultra/player_abilities/life_siphon.json
 3cd67008315b6b35b61dfe19ec6869fed450e4d9 data/mkultra/player_abilities/life_spike.json
 905778c7882b1aca6fec3acbee495b58bf7ce773 data/mkultra/player_abilities/natures_remedy.json
-adc14087fcb177813ceaa0edfe3b4054f07ed87f data/mkultra/player_abilities/necrotide_golem_beam.json
+f68e2098f0459c145c102c0db43e216300afd574 data/mkultra/player_abilities/necrotide_golem_beam.json
 6318dee333dc16bd25ebae91fef3df74712c5c81 data/mkultra/player_abilities/necrotide_warrior_summon.json
 c2ddaba6ed427490207c1d82d5494d7ce7ea4bad data/mkultra/player_abilities/power_word_summon.json
 03b71dde2e6704db02683697b32d763962143b18 data/mkultra/player_abilities/seafury.json

@@ -1,0 +1,9 @@
+{
+  "type": "mkcore:player_flag",
+  "description": {
+    "translate": "entitlement.mkultra.nether_mage.tier_2.description"
+  },
+  "display_name": {
+    "translate": "entitlement.mkultra.nether_mage.tier_2.name"
+  }
+}

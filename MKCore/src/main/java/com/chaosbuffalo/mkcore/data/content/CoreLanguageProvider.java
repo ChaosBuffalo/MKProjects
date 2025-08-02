@@ -22,6 +22,7 @@ class CoreLanguageProvider extends MKLanguageProvider {
     protected void addTranslations() {
         addLegacy();
         addGui();
+        addCommands();
         addDamageTypes();
         addAttributes();
         addEntitlements();
@@ -175,6 +176,11 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.configuration.skillScalingMultiplier", "Weapon Skill Scaling Multiplier");
         add("mkcore.configuration.difficultyBandIncrease", "Difficulty Band Increase");
         add("mkcore.configuration.worldDifficultyBandSize", "World Difficulty Band Size");
+    }
+
+    private void addCommands() {
+        add("mkcore.command.ability.unlearn.not_known", "Player '%s' doesn't know ability %s");
+        add("mkcore.command.ability.learn.success", "Player '%s' learned ability %s");
     }
 
     private void addLegacy() {

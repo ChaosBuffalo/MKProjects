@@ -20,7 +20,7 @@ public abstract class MKDataProvider implements DataProvider {
         this.providerName = providerName;
     }
 
-    public MKDataProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> registries,  String modId, String providerName) {
+    public MKDataProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> registries, String modId, String providerName) {
         this.generator = generator;
         this.registries = registries;
         this.modId = modId;

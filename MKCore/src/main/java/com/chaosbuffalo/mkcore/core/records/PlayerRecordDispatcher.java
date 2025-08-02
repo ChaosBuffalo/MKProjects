@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.core.records;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 
 import java.util.HashMap;
@@ -38,5 +37,6 @@ public class PlayerRecordDispatcher<T extends IRecordInstance<T>> {
 //            MKCore.LOGGER.debug("PlayerRecordDispatcher.onPersonaActivated.onRecordLoaded {}", r);
             getRecordHandler(r).onRecordLoaded(r);
         });
+        typeHandlerMap.values().forEach(IRecordTypeHandler::onRecordLoadingFinished);
     }
 }

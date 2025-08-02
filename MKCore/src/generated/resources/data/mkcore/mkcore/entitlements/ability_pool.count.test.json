@@ -1,0 +1,10 @@
+{
+  "type": "mkcore:ability_pool.count",
+  "description": {
+    "translate": "entitlement.mkcore.ability_pool.count.test.description"
+  },
+  "display_name": {
+    "translate": "entitlement.mkcore.ability_pool.count.test.name"
+  },
+  "max_extra_pool": 12
+}

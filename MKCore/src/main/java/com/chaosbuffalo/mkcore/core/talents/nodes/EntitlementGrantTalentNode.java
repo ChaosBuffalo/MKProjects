@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.core.talents.nodes;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.entitlements.EntitlementInstance;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.talents.TalentNode;
@@ -16,7 +15,7 @@ import java.util.UUID;
 
 public class EntitlementGrantTalentNode extends TalentNode {
     public static final MapCodec<EntitlementGrantTalentNode> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
-            MKCoreRegistry.ENTITLEMENTS.holderByNameCodec().fieldOf("entitlement").forGetter(EntitlementGrantTalentNode::getEntitlement),
+            MKEntitlement.REFERENCE_CODEC.fieldOf("entitlement").forGetter(EntitlementGrantTalentNode::getEntitlement),
             TalentNodeDisplay.REFERENCE_CODEC.fieldOf("display_info").forGetter(i -> i.displayHolder),
             UUIDUtil.STRING_CODEC.fieldOf("nodeId").forGetter(EntitlementGrantTalentNode::getNodeId)
     ).apply(builder, EntitlementGrantTalentNode::new));
@@ -44,6 +43,6 @@ public class EntitlementGrantTalentNode extends TalentNode {
     }
 
     public EntitlementInstance createInstance() {
-        return new EntitlementInstance(entitlement.value(), nodeId);
+        return new EntitlementInstance(entitlement, nodeId);
     }
 }

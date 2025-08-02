@@ -5,6 +5,8 @@ import com.chaosbuffalo.mkcore.core.entitlements.EntitlementInstance;
 import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.records.PlayerRecordDispatcher;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -27,8 +29,12 @@ public class PlayerEntitlements {
         return entitlements.values().stream();
     }
 
-    public boolean hasEntitlement(MKEntitlement entitlement) {
-        return getEntitlementLevel(entitlement) > 0;
+    public boolean hasEntitlement(Holder<MKEntitlement> entitlement) {
+        return getInstanceStream().anyMatch(instance -> instance.entitlement().value().equals(entitlement.value()));
+    }
+
+    public boolean hasEntitlementInstance(UUID instanceId) {
+        return entitlements.containsKey(instanceId);
     }
 
     public void addEntitlement(EntitlementInstance instance) {
@@ -51,16 +57,17 @@ public class PlayerEntitlements {
 
     public int getEntitlementLevel(MKEntitlement entitlement) {
         return (int) getInstanceStream()
-                .filter(instance -> instance.entitlement() == entitlement)
+                .filter(instance -> instance.entitlement().value().equals(entitlement))
                 .limit(entitlement.getMaxEntitlements())
                 .count();
     }
 
-    public CompoundTag serialize() {
+    public CompoundTag serialize(HolderLookup.Provider provider) {
+        var regOps = provider.createSerializationContext(NbtOps.INSTANCE);
         CompoundTag tag = new CompoundTag();
         ListTag entitlementsTag = new ListTag();
         for (EntitlementInstance instance : entitlements.values()) {
-            EntitlementInstance.CODEC.encodeStart(NbtOps.INSTANCE, instance)
+            EntitlementInstance.CODEC.encodeStart(regOps, instance)
                     .resultOrPartial(MKCore.LOGGER::error)
                     .ifPresent(entitlementsTag::add);
         }
@@ -68,11 +75,12 @@ public class PlayerEntitlements {
         return tag;
     }
 
-    public boolean deserialize(CompoundTag tag) {
+    public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
+        var regOps = provider.createSerializationContext(NbtOps.INSTANCE);
         entitlements.clear();
         ListTag entitlementsTag = tag.getList("entitlements", Tag.TAG_COMPOUND);
         for (Tag entNbt : entitlementsTag) {
-            EntitlementInstance.CODEC.parse(NbtOps.INSTANCE, entNbt)
+            EntitlementInstance.CODEC.parse(regOps, entNbt)
                     .resultOrPartial(MKCore.LOGGER::error)
                     .ifPresent(e -> entitlements.put(e.instanceId(), e));
         }

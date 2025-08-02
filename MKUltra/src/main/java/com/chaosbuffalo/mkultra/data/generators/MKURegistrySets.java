@@ -31,7 +31,8 @@ public class MKURegistrySets extends DatapackBuiltinEntriesProvider {
             .add(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY, MKULootTiers::bootstrap)
             .add(NpcRegistries.NPC_DEFINITIONS, MKUNpcs::bootstrap)
             .add(QuestRegistries.QUEST_DEFINITIONS, MKUQuests::bootstrap)
-            .add(ChatRegistries.DIALOGUE_TREES, MKUDialogues::bootstrap);
+            .add(ChatRegistries.DIALOGUE_TREES, MKUDialogues::bootstrap)
+            .add(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY, MKUEntitlements::bootstrap);
 
     public MKURegistrySets(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         super(output, registries, BUILDER, Collections.singleton(MKUltra.MODID));

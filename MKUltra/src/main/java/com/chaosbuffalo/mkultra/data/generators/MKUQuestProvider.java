@@ -46,6 +46,7 @@ public class MKUQuestProvider {
 
     private static QuestDefinition generateThemcromancerChain(ResourceKey<QuestDefinition> key, BootstrapContext<QuestDefinition> context) {
         var factionReg = context.lookup(MKFactionRegistry.FACTION_REGISTRY_KEY);
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
 
         QuestStructureLocation temple = new QuestStructureLocation(UltraStructures.THEMCROMANCERS_LAIR.location(), "0");
         QuestStructureLocation obelisk = new QuestStructureLocation(UltraStructures.DEEPSLATE_OBELISK.location(), "0");
@@ -79,7 +80,7 @@ public class MKUQuestProvider {
                 .questLootFromTypeTag("finger_bones", EntityTypeTags.UNDEAD, "the Undead",
                         6, 0.25, Component.literal("Decaying Fingerbones"))
                 .autoComplete(true)
-                .reward(new GrantEntitlementReward(MKUEntitlements.ThemcromancerTier1))
+                .reward(new GrantEntitlementReward(entitlements.getOrThrow(MKUEntitlements.ThemcromancerTier1)))
                 .xp(250)
                 .quest();
         parts.setAutoComplete(true);
@@ -137,7 +138,7 @@ public class MKUQuestProvider {
                 )
                 .reward(new FactionReward(100, factionReg.getOrThrow(MKUFactions.THEMCROMANCERS_NAME)))
                 .reward(new FactionReward(-10000, factionReg.getOrThrow(MKUFactions.SEE_OF_SOLANG_NAME)))
-                .reward(new GrantEntitlementReward(MKUEntitlements.ThemcromancerTier2))
+                .reward(new GrantEntitlementReward(entitlements.getOrThrow(MKUEntitlements.ThemcromancerTier2)))
                 .reward(new XpReward(250))
                 .quest();
         def.addQuest(returnAfterRemnants);
@@ -162,7 +163,7 @@ public class MKUQuestProvider {
                 .builderHail("return_after_kill_2", Component.literal("Talk to the Archon again."),
                         archon, postKill2, null)
                 .reward(new FactionReward(200, factionReg.getOrThrow(MKUFactions.SEE_OF_SOLANG_NAME)))
-                .reward(new GrantEntitlementReward(MKUEntitlements.ThemcromancerTier3))
+                .reward(new GrantEntitlementReward(entitlements.getOrThrow(MKUEntitlements.ThemcromancerTier3)))
                 .reward(new XpReward(400))
                 .quest();
 
@@ -232,6 +233,7 @@ public class MKUQuestProvider {
 
     private static QuestDefinition generateClericQuestChain(ResourceKey<QuestDefinition> key, BootstrapContext<QuestDefinition> context) {
         var factionReg = context.lookup(MKFactionRegistry.FACTION_REGISTRY_KEY);
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
 
         QuestStructureLocation temple = new QuestStructureLocation(UltraStructures.DESERT_TEMPLE_VILLAGE.location(), "0");
         QuestStructureLocation tomb = new QuestStructureLocation(UltraStructures.HYBOREAN_CRYPT.location(), "0");
@@ -267,7 +269,7 @@ public class MKUQuestProvider {
                 ));
         goldBars.addObjective(tradeGold);
         goldBars.addReward(new XpReward(100));
-        goldBars.addReward(new GrantEntitlementReward(MKUEntitlements.ClericTier1));
+        goldBars.addReward(new GrantEntitlementReward(entitlements.getOrThrow(MKUEntitlements.ClericTier1)));
         def.addQuest(goldBars);
 
         DialogueBuilder killDead = DialogueBuilder.hail(
@@ -318,7 +320,7 @@ public class MKUQuestProvider {
                         null
                 )
                 .reward(new FactionReward(100, factionReg.getOrThrow(MKUFactions.SEE_OF_SOLANG_NAME)))
-                .reward(new GrantEntitlementReward(MKUEntitlements.ClericTier2))
+                .reward(new GrantEntitlementReward(entitlements.getOrThrow(MKUEntitlements.ClericTier2)))
                 .reward(new XpReward(250))
                 .quest();
         def.addQuest(returnAfterKill);
@@ -345,7 +347,7 @@ public class MKUQuestProvider {
                 .builderHail("return_after_kill_2", Component.literal("Talk to the Cleric again."),
                         cleric, postKill2, null)
                 .reward(new FactionReward(200, factionReg.getOrThrow(MKUFactions.SEE_OF_SOLANG_NAME)))
-                .reward(new GrantEntitlementReward(MKUEntitlements.ClericTier3))
+                .reward(new GrantEntitlementReward(entitlements.getOrThrow(MKUEntitlements.ClericTier3)))
                 .reward(new XpReward(400))
                 .quest();
 
@@ -355,6 +357,7 @@ public class MKUQuestProvider {
     }
 
     private static QuestDefinition generateIntroMageQuest(ResourceKey<QuestDefinition> key, BootstrapContext<QuestDefinition> context) {
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
         Holder<LootTier> burning_staff = context.lookup(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY).getOrThrow(MKULootTiers.burning_staff);
 
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
@@ -431,7 +434,7 @@ public class MKUQuestProvider {
                         initiate,
                         complete,
                         null)
-                .reward(new GrantEntitlementReward(MKUEntitlements.IntroNetherMageTier1))
+                .reward(new GrantEntitlementReward(entitlements.getOrThrow(MKUEntitlements.IntroNetherMageTier1)))
                 .reward(new XpReward(50))
                 .quest();
         def.addQuest(finalReturn);
@@ -444,6 +447,8 @@ public class MKUQuestProvider {
     }
 
     private static QuestDefinition generateIntroClericQuest(ResourceKey<QuestDefinition> key, BootstrapContext<QuestDefinition> context) {
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
+
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         QuestBuilder.QuestNpc acolyte = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.solangian_acolyte);
         QuestBuilder.QuestNpc apprentice = new QuestBuilder.QuestNpc(introCastle, IntroCastleNpcs.solangian_apprentice);
@@ -530,7 +535,7 @@ public class MKUQuestProvider {
                         null
                 )
                 .reward(new XpReward(25))
-                .reward(new GrantEntitlementReward(MKUEntitlements.IntroClericTier1))
+                .reward(new GrantEntitlementReward(entitlements.getOrThrow(MKUEntitlements.IntroClericTier1)))
                 .quest();
         def.addQuest(returnToAcolyte);
 
@@ -538,12 +543,13 @@ public class MKUQuestProvider {
     }
 
     private static QuestDefinition generateTrooperArmorQuest(ResourceKey<QuestDefinition> key, BootstrapContext<QuestDefinition> context) {
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
         Holder<LootTier> trooper_knight_armor = context.lookup(MKWeaponsRegistry.LOOT_TIER_REGISTRY_KEY).getOrThrow(MKULootTiers.trooper_knight_armor);
 
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
 
         QuestDefinition def = new QuestDefinition(key);
-        def.addRequirement(new HasEntitlementRequirement(MKUEntitlements.GreenKnightTier1));
+        def.addRequirement(new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.GreenKnightTier1)));
         def.setRepeatable(true);
         def.setQuestName(text("Salvaged Trooper Armor"));
         def.setMode(QuestDefinition.QuestMode.UNSORTED);
@@ -639,6 +645,7 @@ public class MKUQuestProvider {
 
     private static QuestDefinition generateIntroQuest(ResourceKey<QuestDefinition> key, BootstrapContext<QuestDefinition> context) {
         var talentTrees = context.lookup(MKCoreRegistry.TALENT_TREE_REGISTRY_KEY);
+        var entitlements = context.lookup(MKCoreRegistry.ENTITLEMENT_REGISTRY_KEY);
 
         QuestStructureLocation introCastle = new QuestStructureLocation(UltraStructures.INTRO_CASTLE.location(), "0");
         QuestBuilder.QuestNpc greenLady = new QuestBuilder.QuestNpc(introCastle, GreenKnightNpcs.green_lady);
@@ -745,7 +752,7 @@ public class MKUQuestProvider {
                         null
                 )
                 .reward(new XpReward(50))
-                .reward(new GrantEntitlementReward(MKUEntitlements.GreenKnightTier1))
+                .reward(new GrantEntitlementReward(entitlements.getOrThrow(MKUEntitlements.GreenKnightTier1)))
                 .quest();
         def.addQuest(returnToGreenLady);
 
@@ -805,7 +812,7 @@ public class MKUQuestProvider {
                         null
                 )
                 .reward(new XpReward(100))
-                .reward(new GrantEntitlementReward(MKUEntitlements.GreenKnightTier2))
+                .reward(new GrantEntitlementReward(entitlements.getOrThrow(MKUEntitlements.GreenKnightTier2)))
                 .quest();
         def.addQuest(killCaptain);
 
@@ -854,7 +861,7 @@ public class MKUQuestProvider {
                         null
                 )
                 .reward(new XpReward(100))
-                .reward(new GrantEntitlementReward(MKUEntitlements.GreenKnightTier3))
+                .reward(new GrantEntitlementReward(entitlements.getOrThrow(MKUEntitlements.GreenKnightTier3)))
                 .reward(new TalentTreeReward(talentTrees.getOrThrow(MKUTalentTrees.GREEN_KNIGHT)))
                 .quest();
         def.addQuest(killBurning);

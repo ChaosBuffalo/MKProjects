@@ -1,0 +1,10 @@
+{
+  "type": "mkcore:ability_slot",
+  "ability_group": "passive",
+  "description": {
+    "translate": "entitlement.mkcore.ability_slot.passive.description"
+  },
+  "display_name": {
+    "translate": "entitlement.mkcore.ability_slot.passive.name"
+  }
+}

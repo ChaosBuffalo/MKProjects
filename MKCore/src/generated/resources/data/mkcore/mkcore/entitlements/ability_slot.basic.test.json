@@ -1,0 +1,10 @@
+{
+  "type": "mkcore:ability_slot",
+  "ability_group": "basic",
+  "description": {
+    "translate": "entitlement.mkcore.ability_slot.basic.test.description"
+  },
+  "display_name": {
+    "translate": "entitlement.mkcore.ability_slot.basic.test.name"
+  }
+}
