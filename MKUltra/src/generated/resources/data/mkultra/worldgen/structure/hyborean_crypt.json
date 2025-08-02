@@ -1,6 +1,7 @@
 {
   "type": "mknpc:mk_jigsaw",
   "biomes": "#mkultra:has_hyborean_crypt",
+  "fill_floor": false,
   "max_distance_from_center": 80,
   "project_start_to_heightmap": "WORLD_SURFACE_WG",
   "size": 7,

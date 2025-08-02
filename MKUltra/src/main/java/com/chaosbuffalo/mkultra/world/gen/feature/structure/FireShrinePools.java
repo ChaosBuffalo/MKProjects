@@ -10,6 +10,7 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.Pools;
+import net.minecraft.data.worldgen.Structures;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
@@ -64,12 +65,12 @@ public class FireShrinePools {
                 ImmutableList.of(
                         Pair.of(MKSinglePoolElement.forTemplate(Templates.CORNER_WEST, true), 1)
                 ),
-                StructureTemplatePool.Projection.TERRAIN_MATCHING));
+                StructureTemplatePool.Projection.RIGID));
         pContext.register(CORNERS_EAST, new StructureTemplatePool(empty,
                 ImmutableList.of(
                         Pair.of(MKSinglePoolElement.forTemplate(Templates.CORNER_EAST, true), 1)
                 ),
-                StructureTemplatePool.Projection.TERRAIN_MATCHING));
+                StructureTemplatePool.Projection.RIGID));
         pContext.register(PLATFORM_CONTENTS, new StructureTemplatePool(empty,
                 ImmutableList.of(
                         Pair.of(MKSinglePoolElement.forTemplate(Templates.GAZEBO, false), 1),

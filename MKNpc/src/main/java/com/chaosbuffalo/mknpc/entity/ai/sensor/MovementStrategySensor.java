@@ -17,7 +17,7 @@ public class MovementStrategySensor extends Sensor<MKEntity> {
 
     @Override
     protected void doTick(ServerLevel worldIn, MKEntity entityIn) {
-        if ((entityIn.avoidsWater() && entityIn.isInWater()) || entityIn.getBrain().getMemory(MKMemoryModuleTypes.IS_RETURNING.get()).orElse(false)) {
+        if ((entityIn.avoidsWater() && entityIn.isInWater()) || (!entityIn.getEntityDataCap().getPets().isPet() && entityIn.getBrain().getMemory(MKMemoryModuleTypes.IS_RETURNING.get()).orElse(false))) {
             return;
         }
         entityIn.getBrain().getMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get())

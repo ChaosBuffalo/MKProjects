@@ -57,7 +57,7 @@ public class ReturnToSpawnGoal extends Goal {
         entity.getNavigation().stop();
         entity.getBrain().eraseMemory(MemoryModuleType.PATH);
         entity.getBrain().eraseMemory(MKMemoryModuleTypes.IS_RETURNING.get());
-        entity.enterNonCombatMovementState();
+        entity.returnToDefaultMovementState();
     }
 
     private boolean needsToReturnHome(BlockPos spawn) {
@@ -92,6 +92,9 @@ public class ReturnToSpawnGoal extends Goal {
 
     public boolean canContinueToUse() {
         Optional<BlockPos> blockPosOpt = entity.getBrain().getMemory(MKMemoryModuleTypes.SPAWN_POINT.get());
+        if (entity.getEntityDataCap().getPets().isPet() && entity.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET.get()).isPresent()) {
+            return false;
+        }
         return blockPosOpt.map((pos) -> pos.distManhattan(entity.blockPosition()) > MIN_RANGE).orElse(false);
     }
 
