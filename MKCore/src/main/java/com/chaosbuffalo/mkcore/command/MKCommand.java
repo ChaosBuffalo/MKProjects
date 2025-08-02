@@ -22,4 +22,8 @@ public class MKCommand {
         dispatcher.register(builder);
         dispatcher.register(PartyCommand.register());
     }
+
+    public static boolean isGM(CommandSourceStack c) {
+        return c.hasPermission(Commands.LEVEL_GAMEMASTERS);
+    }
 }
