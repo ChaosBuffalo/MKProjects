@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.core.talents;
 
+import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
@@ -56,7 +57,9 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     }
 
     public int getXpToNextLevel() {
-        return 100 + Math.round((getTotalTalentPoints() / 2.0f) * 100);
+        return MKConfig.SERVER.baseXpPerTalentPoint.get() +
+                Math.round((getTotalTalentPoints() * MKConfig.SERVER.totalTalentXpMultiplier.get().floatValue()) *
+                        MKConfig.SERVER.scalingXpPerTalentPoint.get());
     }
 
     public boolean shouldLevel() {
@@ -64,6 +67,10 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     }
 
     public void addTalentXp(int value) {
+        int maxPoints = MKConfig.SERVER.maxTalentPoints.get();
+        if (maxPoints > 0 && getTotalTalentPoints() >= MKConfig.SERVER.maxTalentPoints.get()) {
+            return;
+        }
         talentXp.add(value);
         if (shouldLevel()) {
             performLevel();

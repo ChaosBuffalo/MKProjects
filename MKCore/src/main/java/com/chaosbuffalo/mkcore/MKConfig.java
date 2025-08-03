@@ -71,6 +71,11 @@ public class MKConfig {
         public final ModConfigSpec.DoubleValue skillScalingMultiplier;
         public final ModConfigSpec.IntValue worldDifficultyBandSize;
         public final ModConfigSpec.DoubleValue difficultyBandIncrease;
+        public final ModConfigSpec.IntValue maxTalentPoints;
+        public final ModConfigSpec.IntValue talentPointsPerSkill;
+        public final ModConfigSpec.IntValue baseXpPerTalentPoint;
+        public final ModConfigSpec.DoubleValue totalTalentXpMultiplier;
+        public final ModConfigSpec.IntValue scalingXpPerTalentPoint;
 
         public Server(ModConfigSpec.Builder builder) {
             builder.comment("Gameplay settings").push("gameplay");
@@ -98,7 +103,21 @@ public class MKConfig {
             difficultyBandIncrease = builder
                     .comment("The amount difficulty goes up each band")
                     .defineInRange("difficultyBandIncrease", 10.0, 0.0, 100.0);
-
+            maxTalentPoints = builder
+                    .comment("The maximum number of talent points you can collect")
+                    .defineInRange("maxTalentPoints", 0, 0, Integer.MAX_VALUE);
+            talentPointsPerSkill = builder
+                    .comment("The number of talent points it takes to increase your skill cap by 10 (set to 0 to disable).")
+                    .defineInRange("talentPointsPerSkill", 10, 0, Integer.MAX_VALUE);
+            baseXpPerTalentPoint = builder
+                    .comment("The amount of xp it takes to get your first talent point.")
+                    .defineInRange("baseXpPerTalentPoint", 100, 1, Integer.MAX_VALUE);
+            totalTalentXpMultiplier = builder
+                    .comment("Your current total talent points are scaled by this value before applying the cost multiplier.")
+                    .defineInRange("totalTalentXpMultiplier", 0.5, 0.01, Double.MAX_VALUE);
+            scalingXpPerTalentPoint = builder
+                    .comment("The cost multiplier for additional talent points after your first.")
+                    .defineInRange("scalingXpPerTalentPoint", 100, 0, Integer.MAX_VALUE);
             builder.pop();
         }
     }

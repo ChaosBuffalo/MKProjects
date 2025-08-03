@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -125,6 +126,14 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
     public void tryIncreaseSkill(Holder<Attribute> attribute, DoubleUnaryOperator chanceFormula) {
         double currentSkill = getSkillValue(attribute);
         if (currentSkill < GameConstants.NATURAL_SKILL_MAX) {
+            int perSkillCap = MKConfig.SERVER.talentPointsPerSkill.get();
+            if (perSkillCap > 0) {
+                int currentTalents = persona.getTalents().getTotalTalentPoints();
+                double cap = (1 + (currentTalents / perSkillCap)) * 10.0;
+                if (currentSkill >= cap) {
+                    return;
+                }
+            }
             Player player = persona.getEntity();
             if (player.getRandom().nextDouble() <= chanceFormula.applyAsDouble(currentSkill)) {
                 player.sendSystemMessage(Component.translatable("mkcore.skill.increase",
