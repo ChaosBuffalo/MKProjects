@@ -176,6 +176,11 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.configuration.skillScalingMultiplier", "Weapon Skill Scaling Multiplier");
         add("mkcore.configuration.difficultyBandIncrease", "Difficulty Band Increase");
         add("mkcore.configuration.worldDifficultyBandSize", "World Difficulty Band Size");
+        add("mkcore.configuration.maxTalentPoints", "Max Talent Points");
+        add("mkcore.configuration.talentPointsPerSkill", "Talent Points Per Skill Tier");
+        add("mkcore.configuration.baseXpPerTalentPoint", "Base XP Per Talent Point");
+        add("mkcore.configuration.totalTalentXpMultiplier", "Total Talent Multiplier");
+        add("mkcore.configuration.scalingXpPerTalentPoint", "Scaling XP Per Talent Point");
     }
 
     private void addCommands() {
