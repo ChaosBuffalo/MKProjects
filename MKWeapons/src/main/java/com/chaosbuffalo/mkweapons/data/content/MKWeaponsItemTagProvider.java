@@ -6,6 +6,9 @@ import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.resources.ResourceLocation;
@@ -16,6 +19,7 @@ import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
+import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
 
 public class MKWeaponsItemTagProvider extends ItemTagsProvider {
@@ -33,12 +37,10 @@ public class MKWeaponsItemTagProvider extends ItemTagsProvider {
                 MKWeaponsItems.GoldRing.get(), MKWeaponsItems.RoseGoldRing.get(), MKWeaponsItems.SilverRing.get());
         tag(accessory("earring")).add(MKWeaponsItems.GoldEarring.get(), MKWeaponsItems.SilverEarring.get(),
                 MKWeaponsItems.CopperEarring.get());
-        for (MKMeleeWeapon weapon : MKWeaponsItems.WEAPONS) {
-            tag(ItemTags.SWORD_ENCHANTABLE).add(weapon);
-        }
-        for (MKBow bow : MKWeaponsItems.BOWS) {
-            tag(ItemTags.BOW_ENCHANTABLE).add(bow);
-        }
+        MKWeaponsItems.WEAPONS.stream().sorted(Comparator.comparing(x -> BuiltInRegistries.ITEM.getKey(x).toString()))
+                .forEach(weapon -> tag(ItemTags.SWORD_ENCHANTABLE).add(weapon));
+        MKWeaponsItems.BOWS.stream().sorted(Comparator.comparing(x -> BuiltInRegistries.ITEM.getKey(x).toString()))
+                .forEach(bow -> tag(ItemTags.BOW_ENCHANTABLE).add(bow));
     }
 
     private static TagKey<Item> accessory(String name) {
