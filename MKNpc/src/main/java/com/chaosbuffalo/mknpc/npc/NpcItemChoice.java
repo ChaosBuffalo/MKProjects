@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 public class NpcItemChoice {
     public static final Codec<NpcItemChoice> CODEC = RecordCodecBuilder.<NpcItemChoice>mapCodec(builder -> {
         return builder.group(
-                ItemStack.CODEC.optionalFieldOf("item", ItemStack.EMPTY).forGetter(i -> i.item),
+                ItemStack.CODEC.lenientOptionalFieldOf("item", ItemStack.EMPTY).forGetter(i -> i.item),
                 Codec.DOUBLE.fieldOf("weight").forGetter(i -> i.weight),
                 Codec.FLOAT.fieldOf("dropChance").forGetter(i -> i.dropChance)
         ).apply(builder, NpcItemChoice::new);
