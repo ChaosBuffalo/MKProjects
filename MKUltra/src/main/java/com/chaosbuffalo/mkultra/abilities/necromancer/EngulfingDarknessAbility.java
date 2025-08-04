@@ -115,9 +115,8 @@ public class EngulfingDarknessAbility extends EntityTargetingAbility {
                 .ability(this)
                 .skillLevel(level);
 
-        MKCore.getEntityData(target).ifPresent(targetData -> {
-            targetData.getEffects().addEffect(dot);
-        });
+        MKCore.getEntityData(target).ifPresent(targetData ->
+                targetData.getEffects().addEffect(dot, context.getSourceId()));
         SoundUtils.serverPlaySoundAtEntity(target, MKUSounds.spell_dark_7.value(), target.getSoundSource());
         MKParticles.spawnOffset(target, new Vec3(0.0, 1.0, 0.0), castParticles.getValue());
     }

@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -21,6 +22,7 @@ public class AbilityContext {
     @Nullable
     private BiFunction<IMKEntityData, Holder<Attribute>, Float> skillValueOverrideProvider;
     private AbilityClientState clientState;
+    private UUID sourceOverride;
 
     public AbilityContext(IMKEntityData entityData) {
         memories = new HashMap<>();
@@ -35,6 +37,14 @@ public class AbilityContext {
     public AbilityContext(IMKEntityData entityData, MKAbilityInfo ability) {
         memories = new HashMap<>();
         this.casterData = entityData;
+    }
+
+    public UUID getSourceId() {
+        if (sourceOverride != null) {
+            return sourceOverride;
+        } else {
+            return getCasterData().getEntity().getUUID();
+        }
     }
 
     public AbilityClientState getClientState() {
@@ -98,6 +108,10 @@ public class AbilityContext {
 
     public void setSkillResolver(BiFunction<IMKEntityData, Holder<Attribute>, Float> supplier) {
         this.skillValueOverrideProvider = supplier;
+    }
+
+    public void setSourceOverride(UUID sourceOverride) {
+        this.sourceOverride = sourceOverride;
     }
 
     public static AbilityContext forCaster(IMKEntityData casterData, MKAbility ability) {

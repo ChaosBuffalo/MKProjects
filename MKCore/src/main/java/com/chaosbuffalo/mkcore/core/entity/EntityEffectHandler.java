@@ -318,6 +318,10 @@ public class EntityEffectHandler {
         addEffect(builder.createApplication(), builder.getSourceId());
     }
 
+    public void addEffect(MKEffectBuilder<?> builder, UUID sourceId) {
+        addEffect(builder.createApplication(), sourceId);
+    }
+
     public void addEffect(MKActiveEffect activeEffect) {
         addEffect(activeEffect, activeEffect.getSourceId());
     }
