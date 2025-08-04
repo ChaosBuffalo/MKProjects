@@ -22,7 +22,8 @@ public class AbilityContext {
     @Nullable
     private BiFunction<IMKEntityData, Holder<Attribute>, Float> skillValueOverrideProvider;
     private AbilityClientState clientState;
-    private UUID sourceOverride;
+    @Nullable
+    private UUID sourceOverride = null;
 
     public AbilityContext(IMKEntityData entityData) {
         memories = new HashMap<>();
