@@ -1,13 +1,19 @@
 package com.chaosbuffalo.mknpc.entity.ai.movement_strategy;
 
+import com.chaosbuffalo.mkcore.fx.ParticleEffects;
+import com.chaosbuffalo.mkcore.init.CoreParticles;
+import com.chaosbuffalo.mkcore.network.PacketHandler;
+import com.chaosbuffalo.mkcore.network.ParticleEffectSpawnPacket;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.MovementUtils;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
+import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
@@ -25,7 +31,7 @@ public class KiteMovementStrategy extends MovementStrategy {
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get());
         Optional<WalkTarget> walkTargetOptional = brain.getMemory(MemoryModuleType.WALK_TARGET);
-        if (entity.getRandom().nextInt(20) == 0) {
+        if (walkTargetOptional.isPresent() && entity.getRandom().nextInt(40) != 0) {
             return;
         }
         if (targetOpt.isPresent()) {
@@ -34,23 +40,23 @@ public class KiteMovementStrategy extends MovementStrategy {
                 brain.eraseMemory(MemoryModuleType.WALK_TARGET);
                 return;
             }
-            WalkTarget walkTarget = walkTargetOptional.orElse(null);
-            Vec3 targetPos = null;
-            double distToWalkTarget = 0.0;
             double distanceTo = entity.distanceTo(target);
-            if (walkTarget != null) {
-                distToWalkTarget = target.distanceToSqr(walkTarget.getTarget().currentPosition());
-            }
-            double threeQuarterDist = .75 * dist;
-            if (distanceTo < threeQuarterDist && distToWalkTarget < (threeQuarterDist * threeQuarterDist)) {
-                targetPos = MovementUtils.findRandomTargetBlockAwayFromNoWater(
-                        entity, (int) Math.round(dist), 3, target.position());
-            } else if (distanceTo > 1.1 * dist) {
+            Vec3 targetPos = null;
+            if (distanceTo > (1.5 * dist)) {
                 targetPos = target.position();
+            } else {
+                for (int i = 0; i < 10; i++) {
+                    targetPos = MovementUtils.findRandomTargetBlockAwayFromNoWater(
+                            entity, (int) Math.round(dist), 7, target.position());
+                    if (targetPos != null) {
+                        break;
+                    }
+                }
             }
             if (targetPos != null) {
                 brain.setMemory(MemoryModuleType.WALK_TARGET,
                         new WalkTarget(targetPos, 1.0f, 1));
+
             }
         }
 

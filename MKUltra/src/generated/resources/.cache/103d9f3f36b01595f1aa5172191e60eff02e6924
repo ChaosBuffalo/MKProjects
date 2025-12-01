@@ -1,4 +1,4 @@
-// 1.21.1	2025-08-02T16:04:13.3110764	Registries
+// 1.21.1	2025-11-28T13:58:03.9380494	Registries
 0da9c23f46702bc38555b6b70af1c3a7ec4c11ef data/mkultra/mkchat/dialogue_trees/cleric_default.json
 2d28e6556d4620a466345f5777242ccf8aee30e3 data/mkultra/mkchat/dialogue_trees/intro_cleric_acolyte.json
 f0b3ca666c13a5a2e4305f664f92f2013ae433cb data/mkultra/mkchat/dialogue_trees/intro_nether_mage_initiate.json
@@ -28,6 +28,7 @@ b1b7888ae76ab4c67ef3ca5e95335be8e6b0a495 data/mkultra/mkcore/talent_trees/knight
 8c005057ea15cddf26dec8ff51ee604eb599b955 data/mkultra/mkcore/talent_trees/mage.json
 69a5cdf6f0137518d897dae977dadee940c81ce0 data/mkultra/mkcore/talent_trees/priest.json
 fe4a6c3101ba46a9abaa9997921493a29e4b26c1 data/mkultra/mkcore/talent_trees/warrior.json
+c5286fea565caa0cf6fa5a72569d29fa2fd2635b data/mkultra/mkfaction/factions/fire_shrine_guardians.json
 42fefaa91b7eb03decf35b268a2a8e51ae5003fe data/mkultra/mkfaction/factions/ghosts_of_hyboria.json
 2eb73a463744c41a8fb661968730adc9a3f24228 data/mkultra/mkfaction/factions/green_knights.json
 9288fe293699f84543106263c51ffaf0405d4e58 data/mkultra/mkfaction/factions/hyborean_dead.json
@@ -48,6 +49,7 @@ ad02e1de85c207662f304a988fc0663efc993960 data/mkultra/mknpc/mknpcs/a_skeletal_ga
 b7b9f57ac6d6aa42030b629ed3572b832ea6d6a4 data/mkultra/mknpc/mknpcs/crumbling_trooper_mage.json
 5cbbbfa1ffac5ecb9623aa669834bc798182a5a7 data/mkultra/mknpc/mknpcs/decaying_piglin.json
 820b4e43cf47d34c77d11e63ac5a97d948be1666 data/mkultra/mknpc/mknpcs/decaying_piglin_archer.json
+f223d9ac8bafdf3f62ca048e33a9b76860695e9c data/mkultra/mknpc/mknpcs/fire_sprite.json
 caa68281c776951ecd722d7ef4301a2d7c708e58 data/mkultra/mknpc/mknpcs/forlorn_ghost.json
 9dbb97655528bf8531962ca932354436e3d62278 data/mkultra/mknpc/mknpcs/green_lady.json
 9878cf9e3ddb134240f538a3950bb1eff39bd09e data/mkultra/mknpc/mknpcs/green_lady_guard_1.json

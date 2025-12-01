@@ -14,11 +14,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ThreatSensor extends Sensor<MKEntity> {
-    private static final float THREAT_FALLOFF_2 = 225.0f;
+    private static final float THREAT_FALLOFF_2 = 1500.0f;
     private static final float BONUS_THREAT_FIRST_SIGHT = 750.0f;
     private static final float MAX_THREAT_FROM_DISTANCE = 250.0f;
     private static final float ADD_THREAT = 125.0f;
-    private static final float REMOVE_DIST_2 = 400.0f;
+    private static final float REMOVE_DIST_2 = 10000.0f;
 
 
     private float getAggroDistanceForEntity(LivingEntity entity) {
@@ -56,7 +56,7 @@ public class ThreatSensor extends Sensor<MKEntity> {
             Set<LivingEntity> toRemove = new HashSet<>();
             for (Map.Entry<LivingEntity, ThreatMapEntry> entry : threatMap.entrySet()) {
                 float dist2 = (float) entityIn.distanceToSqr(entry.getKey());
-                ThreatMapEntry threat = entry.getValue().addThreat((1.0f - dist2 / THREAT_FALLOFF_2) * MAX_THREAT_FROM_DISTANCE);
+                ThreatMapEntry threat = entry.getValue().addThreat((1.0f - (dist2 / THREAT_FALLOFF_2)) * MAX_THREAT_FROM_DISTANCE);
                 if (threat.getCurrentThreat() < 0 || dist2 > REMOVE_DIST_2 || !entry.getKey().isAlive()) {
                     toRemove.add(entry.getKey());
                 }

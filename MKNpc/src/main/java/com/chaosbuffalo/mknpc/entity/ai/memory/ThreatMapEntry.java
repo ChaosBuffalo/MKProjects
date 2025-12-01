@@ -12,12 +12,12 @@ public class ThreatMapEntry {
     }
 
     public ThreatMapEntry addThreat(float value) {
-        currentThreat += value;
+        currentThreat = Math.max(1, currentThreat + value);
         return this;
     }
 
     public ThreatMapEntry subtractThreat(float value) {
-        currentThreat -= value;
+        addThreat(-value);
         return this;
     }
 }

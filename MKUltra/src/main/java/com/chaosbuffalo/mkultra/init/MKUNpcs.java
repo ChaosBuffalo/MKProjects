@@ -22,5 +22,6 @@ public class MKUNpcs {
         HyboreanNpcs.bootstrap(context);
         ThemcromancerNpcs.bootstrap(context);
         IntroCastleNpcs.bootstrap(context);
+        FireShrineNpcs.bootstrap(context);
     }
 }

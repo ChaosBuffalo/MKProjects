@@ -1,10 +1,7 @@
 package com.chaosbuffalo.mknpc.entity.ai.controller;
 
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
-import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.FollowMovementStrategy;
-import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.KiteMovementStrategy;
-import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.RandomWanderMovementStrategy;
-import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.StationaryMovementStrategy;
+import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.*;
 import net.minecraft.world.entity.LivingEntity;
 
 public class MovementStrategyController {
@@ -35,5 +32,11 @@ public class MovementStrategyController {
         entity.getBrain().eraseMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get());
         entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
                 new RandomWanderMovementStrategy(1200));
+    }
+
+    public static void enterRandomFlyingWander(LivingEntity entity) {
+        entity.getBrain().eraseMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get());
+        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
+                new RandomFlyingWanderMovementStrategy(1200));
     }
 }

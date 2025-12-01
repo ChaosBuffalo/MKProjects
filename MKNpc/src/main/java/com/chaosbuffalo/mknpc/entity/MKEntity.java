@@ -118,6 +118,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     private int castTicks;
     private int currentCastTicks;
+    private double rangedCastingDistance;
 
     @Nullable
     protected Component battlecry;
@@ -204,6 +205,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         castingAbility = null;
         battlecry = null;
         lungeSpeed = .25;
+        rangedCastingDistance = 6.0;
         blockCooldown = GameConstants.TICKS_PER_SECOND * 2;
         blockDelay = GameConstants.TICKS_PER_SECOND / 2;
         blockHold = GameConstants.TICKS_PER_SECOND * 2;
@@ -448,7 +450,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         this.goalSelector.addGoal(priority++, new ReturnToSpawnGoal(this));
         this.goalSelector.addGoal(priority++, new FloatGoal(this));
         this.goalSelector.addGoal(priority++, new MovementGoal(this));
-        this.goalSelector.addGoal(priority++, new UseAbilityGoal(this));
+        this.goalSelector.addGoal(priority++, new UseAbilityGoal(this, false));
         this.goalSelector.addGoal(priority++, new MKBowAttackGoal(this, 5, 15.0f));
         this.goalSelector.addGoal(priority++, new MKBlockGoal(this));
         this.meleeAttackGoal = new MKMeleeAttackGoal(this);
@@ -462,7 +464,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return true;
     }
 
-    private void handleCombatMovementDetect(ItemStack stack) {
+    protected void handleCombatMovementDetect(ItemStack stack) {
         if (ItemUtils.isRangedWeapon(stack)) {
             setCombatMoveType(CombatMoveType.RANGE);
         } else {
@@ -613,7 +615,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
         switch (decision.getMovementSuggestion()) {
             case KITE:
-                return new KiteMovementStrategy(Math.max(ability.getDistance(this) * .5, 8));
+                return new KiteMovementStrategy(Math.max(ability.getDistance(this) * .50, getMinimumRangedCastingDistance()));
             case FOLLOW:
                 return new FollowMovementStrategy(1.0f, Math.round(ability.getDistance(this) / 2.0f));
             case MELEE:
@@ -778,9 +780,17 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get(), target);
         switch (getCombatMoveType()) {
             case STATIONARY -> MovementStrategyController.enterStationary(this);
-            case RANGE -> MovementStrategyController.enterCastingMode(this, 6.0);
+            case RANGE -> MovementStrategyController.enterCastingMode(this, getMinimumRangedCastingDistance());
             default -> MovementStrategyController.enterMeleeMode(this, 1);
         }
+    }
+
+    public double getMinimumRangedCastingDistance(){
+        return rangedCastingDistance;
+    }
+
+    public void setMinimumRangedCastingDistance(double rangedCastingDistance) {
+        this.rangedCastingDistance = rangedCastingDistance;
     }
 
     @Override
@@ -793,10 +803,14 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             }
         } else {
             switch (getNonCombatMoveType()) {
-                case RANDOM_WANDER -> MovementStrategyController.enterRandomWander(this);
+                case RANDOM_WANDER -> enterWanderState();
                 default -> MovementStrategyController.enterStationary(this);
             }
         }
+    }
+
+    protected void enterWanderState() {
+        MovementStrategyController.enterRandomWander(this);
     }
 
     public boolean hasThreatTarget() {

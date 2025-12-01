@@ -1,0 +1,59 @@
+{
+  "entityType": "mknpc:blaze",
+  "name": "mkultra:fire_sprite",
+  "options": {
+    "mknpc:abilities": {
+      "abilities": [
+        {
+          "ability": "mkultra:fireball",
+          "chance": 1.0,
+          "priority": 1
+        },
+        {
+          "ability": "mkultra:fireball_burst",
+          "chance": 0.3,
+          "priority": 2
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "base_value": 50.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "base_value": 50.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "base_value": 5.0
+        }
+      ]
+    },
+    "mknpc:experience": {
+      "experience": 25
+    },
+    "mknpc:faction": {
+      "factionId": "mkultra:fire_shrine_guardians"
+    },
+    "mknpc:mk_size": {
+      "scale": 0.9
+    },
+    "mknpc:name": {
+      "name": "Fire Sprite"
+    },
+    "mknpc:skills": {
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:conjuration",
+        "mkcore:evocation"
+      ],
+      "remedial_skills": [
+        "mkcore:one_hand_pierce"
+      ]
+    }
+  }
+}

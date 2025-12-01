@@ -25,6 +25,7 @@ public class MKUFactions {
     public static final ResourceKey<MKFaction> NECROTIDE_CULTISTS_NAME = createKey("necrotide_cultists");
     public static final ResourceKey<MKFaction> THEMCROMANCERS_NAME = createKey("themcromancers");
     public static final ResourceKey<MKFaction> THEMCROMANCER_GATEKEEPER_NAME = createKey("themcromancer_gatekeepers");
+    public static final ResourceKey<MKFaction> FIRE_SHRINE_GUARDIANS_NAME = createKey("fire_shrine_guardians");
 
 
     private static ResourceKey<MKFaction> createKey(String name) {
@@ -86,6 +87,9 @@ public class MKUFactions {
 
         context.register(THEMCROMANCER_GATEKEEPER_NAME, setupGreekNames(new MKFaction.Builder(FactionConstants.TRUE_NEUTRAL))
                 .build(context, THEMCROMANCER_GATEKEEPER_NAME));
+
+        context.register(FIRE_SHRINE_GUARDIANS_NAME, setupRomanNames(new MKFaction.Builder(FactionConstants.ENEMY_THRESHOLD))
+                .build(context, FIRE_SHRINE_GUARDIANS_NAME));
     }
 
     protected static Set<ResourceKey<MKFaction>> getDefaultGoodFactionSet() {

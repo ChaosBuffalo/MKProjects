@@ -151,5 +151,6 @@ public class MKULangProvider extends NpcLanguageProvider {
         talentTree(MKUltra.id("mage"), "Mage");
         talentTree(MKUltra.id("warrior"), "Warrior");
         ability(MKUAbilities.NECROTIDE_WARRIOR_SUMMON, "Summon Skeletal Warrior", "Summons a skeletal warrior to fight by your side.");
+        faction(MKUFactions.FIRE_SHRINE_GUARDIANS_NAME, "Guardians of the Eternal Flame");
     }
 }
