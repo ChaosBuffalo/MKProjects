@@ -1,56 +1,50 @@
 package com.chaosbuffalo.mkcore.core.player;
 
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
-import com.chaosbuffalo.mkcore.sync.SyncGroup;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.nbt.Tag;
 
 public class PlayerSyncComponent {
+    private final SyncGroup syncGroup;
 
-    private final SyncGroup publicUpdater;
-    private final SyncGroup privateUpdater;
-
-    public interface UnhandledChildFunction {
-        PlayerSyncComponent handle(String key, Tag valueTag, SyncVisibility visibility);
+    public interface DynamicComponentFactory {
+        PlayerSyncComponent createComponent(String key, Tag valueTag, SyncVisibility visibility);
     }
 
     public PlayerSyncComponent() {
-        publicUpdater = new SyncGroup();
-        privateUpdater = new SyncGroup();
+        syncGroup = new SyncGroup();
     }
 
-    public void setHandlerFunction(UnhandledChildFunction function) {
-        privateUpdater.setUnhandledKeyHandler((childName, valueTag) -> {
-            var sync = function.handle(childName, valueTag, SyncVisibility.Private);
-            return sync != null ? sync.privateUpdater : null;
-        });
-        publicUpdater.setUnhandledKeyHandler((childName, valueTag) -> {
-            var sync = function.handle(childName, valueTag, SyncVisibility.Public);
-            return sync != null ? sync.publicUpdater : null;
+    public void setDynamicMemberFactory(DynamicComponentFactory factory) {
+        syncGroup.setDynamicMemberFactory((key, tag, v) -> {
+            var component = factory.createComponent(key, tag, v);
+            return component != null ? component.syncGroup : null;
         });
     }
 
     public void attach(String name, SyncController engine) {
-        engine.add(name, publicUpdater, SyncVisibility.Public);
-        engine.add(name, privateUpdater, SyncVisibility.Private);
+        engine.addGroup(name, syncGroup);
     }
 
-//    public void detach(SyncController engine) {
-//        engine.remove(name, publicUpdater, SyncVisibility.Public);
-//        engine.remove(name, privateUpdater, SyncVisibility.Private);
-//    }
-
     public void addChild(String name, PlayerSyncComponent component) {
-        addPublic(name, component.publicUpdater);
-        addPrivate(name, component.privateUpdater);
+        syncGroup.addGroup(name, component.syncGroup);
+    }
+
+    public void addChild(String name, SyncGroup component) {
+        syncGroup.addGroup(name, component);
     }
 
     public void addPublic(String name, ISyncObject syncObject) {
-        publicUpdater.add(name, syncObject);
+        syncGroup.add(name, syncObject, SyncVisibility.Public);
     }
 
     public void addPrivate(String name, ISyncObject syncObject) {
-        privateUpdater.add(name, syncObject);
+        syncGroup.add(name, syncObject, SyncVisibility.Private);
+    }
+
+    public void addMember(String name, ISyncObject syncObject, SyncVisibility visibility) {
+        syncGroup.add(name, syncObject, visibility);
     }
 }

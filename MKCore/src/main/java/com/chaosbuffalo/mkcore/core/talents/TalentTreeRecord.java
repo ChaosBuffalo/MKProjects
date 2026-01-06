@@ -1,9 +1,10 @@
 package com.chaosbuffalo.mkcore.core.talents;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
@@ -250,7 +251,7 @@ public class TalentTreeRecord {
 
         public void markUpdated(String lineName, int index) {
             getLineUpdater(lineName).set(index);
-            parentNotifier.notifyUpdate(this);
+            parentNotifier.notifyUpdate();
         }
 
         private BitSet getLineUpdater(String line) {
@@ -258,7 +259,7 @@ public class TalentTreeRecord {
         }
 
         @Override
-        public void setNotifier(ISyncNotifier notifier) {
+        public void setSyncUpdateNotifier(ISyncNotifier notifier) {
             parentNotifier = notifier;
         }
 
@@ -273,7 +274,7 @@ public class TalentTreeRecord {
         }
 
         @Override
-        public @Nullable Tag writeFullValue(SyncContext context) {
+        public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
             CompoundTag root = new CompoundTag();
             root.putBoolean("f", true);
 
@@ -292,7 +293,7 @@ public class TalentTreeRecord {
         }
 
         @Override
-        public @Nullable Tag writeUpdateValue(SyncContext context) {
+        public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
             CompoundTag root = new CompoundTag();
 
             CompoundTag updateTag = new CompoundTag();
@@ -316,7 +317,7 @@ public class TalentTreeRecord {
         }
 
         @Override
-        public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+        public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
             if (valueTag instanceof CompoundTag root) {
                 if (root.getBoolean("f")) {
                     lines.clear();

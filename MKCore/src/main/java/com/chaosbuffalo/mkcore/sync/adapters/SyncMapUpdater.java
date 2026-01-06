@@ -2,9 +2,10 @@ package com.chaosbuffalo.mkcore.sync.adapters;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
-import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -48,11 +49,11 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
 
     public void markDirty(K key) {
         dirty.add(key);
-        parentNotifier.notifyUpdate(this);
+        parentNotifier.notifyUpdate();
     }
 
     @Override
-    public void setNotifier(ISyncNotifier notifier) {
+    public void setSyncUpdateNotifier(ISyncNotifier notifier) {
         parentNotifier = notifier;
     }
 
@@ -104,7 +105,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     }
 
     @Override
-    public @Nullable Tag writeFullValue(SyncContext context) {
+    public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
         if (backingMap.isEmpty())
             return null;
 
@@ -115,7 +116,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     }
 
     @Override
-    public @Nullable Tag writeUpdateValue(SyncContext context) {
+    public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
         if (dirty.isEmpty())
             return null;
 
@@ -135,7 +136,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     }
 
     @Override
-    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+    public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
         if (valueTag instanceof CompoundTag root) {
             if (root.getBoolean("f")) {
                 backingMap.clear();

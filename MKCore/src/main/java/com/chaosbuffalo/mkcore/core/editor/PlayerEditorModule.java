@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
 import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -30,7 +31,7 @@ public class PlayerEditorModule implements IPlayerSyncComponentProvider {
     public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         var context = new SyncContext(provider);
-        Tag particlesTag = particleEditorData.writeFullValue(context);
+        Tag particlesTag = particleEditorData.writeFullValue(context, SyncVisibility.Private);
         if (particlesTag != null) {
             tag.put("particleEditor", particlesTag);
         }
@@ -41,7 +42,7 @@ public class PlayerEditorModule implements IPlayerSyncComponentProvider {
         if (nbt.contains("particleEditor")) {
             CompoundTag particlesTag = nbt.getCompound("particleEditor");
             var context = new SyncContext(provider);
-            particleEditorData.handleUpdatePayload(context, particlesTag);
+            particleEditorData.handleUpdatePayload(context, particlesTag, SyncVisibility.Private);
             particleEditorData.markDirty();
         }
     }

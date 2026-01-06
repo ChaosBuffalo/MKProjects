@@ -179,8 +179,8 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
 
         public ClientPersonaManager(MKPlayerData playerData) {
             super(playerData);
-            sync.setHandlerFunction((s, t, v) -> {
-                Persona persona = getOrCreatePersona(s);
+            sync.setDynamicMemberFactory((name, tag, visibility) -> {
+                Persona persona = getOrCreatePersona(name);
                 return persona.getSyncComponent();
             });
             activePersonaName.setCallback(newName -> {

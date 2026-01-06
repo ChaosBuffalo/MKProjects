@@ -1,43 +1,45 @@
 package com.chaosbuffalo.mkcore.sync.controllers;
 
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
-import com.chaosbuffalo.mkcore.sync.SyncGroup;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 
-import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.Set;
 
 public abstract class SyncController {
     private static final EnumSet<SyncVisibility> DEFAULT_VISIBILITY = EnumSet.of(SyncVisibility.Public);
-    protected final Map<SyncVisibility, SyncGroup> rootGroups = new EnumMap<>(SyncVisibility.class);
+    protected final SyncGroup rootGroup = createRootGroup();
 
     protected Set<SyncVisibility> supportedVisibilities() {
         return DEFAULT_VISIBILITY;
     }
 
-    protected SyncGroup createGroup(SyncVisibility visibility) {
+    protected SyncGroup createRootGroup() {
         return new SyncGroup();
     }
 
-    protected SyncGroup getVisibilityGroup(SyncVisibility visibility) {
-        return rootGroups.computeIfAbsent(visibility, this::createGroup);
+    protected SyncGroup getRootGroup() {
+        return rootGroup;
     }
 
     public void add(String name, ISyncObject syncObject, SyncVisibility visibility) {
-        getVisibilityGroup(visibility).add(name, syncObject);
+        rootGroup.add(name, syncObject, visibility);
+    }
+
+    public void addGroup(String name, SyncGroup group) {
+        rootGroup.addGroup(name, group);
     }
 
     public void remove(String name, ISyncObject syncObject, SyncVisibility visibility) {
-        getVisibilityGroup(visibility).remove(name, syncObject);
+        rootGroup.remove(name, syncObject, visibility);
     }
 
     public void deserializeUpdate(SyncContext context, CompoundTag updateTag, SyncVisibility visibility) {
-        getVisibilityGroup(visibility).handleUpdatePayload(context, updateTag);
+        rootGroup.handleUpdatePayload(context, updateTag, visibility);
     }
 
     public abstract boolean syncUpdates();

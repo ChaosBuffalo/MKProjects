@@ -1,9 +1,10 @@
 package com.chaosbuffalo.mkcore.sync.adapters;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -13,36 +14,47 @@ import net.minecraft.resources.ResourceLocation;
 import javax.annotation.Nullable;
 import java.util.BitSet;
 import java.util.List;
-import java.util.function.BiFunction;
 
 public class SyncArrayListUpdater<T> implements ISyncObject {
     private final List<T> parent;
-    private final BiFunction<SyncContext, T, Tag> valueEncoder;
-    private final BiFunction<SyncContext, Tag, T> valueDecoder;
+    private final ElementSerializer<T> serializer;
     private final BitSet dirtyEntries = new BitSet();
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
-    public static SyncArrayListUpdater<ResourceLocation> resourceLocations(List<ResourceLocation> list) {
-        return new SyncArrayListUpdater<>(list,
-                (context, location) -> StringTag.valueOf(location.toString()),
-                (context, tag) -> ResourceLocation.tryParse(tag.getAsString()));
+    public interface ElementSerializer<T> {
+        Tag encodeValue(SyncContext context, T value);
+
+        T decodeValue(SyncContext context, Tag value);
+
+        ElementSerializer<ResourceLocation> RESOURCE_LOCATION = new ElementSerializer<>() {
+            @Override
+            public Tag encodeValue(SyncContext context, ResourceLocation value) {
+                return StringTag.valueOf(value.toString());
+            }
+
+            @Override
+            public ResourceLocation decodeValue(SyncContext context, Tag value) {
+                return ResourceLocation.tryParse(value.getAsString());
+            }
+        };
     }
 
-    public SyncArrayListUpdater(List<T> list,
-                                BiFunction<SyncContext, T, Tag> valueEncoder,
-                                BiFunction<SyncContext, Tag, T> valueDecoder) {
+    public static SyncArrayListUpdater<ResourceLocation> resourceLocations(List<ResourceLocation> list) {
+        return new SyncArrayListUpdater<>(list, ElementSerializer.RESOURCE_LOCATION);
+    }
+
+    public SyncArrayListUpdater(List<T> list, ElementSerializer<T> elementSerializer) {
         this.parent = list;
-        this.valueDecoder = valueDecoder;
-        this.valueEncoder = valueEncoder;
+        this.serializer = elementSerializer;
     }
 
     public void setDirty(int index) {
         dirtyEntries.set(index);
-        parentNotifier.notifyUpdate(this);
+        parentNotifier.notifyUpdate();
     }
 
     @Override
-    public void setNotifier(ISyncNotifier notifier) {
+    public void setSyncUpdateNotifier(ISyncNotifier notifier) {
         parentNotifier = notifier;
     }
 
@@ -57,20 +69,20 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
     }
 
     @Override
-    public @Nullable Tag writeFullValue(SyncContext context) {
+    public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
         if (parent.isEmpty())
             return null;
 
         CompoundTag root = new CompoundTag();
         root.putBoolean("f", true);
         ListTag list = new ListTag();
-        parent.forEach(r -> list.add(valueEncoder.apply(context, r)));
+        parent.forEach(r -> list.add(serializer.encodeValue(context, r)));
         root.put("l", list);
         return root;
     }
 
     @Override
-    public @Nullable Tag writeUpdateValue(SyncContext context) {
+    public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
         if (dirtyEntries.isEmpty())
             return null;
 
@@ -79,7 +91,7 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
         dirtyEntries.stream().forEach(i -> {
             CompoundTag tag = new CompoundTag();
             tag.putInt("i", i);
-            tag.put("v", valueEncoder.apply(context, parent.get(i)));
+            tag.put("v", serializer.encodeValue(context, parent.get(i)));
             list.add(tag);
         });
         root.put("s", list);
@@ -88,7 +100,7 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
     }
 
     @Override
-    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+    public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
         if (valueTag instanceof CompoundTag root) {
             if (root.getBoolean("f")) {
                 parent.clear();
@@ -112,7 +124,7 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
     }
 
     private void setValueInternal(SyncContext context, int index, Tag encodedValue) {
-        T decoded = valueDecoder.apply(context, encodedValue);
+        T decoded = serializer.decodeValue(context, encodedValue);
         if (decoded != null) {
             if (index < parent.size()) {
                 parent.set(index, decoded);

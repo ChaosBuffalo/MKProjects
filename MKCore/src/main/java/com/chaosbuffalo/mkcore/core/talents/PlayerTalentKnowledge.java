@@ -8,9 +8,10 @@ import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
 import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.core.records.PlayerRecordDispatcher;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
-import com.chaosbuffalo.mkcore.sync.SyncGroup;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
@@ -48,7 +49,7 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
         addSyncPrivate("totalPoints", totalTalentPoints);
         addSyncPrivate("xp", talentXp);
         treeGroup = new TreeSyncGroup();
-        addSyncPrivate("trees", treeGroup);
+        addSyncChild("trees", treeGroup);
         unlockDefaultTrees();
     }
 
@@ -124,7 +125,7 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
         if (record == null) {
             return false;
         }
-        treeGroup.add(treeId.location().toString(), record.getUpdater(), sendUpdate);
+        treeGroup.add(treeId.location().toString(), record.getUpdater(), SyncVisibility.Private, sendUpdate);
         return true;
     }
 
@@ -283,7 +284,7 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
             talentPoints.add(-treeRecord.getPointsSpent());
 
             talentTreeRecordMap.put(treeId, treeRecord);
-            treeGroup.add(treeId.toString(), treeRecord.getUpdater(), false);
+            treeGroup.add(treeId.toString(), treeRecord.getUpdater(), SyncVisibility.Private, false);
         }
     }
 
@@ -302,10 +303,10 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
 
     class TreeSyncGroup extends SyncGroup {
         public TreeSyncGroup() {
-            setUnhandledKeyHandler(this::handleUnhandled);
+            setDynamicMemberFactory(this::handleUnhandled);
         }
 
-        private ISyncObject handleUnhandled(String name, Tag tag) {
+        private ISyncObject handleUnhandled(String name, Tag tag, SyncVisibility visibility) {
             ResourceLocation treeId = ResourceLocation.tryParse(name);
             if (treeId == null)
                 return null;

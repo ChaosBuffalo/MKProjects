@@ -3,10 +3,9 @@ package com.chaosbuffalo.mkcore.sync.controllers;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.packets.EntityDataUpdatePacket;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
-import com.chaosbuffalo.mkcore.sync.SyncGroup;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,19 +18,24 @@ public class EntitySyncController extends SyncController {
 
     protected final Entity entity;
     protected boolean anyDirty;
+    protected boolean enableLogging = false;
 
     public EntitySyncController(Entity entity) {
         this.entity = entity;
     }
 
     @Override
-    protected SyncGroup createGroup(SyncVisibility visibility) {
-        var group = super.createGroup(visibility);
-        group.setNotifier(this::childUpdated);
-        return group;
+    protected SyncGroup createRootGroup() {
+        return new SyncGroup() {
+            @Override
+            protected void onMemberUpdated(SyncVisibility visibility) {
+                super.onMemberUpdated(visibility);
+                childUpdated();
+            }
+        };
     }
 
-    protected void childUpdated(ISyncObject child) {
+    protected void childUpdated() {
         setAnyDirty();
     }
 
@@ -47,17 +51,17 @@ public class EntitySyncController extends SyncController {
         }
 
         var context = new SyncContext(entity.registryAccess());
+        var rootGroup = getRootGroup();
         for (SyncVisibility visibility : supportedVisibilities()) {
-            SyncGroup group = getVisibilityGroup(visibility);
-            if (group.isDirty()) {
-                CompoundTag tag = group.writeUpdateValue(context);
+            if (rootGroup.isDirty(visibility)) {
+                CompoundTag tag = rootGroup.writeDirtyValue(context, visibility);
                 if (tag == null) {
                     continue;
                 }
 
                 var updateTag = new EntityDataUpdatePacket.UpdateTag(visibility, tag);
                 EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), List.of(updateTag));
-                if (MKCore.DEV_LOGGING) {
+                if (MKCore.DEV_LOGGING && logEntity(entity)) {
                     MKCore.LOGGER.info("sending {} dirty update {} for {}\n{}", visibility, packet, entity, NbtUtils.prettyPrint(tag));
                 }
                 visibility.sendPacket(packet, entity);
@@ -75,10 +79,10 @@ public class EntitySyncController extends SyncController {
 
         var context = new SyncContext(entity.registryAccess());
         List<EntityDataUpdatePacket.UpdateTag> updateTags = new ArrayList<>(2);
+        var rootGroup = getRootGroup();
         for (SyncVisibility visibility : supportedVisibilities()) {
-            SyncGroup group = getVisibilityGroup(visibility);
             if (visibility.isVisibleTo(entity, otherPlayer)) {
-                CompoundTag tag = group.writeFullValue(context);
+                CompoundTag tag = rootGroup.writeFullValue(context, visibility);
                 if (tag == null) {
                     continue;
                 }
@@ -92,7 +96,7 @@ public class EntitySyncController extends SyncController {
         }
 
         EntityDataUpdatePacket packet = new EntityDataUpdatePacket(entity.getId(), updateTags);
-        if (MKCore.DEV_LOGGING) {
+        if (MKCore.DEV_LOGGING && logEntity(entity)) {
             for (var updateTag : updateTags) {
                 MKCore.LOGGER.info("sending {} full update for {}\n{}", updateTag.visibility(), entity,
                         NbtUtils.prettyPrint(updateTag.tag()));
@@ -106,7 +110,11 @@ public class EntitySyncController extends SyncController {
         // Clear all dirty elements to avoid pointless packets after spawn.
         // Should be safe because no one has seen this entity yet.
         if (!entity.isAddedToLevel()) {
-            rootGroups.values().forEach(SyncGroup::clearDirty);
+            rootGroup.clearDirty();
         }
+    }
+
+    protected boolean logEntity(Entity entity) {
+        return enableLogging;
     }
 }

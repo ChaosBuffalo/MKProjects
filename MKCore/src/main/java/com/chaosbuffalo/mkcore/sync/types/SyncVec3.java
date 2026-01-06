@@ -1,8 +1,9 @@
 package com.chaosbuffalo.mkcore.sync.types;
 
-import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.phys.Vec3;
@@ -32,11 +33,11 @@ public class SyncVec3 implements ISyncObject {
     public void set(Vec3 value) {
         this.value = value;
         this.dirty = true;
-        parentNotifier.notifyUpdate(this);
+        parentNotifier.notifyUpdate();
     }
 
     @Override
-    public void setNotifier(ISyncNotifier notifier) {
+    public void setSyncUpdateNotifier(ISyncNotifier notifier) {
         parentNotifier = notifier;
     }
 
@@ -51,7 +52,7 @@ public class SyncVec3 implements ISyncObject {
     }
 
     @Override
-    public @Nullable Tag writeFullValue(SyncContext context) {
+    public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
         CompoundTag root = new CompoundTag();
         root.putDouble("x", value.x);
         root.putDouble("y", value.y);
@@ -60,13 +61,13 @@ public class SyncVec3 implements ISyncObject {
     }
 
     @Override
-    public @Nullable Tag writeUpdateValue(SyncContext context) {
+    public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
         dirty = false;
-        return writeFullValue(context);
+        return writeFullValue(context, visibility);
     }
 
     @Override
-    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+    public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
         if (valueTag instanceof CompoundTag root) {
             Vec3 prev = value;
             this.value = new Vec3(root.getDouble("x"), root.getDouble("y"), root.getDouble("z"));
