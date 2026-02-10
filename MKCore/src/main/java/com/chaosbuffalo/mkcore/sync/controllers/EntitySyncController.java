@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.packets.EntityDataUpdatePacket;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -14,9 +15,16 @@ import net.minecraft.world.entity.Entity;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EntitySyncController extends SyncController {
+public class EntitySyncController implements SyncController {
 
     protected final Entity entity;
+    protected final SyncGroup rootGroup = new SyncGroup() {
+        @Override
+        protected void onMemberUpdated(SyncVisibility visibility) {
+            super.onMemberUpdated(visibility);
+            childUpdated();
+        }
+    };
     protected boolean anyDirty;
     protected boolean enableLogging = false;
 
@@ -24,22 +32,23 @@ public class EntitySyncController extends SyncController {
         this.entity = entity;
     }
 
-    @Override
-    protected SyncGroup createRootGroup() {
-        return new SyncGroup() {
-            @Override
-            protected void onMemberUpdated(SyncVisibility visibility) {
-                super.onMemberUpdated(visibility);
-                childUpdated();
-            }
-        };
+    public void add(String name, ISyncObject syncObject, SyncVisibility visibility) {
+        rootGroup.add(name, syncObject, visibility);
+    }
+
+    public void addGroup(String name, SyncGroup group) {
+        rootGroup.addGroup(name, group);
+    }
+
+    public void remove(String name, ISyncObject syncObject, SyncVisibility visibility) {
+        rootGroup.remove(name, syncObject, visibility);
+    }
+
+    public void applyRemoteUpdate(SyncContext context, CompoundTag updateTag, SyncVisibility visibility) {
+        rootGroup.handleUpdatePayload(context, updateTag, visibility);
     }
 
     protected void childUpdated() {
-        setAnyDirty();
-    }
-
-    protected void setAnyDirty() {
         anyDirty = true;
     }
 
@@ -51,7 +60,6 @@ public class EntitySyncController extends SyncController {
         }
 
         var context = new SyncContext(entity.registryAccess());
-        var rootGroup = getRootGroup();
         for (SyncVisibility visibility : supportedVisibilities()) {
             if (rootGroup.isDirty(visibility)) {
                 CompoundTag tag = rootGroup.writeDirtyValue(context, visibility);
@@ -79,7 +87,6 @@ public class EntitySyncController extends SyncController {
 
         var context = new SyncContext(entity.registryAccess());
         List<EntityDataUpdatePacket.UpdateTag> updateTags = new ArrayList<>(2);
-        var rootGroup = getRootGroup();
         for (SyncVisibility visibility : supportedVisibilities()) {
             if (visibility.isVisibleTo(entity, otherPlayer)) {
                 CompoundTag tag = rootGroup.writeFullValue(context, visibility);

@@ -28,7 +28,7 @@ public final class PlayerSyncController extends EntitySyncController {
     }
 
     @Override
-    protected Set<SyncVisibility> supportedVisibilities() {
+    public Set<SyncVisibility> supportedVisibilities() {
         return PLAYER_VISIBILITY;
     }
 
@@ -41,8 +41,8 @@ public final class PlayerSyncController extends EntitySyncController {
     }
 
     @Override
-    public void deserializeUpdate(SyncContext context, CompoundTag updateTag, SyncVisibility visibility) {
-        super.deserializeUpdate(context, updateTag, visibility);
+    public void applyRemoteUpdate(SyncContext context, CompoundTag updateTag, SyncVisibility visibility) {
+        super.applyRemoteUpdate(context, updateTag, visibility);
         NeoForge.EVENT_BUS.post(new PlayerDataEvent.Updated(playerData));
     }
 

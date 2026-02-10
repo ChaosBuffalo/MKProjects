@@ -10,39 +10,22 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.EnumSet;
 import java.util.Set;
 
-public abstract class SyncController {
-    private static final EnumSet<SyncVisibility> DEFAULT_VISIBILITY = EnumSet.of(SyncVisibility.Public);
-    protected final SyncGroup rootGroup = createRootGroup();
+public interface SyncController {
+    EnumSet<SyncVisibility> DEFAULT_VISIBILITY = EnumSet.of(SyncVisibility.Public);
 
-    protected Set<SyncVisibility> supportedVisibilities() {
+    default Set<SyncVisibility> supportedVisibilities() {
         return DEFAULT_VISIBILITY;
     }
 
-    protected SyncGroup createRootGroup() {
-        return new SyncGroup();
-    }
+    void add(String name, ISyncObject syncObject, SyncVisibility visibility);
 
-    protected SyncGroup getRootGroup() {
-        return rootGroup;
-    }
+    void addGroup(String name, SyncGroup group);
 
-    public void add(String name, ISyncObject syncObject, SyncVisibility visibility) {
-        rootGroup.add(name, syncObject, visibility);
-    }
+    void remove(String name, ISyncObject syncObject, SyncVisibility visibility);
 
-    public void addGroup(String name, SyncGroup group) {
-        rootGroup.addGroup(name, group);
-    }
+    void applyRemoteUpdate(SyncContext context, CompoundTag updateTag, SyncVisibility visibility);
 
-    public void remove(String name, ISyncObject syncObject, SyncVisibility visibility) {
-        rootGroup.remove(name, syncObject, visibility);
-    }
+    boolean syncUpdates();
 
-    public void deserializeUpdate(SyncContext context, CompoundTag updateTag, SyncVisibility visibility) {
-        rootGroup.handleUpdatePayload(context, updateTag, visibility);
-    }
-
-    public abstract boolean syncUpdates();
-
-    public abstract void sendFullSync(ServerPlayer otherPlayer);
+    void sendFullSync(ServerPlayer otherPlayer);
 }
