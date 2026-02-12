@@ -2,12 +2,12 @@ package com.chaosbuffalo.mkcore.core.persona;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
 import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
-import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.mkcore.sync.types.SyncString;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,24 +15,24 @@ import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.*;
 
-public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSyncComponentProvider {
+public class PersonaManager implements IMKSerializable<CompoundTag>, ISyncGroupProvider {
     public static final String DEFAULT_PERSONA_NAME = "default";
     private static final List<IPersonaExtensionProvider> extensionProviders = new ArrayList<>(4);
     private final MKPlayerData playerData;
     private final Map<String, Persona> personas = new HashMap<>();
-    protected final PlayerSyncComponent sync = new PlayerSyncComponent();
+    protected final SyncGroup syncGroup = new SyncGroup();
     protected final SyncString activePersonaName = new SyncString(DEFAULT_PERSONA_NAME);
     protected Persona activePersona;
 
     public PersonaManager(MKPlayerData playerData) {
         this.playerData = playerData;
-        addSyncPrivate("#active", activePersonaName);
+        syncGroup.addPrivate("#active", activePersonaName);
         activePersona = getOrCreatePersona(activePersonaName.get());
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public Persona getActivePersona() {
@@ -51,7 +51,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
     protected Persona getOrCreatePersona(String name) {
         return personas.computeIfAbsent(name, newName -> {
             var newPersona = createNewPersona(newName);
-            addSyncChild(newName, newPersona);
+            syncGroup.addGroup(newName, newPersona.getSyncComponent());
             return newPersona;
         });
     }
@@ -158,7 +158,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
                 continue;
             }
 
-            addSyncChild(name, persona);
+            syncGroup.addGroup(name, persona.getSyncComponent().getSyncGroup());
             personas.put(name, persona);
         }
 
@@ -179,9 +179,9 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
 
         public ClientPersonaManager(MKPlayerData playerData) {
             super(playerData);
-            sync.setDynamicMemberFactory((name, tag, visibility) -> {
+            syncGroup.setDynamicMemberFactory((name, tag, visibility) -> {
                 Persona persona = getOrCreatePersona(name);
-                return persona.getSyncComponent();
+                return persona.getSyncComponent().getSyncGroup();
             });
             activePersonaName.setCallback(newName -> {
                 activePersona = getOrCreatePersona(newName);

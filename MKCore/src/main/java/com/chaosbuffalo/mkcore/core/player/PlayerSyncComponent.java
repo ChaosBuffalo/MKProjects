@@ -2,11 +2,12 @@ package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.nbt.Tag;
 
-public class PlayerSyncComponent {
+public class PlayerSyncComponent implements ISyncGroupProvider {
     private final SyncGroup syncGroup;
 
     public interface DynamicComponentFactory {
@@ -15,6 +16,11 @@ public class PlayerSyncComponent {
 
     public PlayerSyncComponent() {
         syncGroup = new SyncGroup();
+    }
+
+    @Override
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public void setDynamicMemberFactory(DynamicComponentFactory factory) {

@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.sync.controllers;
 
 import com.chaosbuffalo.mkcore.sync.SyncContext;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.nbt.CompoundTag;
@@ -20,6 +21,10 @@ public interface SyncController {
     void add(String name, ISyncObject syncObject, SyncVisibility visibility);
 
     void addGroup(String name, SyncGroup group);
+
+    default void addChild(String name, ISyncGroupProvider provider) {
+        addGroup(name, provider.getSyncGroup());
+    }
 
     void remove(String name, ISyncObject syncObject, SyncVisibility visibility);
 

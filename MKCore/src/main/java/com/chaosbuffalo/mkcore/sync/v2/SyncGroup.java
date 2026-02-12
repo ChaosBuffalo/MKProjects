@@ -66,6 +66,14 @@ public class SyncGroup implements ISyncUpdatableBase {
         }
     }
 
+    public void addPublic(String name, ISyncObject sync) {
+        add(name, sync, SyncVisibility.Public);
+    }
+
+    public void addPrivate(String name, ISyncObject sync) {
+        add(name, sync, SyncVisibility.Private);
+    }
+
     public void remove(String name, ISyncObject syncObject, SyncVisibility visibility) {
         SyncMemberInfo sync = members.remove(name);
         if (sync != null) {
@@ -91,6 +99,10 @@ public class SyncGroup implements ISyncUpdatableBase {
 
         // If the group being added was already dirty, reflect that in ourselves
         childGroup.dirtySet.forEach(this::onMemberUpdated);
+    }
+
+    public void addGroup(String name, ISyncGroupProvider provider) {
+        addGroup(name, provider.getSyncGroup());
     }
 
     public void removeGroup(String name, SyncGroup group) {
