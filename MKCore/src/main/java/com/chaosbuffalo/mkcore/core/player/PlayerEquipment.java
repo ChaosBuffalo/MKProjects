@@ -10,6 +10,8 @@ import com.chaosbuffalo.mkcore.item.ArmorClass;
 import com.chaosbuffalo.mkcore.item.CoreItemComponents;
 import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
 import com.chaosbuffalo.mkcore.sync.types.SyncString;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -22,11 +24,11 @@ import net.minecraft.world.item.ItemStack;
 import javax.annotation.Nonnull;
 import java.util.*;
 
-public class PlayerEquipment extends EntityEquipment implements IPlayerSyncComponentProvider {
+public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvider {
     private static final UUID EV_ID = UUID.fromString("951a29de-b941-4c4d-9d01-dba4c68b7897");
 
     private final MKPlayerData playerData;
-    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+    private final SyncGroup syncGroup = new SyncGroup();
     private final Set<ResourceLocation> armorMastery;
     private final SyncString clientMasteryInfo;
 
@@ -36,14 +38,14 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
         this.armorMastery = new HashSet<>();
         clientMasteryInfo = new SyncString(""); // TODO: better sync? this is pretty dumb
         clientMasteryInfo.setCallback(this::handleClientMasteryUpdate);
-        addSyncPrivate("armor_mastery", clientMasteryInfo);
+        syncGroup.addPrivate("armor_mastery", clientMasteryInfo);
         playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
         playerData.events().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated);
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     private void handleClientMasteryUpdate(String masteryInfo) {
