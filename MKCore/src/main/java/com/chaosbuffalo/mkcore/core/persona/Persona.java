@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.core.persona;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.*;
 import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
@@ -9,6 +8,8 @@ import com.chaosbuffalo.mkcore.core.player.events.PersonaEventSubscription;
 import com.chaosbuffalo.mkcore.core.player.events.PlayerEvent;
 import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
@@ -18,9 +19,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncComponentProvider {
+public class Persona implements IMKSerializable<CompoundTag>, ISyncGroupProvider {
     private final String name;
-    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+    private final SyncGroup syncGroup = new SyncGroup();
     private final PlayerAbilityKnowledge abilities;
     private final PlayerTalentKnowledge talents;
     private final PlayerEntitlements entitlements;
@@ -38,9 +39,9 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
         talents = new PlayerTalentKnowledge(this);
         loadout = new PlayerAbilityLoadout(this);
         entitlements = new PlayerEntitlements(this);
-        addSyncChild("abilities", abilities);
-        addSyncChild("talents", talents);
-        addSyncChild("loadout", loadout);
+        syncGroup.addGroup("abilities", abilities.getSyncComponent());
+        syncGroup.addGroup("talents", talents.getSyncComponent());
+        syncGroup.addGroup("loadout", loadout.getSyncComponent());
         skills = new PlayerSkills(this);
     }
 
@@ -61,8 +62,8 @@ public class Persona implements IMKSerializable<CompoundTag>, IPlayerSyncCompone
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public PlayerSkills getSkills() {

@@ -51,7 +51,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, ISyncGroupP
     protected Persona getOrCreatePersona(String name) {
         return personas.computeIfAbsent(name, newName -> {
             var newPersona = createNewPersona(newName);
-            syncGroup.addGroup(newName, newPersona.getSyncComponent());
+            syncGroup.addGroup(newName, newPersona);
             return newPersona;
         });
     }
@@ -158,7 +158,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, ISyncGroupP
                 continue;
             }
 
-            syncGroup.addGroup(name, persona.getSyncComponent().getSyncGroup());
+            syncGroup.addGroup(name, persona);
             personas.put(name, persona);
         }
 
@@ -181,7 +181,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, ISyncGroupP
             super(playerData);
             syncGroup.setDynamicMemberFactory((name, tag, visibility) -> {
                 Persona persona = getOrCreatePersona(name);
-                return persona.getSyncComponent().getSyncGroup();
+                return persona.getSyncGroup();
             });
             activePersonaName.setCallback(newName -> {
                 activePersona = getOrCreatePersona(newName);
