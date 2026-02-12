@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkcore.sync.v2;
 
 import com.chaosbuffalo.mkcore.sync.SyncContext;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
-import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
@@ -14,8 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SyncGroup implements ISyncUpdatableBase {
-    private final Map<String, SyncGroup> subgroups = new HashMap<>();
-    private final Map<String, SyncMemberInfo> members = new HashMap<>();
+    private final Map<String, ISyncUpdatableBase> members = new HashMap<>();
     private final EnumSet<SyncVisibility> dirtySet = EnumSet.noneOf(SyncVisibility.class);
     private DynamicObjectFactoryFunction dynamicMemberFactory = null;
     private SyncGroup parentGroup;
@@ -24,7 +22,7 @@ public class SyncGroup implements ISyncUpdatableBase {
         ISyncUpdatableBase createSyncObject(String key, Tag valueTag, SyncVisibility visibility);
     }
 
-    public static final class SyncMemberInfo {
+    private static final class SyncMemberInfo implements ISyncUpdatableBase {
         public final ISyncObject object;
         public final SyncVisibility visibility;
         public boolean dirty;
@@ -39,9 +37,27 @@ public class SyncGroup implements ISyncUpdatableBase {
             return this.visibility == visibility;
         }
 
-        private void clearDirty() {
+        @Override
+        public void clearDirty() {
             object.clearDirty();
             dirty = false;
+        }
+
+        @Override
+        public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
+            object.handleUpdatePayload(context, valueTag, visibility);
+        }
+
+        @Override
+        public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
+            return object.writeFullValue(context, visibility);
+        }
+
+        @Override
+        public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
+            var tag = object.writeDirtyValue(context, visibility);
+            dirty = false;
+            return tag;
         }
     }
 
@@ -74,13 +90,6 @@ public class SyncGroup implements ISyncUpdatableBase {
         add(name, sync, SyncVisibility.Private);
     }
 
-    public void remove(String name, ISyncObject syncObject, SyncVisibility visibility) {
-        SyncMemberInfo sync = members.remove(name);
-        if (sync != null) {
-            sync.object.setSyncUpdateNotifier(ISyncNotifier.NONE);
-        }
-    }
-
     private void setParentGroup(SyncGroup parent) {
         this.parentGroup = parent;
     }
@@ -93,7 +102,7 @@ public class SyncGroup implements ISyncUpdatableBase {
     }
 
     public void addChild(String name, SyncGroup childGroup) {
-        subgroups.put(name, childGroup);
+        members.put(name, childGroup);
 
         childGroup.setParentGroup(this);
 
@@ -105,25 +114,13 @@ public class SyncGroup implements ISyncUpdatableBase {
         addChild(name, provider.getSyncGroup());
     }
 
-    public void removeGroup(String name, SyncGroup group) {
-        SyncGroup childGroup = subgroups.remove(name);
-        if (childGroup == null) {
-            return;
-        }
-        if (childGroup != group) {
-            Util.logAndPauseIfInIde("sync group mismatch");
-        }
-
-        childGroup.setParentGroup(null);
-    }
-
     public boolean isDirty(SyncVisibility visibility) {
         return dirtySet.contains(visibility);
     }
 
+    @Override
     public void clearDirty() {
-        subgroups.values().forEach(SyncGroup::clearDirty);
-        members.values().forEach(SyncMemberInfo::clearDirty);
+        members.values().forEach(ISyncUpdatableBase::clearDirty);
         dirtySet.clear();
     }
 
@@ -133,28 +130,23 @@ public class SyncGroup implements ISyncUpdatableBase {
             return;
         }
 
-        if (subgroups.isEmpty() && members.isEmpty() && dynamicMemberFactory == null) {
+        if (members.isEmpty() && dynamicMemberFactory == null) {
             return;
         }
 
         for (String key : groupTag.getAllKeys()) {
             Tag memberTag = groupTag.get(key);
-            SyncGroup childGroup = subgroups.get(key);
-            if (childGroup != null) {
-                childGroup.handleUpdatePayload(context, memberTag, visibility);
-                continue;
-            }
 
-            SyncMemberInfo existingEntry = members.get(key);
-            if (existingEntry != null) {
-                existingEntry.object.handleUpdatePayload(context, memberTag, visibility);
+            ISyncUpdatableBase existingMember = members.get(key);
+
+            if (existingMember != null) {
+                existingMember.handleUpdatePayload(context, memberTag, visibility);
             } else if (dynamicMemberFactory != null) {
                 ISyncUpdatableBase newObject = dynamicMemberFactory.createSyncObject(key, memberTag, visibility);
+                newObject.handleUpdatePayload(context, memberTag, visibility);
                 if (newObject instanceof SyncGroup newGrp) {
-                    newGrp.handleUpdatePayload(context, memberTag, visibility);
                     addChild(key, newGrp);
                 } else if (newObject instanceof ISyncObject newObj) {
-                    newObj.handleUpdatePayload(context, memberTag, visibility);
                     add(key, newObj, visibility, false);
                 }
             }
@@ -162,98 +154,93 @@ public class SyncGroup implements ISyncUpdatableBase {
     }
 
 
+    private interface MemberVisitor {
+        void visitMember(String key, SyncMemberInfo member);
+
+        void visitGroup(String key, SyncGroup member);
+    }
+
+    private void visitMembers(MemberVisitor visitor) {
+        for (Map.Entry<String, ISyncUpdatableBase> entry : members.entrySet()) {
+            ISyncUpdatableBase member = entry.getValue();
+            switch (member) {
+                case SyncMemberInfo smi -> {
+                    visitor.visitMember(entry.getKey(), smi);
+                }
+                case SyncGroup childGroup -> {
+                    visitor.visitGroup(entry.getKey(), childGroup);
+                }
+                default -> {
+                }
+            }
+        }
+    }
+
     @Override
     public @Nullable CompoundTag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
-
         // Early return if no dirty elements for this visibility
         if (!dirtySet.contains(visibility)) {
             return null;
         }
 
         CompoundTag outputTag = new CompoundTag();
-        writeDirtyGroups(context, outputTag, visibility);
-        writeDirtyMembers(context, outputTag, visibility);
+        visitMembers(new MemberVisitor() {
+
+            @Override
+            public void visitMember(String key, SyncMemberInfo member) {
+                if (member.dirty && member.matches(visibility)) {
+                    Tag childTag = member.writeDirtyValue(context, visibility);
+                    if (childTag != null) {
+                        outputTag.put(key, childTag);
+                    }
+                }
+            }
+
+            @Override
+            public void visitGroup(String key, SyncGroup childGroup) {
+                if (childGroup.isDirty(visibility)) {
+                    Tag childTag = childGroup.writeDirtyValue(context, visibility);
+                    if (childTag != null) {
+                        outputTag.put(key, childTag);
+                    }
+                }
+            }
+        });
 
         dirtySet.remove(visibility);
         return outputTag.isEmpty() ? null : outputTag;
     }
 
-    private void writeDirtyGroups(SyncContext context, CompoundTag outputTag, SyncVisibility visibility) {
-        if (subgroups.isEmpty()) {
-            return;
-        }
-
-        for (Map.Entry<String, SyncGroup> entry : subgroups.entrySet()) {
-            SyncGroup childGroup = entry.getValue();
-            if (childGroup.isDirty(visibility)) {
-                Tag childTag = childGroup.writeDirtyValue(context, visibility);
-                if (childTag != null) {
-                    outputTag.put(entry.getKey(), childTag);
-                }
-            }
-        }
-    }
-
-    private void writeDirtyMembers(SyncContext context, CompoundTag outputTag, SyncVisibility visibility) {
-        if (members.isEmpty()) {
-            return;
-        }
-
-        for (Map.Entry<String, SyncMemberInfo> entry : members.entrySet()) {
-            SyncMemberInfo value = entry.getValue();
-            if (value.dirty && value.matches(visibility)) {
-                Tag childTag = value.object.writeDirtyValue(context, visibility);
-                if (childTag != null) {
-                    outputTag.put(entry.getKey(), childTag);
-                }
-                value.dirty = false;
-            }
-        }
-    }
-
     @Override
     public @Nullable CompoundTag writeFullValue(SyncContext context, SyncVisibility visibility) {
         // Early return if no children or members
-        if (subgroups.isEmpty() && members.isEmpty()) {
+        if (members.isEmpty()) {
             return null;
         }
 
         CompoundTag groupTag = new CompoundTag();
-        writeFullGroups(context, groupTag, visibility);
-        writeFullMembers(context, groupTag, visibility);
-        return groupTag.isEmpty() ? null : groupTag;
-    }
+        visitMembers(new MemberVisitor() {
 
-    private void writeFullGroups(SyncContext context, CompoundTag groupTag, SyncVisibility visibility) {
-        // Early return if no child groups
-        if (subgroups.isEmpty()) {
-            return;
-        }
-
-        for (Map.Entry<String, SyncGroup> entry : subgroups.entrySet()) {
-            SyncGroup childGroup = entry.getValue();
-            var childTag = childGroup.writeFullValue(context, visibility);
-            if (childTag != null) {
-                groupTag.put(entry.getKey(), childTag);
-            }
-        }
-    }
-
-    private void writeFullMembers(SyncContext context, CompoundTag outputTag, SyncVisibility visibility) {
-        // Early return if no members
-        if (members.isEmpty()) {
-            return;
-        }
-
-        for (Map.Entry<String, SyncMemberInfo> entry : members.entrySet()) {
-            SyncMemberInfo value = entry.getValue();
-            if (value.matches(visibility)) {
-                Tag childTag = value.object.writeFullValue(context, visibility);
-                if (childTag != null) {
-                    outputTag.put(entry.getKey(), childTag);
+            @Override
+            public void visitMember(String key, SyncMemberInfo member) {
+                if (member.matches(visibility)) {
+                    Tag childTag = member.writeFullValue(context, visibility);
+                    if (childTag != null) {
+                        groupTag.put(key, childTag);
+                    }
                 }
             }
-        }
+
+            @Override
+            public void visitGroup(String key, SyncGroup childGroup) {
+                Tag childTag = childGroup.writeFullValue(context, visibility);
+                if (childTag != null) {
+                    groupTag.put(key, childTag);
+                }
+            }
+        });
+
+        return groupTag.isEmpty() ? null : groupTag;
     }
 
     @Override
@@ -261,6 +248,6 @@ public class SyncGroup implements ISyncUpdatableBase {
         String dirtyString = Arrays.stream(SyncVisibility.values())
                 .map(v -> String.format("%s=%b", v, isDirty(v)))
                 .collect(Collectors.joining(","));
-        return String.format("SyncGroup[children=%s, components=%s, dirty='%s']", subgroups, members, dirtyString);
+        return String.format("SyncGroup[components=%s, dirty='%s']", members, dirtyString);
     }
 }

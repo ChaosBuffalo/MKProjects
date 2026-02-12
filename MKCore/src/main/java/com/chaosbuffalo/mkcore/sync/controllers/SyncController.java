@@ -26,8 +26,6 @@ public interface SyncController {
         addChild(name, provider.getSyncGroup());
     }
 
-    void remove(String name, ISyncObject syncObject, SyncVisibility visibility);
-
     void applyRemoteUpdate(SyncContext context, CompoundTag updateTag, SyncVisibility visibility);
 
     boolean syncUpdates();

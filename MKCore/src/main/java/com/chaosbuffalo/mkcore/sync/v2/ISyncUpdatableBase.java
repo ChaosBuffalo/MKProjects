@@ -14,4 +14,6 @@ public interface ISyncUpdatableBase {
 
     @Nullable
     Tag writeDirtyValue(SyncContext context, SyncVisibility visibility);
+
+    void clearDirty();
 }

@@ -6,8 +6,6 @@ public interface ISyncObject extends ISyncUpdatableBase {
 
     boolean isDirty();
 
-    void clearDirty();
-
     static void notImplementedByDesign(Object self) {
         throw new IllegalStateException("object '%s' does not implement sync method".formatted(self));
     }

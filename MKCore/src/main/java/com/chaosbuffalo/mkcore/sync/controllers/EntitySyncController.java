@@ -40,10 +40,6 @@ public class EntitySyncController implements SyncController {
         rootGroup.addChild(name, group);
     }
 
-    public void remove(String name, ISyncObject syncObject, SyncVisibility visibility) {
-        rootGroup.remove(name, syncObject, visibility);
-    }
-
     public void applyRemoteUpdate(SyncContext context, CompoundTag updateTag, SyncVisibility visibility) {
         rootGroup.handleUpdatePayload(context, updateTag, visibility);
     }
