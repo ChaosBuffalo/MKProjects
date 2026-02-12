@@ -4,11 +4,13 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ParticleEffectInstance;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 
 import java.util.Collection;
 
-public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
-    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+public class PlayerAnimationModule implements ISyncGroupProvider {
+    private final SyncGroup syncGroup = new SyncGroup();
     private final MKPlayerData playerData;
     private final ParticleEffectInstanceTracker effectInstanceTracker;
     private int castAnimTimer;
@@ -18,8 +20,8 @@ public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
     private int currentCastTicks;
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public enum PlayerVisualCastState {
@@ -36,7 +38,7 @@ public class PlayerAnimationModule implements IPlayerSyncComponentProvider {
         castTicks = 0;
         castingAbility = null;
         effectInstanceTracker = ParticleEffectInstanceTracker.getTracker(playerData.getEntity());
-        addSyncPublic("effects", effectInstanceTracker);
+        syncGroup.addPublic("effects", effectInstanceTracker);
     }
 
     public ParticleEffectInstanceTracker getEffectInstanceTracker() {

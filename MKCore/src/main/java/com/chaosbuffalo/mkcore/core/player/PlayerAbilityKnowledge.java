@@ -11,6 +11,8 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -21,10 +23,10 @@ import java.util.*;
 import java.util.stream.Stream;
 
 
-public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncComponentProvider {
+public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupProvider {
     private final Persona persona;
     private final MKPlayerData playerData;
-    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+    private final SyncGroup syncGroup = new SyncGroup();
     private final Map<ResourceLocation, PlayerKnownAbility> knownAbilities = new HashMap<>();
     private final SyncInt poolSize = new SyncInt(GameConstants.DEFAULT_ABILITY_POOL_SIZE);
     private final SyncMapUpdater<ResourceLocation, PlayerKnownAbility> knownAbilityUpdater =
@@ -38,13 +40,13 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, IPlayerSyncC
     public PlayerAbilityKnowledge(Persona persona) {
         this.persona = persona;
         this.playerData = persona.getPlayerData();
-        addSyncPrivate("known", knownAbilityUpdater);
-        addSyncPrivate("poolSize", poolSize);
+        syncGroup.addPrivate("known", knownAbilityUpdater);
+        syncGroup.addPrivate("poolSize", poolSize);
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public int getAbilityPoolSize() {

@@ -39,8 +39,8 @@ public class Persona implements IMKSerializable<CompoundTag>, ISyncGroupProvider
         talents = new PlayerTalentKnowledge(this);
         loadout = new PlayerAbilityLoadout(this);
         entitlements = new PlayerEntitlements(this);
-        syncGroup.addGroup("abilities", abilities.getSyncComponent());
-        syncGroup.addGroup("talents", talents.getSyncComponent());
+        syncGroup.addGroup("abilities", abilities);
+        syncGroup.addGroup("talents", talents);
         syncGroup.addGroup("loadout", loadout);
         skills = new PlayerSkills(this);
     }

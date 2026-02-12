@@ -1,27 +1,27 @@
 package com.chaosbuffalo.mkcore.core.editor;
 
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
-import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
-public class PlayerEditorModule implements IPlayerSyncComponentProvider {
-    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+public class PlayerEditorModule implements ISyncGroupProvider {
+    private final SyncGroup syncGroup = new SyncGroup();
     private final ParticleEditorSyncComponent particleEditorData = new ParticleEditorSyncComponent();
     protected final MKPlayerData playerData;
 
     public PlayerEditorModule(MKPlayerData playerData) {
         this.playerData = playerData;
-        addSyncPrivate("particle_editor", particleEditorData);
+        syncGroup.addPrivate("particle_editor", particleEditorData);
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public ParticleEditorSyncComponent getParticleEditorData() {

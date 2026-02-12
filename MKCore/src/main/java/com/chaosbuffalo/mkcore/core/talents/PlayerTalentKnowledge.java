@@ -4,12 +4,11 @@ import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
-import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
-import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.core.records.PlayerRecordDispatcher;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -32,9 +31,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
+public class PlayerTalentKnowledge implements ISyncGroupProvider {
     private final MKPlayerData playerData;
-    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+    private final SyncGroup syncGroup = new SyncGroup();
     private final SyncInt talentPoints = new SyncInt(0);
     private final SyncInt totalTalentPoints = new SyncInt(0);
     private final Map<ResourceLocation, TalentTreeRecord> talentTreeRecordMap = new HashMap<>();
@@ -45,11 +44,11 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     public PlayerTalentKnowledge(Persona persona) {
         this.playerData = persona.getPlayerData();
         dispatcher = new PlayerRecordDispatcher<>(persona, this::getKnownTalentsStream);
-        addSyncPrivate("points", talentPoints);
-        addSyncPrivate("totalPoints", totalTalentPoints);
-        addSyncPrivate("xp", talentXp);
+        syncGroup.addPrivate("points", talentPoints);
+        syncGroup.addPrivate("totalPoints", totalTalentPoints);
+        syncGroup.addPrivate("xp", talentXp);
         treeGroup = new TreeSyncGroup();
-        addSyncChild("trees", treeGroup);
+        syncGroup.addGroup("trees", treeGroup);
         unlockDefaultTrees();
     }
 
@@ -89,8 +88,8 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public int getTotalTalentPoints() {

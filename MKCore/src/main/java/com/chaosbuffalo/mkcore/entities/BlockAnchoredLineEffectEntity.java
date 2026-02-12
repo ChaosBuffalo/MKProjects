@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore.entities;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreEntities;
@@ -10,6 +9,7 @@ import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
 import com.chaosbuffalo.mkcore.sync.types.SyncBool;
 import com.chaosbuffalo.mkcore.sync.types.SyncFloat;
 import com.chaosbuffalo.mkcore.sync.types.SyncVec3;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import com.chaosbuffalo.mkcore.utils.RayTraceUtils;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
@@ -46,7 +46,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     private static final EntityDataAccessor<Float> RANGE = SynchedEntityData.defineId(
             BlockAnchoredLineEffectEntity.class, EntityDataSerializers.FLOAT);
     private final EntitySyncController engine;
-    private final PlayerSyncComponent targeting = new PlayerSyncComponent();
+    private final SyncGroup targeting = new SyncGroup();
 
     @Nullable
     protected LivingEntity target;
@@ -63,7 +63,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     public BlockAnchoredLineEffectEntity(EntityType<? extends BlockAnchoredLineEffectEntity> entityType, Level world) {
         super(entityType, world);
         engine = new EntitySyncController(this);
-        targeting.attach("targeting", engine);
+        engine.addGroup("targeting", targeting);
         targeting.addPublic("has_entity", hasEntity);
         targeting.addPublic("start_point", startPoint);
         targeting.addPublic("end_point", endPoint);
