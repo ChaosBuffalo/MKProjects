@@ -54,7 +54,7 @@ public class PlayerAbilityLoadout implements ISyncGroupProvider {
 
     private void registerAbilityGroup(String name, AbilityGroupId group, AbilityGroup abilityGroup) {
         abilityGroups.put(group, abilityGroup);
-        syncGroup.addGroup(name, abilityGroup);
+        syncGroup.addChild(name, abilityGroup);
     }
 
     public ItemAbilityGroup getItemGroup() {

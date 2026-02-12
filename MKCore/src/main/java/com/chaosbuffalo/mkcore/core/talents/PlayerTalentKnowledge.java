@@ -48,7 +48,7 @@ public class PlayerTalentKnowledge implements ISyncGroupProvider {
         syncGroup.addPrivate("totalPoints", totalTalentPoints);
         syncGroup.addPrivate("xp", talentXp);
         treeGroup = new TreeSyncGroup();
-        syncGroup.addGroup("trees", treeGroup);
+        syncGroup.addChild("trees", treeGroup);
         unlockDefaultTrees();
     }
 

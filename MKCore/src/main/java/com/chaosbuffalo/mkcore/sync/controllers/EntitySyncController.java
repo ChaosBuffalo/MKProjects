@@ -36,8 +36,8 @@ public class EntitySyncController implements SyncController {
         rootGroup.add(name, syncObject, visibility);
     }
 
-    public void addGroup(String name, SyncGroup group) {
-        rootGroup.addGroup(name, group);
+    public void addChild(String name, SyncGroup group) {
+        rootGroup.addChild(name, group);
     }
 
     public void remove(String name, ISyncObject syncObject, SyncVisibility visibility) {

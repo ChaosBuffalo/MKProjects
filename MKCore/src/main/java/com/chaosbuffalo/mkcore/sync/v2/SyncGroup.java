@@ -92,7 +92,7 @@ public class SyncGroup implements ISyncUpdatableBase {
         }
     }
 
-    public void addGroup(String name, SyncGroup childGroup) {
+    public void addChild(String name, SyncGroup childGroup) {
         subgroups.put(name, childGroup);
 
         childGroup.setParentGroup(this);
@@ -101,8 +101,8 @@ public class SyncGroup implements ISyncUpdatableBase {
         childGroup.dirtySet.forEach(this::onMemberUpdated);
     }
 
-    public void addGroup(String name, ISyncGroupProvider provider) {
-        addGroup(name, provider.getSyncGroup());
+    public void addChild(String name, ISyncGroupProvider provider) {
+        addChild(name, provider.getSyncGroup());
     }
 
     public void removeGroup(String name, SyncGroup group) {
@@ -152,7 +152,7 @@ public class SyncGroup implements ISyncUpdatableBase {
                 ISyncUpdatableBase newObject = dynamicMemberFactory.createSyncObject(key, memberTag, visibility);
                 if (newObject instanceof SyncGroup newGrp) {
                     newGrp.handleUpdatePayload(context, memberTag, visibility);
-                    addGroup(key, newGrp);
+                    addChild(key, newGrp);
                 } else if (newObject instanceof ISyncObject newObj) {
                     newObj.handleUpdatePayload(context, memberTag, visibility);
                     add(key, newObj, visibility, false);

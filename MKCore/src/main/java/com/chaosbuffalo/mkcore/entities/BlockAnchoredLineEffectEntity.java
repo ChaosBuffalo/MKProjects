@@ -63,7 +63,7 @@ public class BlockAnchoredLineEffectEntity extends BaseEffectEntity implements I
     public BlockAnchoredLineEffectEntity(EntityType<? extends BlockAnchoredLineEffectEntity> entityType, Level world) {
         super(entityType, world);
         engine = new EntitySyncController(this);
-        engine.addGroup("targeting", targeting);
+        engine.addChild("targeting", targeting);
         targeting.addPublic("has_entity", hasEntity);
         targeting.addPublic("start_point", startPoint);
         targeting.addPublic("end_point", endPoint);

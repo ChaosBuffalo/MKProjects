@@ -208,7 +208,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         blockDelay = GameConstants.TICKS_PER_SECOND / 2;
         blockHold = GameConstants.TICKS_PER_SECOND * 2;
         syncController = new EntitySyncController(this);
-        syncController.addGroup("anim", animSync);
+        syncController.addChild("anim", animSync);
         particleEffectTracker = ParticleEffectInstanceTracker.getTracker(this);
         animSync.addPublic("particles", particleEffectTracker);
         nonCombatMoveType = NonCombatMoveType.RANDOM_WANDER;

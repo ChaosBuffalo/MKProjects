@@ -20,10 +20,10 @@ public interface SyncController {
 
     void add(String name, ISyncObject syncObject, SyncVisibility visibility);
 
-    void addGroup(String name, SyncGroup group);
+    void addChild(String name, SyncGroup group);
 
     default void addChild(String name, ISyncGroupProvider provider) {
-        addGroup(name, provider.getSyncGroup());
+        addChild(name, provider.getSyncGroup());
     }
 
     void remove(String name, ISyncObject syncObject, SyncVisibility visibility);

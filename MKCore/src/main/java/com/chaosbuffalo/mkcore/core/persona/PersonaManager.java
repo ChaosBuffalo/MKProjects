@@ -51,7 +51,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, ISyncGroupP
     protected Persona getOrCreatePersona(String name) {
         return personas.computeIfAbsent(name, newName -> {
             var newPersona = createNewPersona(newName);
-            syncGroup.addGroup(newName, newPersona);
+            syncGroup.addChild(newName, newPersona);
             return newPersona;
         });
     }
@@ -158,7 +158,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, ISyncGroupP
                 continue;
             }
 
-            syncGroup.addGroup(name, persona);
+            syncGroup.addChild(name, persona);
             personas.put(name, persona);
         }
 
