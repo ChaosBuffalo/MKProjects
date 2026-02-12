@@ -209,7 +209,7 @@ public class MKPlayerData implements IMKEntityData {
     public void attachUpdateEngine(SyncController engine) {
         engine.addChild("persona", personaManager);
         animationModule.getSyncComponent().attach("animation", engine);
-        combatExtensionModule.getSyncComponent().attach("combat", engine);
+        engine.addChild("combat", combatExtensionModule);
         stats.getSyncComponent().attach("stats", engine);
         editorModule.getSyncComponent().attach("editor", engine);
         pets.getSyncComponent().attach("pets", engine);

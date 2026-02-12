@@ -5,6 +5,8 @@ import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.core.player.loadout.ItemAbilityGroup;
 import com.chaosbuffalo.mkcore.core.player.loadout.PassiveAbilityGroup;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.nbt.CompoundTag;
 
 import javax.annotation.Nonnull;
@@ -12,8 +14,8 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
-    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+public class PlayerAbilityLoadout implements ISyncGroupProvider {
+    private final SyncGroup syncGroup = new SyncGroup();
 
     private final Map<AbilityGroupId, AbilityGroup> abilityGroups = new EnumMap<>(AbilityGroupId.class);
     private final PassiveAbilityGroup passiveAbilityGroup;
@@ -33,8 +35,8 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public PassiveAbilityGroup getPassiveAbilityGroup() {
@@ -52,7 +54,7 @@ public class PlayerAbilityLoadout implements IPlayerSyncComponentProvider {
 
     private void registerAbilityGroup(String name, AbilityGroupId group, AbilityGroup abilityGroup) {
         abilityGroups.put(group, abilityGroup);
-        addSyncChild(name, abilityGroup);
+        syncGroup.addGroup(name, abilityGroup);
     }
 
     public ItemAbilityGroup getItemGroup() {
