@@ -4,47 +4,46 @@ import com.chaosbuffalo.mkcore.sync.SyncContext;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 public class SyncEntity<T extends Entity> implements ISyncObject {
-    @Nullable
-    private T value;
-    private final Class<T> clazz;
+    private int networkId;
     private boolean dirty;
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
-    public SyncEntity(String name, T value, Class<T> clazz) {
-        this.clazz = clazz;
-        set(value);
-    }
-
-    public boolean isValid() {
-        return value != null;
+    public SyncEntity() {
+        networkId = -1;
     }
 
     public void set(T value) {
-        boolean isPrev = this.value == value;
-        this.value = value;
+        int newId = value == null ? -1 : value.getId();
+        boolean isPrev = networkId == newId;
+        networkId = newId;
         if (!isPrev) {
             this.dirty = true;
             parentNotifier.notifyUpdate();
         }
-
-    }
-
-    public Optional<T> target() {
-        return Optional.ofNullable(get());
     }
 
     @Nullable
-    public T get() {
-        return value;
+    public T get(Level level, Class<T> clazz) {
+        if (networkId == -1) {
+            return null;
+        }
+        var entity = level.getEntity(networkId);
+        if (clazz.isInstance(entity)) {
+            return clazz.cast(entity);
+        }
+        return null;
+    }
+
+    public boolean hasEntity() {
+        return networkId != -1;
     }
 
     @Override
@@ -64,7 +63,7 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
 
     @Override
     public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
-        return IntTag.valueOf(value != null ? value.getId() : -1);
+        return IntTag.valueOf(networkId);
     }
 
     @Override
@@ -76,26 +75,7 @@ public class SyncEntity<T extends Entity> implements ISyncObject {
     @Override
     public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
         if (valueTag instanceof IntTag intTag) {
-            int id = intTag.getId();
-            if (id != -1) {
-                Entity ent = ClientHandler.handleClient(id);
-                if (clazz.isInstance(ent)) {
-                    value = clazz.cast(ent);
-                } else {
-                    value = null;
-                }
-            } else {
-                value = null;
-            }
-        }
-    }
-
-    static class ClientHandler {
-        public static Entity handleClient(int entityId) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.level == null)
-                return null;
-            return mc.level.getEntity(entityId);
+            networkId = intTag.getAsInt();
         }
     }
 }

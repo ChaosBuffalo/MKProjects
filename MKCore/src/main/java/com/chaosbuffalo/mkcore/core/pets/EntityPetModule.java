@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkcore.core.pets;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.sync.types.SyncBool;
 import com.chaosbuffalo.mkcore.sync.types.SyncEntity;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
@@ -20,8 +19,7 @@ import java.util.stream.Collectors;
 public class EntityPetModule implements ISyncGroupProvider {
     private final SyncGroup syncGroup = new SyncGroup();
     protected final IMKEntityData entityData;
-    protected final SyncBool isPet = new SyncBool(false);
-    protected final SyncEntity<LivingEntity> owner = new SyncEntity<>("owner", null, LivingEntity.class);
+    protected final SyncEntity<LivingEntity> owner = new SyncEntity<>();
     protected final Map<ResourceLocation, MKPet<?>> pets = new HashMap<>();
     protected final Map<ResourceLocation, MKPet.ClientMKPet> clientPetMap = new HashMap<>();
     protected final SyncMapUpdater<ResourceLocation, MKPet.ClientMKPet> clientPets = new SyncMapUpdater<>(
@@ -34,7 +32,6 @@ public class EntityPetModule implements ISyncGroupProvider {
     public EntityPetModule(IMKEntityData entityData) {
         this.entityData = entityData;
         syncGroup.addPublic("owner", owner);
-        syncGroup.addPublic("isPet", isPet);
         syncGroup.addPublic("clientPets", clientPets);
     }
 
@@ -83,17 +80,16 @@ public class EntityPetModule implements ISyncGroupProvider {
     }
 
     public boolean isPet() {
-        return isPet.get();
+        return owner.hasEntity();
     }
 
     public void setOwner(LivingEntity owner) {
-        isPet.set(true);
         this.owner.set(owner);
     }
 
     @Nullable
     public LivingEntity getOwner() {
-        return owner.get();
+        return owner.get(entityData.getEntity().level(), LivingEntity.class);
     }
 
     @Override
