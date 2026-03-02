@@ -187,10 +187,17 @@ public class MKActiveEffect {
         return null;
     }
 
+    // Only need to share what is used by MKMobEffectInstance
     public CompoundTag serializeClient() {
         CompoundTag stateTag = new CompoundTag();
-        stateTag.put("state", serializeState());
+        stateTag.put("behaviour", behaviour.serialize());
+        stateTag.putInt("stacks", getStackCount());
         return stateTag;
+    }
+
+    private void deserializeClient(CompoundTag stateTag) {
+        behaviour.deserializeState(stateTag.getCompound("behaviour"));
+        stackCount = stateTag.getInt("stacks");
     }
 
     public static MKActiveEffect deserializeClient(ResourceLocation effectId, UUID sourceId, CompoundTag tag) {
@@ -200,20 +207,24 @@ public class MKActiveEffect {
         }
 
         MKActiveEffect active = effect.createInstance(sourceId);
-        active.deserializeState(tag.getCompound("state"));
+        active.deserializeClient(tag);
         return active;
     }
 
-    public CompoundTag serializeState() {
-        CompoundTag stateTag = new CompoundTag();
-        stateTag.put("behaviour", behaviour.serialize());
-        stateTag.putInt("stacks", getStackCount());
-        stateTag.putFloat("skillLevel", getSkillLevel());
+    public float getAttributeSkillLevel(Holder<Attribute> skill) {
+        return attributeSkillSnapshot.getOrDefault(skill, 0f);
+    }
+
+    public CompoundTag serializeStorage() {
+        CompoundTag tag = new CompoundTag();
+        tag.put("behaviour", behaviour.serialize());
+        tag.putInt("stacks", getStackCount());
+        tag.putFloat("skillLevel", getSkillLevel());
         if (abilityId != null) {
-            stateTag.putString("abilityId", abilityId.toString());
+            tag.putString("abilityId", abilityId.toString());
         }
         if (directUUID != null) {
-            stateTag.putUUID("directEntity", directUUID);
+            tag.putUUID("directEntity", directUUID);
         }
         if (!attributeSkillSnapshot.isEmpty()) {
             CompoundTag attrTag = new CompoundTag();
@@ -224,31 +235,33 @@ public class MKActiveEffect {
                     attrTag.putFloat(attrId.toString(), entry.getFloatValue());
                 }
             });
-            stateTag.put("attrSkills", attrTag);
+            tag.put("attrSkills", attrTag);
         }
 
-        return stateTag;
+        serializeId(tag);
+        CompoundTag stateTag = new CompoundTag();
+        state.serializeStorage(stateTag);
+        if (!stateTag.isEmpty()) {
+            tag.put("state", stateTag);
+        }
+        return tag;
     }
 
-    public float getAttributeSkillLevel(Holder<Attribute> skill) {
-        return attributeSkillSnapshot.getOrDefault(skill, 0f);
-    }
-
-    public void deserializeState(CompoundTag stateTag) {
-        stackCount = stateTag.getInt("stacks");
-        skillLevel = stateTag.getFloat("skillLevel");
-        behaviour.deserializeState(stateTag.getCompound("behaviour"));
-        if (stateTag.contains("abilityId")) {
-            abilityId = ResourceLocation.tryParse(stateTag.getString("abilityId"));
+    private void deserializeStorage(CompoundTag tag) {
+        stackCount = tag.getInt("stacks");
+        skillLevel = tag.getFloat("skillLevel");
+        behaviour.deserializeState(tag.getCompound("behaviour"));
+        if (tag.contains("abilityId")) {
+            abilityId = ResourceLocation.tryParse(tag.getString("abilityId"));
         }
-        if (stateTag.contains("state")) {
-            state.deserializeStorage(stateTag.getCompound("state"));
+        if (tag.contains("state")) {
+            state.deserializeStorage(tag.getCompound("state"));
         }
-        if (stateTag.contains("directEntity")) {
-            directUUID = stateTag.getUUID("directEntity");
+        if (tag.contains("directEntity")) {
+            directUUID = tag.getUUID("directEntity");
         }
-        if (stateTag.contains("attrSkills")) {
-            CompoundTag attrTag = stateTag.getCompound("attrSkills");
+        if (tag.contains("attrSkills")) {
+            CompoundTag attrTag = tag.getCompound("attrSkills");
             for (String key : attrTag.getAllKeys()) {
                 ResourceLocation attrLoc = ResourceLocation.parse(key);
                 // FIXME: We should make these serialize holders
@@ -261,17 +274,6 @@ public class MKActiveEffect {
         }
     }
 
-    public CompoundTag serializeStorage() {
-        CompoundTag tag = serializeState();
-        serializeId(tag);
-        CompoundTag stateTag = new CompoundTag();
-        state.serializeStorage(stateTag);
-        if (!stateTag.isEmpty()) {
-            tag.put("state", stateTag);
-        }
-        return tag;
-    }
-
     public static MKActiveEffect deserializeStorage(UUID sourceId, CompoundTag tag) {
         ResourceLocation effectId = deserializeId(tag);
 
@@ -281,7 +283,7 @@ public class MKActiveEffect {
         }
 
         MKActiveEffect active = effect.createInstance(sourceId);
-        active.deserializeState(tag);
+        active.deserializeStorage(tag);
         if (!active.getState().validateOnLoad(active)) {
             MKCore.LOGGER.warn("Effect {} failed load validation", active);
             return null;

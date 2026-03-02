@@ -17,7 +17,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.extensions.common.IClientMobEffectExtensions;
 import net.neoforged.neoforge.common.util.Lazy;
 
@@ -25,7 +24,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public abstract class MKEffect {
 
@@ -35,7 +33,7 @@ public abstract class MKEffect {
         @Nullable
         public final Holder<Attribute> skill;
 
-        public Modifier(UUID uuid, Supplier<String> nameProvider, double base, double amount,
+        public Modifier(UUID uuid, double base, double amount,
                         AttributeModifier.Operation operation, @Nullable Holder<Attribute> skill) {
             attributeModifier = new AttributeModifier(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, uuid.toString()), amount, operation);
             this.base = base;
@@ -65,12 +63,8 @@ public abstract class MKEffect {
         return name;
     }
 
-    public String getName() {
-        return getOrCreateDescriptionId();
-    }
-
     public Component getDisplayName() {
-        return Component.translatable(getName());
+        return Component.translatable(getOrCreateDescriptionId());
     }
 
     public boolean isValidTarget(TargetingContext targetContext, IMKEntityData sourceData, IMKEntityData targetData) {
@@ -140,7 +134,7 @@ public abstract class MKEffect {
 
     public MKEffect addAttribute(Holder<Attribute> attribute, UUID uuid, double base, double amount,
                                  AttributeModifier.Operation operation, @Nullable Holder<Attribute> skill) {
-        attributeModifierMap.put(attribute, new Modifier(uuid, this::getName, base, amount, operation, skill));
+        attributeModifierMap.put(attribute, new Modifier(uuid, base, amount, operation, skill));
         return this;
     }
 
@@ -173,8 +167,6 @@ public abstract class MKEffect {
     }
 
     private AttributeModifier createModifier(Modifier template, MKActiveEffect activeEffect) {
-        int stacks = activeEffect.getStackCount();
-
         double amount = calculateInstanceModifierValue(template, activeEffect);
         return new AttributeModifier(template.attributeModifier.id(), amount, template.attributeModifier.operation());
     }
@@ -211,7 +203,7 @@ public abstract class MKEffect {
         @Nonnull
         @Override
         public String getDescriptionId() {
-            return getName();
+            return MKEffect.this.getOrCreateDescriptionId();
         }
 
         @Nonnull
