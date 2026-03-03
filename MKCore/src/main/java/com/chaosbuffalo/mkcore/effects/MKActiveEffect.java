@@ -14,13 +14,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.Lazy;
 
 import javax.annotation.Nullable;
@@ -43,8 +41,6 @@ public class MKActiveEffect {
     private LivingEntity sourceEntity;
     @Nullable
     private Entity directEntity;
-    @Nullable
-    private UUID directUUID;
 
     // Builder
     public MKActiveEffect(MKEffectBuilder<?> builder, MKEffectState state) {
@@ -65,9 +61,6 @@ public class MKActiveEffect {
                     attributeSkillSnapshot.put(modifier.skill, MKAbility.getSkillLevel(sourceEntity, modifier.skill));
                 }
             }
-        }
-        if (directEntity != null) {
-            directUUID = directEntity.getUUID();
         }
     }
 
@@ -165,28 +158,6 @@ public class MKActiveEffect {
         return getDirectEntity() != null;
     }
 
-    public void recoverState(IMKEntityData targetData) {
-        Entity rawSource = findEntity(sourceEntity, getSourceId(), targetData);
-        if (rawSource instanceof LivingEntity) {
-            sourceEntity = (LivingEntity) rawSource;
-        }
-
-        if (directEntity == null && directUUID != null) {
-            directEntity = findEntity(null, directUUID, targetData);
-        }
-    }
-
-    @Nullable
-    protected Entity findEntity(Entity entity, UUID entityId, IMKEntityData targetData) {
-        if (entity != null)
-            return entity;
-        Level world = targetData.getEntity().getCommandSenderWorld();
-        if (!world.isClientSide()) {
-            return ((ServerLevel) world).getEntity(entityId);
-        }
-        return null;
-    }
-
     // Only need to share what is used by MKMobEffectInstance
     public CompoundTag serializeClient() {
         CompoundTag stateTag = new CompoundTag();
@@ -223,9 +194,6 @@ public class MKActiveEffect {
         if (abilityId != null) {
             tag.putString("abilityId", abilityId.toString());
         }
-        if (directUUID != null) {
-            tag.putUUID("directEntity", directUUID);
-        }
         if (!attributeSkillSnapshot.isEmpty()) {
             CompoundTag attrTag = new CompoundTag();
             // FIXME: We should make these serialize holders
@@ -256,9 +224,6 @@ public class MKActiveEffect {
         }
         if (tag.contains("state")) {
             state.deserializeStorage(tag.getCompound("state"));
-        }
-        if (tag.contains("directEntity")) {
-            directUUID = tag.getUUID("directEntity");
         }
         if (tag.contains("attrSkills")) {
             CompoundTag attrTag = tag.getCompound("attrSkills");
