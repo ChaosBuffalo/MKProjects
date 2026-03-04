@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
+import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
 import com.chaosbuffalo.mkcore.item.CoreItemComponents;
 import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
@@ -20,12 +21,13 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 import javax.annotation.Nonnull;
 import java.util.*;
 
 public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvider {
-    private static final UUID EV_ID = UUID.fromString("951a29de-b941-4c4d-9d01-dba4c68b7897");
 
     private final MKPlayerData playerData;
     private final SyncGroup syncGroup = new SyncGroup();
@@ -39,8 +41,6 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
         clientMasteryInfo = new SyncString(""); // TODO: better sync? this is pretty dumb
         clientMasteryInfo.setCallback(this::handleClientMasteryUpdate);
         syncGroup.addPrivate("armor_mastery", clientMasteryInfo);
-        playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
-        playerData.events().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated);
     }
 
     @Override
@@ -236,7 +236,7 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
 
     }
 
-    public void onPersonaActivated(PlayerEvents.PersonaEvent event) {
+    private void onPersonaActivated() {
         refreshAllArmorSlots();
         addItemAbility(EquipmentSlot.MAINHAND);
         addItemAbility(EquipmentSlot.HEAD);
@@ -245,12 +245,26 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
         addItemAbility(EquipmentSlot.FEET);
     }
 
-    private void onPersonaDeactivated(PlayerEvents.PersonaEvent event) {
+    private void onPersonaDeactivated() {
         resetArmorMastery();
         removeItemAbility(EquipmentSlot.MAINHAND);
         removeItemAbility(EquipmentSlot.HEAD);
         removeItemAbility(EquipmentSlot.CHEST);
         removeItemAbility(EquipmentSlot.LEGS);
         removeItemAbility(EquipmentSlot.FEET);
+    }
+
+    @EventBusSubscriber
+    public static class Events {
+
+        @SubscribeEvent
+        public static void onPersonaActivated(PersonaEvent.PersonaActivated event) {
+            event.getPlayerData().getEquipment().onPersonaActivated();
+        }
+
+        @SubscribeEvent
+        public static void onPersonaDeactivated(PersonaEvent.PersonaDeactivated event) {
+            event.getPlayerData().getEquipment().onPersonaDeactivated();
+        }
     }
 }

@@ -3,10 +3,11 @@ package com.chaosbuffalo.mkcore.events;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import net.neoforged.bus.api.Event;
 
-public class PersonaEvent extends Event {
+public class PersonaEvent extends PlayerDataEvent {
     private final Persona persona;
 
     public PersonaEvent(Persona persona) {
+        super(persona.getPlayerData());
         this.persona = persona;
     }
 
