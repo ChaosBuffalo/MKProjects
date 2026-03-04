@@ -2,10 +2,6 @@ package com.chaosbuffalo.mkcore.core.persona;
 
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.player.*;
-import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
-import com.chaosbuffalo.mkcore.core.player.events.EventType;
-import com.chaosbuffalo.mkcore.core.player.events.PersonaEventSubscription;
-import com.chaosbuffalo.mkcore.core.player.events.PlayerEvent;
 import com.chaosbuffalo.mkcore.core.talents.PlayerTalentKnowledge;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
@@ -17,7 +13,6 @@ import net.minecraft.world.entity.player.Player;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 public class Persona implements IMKSerializable<CompoundTag>, ISyncGroupProvider {
     private final String name;
@@ -112,14 +107,6 @@ public class Persona implements IMKSerializable<CompoundTag>, ISyncGroupProvider
 
     public boolean isActive() {
         return playerData.getPersonaManager().getActivePersona() == this;
-    }
-
-    public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, UUID uuid, Consumer<T> function) {
-        subscribe(eventType, uuid, function, EventPriorities.CONSUMER);
-    }
-
-    public <T extends PlayerEvent<?>> void subscribe(EventType<T> eventType, UUID uuid, Consumer<T> function, int priority) {
-        getPlayerData().events().subscribe(eventType, () -> new PersonaEventSubscription<>(this, uuid, function, priority));
     }
 
     private CompoundTag serializeExtensions(HolderLookup.Provider provider) {

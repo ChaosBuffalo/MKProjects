@@ -131,7 +131,6 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupPr
         markDirty(knownAbility);
 
         persona.getLoadout().onAbilityLearned(knownAbility.getAbilityInfo(), source);
-        playerData.events().trigger(PlayerEvents.ABILITY_LEARNED, new PlayerEvents.AbilityLearnEvent(playerData, knownAbility.getAbilityInfo(), source));
         return true;
     }
 
@@ -148,7 +147,6 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupPr
 
         if (!knownAbility.isCurrentlyKnown()) {
             persona.getLoadout().onAbilityUnlearned(knownAbility.getAbilityInfo());
-            playerData.events().trigger(PlayerEvents.ABILITY_UNLEARNED, new PlayerEvents.AbilityUnlearnEvent(playerData, knownAbility.getAbilityInfo()));
             knownAbilities.remove(abilityId);
         }
         return true;

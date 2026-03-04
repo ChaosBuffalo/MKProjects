@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,7 +19,6 @@ public final class MKServerPlayerData extends MKPlayerData {
     public void onJoinWorld() {
         super.onJoinWorld();
         combatExtensionModule.serverInit();
-        events().trigger(PlayerEvents.SERVER_JOIN_LEVEL, new PlayerEvents.JoinLevelServerEvent(this));
         initialSync();
     }
 

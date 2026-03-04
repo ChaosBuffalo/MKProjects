@@ -35,12 +35,10 @@ public class MKPlayerData implements IMKEntityData {
     private final PlayerEffectHandler effectHandler;
     private final EntityPetModule pets;
     protected final PlayerAttributeMonitor attributeMonitor;
-    private final PlayerEventDispatcher events;
     private final EntityRiderModule riders;
 
     public MKPlayerData(Player playerEntity) {
         player = Objects.requireNonNull(playerEntity);
-        events = new PlayerEventDispatcher(this);
         syncController = new PlayerSyncController(this);
         personaManager = PersonaManager.getPersonaManager(this);
         abilityExecutor = new PlayerAbilityExecutor(this);
@@ -73,10 +71,6 @@ public class MKPlayerData implements IMKEntityData {
     @Override
     public PlayerCombatExtensionModule getCombatExtension() {
         return combatExtensionModule;
-    }
-
-    public PlayerEventDispatcher events() {
-        return events;
     }
 
     @Override

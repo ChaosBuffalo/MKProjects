@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkcore.core.persona;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
 import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.mkcore.sync.types.SyncString;
@@ -124,16 +123,12 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, ISyncGroupP
         setActivePersona(persona);
         persona.activate();
 
-        var event = new PlayerEvents.PersonaEvent(persona);
-        playerData.events().trigger(PlayerEvents.PERSONA_ACTIVATE, event);
         NeoForge.EVENT_BUS.post(new PersonaEvent.PersonaActivated(persona));
     }
 
     private void dispatchDeactivation(Persona current) {
         current.deactivate();
 
-        var event = new PlayerEvents.PersonaEvent(current);
-        playerData.events().trigger(PlayerEvents.PERSONA_DEACTIVATE, event);
         NeoForge.EVENT_BUS.post(new PersonaEvent.PersonaDeactivated(current));
     }
 
