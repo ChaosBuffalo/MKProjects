@@ -37,12 +37,12 @@ public class Persona implements IMKSerializable<CompoundTag>, ISyncGroupProvider
         personaId = UUID.randomUUID();
         abilities = new PlayerAbilityKnowledge(this);
         talents = new PlayerTalentKnowledge(this);
-        loadout = new PlayerAbilityLoadout(this);
         entitlements = new PlayerEntitlements(this);
+        skills = new PlayerSkills(this);
+        loadout = new PlayerAbilityLoadout(this);
         syncGroup.addChild("abilities", abilities);
         syncGroup.addChild("talents", talents);
         syncGroup.addChild("loadout", loadout);
-        skills = new PlayerSkills(this);
     }
 
     public String getName() {

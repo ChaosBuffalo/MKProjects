@@ -33,8 +33,13 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         void onSkillChange(MKPlayerData playerData, double value);
     }
 
+    public interface PlayerSkillChangeObserver {
+        void onSkillLevelChange(MKPlayerData playerData, AttributeInstance attribute);
+    }
+
     private final Persona persona;
     private final Object2DoubleMap<Holder<Attribute>> skillValues = new Object2DoubleOpenHashMap<>();
+    private final List<PlayerSkillChangeObserver> skillChangeObservers = new ArrayList<>();
 
     private static final Map<Holder<Attribute>, SkillChangeHandler> skillChangeHandlers = Util.make(() -> {
         Map<Holder<Attribute>, SkillChangeHandler> map = new HashMap<>(8);
@@ -88,6 +93,10 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         }
     }
 
+    public void addSkillChangeObserver(PlayerSkillChangeObserver skillChangeObserver) {
+        skillChangeObservers.add(skillChangeObserver);
+    }
+
     public void setSkill(Holder<Attribute> attribute, double skillLevel) {
         setSkill(attribute, skillLevel, true);
     }
@@ -108,7 +117,9 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         if (handler != null) {
             handler.onSkillChange(playerData, skillLevel);
         }
-        playerData.events().tryTrigger(PlayerEvents.SKILL_LEVEL_CHANGE, () -> new PlayerEvents.SkillEvent(persona.getPlayerData(), attrInst));
+        if (!skillChangeObservers.isEmpty()) {
+            skillChangeObservers.forEach(s -> s.onSkillLevelChange(playerData, attrInst));
+        }
     }
 
     private double getSkillValue(Holder<Attribute> attribute) {
