@@ -106,6 +106,8 @@ public class Persona implements IMKSerializable<CompoundTag>, ISyncGroupProvider
     public void deactivate() {
         skills.onPersonaDeactivated();
         loadout.onPersonaDeactivated();
+        talents.onPersonaDeactivated();
+        entitlements.onPersonaDeactivated();
     }
 
     public boolean isActive() {

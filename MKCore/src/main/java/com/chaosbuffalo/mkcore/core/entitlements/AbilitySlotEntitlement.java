@@ -75,7 +75,7 @@ public class AbilitySlotEntitlement extends MKEntitlement {
         }
 
         @Override
-        public void onRecordLoadingFinished() {
+        public void onPersonaActivated() {
             applyEffects();
         }
     }

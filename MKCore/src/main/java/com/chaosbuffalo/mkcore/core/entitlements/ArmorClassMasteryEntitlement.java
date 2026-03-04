@@ -70,7 +70,7 @@ public class ArmorClassMasteryEntitlement extends MKEntitlement {
         }
 
         @Override
-        public void onRecordLoadingFinished() {
+        public void onPersonaActivated() {
             applyEffects();
         }
     }

@@ -300,6 +300,10 @@ public class PlayerTalentKnowledge implements ISyncGroupProvider {
         dispatcher.onPersonaActivated();
     }
 
+    public void onPersonaDeactivated() {
+        dispatcher.onPersonaDeactivated();
+    }
+
     class TreeSyncGroup extends SyncGroup {
         public TreeSyncGroup() {
             setDynamicMemberFactory(this::handleUnhandled);

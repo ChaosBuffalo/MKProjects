@@ -94,4 +94,8 @@ public class PlayerEntitlements {
     public void onPersonaActivated() {
         dispatcher.onPersonaActivated();
     }
+
+    public void onPersonaDeactivated() {
+        dispatcher.onPersonaDeactivated();
+    }
 }

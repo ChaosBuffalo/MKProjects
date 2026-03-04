@@ -62,7 +62,7 @@ public class AbilityPoolEntitlement extends MKEntitlement {
         }
 
         @Override
-        public void onRecordLoadingFinished() {
+        public void onPersonaActivated() {
             applyEffects();
         }
     }
