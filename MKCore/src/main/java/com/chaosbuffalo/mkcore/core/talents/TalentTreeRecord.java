@@ -275,9 +275,6 @@ public class TalentTreeRecord {
 
         @Override
         public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
-            CompoundTag root = new CompoundTag();
-            root.putBoolean("f", true);
-
             CompoundTag updateTag = new CompoundTag();
 
             lines.values().forEach(line -> {
@@ -288,14 +285,11 @@ public class TalentTreeRecord {
                 updateTag.put(lineName, list);
             });
 
-            root.put("u", updateTag);
-            return root;
+            return updateTag;
         }
 
         @Override
         public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
-            CompoundTag root = new CompoundTag();
-
             CompoundTag updateTag = new CompoundTag();
             updatedLines.forEach((key, bits) -> {
                 TalentLineRecord lineRecord = getLineRecord(key);
@@ -310,36 +304,26 @@ public class TalentTreeRecord {
                 updateTag.put(key, list);
             });
 
-            root.put("u", updateTag);
-
             updatedLines.clear();
-            return root;
+            return updateTag;
         }
 
         @Override
         public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
-            if (valueTag instanceof CompoundTag root) {
-                if (root.getBoolean("f")) {
-                    lines.clear();
-                }
-
-                if (root.contains("u")) {
-                    CompoundTag updated = root.getCompound("u");
-
-                    for (String line : updated.getAllKeys()) {
-                        TalentLineRecord lineRecord = getLineRecord(line);
-                        if (lineRecord == null) {
-                            MKCore.LOGGER.warn("TalentTreeUpdater.deserializeUpdate unknown line {}", line);
-                            continue;
-                        }
-                        updated.getList(line, Tag.TAG_COMPOUND).forEach(nbt -> {
-                            int index = ((CompoundTag) nbt).getInt("i");
-                            TalentRecord record = lineRecord.getRecord(index);
-                            if (record != null) {
-                                record.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt));
-                            }
-                        });
+            if (valueTag instanceof CompoundTag updated) {
+                for (String line : updated.getAllKeys()) {
+                    TalentLineRecord lineRecord = getLineRecord(line);
+                    if (lineRecord == null) {
+                        MKCore.LOGGER.warn("TalentTreeUpdater.deserializeUpdate unknown line {}", line);
+                        continue;
                     }
+                    updated.getList(line, Tag.TAG_COMPOUND).forEach(nbt -> {
+                        int index = ((CompoundTag) nbt).getInt("i");
+                        TalentRecord record = lineRecord.getRecord(index);
+                        if (record != null) {
+                            record.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt));
+                        }
+                    });
                 }
             }
         }

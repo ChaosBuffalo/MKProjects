@@ -62,6 +62,12 @@ public class PlayerTalentKnowledge implements ISyncGroupProvider {
                         MKConfig.SERVER.scalingXpPerTalentPoint.get());
     }
 
+    public float getXpProgressPercent() {
+        int currentXp = getTalentXp();
+        int nextLevel = getXpToNextLevel();
+        return (float) currentXp / (float) nextLevel;
+    }
+
     public boolean shouldLevel() {
         return getTalentXp() >= getXpToNextLevel();
     }
@@ -77,7 +83,7 @@ public class PlayerTalentKnowledge implements ISyncGroupProvider {
         }
     }
 
-    public void performLevel() {
+    private void performLevel() {
         if (playerData.isServerSide()) {
             talentXp.add(-getXpToNextLevel());
             grantTalentPoints(1);
@@ -116,15 +122,11 @@ public class PlayerTalentKnowledge implements ISyncGroupProvider {
     }
 
     public boolean unlockTree(ResourceKey<TalentTreeDefinition> treeId) {
-        return unlockTree(treeId, true);
-    }
-
-    private boolean unlockTree(ResourceKey<TalentTreeDefinition> treeId, boolean sendUpdate) {
         var record = unlockTreeInternal(treeId.location());
         if (record == null) {
             return false;
         }
-        treeGroup.add(treeId.location().toString(), record.getUpdater(), SyncVisibility.Private, sendUpdate);
+        treeGroup.addTree(record, true);
         return true;
     }
 
@@ -283,7 +285,7 @@ public class PlayerTalentKnowledge implements ISyncGroupProvider {
             talentPoints.add(-treeRecord.getPointsSpent());
 
             talentTreeRecordMap.put(treeId, treeRecord);
-            treeGroup.add(treeId.toString(), treeRecord.getUpdater(), SyncVisibility.Private, false);
+            treeGroup.addTree(treeRecord, false);
         }
     }
 
@@ -306,16 +308,21 @@ public class PlayerTalentKnowledge implements ISyncGroupProvider {
 
     class TreeSyncGroup extends SyncGroup {
         public TreeSyncGroup() {
-            setDynamicMemberFactory(this::handleUnhandled);
+            setDynamicMemberFactory(this::handleNewTreeRecord);
         }
 
-        private ISyncObject handleUnhandled(String name, Tag tag, SyncVisibility visibility) {
+        private ISyncObject handleNewTreeRecord(String name, Tag tag, SyncVisibility visibility) {
             ResourceLocation treeId = ResourceLocation.tryParse(name);
             if (treeId == null)
                 return null;
 
             var record = unlockTreeInternal(treeId);
             return record != null ? record.getUpdater() : null;
+        }
+
+        void addTree(TalentTreeRecord treeRecord, boolean sendUpdate) {
+            var treeId = treeRecord.getTreeId().location();
+            add(treeId.toString(), treeRecord.getUpdater(), SyncVisibility.Private, sendUpdate);
         }
     }
 }
