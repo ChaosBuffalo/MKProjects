@@ -161,33 +161,37 @@ public class TalentTreeRecord {
     }
 
     public <T> boolean deserialize(Dynamic<T> dynamic) {
-
         int version = dynamic.get("version").asInt(-1);
         if (version != tree.getVersion()) {
-            // This isn't really an error if it's an upgrade scenario.
-            // Return true to add it to the unlocked tree map but with no points spent
-            return true;
+            // Not necessarily an error, but just install a blank tree record and let the player put points in again
+            return false;
         }
 
         Map<DataResult<String>, Dynamic<T>> lineMap = dynamic.get("lines").asMap(Dynamic::asString, Function.identity());
-        lineMap.forEach((name, value) ->
-                name.resultOrPartial(MKCore.LOGGER::error).ifPresent(s -> deserializeLineRecord(s, value)));
+        for (Map.Entry<DataResult<String>, Dynamic<T>> entry : lineMap.entrySet()) {
+            String name = entry.getKey().getOrThrow();
+            if (!deserializeLineRecord(name, entry.getValue())) {
+                return false;
+            }
+        }
 
         return true;
     }
 
-    private <T> void deserializeLineRecord(String name, Dynamic<T> dyn) {
+    private <T> boolean deserializeLineRecord(String name, Dynamic<T> dyn) {
         TalentLineRecord lineRecord = createLineRecord(name);
         if (lineRecord == null) {
             MKCore.LOGGER.error("TalentTreeRecord.deserializeLineRecord line {} - line does not exist!", name);
-            return;
+            return false;
         }
 
         if (lineRecord.deserialize(dyn)) {
             lines.put(name, lineRecord);
         } else {
             MKCore.LOGGER.error("TalentTreeRecord.deserializeLineRecord line {} - line failed to deserialize!", name);
+            return false;
         }
+        return true;
     }
 
     private TalentLineRecord createLineRecord(String name) {

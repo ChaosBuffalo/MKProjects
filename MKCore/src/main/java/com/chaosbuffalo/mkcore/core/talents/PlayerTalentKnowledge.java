@@ -74,7 +74,7 @@ public class PlayerTalentKnowledge implements ISyncGroupProvider {
 
     public void addTalentXp(int value) {
         int maxPoints = MKConfig.SERVER.maxTalentPoints.get();
-        if (maxPoints > 0 && getTotalTalentPoints() >= MKConfig.SERVER.maxTalentPoints.get()) {
+        if (maxPoints > 0 && getTotalTalentPoints() >= maxPoints) {
             return;
         }
         talentXp.add(value);
@@ -280,13 +280,21 @@ public class PlayerTalentKnowledge implements ISyncGroupProvider {
         TalentTreeRecord treeRecord = tree.createRecord(treeId);
         if (!treeRecord.deserialize(dyn)) {
             MKCore.LOGGER.error("Player {} had invalid talent layout for tree {}. Points will be refunded.", playerData.getEntity(), treeId);
+            // Failed to deserialize tree record, so unlock a blank record
+            treeRecord = tree.createRecord(treeId);
         } else {
-            // If the tree deserializes properly subtract the points spent in it from the total points
-            talentPoints.add(-treeRecord.getPointsSpent());
-
-            talentTreeRecordMap.put(treeId, treeRecord);
-            treeGroup.addTree(treeRecord, false);
+            // Points parsed out correctly, now check if the player can afford it
+            int pointsNeeded = treeRecord.getPointsSpent();
+            if (pointsNeeded <= talentPoints.get()) {
+                // Subtract the points spent in it from the available points
+                talentPoints.add(-pointsNeeded);
+            } else {
+                // Couldn't afford the tree, so just unlock the tree and consume no points
+                treeRecord = tree.createRecord(treeId);
+            }
         }
+        talentTreeRecordMap.put(treeId, treeRecord);
+        treeGroup.addTree(treeRecord, false);
     }
 
     public Tag serializeNBT(HolderLookup.Provider provider) {
