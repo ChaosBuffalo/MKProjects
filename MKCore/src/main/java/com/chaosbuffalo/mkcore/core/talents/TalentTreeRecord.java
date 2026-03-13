@@ -9,10 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceKey;
 
 import javax.annotation.Nonnull;
@@ -277,16 +274,22 @@ public class TalentTreeRecord {
             updatedLines.clear();
         }
 
+        private IntArrayTag compressRecords(Stream<TalentRecord> recordStream) {
+            int[] nodeInfo = recordStream
+                    .mapMultiToInt((record, mapper) -> {
+                        mapper.accept(record.getNode().getIndex());
+                        mapper.accept(record.getRank());
+                    })
+                    .toArray();
+            return new IntArrayTag(nodeInfo);
+        }
+
         @Override
         public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
             CompoundTag updateTag = new CompoundTag();
 
-            lines.values().forEach(line -> {
-                String lineName = line.getLineDefinition().getName();
-                ListTag list = line.lineRecords.stream()
-                        .map(this::writeNode)
-                        .collect(Collectors.toCollection(ListTag::new));
-                updateTag.put(lineName, list);
+            lines.forEach((name, line) -> {
+                updateTag.put(name, compressRecords(line.lineRecords.stream()));
             });
 
             return updateTag;
@@ -300,12 +303,7 @@ public class TalentTreeRecord {
                 if (lineRecord == null) {
                     return;
                 }
-
-                ListTag list = bits.stream()
-                        .mapToObj(lineRecord::getRecord)
-                        .map(this::writeNode)
-                        .collect(Collectors.toCollection(ListTag::new));
-                updateTag.put(key, list);
+                updateTag.put(key, compressRecords(bits.stream().mapToObj(lineRecord::getRecord)));
             });
 
             updatedLines.clear();
@@ -318,24 +316,25 @@ public class TalentTreeRecord {
                 for (String line : updated.getAllKeys()) {
                     TalentLineRecord lineRecord = getLineRecord(line);
                     if (lineRecord == null) {
-                        MKCore.LOGGER.warn("TalentTreeUpdater.deserializeUpdate unknown line {}", line);
+                        MKCore.LOGGER.warn("TalentTreeUpdater received unknown line {}", line);
                         continue;
                     }
-                    updated.getList(line, Tag.TAG_COMPOUND).forEach(nbt -> {
-                        int index = ((CompoundTag) nbt).getInt("i");
+
+                    int[] nodeInfo = updated.getIntArray(line);
+                    if (nodeInfo.length % 2 != 0) {
+                        MKCore.LOGGER.warn("TalentTreeUpdater improper node info length {}", nodeInfo.length);
+                        continue;
+                    }
+                    for (int i = 0; i < nodeInfo.length; i += 2) {
+                        int index = nodeInfo[i];
+                        int rank = nodeInfo[i + 1];
                         TalentRecord record = lineRecord.getRecord(index);
                         if (record != null) {
-                            record.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt));
+                            record.setRank(rank);
                         }
-                    });
+                    }
                 }
             }
-        }
-
-        private CompoundTag writeNode(TalentRecord rec) {
-            CompoundTag recTag = (CompoundTag) rec.serialize(NbtOps.INSTANCE);
-            recTag.putInt("i", rec.getNode().getIndex());
-            return recTag;
         }
     }
 }
