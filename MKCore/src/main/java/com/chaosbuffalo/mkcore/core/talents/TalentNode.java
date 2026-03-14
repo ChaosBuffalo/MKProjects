@@ -45,10 +45,6 @@ public abstract class TalentNode {
         return maxRanks;
     }
 
-    public TalentRecord createRecord(TalentTreeRecord treeRecord) {
-        return new TalentRecord(this, treeRecord);
-    }
-
     @Override
     public String toString() {
         return "TalentNode{" +

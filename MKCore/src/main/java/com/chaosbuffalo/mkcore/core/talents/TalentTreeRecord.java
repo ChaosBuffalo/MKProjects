@@ -200,14 +200,12 @@ public class TalentTreeRecord {
     }
 
     private static class TalentLineRecord {
-        private final TalentLineDefinition lineDefinition;
         private final List<TalentRecord> lineRecords;
 
         public TalentLineRecord(TalentLineDefinition lineDefinition, TalentTreeRecord treeRecord) {
-            this.lineDefinition = lineDefinition;
             this.lineRecords = lineDefinition.getNodes()
                     .stream()
-                    .map(node -> node.createRecord(treeRecord))
+                    .map(node -> new TalentRecord(node, treeRecord))
                     .collect(Collectors.toList());
         }
 
@@ -219,27 +217,33 @@ public class TalentTreeRecord {
         }
 
         public int getLength() {
-            return lineDefinition.getLength();
-        }
-
-        public TalentLineDefinition getLineDefinition() {
-            return lineDefinition;
+            return lineRecords.size();
         }
 
 
         public <T> T serialize(DynamicOps<T> ops) {
-            return ops.createList(lineRecords.stream().map(record -> record.serialize(ops)));
+            return ops.createList(lineRecords.stream()
+                    .takeWhile(TalentRecord::isKnown)
+                    .map(record -> record.serialize(ops)));
         }
 
         public <T> boolean deserialize(Dynamic<T> dynamic) {
             List<Dynamic<T>> storedEntries = dynamic.asList(Function.identity());
-            if (storedEntries.size() != getLength())
+            if (storedEntries.size() > getLength())
                 return false;
 
             for (int i = 0; i < lineRecords.size(); i++) {
                 TalentRecord record = lineRecords.get(i);
-                if (record == null || !record.deserialize(storedEntries.get(i))) {
+                if (record == null) {
                     return false;
+                }
+                if (i < storedEntries.size()) {
+                    if (!record.deserialize(storedEntries.get(i))) {
+                        return false;
+                    }
+                } else {
+                    // Probably not needed, but explicitly set the remaining nodes to 0
+                    record.setRank(0);
                 }
             }
             return true;
@@ -289,7 +293,8 @@ public class TalentTreeRecord {
             CompoundTag updateTag = new CompoundTag();
 
             lines.forEach((name, line) -> {
-                updateTag.put(name, compressRecords(line.lineRecords.stream()));
+                var knownRecords = line.lineRecords.stream().takeWhile(TalentRecord::isKnown);
+                updateTag.put(name, compressRecords(knownRecords));
             });
 
             return updateTag;
@@ -303,7 +308,8 @@ public class TalentTreeRecord {
                 if (lineRecord == null) {
                     return;
                 }
-                updateTag.put(key, compressRecords(bits.stream().mapToObj(lineRecord::getRecord)));
+                var dirtyRecords = bits.stream().mapToObj(lineRecord::getRecord);
+                updateTag.put(key, compressRecords(dirtyRecords));
             });
 
             updatedLines.clear();
