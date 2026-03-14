@@ -35,7 +35,7 @@ public class AbilitySlotEntitlement extends MKEntitlement {
         return CoreEntitlementTypes.ABILITY_SLOT.get();
     }
 
-    public static class AbilitySlotEntitlementHandler extends EntitlementTypeHandler {
+    public static class AbilitySlotEntitlementHandler implements EntitlementTypeHandler {
         private final Persona persona;
         private final Object2IntMap<AbilitySlotEntitlement> levelsByEntitlement = new Object2IntArrayMap<>();
 

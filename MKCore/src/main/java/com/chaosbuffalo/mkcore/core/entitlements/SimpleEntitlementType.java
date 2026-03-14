@@ -11,6 +11,6 @@ public class SimpleEntitlementType extends EntitlementType<SimpleEntitlement> {
 
     @Override
     public EntitlementTypeHandler createTypeHandler(Persona persona) {
-        return new SimpleEntitlement.SimpleEntitlementHandler();
+        return EntitlementTypeHandler.NONE;
     }
 }
