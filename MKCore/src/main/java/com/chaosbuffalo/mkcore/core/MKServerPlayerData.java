@@ -18,6 +18,7 @@ public final class MKServerPlayerData extends MKPlayerData {
     @Override
     public void onJoinWorld() {
         super.onJoinWorld();
+        getPersonaManager().onJoinLevel();
         combatExtensionModule.serverInit();
         initialSync();
     }

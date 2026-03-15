@@ -43,7 +43,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, ISyncGroupP
         activePersonaName.set(persona.getName());
     }
 
-    public void onJoinWorld() {
+    public void onJoinLevel() {
         dispatchActivation(getActivePersona());
     }
 
