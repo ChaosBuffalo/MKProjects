@@ -30,7 +30,7 @@ import java.util.function.DoubleUnaryOperator;
 public class PlayerSkills implements IMKSerializable<CompoundTag> {
 
     protected interface SkillChangeHandler {
-        void onSkillChange(MKPlayerData playerData, double value);
+        void onSkillChange(MKPlayerData playerData, Holder<Attribute> skill);
     }
 
     public interface PlayerSkillChangeObserver {
@@ -58,17 +58,17 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         this.persona = persona;
     }
 
-    private static void onWeaponSkillChange(MKPlayerData playerData, double value) {
+    private static void onWeaponSkillChange(MKPlayerData playerData, Holder<Attribute> skill) {
         ItemStack mainHand = playerData.getEntity().getItemBySlot(EquipmentSlot.MAINHAND);
         if (mainHand.getItem() instanceof IReceivesSkillChange receiver) {
-            receiver.onSkillChange(mainHand, playerData.getEntity());
+            receiver.onSkillChange(mainHand, playerData.getEntity(), skill);
         }
     }
 
-    private static void onUnarmedSkillChange(MKPlayerData playerData, double value) {
+    private static void onUnarmedSkillChange(MKPlayerData playerData, Holder<Attribute> skill) {
         ItemStack mainHand = playerData.getEntity().getItemBySlot(EquipmentSlot.MAINHAND);
         if (mainHand.getItem() instanceof IReceivesSkillChange receiver) {
-            receiver.onSkillChange(mainHand, playerData.getEntity());
+            receiver.onSkillChange(mainHand, playerData.getEntity(), skill);
         } else if (mainHand.isEmpty()) {
             playerData.getEquipment().removeUnarmedModifier();
             playerData.getEquipment().addUnarmedModifier();
@@ -115,7 +115,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         MKPlayerData playerData = persona.getPlayerData();
         SkillChangeHandler handler = skillChangeHandlers.get(attribute);
         if (handler != null) {
-            handler.onSkillChange(playerData, skillLevel);
+            handler.onSkillChange(playerData, attribute);
         }
         if (!skillChangeObservers.isEmpty()) {
             skillChangeObservers.forEach(s -> s.onSkillLevelChange(playerData, attrInst));

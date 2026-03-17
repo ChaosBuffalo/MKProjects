@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedSkillScalingEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -16,6 +17,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.BowItem;
@@ -141,7 +143,7 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
     }
 
     @Override
-    public void onSkillChange(ItemStack itemStack, Player playerEntity) {
-        getWeaponEffects(itemStack).forEach(x -> x.onSkillChange(playerEntity));
+    public void onSkillChange(ItemStack itemStack, Player playerEntity, Holder<Attribute> skill) {
+        getWeaponEffects(itemStack).forEach(x -> x.onSkillChange(playerEntity, skill));
     }
 }
