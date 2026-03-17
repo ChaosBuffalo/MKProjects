@@ -62,30 +62,8 @@ public class ArmorClass {
         this.negativeModifierMap.putAll(negMap);
     }
 
-    public ArmorClass(Component displayName) {
-        this.name = displayName;
-    }
-
     public Component getName() {
-        return name.copy();
-    }
-
-    public ArmorClass addNegativeEffect(Holder<Attribute> attributeIn, double amount, AttributeModifier.Operation operation) {
-        if (negativeModifierMap.containsKey(attributeIn)) {
-            throw new IllegalArgumentException("Cannot add 2 modifiers for the same attribute '%s' to armor class".formatted(attributeIn));
-        }
-        AttributeModifier attributemodifier = new AttributeModifier(ARMOR_CLASS_NEGATIVES_ID, amount, operation);
-        this.negativeModifierMap.put(attributeIn, attributemodifier);
-        return this;
-    }
-
-    public ArmorClass addPositiveEffect(Holder<Attribute> attributeIn, double amount, AttributeModifier.Operation operation) {
-        if (positiveModifierMap.containsKey(attributeIn)) {
-            throw new IllegalArgumentException("Cannot add 2 modifiers for the same attribute '%s' to armor class".formatted(attributeIn));
-        }
-        AttributeModifier attributemodifier = new AttributeModifier(ARMOR_CLASS_POSITIVES_ID, amount, operation);
-        this.positiveModifierMap.put(attributeIn, attributemodifier);
-        return this;
+        return name;
     }
 
     public Map<Holder<Attribute>, AttributeModifier> getPositiveModifierMap(EquipmentSlot slot) {
@@ -94,5 +72,38 @@ public class ArmorClass {
 
     public Map<Holder<Attribute>, AttributeModifier> getNegativeModifierMap(EquipmentSlot slot) {
         return this.negativeModifierMap;
+    }
+
+
+    public static class Builder {
+        private final Component name;
+        private final Map<Holder<Attribute>, AttributeModifier> positiveModifierMap = new HashMap<>();
+        private final Map<Holder<Attribute>, AttributeModifier> negativeModifierMap = new HashMap<>();
+
+        public Builder(Component name) {
+            this.name = name;
+        }
+
+        public Builder addNegativeEffect(Holder<Attribute> attributeIn, double amount, AttributeModifier.Operation operation) {
+            if (negativeModifierMap.containsKey(attributeIn)) {
+                throw new IllegalArgumentException("Cannot add 2 modifiers for the same attribute '%s' to armor class".formatted(attributeIn));
+            }
+            AttributeModifier attributemodifier = new AttributeModifier(ARMOR_CLASS_NEGATIVES_ID, amount, operation);
+            this.negativeModifierMap.put(attributeIn, attributemodifier);
+            return this;
+        }
+
+        public Builder addPositiveEffect(Holder<Attribute> attributeIn, double amount, AttributeModifier.Operation operation) {
+            if (positiveModifierMap.containsKey(attributeIn)) {
+                throw new IllegalArgumentException("Cannot add 2 modifiers for the same attribute '%s' to armor class".formatted(attributeIn));
+            }
+            AttributeModifier attributemodifier = new AttributeModifier(ARMOR_CLASS_POSITIVES_ID, amount, operation);
+            this.positiveModifierMap.put(attributeIn, attributemodifier);
+            return this;
+        }
+
+        public ArmorClass build() {
+            return new ArmorClass(this.name, this.positiveModifierMap, this.negativeModifierMap);
+        }
     }
 }
