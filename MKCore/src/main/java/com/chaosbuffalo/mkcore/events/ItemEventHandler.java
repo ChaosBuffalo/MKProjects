@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.item.ItemBlockStats;
+import com.chaosbuffalo.mkcore.item.ItemCriticalStats;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
@@ -61,7 +62,7 @@ public class ItemEventHandler {
                                 AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
             }
 
-            var critStats = ItemUtils.getCriticalStats(event.getItemStack());
+            var critStats = ItemCriticalStats.getOrDefault(event.getItemStack());
             addDefaultAttribute(event, MKAttributes.MELEE_CRIT,
                     id -> createDefaultSlotModifier(id,
                             critStats.critChance(),
