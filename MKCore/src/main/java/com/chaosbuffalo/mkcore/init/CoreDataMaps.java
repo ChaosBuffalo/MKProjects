@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.init;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
+import com.chaosbuffalo.mkcore.item.ItemBlockStats;
 import com.chaosbuffalo.mkcore.item.ItemCriticalStats;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Holder;
@@ -34,6 +35,12 @@ public class CoreDataMaps {
                     ItemCriticalStats.CODEC)
             .build();
 
+    public static final DataMapType<Item, ItemBlockStats> ITEM_BLOCK_STATS = AdvancedDataMapType.builder(
+                    MKCore.id("item_block_stats"),
+                    Registries.ITEM,
+                    ItemBlockStats.CODEC)
+            .build();
+
     public static void register(IEventBus modBus) {
         modBus.addListener(CoreDataMaps::registerDataMapTypes);
     }
@@ -42,5 +49,6 @@ public class CoreDataMaps {
         event.register(ARMOR_CLASS_MAPPING);
         event.register(DIMENSION_DIFFICULTY_BONUSES);
         event.register(ITEM_CRITICAL_STATS);
+        event.register(ITEM_BLOCK_STATS);
     }
 }
