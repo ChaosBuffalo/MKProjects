@@ -70,8 +70,7 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         if (mainHand.getItem() instanceof IReceivesSkillChange receiver) {
             receiver.onSkillChange(mainHand, playerData.getEntity(), skill);
         } else if (mainHand.isEmpty()) {
-            playerData.getEquipment().removeUnarmedModifier();
-            playerData.getEquipment().addUnarmedModifier();
+            playerData.getEquipment().refreshUnarmedModifiers(mainHand);
         }
     }
 
@@ -112,13 +111,12 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
             skillValues.put(attribute, skillLevel);
         }
 
-        MKPlayerData playerData = persona.getPlayerData();
         SkillChangeHandler handler = skillChangeHandlers.get(attribute);
         if (handler != null) {
-            handler.onSkillChange(playerData, attribute);
+            handler.onSkillChange(persona.getPlayerData(), attribute);
         }
         if (!skillChangeObservers.isEmpty()) {
-            skillChangeObservers.forEach(s -> s.onSkillLevelChange(playerData, attrInst));
+            skillChangeObservers.forEach(s -> s.onSkillLevelChange(persona.getPlayerData(), attrInst));
         }
     }
 

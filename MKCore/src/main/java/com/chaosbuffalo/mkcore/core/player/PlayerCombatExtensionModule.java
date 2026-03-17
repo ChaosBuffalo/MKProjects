@@ -41,10 +41,9 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
     private static void updatePoiseBonus(MKPlayerData playerData) {
         AttributeInstance maxPoise = playerData.getEntity().getAttribute(MKAttributes.MAX_POISE);
         if (maxPoise != null) {
-            maxPoise.removeModifier(blockMaxPoiseBonusId);
             AttributeModifier blockPoiseBonus = new AttributeModifier(blockMaxPoiseBonusId,
                     getBlockSkillMaxPoiseBonus(playerData), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-            maxPoise.addTransientModifier(blockPoiseBonus);
+            maxPoise.addOrUpdateTransientModifier(blockPoiseBonus);
         }
     }
 

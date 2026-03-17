@@ -33,6 +33,7 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
     private final SyncGroup syncGroup = new SyncGroup();
     private final Set<ResourceLocation> armorMastery;
     private final SyncString clientMasteryInfo;
+    private boolean lastHandsEmpty = false;
 
     public PlayerEquipment(MKPlayerData playerData) {
         super(playerData);
@@ -71,7 +72,7 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
         if (slot.isArmor()) {
             // Need to do refresh here so armor mastery is applied to the armor worn at login
             // persona activate callback is done before equipment is ready
-            refreshArmorClassBonus(slot);
+            refreshArmorClassBonus(slot, to);
         }
     }
 
@@ -108,7 +109,7 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
         return armorKey != null && armorMastery.contains(armorKey.location());
     }
 
-    private void applyArmorClassBonus(EquipmentSlot slot, ItemStack to) {
+    private void refreshArmorClassBonus(EquipmentSlot slot, ItemStack to) {
         if (to.isEmpty())
             return;
 
@@ -118,7 +119,9 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
 
         ArmorClass armorClass = holder.value();
         armorClass.getPositiveModifierMap(slot).forEach((attr, mod) -> tryAddModifier(attr, slot, mod));
-        if (!isArmorClassMastered(holder)) {
+        if (isArmorClassMastered(holder)) {
+            armorClass.getNegativeModifierMap(slot).forEach((attr, mod) -> tryRemoveModifier(attr, slot, mod));
+        } else {
             armorClass.getNegativeModifierMap(slot).forEach((attr, mod) -> tryAddModifier(attr, slot, mod));
         }
     }
@@ -139,8 +142,7 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
     private void refreshArmorClassBonus(EquipmentSlot slot) {
         var item = playerData.getEntity().getItemBySlot(slot);
         if (!item.isEmpty()) {
-            removeArmorClassBonus(slot, item);
-            applyArmorClassBonus(slot, item);
+            refreshArmorClassBonus(slot, item);
         }
     }
 
@@ -153,7 +155,7 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
         if (instance != null) {
             var modId = makeSlotModifierId(template, slot);
             AttributeModifier mod = new AttributeModifier(modId, template.amount(), template.operation());
-            instance.addTransientModifier(mod);
+            instance.addOrUpdateTransientModifier(mod);
         }
     }
 
@@ -203,27 +205,27 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
     }
 
     @Override
-    public void addUnarmedModifier() {
+    protected void addUnarmedModifier() {
         super.addUnarmedModifier();
-        AttributeInstance attr = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT);
         float skillLevel = MKAbility.getSkillLevel(playerData.getEntity(), MKAttributes.HAND_TO_HAND);
+
+        AttributeInstance attr = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT);
         if (attr != null) {
-            if (attr.getModifier(UNARMED_SKILL_ID) == null) {
-                attr.addTransientModifier(new AttributeModifier(UNARMED_SKILL_ID,
-                        0.05 + skillLevel / 100.0, AttributeModifier.Operation.ADD_VALUE));
-            }
+            double amount = 0.05 + skillLevel / 100.0;
+            attr.addOrUpdateTransientModifier(new AttributeModifier(UNARMED_SKILL_ID,
+                    amount, AttributeModifier.Operation.ADD_VALUE));
         }
+
         AttributeInstance crit = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT_MULTIPLIER);
         if (crit != null) {
-            if (crit.getModifier(UNARMED_SKILL_ID) == null) {
-                crit.addTransientModifier(new AttributeModifier(UNARMED_SKILL_ID,
-                        0.5 + skillLevel / 10.0, AttributeModifier.Operation.ADD_VALUE));
-            }
+            double amount = 0.5 + skillLevel / 10.0;
+            crit.addOrUpdateTransientModifier(new AttributeModifier(UNARMED_SKILL_ID,
+                    amount, AttributeModifier.Operation.ADD_VALUE));
         }
     }
 
     @Override
-    public void removeUnarmedModifier() {
+    protected void removeUnarmedModifier() {
         super.removeUnarmedModifier();
         AttributeInstance attr = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT);
         if (attr != null) {
@@ -233,7 +235,18 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
         if (crit != null) {
             crit.removeModifier(UNARMED_SKILL_ID);
         }
+    }
 
+    @Override
+    public void refreshUnarmedModifiers(ItemStack mainHand) {
+        refreshUnarmedModifiers(mainHand, false);
+    }
+
+    private void refreshUnarmedModifiers(ItemStack mainHand, boolean force) {
+        if (force || lastHandsEmpty != mainHand.isEmpty()) {
+            super.refreshUnarmedModifiers(mainHand);
+            lastHandsEmpty = mainHand.isEmpty();
+        }
     }
 
     private void onPersonaActivated() {
@@ -243,6 +256,9 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
         addItemAbility(EquipmentSlot.CHEST);
         addItemAbility(EquipmentSlot.LEGS);
         addItemAbility(EquipmentSlot.FEET);
+
+        ItemStack mainHand = playerData.getEntity().getItemBySlot(EquipmentSlot.MAINHAND);
+        refreshUnarmedModifiers(mainHand, true);
     }
 
     private void onPersonaDeactivated() {
