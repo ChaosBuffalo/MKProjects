@@ -13,6 +13,7 @@ import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
+import com.chaosbuffalo.mkweapons.items.weapon.types.RangedWeaponTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
@@ -143,7 +144,7 @@ public class NecrotideNpcs {
                 .attribute(MKAttributes.MAX_MANA, 30.0)
                 .attribute(MKAttributes.MANA_REGEN, 1.0)
                 .name("Skeleton Archer")
-                .mainHand(BuiltInRegistries.ITEM.getHolder(ResourceLocation.parse("mkweapons:longbow_iron")).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, RangedWeaponTypes.LONGBOW))
                 .skillClass(NpcGenUtils.NpcSkillClass.ARCHER)
                 .xp(25)
                 .build();

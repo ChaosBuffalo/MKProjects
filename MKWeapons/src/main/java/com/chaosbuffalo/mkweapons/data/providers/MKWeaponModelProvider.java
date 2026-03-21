@@ -34,6 +34,8 @@ public abstract class MKWeaponModelProvider extends ItemModelProvider {
     protected void makeBowModels(MKBow bow) {
         String path = BuiltInRegistries.ITEM.getKey(bow).getPath();
 
+        String weaponType = bow.getRangedWeaponType().getTypeName();
+
         Map<String, Tuple<Integer, Double>> subModelKeys = new HashMap<>();
         subModelKeys.put("pulling_0", new Tuple<>(1, -1.0));
         subModelKeys.put("pulling_1", new Tuple<>(1, 0.65));
@@ -43,19 +45,20 @@ public abstract class MKWeaponModelProvider extends ItemModelProvider {
         for (String subModel : subModelKeys.keySet()) {
             String subPath = String.format("%s_%s", path, subModel);
             getBuilder(subPath)
-                    .parent(getExistingFile(getBaseLoc(String.format("item/longbow_base_%s", subModel))))
+                    .parent(getExistingFile(getBaseLoc(String.format("item/%s_base_%s", weaponType, subModel))))
                     .texture("0", toolPath)
                     .texture("particle", toolPath);
         }
         ItemModelBuilder builder = getBuilder(path)
-                .parent(getExistingFile(getBaseLoc("item/longbow_base")))
+                .parent(getExistingFile(getBaseLoc(String.format("item/%s_base", weaponType))))
                 .texture("0", toolPath)
                 .texture("particle", toolPath);
 
         for (String subModel : subModelKeys.keySet()) {
             Tuple<Integer, Double> predicates = subModelKeys.get(subModel);
             ItemModelBuilder.OverrideBuilder override = builder.override()
-                    .model(getExistingFile(modLoc(String.format("item/longbow_%s_%s",
+                    .model(getExistingFile(modLoc(String.format("item/%s_%s_%s",
+                            weaponType,
                             bow.getMKTier().getName(), subModel))))
                     .predicate(ResourceLocation.withDefaultNamespace("pulling"), predicates.getA());
             if (predicates.getB() > 0) {

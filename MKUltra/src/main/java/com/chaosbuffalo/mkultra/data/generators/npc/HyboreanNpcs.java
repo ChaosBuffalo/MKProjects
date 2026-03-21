@@ -4,16 +4,14 @@ import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUSkeletons;
 import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
+import com.chaosbuffalo.mkweapons.items.weapon.types.RangedWeaponTypes;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 
 public class HyboreanNpcs {
@@ -163,11 +161,9 @@ public class HyboreanNpcs {
                 .health(25)
                 .mana(25)
                 .manaRegen(1)
-                .mainHand(BuiltInRegistries.ITEM.getHolder(
-                        ResourceLocation.parse("mkweapons:longbow_stone")).orElseThrow(), 10.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.STONE_TIER, RangedWeaponTypes.LONGBOW), 10.0)
                 .dropChance(1.1f)
-                .mainHand(BuiltInRegistries.ITEM.getHolder(
-                        MKUltra.id("longbow_bronze")).get(), 4.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, RangedWeaponTypes.LONGBOW), 4.0)
                 .xp(25)
                 .skillClass(NpcGenUtils.NpcSkillClass.ARCHER)
                 .build();

@@ -52,12 +52,12 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
         this.weaponType = weaponType;
         this.mkTier = tier;
         this.weaponEffects = ConcatenatedListView.of(
-                tier.getTierEffects(),
+                tier.getMeleeEffects(),
                 weaponType.getWeaponEffects()
         );
     }
 
-    public static ItemAttributeModifiers createAttributes(IMKTier tier, IMeleeWeaponType weaponType) {
+    public static ItemAttributeModifiers.Builder createAttributes(IMKTier tier, IMeleeWeaponType weaponType) {
         ResourceLocation modId = weaponType.getName().withSuffix("_" + tier.getName());
         return ItemAttributeModifiers.builder()
                 .add(
@@ -94,8 +94,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
                         MKAttributes.BLOCK_EFFICIENCY,
                         new AttributeModifier(modId, weaponType.getBlockEfficiency(), AttributeModifier.Operation.ADD_VALUE),
                         EquipmentSlotGroup.MAINHAND
-                )
-                .build();
+                );
     }
 
 

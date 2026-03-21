@@ -7,10 +7,13 @@ import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.TestNBTWeaponEffectItem;
 import com.chaosbuffalo.mkweapons.items.accessories.MKCurioAccessory;
 import com.chaosbuffalo.mkweapons.items.effects.melee.LivingDamageMeleeWeaponEffect;
+import com.chaosbuffalo.mkweapons.items.effects.ranged.RapidFireRangedWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.MKWrapperTier;
 import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
+import com.chaosbuffalo.mkweapons.items.weapon.types.IRangedWeaponType;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
+import com.chaosbuffalo.mkweapons.items.weapon.types.RangedWeaponTypes;
 import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -39,19 +42,44 @@ public class MKWeaponsItems {
         REGISTRY.register(bus);
     }
 
-    public static List<MKMeleeWeapon> WEAPONS = new ArrayList<>();
-
-    public static MKWrapperTier IRON_TIER = new MKWrapperTier(Tiers.IRON, "iron", Tags.Items.INGOTS_IRON);
-    public static MKWrapperTier WOOD_TIER = new MKWrapperTier(Tiers.WOOD, "wood", ItemTags.PLANKS);
-    public static MKWrapperTier DIAMOND_TIER = new MKWrapperTier(Tiers.DIAMOND, "diamond", Tags.Items.GEMS_DIAMOND);
-    public static MKWrapperTier GOLD_TIER = new MKWrapperTier(Tiers.GOLD, "gold", Tags.Items.INGOTS_GOLD);
-    public static MKWrapperTier STONE_TIER = new MKWrapperTier(Tiers.STONE, "stone", Tags.Items.COBBLESTONES);
+    public static MKWrapperTier IRON_TIER = new MKWrapperTier(Tiers.IRON, "iron", Tags.Items.INGOTS_IRON,
+            List.of(),
+            List.of(
+                    new RapidFireRangedWeaponEffect(7, .10f)
+            ));
+    public static MKWrapperTier WOOD_TIER = new MKWrapperTier(Tiers.WOOD, "wood", ItemTags.PLANKS,
+            List.of(),
+            List.of(
+                    new RapidFireRangedWeaponEffect(7, .10f)
+            ));
+    public static MKWrapperTier DIAMOND_TIER = new MKWrapperTier(Tiers.DIAMOND, "diamond", Tags.Items.GEMS_DIAMOND,
+            List.of(),
+            List.of(
+                    new RapidFireRangedWeaponEffect(7, .10f)
+            ));
+    public static MKWrapperTier GOLD_TIER = new MKWrapperTier(Tiers.GOLD, "gold", Tags.Items.INGOTS_GOLD,
+            List.of(),
+            List.of(
+                    new RapidFireRangedWeaponEffect(7, .10f)
+            ));
+    public static MKWrapperTier STONE_TIER = new MKWrapperTier(Tiers.STONE, "stone", Tags.Items.COBBLESTONES,
+            List.of(),
+            List.of(
+                    new RapidFireRangedWeaponEffect(7, .10f)
+            ));
     public static MKWrapperTier NETHERITE_TIER = new MKWrapperTier(Tiers.NETHERITE, "netherite", Tags.Items.INGOTS_NETHERITE,
-            new LivingDamageMeleeWeaponEffect(1.2f));
+            List.of(
+                    new LivingDamageMeleeWeaponEffect(1.2f)
+            ),
+            List.of(
+                    new RapidFireRangedWeaponEffect(7, .10f)
+            ));
 
-    public static List<MKBow> BOWS = new ArrayList<>();
+    public static final List<MKMeleeWeapon> WEAPONS = new ArrayList<>();
+    public static final List<MKBow> BOWS = new ArrayList<>();
 
-    public static Map<IMKTier, Map<IMeleeWeaponType, Item>> WEAPON_LOOKUP = new HashMap<>();
+    public static final Map<IMKTier, Map<IMeleeWeaponType, Item>> WEAPON_LOOKUP = new HashMap<>();
+    public static final Map<IMKTier, Map<IRangedWeaponType, Item>> RANGED_LOOKUP = new HashMap<>();
 
     public static DeferredItem<Item> Haft = REGISTRY.register("haft",
             () -> new Item(new Item.Properties()));
@@ -81,8 +109,16 @@ public class MKWeaponsItems {
         WEAPON_LOOKUP.computeIfAbsent(tier, t -> new HashMap<>()).put(weaponType, item);
     }
 
+    public static void putWeaponForLookup(IMKTier tier, IRangedWeaponType weaponType, Item item) {
+        RANGED_LOOKUP.computeIfAbsent(tier, t -> new HashMap<>()).put(weaponType, item);
+    }
+
     public static Item lookupWeapon(IMKTier tier, IMeleeWeaponType weaponType) {
         return Objects.requireNonNull(WEAPON_LOOKUP.get(tier).get(weaponType));
+    }
+
+    public static Item lookupWeapon(IMKTier tier, IRangedWeaponType weaponType) {
+        return Objects.requireNonNull(RANGED_LOOKUP.get(tier).get(weaponType));
     }
 
     public static List<MKMeleeWeapon> getMeleeWeaponsFromMod(String modId) {
@@ -106,8 +142,8 @@ public class MKWeaponsItems {
         }
 
         @Override
-        public ResourceLocation getRangedRegistryName(IMKTier tier) {
-            return MKWeapons.id("longbow_" + tier.getName());
+        public ResourceLocation getRangedRegistryName(IMKTier tier, IRangedWeaponType rangedWeaponType) {
+            return MKWeapons.id(rangedWeaponType.getTypeName() + "_" + tier.getName());
         }
     };
 
@@ -149,10 +185,11 @@ public class MKWeaponsItems {
                 }
             }
 
-            MKBow bow = factory.createRangedWeapon(tier);
+            MKBow bow = factory.createRangedWeapon(tier, RangedWeaponTypes.LONGBOW);
             if (bow != null) {
                 BOWS.add(bow);
-                ResourceLocation bowId = factory.getRangedRegistryName(tier);
+                putWeaponForLookup(tier, RangedWeaponTypes.LONGBOW, bow);
+                ResourceLocation bowId = factory.getRangedRegistryName(tier, RangedWeaponTypes.LONGBOW);
                 event.register(Registries.ITEM, bowId, () -> bow);
             }
         }

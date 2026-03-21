@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
+import com.chaosbuffalo.mkweapons.items.weapon.types.RangedWeaponTypes;
 import net.minecraft.data.PackOutput;
 
 public class MKULangProvider extends NpcLanguageProvider {
@@ -146,7 +147,7 @@ public class MKULangProvider extends NpcLanguageProvider {
         add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.SPEAR_TYPE), "Bronze Spear");
         add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.WARHAMMER_TYPE), "Bronze Warhammer");
         add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE), "Bronze Quarterstaff");
-        add("item.mkultra.longbow_bronze", "Bronze Longbow");
+        add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, RangedWeaponTypes.LONGBOW), "Bronze Longbow");
 
 
         addItem(MKUItems.corruptedGauntlets, "Corrupted Gauntlets");
