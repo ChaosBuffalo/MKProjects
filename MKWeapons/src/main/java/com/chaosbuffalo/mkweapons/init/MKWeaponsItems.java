@@ -1,31 +1,24 @@
 package com.chaosbuffalo.mkweapons.init;
 
 
-import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.TestNBTWeaponEffectItem;
 import com.chaosbuffalo.mkweapons.items.accessories.MKCurioAccessory;
 import com.chaosbuffalo.mkweapons.items.effects.melee.LivingDamageMeleeWeaponEffect;
-import com.chaosbuffalo.mkweapons.items.effects.ranged.RapidFireRangedWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.MKWrapperTier;
 import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
-import com.chaosbuffalo.mkweapons.items.weapon.types.WeaponTypeManager;
-import net.minecraft.core.Holder;
+import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.entity.EquipmentSlotGroup;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tiers;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -47,7 +40,6 @@ public class MKWeaponsItems {
     }
 
     public static List<MKMeleeWeapon> WEAPONS = new ArrayList<>();
-    public static final UUID RANGED_WEP_UUID = UUID.fromString("dbaf479e-515e-4ebc-94dd-eb5a4014bb64");
 
     public static MKWrapperTier IRON_TIER = new MKWrapperTier(Tiers.IRON, "iron", Tags.Items.INGOTS_IRON);
     public static MKWrapperTier WOOD_TIER = new MKWrapperTier(Tiers.WOOD, "wood", ItemTags.PLANKS);
@@ -90,16 +82,49 @@ public class MKWeaponsItems {
     }
 
     public static Item lookupWeapon(IMKTier tier, IMeleeWeaponType weaponType) {
-        return WEAPON_LOOKUP.get(tier).get(weaponType);
+        return Objects.requireNonNull(WEAPON_LOOKUP.get(tier).get(weaponType));
     }
 
-    public static Optional<Holder.Reference<Item>> lookupMelee(IMKTier tier, IMeleeWeaponType weaponType, String sourceMod) {
-        return BuiltInRegistries.ITEM.getHolder(ResourceLocation.fromNamespaceAndPath(sourceMod,
-                String.format("%s_%s", weaponType.getName().getPath(), tier.getName())));
+    public static List<MKMeleeWeapon> getMeleeWeaponsFromMod(String modId) {
+        return WEAPONS.stream().filter(item -> {
+            var itemId = BuiltInRegistries.ITEM.getKey(item);
+            return itemId.getNamespace().equals(modId);
+        }).toList();
     }
 
-    public static Optional<Holder.Reference<Item>> lookupMelee(IMKTier tier, IMeleeWeaponType weaponType) {
-        return lookupMelee(tier, weaponType, MKWeapons.MODID);
+    public static List<MKBow> getRangedWeaponsFromMod(String modId) {
+        return BOWS.stream().filter(item -> {
+            var itemId = BuiltInRegistries.ITEM.getKey(item);
+            return itemId.getNamespace().equals(modId);
+        }).toList();
+    }
+
+    static final WeaponTierItemFactory DEFAULT_TIER_FACTORY = new WeaponTierItemFactory() {
+        @Override
+        public ResourceLocation getMeleeRegistryName(IMKTier tier, IMeleeWeaponType weaponType) {
+            return MKWeapons.id(weaponType.getName().getPath() + "_" + tier.getName());
+        }
+
+        @Override
+        public ResourceLocation getRangedRegistryName(IMKTier tier) {
+            return MKWeapons.id("longbow_" + tier.getName());
+        }
+    };
+
+    static final Map<IMKTier, WeaponTierItemFactory> tierFactoryMap = Util.make(new HashMap<>(), map -> {
+        Map<IMKTier, WeaponTierItemFactory> tiers = Map.of(
+                WOOD_TIER, DEFAULT_TIER_FACTORY,
+                GOLD_TIER, DEFAULT_TIER_FACTORY,
+                IRON_TIER, DEFAULT_TIER_FACTORY,
+                STONE_TIER, DEFAULT_TIER_FACTORY,
+                DIAMOND_TIER, DEFAULT_TIER_FACTORY,
+                NETHERITE_TIER, DEFAULT_TIER_FACTORY
+        );
+        map.putAll(tiers);
+    });
+
+    public static void registerTierFactory(IMKTier tier, WeaponTierItemFactory factory) {
+        tierFactoryMap.put(tier, factory);
     }
 
     @SubscribeEvent
@@ -107,63 +132,29 @@ public class MKWeaponsItems {
         if (event.getRegistryKey() != Registries.ITEM) {
             return;
         }
-        MeleeWeaponTypes.registerWeaponTypes();
-
-        Map<String, IMKTier> tiers = Map.of(
-                "wood", WOOD_TIER,
-                "gold", GOLD_TIER,
-                "iron", IRON_TIER,
-                "stone", STONE_TIER,
-                "diamond", DIAMOND_TIER,
-                "netherite", NETHERITE_TIER
-        );
 
         WEAPON_LOOKUP.clear();
         BOWS.clear();
         WEAPONS.clear();
-        for (Map.Entry<String, IMKTier> mat : tiers.entrySet()) {
-            IMKTier tier = mat.getValue();
+        for (var entry : tierFactoryMap.entrySet()) {
+            IMKTier tier = entry.getKey();
+            WeaponTierItemFactory factory = entry.getValue();
             for (IMeleeWeaponType weaponType : MeleeWeaponTypes.WEAPON_TYPES.values()) {
-                MKMeleeWeapon weapon = new MKMeleeWeapon(tier, weaponType, new Item.Properties()
-                        .attributes(MKMeleeWeapon.createAttributes(tier, weaponType)));
-                WEAPONS.add(weapon);
-                WeaponTypeManager.addMeleeWeapon(weapon);
-                putWeaponForLookup(tier, weaponType, weapon);
-                event.register(Registries.ITEM,
-                        MKWeapons.id(String.format("%s_%s", weaponType.getName().getPath(), mat.getKey())),
-                        () -> weapon);
+                MKMeleeWeapon weapon = factory.createMeleeWeapon(tier, weaponType);
+                if (weapon != null) {
+                    WEAPONS.add(weapon);
+                    putWeaponForLookup(tier, weaponType, weapon);
+                    ResourceLocation registryId = factory.getMeleeRegistryName(tier, weaponType);
+                    event.register(Registries.ITEM, registryId, () -> weapon);
+                }
             }
 
-            ResourceLocation modifierId = MKWeapons.id("base." + tier.getName());
-
-            ItemAttributeModifiers defaultAttributes = ItemAttributeModifiers.builder()
-                    .add(
-                            MKAttributes.RANGED_CRIT,
-                            new AttributeModifier(
-                                    modifierId, 0.05, AttributeModifier.Operation.ADD_VALUE
-                            ),
-                            EquipmentSlotGroup.MAINHAND
-                    )
-                    .add(
-                            MKAttributes.RANGED_CRIT_MULTIPLIER,
-                            new AttributeModifier(
-                                    modifierId, 0.25, AttributeModifier.Operation.ADD_VALUE
-                            ),
-                            EquipmentSlotGroup.MAINHAND
-                    )
-                    .build();
-
-            MKBow bow = new MKBow(
-                    new Item.Properties()
-                            .durability(tier.getUses() * 3)
-                            .attributes(defaultAttributes),
-                    tier,
-                    GameConstants.TICKS_PER_SECOND * 2.5f, 4.0f,
-                    new RapidFireRangedWeaponEffect(7, .10f)
-            );
-            BOWS.add(bow);
-            event.register(Registries.ITEM,
-                    MKWeapons.id(String.format("longbow_%s", mat.getKey())), () -> bow);
+            MKBow bow = factory.createRangedWeapon(tier);
+            if (bow != null) {
+                BOWS.add(bow);
+                ResourceLocation bowId = factory.getRangedRegistryName(tier);
+                event.register(Registries.ITEM, bowId, () -> bow);
+            }
         }
         TestNBTWeaponEffectItem testNBTWeaponEffectItem = new TestNBTWeaponEffectItem(new Item.Properties());
         event.register(Registries.ITEM,

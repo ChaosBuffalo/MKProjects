@@ -44,7 +44,7 @@ public class ClericNpcs {
                 .ability(MKUAbilities.POWER_WORD_SUMMON, 4, 1.0)
                 .ability(MKUAbilities.INSPIRE, 5, 1.0)
                 .dialogue(MKUDialogues.cleric_default)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.GOLD_TIER, MeleeWeaponTypes.MACE_TYPE).orElseThrow(), 1.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.GOLD_TIER, MeleeWeaponTypes.MACE_TYPE), 1.0)
                 .quests(MKUQuests.CLERIC_UNLOCK_CHAIN)
                 .trains(MKUAbilities.HEAL, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.ClericTier1)))
                 .trains(MKUAbilities.SMITE, new HasEntitlementRequirement(entitlements.getOrThrow(MKUEntitlements.ClericTier1)))
@@ -69,7 +69,7 @@ public class ClericNpcs {
                 .ability(MKUAbilities.HEAL, 1, 1.0)
                 .ability(MKUAbilities.SMITE, 2, 1.0)
                 .ability(MKUAbilities.SEVER_TENDON, 3, 1.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.GOLD_TIER, MeleeWeaponTypes.SPEAR_TYPE).orElseThrow(), 1.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.GOLD_TIER, MeleeWeaponTypes.SPEAR_TYPE), 1.0)
                 .skillClass(NpcGenUtils.NpcSkillClass.PALADIN)
                 .xp(65)
                 .build();
@@ -87,7 +87,7 @@ public class ClericNpcs {
                 .notable()
                 .ability(MKUAbilities.HEAL, 1, 1.0)
                 .ability(MKUAbilities.SMITE, 2, 1.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.GOLD_TIER, MeleeWeaponTypes.SPEAR_TYPE).orElseThrow(), 1.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.GOLD_TIER, MeleeWeaponTypes.SPEAR_TYPE), 1.0)
                 .skillClass(NpcGenUtils.NpcSkillClass.PALADIN)
                 .xp(50)
                 .build();

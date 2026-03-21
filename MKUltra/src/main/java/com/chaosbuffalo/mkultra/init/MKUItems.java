@@ -1,27 +1,23 @@
 package com.chaosbuffalo.mkultra.init;
 
-import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.item.MKUArmorMaterial;
-import com.chaosbuffalo.mkweapons.items.MKBow;
-import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
+import com.chaosbuffalo.mkweapons.event.MKWeaponsRegistryEvent;
+import com.chaosbuffalo.mkweapons.init.WeaponTierItemFactory;
 import com.chaosbuffalo.mkweapons.items.accessories.MKCurioAccessory;
 import com.chaosbuffalo.mkweapons.items.armor.MKArmorItem;
 import com.chaosbuffalo.mkweapons.items.effects.armor.ArmorModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.melee.ManaDrainWeaponEffect;
+import com.chaosbuffalo.mkweapons.items.effects.ranged.IRangedWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedManaDrainEffect;
-import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedModifierEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RapidFireRangedWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEntry;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.MKTier;
 import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
-import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -37,10 +33,8 @@ import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.RegisterEvent;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 @EventBusSubscriber(modid = MKUltra.MODID)
 public final class MKUItems {
@@ -440,7 +434,6 @@ public final class MKUItems {
                     ))));
 
 
-
     public static DeferredHolder<Item, Item> destroyedTrooperHelmet = REGISTRY.register("destroyed_trooper_helmet",
             () -> new Item(new Item.Properties()));
 
@@ -463,78 +456,34 @@ public final class MKUItems {
         REGISTRY.register(bus);
     }
 
-    public static Map<IMKTier, Map<IMeleeWeaponType, Item>> WEAPON_LOOKUP = new HashMap<>();
-    public static List<MKMeleeWeapon> WEAPONS = new ArrayList<>();
-    public static List<MKBow> BOWS = new ArrayList<>();
-
-    private static void putWeaponForLookup(IMKTier tier, IMeleeWeaponType weaponType, Item item) {
-        WEAPON_LOOKUP.putIfAbsent(tier, new HashMap<>());
-        WEAPON_LOOKUP.get(tier).put(weaponType, item);
-    }
-
-    public static Item lookupWeapon(IMKTier tier, IMeleeWeaponType weaponType) {
-        return WEAPON_LOOKUP.get(tier).get(weaponType);
-    }
-
-    public static Supplier<Item> lookupWeaponSupplier(IMKTier tier, IMeleeWeaponType weaponType) {
-        return () -> lookupWeapon(tier, weaponType);
-    }
-
-    @SubscribeEvent
-    public static void registerItems(RegisterEvent event) {
-        if (event.getRegistryKey() != Registries.ITEM) {
-            return;
+    private static final WeaponTierItemFactory BRONZE_TIER_FACTORY = new WeaponTierItemFactory() {
+        @Override
+        public ResourceLocation getMeleeRegistryName(IMKTier tier, IMeleeWeaponType weaponType) {
+            return MKUltra.id(weaponType.getName().getPath() + "_" + tier.getName());
         }
-        Set<Tuple<String, IMKTier>> materials = new HashSet<>();
-        materials.add(new Tuple<>("bronze", BRONZE_TIER));
-        WEAPONS.clear();
-        BOWS.clear();
-        WEAPON_LOOKUP.clear();
-        for (Tuple<String, IMKTier> mat : materials) {
-            IMKTier tier = mat.getB();
-            for (IMeleeWeaponType weaponType : MeleeWeaponTypes.WEAPON_TYPES.values()) {
-                MKMeleeWeapon weapon = new MKMeleeWeapon(tier, weaponType,
-                        new Item.Properties()
-                                .attributes(MKMeleeWeapon.createAttributes(tier, weaponType)));
-                WEAPONS.add(weapon);
-                putWeaponForLookup(tier, weaponType, weapon);
-                event.register(Registries.ITEM, MKUltra.id(
-                        String.format("%s_%s", weaponType.getName().getPath(), mat.getA())), () -> weapon);
-            }
 
-            ResourceLocation modifierId = MKUltra.id("base." + tier.getName());
-            RangedModifierEffect attributeMods = new RangedModifierEffect(List.of(
-                    new AttributeOptionEntry(MKAttributes.RANGED_CRIT,
-                            new AttributeModifier(modifierId, 0.05, AttributeModifier.Operation.ADD_VALUE),
-                            EquipmentSlotGroup.MAINHAND),
-                    new AttributeOptionEntry(MKAttributes.RANGED_CRIT_MULTIPLIER,
-                            new AttributeModifier(modifierId, 0.25, AttributeModifier.Operation.ADD_VALUE),
-                            EquipmentSlotGroup.MAINHAND)
-            ));
-            MKBow bow = new MKBow(
-                    new Item.Properties()
-                            .durability(mat.getB().getUses() * 3),
-                    tier,
-                    GameConstants.TICKS_PER_SECOND * 2.5f, 4.0f,
+        @Override
+        public ResourceLocation getRangedRegistryName(IMKTier tier) {
+            return MKUltra.id("longbow_" + tier.getName());
+        }
+
+        @Override
+        public List<IRangedWeaponEffect> getRangedEffects(IMKTier tier) {
+            return List.of(
                     new RapidFireRangedWeaponEffect(7, .10f),
-                    attributeMods,
                     new RangedManaDrainEffect(0.5f, 0.5f)
             );
-            BOWS.add(bow);
-            event.register(Registries.ITEM,
-                    MKUltra.id(String.format("longbow_%s", mat.getA())), () -> bow);
         }
+    };
+
+    @SubscribeEvent
+    public static void registerMKWeaponsTiers(MKWeaponsRegistryEvent event) {
+        event.registerTier(BRONZE_TIER, BRONZE_TIER_FACTORY);
     }
 
     @SubscribeEvent
     public static void buildContents(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.COMBAT) {
-            for (MKBow bow : BOWS) {
-                event.accept(bow);
-            }
-            for (MKMeleeWeapon weapon : WEAPONS) {
-                event.accept(weapon);
-            }
             event.accept(seawovenBoots.get());
             event.accept(seawovenChestplate.get());
             event.accept(seawovenHelmet.get());
@@ -574,8 +523,7 @@ public final class MKUItems {
             event.accept(destroyedTrooperHelmet.get());
             event.accept(destroyedTrooperLeggings.get());
             event.accept(corruptedPigIronPlate.get());
-        } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES)
-        {
+        } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(necrotideBand.get());
             event.accept(corruptedGauntlets.get());
             event.accept(themcromancerArchonRing.get());

@@ -2,22 +2,17 @@ package com.chaosbuffalo.mkweapons.data.content;
 
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
-import com.chaosbuffalo.mkweapons.items.MKBow;
-import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
-import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
@@ -33,14 +28,23 @@ public class MKWeaponsItemTagProvider extends ItemTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider pProvider) {
-        tag(accessory("ring")).add(MKWeaponsItems.CopperRing.get(),
-                MKWeaponsItems.GoldRing.get(), MKWeaponsItems.RoseGoldRing.get(), MKWeaponsItems.SilverRing.get());
-        tag(accessory("earring")).add(MKWeaponsItems.GoldEarring.get(), MKWeaponsItems.SilverEarring.get(),
+        tag(accessory("ring")).add(
+                MKWeaponsItems.CopperRing.get(),
+                MKWeaponsItems.GoldRing.get(),
+                MKWeaponsItems.RoseGoldRing.get(),
+                MKWeaponsItems.SilverRing.get());
+        tag(accessory("earring")).add(
+                MKWeaponsItems.GoldEarring.get(),
+                MKWeaponsItems.SilverEarring.get(),
                 MKWeaponsItems.CopperEarring.get());
-        MKWeaponsItems.WEAPONS.stream().sorted(Comparator.comparing(x -> BuiltInRegistries.ITEM.getKey(x).toString()))
+        MKWeaponsItems.WEAPONS.stream().sorted(itemSorter())
                 .forEach(weapon -> tag(ItemTags.SWORD_ENCHANTABLE).add(weapon));
-        MKWeaponsItems.BOWS.stream().sorted(Comparator.comparing(x -> BuiltInRegistries.ITEM.getKey(x).toString()))
+        MKWeaponsItems.BOWS.stream().sorted(itemSorter())
                 .forEach(bow -> tag(ItemTags.BOW_ENCHANTABLE).add(bow));
+    }
+
+    private static <T extends Item> @NotNull Comparator<T> itemSorter() {
+        return Comparator.comparing(x -> BuiltInRegistries.ITEM.getKey(x).toString());
     }
 
     private static TagKey<Item> accessory(String name) {
