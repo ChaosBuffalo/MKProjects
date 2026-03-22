@@ -195,7 +195,7 @@ public class AbilityTracker implements ISyncObject {
 
     static class AbilityTrackerServer extends AbilityTracker {
 
-        private final List<ResourceLocation> dirty = new ArrayList<>();
+        private final Set<ResourceLocation> dirty = new HashSet<>();
         private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
         public AbilityTrackerServer() {
