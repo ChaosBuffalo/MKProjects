@@ -6,17 +6,15 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class SyncGroup implements ISyncUpdatableBase {
     private final Map<String, ISyncUpdatableBase> members = new HashMap<>();
-    private final EnumSet<SyncVisibility> dirtySet = EnumSet.noneOf(SyncVisibility.class);
+    private final EnumMap<SyncVisibility, Map<String, ISyncUpdatableBase>> dirtyMembers = new EnumMap<>(SyncVisibility.class);
     private DynamicObjectFactoryFunction dynamicMemberFactory = null;
-    private SyncGroup parentGroup;
+    private Consumer<SyncVisibility> parentNotifier = vis -> {};
 
     public interface DynamicObjectFactoryFunction {
         ISyncUpdatableBase createSyncObject(String key, Tag valueTag, SyncVisibility visibility);
@@ -75,10 +73,10 @@ public class SyncGroup implements ISyncUpdatableBase {
         members.put(name, entry);
         sync.setSyncUpdateNotifier(() -> {
             entry.dirty = true;
-            onMemberUpdated(visibility);
+            markMemberDirty(name, entry, visibility);
         });
         if (setDirty) {
-            onMemberUpdated(visibility);
+            markMemberDirty(name, entry, visibility);
         }
     }
 
@@ -90,24 +88,26 @@ public class SyncGroup implements ISyncUpdatableBase {
         add(name, sync, SyncVisibility.Private);
     }
 
-    private void setParentGroup(SyncGroup parent) {
-        this.parentGroup = parent;
+    private void markMemberDirty(String name, ISyncUpdatableBase member, SyncVisibility visibility) {
+        dirtyMembers.computeIfAbsent(visibility, k -> new HashMap<>()).put(name, member);
+        onMemberUpdated(visibility);
     }
 
     protected void onMemberUpdated(SyncVisibility visibility) {
-        dirtySet.add(visibility);
-        if (parentGroup != null) {
-            parentGroup.onMemberUpdated(visibility);
-        }
+        parentNotifier.accept(visibility);
     }
 
     public void addChild(String name, SyncGroup childGroup) {
         members.put(name, childGroup);
 
-        childGroup.setParentGroup(this);
+        childGroup.parentNotifier = vis -> markMemberDirty(name, childGroup, vis);
 
         // If the group being added was already dirty, reflect that in ourselves
-        childGroup.dirtySet.forEach(this::onMemberUpdated);
+        childGroup.dirtyMembers.forEach((vis, dirty) -> {
+            if (!dirty.isEmpty()) {
+                markMemberDirty(name, childGroup, vis);
+            }
+        });
     }
 
     public void addChild(String name, ISyncGroupProvider provider) {
@@ -115,13 +115,14 @@ public class SyncGroup implements ISyncUpdatableBase {
     }
 
     public boolean isDirty(SyncVisibility visibility) {
-        return dirtySet.contains(visibility);
+        var dirty = dirtyMembers.get(visibility);
+        return dirty != null && !dirty.isEmpty();
     }
 
     @Override
     public void clearDirty() {
         members.values().forEach(ISyncUpdatableBase::clearDirty);
-        dirtySet.clear();
+        dirtyMembers.values().forEach(Map::clear);
     }
 
     @Override
@@ -154,60 +155,28 @@ public class SyncGroup implements ISyncUpdatableBase {
     }
 
 
-    private interface MemberVisitor {
-        void visitMember(String key, SyncMemberInfo member);
-
-        void visitGroup(String key, SyncGroup member);
-    }
-
-    private void visitMembers(MemberVisitor visitor) {
-        for (Map.Entry<String, ISyncUpdatableBase> entry : members.entrySet()) {
-            ISyncUpdatableBase member = entry.getValue();
-            switch (member) {
-                case SyncMemberInfo smi -> {
-                    visitor.visitMember(entry.getKey(), smi);
-                }
-                case SyncGroup childGroup -> {
-                    visitor.visitGroup(entry.getKey(), childGroup);
-                }
-                default -> {
-                }
-            }
-        }
-    }
-
     @Override
     public @Nullable CompoundTag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
-        // Early return if no dirty elements for this visibility
-        if (!dirtySet.contains(visibility)) {
+        Map<String, ISyncUpdatableBase> dirty = dirtyMembers.get(visibility);
+        if (dirty == null || dirty.isEmpty()) {
             return null;
         }
 
         CompoundTag outputTag = new CompoundTag();
-        visitMembers(new MemberVisitor() {
-
-            @Override
-            public void visitMember(String key, SyncMemberInfo member) {
-                if (member.dirty && member.matches(visibility)) {
-                    Tag childTag = member.writeDirtyValue(context, visibility);
-                    if (childTag != null) {
-                        outputTag.put(key, childTag);
-                    }
-                }
+        for (var entry : dirty.entrySet()) {
+            Tag childTag = switch (entry.getValue()) {
+                case SyncMemberInfo smi when smi.dirty && smi.matches(visibility) ->
+                        smi.writeDirtyValue(context, visibility);
+                case SyncGroup childGroup when childGroup.isDirty(visibility) ->
+                        childGroup.writeDirtyValue(context, visibility);
+                default -> null;
+            };
+            if (childTag != null) {
+                outputTag.put(entry.getKey(), childTag);
             }
+        }
 
-            @Override
-            public void visitGroup(String key, SyncGroup childGroup) {
-                if (childGroup.isDirty(visibility)) {
-                    Tag childTag = childGroup.writeDirtyValue(context, visibility);
-                    if (childTag != null) {
-                        outputTag.put(key, childTag);
-                    }
-                }
-            }
-        });
-
-        dirtySet.remove(visibility);
+        dirty.clear();
         return outputTag.isEmpty() ? null : outputTag;
     }
 
@@ -219,26 +188,18 @@ public class SyncGroup implements ISyncUpdatableBase {
         }
 
         CompoundTag groupTag = new CompoundTag();
-        visitMembers(new MemberVisitor() {
-
-            @Override
-            public void visitMember(String key, SyncMemberInfo member) {
-                if (member.matches(visibility)) {
-                    Tag childTag = member.writeFullValue(context, visibility);
-                    if (childTag != null) {
-                        groupTag.put(key, childTag);
-                    }
-                }
+        for (Map.Entry<String, ISyncUpdatableBase> entry : members.entrySet()) {
+            Tag childTag = switch (entry.getValue()) {
+                case SyncMemberInfo smi when smi.matches(visibility) ->
+                        smi.writeFullValue(context, visibility);
+                case SyncGroup childGroup ->
+                        childGroup.writeFullValue(context, visibility);
+                default -> null;
+            };
+            if (childTag != null) {
+                groupTag.put(entry.getKey(), childTag);
             }
-
-            @Override
-            public void visitGroup(String key, SyncGroup childGroup) {
-                Tag childTag = childGroup.writeFullValue(context, visibility);
-                if (childTag != null) {
-                    groupTag.put(key, childTag);
-                }
-            }
-        });
+        }
 
         return groupTag.isEmpty() ? null : groupTag;
     }
