@@ -138,7 +138,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, ISyncGroupP
         CompoundTag personaRoot = new CompoundTag();
         personas.forEach((name, persona) -> personaRoot.put(name, persona.serialize(provider)));
         tag.put("personas", personaRoot);
-        tag.putString("activePersona", getActivePersona().getName());
+        tag.putString("activePersona", activePersonaName.get());
         return tag;
     }
 
@@ -147,14 +147,22 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, ISyncGroupP
         CompoundTag personaRoot = tag.getCompound("personas");
         for (String name : personaRoot.getAllKeys()) {
             CompoundTag personaTag = personaRoot.getCompound(name);
-            Persona persona = createNewPersona(name);
+
+            Persona persona = getPersona(name);
+            boolean newlyCreatedPersona = persona == null;
+            if (persona == null) {
+                persona = createNewPersona(name);
+            }
             if (!persona.deserialize(provider, personaTag)) {
                 MKCore.LOGGER.error("Failed to deserialize persona {} for {}", name, playerData.getEntity());
+                personas.remove(name);
                 continue;
             }
 
-            syncGroup.addChild(name, persona);
-            personas.put(name, persona);
+            if (newlyCreatedPersona) {
+                syncGroup.addChild(name, persona);
+                personas.put(name, persona);
+            }
         }
 
         String activePersonaName = tag.contains("activePersona") ?
