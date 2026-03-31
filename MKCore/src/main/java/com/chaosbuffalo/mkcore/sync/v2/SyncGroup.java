@@ -73,6 +73,9 @@ public class SyncGroup implements ISyncUpdatableBase {
 
         members.put(name, entry);
         sync.setSyncUpdateNotifier(() -> {
+            if (entry.dirty) {
+                return;
+            }
             entry.dirty = true;
             markMemberDirty(name, entry, visibility);
         });
@@ -90,8 +93,11 @@ public class SyncGroup implements ISyncUpdatableBase {
     }
 
     private void markMemberDirty(String name, ISyncUpdatableBase member, SyncVisibility visibility) {
-        dirtyMembers.computeIfAbsent(visibility, k -> new HashMap<>()).put(name, member);
-        onMemberUpdated(visibility);
+        Map<String, ISyncUpdatableBase> dirtyByVisibility =
+                dirtyMembers.computeIfAbsent(visibility, k -> new HashMap<>());
+        if (dirtyByVisibility.putIfAbsent(name, member) == null) {
+            onMemberUpdated(visibility);
+        }
     }
 
     protected void onMemberUpdated(SyncVisibility visibility) {
