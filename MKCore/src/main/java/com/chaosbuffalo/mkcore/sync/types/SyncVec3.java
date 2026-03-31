@@ -31,9 +31,15 @@ public class SyncVec3 implements ISyncObject {
     }
 
     public void set(Vec3 value) {
+        set(value, !value.equals(this.value));
+    }
+
+    public void set(Vec3 value, boolean setDirty) {
         this.value = value;
-        this.dirty = true;
-        parentNotifier.notifyUpdate();
+        if (setDirty) {
+            this.dirty = true;
+            parentNotifier.notifyUpdate();
+        }
     }
 
     @Override

@@ -19,7 +19,7 @@ public class SyncFloat implements ISyncObject {
     }
 
     public void set(float value) {
-        set(value, true);
+        set(value, value != this.value);
     }
 
     public void set(float value, boolean setDirty) {

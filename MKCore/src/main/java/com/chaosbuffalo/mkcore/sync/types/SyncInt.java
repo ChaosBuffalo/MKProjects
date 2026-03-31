@@ -19,7 +19,7 @@ public class SyncInt implements ISyncObject {
     }
 
     public void set(int value) {
-        set(value, true);
+        set(value, value != this.value);
     }
 
     public void set(int value, boolean setDirty) {

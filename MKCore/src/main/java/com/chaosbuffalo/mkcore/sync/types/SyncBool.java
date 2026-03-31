@@ -19,7 +19,7 @@ public class SyncBool implements ISyncObject {
     }
 
     public void set(boolean value) {
-        set(value, true);
+        set(value, value != this.value);
     }
 
     private void set(boolean value, boolean setDirty) {
