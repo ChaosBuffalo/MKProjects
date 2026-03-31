@@ -17,6 +17,7 @@ public class SyncGroup implements ISyncUpdatableBase {
     private Consumer<SyncVisibility> parentNotifier = vis -> {};
 
     public interface DynamicObjectFactoryFunction {
+        @Nullable
         ISyncUpdatableBase createSyncObject(String key, Tag valueTag, SyncVisibility visibility);
     }
 
@@ -144,6 +145,9 @@ public class SyncGroup implements ISyncUpdatableBase {
                 existingMember.handleUpdatePayload(context, memberTag, visibility);
             } else if (dynamicMemberFactory != null) {
                 ISyncUpdatableBase newObject = dynamicMemberFactory.createSyncObject(key, memberTag, visibility);
+                if (newObject == null) {
+                    continue;
+                }
                 newObject.handleUpdatePayload(context, memberTag, visibility);
                 if (newObject instanceof SyncGroup newGrp) {
                     addChild(key, newGrp);
