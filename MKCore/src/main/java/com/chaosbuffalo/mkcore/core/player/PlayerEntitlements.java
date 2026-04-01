@@ -67,6 +67,9 @@ public class PlayerEntitlements {
         CompoundTag tag = new CompoundTag();
         ListTag entitlementsTag = new ListTag();
         for (EntitlementInstance instance : entitlements.values()) {
+            if (!instance.persistent()) {
+                continue;
+            }
             EntitlementInstance.CODEC.encodeStart(regOps, instance)
                     .resultOrPartial(MKCore.LOGGER::error)
                     .ifPresent(entitlementsTag::add);
