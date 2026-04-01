@@ -246,6 +246,16 @@ public class TalentTreeRecord {
                     record.setRank(0);
                 }
             }
+
+            // Reject edited/corrupt saves that skip prerequisite nodes, e.g. node 3 known while node 2 is 0.
+            boolean foundGap = false;
+            for (TalentRecord record : lineRecords) {
+                if (!record.isKnown()) {
+                    foundGap = true;
+                } else if (foundGap) {
+                    return false;
+                }
+            }
             return true;
         }
     }
