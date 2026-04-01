@@ -121,6 +121,7 @@ public class AbilityTracker implements ISyncObject {
     }
 
     public void deserialize(CompoundTag root) {
+        removeAll();
         if (root.contains("sync")) {
             deserializeList(root.getCompound("sync"), false);
         }
