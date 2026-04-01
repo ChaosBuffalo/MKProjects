@@ -13,11 +13,14 @@ import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class SyncArrayListUpdater<T> implements ISyncObject {
     private final List<T> parent;
     private final ElementSerializer<T> serializer;
+    private final @Nullable T defaultValue;
     private final BitSet dirtyEntries = new BitSet();
     private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
@@ -43,9 +46,19 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
         return new SyncArrayListUpdater<>(list, ElementSerializer.RESOURCE_LOCATION);
     }
 
+    public static SyncArrayListUpdater<ResourceLocation> resourceLocations(List<ResourceLocation> list,
+                                                                           @Nullable ResourceLocation defaultValue) {
+        return new SyncArrayListUpdater<>(list, ElementSerializer.RESOURCE_LOCATION, defaultValue);
+    }
+
     public SyncArrayListUpdater(List<T> list, ElementSerializer<T> elementSerializer) {
+        this(list, elementSerializer, null);
+    }
+
+    public SyncArrayListUpdater(List<T> list, ElementSerializer<T> elementSerializer, @Nullable T defaultValue) {
         this.parent = list;
         this.serializer = elementSerializer;
+        this.defaultValue = defaultValue;
     }
 
     public void setDirty(int index) {
@@ -75,9 +88,25 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
 
         CompoundTag root = new CompoundTag();
         root.putBoolean("f", true);
-        ListTag list = new ListTag();
-        parent.forEach(r -> list.add(serializer.encodeValue(context, r)));
-        root.put("l", list);
+        if (hasDefaultValue()) {
+            root.putInt("n", parent.size());
+            ListTag sparseList = new ListTag();
+            for (int i = 0; i < parent.size(); i++) {
+                T value = parent.get(i);
+                if (isDefaultValue(value)) {
+                    continue;
+                }
+                CompoundTag tag = new CompoundTag();
+                tag.putInt("i", i);
+                tag.put("v", serializer.encodeValue(context, value));
+                sparseList.add(tag);
+            }
+            root.put("s", sparseList);
+        } else {
+            ListTag list = new ListTag();
+            parent.forEach(r -> list.add(serializer.encodeValue(context, r)));
+            root.put("l", list);
+        }
         return root;
     }
 
@@ -87,14 +116,31 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
             return null;
 
         CompoundTag root = new CompoundTag();
-        ListTag list = new ListTag();
-        dirtyEntries.stream().forEach(i -> {
-            CompoundTag tag = new CompoundTag();
-            tag.putInt("i", i);
-            tag.put("v", serializer.encodeValue(context, parent.get(i)));
-            list.add(tag);
-        });
-        root.put("s", list);
+        if (hasDefaultValue() && dirtyEntries.stream().anyMatch(i -> isDefaultValue(parent.get(i)))) {
+            root.putBoolean("f", true);
+            root.putInt("n", parent.size());
+            ListTag sparseList = new ListTag();
+            for (int i = 0; i < parent.size(); i++) {
+                T value = parent.get(i);
+                if (isDefaultValue(value)) {
+                    continue;
+                }
+                CompoundTag tag = new CompoundTag();
+                tag.putInt("i", i);
+                tag.put("v", serializer.encodeValue(context, value));
+                sparseList.add(tag);
+            }
+            root.put("s", sparseList);
+        } else {
+            ListTag list = new ListTag();
+            dirtyEntries.stream().forEach(i -> {
+                CompoundTag tag = new CompoundTag();
+                tag.putInt("i", i);
+                tag.put("v", serializer.encodeValue(context, parent.get(i)));
+                list.add(tag);
+            });
+            root.put("s", list);
+        }
         dirtyEntries.clear();
         return root;
     }
@@ -103,7 +149,7 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
     public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
         if (valueTag instanceof CompoundTag root) {
             if (root.getBoolean("f")) {
-                parent.clear();
+                resetValues(root.contains("n") ? root.getInt("n") : parent.size());
             }
 
             if (root.contains("s")) {
@@ -133,6 +179,26 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
             }
         } else {
             MKCore.LOGGER.error("Failed to decode list entry {}: {}", index, encodedValue);
+        }
+    }
+
+    private boolean hasDefaultValue() {
+        return defaultValue != null;
+    }
+
+    private boolean isDefaultValue(@Nullable T value) {
+        return hasDefaultValue() && Objects.equals(defaultValue, value);
+    }
+
+    private void resetValues(int targetSize) {
+        if (hasDefaultValue()) {
+            if (parent.size() != targetSize) {
+                MKCore.LOGGER.warn("Default-backed sync list size mismatch. Local: {}, Remote: {}",
+                        parent.size(), targetSize);
+            }
+            Collections.fill(parent, defaultValue);
+        } else {
+            parent.clear();
         }
     }
 }
