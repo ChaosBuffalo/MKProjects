@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityManager;
 import com.chaosbuffalo.mkcore.command.MKCommand;
+import com.chaosbuffalo.mkcore.combat.damage.CoreDamagePipelineStages;
 import com.chaosbuffalo.mkcore.compat.CoreCompatHooks;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
@@ -69,6 +70,7 @@ public class MKCore {
         particleAnimationManager = new ParticleAnimationManager();
         AbilityManager.setupDeserializers();
         ParticleAnimationManager.setupDeserializers();
+        CoreDamagePipelineStages.registerStages();
     }
 
     private void loadComplete(final FMLLoadCompleteEvent event) {

@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mkcore.events;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.combat.damage.MKDamageContext;
+import com.chaosbuffalo.mkcore.combat.damage.MKDamagePipeline;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.core.damage.IMKDamageSourceExtensions;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
@@ -8,10 +10,8 @@ import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import net.minecraft.core.Holder;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -34,31 +34,11 @@ public class CombatEventHandler {
         LivingEntity livingTarget = event.getEntity();
         if (livingTarget.level().isClientSide)
             return;
-
-        DamageSource source = event.getSource();
-        // Fully blocked hits should not reach any attacker/victim trigger pipeline.
-        if (DamageUtils.isFullyBlockedDamage(source, event.getNewDamage())) {
-            return;
-        }
-        Entity trueSource = source.getEntity();
-        if (source.is(DamageTypes.FALL)) { // TODO: maybe just use LivingFallEvent?
-            SpellTriggers.FALL.onLivingFall(event, source, livingTarget);
-        }
-
-        // Living is source
-        if (trueSource instanceof LivingEntity livingSource) {
-            var sourceData = MKCore.getEntityDataOrThrow(livingSource);
-            SpellTriggers.LIVING_HURT_ENTITY.onLivingHurtEntity(event, source, livingTarget, sourceData);
-
-            if (livingSource instanceof ServerPlayer serverPlayer && DamageUtils.isMeleeDamage(source) && livingSource.getMainHandItem().isEmpty()) {
-                var playerData = MKCore.getPlayerOrThrow(serverPlayer);
-                playerData.getSkills().tryScaledIncreaseSkill(MKAttributes.HAND_TO_HAND, 0.5);
-            }
-        }
-
-        // Living is victim
-        var targetData = MKCore.getEntityDataOrThrow(livingTarget);
-        SpellTriggers.ENTITY_HURT.onEntityHurtLiving(event, source, targetData);
+        // MKCore owns the single damage entrypoint now. Other modules contribute ordered
+        // stages through MKDamagePipeline instead of subscribing to LivingDamageEvent.Pre.
+        MKDamageContext context = MKDamageContext.from(event);
+        MKDamagePipeline.run(context);
+        event.setNewDamage(context.getWorkingDamage());
     }
 
     private static void playSound(LivingEntity target, Holder<SoundEvent> sound) {

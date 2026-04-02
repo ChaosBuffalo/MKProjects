@@ -1,10 +1,13 @@
 package com.chaosbuffalo.mkweapons.event;
 
+import com.chaosbuffalo.mkcore.combat.damage.MKDamageCategory;
+import com.chaosbuffalo.mkcore.combat.damage.MKDamageContext;
+import com.chaosbuffalo.mkcore.combat.damage.MKDamagePipeline;
+import com.chaosbuffalo.mkcore.combat.damage.MKDamageStageOrder;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.events.EntityAbilityEvent;
 import com.chaosbuffalo.mkcore.events.PostAttackEvent;
-import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.accessories.IMKAccessory;
 import com.chaosbuffalo.mkweapons.items.accessories.MKAccessories;
@@ -19,7 +22,6 @@ import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -28,15 +30,17 @@ import net.minecraft.world.item.ShieldItem;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
 
 import java.util.List;
 
 @EventBusSubscriber(modid = MKWeapons.MODID)
 public class MKWeaponsEventHandler {
+    private static final String MELEE_DAMAGE_BEFORE_CORE_KEY = "mkweapons.melee_damage_before_core";
+    private static boolean damageStagesRegistered;
 
-    private static void handleProjectileDamage(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
+    private static void handleProjectileDamage(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Pre event,
+                                               DamageSource source, LivingEntity livingTarget,
                                                IMKEntityData attackerData) {
         if (source.getDirectEntity() instanceof AbstractArrow arrow && !livingTarget.isBlocking()) {
             ItemStack weapon = arrow.getWeaponItem();
@@ -83,6 +87,21 @@ public class MKWeaponsEventHandler {
         SpellTriggers.LIVING_HURT_ENTITY.registerProjectile(MKWeaponsEventHandler::handleProjectileDamage);
     }
 
+    public static synchronized void registerDamageStages() {
+        if (damageStagesRegistered) {
+            return;
+        }
+        // Route item damage math through MKCore's ordered pipeline so weapon/accessory
+        // modifiers execute deterministically relative to the core damage calculations.
+        MKDamagePipeline.register(MKDamageStageOrder.WEAPON_MODIFIERS, MKWeapons.id("melee_weapon_damage"),
+                MKWeaponsEventHandler::applyMeleeWeaponDamageModifiers);
+        MKDamagePipeline.register(MKDamageStageOrder.ACCESSORY_MODIFIERS, MKWeapons.id("accessory_damage"),
+                MKWeaponsEventHandler::applyAccessoryDamageModifiers);
+        MKDamagePipeline.register(MKDamageStageOrder.POST_REACTIONS, MKWeapons.id("melee_weapon_on_hurt"),
+                MKWeaponsEventHandler::applyMeleeWeaponOnHurt);
+        damageStagesRegistered = true;
+    }
+
     @SubscribeEvent
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
         if (event.getSlot().getType() == EquipmentSlot.Type.HAND) {
@@ -126,44 +145,59 @@ public class MKWeaponsEventHandler {
         });
     }
 
-    @SubscribeEvent
-    public static void onLivingHurt(LivingDamageEvent.Pre event) {
-        LivingEntity livingTarget = event.getEntity();
-        if (livingTarget.level().isClientSide)
-            return;
-        DamageSource source = event.getSource();
-        if (DamageUtils.isFullyBlockedDamage(source, event.getNewDamage())) {
+    private static void applyMeleeWeaponDamageModifiers(MKDamageContext context) {
+        if (context.isFullyBlocked() || context.getCategory() != MKDamageCategory.MELEE) {
             return;
         }
-        Entity trueSource = source.getEntity();
-        float newDamage = event.getNewDamage();
-        boolean isMelee = DamageUtils.isMeleeDamage(source);
-        if (trueSource instanceof LivingEntity livingSource) {
-            if (isMelee) {
-                ItemStack mainHand = livingSource.getMainHandItem();
-                if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
-                    for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(mainHand)) {
-                        newDamage = effect.modifyDamageDealt(newDamage, meleeWeapon,
-                                mainHand, livingTarget, livingSource);
-                    }
-                }
+        LivingEntity livingSource = context.getAttacker();
+        if (livingSource == null) {
+            return;
+        }
+        float newDamage = context.getWorkingDamage();
+        ItemStack mainHand = livingSource.getMainHandItem();
+        if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
+            for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(mainHand)) {
+                newDamage = effect.modifyDamageDealt(newDamage, meleeWeapon, mainHand, context.getTarget(), livingSource);
             }
+            context.setWorkingDamage(newDamage, "mkweapons:melee_weapon_damage");
+            context.putMetadata(MELEE_DAMAGE_BEFORE_CORE_KEY, newDamage);
+        }
+    }
 
-            event.setNewDamage(newDamage);
-            MKAccessories.iterateAccessories(event.getEntity(), (accStack, accessory) -> {
-                for (IAccessoryEffect effect : accessory.getAccessoryEffects(accStack)) {
-                    var nextDamage = effect.modifyDamageDealt(event.getNewDamage(), accessory, accStack, livingTarget, livingSource);
-                    event.setNewDamage(nextDamage);
-                }
-            });
+    private static void applyAccessoryDamageModifiers(MKDamageContext context) {
+        if (context.isFullyBlocked()) {
+            return;
+        }
+        LivingEntity livingSource = context.getAttacker();
+        if (livingSource == null) {
+            return;
+        }
+        MKAccessories.iterateAccessories(context.getTarget(), (accStack, accessory) -> {
+            for (IAccessoryEffect effect : accessory.getAccessoryEffects(accStack)) {
+                var nextDamage = effect.modifyDamageDealt(context.getWorkingDamage(), accessory, accStack,
+                        context.getTarget(), livingSource);
+                context.setWorkingDamage(nextDamage, "mkweapons:accessory_damage");
+            }
+        });
+    }
 
-            if (isMelee) {
-                ItemStack mainHand = livingSource.getMainHandItem();
-                if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
-                    for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(mainHand)) {
-                        effect.onHurt(newDamage, meleeWeapon, mainHand, livingTarget, livingSource);
-                    }
-                }
+    private static void applyMeleeWeaponOnHurt(MKDamageContext context) {
+        if (context.isFullyBlocked() || context.getCategory() != MKDamageCategory.MELEE) {
+            return;
+        }
+        LivingEntity livingSource = context.getAttacker();
+        if (livingSource == null) {
+            return;
+        }
+        ItemStack mainHand = livingSource.getMainHandItem();
+        if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
+            float damageForEffects = context.getWorkingDamage();
+            Float preCoreDamage = context.getMetadata(MELEE_DAMAGE_BEFORE_CORE_KEY, Float.class);
+            if (preCoreDamage != null) {
+                damageForEffects = preCoreDamage;
+            }
+            for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(mainHand)) {
+                effect.onHurt(damageForEffects, meleeWeapon, mainHand, context.getTarget(), livingSource);
             }
         }
     }
