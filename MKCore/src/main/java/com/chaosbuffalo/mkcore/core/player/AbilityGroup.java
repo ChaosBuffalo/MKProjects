@@ -111,7 +111,12 @@ public class AbilityGroup implements ISyncGroupProvider {
     }
 
     protected int getFirstFreeAbilitySlot() {
-        return getAbilitySlot(MKCoreRegistry.INVALID_ABILITY);
+        for (int i = 0; i < getCurrentSlotCount(); i++) {
+            if (activeAbilities.get(i).equals(MKCoreRegistry.INVALID_ABILITY)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public boolean tryEquip(ResourceLocation abilityId) {
@@ -146,11 +151,17 @@ public class AbilityGroup implements ISyncGroupProvider {
 
     protected void onAbilityAdded(int index, MKAbilityInfo abilityInfo) {
 //        MKCore.LOGGER.debug("onAbilityAdded({}, {})", index, abilityInfo);
+        if (abilityInfo == null) {
+            return;
+        }
         abilityInfo.getAbility().onAbilityGroupAdded(playerData, abilityInfo);
     }
 
     protected void onAbilityRemoved(int index, MKAbilityInfo abilityInfo) {
 //        MKCore.LOGGER.debug("onAbilityRemoved({}, {})", index, abilityInfo);
+        if (abilityInfo == null) {
+            return;
+        }
         abilityInfo.getAbility().onAbilityGroupRemoved(playerData, abilityInfo);
     }
 
@@ -172,7 +183,9 @@ public class AbilityGroup implements ISyncGroupProvider {
 //            MKCore.LOGGER.info("setSlot - clearing {} from {}", index, currentAbilityId);
             MKAbilityInfo oldInfo = getAbilityInfo(index);
             setIndex(index, abilityId);
-            onAbilityRemoved(index, oldInfo);
+            if (oldInfo != null) {
+                onAbilityRemoved(index, oldInfo);
+            }
             return;
         }
 
@@ -194,16 +207,26 @@ public class AbilityGroup implements ISyncGroupProvider {
         if (currentAbilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
             setIndex(index, abilityId);
             MKAbilityInfo newInfo = getAbilityInfo(index);
-            onAbilityAdded(index, newInfo);
+            if (newInfo != null) {
+                onAbilityAdded(index, newInfo);
+            } else {
+                MKCore.LOGGER.warn("Failed to resolve ability {} for {} slot {} after slotting", abilityId, groupId, index);
+            }
             return;
         }
 
         // New ability is not current slotted and is replacing an existing ability
         MKAbilityInfo oldInfo = getAbilityInfo(index);
         setIndex(index, abilityId);
-        onAbilityRemoved(index, oldInfo);
+        if (oldInfo != null) {
+            onAbilityRemoved(index, oldInfo);
+        }
         MKAbilityInfo newInfo = getAbilityInfo(index);
-        onAbilityAdded(index, newInfo);
+        if (newInfo != null) {
+            onAbilityAdded(index, newInfo);
+        } else {
+            MKCore.LOGGER.warn("Failed to resolve ability {} for {} slot {} after replacing {}", abilityId, groupId, index, currentAbilityId);
+        }
     }
 
     private boolean validateAbilityForSlot(int index, ResourceLocation abilityId) {

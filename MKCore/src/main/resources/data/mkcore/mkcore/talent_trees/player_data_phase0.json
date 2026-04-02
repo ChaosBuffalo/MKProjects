@@ -1,0 +1,23 @@
+{
+  "display_name": "MKPlayerData Phase 0",
+  "is_default": false,
+  "lines": [
+    {
+      "line_name": "a",
+      "talents": [
+        {
+          "type": "mkcore:entitlement_grant",
+          "display_info": "mkcore:ability_slot",
+          "entitlement": "mkcore:ability_slot.basic.test",
+          "nodeId": "11111111-1111-1111-1111-111111111111"
+        },
+        {
+          "type": "mkcore:ability_grant",
+          "ability": "mkcore:test_ember",
+          "display_info": "mkcore:ability_slot"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}
