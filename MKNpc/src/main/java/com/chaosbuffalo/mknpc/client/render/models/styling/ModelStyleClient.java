@@ -34,7 +34,7 @@ public class ModelStyleClient {
         return new ModelLayerLocation(entityTypeName, String.format("%s.outer_armor", style.getName()));
     }
 
-    public static synchronized List<ModelStyle> getRegisteredStyles(ResourceLocation entityTypeName) {
+    public static List<ModelStyle> getRegisteredStyles(ResourceLocation entityTypeName) {
         Map<String, ModelStyle> registered = REGISTERED_ENTITY_STYLES.get(entityTypeName);
         if (registered == null || registered.isEmpty()) {
             return List.of();
@@ -42,7 +42,7 @@ public class ModelStyleClient {
         return new ArrayList<>(registered.values());
     }
 
-    private static synchronized void registerStyle(ResourceLocation entityTypeName, ModelStyle style) {
+    private static void registerStyle(ResourceLocation entityTypeName, ModelStyle style) {
         REGISTERED_ENTITY_STYLES.computeIfAbsent(entityTypeName, key -> new LinkedHashMap<>())
                 .put(style.getName(), style);
     }
