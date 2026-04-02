@@ -67,7 +67,7 @@
       ]
     },
     "mknpc:render_group": {
-      "renderGroup": "green_smith"
+      "renderGroup": "mkultra:orc/green_smith"
     },
     "mknpc:skills": {
       "major_skills": [

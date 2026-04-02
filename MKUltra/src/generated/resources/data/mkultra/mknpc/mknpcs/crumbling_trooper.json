@@ -89,7 +89,7 @@
       "name": "Crumbling Trooper"
     },
     "mknpc:render_group": {
-      "renderGroup": "zombie_pig_trooper"
+      "renderGroup": "mkultra:zombified_piglin/zombie_pig_trooper"
     },
     "mknpc:skills": {
       "minor_skills": [

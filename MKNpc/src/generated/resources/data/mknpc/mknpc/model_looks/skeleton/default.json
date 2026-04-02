@@ -1,0 +1,6 @@
+{
+  "baseTexture": "minecraft:textures/entity/skeleton/skeleton.png",
+  "default": true,
+  "entityType": "mknpc:skeleton",
+  "modelStyle": "mknpc:basic"
+}

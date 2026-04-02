@@ -1,6 +1,14 @@
 package com.chaosbuffalo.mknpc.client.render.models.styling;
 
+import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.npc.NpcRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
 public class ModelStyles {
+    public static final DeferredRegister<ModelStyle> REGISTRY = DeferredRegister.create(NpcRegistries.MODEL_STYLE_REGISTRY_KEY, MKNpc.MODID);
 
     public static final String HAIR_1 = "hair_1";
     public static final String HAIR_2 = "hair_2";
@@ -14,49 +22,71 @@ public class ModelStyles {
     public static final String CLOTHES_ARMOR_NAME = "clothes_armor";
     public static final String CLOTHES_ARMOR_TRANSLUCENT_NAME = "clothes_armor_translucent";
 
-    public static final ModelStyle ARMORED_LONG_HAIR_STYLE = new ModelStyle(
+    public static final DeferredHolder<ModelStyle, ModelStyle> ARMORED_LONG_HAIR_STYLE = REGISTRY.register(
             LONG_HAIR_ARMORED_NAME,
-            true,
-            false,
-            new LayerStyle(HAIR_1, 0.25f),
-            new LayerStyle(CLOTHES, 0.4f),
-            new LayerStyle(HAIR_2, 1.15f));
+            () -> new ModelStyle(
+                    LONG_HAIR_ARMORED_NAME,
+                    true,
+                    false,
+                    new LayerStyle(HAIR_1, 0.25f),
+                    new LayerStyle(CLOTHES, 0.4f),
+                    new LayerStyle(HAIR_2, 1.15f)));
 
-    public static final ModelStyle LONG_HAIR_STYLE = new ModelStyle(
+    public static final DeferredHolder<ModelStyle, ModelStyle> LONG_HAIR_STYLE = REGISTRY.register(
             LONG_HAIR_NAME,
-            true,
-            true,
-            new LayerStyle(HAIR_1, 0.25f),
-            new LayerStyle(CLOTHES, 0.4f),
-            new LayerStyle(HAIR_2, 0.45f));
+            () -> new ModelStyle(
+                    LONG_HAIR_NAME,
+                    true,
+                    true,
+                    new LayerStyle(HAIR_1, 0.25f),
+                    new LayerStyle(CLOTHES, 0.4f),
+                    new LayerStyle(HAIR_2, 0.45f)));
 
-    public static final ModelStyle SHORT_HAIR_STYLE = new ModelStyle(
+    public static final DeferredHolder<ModelStyle, ModelStyle> SHORT_HAIR_STYLE = REGISTRY.register(
             SHORT_HAIR_NAME,
-            true,
-            false,
-            new LayerStyle(HAIR_1, 0.25f),
-            new LayerStyle(CLOTHES, 0.4f));
+            () -> new ModelStyle(
+                    SHORT_HAIR_NAME,
+                    true,
+                    false,
+                    new LayerStyle(HAIR_1, 0.25f),
+                    new LayerStyle(CLOTHES, 0.4f)));
 
-    public static final ModelStyle CLOTHES_ONLY_STYLE = new ModelStyle(
+    public static final DeferredHolder<ModelStyle, ModelStyle> CLOTHES_ONLY_STYLE = REGISTRY.register(
             CLOTHES_ONLY_NAME,
-            true,
-            false,
-            new LayerStyle(CLOTHES, 0.25f));
+            () -> new ModelStyle(
+                    CLOTHES_ONLY_NAME,
+                    true,
+                    false,
+                    new LayerStyle(CLOTHES, 0.25f)));
 
-    public static final ModelStyle CLOTHES_ARMOR_STYLE = new ModelStyle(
+    public static final DeferredHolder<ModelStyle, ModelStyle> CLOTHES_ARMOR_STYLE = REGISTRY.register(
             CLOTHES_ARMOR_NAME,
-            true,
-            false,
-            new LayerStyle(CLOTHES, 0.75f));
+            () -> new ModelStyle(
+                    CLOTHES_ARMOR_NAME,
+                    true,
+                    false,
+                    new LayerStyle(CLOTHES, 0.75f)));
 
-    public static final ModelStyle CLOTHES_ARMOR_TRANSLUCENT_STYLE = new ModelStyle(
+    public static final DeferredHolder<ModelStyle, ModelStyle> CLOTHES_ARMOR_TRANSLUCENT_STYLE = REGISTRY.register(
             CLOTHES_ARMOR_TRANSLUCENT_NAME,
-            true,
-            false,
-            new LayerStyle(CLOTHES, 0.75f, true));
+            () -> new ModelStyle(
+                    CLOTHES_ARMOR_TRANSLUCENT_NAME,
+                    true,
+                    false,
+                    new LayerStyle(CLOTHES, 0.75f, true)));
 
-    public static final ModelStyle BASIC_STYLE = new ModelStyle(
+    public static final DeferredHolder<ModelStyle, ModelStyle> BASIC_STYLE = REGISTRY.register(
             BASIC_NAME,
-            true,
-            false);
+            () -> new ModelStyle(
+                    BASIC_NAME,
+                    true,
+                    false));
+
+    public static void register(IEventBus modBus) {
+        REGISTRY.register(modBus);
+    }
+
+    public static ResourceLocation getId(ModelStyle style) {
+        return NpcRegistries.MODEL_STYLES.getKey(style);
+    }
 }

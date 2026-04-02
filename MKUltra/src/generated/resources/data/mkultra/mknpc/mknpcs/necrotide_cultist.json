@@ -56,7 +56,7 @@
       "scale": 1.05
     },
     "mknpc:render_group": {
-      "renderGroup": "necrotide_cultist_skull_1"
+      "renderGroup": "mkultra:human/necrotide_cultist_skull_1"
     },
     "mknpc:skills": {
       "major_skills": [

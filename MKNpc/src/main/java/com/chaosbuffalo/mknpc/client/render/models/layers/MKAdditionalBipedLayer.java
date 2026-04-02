@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.client.render.models.layers;
 
 import com.chaosbuffalo.mknpc.client.render.models.styling.LayerStyle;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyleClient;
 import com.chaosbuffalo.mknpc.client.render.renderers.ILayerTextureProvider;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -30,7 +31,7 @@ public class MKAdditionalBipedLayer<T extends MKEntity, M extends HumanoidModel<
                                   ModelStyle style, LayerStyle layer, ResourceLocation entityType) {
         super(entityRendererIn);
         this.renderer = entityRendererIn;
-        this.layerModel = modelSupplier.apply(context.bakeLayer(style.getLayerLocation(entityType, layer)));
+        this.layerModel = modelSupplier.apply(context.bakeLayer(ModelStyleClient.getLayerLocation(entityType, style, layer)));
         this.style = layer;
     }
 

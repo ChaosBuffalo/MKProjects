@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.data.generators.NpcRegistrySets;
 import com.chaosbuffalo.mknpc.data.generators.tags.NpcBiomeTagsProvider;
 import com.chaosbuffalo.mknpc.data.generators.tags.NpcEntityTypeTagsProvider;
 import com.chaosbuffalo.mknpc.data.generators.tags.NpcStructureTagsProvider;
+import com.chaosbuffalo.mknpc.data.providers.NpcModelLookProvider;
 import net.minecraft.DetectedVersion;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
@@ -36,6 +37,7 @@ public class MKNpcGenerator {
         generator.addProvider(event.includeServer(), new NpcBiomeTagsProvider(packOutput, datapackLookup, fileHelper));
         generator.addProvider(event.includeServer(), new NpcStructureTagsProvider(packOutput, datapackLookup, fileHelper));
         generator.addProvider(event.includeServer(), new NpcEntityTypeTagsProvider(packOutput, datapackLookup, fileHelper));
+        generator.addProvider(event.includeServer(), new NpcModelLookProvider(generator));
 
 
         // pack.mcmeta

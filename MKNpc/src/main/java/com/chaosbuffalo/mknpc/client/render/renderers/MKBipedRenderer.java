@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.client.render.models.layers.MKAdditionalBipedLayer
 import com.chaosbuffalo.mknpc.client.render.models.styling.LayerStyle;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyleClient;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HumanoidModel;
@@ -35,24 +36,22 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
     private final ModelStyle style;
     private final float defaultShadowSize;
     private ModelLook look;
-    private final ModelLook defaultLook;
     private final BipedSkeleton<T, M> skeleton;
 
 
-    public MKBipedRenderer(EntityRendererProvider.Context context, ModelStyle style, ModelLook defaultLook,
+    public MKBipedRenderer(EntityRendererProvider.Context context, ModelStyle style,
                            float shadowSize, Function<ModelPart, M> modelSupplier, ResourceLocation entityType) {
-        super(context, modelSupplier.apply(context.bakeLayer(style.getBaseLocation(entityType))), shadowSize);
+        super(context, modelSupplier.apply(context.bakeLayer(ModelStyleClient.getBaseLocation(entityType, style))), shadowSize);
         this.style = style;
         this.defaultShadowSize = shadowSize;
-        this.defaultLook = defaultLook;
         this.skeleton = new BipedSkeleton<>(getModel());
         for (LayerStyle layer : style.getAdditionalLayers()) {
             addLayer(new MKAdditionalBipedLayer<>(this, context, modelSupplier, style, layer, entityType));
         }
         if (style.shouldDrawArmor()) {
             addLayer(new HumanoidArmorLayer<>(this, new HumanoidModel<>(
-                    context.bakeLayer(style.getInnerArmorLocation(entityType))),
-                    new HumanoidModel<>(context.bakeLayer(style.getOuterArmorLocation(entityType))), context.getModelManager()));
+                    context.bakeLayer(ModelStyleClient.getInnerArmorLocation(entityType, style))),
+                    new HumanoidModel<>(context.bakeLayer(ModelStyleClient.getOuterArmorLocation(entityType, style))), context.getModelManager()));
         }
 
     }
@@ -62,7 +61,7 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
     }
 
     public ModelLook getLook() {
-        return look != null ? look : defaultLook;
+        return look;
     }
 
     public ModelStyle getStyle() {
@@ -78,6 +77,9 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
 
     @Override
     public ResourceLocation getLayerTexture(String layerName, T entity) {
+        if (getLook() == null) {
+            return ModelLook.MISSING_TEXTURE;
+        }
         ResourceLocation tex = getLook().getLayerTexture(layerName);
         if (tex == null) {
             MKNpc.LOGGER.error("Layer texture {} missing for {}", layerName, entity);
@@ -87,7 +89,7 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
 
     @Override
     public ResourceLocation getTextureLocation(T entity) {
-        return getLook().getBaseTexture();
+        return getLook() != null ? getLook().getBaseTexture() : ModelLook.MISSING_TEXTURE;
     }
 
 

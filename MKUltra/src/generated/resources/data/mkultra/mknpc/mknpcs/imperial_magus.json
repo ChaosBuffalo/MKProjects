@@ -111,7 +111,7 @@
       "isNotable": true
     },
     "mknpc:render_group": {
-      "renderGroup": "skeletal_mage"
+      "renderGroup": "mkultra:zombified_piglin/skeletal_mage"
     },
     "mknpc:skills": {
       "minor_skills": [

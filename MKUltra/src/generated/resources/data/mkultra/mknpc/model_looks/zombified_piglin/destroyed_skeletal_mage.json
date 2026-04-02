@@ -1,0 +1,8 @@
+{
+  "baseTexture": "mkultra:textures/entity/piglin/zombified_piglin_skeletal_face.png",
+  "entityType": "mkultra:zombified_piglin",
+  "layerTextures": {
+    "clothes_1": "mkultra:textures/entity/piglin/imperial_magus_armor_damaged.png"
+  },
+  "modelStyle": "mknpc:clothes_armor_translucent"
+}

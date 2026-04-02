@@ -117,7 +117,7 @@
       "isNotable": true
     },
     "mknpc:render_group": {
-      "renderGroup": "green_lady_guard_2"
+      "renderGroup": "mkultra:orc/green_lady_guard_2"
     },
     "mknpc:skills": {
       "major_skills": [

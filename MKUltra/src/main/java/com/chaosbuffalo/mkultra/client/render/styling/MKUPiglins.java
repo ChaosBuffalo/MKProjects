@@ -1,13 +1,11 @@
 package com.chaosbuffalo.mkultra.client.render.styling;
 
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
-import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
+import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.init.MKUEntities;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-
-import java.util.HashMap;
-import java.util.Map;
-
 
 public class MKUPiglins {
 
@@ -42,22 +40,6 @@ public class MKUPiglins {
             "textures/entity/piglin/imperial_magus_armor_damaged.png"
     );
 
-    public static final ModelLook ZOMBIE_PIG_TROOPER_LOOK = new ModelLook(ModelStyles.CLOTHES_ARMOR_TRANSLUCENT_STYLE,
-            VANILLA_ZOMBIFIED_PIGLIN_TEXTURE, IMPERIAL_TROOPER_ARMOR_DAMAGED);
-    public static final ModelLook ZOMBIE_PIG_MAGE_LOOK = new ModelLook(ModelStyles.CLOTHES_ARMOR_TRANSLUCENT_STYLE,
-            VANILLA_ZOMBIFIED_PIGLIN_TEXTURE, IMPERIAL_MAGUS_ARMOR_DAMAGED);
-    public static final ModelLook SKELETAL_TROOPER_LOOK = new ModelLook(ModelStyles.CLOTHES_ARMOR_STYLE,
-            SKELETAL_ZOMBIFIED_PIGLIN_TEXTURE, IMPERIAL_TROOPER_ARMOR_NO_HELMET);
-    public static final ModelLook SKELETAL_MAGE_LOOK = new ModelLook(ModelStyles.CLOTHES_ARMOR_STYLE,
-            SKELETAL_ZOMBIFIED_PIGLIN_TEXTURE, IMPERIAL_MAGUS_ARMOR_NO_HELMET);
-    public static final ModelLook DESTROYED_SKELETAL_MAGE_LOOK = new ModelLook(ModelStyles.CLOTHES_ARMOR_TRANSLUCENT_STYLE,
-            SKELETAL_ZOMBIFIED_PIGLIN_TEXTURE, IMPERIAL_MAGUS_ARMOR_DAMAGED);
-    public static final ModelLook DESTROYED_SKELETAL_TROOPER_LOOK = new ModelLook(ModelStyles.CLOTHES_ARMOR_TRANSLUCENT_STYLE,
-            SKELETAL_ZOMBIFIED_PIGLIN_TEXTURE, IMPERIAL_TROOPER_ARMOR_DAMAGED);
-    public static final ModelLook BASE_LOOK = new ModelLook(ModelStyles.BASIC_STYLE, VANILLA_ZOMBIFIED_PIGLIN_TEXTURE);
-
-    public static final Map<String, ModelLook> ZOMBIE_PIGLIN_STYLES = new HashMap<>();
-
     public static final String ZOMBIE_PIG_TROOPER_NAME = "zombie_pig_trooper";
     public static final String ZOMBIE_PIG_MAGUS_NAME = "zombie_pig_magus";
     public static final String ZOMBIE_PIG_NAME = "zombie_pig";
@@ -66,14 +48,20 @@ public class MKUPiglins {
     public static final String DESTROYED_SKELETAL_MAGE_NAME = "destroyed_skeletal_mage";
     public static final String DESTROYED_SKELETAL_TROOPER_NAME = "destroyed_skeletal_trooper";
 
-    static {
-        ZOMBIE_PIGLIN_STYLES.put(ZOMBIE_PIG_TROOPER_NAME, ZOMBIE_PIG_TROOPER_LOOK);
-        ZOMBIE_PIGLIN_STYLES.put(ZOMBIE_PIG_MAGUS_NAME, ZOMBIE_PIG_MAGE_LOOK);
-        ZOMBIE_PIGLIN_STYLES.put(ZOMBIE_PIG_NAME, BASE_LOOK);
-        ZOMBIE_PIGLIN_STYLES.put(SKELETAL_TROOPER_NAME, SKELETAL_TROOPER_LOOK);
-        ZOMBIE_PIGLIN_STYLES.put(SKELETAL_MAGE_NAME, SKELETAL_MAGE_LOOK);
-        ZOMBIE_PIGLIN_STYLES.put(DESTROYED_SKELETAL_MAGE_NAME, DESTROYED_SKELETAL_MAGE_LOOK);
-        ZOMBIE_PIGLIN_STYLES.put(DESTROYED_SKELETAL_TROOPER_NAME, DESTROYED_SKELETAL_TROOPER_LOOK);
+    public static final ResourceKey<ModelLook> DEFAULT_LOOK = lookKey("default");
+    public static final ResourceKey<ModelLook> ZOMBIE_PIG_TROOPER_LOOK = lookKey(ZOMBIE_PIG_TROOPER_NAME);
+    public static final ResourceKey<ModelLook> ZOMBIE_PIG_MAGUS_LOOK = lookKey(ZOMBIE_PIG_MAGUS_NAME);
+    public static final ResourceKey<ModelLook> ZOMBIE_PIG_LOOK = lookKey(ZOMBIE_PIG_NAME);
+    public static final ResourceKey<ModelLook> SKELETAL_TROOPER_LOOK = lookKey(SKELETAL_TROOPER_NAME);
+    public static final ResourceKey<ModelLook> SKELETAL_MAGE_LOOK = lookKey(SKELETAL_MAGE_NAME);
+    public static final ResourceKey<ModelLook> DESTROYED_SKELETAL_MAGE_LOOK = lookKey(DESTROYED_SKELETAL_MAGE_NAME);
+    public static final ResourceKey<ModelLook> DESTROYED_SKELETAL_TROOPER_LOOK = lookKey(DESTROYED_SKELETAL_TROOPER_NAME);
+
+    private static ResourceKey<ModelLook> lookKey(String lookName) {
+        ResourceLocation entityId = MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId();
+        return ResourceKey.create(NpcRegistries.MODEL_LOOKS,
+                ResourceLocation.fromNamespaceAndPath(entityId.getNamespace(), "%s/%s".formatted(entityId.getPath(), lookName)));
     }
 }
+
 

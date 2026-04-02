@@ -42,7 +42,7 @@ public class NecrotideNpcs {
     static NpcDefinition generateNecrotideCultist(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
-                .renderGroup(MKUHumans.NECROTIDE_CULTIST_SKULL_1_NAME)
+                .renderGroup(MKUHumans.NECROTIDE_CULTIST_SKULL_1_LOOK)
                 .size(1.05f)
                 .attribute(Attributes.MAX_HEALTH, 125.0)
                 .attribute(MKAttributes.MAX_MANA, 125.0)
@@ -61,7 +61,7 @@ public class NecrotideNpcs {
     static NpcDefinition generateSkeletalLock(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
-                .renderGroup(MKUSkeletons.BASIC_NAME)
+                .renderGroup(MKUSkeletons.BASIC_LOOK)
                 .size(1.0f)
                 .attribute(Attributes.MAX_HEALTH, 50.0)
                 .attribute(MKAttributes.MAX_MANA, 50.0)
@@ -78,7 +78,7 @@ public class NecrotideNpcs {
     static NpcDefinition generateNecrotideGolem(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.GOLEM_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
-                .renderGroup(MKUGolems.NECROTIDE_GOLEM_NAME)
+                .renderGroup(MKUGolems.NECROTIDE_GOLEM_LOOK)
                 .size(1.25f)
                 .attribute(Attributes.MAX_HEALTH, 750.0)
                 .attribute(MKAttributes.MAX_MANA, 750.0)
@@ -101,7 +101,7 @@ public class NecrotideNpcs {
     static NpcDefinition generateNecrotideCultistAcolyte(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
-                .renderGroup(MKUHumans.NECROTIDE_CULTIST_1_NAME)
+                .renderGroup(MKUHumans.NECROTIDE_CULTIST_1_LOOK)
                 .size(0.95f)
                 .attribute(Attributes.MAX_HEALTH, 50.0)
                 .attribute(MKAttributes.MAX_MANA, 50.0)
@@ -119,7 +119,7 @@ public class NecrotideNpcs {
     static NpcDefinition generateNecrotideSkeletalWarrior(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
-                .renderGroup(MKUSkeletons.BASIC_NAME)
+                .renderGroup(MKUSkeletons.BASIC_LOOK)
                 .size(1.0f)
                 .attribute(Attributes.MAX_HEALTH, 65.0)
                 .attribute(MKAttributes.MAX_MANA, 65.0)
@@ -138,7 +138,7 @@ public class NecrotideNpcs {
     static NpcDefinition generateNecrotideSkeletalArcher(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
-                .renderGroup(MKUSkeletons.HYBOREAN_ARCHER_NAME)
+                .renderGroup(MKUSkeletons.HYBOREAN_ARCHER_LOOK)
                 .size(0.95f)
                 .attribute(Attributes.MAX_HEALTH, 30.0)
                 .attribute(MKAttributes.MAX_MANA, 30.0)

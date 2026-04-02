@@ -1,0 +1,10 @@
+{
+  "baseTexture": "mkultra:textures/entity/humans/human_skin_1.png",
+  "entityType": "mkultra:human",
+  "layerTextures": {
+    "armor_lower": "mkultra:textures/entity/clothes/solangian_armor_2.png",
+    "armor_upper": "mkultra:textures/entity/clothes/solangian_armor_1.png",
+    "hair_1": "mkultra:textures/entity/humans/human_hair_2.png"
+  },
+  "modelStyle": "mkultra:two_layer_armor_short_hair"
+}

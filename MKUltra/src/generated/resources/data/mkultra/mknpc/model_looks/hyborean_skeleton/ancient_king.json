@@ -1,0 +1,8 @@
+{
+  "baseTexture": "minecraft:textures/entity/skeleton/wither_skeleton.png",
+  "entityType": "mkultra:hyborean_skeleton",
+  "layerTextures": {
+    "clothes_1": "mkultra:textures/entity/clothes/fur_lined_scraps.png"
+  },
+  "modelStyle": "mknpc:clothes_only"
+}

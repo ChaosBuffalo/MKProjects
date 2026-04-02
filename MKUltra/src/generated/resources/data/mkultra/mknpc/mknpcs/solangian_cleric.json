@@ -134,7 +134,7 @@
       ]
     },
     "mknpc:render_group": {
-      "renderGroup": "cleric_1"
+      "renderGroup": "mkultra:human/cleric_1"
     },
     "mknpc:skills": {
       "major_skills": [

@@ -1,8 +1,10 @@
 package com.chaosbuffalo.mknpc.entity;
 
+import net.minecraft.resources.ResourceLocation;
+
 public interface IModelLookProvider {
 
-    String getCurrentModelLook();
+    ResourceLocation getCurrentModelLook();
 
-    void setCurrentModelLook(String group);
+    void setCurrentModelLook(ResourceLocation lookId);
 }

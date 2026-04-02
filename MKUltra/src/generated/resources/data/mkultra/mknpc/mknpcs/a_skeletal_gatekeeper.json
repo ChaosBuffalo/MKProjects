@@ -39,7 +39,7 @@
       ]
     },
     "mknpc:render_group": {
-      "renderGroup": "basic"
+      "renderGroup": "mkultra:hyborean_skeleton/basic"
     },
     "mknpc:skills": {
       "major_skills": [

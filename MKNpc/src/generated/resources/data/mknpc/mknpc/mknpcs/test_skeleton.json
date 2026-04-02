@@ -9,7 +9,7 @@
       "scale": 0.25
     },
     "mknpc:render_group": {
-      "renderGroup": "wither_king"
+      "renderGroup": "mknpc:skeleton/wither_king"
     }
   }
 }

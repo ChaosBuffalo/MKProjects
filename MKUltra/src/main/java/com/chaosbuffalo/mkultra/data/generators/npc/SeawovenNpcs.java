@@ -27,7 +27,7 @@ public class SeawovenNpcs {
     static NpcDefinition generateSeawovenWretch(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
-                .renderGroup(MKUSkeletons.SEAWOVEN_WRTECH_NAME)
+                .renderGroup(MKUSkeletons.SEAWOVEN_WRETCH_LOOK)
                 .size(0.92f)
                 .attribute(Attributes.MAX_HEALTH, 35.0)
                 .attribute(MKAttributes.MAX_MANA, 35.0)
@@ -42,7 +42,7 @@ public class SeawovenNpcs {
     static NpcDefinition generateSeawovenSkeleton(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKFactions.UNDEAD)
-                .renderGroup(MKUSkeletons.SEAWOVEN_NAME)
+                .renderGroup(MKUSkeletons.SEAWOVEN_LOOK)
                 .size(0.98f)
                 .attribute(Attributes.MAX_HEALTH, 45.0)
                 .attribute(MKAttributes.MAX_MANA, 45.0)

@@ -45,7 +45,7 @@
       "name": "Skeleton Archer"
     },
     "mknpc:render_group": {
-      "renderGroup": "hyborean_archer"
+      "renderGroup": "mkultra:hyborean_skeleton/hyborean_archer"
     },
     "mknpc:skills": {
       "major_skills": [

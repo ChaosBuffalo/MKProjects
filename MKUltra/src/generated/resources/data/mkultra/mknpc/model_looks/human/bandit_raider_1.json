@@ -1,0 +1,9 @@
+{
+  "baseTexture": "mkultra:textures/entity/humans/human_skin_2.png",
+  "entityType": "mkultra:human",
+  "layerTextures": {
+    "clothes_1": "mkultra:textures/entity/clothes/bandit_leathers_1.png",
+    "hair_1": "mkultra:textures/entity/humans/human_hair_1.png"
+  },
+  "modelStyle": "mknpc:short_hair"
+}

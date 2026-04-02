@@ -1,0 +1,5 @@
+{
+  "baseTexture": "minecraft:textures/entity/skeleton/wither_skeleton.png",
+  "entityType": "mknpc:skeleton",
+  "modelStyle": "mknpc:basic"
+}

@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.client.render.models.MKPiglinModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKSkeletalModel;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelArgs;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyleClient;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
 import com.chaosbuffalo.mknpc.client.render.renderers.SkeletalGroupRenderer;
 import com.chaosbuffalo.mknpc.client.render.renderers.ZombifiedPiglinGroupRenderer;
@@ -14,11 +15,9 @@ import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.entities.golems.GolemGroupRenderer;
 import com.chaosbuffalo.mkultra.client.render.entities.humans.HumanGroupRenderer;
 import com.chaosbuffalo.mkultra.client.render.entities.orcs.OrcGroupRenderer;
-import com.chaosbuffalo.mkultra.client.render.styling.MKUGolems;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUHumans;
-import com.chaosbuffalo.mkultra.client.render.styling.MKUPiglins;
-import com.chaosbuffalo.mkultra.client.render.styling.MKUSkeletons;
 import com.chaosbuffalo.mkultra.init.MKUEntities;
+import com.chaosbuffalo.mkultra.init.MKUModelStyles;
 import net.minecraft.client.model.geom.LayerDefinitions;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.neoforged.api.distmarker.Dist;
@@ -39,9 +38,9 @@ public class MKURenderers {
         evt.registerEntityRenderer(MKUEntities.ORC_TYPE.get(), (context) -> new OrcGroupRenderer(context, MKUEntities.ORC_TYPE.getId()));
         evt.registerEntityRenderer(MKUEntities.HUMAN_TYPE.get(), (context) -> new HumanGroupRenderer(context, MKUEntities.HUMAN_TYPE.getId()));
         evt.registerEntityRenderer(MKUEntities.HYBOREAN_SKELETON_TYPE.get(), (context) ->
-                new SkeletalGroupRenderer(context, MKUSkeletons.SKELETON_STYLES, MKUEntities.HYBOREAN_SKELETON_TYPE.getId()));
+                new SkeletalGroupRenderer(context, MKUEntities.HYBOREAN_SKELETON_TYPE.getId()));
         evt.registerEntityRenderer(MKUEntities.ZOMBIFIED_PIGLIN_TYPE.get(),
-                (context) -> new ZombifiedPiglinGroupRenderer(context, MKUPiglins.ZOMBIE_PIGLIN_STYLES, MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId()));
+                (context) -> new ZombifiedPiglinGroupRenderer(context, MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId()));
         evt.registerEntityRenderer(MKUEntities.GOLEM_TYPE.get(), (context) -> new GolemGroupRenderer(context, MKUEntities.GOLEM_TYPE.getId()));
         evt.registerEntityRenderer(MKUEntities.HUMAN_GHOST_TYPE.get(), (context) -> new HumanGroupRenderer(context, MKUEntities.HUMAN_GHOST_TYPE.getId()));
     }
@@ -49,51 +48,51 @@ public class MKURenderers {
     @SubscribeEvent
     public static void layerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
 
-        List<ModelStyle> orcStyles = List.of(ModelStyles.LONG_HAIR_STYLE, ModelStyles.ARMORED_LONG_HAIR_STYLE, ModelStyles.BASIC_STYLE);
+        List<ModelStyle> orcStyles = List.of(ModelStyles.LONG_HAIR_STYLE.get(), ModelStyles.ARMORED_LONG_HAIR_STYLE.get(), ModelStyles.BASIC_STYLE.get());
         for (ModelStyle style : orcStyles) {
-            style.registerModelLayers(event, MKBipedModel::createBodyLayer, MKUEntities.ORC_TYPE.getId(),
+            ModelStyleClient.registerModelLayers(event, style, MKBipedModel::createBodyLayer, MKUEntities.ORC_TYPE.getId(),
                     64, 32,
                     new ModelArgs(CubeDeformation.NONE, false, 0.0f,
                             LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
         }
 
-        List<ModelStyle> humanStyles = List.of(ModelStyles.BASIC_STYLE, MKUHumans.TWO_LAYER_ARMOR_NO_HAIR,
-                MKUHumans.TWO_LAYER_ARMOR_SHORT_HAIR, MKUHumans.GHOST_LONG_HAIR_STYLE, MKUHumans.TWO_LAYER_CLOTHES_SHORT_HAIR,
-                MKUHumans.ARMORED_GHOST_LONG_HAIR_STYLE, ModelStyles.SHORT_HAIR_STYLE, MKUHumans.GHOST_LONG_HAIR_NO_CLOTHES_STYLE,
-                MKUHumans.ARMORED_GHOST_LONG_HAIR_NO_CLOTHES_STYLE, MKUHumans.GHOST_SHORT_HAIR_NO_CLOTHES_STYLE,
-                MKUHumans.ARMORED_GHOST_SHORT_HAIR_NO_CLOTHES_STYLE);
+        List<ModelStyle> humanStyles = List.of(ModelStyles.BASIC_STYLE.get(), MKUModelStyles.TWO_LAYER_ARMOR_NO_HAIR.get(),
+                MKUModelStyles.TWO_LAYER_ARMOR_SHORT_HAIR.get(), MKUModelStyles.GHOST_LONG_HAIR.get(), MKUModelStyles.TWO_LAYER_CLOTHES_SHORT_HAIR.get(),
+                MKUModelStyles.GHOST_LONG_HAIR_ARMORED.get(), ModelStyles.SHORT_HAIR_STYLE.get(), MKUModelStyles.GHOST_LONG_HAIR_NO_CLOTHES.get(),
+                MKUModelStyles.GHOST_LONG_HAIR_NO_CLOTHES_ARMORED.get(), MKUModelStyles.GHOST_SHORT_HAIR_NO_CLOTHES.get(),
+                MKUModelStyles.GHOST_SHORT_HAIR_NO_CLOTHES_ARMORED.get());
 
         for (ModelStyle style : humanStyles) {
-            style.registerModelLayers(event, MKBipedModel::createBodyLayer,
+            ModelStyleClient.registerModelLayers(event, style, MKBipedModel::createBodyLayer,
                     MKUEntities.HUMAN_TYPE.getId(), 64, 32,
                     new ModelArgs(CubeDeformation.NONE, false, 0.0f,
                             LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
-            style.registerModelLayers(event, MKBipedModel::createBodyLayer,
+            ModelStyleClient.registerModelLayers(event, style, MKBipedModel::createBodyLayer,
                     MKUEntities.HUMAN_GHOST_TYPE.getId(), 64, 32,
                     new ModelArgs(CubeDeformation.NONE, false, 0.0f,
                             LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
         }
 
-        List<ModelStyle> skeletonStyles = List.of(ModelStyles.BASIC_STYLE, ModelStyles.CLOTHES_ONLY_STYLE);
+        List<ModelStyle> skeletonStyles = List.of(ModelStyles.BASIC_STYLE.get(), ModelStyles.CLOTHES_ONLY_STYLE.get());
         for (ModelStyle style : skeletonStyles) {
-            style.registerModelLayers(event, MKSkeletalModel::createBodyLayer,
+            ModelStyleClient.registerModelLayers(event, style, MKSkeletalModel::createBodyLayer,
                     MKUEntities.HYBOREAN_SKELETON_TYPE.getId(), 64, 32,
                     new ModelArgs(CubeDeformation.NONE, true, 0.0f,
                             LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
         }
 
-        List<ModelStyle> zombiePiglinStyles = List.of(ModelStyles.BASIC_STYLE, ModelStyles.CLOTHES_ONLY_STYLE,
-                ModelStyles.CLOTHES_ARMOR_STYLE, ModelStyles.CLOTHES_ARMOR_TRANSLUCENT_STYLE);
+        List<ModelStyle> zombiePiglinStyles = List.of(ModelStyles.BASIC_STYLE.get(), ModelStyles.CLOTHES_ONLY_STYLE.get(),
+                ModelStyles.CLOTHES_ARMOR_STYLE.get(), ModelStyles.CLOTHES_ARMOR_TRANSLUCENT_STYLE.get());
         for (ModelStyle style : zombiePiglinStyles) {
-            style.registerModelLayers(event, MKPiglinModel::createMesh,
+            ModelStyleClient.registerModelLayers(event, style, MKPiglinModel::createMesh,
                     MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId(), 64, 64,
                     new ModelArgs(CubeDeformation.NONE, true, 0.0f,
                             new CubeDeformation(1.02F), LayerDefinitions.INNER_ARMOR_DEFORMATION));
         }
 
-        List<ModelStyle> golemStyles = List.of(MKUGolems.GOLEM_STYLE);
+        List<ModelStyle> golemStyles = List.of(MKUModelStyles.BASIC_GOLEM_STYLE.get());
         for (ModelStyle style : golemStyles) {
-            style.registerModelLayers(event, MKGolemModel::createBodyLayer,
+            ModelStyleClient.registerModelLayers(event, style, MKGolemModel::createBodyLayer,
                     MKUEntities.GOLEM_TYPE.getId(), 128, 128,
                     new ModelArgs(CubeDeformation.NONE, false, 0.0f,
                             LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
@@ -102,3 +101,4 @@ public class MKURenderers {
 
     }
 }
+

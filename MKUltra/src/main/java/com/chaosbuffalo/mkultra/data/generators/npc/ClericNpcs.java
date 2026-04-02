@@ -32,7 +32,7 @@ public class ClericNpcs {
         return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
                 .size(1.05f)
-                .renderGroup(MKUHumans.CLERIC_1_NAME)
+                .renderGroup(MKUHumans.CLERIC_1_LOOK)
                 .titledFactionName("Cleric")
                 .notable()
                 .health(500.0)
@@ -59,7 +59,7 @@ public class ClericNpcs {
     static NpcDefinition generateTempleGuard2(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
-                .renderGroup(MKUHumans.TEMPLE_GUARD_2_NAME)
+                .renderGroup(MKUHumans.TEMPLE_GUARD_2_LOOK)
                 .size(1.0f)
                 .health(300.0)
                 .mana(300.0)
@@ -78,7 +78,7 @@ public class ClericNpcs {
     static NpcDefinition generateTempleGuard(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.SEE_OF_SOLANG_NAME)
-                .renderGroup(MKUHumans.TEMPLE_GUARD_1_NAME)
+                .renderGroup(MKUHumans.TEMPLE_GUARD_1_LOOK)
                 .size(1.0f)
                 .health(250.0)
                 .mana(250.0)

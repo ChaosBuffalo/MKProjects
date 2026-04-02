@@ -1,0 +1,6 @@
+{
+  "baseTexture": "mkultra:textures/entity/humans/human_skin_1.png",
+  "default": true,
+  "entityType": "mkultra:human_ghost",
+  "modelStyle": "mknpc:basic"
+}

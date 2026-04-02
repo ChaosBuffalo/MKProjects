@@ -120,7 +120,7 @@
       ]
     },
     "mknpc:render_group": {
-      "renderGroup": "green_lady"
+      "renderGroup": "mkultra:orc/green_lady"
     },
     "mknpc:skills": {
       "major_skills": [

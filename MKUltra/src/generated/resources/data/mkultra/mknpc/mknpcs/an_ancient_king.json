@@ -182,7 +182,7 @@
       "isNotable": true
     },
     "mknpc:render_group": {
-      "renderGroup": "ancient_king"
+      "renderGroup": "mkultra:hyborean_skeleton/ancient_king"
     },
     "mknpc:skills": {
       "major_skills": [

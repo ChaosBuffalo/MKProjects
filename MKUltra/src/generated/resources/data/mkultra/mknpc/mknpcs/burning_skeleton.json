@@ -139,7 +139,7 @@
       ]
     },
     "mknpc:render_group": {
-      "renderGroup": "burning_skeleton"
+      "renderGroup": "mkultra:hyborean_skeleton/burning_skeleton"
     },
     "mknpc:skills": {
       "minor_skills": [

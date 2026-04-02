@@ -1,0 +1,5 @@
+{
+  "baseTexture": "minecraft:textures/entity/piglin/zombified_piglin.png",
+  "entityType": "mkultra:zombified_piglin",
+  "modelStyle": "mknpc:basic"
+}

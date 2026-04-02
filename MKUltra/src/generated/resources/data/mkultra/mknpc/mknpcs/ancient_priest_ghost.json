@@ -99,7 +99,7 @@
       "name": "An Ancient Priest"
     },
     "mknpc:render_group": {
-      "renderGroup": "ghost_clean"
+      "renderGroup": "mkultra:human_ghost/ghost_clean"
     },
     "mknpc:skills": {
       "major_skills": [

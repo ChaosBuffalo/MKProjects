@@ -26,7 +26,7 @@ public class MKBlazeEntity extends MKEntity{
         this.setPathfindingMalus(PathType.LAVA, 8.0F);
         this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
         this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
-        setCurrentModelLook(DEFAULT);
+        setCurrentModelLook(MKEntity.makeLookId(type, DEFAULT));
         setCombatMoveType(CombatMoveType.RANGE);
         setMinimumRangedCastingDistance(10.0);
     }

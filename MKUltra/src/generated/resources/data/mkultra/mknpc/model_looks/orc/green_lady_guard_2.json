@@ -1,0 +1,10 @@
+{
+  "baseTexture": "mkultra:textures/entity/orcs/green_orc.png",
+  "entityType": "mkultra:orc",
+  "layerTextures": {
+    "clothes_1": "mkultra:textures/entity/clothes/loincloth_2.png",
+    "hair_1": "mkultra:textures/entity/orcs/orc_hair_1.png",
+    "hair_2": "mkultra:textures/entity/orcs/orc_long_hair_1_layer_2.png"
+  },
+  "modelStyle": "mknpc:long_hair"
+}

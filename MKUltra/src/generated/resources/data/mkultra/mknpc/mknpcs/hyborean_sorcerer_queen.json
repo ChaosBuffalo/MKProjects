@@ -110,7 +110,7 @@
       "isNotable": true
     },
     "mknpc:render_group": {
-      "renderGroup": "sorcerer_queen"
+      "renderGroup": "mkultra:hyborean_skeleton/sorcerer_queen"
     },
     "mknpc:skills": {
       "minor_skills": [

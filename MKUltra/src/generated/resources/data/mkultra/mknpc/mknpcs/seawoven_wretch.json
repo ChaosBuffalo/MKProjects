@@ -40,7 +40,7 @@
       "name": "A Seawoven Wretch"
     },
     "mknpc:render_group": {
-      "renderGroup": "seawoven_wretch"
+      "renderGroup": "mkultra:hyborean_skeleton/seawoven_wretch"
     },
     "mknpc:skills": {
       "major_skills": [
