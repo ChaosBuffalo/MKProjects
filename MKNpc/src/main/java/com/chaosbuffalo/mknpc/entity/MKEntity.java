@@ -227,7 +227,6 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     public void onAddedToLevel() {
         super.onAddedToLevel();
-        getEntityDataCap();
         if (!level().isClientSide) {
             syncController.onJoinLevel();
         }
