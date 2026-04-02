@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.dialogue.NPCDialogueExtension;
 import com.chaosbuffalo.mknpc.dialogue.NpcDialogueConditionTypes;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
+import com.chaosbuffalo.mknpc.event.EntityHandler;
 import com.chaosbuffalo.mknpc.init.*;
 import com.chaosbuffalo.mknpc.npc.*;
 import com.chaosbuffalo.mknpc.quest.QuestRegistries;
@@ -97,6 +98,7 @@ public class MKNpc {
 
 
     private void setup(final FMLCommonSetupEvent event) {
+        EntityHandler.registerDamageStages();
 //        MKNpcWorldGen.registerStructurePoolTypes();
     }
 

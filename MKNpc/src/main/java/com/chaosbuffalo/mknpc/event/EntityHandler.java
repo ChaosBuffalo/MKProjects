@@ -1,6 +1,9 @@
 package com.chaosbuffalo.mknpc.event;
 
 import com.chaosbuffalo.mkchat.event.PlayerNpcDialogueTreeGatherEvent;
+import com.chaosbuffalo.mkcore.combat.damage.MKDamageContext;
+import com.chaosbuffalo.mkcore.combat.damage.MKDamagePipeline;
+import com.chaosbuffalo.mkcore.combat.damage.MKDamageStageOrder;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.core.healing.MKAbilityHealEvent;
 import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
@@ -35,7 +38,6 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
@@ -49,6 +51,7 @@ import java.util.Optional;
 @SuppressWarnings("unused")
 @EventBusSubscriber(modid = MKNpc.MODID)
 public class EntityHandler {
+    private static boolean damageStagesRegistered;
 
     @SubscribeEvent
     public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
@@ -59,17 +62,29 @@ public class EntityHandler {
         });
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onEntityDamage(LivingDamageEvent.Pre event) {
-        if (event.getSource() instanceof MKDamageSource) {
-            if (event.getEntity() instanceof Player) {
-                if (!(event.getSource().getEntity() instanceof Player)) {
-                    event.setNewDamage((float) (event.getNewDamage() * MKNpc.getDifficultyScale(event.getEntity())));
-                }
-                //add threat to pets here
-
-            }
+    public static synchronized void registerDamageStages() {
+        if (damageStagesRegistered) {
+            return;
         }
+        MKDamagePipeline.register(MKDamageStageOrder.FINAL_MODIFIERS, MKNpc.id("difficulty_scale"),
+                EntityHandler::applyDifficultyScale);
+        damageStagesRegistered = true;
+    }
+
+    private static void applyDifficultyScale(MKDamageContext context) {
+        if (!(context.getSource() instanceof MKDamageSource)) {
+            return;
+        }
+        if (!(context.getTarget() instanceof Player)) {
+            return;
+        }
+        if (context.getSource().getEntity() instanceof Player) {
+            return;
+        }
+        float scaledDamage = (float) (context.getWorkingDamage() * MKNpc.getDifficultyScale(context.getTarget()));
+        context.setWorkingDamage(scaledDamage, "mknpc:difficulty_scale");
+        // Threat-to-pets logic historically lived next to the old damage hook.
+        // Keep this stage as the single integration point when that behavior is restored.
     }
 
     @SubscribeEvent

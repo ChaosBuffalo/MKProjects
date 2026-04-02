@@ -32,9 +32,11 @@ public final class MKDamagePipeline {
             for (Map.Entry<ResourceLocation, MKDamageStage> entry : STAGES.get(order).entrySet()) {
                 // Keep the legacy LivingDamageEvent.Pre handlers and the new context-based stages in sync
                 // until all damage code is fully migrated onto MKDamageContext.
+                context.addAudit("stage:start:" + entry.getKey());
                 context.syncToEvent();
                 entry.getValue().apply(context);
                 context.syncFromEvent();
+                context.addAudit("stage:end:" + entry.getKey() + "=" + context.getWorkingDamage());
             }
         }
     }

@@ -148,6 +148,10 @@ public class MKDamageContext {
         audit.add(reason + "=" + workingDamage);
     }
 
+    public void addAudit(String line) {
+        audit.add(line);
+    }
+
     public void syncToEvent() {
         event.setNewDamage(workingDamage);
     }
