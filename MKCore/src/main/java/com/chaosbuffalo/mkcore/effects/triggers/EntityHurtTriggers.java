@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mkcore.effects.triggers;
 
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
+import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
@@ -34,10 +36,11 @@ public class EntityHurtTriggers extends SpellTriggers.TriggerCollectionBase {
     }
 
     public void onEntityHurtLiving(LivingDamageEvent.Pre event, DamageSource source, IMKEntityData targetData) {
-        if (startTrigger(targetData, TAG))
-            return;
-        entityHurtLivingPreTriggers.forEach(f -> f.apply(event, source, targetData));
+        applyResistance(event, source, targetData);
+        dispatchTriggers(event, source, targetData);
+    }
 
+    public void applyResistance(LivingDamageEvent.Pre event, DamageSource source, IMKEntityData targetData) {
         if (source instanceof MKDamageSource mkDamageSource) {
             // we check unblockable here because if it is blockable than the armor calculation will already be applied
             // by vanilla mc, we don't want to apply armor reduction twice
@@ -45,7 +48,16 @@ public class EntityHurtTriggers extends SpellTriggers.TriggerCollectionBase {
                 event.setNewDamage(mkDamageSource.getMKDamageType().applyResistance(targetData.getEntity(), event.getNewDamage(), source));
             }
         }
+        if (DamageUtils.isProjectileDamage(source)) {
+            event.setNewDamage((float) (event.getNewDamage()
+                    * (1.0 - targetData.getEntity().getAttributeValue(MKAttributes.RANGED_RESISTANCE))));
+        }
+    }
 
+    public void dispatchTriggers(LivingDamageEvent.Pre event, DamageSource source, IMKEntityData targetData) {
+        if (startTrigger(targetData, TAG))
+            return;
+        entityHurtLivingPreTriggers.forEach(f -> f.apply(event, source, targetData));
         entityHurtLivingPostTriggers.forEach(f -> f.apply(event, source, targetData));
         endTrigger(targetData, TAG);
     }

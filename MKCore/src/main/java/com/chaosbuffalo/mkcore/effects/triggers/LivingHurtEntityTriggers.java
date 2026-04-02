@@ -126,6 +126,19 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
 
     public void onLivingHurtEntity(LivingDamageEvent.Pre event, DamageSource source,
                                    LivingEntity livingTarget, IMKEntityData sourceData) {
+        applyDamageBonuses(event, source, livingTarget, sourceData);
+        applyCrits(event, source, livingTarget, sourceData);
+        dispatchTriggers(event, source, livingTarget, sourceData);
+    }
+
+    public void applyDamageAdjustments(LivingDamageEvent.Pre event, DamageSource source,
+                                       LivingEntity livingTarget, IMKEntityData sourceData) {
+        applyDamageBonuses(event, source, livingTarget, sourceData);
+        applyCrits(event, source, livingTarget, sourceData);
+    }
+
+    public void applyDamageBonuses(LivingDamageEvent.Pre event, DamageSource source,
+                                   LivingEntity livingTarget, IMKEntityData sourceData) {
         // A blocked source can still have remaining damage; only zero-damage full blocks
         // should skip the attacker-side trigger pipeline entirely.
         if (DamageUtils.isFullyBlockedDamage(source, event.getNewDamage())) {
@@ -133,20 +146,52 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         }
         LivingEntity livingSource = sourceData.getEntity();
         if (source instanceof MKDamageSource mkSource) {
-            if (mkSource.isMeleeDamage()) {
-                handleMKMelee(event, mkSource, livingTarget, livingSource, sourceData);
-            } else {
-                handleMKDamage(event, mkSource, livingTarget, livingSource, sourceData);
-            }
-        }
-
-        // If this is a weapon swing
-        if (DamageUtils.isMinecraftPhysicalDamage(source)) {
-            handleVanillaMelee(event, source, livingTarget, livingSource, sourceData);
+            applyMKDamageBonus(event, mkSource, livingTarget, livingSource);
         }
 
         if (DamageUtils.isProjectileDamage(source)) {
-            handleProjectile(event, source, livingTarget, livingSource, sourceData);
+            applyProjectileDamageBonus(event, source, livingSource);
+        }
+    }
+
+    public void applyCrits(LivingDamageEvent.Pre event, DamageSource source,
+                           LivingEntity livingTarget, IMKEntityData sourceData) {
+        if (DamageUtils.isFullyBlockedDamage(source, event.getNewDamage())) {
+            return;
+        }
+        LivingEntity livingSource = sourceData.getEntity();
+        if (source instanceof MKDamageSource mkSource) {
+            applyMKCrit(event, mkSource, livingTarget, livingSource);
+        }
+
+        if (DamageUtils.isMinecraftPhysicalDamage(source)) {
+            applyVanillaMeleeCrit(event, source, livingTarget, livingSource, sourceData);
+        }
+
+        if (DamageUtils.isProjectileDamage(source)) {
+            applyProjectileCrit(event, source, livingTarget, livingSource);
+        }
+    }
+
+    public void dispatchTriggers(LivingDamageEvent.Pre event, DamageSource source,
+                                 LivingEntity livingTarget, IMKEntityData sourceData) {
+        if (DamageUtils.isFullyBlockedDamage(source, event.getNewDamage())) {
+            return;
+        }
+        if (source instanceof MKDamageSource mkSource) {
+            if (mkSource.isMeleeDamage()) {
+                dispatchMeleeTriggers(event, source, livingTarget, sourceData);
+            } else {
+                dispatchMagicTriggers(event, source, livingTarget, sourceData);
+            }
+        }
+
+        if (DamageUtils.isMinecraftPhysicalDamage(source)) {
+            dispatchMeleeTriggers(event, source, livingTarget, sourceData);
+        }
+
+        if (DamageUtils.isProjectileDamage(source)) {
+            dispatchProjectileTriggers(event, source, livingTarget, sourceData);
         }
         if (livingHurtEntityPostEffectTriggers.hasTriggers()) {
             livingHurtEntityPostEffectTriggers.onLivingHurtEntity(event, source, livingTarget, sourceData);
@@ -157,26 +202,23 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         endTrigger(sourceData, POST_TAG);
     }
 
-    private void handleMKDamage(LivingDamageEvent.Pre event, MKDamageSource source, LivingEntity livingTarget,
-                                LivingEntity livingSource,
-                                IMKEntityData sourceData) {
-        calculateMKDamage(event, livingTarget, livingSource, sourceData, source,
-                MAGIC_TAG, livingHurtEntityMagicTriggers, livingHurtEntityMagicEffectTriggers);
-    }
-
     private static boolean wasBlocked(DamageSource source) {
         return source instanceof IMKDamageSourceExtensions ext && ext.wasBlocked();
     }
 
-    private void calculateMKDamage(LivingDamageEvent.Pre event, LivingEntity livingTarget,
-                                   LivingEntity livingSource, IMKEntityData sourceData,
-                                   MKDamageSource source, String typeTag,
-                                   List<Trigger> playerHurtTriggers, LivingHurtEntityEffectTriggers effectTriggers) {
+    private void applyMKDamageBonus(LivingDamageEvent.Pre event, MKDamageSource source,
+                                    LivingEntity livingTarget, LivingEntity livingSource) {
         Entity immediate = source.getDirectEntity() != null ? source.getDirectEntity() : livingSource;
-        float newDamage = source.getMKDamageType().applyDamage(livingSource, livingTarget, immediate, event.getNewDamage(), source.getModifierScaling());
-        boolean notBlocked = !wasBlocked(source);
-        if (notBlocked && source.getMKDamageType().rollCrit(livingSource, livingTarget, immediate)) {
-            newDamage = source.getMKDamageType().applyCritDamage(livingSource, livingTarget, immediate, newDamage);
+        event.setNewDamage(source.getMKDamageType().applyDamage(
+                livingSource, livingTarget, immediate, event.getNewDamage(), source.getModifierScaling()));
+    }
+
+    private void applyMKCrit(LivingDamageEvent.Pre event, MKDamageSource source,
+                             LivingEntity livingTarget, LivingEntity livingSource) {
+        Entity immediate = source.getDirectEntity() != null ? source.getDirectEntity() : livingSource;
+        if (!wasBlocked(source) && source.getMKDamageType().rollCrit(livingSource, livingTarget, immediate)) {
+            float newDamage = source.getMKDamageType().applyCritDamage(livingSource, livingTarget, immediate, event.getNewDamage());
+            event.setNewDamage(newDamage);
             switch (source.getOrigination()) {
                 case MK_ABILITY:
                     sendAbilityCrit(livingTarget, livingSource, source, newDamage);
@@ -186,17 +228,6 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
                     break;
             }
         }
-        event.setNewDamage(newDamage);
-        if (!notBlocked) {
-            return;
-        }
-        if (effectTriggers.hasTriggers()) {
-            effectTriggers.onLivingHurtEntity(event, source, livingTarget, sourceData);
-        }
-        if (playerHurtTriggers.isEmpty() || startTrigger(sourceData, typeTag))
-            return;
-        playerHurtTriggers.forEach(f -> f.apply(event, source, livingTarget, sourceData));
-        endTrigger(sourceData, typeTag);
     }
 
     private void sendEffectCrit(LivingEntity livingTarget, LivingEntity livingSource, MKDamageSource source,
@@ -224,49 +255,26 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         }
     }
 
-    private void handleProjectile(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
-                                  LivingEntity livingSource, IMKEntityData sourceData) {
+    private void applyProjectileDamageBonus(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingSource) {
+        if (DamageUtils.isNonMKProjectileDamage(source)) {
+            event.setNewDamage(event.getNewDamage() + (float) livingSource.getAttributeValue(MKAttributes.RANGED_DAMAGE));
+        }
+    }
 
+    private void applyProjectileCrit(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
+                                     LivingEntity livingSource) {
         boolean blocked = wasBlocked(source);
         Entity projectile = source.getDirectEntity();
-        float damage = event.getNewDamage();
-        if (DamageUtils.isNonMKProjectileDamage(source)) {
-            damage += (float) livingSource.getAttributeValue(MKAttributes.RANGED_DAMAGE);
-        }
-        boolean wasCrit = false;
         if (!blocked && projectile != null && CoreDamageTypes.RangedDamage.get().rollCrit(livingSource, livingTarget, projectile)) {
-            damage = CoreDamageTypes.RangedDamage.get().applyCritDamage(livingSource, livingTarget, projectile, damage);
-            wasCrit = true;
-        }
-        // Partial shield blocks still leave residual projectile damage that should
-        // continue through the ranged resistance calculation.
-        damage = (float) (damage * (1.0 - livingTarget.getAttributeValue(MKAttributes.RANGED_RESISTANCE)));
-        event.setNewDamage(damage);
-        if (wasCrit) {
+            float damage = CoreDamageTypes.RangedDamage.get().applyCritDamage(livingSource, livingTarget, projectile, event.getNewDamage());
+            event.setNewDamage(damage);
             sendCritPacket(livingTarget, livingSource,
-                    new CritMessagePacket(livingTarget.getId(), livingSource.getId(), damage,
-                            projectile.getId()));
+                    new CritMessagePacket(livingTarget.getId(), livingSource.getId(), damage, projectile.getId()));
         }
-        if (blocked)
-            return;
-        if (livingHurtEntityProjectileEffectTriggers.hasTriggers()) {
-            livingHurtEntityProjectileEffectTriggers.onLivingHurtEntity(event, source, livingTarget, sourceData);
-        }
-        if (livingHurtEntityProjectileTriggers.isEmpty() || startTrigger(sourceData, PROJECTILE_TAG))
-            return;
-        livingHurtEntityProjectileTriggers.forEach(f -> f.apply(event, source, livingTarget, sourceData));
-        endTrigger(sourceData, PROJECTILE_TAG);
     }
 
-    private void handleMKMelee(LivingDamageEvent.Pre event, MKDamageSource source, LivingEntity livingTarget,
-                               LivingEntity livingSource, IMKEntityData sourceData) {
-
-        calculateMKDamage(event, livingTarget, livingSource, sourceData, source,
-                MELEE_TAG, livingHurtEntityMeleeTriggers, livingHurtEntityMeleeEffectTriggers);
-    }
-
-    private void handleVanillaMelee(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
-                                    LivingEntity livingSource, IMKEntityData sourceData) {
+    private void applyVanillaMeleeCrit(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
+                                       LivingEntity livingSource, IMKEntityData sourceData) {
         boolean blocked = wasBlocked(source);
         // A blocked vanilla melee hit may still have residual damage after poise absorption.
         // That remainder should continue through vanilla damage resolution, but MK melee crits
@@ -279,15 +287,44 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
                         new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage));
             }
         }
-        if (blocked)
+    }
+
+    private void dispatchMagicTriggers(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
+                                       IMKEntityData sourceData) {
+        if (wasBlocked(source)) {
             return;
-        if (livingHurtEntityMeleeEffectTriggers.hasTriggers()) {
-            livingHurtEntityMeleeEffectTriggers.onLivingHurtEntity(event, source, livingTarget, sourceData);
         }
-        if (livingHurtEntityMeleeTriggers.isEmpty() || startTrigger(sourceData, MELEE_TAG))
+        dispatchTypedTriggers(event, source, livingTarget, sourceData, MAGIC_TAG,
+                livingHurtEntityMagicTriggers, livingHurtEntityMagicEffectTriggers);
+    }
+
+    private void dispatchProjectileTriggers(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
+                                            IMKEntityData sourceData) {
+        if (wasBlocked(source)) {
             return;
-        livingHurtEntityMeleeTriggers.forEach(f -> f.apply(event, source, livingTarget, sourceData));
-        endTrigger(sourceData, MELEE_TAG);
+        }
+        dispatchTypedTriggers(event, source, livingTarget, sourceData, PROJECTILE_TAG,
+                livingHurtEntityProjectileTriggers, livingHurtEntityProjectileEffectTriggers);
+    }
+
+    private void dispatchMeleeTriggers(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
+                                       IMKEntityData sourceData) {
+        if (wasBlocked(source))
+            return;
+        dispatchTypedTriggers(event, source, livingTarget, sourceData, MELEE_TAG,
+                livingHurtEntityMeleeTriggers, livingHurtEntityMeleeEffectTriggers);
+    }
+
+    private void dispatchTypedTriggers(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
+                                       IMKEntityData sourceData, String typeTag, List<Trigger> playerHurtTriggers,
+                                       LivingHurtEntityEffectTriggers effectTriggers) {
+        if (effectTriggers.hasTriggers()) {
+            effectTriggers.onLivingHurtEntity(event, source, livingTarget, sourceData);
+        }
+        if (playerHurtTriggers.isEmpty() || startTrigger(sourceData, typeTag))
+            return;
+        playerHurtTriggers.forEach(f -> f.apply(event, source, livingTarget, sourceData));
+        endTrigger(sourceData, typeTag);
     }
 
     private static void sendCritPacket(LivingEntity livingTarget, LivingEntity livingSource,
