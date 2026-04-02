@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.effects.triggers;
 
+import com.chaosbuffalo.mkcore.combat.damage.MKDamageContext;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
@@ -54,11 +55,31 @@ public class EntityHurtTriggers extends SpellTriggers.TriggerCollectionBase {
         }
     }
 
+    public void applyResistance(MKDamageContext context) {
+        DamageSource source = context.getSource();
+        IMKEntityData targetData = context.getTargetData();
+        float damage = context.getWorkingDamage();
+        if (source instanceof MKDamageSource mkDamageSource) {
+            if (mkDamageSource.is(DamageTypeTags.BYPASSES_ARMOR)) {
+                damage = mkDamageSource.getMKDamageType().applyResistance(targetData.getEntity(), damage, source);
+            }
+        }
+        if (DamageUtils.isProjectileDamage(source)) {
+            damage = (float) (damage * (1.0 - targetData.getEntity().getAttributeValue(MKAttributes.RANGED_RESISTANCE)));
+        }
+        context.setWorkingDamage(damage, "mkcore:victim_resistance");
+    }
+
     public void dispatchTriggers(LivingDamageEvent.Pre event, DamageSource source, IMKEntityData targetData) {
         if (startTrigger(targetData, TAG))
             return;
         entityHurtLivingPreTriggers.forEach(f -> f.apply(event, source, targetData));
         entityHurtLivingPostTriggers.forEach(f -> f.apply(event, source, targetData));
         endTrigger(targetData, TAG);
+    }
+
+    public void dispatchTriggers(MKDamageContext context) {
+        context.runLegacyEventMutation("mkcore:victim_triggers", event ->
+                dispatchTriggers(event, context.getSource(), context.getTargetData()));
     }
 }

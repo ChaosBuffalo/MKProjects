@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.effects.triggers;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.combat.damage.MKDamageContext;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -154,6 +155,24 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         }
     }
 
+    public void applyDamageBonuses(MKDamageContext context) {
+        if (context.isFullyBlocked() || context.getAttackerData() == null) {
+            return;
+        }
+        DamageSource source = context.getSource();
+        LivingEntity livingTarget = context.getTarget();
+        LivingEntity livingSource = context.getAttacker();
+        if (livingSource == null) {
+            return;
+        }
+        if (source instanceof MKDamageSource mkSource) {
+            applyMKDamageBonus(context, mkSource, livingTarget, livingSource);
+        }
+        if (DamageUtils.isProjectileDamage(source)) {
+            applyProjectileDamageBonus(context, source, livingSource);
+        }
+    }
+
     public void applyCrits(LivingDamageEvent.Pre event, DamageSource source,
                            LivingEntity livingTarget, IMKEntityData sourceData) {
         if (DamageUtils.isFullyBlockedDamage(source, event.getNewDamage())) {
@@ -170,6 +189,27 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
 
         if (DamageUtils.isProjectileDamage(source)) {
             applyProjectileCrit(event, source, livingTarget, livingSource);
+        }
+    }
+
+    public void applyCrits(MKDamageContext context) {
+        if (context.isFullyBlocked() || context.getAttackerData() == null) {
+            return;
+        }
+        DamageSource source = context.getSource();
+        LivingEntity livingTarget = context.getTarget();
+        LivingEntity livingSource = context.getAttacker();
+        if (livingSource == null) {
+            return;
+        }
+        if (source instanceof MKDamageSource mkSource) {
+            applyMKCrit(context, mkSource, livingTarget, livingSource);
+        }
+        if (DamageUtils.isMinecraftPhysicalDamage(source)) {
+            applyVanillaMeleeCrit(context, source, livingTarget, livingSource, context.getAttackerData());
+        }
+        if (DamageUtils.isProjectileDamage(source)) {
+            applyProjectileCrit(context, source, livingTarget, livingSource);
         }
     }
 
@@ -202,6 +242,14 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         endTrigger(sourceData, POST_TAG);
     }
 
+    public void dispatchTriggers(MKDamageContext context) {
+        if (context.isFullyBlocked() || context.getAttackerData() == null || context.getAttacker() == null) {
+            return;
+        }
+        context.runLegacyEventMutation("mkcore:attacker_triggers", event ->
+                dispatchTriggers(event, context.getSource(), context.getTarget(), context.getAttackerData()));
+    }
+
     private static boolean wasBlocked(DamageSource source) {
         return source instanceof IMKDamageSourceExtensions ext && ext.wasBlocked();
     }
@@ -213,12 +261,38 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
                 livingSource, livingTarget, immediate, event.getNewDamage(), source.getModifierScaling()));
     }
 
+    private void applyMKDamageBonus(MKDamageContext context, MKDamageSource source,
+                                    LivingEntity livingTarget, LivingEntity livingSource) {
+        Entity immediate = source.getDirectEntity() != null ? source.getDirectEntity() : livingSource;
+        float newDamage = source.getMKDamageType().applyDamage(
+                livingSource, livingTarget, immediate, context.getWorkingDamage(), source.getModifierScaling());
+        context.setWorkingDamage(newDamage, "mkcore:attacker_damage_bonus");
+    }
+
     private void applyMKCrit(LivingDamageEvent.Pre event, MKDamageSource source,
                              LivingEntity livingTarget, LivingEntity livingSource) {
         Entity immediate = source.getDirectEntity() != null ? source.getDirectEntity() : livingSource;
         if (!wasBlocked(source) && source.getMKDamageType().rollCrit(livingSource, livingTarget, immediate)) {
             float newDamage = source.getMKDamageType().applyCritDamage(livingSource, livingTarget, immediate, event.getNewDamage());
             event.setNewDamage(newDamage);
+            switch (source.getOrigination()) {
+                case MK_ABILITY:
+                    sendAbilityCrit(livingTarget, livingSource, source, newDamage);
+                    break;
+                case DAMAGE_TYPE:
+                    sendEffectCrit(livingTarget, livingSource, source, newDamage);
+                    break;
+            }
+        }
+    }
+
+    private void applyMKCrit(MKDamageContext context, MKDamageSource source,
+                             LivingEntity livingTarget, LivingEntity livingSource) {
+        Entity immediate = source.getDirectEntity() != null ? source.getDirectEntity() : livingSource;
+        if (!wasBlocked(source) && source.getMKDamageType().rollCrit(livingSource, livingTarget, immediate)) {
+            float newDamage = source.getMKDamageType().applyCritDamage(
+                    livingSource, livingTarget, immediate, context.getWorkingDamage());
+            context.setWorkingDamage(newDamage, "mkcore:attacker_crit");
             switch (source.getOrigination()) {
                 case MK_ABILITY:
                     sendAbilityCrit(livingTarget, livingSource, source, newDamage);
@@ -261,6 +335,13 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         }
     }
 
+    private void applyProjectileDamageBonus(MKDamageContext context, DamageSource source, LivingEntity livingSource) {
+        if (DamageUtils.isNonMKProjectileDamage(source)) {
+            context.setWorkingDamage(context.getWorkingDamage() + (float) livingSource.getAttributeValue(MKAttributes.RANGED_DAMAGE),
+                    "mkcore:projectile_damage_bonus");
+        }
+    }
+
     private void applyProjectileCrit(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
                                      LivingEntity livingSource) {
         boolean blocked = wasBlocked(source);
@@ -268,6 +349,19 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         if (!blocked && projectile != null && CoreDamageTypes.RangedDamage.get().rollCrit(livingSource, livingTarget, projectile)) {
             float damage = CoreDamageTypes.RangedDamage.get().applyCritDamage(livingSource, livingTarget, projectile, event.getNewDamage());
             event.setNewDamage(damage);
+            sendCritPacket(livingTarget, livingSource,
+                    new CritMessagePacket(livingTarget.getId(), livingSource.getId(), damage, projectile.getId()));
+        }
+    }
+
+    private void applyProjectileCrit(MKDamageContext context, DamageSource source, LivingEntity livingTarget,
+                                     LivingEntity livingSource) {
+        boolean blocked = wasBlocked(source);
+        Entity projectile = source.getDirectEntity();
+        if (!blocked && projectile != null && CoreDamageTypes.RangedDamage.get().rollCrit(livingSource, livingTarget, projectile)) {
+            float damage = CoreDamageTypes.RangedDamage.get().applyCritDamage(
+                    livingSource, livingTarget, projectile, context.getWorkingDamage());
+            context.setWorkingDamage(damage, "mkcore:projectile_crit");
             sendCritPacket(livingTarget, livingSource,
                     new CritMessagePacket(livingTarget.getId(), livingSource.getId(), damage, projectile.getId()));
         }
@@ -283,6 +377,20 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
             if (CoreDamageTypes.MeleeDamage.get().rollCrit(livingSource, livingTarget)) {
                 float newDamage = CoreDamageTypes.MeleeDamage.get().applyCritDamage(livingSource, livingTarget, event.getNewDamage());
                 event.setNewDamage(newDamage);
+                sendCritPacket(livingTarget, livingSource,
+                        new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage));
+            }
+        }
+    }
+
+    private void applyVanillaMeleeCrit(MKDamageContext context, DamageSource source, LivingEntity livingTarget,
+                                       LivingEntity livingSource, IMKEntityData sourceData) {
+        boolean blocked = wasBlocked(source);
+        if (!blocked && sourceData instanceof MKPlayerData) {
+            if (CoreDamageTypes.MeleeDamage.get().rollCrit(livingSource, livingTarget)) {
+                float newDamage = CoreDamageTypes.MeleeDamage.get().applyCritDamage(
+                        livingSource, livingTarget, context.getWorkingDamage());
+                context.setWorkingDamage(newDamage, "mkcore:melee_crit");
                 sendCritPacket(livingTarget, livingSource,
                         new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage));
             }

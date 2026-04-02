@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.effects.triggers;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.combat.damage.MKDamageContext;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import net.minecraft.world.damagesource.DamageSource;
@@ -37,5 +38,10 @@ public class FallTriggers extends SpellTriggers.TriggerCollectionBase {
             return;
         fallTriggers.forEach(f -> f.apply(event, source, entity));
         endTrigger(entityData, TAG);
+    }
+
+    public void onLivingFall(MKDamageContext context) {
+        context.runLegacyEventMutation("mkcore:fall_trigger", event ->
+                onLivingFall(event, context.getSource(), context.getTarget()));
     }
 }
