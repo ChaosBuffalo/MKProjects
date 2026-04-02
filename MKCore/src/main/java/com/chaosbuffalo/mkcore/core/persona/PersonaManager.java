@@ -2,12 +2,11 @@ package com.chaosbuffalo.mkcore.core.persona;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
-import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
-import com.chaosbuffalo.mkcore.core.player.PlayerEvents;
-import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.mkcore.sync.types.SyncString;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,24 +14,24 @@ import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.*;
 
-public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSyncComponentProvider {
+public class PersonaManager implements IMKSerializable<CompoundTag>, ISyncGroupProvider {
     public static final String DEFAULT_PERSONA_NAME = "default";
     private static final List<IPersonaExtensionProvider> extensionProviders = new ArrayList<>(4);
     private final MKPlayerData playerData;
     private final Map<String, Persona> personas = new HashMap<>();
-    protected final PlayerSyncComponent sync = new PlayerSyncComponent();
+    protected final SyncGroup syncGroup = new SyncGroup();
     protected final SyncString activePersonaName = new SyncString(DEFAULT_PERSONA_NAME);
     protected Persona activePersona;
 
     public PersonaManager(MKPlayerData playerData) {
         this.playerData = playerData;
-        addSyncPrivate("#active", activePersonaName);
+        syncGroup.addPrivate("#active", activePersonaName);
         activePersona = getOrCreatePersona(activePersonaName.get());
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public Persona getActivePersona() {
@@ -44,14 +43,14 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
         activePersonaName.set(persona.getName());
     }
 
-    public void onJoinWorld() {
+    public void onJoinLevel() {
         dispatchActivation(getActivePersona());
     }
 
     protected Persona getOrCreatePersona(String name) {
         return personas.computeIfAbsent(name, newName -> {
             var newPersona = createNewPersona(newName);
-            addSyncChild(newName, newPersona);
+            syncGroup.addChild(newName, newPersona);
             return newPersona;
         });
     }
@@ -124,16 +123,12 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
         setActivePersona(persona);
         persona.activate();
 
-        var event = new PlayerEvents.PersonaEvent(persona);
-        playerData.events().trigger(PlayerEvents.PERSONA_ACTIVATE, event);
         NeoForge.EVENT_BUS.post(new PersonaEvent.PersonaActivated(persona));
     }
 
     private void dispatchDeactivation(Persona current) {
         current.deactivate();
 
-        var event = new PlayerEvents.PersonaEvent(current);
-        playerData.events().trigger(PlayerEvents.PERSONA_DEACTIVATE, event);
         NeoForge.EVENT_BUS.post(new PersonaEvent.PersonaDeactivated(current));
     }
 
@@ -143,7 +138,7 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
         CompoundTag personaRoot = new CompoundTag();
         personas.forEach((name, persona) -> personaRoot.put(name, persona.serialize(provider)));
         tag.put("personas", personaRoot);
-        tag.putString("activePersona", getActivePersona().getName());
+        tag.putString("activePersona", activePersonaName.get());
         return tag;
     }
 
@@ -152,14 +147,22 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
         CompoundTag personaRoot = tag.getCompound("personas");
         for (String name : personaRoot.getAllKeys()) {
             CompoundTag personaTag = personaRoot.getCompound(name);
-            Persona persona = createNewPersona(name);
+
+            Persona persona = getPersona(name);
+            boolean newlyCreatedPersona = persona == null;
+            if (persona == null) {
+                persona = createNewPersona(name);
+            }
             if (!persona.deserialize(provider, personaTag)) {
                 MKCore.LOGGER.error("Failed to deserialize persona {} for {}", name, playerData.getEntity());
+                personas.remove(name);
                 continue;
             }
 
-            addSyncChild(name, persona);
-            personas.put(name, persona);
+            if (newlyCreatedPersona) {
+                syncGroup.addChild(name, persona);
+                personas.put(name, persona);
+            }
         }
 
         String activePersonaName = tag.contains("activePersona") ?
@@ -179,9 +182,9 @@ public class PersonaManager implements IMKSerializable<CompoundTag>, IPlayerSync
 
         public ClientPersonaManager(MKPlayerData playerData) {
             super(playerData);
-            sync.setHandlerFunction((s, t, v) -> {
-                Persona persona = getOrCreatePersona(s);
-                return persona.getSyncComponent();
+            syncGroup.setDynamicMemberFactory((name, tag, visibility) -> {
+                Persona persona = getOrCreatePersona(name);
+                return persona.getSyncGroup();
             });
             activePersonaName.setCallback(newName -> {
                 activePersona = getOrCreatePersona(newName);

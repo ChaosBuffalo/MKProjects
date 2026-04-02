@@ -36,7 +36,6 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
                 BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("skill").forGetter(i -> i.skill)
         ).apply(builder, RangedSkillScalingEffect::new);
     });
-    public static final Codec<RangedSkillScalingEffect> CODEC = MAP_CODEC.codec();
 
     public static final ResourceLocation skillScaling = MKWeapons.id("ranged_skill_scaling");
     private final double baseDamage;
@@ -76,12 +75,11 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
 
     @Override
     public void onEntityEquip(LivingEntity entity) {
-        float skillLevel = MKAbility.getSkillLevel(entity, skill);
         AttributeInstance attr = entity.getAttribute(MKAttributes.RANGED_DAMAGE);
         if (attr != null) {
-            if (attr.getModifier(skillScaling) == null) {
-                attr.addTransientModifier(new AttributeModifier(skillScaling, skillLevel * baseDamage * MKConfig.SERVER.skillScalingMultiplier.getAsDouble(), AttributeModifier.Operation.ADD_VALUE));
-            }
+            float skillLevel = MKAbility.getSkillLevel(entity, skill);
+            double amount = skillLevel * baseDamage * MKConfig.SERVER.skillScalingMultiplier.getAsDouble();
+            attr.addOrUpdateTransientModifier(new AttributeModifier(skillScaling, amount, AttributeModifier.Operation.ADD_VALUE));
         }
     }
 
@@ -94,8 +92,9 @@ public class RangedSkillScalingEffect extends BaseRangedWeaponEffect {
     }
 
     @Override
-    public void onSkillChange(Player player) {
-        onEntityUnequip(player);
-        onEntityEquip(player);
+    public void onSkillChange(Player player, Holder<Attribute> skill) {
+        if (this.skill.is(skill)) {
+            onEntityEquip(player);
+        }
     }
 }

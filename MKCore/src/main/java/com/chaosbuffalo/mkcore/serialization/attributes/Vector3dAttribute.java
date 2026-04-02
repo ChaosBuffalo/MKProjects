@@ -7,7 +7,6 @@ import net.minecraft.world.phys.Vec3;
 
 public class Vector3dAttribute extends SimpleAttribute<Vec3> {
 
-
     public Vector3dAttribute(String name, Vec3 defaultValue) {
         super(name, defaultValue);
     }
@@ -28,25 +27,5 @@ public class Vector3dAttribute extends SimpleAttribute<Vec3> {
         double y = dynamic.get("y").asDouble(0.0);
         double z = dynamic.get("z").asDouble(0.0);
         setValue(new Vec3(x, y, z));
-    }
-
-    @Override
-    public void setValueFromString(String stringValue) {
-
-    }
-
-    @Override
-    public boolean validateString(String stringValue) {
-        return false;
-    }
-
-    @Override
-    public boolean isEmptyStringInput(String string) {
-        return false;
-    }
-
-    @Override
-    public String valueAsString() {
-        return String.format("%f,%f,%f", getValue().x, getValue().y, getValue().z);
     }
 }

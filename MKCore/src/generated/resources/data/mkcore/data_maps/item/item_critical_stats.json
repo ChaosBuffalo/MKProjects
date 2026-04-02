@@ -1,0 +1,24 @@
+{
+  "values": {
+    "#minecraft:axes": {
+      "crit_chance": 0.15,
+      "crit_multiplier": 1.0
+    },
+    "#minecraft:hoes": {
+      "crit_chance": 0.05,
+      "crit_multiplier": 0.5
+    },
+    "#minecraft:pickaxes": {
+      "crit_chance": 0.05,
+      "crit_multiplier": 0.5
+    },
+    "#minecraft:shovels": {
+      "crit_chance": 0.05,
+      "crit_multiplier": 0.5
+    },
+    "#minecraft:swords": {
+      "crit_chance": 0.05,
+      "crit_multiplier": 1.0
+    }
+  }
+}

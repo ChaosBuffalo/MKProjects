@@ -3,7 +3,9 @@ package com.chaosbuffalo.mkultra.data.generators;
 import com.chaosbuffalo.mknpc.data.providers.NpcLanguageProvider;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.*;
+import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
+import com.chaosbuffalo.mkweapons.items.weapon.types.RangedWeaponTypes;
 import net.minecraft.data.PackOutput;
 
 public class MKULangProvider extends NpcLanguageProvider {
@@ -14,52 +16,7 @@ public class MKULangProvider extends NpcLanguageProvider {
 
     @Override
     protected void addTranslations() {
-        addItem(MKUItems.ancientBronzeBoots, "Ancient Bronze Boots");
-        addItem(MKUItems.ancientBronzeHelmet, "Ancient Bronze Coif");
-        addItem(MKUItems.ancientBronzeChestplate, "Ancient Bronze Cuirass");
-        addItem(MKUItems.ancientBronzeLeggings, "Ancient Bronze Leggings");
-        addItem(MKUItems.ancientCardinalBoots, "Ancient Cardinal Boots");
-        addItem(MKUItems.ancientCardinalHelmet, "Ancient Cardinal Hood");
-        addItem(MKUItems.ancientCardinalLeggings, "Ancient Cardinal Pants");
-        addItem(MKUItems.ancientCardinalChestplate, "Ancient Cardinal Robes");
-        addItem(MKUItems.ancientPriestBoots, "Ancient Priest Boots");
-        addItem(MKUItems.ancientPriestHelmet, "Ancient Priest Hood");
-        addItem(MKUItems.ancientPriestLeggings, "Ancient Priest Pants");
-        addItem(MKUItems.ancientPriestChestplate, "Ancient Priest Robes");
-        addItem(MKUItems.destroyedTrooperBoots, "Destroyed Trooper Boots");
-        addItem(MKUItems.destroyedTrooperHelmet, "Destroyed Trooper Helmet");
-        addItem(MKUItems.destroyedTrooperChestplate, "Destroyed Trooper Chestplate");
-        addItem(MKUItems.destroyedTrooperLeggings, "Destroyed Trooper Leggings");
-        addItem(MKUItems.greenKnightBoots, "Green Knight Boots");
-        addItem(MKUItems.greenKnightHelmet, "Green Knight Helmet");
-        addItem(MKUItems.greenKnightLeggings, "Green Knight Leggings");
-        addItem(MKUItems.greenKnightChestplate, "Green Knight Chestplate");
-        addItem(MKUItems.trooperKnightBoots, "Salvaged Trooper Boots");
-        addItem(MKUItems.trooperKnightHelmet, "Salvaged Trooper Helmet");
-        addItem(MKUItems.trooperKnightChestplate, "Salvaged Trooper Chestplate");
-        addItem(MKUItems.trooperKnightLeggings, "Salvaged Trooper Leggings");
-        addItem(MKUItems.corruptedPigIronPlate, "Corrupted Pig Iron Plate");
-        addItem(MKUItems.lookupWeaponSupplier(MKUItems.BRONZE_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE), "Bronze Battleaxe");
-        addItem(MKUItems.lookupWeaponSupplier(MKUItems.BRONZE_TIER, MeleeWeaponTypes.DAGGER_TYPE), "Bronze Dagger");
-        addItem(MKUItems.lookupWeaponSupplier(MKUItems.BRONZE_TIER, MeleeWeaponTypes.KATANA_TYPE), "Bronze Katana");
-        addItem(MKUItems.lookupWeaponSupplier(MKUItems.BRONZE_TIER, MeleeWeaponTypes.LONGSWORD_TYPE), "Bronze Longsword");
-        addItem(MKUItems.lookupWeaponSupplier(MKUItems.BRONZE_TIER, MeleeWeaponTypes.GREATSWORD_TYPE), "Bronze Greatsword");
-        addItem(MKUItems.lookupWeaponSupplier(MKUItems.BRONZE_TIER, MeleeWeaponTypes.MACE_TYPE), "Bronze Mace");
-        addItem(MKUItems.lookupWeaponSupplier(MKUItems.BRONZE_TIER, MeleeWeaponTypes.SPEAR_TYPE), "Bronze Spear");
-        addItem(MKUItems.lookupWeaponSupplier(MKUItems.BRONZE_TIER, MeleeWeaponTypes.WARHAMMER_TYPE), "Bronze Warhammer");
-        addItem(MKUItems.lookupWeaponSupplier(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE), "Bronze Quarterstaff");
-        add("item.mkultra.longbow_bronze", "Bronze Longbow");
-        addItem(MKUItems.corruptedGauntlets, "Corrupted Gauntlets");
-        addItem(MKUItems.necrotideBand, "Necrotide Band");
-        addItem(MKUItems.seawovenScrap, "Seawoven Scrap");
-        addItem(MKUItems.seawovenBoots, "Seawoven Anklets");
-        addItem(MKUItems.seawovenHelmet, "Seawoven Circlet");
-        addItem(MKUItems.seawovenLeggings, "Seawoven Leggings");
-        addItem(MKUItems.seawovenChestplate, "Seawoven Robes");
-        addItem(MKUItems.themnianBoots, "Themnian Thigh-High Boots");
-        addItem(MKUItems.themnianHelmet, "Themnian Hood");
-        addItem(MKUItems.themnianChestplate, "Themnian Robes");
-        addItem(MKUItems.themnianLeggings, "Themnian Leggings");
+        addItems();
         add("mkultra.pet_name_format", "%s's %s");
         ability(MKUAbilities.HOLY_FIRE, "Holy Fire", "Summons a ring of fire with radius %s at the location, after %s seconds it starts dealing %s every %s seconds for %s seconds.");
         ability(MKUAbilities.HOLY_WORD, "Holy Word", "Strikes the target with the word of God, dealing %s and applying a stack of %s lasting %s seconds, when %s stacks are reached, stuns the target for %s seconds.");
@@ -152,5 +109,58 @@ public class MKULangProvider extends NpcLanguageProvider {
         talentTree(MKUltra.id("warrior"), "Warrior");
         ability(MKUAbilities.NECROTIDE_WARRIOR_SUMMON, "Summon Skeletal Warrior", "Summons a skeletal warrior to fight by your side.");
         faction(MKUFactions.FIRE_SHRINE_GUARDIANS_NAME, "Guardians of the Eternal Flame");
+    }
+
+    private void addItems() {
+        addItem(MKUItems.ancientBronzeBoots, "Ancient Bronze Boots");
+        addItem(MKUItems.ancientBronzeHelmet, "Ancient Bronze Coif");
+        addItem(MKUItems.ancientBronzeChestplate, "Ancient Bronze Cuirass");
+        addItem(MKUItems.ancientBronzeLeggings, "Ancient Bronze Leggings");
+        addItem(MKUItems.ancientCardinalBoots, "Ancient Cardinal Boots");
+        addItem(MKUItems.ancientCardinalHelmet, "Ancient Cardinal Hood");
+        addItem(MKUItems.ancientCardinalLeggings, "Ancient Cardinal Pants");
+        addItem(MKUItems.ancientCardinalChestplate, "Ancient Cardinal Robes");
+        addItem(MKUItems.ancientPriestBoots, "Ancient Priest Boots");
+        addItem(MKUItems.ancientPriestHelmet, "Ancient Priest Hood");
+        addItem(MKUItems.ancientPriestLeggings, "Ancient Priest Pants");
+        addItem(MKUItems.ancientPriestChestplate, "Ancient Priest Robes");
+        addItem(MKUItems.destroyedTrooperBoots, "Destroyed Trooper Boots");
+        addItem(MKUItems.destroyedTrooperHelmet, "Destroyed Trooper Helmet");
+        addItem(MKUItems.destroyedTrooperChestplate, "Destroyed Trooper Chestplate");
+        addItem(MKUItems.destroyedTrooperLeggings, "Destroyed Trooper Leggings");
+        addItem(MKUItems.greenKnightBoots, "Green Knight Boots");
+        addItem(MKUItems.greenKnightHelmet, "Green Knight Helmet");
+        addItem(MKUItems.greenKnightLeggings, "Green Knight Leggings");
+        addItem(MKUItems.greenKnightChestplate, "Green Knight Chestplate");
+        addItem(MKUItems.trooperKnightBoots, "Salvaged Trooper Boots");
+        addItem(MKUItems.trooperKnightHelmet, "Salvaged Trooper Helmet");
+        addItem(MKUItems.trooperKnightChestplate, "Salvaged Trooper Chestplate");
+        addItem(MKUItems.trooperKnightLeggings, "Salvaged Trooper Leggings");
+        addItem(MKUItems.corruptedPigIronPlate, "Corrupted Pig Iron Plate");
+
+
+        add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE), "Bronze Battleaxe");
+        add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.DAGGER_TYPE), "Bronze Dagger");
+        add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.KATANA_TYPE), "Bronze Katana");
+        add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.LONGSWORD_TYPE), "Bronze Longsword");
+        add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.GREATSWORD_TYPE), "Bronze Greatsword");
+        add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.MACE_TYPE), "Bronze Mace");
+        add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.SPEAR_TYPE), "Bronze Spear");
+        add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.WARHAMMER_TYPE), "Bronze Warhammer");
+        add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE), "Bronze Quarterstaff");
+        add(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, RangedWeaponTypes.LONGBOW), "Bronze Longbow");
+
+
+        addItem(MKUItems.corruptedGauntlets, "Corrupted Gauntlets");
+        addItem(MKUItems.necrotideBand, "Necrotide Band");
+        addItem(MKUItems.seawovenScrap, "Seawoven Scrap");
+        addItem(MKUItems.seawovenBoots, "Seawoven Anklets");
+        addItem(MKUItems.seawovenHelmet, "Seawoven Circlet");
+        addItem(MKUItems.seawovenLeggings, "Seawoven Leggings");
+        addItem(MKUItems.seawovenChestplate, "Seawoven Robes");
+        addItem(MKUItems.themnianBoots, "Themnian Thigh-High Boots");
+        addItem(MKUItems.themnianHelmet, "Themnian Hood");
+        addItem(MKUItems.themnianChestplate, "Themnian Robes");
+        addItem(MKUItems.themnianLeggings, "Themnian Leggings");
     }
 }

@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 
-public class FloatAttribute implements ISerializableAttribute<Float> {
+public class FloatAttribute implements ISerializableAttribute<Float>, IGuiDisplayAttribute {
     private final String name;
     private float currentValue;
     private float defaultValue;

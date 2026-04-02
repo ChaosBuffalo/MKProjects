@@ -1,9 +1,7 @@
 package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
 
 public class MKCombatFormulas {
 
@@ -44,10 +42,6 @@ public class MKCombatFormulas {
     public static int applyBuffDurationModifier(IMKEntityData entityData, float amount) {
         float mod = entityData.getStats().getBuffDurationModifier();
         return (int) (amount * mod);
-    }
-
-    public static float getCritChanceForItem(ItemStack item) {
-        return ItemUtils.getCritChanceForItem(item);
     }
 
     public static boolean checkCrit(LivingEntity entity, float chance) {

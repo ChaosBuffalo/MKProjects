@@ -2,7 +2,7 @@ package com.chaosbuffalo.mkcore.serialization.attributes;
 
 import com.chaosbuffalo.mkcore.utils.MathUtils;
 
-public class ColorFloatAttribute extends FloatAttribute {
+public class ColorFloatAttribute extends FloatAttribute implements IGuiDisplayAttribute {
 
     public ColorFloatAttribute(String name, float defaultValue) {
         super(name, defaultValue);

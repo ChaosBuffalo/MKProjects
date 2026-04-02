@@ -2,9 +2,10 @@ package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ParticleEffectInstance;
-import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import net.minecraft.nbt.*;
 import net.minecraft.world.entity.Entity;
 
@@ -47,7 +48,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
 
 
     @Override
-    public void setNotifier(ISyncNotifier notifier) {
+    public void setSyncUpdateNotifier(ISyncNotifier notifier) {
 
     }
 
@@ -67,17 +68,19 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
     }
 
     @Override
-    public @Nullable Tag writeFullValue(SyncContext context) {
-        return ISyncObject.notImplementedByDesign(this);
+    public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
+        ISyncObject.notImplementedByDesign(this);
+        return null;
     }
 
     @Override
-    public @Nullable Tag writeUpdateValue(SyncContext context) {
-        return ISyncObject.notImplementedByDesign(this);
+    public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
+        ISyncObject.notImplementedByDesign(this);
+        return null;
     }
 
     @Override
-    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+    public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
         if (valueTag instanceof CompoundTag tag) {
             if (tag.contains("effectInstances")) {
                 instanceMap.clear();
@@ -125,7 +128,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
             boolean wasAdded = super.addParticleInstance(instance);
             if (wasAdded) {
                 toAddDirty.add(instance);
-                parentNotifier.notifyUpdate(this);
+                parentNotifier.notifyUpdate();
             }
             return wasAdded;
         }
@@ -134,7 +137,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         public void removeParticleInstance(UUID uuid) {
             super.removeParticleInstance(uuid);
             toRemoveDirty.add(uuid);
-            parentNotifier.notifyUpdate(this);
+            parentNotifier.notifyUpdate();
         }
 
         @Override
@@ -149,7 +152,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         }
 
         @Override
-        public @Nullable Tag writeFullValue(SyncContext context) {
+        public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
             if (instanceMap.isEmpty())
                 return null;
 
@@ -166,7 +169,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         }
 
         @Override
-        public @Nullable Tag writeUpdateValue(SyncContext context) {
+        public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
             if (toRemoveDirty.isEmpty() && toAddDirty.isEmpty())
                 return null;
 
@@ -194,7 +197,7 @@ public class ParticleEffectInstanceTracker implements ISyncObject {
         }
 
         @Override
-        public void setNotifier(ISyncNotifier notifier) {
+        public void setSyncUpdateNotifier(ISyncNotifier notifier) {
             parentNotifier = notifier;
         }
     }

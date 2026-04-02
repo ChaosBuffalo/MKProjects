@@ -1,10 +1,10 @@
 package com.chaosbuffalo.mkcore.core.entity;
 
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
-import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -16,8 +16,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EntityRiderModule implements IPlayerSyncComponentProvider {
-    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+public class EntityRiderModule implements ISyncGroupProvider {
+    private final SyncGroup syncGroup = new SyncGroup();
     protected final IMKEntityData entityData;
     protected final Map<Integer, EntityRider> riders = new HashMap<>();
     protected final SyncMapUpdater<Integer, EntityRider> riderSync = new SyncMapUpdater<>(riders,
@@ -28,7 +28,7 @@ public class EntityRiderModule implements IPlayerSyncComponentProvider {
     public EntityRiderModule(IMKEntityData entityData) {
         this.entityData = entityData;
         riderSync.setOnRemoveCallback(this::onClientRemove);
-        addSyncPublic("riders", riderSync);
+        syncGroup.addPublic("riders", riderSync);
     }
 
     public void addRider(Entity rider) {
@@ -74,8 +74,8 @@ public class EntityRiderModule implements IPlayerSyncComponentProvider {
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public static class EntityRider implements IMKSerializable<CompoundTag> {

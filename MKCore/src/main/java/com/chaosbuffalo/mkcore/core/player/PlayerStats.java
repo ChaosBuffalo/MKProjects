@@ -2,11 +2,9 @@ package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entity.EntityStats;
-import com.chaosbuffalo.mkcore.core.player.events.EventPriorities;
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -16,15 +14,11 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.UUID;
-
 
 public class PlayerStats extends EntityStats {
-    private static final UUID EV_ID = UUID.fromString("77c81f2b-4edc-4341-9926-28983fc0e4c3");
 
     public PlayerStats(MKPlayerData playerData) {
         super(playerData);
-        playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated, EventPriorities.CONSUMER_PERSONA);
     }
 
     @Override
@@ -65,18 +59,6 @@ public class PlayerStats extends EntityStats {
         });
     }
 
-    public void refreshStats() {
-        if (getHealth() > getMaxHealth()) {
-            setHealth(getHealth());
-        }
-        if (getMana() > getMaxMana()) {
-            setMana(getMana());
-        }
-        if (getPoise() > getMaxPoise()) {
-            setPoise(getPoise());
-        }
-    }
-
     // For now, this is the same formula as MobStats.doManaRegen but rises smoother for a better visual
     @Override
     protected void doManaRegen(float current, float max, float regenRate) {
@@ -105,10 +87,6 @@ public class PlayerStats extends EntityStats {
 
         float newPoise = Math.min(current + poisePerTick, max);
         setPoise(newPoise, newPoise >= max);
-    }
-
-    private void onPersonaActivated(PlayerEvents.PersonaEvent event) {
-        refreshStats();
     }
 
     public CompoundTag serialize(HolderLookup.Provider provider) {

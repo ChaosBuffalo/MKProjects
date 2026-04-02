@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkweapons.init.MKWeaponsCommands;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsParticles;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
+import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.neoforged.bus.api.IEventBus;
@@ -24,6 +25,7 @@ public class MKWeaponsRegistry {
         WeaponsComponents.register(modBus);
 
         modBus.addListener(MKWeaponsRegistry::createDataPackRegistries);
+        MeleeWeaponTypes.registerWeaponTypes();
     }
 
     public static void createDataPackRegistries(DataPackRegistryEvent.NewRegistry event) {

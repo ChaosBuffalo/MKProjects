@@ -87,7 +87,7 @@ public class PlayerFactionHandler implements IPlayerFaction {
                     this::idToHolder,
                     this::createNewEntry
             );
-            persona.addSyncPrivate("factions", factionUpdater);
+            persona.getSyncGroup().addPrivate("factions", factionUpdater);
         }
 
         private <T> String holderToId(Holder<T> factionHolder) {

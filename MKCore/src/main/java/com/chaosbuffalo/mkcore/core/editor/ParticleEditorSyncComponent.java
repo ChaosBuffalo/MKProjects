@@ -4,9 +4,10 @@ import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.ParticleAnimationEditorSyncPacket;
-import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -35,7 +36,7 @@ public class ParticleEditorSyncComponent implements ISyncObject {
     }
 
     @Override
-    public void setNotifier(ISyncNotifier notifier) {
+    public void setSyncUpdateNotifier(ISyncNotifier notifier) {
         parentNotifier = notifier;
     }
 
@@ -69,7 +70,7 @@ public class ParticleEditorSyncComponent implements ISyncObject {
     }
 
     @Override
-    public @Nullable Tag writeFullValue(SyncContext context) {
+    public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
         CompoundTag syncTag = new CompoundTag();
         if (animation != null) {
             syncTag.put("animation", animation.serialize(NbtOps.INSTANCE));
@@ -79,16 +80,16 @@ public class ParticleEditorSyncComponent implements ISyncObject {
     }
 
     @Override
-    public @Nullable Tag writeUpdateValue(SyncContext context) {
+    public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
         if (isDirty()) {
             dirty = false;
-            return writeFullValue(context);
+            return writeFullValue(context, visibility);
         }
         return null;
     }
 
     @Override
-    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+    public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
         if (valueTag instanceof CompoundTag syncTag) {
             if (syncTag.contains("animation")) {
                 this.animation = ParticleAnimation.deserializeFromDynamic(

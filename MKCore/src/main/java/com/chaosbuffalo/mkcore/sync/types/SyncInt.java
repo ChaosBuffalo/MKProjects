@@ -1,8 +1,9 @@
 package com.chaosbuffalo.mkcore.sync.types;
 
-import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.Tag;
 
@@ -18,14 +19,14 @@ public class SyncInt implements ISyncObject {
     }
 
     public void set(int value) {
-        set(value, true);
+        set(value, value != this.value);
     }
 
     public void set(int value, boolean setDirty) {
         this.value = value;
         if (setDirty) {
             this.dirty = true;
-            parentNotifier.notifyUpdate(this);
+            parentNotifier.notifyUpdate();
         }
     }
 
@@ -38,7 +39,7 @@ public class SyncInt implements ISyncObject {
     }
 
     @Override
-    public void setNotifier(ISyncNotifier notifier) {
+    public void setSyncUpdateNotifier(ISyncNotifier notifier) {
         parentNotifier = notifier;
     }
 
@@ -53,20 +54,20 @@ public class SyncInt implements ISyncObject {
     }
 
     @Override
-    public @Nullable Tag writeFullValue(SyncContext context) {
+    public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
+        if (valueTag instanceof IntTag intTag) {
+            value = intTag.getAsInt();
+        }
+    }
+
+    @Override
+    public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
         return IntTag.valueOf(value);
     }
 
     @Override
-    public @Nullable Tag writeUpdateValue(SyncContext context) {
+    public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
         dirty = false;
-        return writeFullValue(context);
-    }
-
-    @Override
-    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
-        if (valueTag instanceof IntTag intTag) {
-            value = intTag.getAsInt();
-        }
+        return writeFullValue(context, visibility);
     }
 }

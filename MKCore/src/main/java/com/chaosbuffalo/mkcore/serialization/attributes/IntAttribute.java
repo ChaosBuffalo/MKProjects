@@ -6,7 +6,7 @@ import com.mojang.serialization.DynamicOps;
 
 import java.util.function.Consumer;
 
-public class IntAttribute implements ISerializableAttribute<Integer> {
+public class IntAttribute implements ISerializableAttribute<Integer>, IGuiDisplayAttribute {
     private final String name;
     private int currentValue;
     private int defaultValue;

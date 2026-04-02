@@ -8,6 +8,8 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncArrayListUpdater;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
@@ -26,10 +28,10 @@ import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class AbilityGroup implements IPlayerSyncComponentProvider {
+public class AbilityGroup implements ISyncGroupProvider {
     protected final Persona persona;
     protected final MKPlayerData playerData;
-    protected final PlayerSyncComponent sync = new PlayerSyncComponent();
+    protected final SyncGroup syncGroup = new SyncGroup();
     private final List<ResourceLocation> activeAbilities;
     private final SyncArrayListUpdater<ResourceLocation> activeUpdater;
     private final SyncInt slots;
@@ -40,15 +42,15 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         this.playerData = persona.getPlayerData();
         this.groupId = groupId;
         activeAbilities = NonNullList.withSize(groupId.getMaxSlots(), MKCoreRegistry.INVALID_ABILITY);
-        activeUpdater = SyncArrayListUpdater.resourceLocations(activeAbilities);
+        activeUpdater = SyncArrayListUpdater.resourceLocations(activeAbilities, MKCoreRegistry.INVALID_ABILITY);
         slots = new SyncInt(groupId.getDefaultSlots());
-        addSyncPrivate("active", activeUpdater);
-        addSyncPrivate("slots", slots);
+        syncGroup.addPrivate("active", activeUpdater);
+        syncGroup.addPrivate("slots", slots);
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public List<ResourceLocation> getAbilities() {
@@ -109,7 +111,12 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
     }
 
     protected int getFirstFreeAbilitySlot() {
-        return getAbilitySlot(MKCoreRegistry.INVALID_ABILITY);
+        for (int i = 0; i < getCurrentSlotCount(); i++) {
+            if (activeAbilities.get(i).equals(MKCoreRegistry.INVALID_ABILITY)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public boolean tryEquip(ResourceLocation abilityId) {
@@ -144,11 +151,17 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
 
     protected void onAbilityAdded(int index, MKAbilityInfo abilityInfo) {
 //        MKCore.LOGGER.debug("onAbilityAdded({}, {})", index, abilityInfo);
+        if (abilityInfo == null) {
+            return;
+        }
         abilityInfo.getAbility().onAbilityGroupAdded(playerData, abilityInfo);
     }
 
     protected void onAbilityRemoved(int index, MKAbilityInfo abilityInfo) {
 //        MKCore.LOGGER.debug("onAbilityRemoved({}, {})", index, abilityInfo);
+        if (abilityInfo == null) {
+            return;
+        }
         abilityInfo.getAbility().onAbilityGroupRemoved(playerData, abilityInfo);
     }
 
@@ -170,7 +183,9 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
 //            MKCore.LOGGER.info("setSlot - clearing {} from {}", index, currentAbilityId);
             MKAbilityInfo oldInfo = getAbilityInfo(index);
             setIndex(index, abilityId);
-            onAbilityRemoved(index, oldInfo);
+            if (oldInfo != null) {
+                onAbilityRemoved(index, oldInfo);
+            }
             return;
         }
 
@@ -192,16 +207,26 @@ public class AbilityGroup implements IPlayerSyncComponentProvider {
         if (currentAbilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
             setIndex(index, abilityId);
             MKAbilityInfo newInfo = getAbilityInfo(index);
-            onAbilityAdded(index, newInfo);
+            if (newInfo != null) {
+                onAbilityAdded(index, newInfo);
+            } else {
+                MKCore.LOGGER.warn("Failed to resolve ability {} for {} slot {} after slotting", abilityId, groupId, index);
+            }
             return;
         }
 
         // New ability is not current slotted and is replacing an existing ability
         MKAbilityInfo oldInfo = getAbilityInfo(index);
         setIndex(index, abilityId);
-        onAbilityRemoved(index, oldInfo);
+        if (oldInfo != null) {
+            onAbilityRemoved(index, oldInfo);
+        }
         MKAbilityInfo newInfo = getAbilityInfo(index);
-        onAbilityAdded(index, newInfo);
+        if (newInfo != null) {
+            onAbilityAdded(index, newInfo);
+        } else {
+            MKCore.LOGGER.warn("Failed to resolve ability {} for {} slot {} after replacing {}", abilityId, groupId, index, currentAbilityId);
+        }
     }
 
     private boolean validateAbilityForSlot(int index, ResourceLocation abilityId) {

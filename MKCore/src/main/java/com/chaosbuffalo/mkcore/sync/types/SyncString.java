@@ -1,8 +1,9 @@
 package com.chaosbuffalo.mkcore.sync.types;
 
-import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 
@@ -32,7 +33,7 @@ public class SyncString implements ISyncObject {
         this.value = value;
         if (setDirty) {
             this.dirty = true;
-            parentNotifier.notifyUpdate(this);
+            parentNotifier.notifyUpdate();
         }
     }
 
@@ -41,7 +42,7 @@ public class SyncString implements ISyncObject {
     }
 
     @Override
-    public void setNotifier(ISyncNotifier notifier) {
+    public void setSyncUpdateNotifier(ISyncNotifier notifier) {
         parentNotifier = notifier;
     }
 
@@ -56,18 +57,18 @@ public class SyncString implements ISyncObject {
     }
 
     @Override
-    public @Nullable Tag writeFullValue(SyncContext context) {
+    public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
         return StringTag.valueOf(value);
     }
 
     @Override
-    public @Nullable Tag writeUpdateValue(SyncContext context) {
+    public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
         dirty = false;
-        return writeFullValue(context);
+        return writeFullValue(context, visibility);
     }
 
     @Override
-    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+    public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
         if (valueTag instanceof StringTag stringTag) {
             value = stringTag.getAsString();
             if (onSetCallback != null) {

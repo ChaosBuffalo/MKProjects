@@ -37,6 +37,11 @@ public class PlayerRecordDispatcher<T extends IRecordInstance<T>> {
 //            MKCore.LOGGER.debug("PlayerRecordDispatcher.onPersonaActivated.onRecordLoaded {}", r);
             getRecordHandler(r).onRecordLoaded(r);
         });
-        typeHandlerMap.values().forEach(IRecordTypeHandler::onRecordLoadingFinished);
+        typeHandlerMap.values().forEach(IRecordTypeHandler::onPersonaActivated);
+    }
+
+    public void onPersonaDeactivated() {
+        typeHandlerMap.values().forEach(IRecordTypeHandler::onPersonaDeactivated);
+        typeHandlerMap.clear();
     }
 }

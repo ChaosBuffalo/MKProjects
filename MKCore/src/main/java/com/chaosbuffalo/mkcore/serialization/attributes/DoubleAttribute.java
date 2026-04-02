@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 
-public class DoubleAttribute implements ISerializableAttribute<Double> {
+public class DoubleAttribute implements ISerializableAttribute<Double>, IGuiDisplayAttribute {
     private final String name;
     private double currentValue;
     private double defaultValue;

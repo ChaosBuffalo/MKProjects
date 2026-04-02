@@ -8,45 +8,54 @@ import com.chaosbuffalo.mkweapons.items.effects.ranged.IRangedWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.effects.ranged.RangedSkillScalingEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.tier.IMKTier;
+import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
+import com.chaosbuffalo.mkweapons.items.weapon.types.IRangedWeaponType;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.ConcatenatedListView;
 import net.neoforged.neoforge.event.EventHooks;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillChange {
     private final List<IRangedWeaponEffect> weaponEffects = new ArrayList<>();
     private final IMKTier tier;
-    private final float baseDrawTime;
-    private final float baseLaunchVel;
+    private final IRangedWeaponType rangedType;
 
-    public MKBow(Properties builder, IMKTier tier, float baseDrawTime,
-                 float baseLaunchVel, IRangedWeaponEffect... weaponEffects) {
+    public MKBow(Properties builder, IMKTier tier, IRangedWeaponType rangedWeaponType) {
         super(builder);
-        this.baseDrawTime = baseDrawTime;
-        this.baseLaunchVel = baseLaunchVel;
-        this.weaponEffects.addAll(Arrays.asList(weaponEffects));
-        this.weaponEffects.add(new RangedSkillScalingEffect(5.0 + tier.getAttackDamageBonus(), MKAttributes.MARKSMANSHIP));
         this.tier = tier;
+        this.rangedType = rangedWeaponType;
+        this.weaponEffects.addAll(tier.getRangedEffects());
+        this.weaponEffects.add(new RangedSkillScalingEffect(
+                rangedWeaponType.getBaseDamage() + tier.getAttackDamageBonus(), MKAttributes.MARKSMANSHIP));
+    }
+
+    public IRangedWeaponType getRangedWeaponType() {
+        return rangedType;
     }
 
     public float getDrawTime(ItemStack item, LivingEntity entity) {
-        float time = baseDrawTime;
+        float time = rangedType.getBaseDrawTime();
         for (IRangedWeaponEffect weaponEffect : getWeaponEffects(item)) {
             time = weaponEffect.modifyDrawTime(time, item, entity);
         }
@@ -63,7 +72,7 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
     }
 
     public float getLaunchVelocity(ItemStack stack, LivingEntity entity) {
-        float vel = baseLaunchVel;
+        float vel = rangedType.getBaseLaunchVelocity();
         for (IRangedWeaponEffect weaponEffect : getWeaponEffects(stack)) {
             vel = weaponEffect.modifyLaunchVelocity(vel, stack, entity);
         }
@@ -141,7 +150,25 @@ public class MKBow extends BowItem implements IMKRangedWeapon, IReceivesSkillCha
     }
 
     @Override
-    public void onSkillChange(ItemStack itemStack, Player playerEntity) {
-        getWeaponEffects(itemStack).forEach(x -> x.onSkillChange(playerEntity));
+    public void onSkillChange(ItemStack itemStack, Player playerEntity, Holder<Attribute> skill) {
+        getWeaponEffects(itemStack).forEach(x -> x.onSkillChange(playerEntity, skill));
+    }
+
+    public static ItemAttributeModifiers.Builder createAttributes(IMKTier tier, IRangedWeaponType weaponType) {
+        ResourceLocation modifierId = weaponType.getName().withSuffix("_" + tier.getName());
+        return ItemAttributeModifiers.builder()
+                .add(
+                        MKAttributes.RANGED_CRIT,
+                        new AttributeModifier(
+                                modifierId, 0.05, AttributeModifier.Operation.ADD_VALUE
+                        ),
+                        EquipmentSlotGroup.MAINHAND
+                ).add(
+                        MKAttributes.RANGED_CRIT_MULTIPLIER,
+                        new AttributeModifier(
+                                modifierId, 0.25, AttributeModifier.Operation.ADD_VALUE
+                        ),
+                        EquipmentSlotGroup.MAINHAND
+                );
     }
 }

@@ -23,10 +23,6 @@ public class TalentRecord implements IRecordInstance<TalentRecord> {
         return node;
     }
 
-    public TalentTreeRecord getTreeRecord() {
-        return treeRecord;
-    }
-
     public ResourceLocation getTreeId() {
         return treeRecord.getTreeId().location();
     }

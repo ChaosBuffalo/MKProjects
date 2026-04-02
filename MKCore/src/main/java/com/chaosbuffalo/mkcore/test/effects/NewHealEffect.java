@@ -50,11 +50,7 @@ public class NewHealEffect extends MKEffect {
         @Override
         public boolean performEffect(IMKEntityData targetData, MKActiveEffect activeEffect) {
             if (activeEffect.getSourceEntity() == null) {
-                MKCore.LOGGER.debug("NewHealEffect.performEffect before trying to recover source {} = {} {}",
-                        activeEffect.getSourceId(), activeEffect.getSourceEntity(), activeEffect.getDirectEntity());
-                activeEffect.recoverState(targetData);
-                MKCore.LOGGER.debug("NewHealEffect.performEffect after trying to recover source {} = {} {}",
-                        activeEffect.getSourceId(), activeEffect.getSourceEntity(), activeEffect.getDirectEntity());
+                return false;
             }
 
             LivingEntity target = targetData.getEntity();

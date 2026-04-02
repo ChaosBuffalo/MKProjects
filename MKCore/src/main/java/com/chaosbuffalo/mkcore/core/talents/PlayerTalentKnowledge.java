@@ -4,13 +4,13 @@ import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
-import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
-import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.core.records.PlayerRecordDispatcher;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
-import com.chaosbuffalo.mkcore.sync.SyncGroup;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
@@ -31,9 +31,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
+public class PlayerTalentKnowledge implements ISyncGroupProvider {
     private final MKPlayerData playerData;
-    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+    private final SyncGroup syncGroup = new SyncGroup();
     private final SyncInt talentPoints = new SyncInt(0);
     private final SyncInt totalTalentPoints = new SyncInt(0);
     private final Map<ResourceLocation, TalentTreeRecord> talentTreeRecordMap = new HashMap<>();
@@ -44,11 +44,11 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     public PlayerTalentKnowledge(Persona persona) {
         this.playerData = persona.getPlayerData();
         dispatcher = new PlayerRecordDispatcher<>(persona, this::getKnownTalentsStream);
-        addSyncPrivate("points", talentPoints);
-        addSyncPrivate("totalPoints", totalTalentPoints);
-        addSyncPrivate("xp", talentXp);
+        syncGroup.addPrivate("points", talentPoints);
+        syncGroup.addPrivate("totalPoints", totalTalentPoints);
+        syncGroup.addPrivate("xp", talentXp);
         treeGroup = new TreeSyncGroup();
-        addSyncPrivate("trees", treeGroup);
+        syncGroup.addChild("trees", treeGroup);
         unlockDefaultTrees();
     }
 
@@ -62,13 +62,19 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
                         MKConfig.SERVER.scalingXpPerTalentPoint.get());
     }
 
+    public float getXpProgressPercent() {
+        int currentXp = getTalentXp();
+        int nextLevel = getXpToNextLevel();
+        return (float) currentXp / (float) nextLevel;
+    }
+
     public boolean shouldLevel() {
         return getTalentXp() >= getXpToNextLevel();
     }
 
     public void addTalentXp(int value) {
         int maxPoints = MKConfig.SERVER.maxTalentPoints.get();
-        if (maxPoints > 0 && getTotalTalentPoints() >= MKConfig.SERVER.maxTalentPoints.get()) {
+        if (maxPoints > 0 && getTotalTalentPoints() >= maxPoints) {
             return;
         }
         talentXp.add(value);
@@ -77,7 +83,7 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
         }
     }
 
-    public void performLevel() {
+    private void performLevel() {
         if (playerData.isServerSide()) {
             talentXp.add(-getXpToNextLevel());
             grantTalentPoints(1);
@@ -88,8 +94,8 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public int getTotalTalentPoints() {
@@ -116,15 +122,11 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
     }
 
     public boolean unlockTree(ResourceKey<TalentTreeDefinition> treeId) {
-        return unlockTree(treeId, true);
-    }
-
-    private boolean unlockTree(ResourceKey<TalentTreeDefinition> treeId, boolean sendUpdate) {
         var record = unlockTreeInternal(treeId.location());
         if (record == null) {
             return false;
         }
-        treeGroup.add(treeId.location().toString(), record.getUpdater(), sendUpdate);
+        treeGroup.addTree(record, true);
         return true;
     }
 
@@ -278,13 +280,21 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
         TalentTreeRecord treeRecord = tree.createRecord(treeId);
         if (!treeRecord.deserialize(dyn)) {
             MKCore.LOGGER.error("Player {} had invalid talent layout for tree {}. Points will be refunded.", playerData.getEntity(), treeId);
+            // Failed to deserialize tree record, so unlock a blank record
+            treeRecord = tree.createRecord(treeId);
         } else {
-            // If the tree deserializes properly subtract the points spent in it from the total points
-            talentPoints.add(-treeRecord.getPointsSpent());
-
-            talentTreeRecordMap.put(treeId, treeRecord);
-            treeGroup.add(treeId.toString(), treeRecord.getUpdater(), false);
+            // Points parsed out correctly, now check if the player can afford it
+            int pointsNeeded = treeRecord.getPointsSpent();
+            if (pointsNeeded <= talentPoints.get()) {
+                // Subtract the points spent in it from the available points
+                talentPoints.add(-pointsNeeded);
+            } else {
+                // Couldn't afford the tree, so just unlock the tree and consume no points
+                treeRecord = tree.createRecord(treeId);
+            }
         }
+        talentTreeRecordMap.put(treeId, treeRecord);
+        treeGroup.addTree(treeRecord, false);
     }
 
     public Tag serializeNBT(HolderLookup.Provider provider) {
@@ -300,18 +310,27 @@ public class PlayerTalentKnowledge implements IPlayerSyncComponentProvider {
         dispatcher.onPersonaActivated();
     }
 
+    public void onPersonaDeactivated() {
+        dispatcher.onPersonaDeactivated();
+    }
+
     class TreeSyncGroup extends SyncGroup {
         public TreeSyncGroup() {
-            setUnhandledKeyHandler(this::handleUnhandled);
+            setDynamicMemberFactory(this::handleNewTreeRecord);
         }
 
-        private ISyncObject handleUnhandled(String name, Tag tag) {
+        private ISyncObject handleNewTreeRecord(String name, Tag tag, SyncVisibility visibility) {
             ResourceLocation treeId = ResourceLocation.tryParse(name);
             if (treeId == null)
                 return null;
 
             var record = unlockTreeInternal(treeId);
             return record != null ? record.getUpdater() : null;
+        }
+
+        void addTree(TalentTreeRecord treeRecord, boolean sendUpdate) {
+            var treeId = treeRecord.getTreeId().location();
+            add(treeId.toString(), treeRecord.getUpdater(), SyncVisibility.Private, sendUpdate);
         }
     }
 }

@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkcore.serialization.attributes;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 
-public class BooleanAttribute implements ISerializableAttribute<Boolean> {
+public class BooleanAttribute implements ISerializableAttribute<Boolean>, IGuiDisplayAttribute {
     private final String name;
     private boolean currentValue;
     private boolean defaultValue;

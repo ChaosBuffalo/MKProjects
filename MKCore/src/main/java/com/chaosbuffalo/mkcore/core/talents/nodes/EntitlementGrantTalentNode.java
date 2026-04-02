@@ -43,6 +43,6 @@ public class EntitlementGrantTalentNode extends TalentNode {
     }
 
     public EntitlementInstance createInstance() {
-        return new EntitlementInstance(entitlement, nodeId);
+        return new EntitlementInstance(entitlement, nodeId, false);
     }
 }

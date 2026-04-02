@@ -80,8 +80,24 @@ public class PlayerAttributeMonitor {
 
     public void syncInitial() {
         if (playerData.getEntity() instanceof ServerPlayer serverPlayer) {
+            fixInitialHealth(serverPlayer);
             sendInitialPrivateAttributes(serverPlayer);
             AttributeMapExtension.setModificationHandler(serverPlayer, this::onAttributeModified);
+        }
+    }
+
+    /**
+     * Restores the player's saved health after other systems have applied transient modifiers.
+     *
+     * @param serverPlayer the player whose saved health value is restored
+     */
+    private void fixInitialHealth(ServerPlayer serverPlayer) {
+        var data = serverPlayer.getPersistentData();
+        if (data.contains("mkcore$SavedHealth")) {
+            float original = data.getFloat("mkcore$SavedHealth");
+            data.remove("mkcore$SavedHealth");
+
+            serverPlayer.setHealth(original);
         }
     }
 

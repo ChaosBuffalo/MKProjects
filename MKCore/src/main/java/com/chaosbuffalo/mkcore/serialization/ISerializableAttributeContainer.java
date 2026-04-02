@@ -14,6 +14,10 @@ public interface ISerializableAttributeContainer {
 
     List<ISerializableAttribute<?>> getAttributes();
 
+    default Map<String, ISerializableAttribute<?>> getAttributesAsMap() {
+        return getAttributes().stream().collect(Collectors.toMap(ISerializableAttribute::getName, Function.identity()));
+    }
+
     void addAttribute(ISerializableAttribute<?> attribute);
 
     void addAttributes(ISerializableAttribute<?>... attributes);

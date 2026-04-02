@@ -4,7 +4,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
 
-public class ResourceLocationAttribute extends SimpleAttribute<ResourceLocation> {
+public class ResourceLocationAttribute extends SimpleAttribute<ResourceLocation> implements IGuiDisplayAttribute {
 
 
     public ResourceLocationAttribute(String name, ResourceLocation defaultValue) {

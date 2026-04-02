@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkcore.serialization.attributes;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 
-public class StringAttribute extends SimpleAttribute<String> {
+public class StringAttribute extends SimpleAttribute<String> implements IGuiDisplayAttribute {
 
     public StringAttribute(String name, String defaultValue) {
         super(name, defaultValue);

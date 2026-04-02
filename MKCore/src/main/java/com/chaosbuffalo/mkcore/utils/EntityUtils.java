@@ -4,40 +4,20 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
-import com.chaosbuffalo.mkcore.math.AxisAngle;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.Arrow;
-import net.minecraft.world.entity.projectile.SpectralArrow;
-import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 
 public class EntityUtils {
-
-    private static final float DEFAULT_CRIT_RATE = 0.0f;
-    private static final float DEFAULT_CRIT_DAMAGE = 1.0f;
     // Based on Skeleton Volume
     private static final double LARGE_VOLUME = 3.0 * .6 * .6 * 1.8;
-    public static CriticalStats<Entity> ENTITY_CRIT = new CriticalStats<>(DEFAULT_CRIT_RATE, DEFAULT_CRIT_DAMAGE);
 
-    public static void addCriticalStats(Class<? extends Entity> entityIn, int priority, float criticalChance,
-                                        float damageMultiplier) {
-        ENTITY_CRIT.addCriticalStats(entityIn, priority, criticalChance, damageMultiplier);
-    }
-
-
-    static {
-        addCriticalStats(Arrow.class, 0, .1f, 2.0f);
-        addCriticalStats(SpectralArrow.class, 1, .15f, 2.0f);
-        addCriticalStats(ThrowableProjectile.class, 0, .05f, 2.0f);
-    }
 
     public static double calculateBoundingBoxVolume(LivingEntity entityIn) {
         AABB box = entityIn.getBoundingBox();

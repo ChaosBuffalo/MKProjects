@@ -52,6 +52,9 @@ public class ItemAbilityGroup extends AbilityGroup {
 
     @Override
     protected void onAbilityAdded(int index, MKAbilityInfo abilityInfo) {
+        if (abilityInfo == null) {
+            return;
+        }
         super.onAbilityAdded(index, abilityInfo);
         MKAbility ability = abilityInfo.getAbility();
         EquipmentSlot slot = index2slot(index);
@@ -62,6 +65,9 @@ public class ItemAbilityGroup extends AbilityGroup {
 
     @Override
     protected void onAbilityRemoved(int index, MKAbilityInfo abilityInfo) {
+        if (abilityInfo == null) {
+            return;
+        }
         super.onAbilityRemoved(index, abilityInfo);
         MKAbility ability = abilityInfo.getAbility();
         EquipmentSlot slot = index2slot(index);

@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkcore.init;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.core.talents.TalentLineDefinition;
 import com.chaosbuffalo.mkcore.core.talents.TalentTreeDefinition;
 import com.chaosbuffalo.mkcore.core.talents.nodes.AttributeTalentNode;
 import net.minecraft.data.worldgen.BootstrapContext;
@@ -22,12 +21,11 @@ public class CoreTalentTrees {
     private static @NotNull TalentTreeDefinition makeKnightTestTree(BootstrapContext<TalentTreeDefinition> context) {
         var displayNodes = context.lookup(MKCoreRegistry.TALENT_NODE_DISPLAY_REGISTRY_KEY);
 
-        TalentTreeDefinition test = new TalentTreeDefinition(Component.literal("Core Knight Test"));
-        test.setVersion(1);
-        TalentLineDefinition line = new TalentLineDefinition(test, "knight_1");
+        var tree = new TalentTreeDefinition.Builder(Component.literal("Core Knight Test"));
+        tree.setVersion(1);
+        var line = tree.createLine("knight_1");
         line.addNode(new AttributeTalentNode(Attributes.MAX_HEALTH, displayNodes.getOrThrow(CoreTalentDisplayNodes.MAX_HEALTH), 1, 1.0));
-        test.addLine(line);
-        return test;
+        return tree.build();
     }
 
 

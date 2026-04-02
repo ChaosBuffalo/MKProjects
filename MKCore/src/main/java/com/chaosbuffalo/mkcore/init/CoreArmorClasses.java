@@ -23,35 +23,35 @@ public class CoreArmorClasses {
 
     public static void bootstrap(BootstrapContext<ArmorClass> context) {
 
-        var robes = new ArmorClass(Component.translatable("mkcore.armor_class.robes.name"))
+        var robes = new ArmorClass.Builder(Component.translatable("mkcore.armor_class.robes.name"))
                 .addPositiveEffect(Attributes.MOVEMENT_SPEED, 0.025, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addPositiveEffect(MKAttributes.CASTING_SPEED, 0.025, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addPositiveEffect(MKAttributes.MANA_REGEN, 0.025, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addNegativeEffect(Attributes.ARMOR, -0.04, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addNegativeEffect(Attributes.MAX_HEALTH, -0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-        context.register(ROBES_ARMOR, robes);
+        context.register(ROBES_ARMOR, robes.build());
 
 
-        var light = new ArmorClass(Component.translatable("mkcore.armor_class.light.name"))
+        var light = new ArmorClass.Builder(Component.translatable("mkcore.armor_class.light.name"))
                 .addPositiveEffect(MKAttributes.MELEE_CRIT, 0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addPositiveEffect(MKAttributes.SPELL_CRIT, 0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addPositiveEffect(MKAttributes.RANGED_CRIT, 0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addPositiveEffect(MKAttributes.COOLDOWN, 0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addNegativeEffect(MKAttributes.CASTING_SPEED, -0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addNegativeEffect(Attributes.MAX_HEALTH, -0.04, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-        context.register(LIGHT_ARMOR, light);
+        context.register(LIGHT_ARMOR, light.build());
 
 
-        var medium = new ArmorClass(Component.translatable("mkcore.armor_class.medium.name"))
+        var medium = new ArmorClass.Builder(Component.translatable("mkcore.armor_class.medium.name"))
                 .addPositiveEffect(MKAttributes.HEAL_BONUS, 0.04, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addPositiveEffect(Attributes.ATTACK_SPEED, 0.03, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addPositiveEffect(Attributes.MAX_HEALTH, 0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addNegativeEffect(MKAttributes.COOLDOWN, -0.02, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addNegativeEffect(MKAttributes.CASTING_SPEED, -0.03, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-        context.register(MEDIUM_ARMOR, medium);
+        context.register(MEDIUM_ARMOR, medium.build());
 
 
-        var heavy = new ArmorClass(Component.translatable("mkcore.armor_class.heavy.name"))
+        var heavy = new ArmorClass.Builder(Component.translatable("mkcore.armor_class.heavy.name"))
                 .addPositiveEffect(Attributes.ATTACK_DAMAGE, 0.025, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addPositiveEffect(Attributes.MAX_HEALTH, 0.04, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addPositiveEffect(MKAttributes.MAX_POISE, 0.03, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
@@ -65,6 +65,6 @@ public class CoreArmorClasses {
                 .addNegativeEffect(MKAttributes.COOLDOWN, -0.04, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addNegativeEffect(MKAttributes.CASTING_SPEED, -0.04, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
                 .addNegativeEffect(Attributes.ATTACK_SPEED, -0.025, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-        context.register(HEAVY_ARMOR, heavy);
+        context.register(HEAVY_ARMOR, heavy.build());
     }
 }

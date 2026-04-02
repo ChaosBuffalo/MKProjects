@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkcore.sync.controllers;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.events.PlayerDataEvent;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import net.minecraft.nbt.CompoundTag;
@@ -18,31 +17,32 @@ import java.util.Set;
 public final class PlayerSyncController extends EntitySyncController {
     private static final EnumSet<SyncVisibility> PLAYER_VISIBILITY = EnumSet.of(SyncVisibility.Public, SyncVisibility.Private);
     private final MKPlayerData playerData;
+    private final boolean enableTraceLogging = false;
     private boolean readyForUpdates = false;
-    private final boolean enableUpdateLogging = false;
-    private final List<Throwable> dirtyLog = new ArrayList<>();
+    private List<Throwable> dirtyLog;
 
     public PlayerSyncController(MKPlayerData playerData) {
         super(playerData.getEntity());
         this.playerData = playerData;
+        enableLogging = true;
     }
 
     @Override
-    protected Set<SyncVisibility> supportedVisibilities() {
+    public Set<SyncVisibility> supportedVisibilities() {
         return PLAYER_VISIBILITY;
     }
 
     @Override
-    protected void childUpdated(ISyncObject child) {
-        super.childUpdated(child);
-        if (enableUpdateLogging) {
-            dirtyLog.add(new Exception().fillInStackTrace());
+    protected void childUpdated() {
+        super.childUpdated();
+        if (enableTraceLogging) {
+            getDirtyLog().add(new Exception().fillInStackTrace());
         }
     }
 
     @Override
-    public void deserializeUpdate(SyncContext context, CompoundTag updateTag, SyncVisibility visibility) {
-        super.deserializeUpdate(context, updateTag, visibility);
+    public void applyRemoteUpdate(SyncContext context, CompoundTag updateTag, SyncVisibility visibility) {
+        super.applyRemoteUpdate(context, updateTag, visibility);
         NeoForge.EVENT_BUS.post(new PlayerDataEvent.Updated(playerData));
     }
 
@@ -51,12 +51,12 @@ public final class PlayerSyncController extends EntitySyncController {
         if (!readyForUpdates) {
             return false;
         }
-        if (enableUpdateLogging) {
-            MKCore.LOGGER.info("player {} dirty {}", playerData, dirtyLog.size());
+        if (enableTraceLogging) {
+            MKCore.LOGGER.info("player {} dirty {}", playerData, getDirtyLog().size());
         }
         boolean updated = super.syncUpdates();
-        if (enableUpdateLogging && updated) {
-            dirtyLog.clear();
+        if (enableTraceLogging && updated) {
+            getDirtyLog().clear();
         }
         return updated;
     }
@@ -67,5 +67,12 @@ public final class PlayerSyncController extends EntitySyncController {
         if (entity == otherPlayer) {
             readyForUpdates = true;
         }
+    }
+
+    private List<Throwable> getDirtyLog() {
+        if (dirtyLog == null) {
+            dirtyLog = new ArrayList<>();
+        }
+        return dirtyLog;
     }
 }

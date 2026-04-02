@@ -1,5 +1,6 @@
-package com.chaosbuffalo.mkcore.sync;
+package com.chaosbuffalo.mkcore.sync.v1;
 
+import com.chaosbuffalo.mkcore.sync.SyncContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
@@ -9,17 +10,17 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class SyncGroup implements ISyncObject {
-    protected final Map<String, ISyncObject> components = new HashMap<>();
+public class SyncGroupV1 implements ISyncObjectV1 {
+    protected final Map<String, ISyncObjectV1> components = new HashMap<>();
     protected final Set<String> dirtySet = new HashSet<>();
     protected UnhandledKeyHandlerFunction unhandledKeyHandler;
-    private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
+    private ISyncNotifierV1 parentNotifier = ISyncNotifierV1.NONE;
 
     public interface UnhandledKeyHandlerFunction {
-        ISyncObject createSyncObject(String key, Tag valueTag);
+        ISyncObjectV1 createSyncObject(String key, Tag valueTag);
     }
 
-    public SyncGroup() {
+    public SyncGroupV1() {
 
     }
 
@@ -27,11 +28,11 @@ public class SyncGroup implements ISyncObject {
         this.unhandledKeyHandler = handler;
     }
 
-    public void add(String name, ISyncObject sync) {
+    public void add(String name, ISyncObjectV1 sync) {
         add(name, sync, true);
     }
 
-    public void add(String name, ISyncObject sync, boolean setDirty) {
+    public void add(String name, ISyncObjectV1 sync, boolean setDirty) {
         components.put(name, sync);
         sync.setNotifier(s -> {
             childUpdated(name, s);
@@ -41,18 +42,18 @@ public class SyncGroup implements ISyncObject {
         }
     }
 
-    public void remove(String name, ISyncObject syncObject) {
+    public void remove(String name, ISyncObjectV1 syncObject) {
         components.remove(name);
         dirtySet.remove(name);
-        syncObject.setNotifier(ISyncNotifier.NONE);
+        syncObject.setNotifier(ISyncNotifierV1.NONE);
     }
 
     @Override
-    public void setNotifier(ISyncNotifier notifier) {
+    public void setNotifier(ISyncNotifierV1 notifier) {
         parentNotifier = notifier;
     }
 
-    public void childUpdated(String name, ISyncObject syncObject) {
+    public void childUpdated(String name, ISyncObjectV1 syncObject) {
         dirtySet.add(name);
         scheduleUpdate();
     }
@@ -68,7 +69,7 @@ public class SyncGroup implements ISyncObject {
 
     @Override
     public void clearDirty() {
-        components.values().forEach(ISyncObject::clearDirty);
+        components.values().forEach(ISyncObjectV1::clearDirty);
         dirtySet.clear();
     }
 
@@ -84,12 +85,12 @@ public class SyncGroup implements ISyncObject {
         }
 
         for (var key : groupTag.getAllKeys()) {
-            ISyncObject sync = components.get(key);
+            ISyncObjectV1 sync = components.get(key);
             Tag tag = groupTag.get(key);
             if (sync != null) {
                 sync.handleUpdatePayload(context, tag);
             } else if (unhandledKeyHandler != null) {
-                ISyncObject newSync = unhandledKeyHandler.createSyncObject(key, tag);
+                ISyncObjectV1 newSync = unhandledKeyHandler.createSyncObject(key, tag);
                 if (newSync != null) {
                     newSync.handleUpdatePayload(context, tag);
                     components.put(key, newSync);
@@ -107,7 +108,7 @@ public class SyncGroup implements ISyncObject {
         CompoundTag holder = new CompoundTag();
         for (var entry : components.entrySet()) {
             String name = entry.getKey();
-            ISyncObject sync = entry.getValue();
+            ISyncObjectV1 sync = entry.getValue();
             Tag value = sync.writeFullValue(context);
             if (value != null) {
                 holder.put(name, value);
@@ -125,7 +126,7 @@ public class SyncGroup implements ISyncObject {
 
         CompoundTag holder = new CompoundTag();
         for (String name : dirtySet) {
-            ISyncObject sync = components.get(name);
+            ISyncObjectV1 sync = components.get(name);
             Tag value = sync.writeUpdateValue(context);
             if (value != null) {
                 holder.put(name, value);

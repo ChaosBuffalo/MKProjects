@@ -6,7 +6,6 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUHumans;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUSkeletons;
 import com.chaosbuffalo.mkultra.init.*;
@@ -15,7 +14,6 @@ import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 public class ThemcromancerNpcs {
@@ -51,7 +49,7 @@ public class ThemcromancerNpcs {
                 .ability(MKUAbilities.SHADOW_PULSE, 2, 1.0)
                 .ability(MKUAbilities.FIREBALL, 3, 0.5)
                 .ability(MKUAbilities.NECROTIDE_WARRIOR_SUMMON, 3, 1.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.DAGGER_TYPE).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.DAGGER_TYPE))
                 .dropChance(0.05f)
                 .helmet(MKUItems.themnianHelmet)
                 .boots(MKUItems.themnianBoots)
@@ -73,7 +71,7 @@ public class ThemcromancerNpcs {
                 .name("Themnian Neophyte")
                 .ability(MKUAbilities.SHADOW_BOLT, 1, 1.0)
                 .ability(MKUAbilities.ENGULFING_DARKNESS, 2, 0.5)
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.DAGGER_TYPE, MKUltra.MODID).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.DAGGER_TYPE))
                 .dropChance(0.05f)
                 .helmet(MKUItems.themnianHelmet)
                 .boots(MKUItems.themnianBoots)
@@ -107,7 +105,7 @@ public class ThemcromancerNpcs {
                 .dropChance(1)
                 .noLootChance(0.25)
                 .noLootChanceIncrease(0.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE, MKUltra.MODID).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE))
                 .helmet(MKUItems.themnianLeaderHelmet)
                 .boots(MKUItems.themnianLeaderBoots)
                 .chestplate(MKUItems.themnianLeaderChestplate)
@@ -142,7 +140,7 @@ public class ThemcromancerNpcs {
                 .ability(MKUAbilities.SHADOW_PUlSE_FLURRY, 2, 1.0)
                 .ability(MKUAbilities.FIREBALL_BURST, 3, 1.0)
                 .ability(MKUAbilities.NECROTIDE_WARRIOR_SUMMON, 3, 1.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.DAGGER_TYPE).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.DAGGER_TYPE))
                 .dropChance(0.05f)
                 .helmet(MKUItems.themnianHelmet)
                 .boots(MKUItems.themnianBoots)
@@ -178,11 +176,11 @@ public class ThemcromancerNpcs {
                 .attribute(MKAttributes.MAX_MANA, 100.0)
                 .attribute(MKAttributes.MANA_REGEN, 2.0)
                 .name("a skeletal guard")
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE).orElseThrow())
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.SPEAR_TYPE).orElseThrow())
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.GREATSWORD_TYPE).orElseThrow())
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.LONGSWORD_TYPE).orElseThrow())
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.WARHAMMER_TYPE).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE))
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.SPEAR_TYPE))
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.GREATSWORD_TYPE))
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.LONGSWORD_TYPE))
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.WARHAMMER_TYPE))
                 .dropChance(0.05f)
                 .chestplate(MKUItems.ancientBronzeChestplate)
                 .boots(MKUItems.ancientBronzeBoots)

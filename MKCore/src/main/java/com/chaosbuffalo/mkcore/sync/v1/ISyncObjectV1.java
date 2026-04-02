@@ -1,12 +1,13 @@
-package com.chaosbuffalo.mkcore.sync;
+package com.chaosbuffalo.mkcore.sync.v1;
 
+import com.chaosbuffalo.mkcore.sync.SyncContext;
 import net.minecraft.nbt.Tag;
 
 import javax.annotation.Nullable;
 
-public interface ISyncObject {
+public interface ISyncObjectV1 {
 
-    void setNotifier(ISyncNotifier notifier);
+    void setNotifier(ISyncNotifierV1 notifier);
 
     boolean isDirty();
 

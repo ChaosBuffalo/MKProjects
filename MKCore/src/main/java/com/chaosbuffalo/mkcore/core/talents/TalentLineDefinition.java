@@ -8,7 +8,6 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.IntStream;
 
 public class TalentLineDefinition {
@@ -22,20 +21,14 @@ public class TalentLineDefinition {
         return DataResult.error(() -> "Talent line '%s' must contain only lowercase letters in the name".formatted(line.name));
     });
 
-    private TalentTreeDefinition tree;
     private final String name;
     private final List<TalentNode> nodes;
-
-    public TalentLineDefinition(TalentTreeDefinition tree, String name) {
-        this.tree = tree;
-        this.name = name.toLowerCase(Locale.ROOT);
-        nodes = new ArrayList<>();
-    }
+    private TalentTreeDefinition tree;
 
     private TalentLineDefinition(String name, List<TalentNode> nodes) {
         this.name = name;
         this.nodes = nodes;
-        IntStream.range(0, nodes.size()).forEach(i -> nodes.get(i).link(this, i));
+        IntStream.range(0, nodes.size()).forEach(i -> this.nodes.get(i).link(this, i));
     }
 
     void link(TalentTreeDefinition tree) {
@@ -54,19 +47,25 @@ public class TalentLineDefinition {
         return nodes.size();
     }
 
-    public TalentNode getNode(int index) {
-        if (index < nodes.size()) {
-            return nodes.get(index);
-        }
-        return null;
-    }
-
-    public void addNode(TalentNode node) {
-        node.link(this, nodes.size());
-        nodes.add(node);
-    }
-
     public List<TalentNode> getNodes() {
         return Collections.unmodifiableList(nodes);
+    }
+
+    public static class Builder {
+        private final String name;
+        private final List<TalentNode> nodes;
+
+        public Builder(String name) {
+            this.name = name;
+            this.nodes = new ArrayList<>();
+        }
+
+        public void addNode(TalentNode node) {
+            nodes.add(node);
+        }
+
+        public TalentLineDefinition build() {
+            return new TalentLineDefinition(name, nodes);
+        }
     }
 }

@@ -48,4 +48,9 @@ public abstract class SimpleAttribute<T> implements ISerializableAttribute<T> {
             valueChanged.accept(this);
         }
     }
+
+    @Override
+    public void reset() {
+        setValue(getDefaultValue());
+    }
 }

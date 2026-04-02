@@ -1,8 +1,9 @@
 package com.chaosbuffalo.mkcore.core;
 
-import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -120,6 +121,7 @@ public class AbilityTracker implements ISyncObject {
     }
 
     public void deserialize(CompoundTag root) {
+        removeAll();
         if (root.contains("sync")) {
             deserializeList(root.getCompound("sync"), false);
         }
@@ -194,7 +196,7 @@ public class AbilityTracker implements ISyncObject {
 
     static class AbilityTrackerServer extends AbilityTracker {
 
-        private final List<ResourceLocation> dirty = new ArrayList<>();
+        private final Set<ResourceLocation> dirty = new HashSet<>();
         private ISyncNotifier parentNotifier = ISyncNotifier.NONE;
 
         public AbilityTrackerServer() {
@@ -213,14 +215,14 @@ public class AbilityTracker implements ISyncObject {
         }
 
         @Override
-        public void setNotifier(ISyncNotifier notifier) {
+        public void setSyncUpdateNotifier(ISyncNotifier notifier) {
             parentNotifier = notifier;
         }
 
         private void markDirty(ResourceLocation timerId, boolean local) {
             if (!local) {
                 dirty.add(timerId);
-                parentNotifier.notifyUpdate(this);
+                parentNotifier.notifyUpdate();
             }
         }
 
@@ -235,7 +237,7 @@ public class AbilityTracker implements ISyncObject {
         }
 
         @Override
-        public @Nullable Tag writeFullValue(SyncContext context) {
+        public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
             CompoundTag root = new CompoundTag();
             iterateActiveEntries(e -> {
                 return !e.getValue().isLocal();
@@ -246,7 +248,7 @@ public class AbilityTracker implements ISyncObject {
         }
 
         @Override
-        public @Nullable Tag writeUpdateValue(SyncContext context) {
+        public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
             CompoundTag root = new CompoundTag();
             dirty.forEach(id -> root.putInt(id.toString(), getTimerTicksRemaining(id)));
             dirty.clear();
@@ -264,7 +266,7 @@ public class AbilityTracker implements ISyncObject {
     }
 
     @Override
-    public void setNotifier(ISyncNotifier notifier) {
+    public void setSyncUpdateNotifier(ISyncNotifier notifier) {
 
     }
 
@@ -279,17 +281,19 @@ public class AbilityTracker implements ISyncObject {
     }
 
     @Override
-    public @Nullable Tag writeFullValue(SyncContext context) {
-        return ISyncObject.notImplementedByDesign(this);
+    public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
+        ISyncObject.notImplementedByDesign(this);
+        return null;
     }
 
     @Override
-    public @Nullable Tag writeUpdateValue(SyncContext context) {
-        return ISyncObject.notImplementedByDesign(this);
+    public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
+        ISyncObject.notImplementedByDesign(this);
+        return null;
     }
 
     @Override
-    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+    public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
         if (valueTag instanceof CompoundTag groupTag) {
             deserializeList(groupTag, false);
         }

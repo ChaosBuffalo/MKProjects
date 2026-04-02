@@ -42,9 +42,7 @@ public class OnScreenXpBarWidget extends MKWidget {
     }
 
     public void syncPlayerXp(MKPlayerData playerData) {
-        int currentXp = playerData.getTalents().getTalentXp();
-        int nextLevel = playerData.getTalents().getXpToNextLevel();
-        float ratio = (float) currentXp / (float) nextLevel;
+        float ratio = playerData.getTalents().getXpProgressPercent();
         if (ratio > 1.0f) {
             ratio = 1.0f;
         }

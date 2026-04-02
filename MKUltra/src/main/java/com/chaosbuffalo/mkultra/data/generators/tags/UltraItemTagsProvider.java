@@ -51,10 +51,10 @@ public class UltraItemTagsProvider extends ItemTagsProvider {
         tag(accessory("ring"))
                 .add(MKUItems.necrotideBand.get())
                 .add(MKUItems.themcromancerArchonRing.get());
-        for (MKMeleeWeapon weapon : MKUItems.WEAPONS) {
+        for (MKMeleeWeapon weapon : MKWeaponsItems.getMeleeWeaponsFromMod(MKUltra.MODID)) {
             tag(ItemTags.SWORD_ENCHANTABLE).add(weapon);
         }
-        for (MKBow bow : MKUItems.BOWS) {
+        for (MKBow bow : MKWeaponsItems.getRangedWeaponsFromMod(MKUltra.MODID)) {
             tag(ItemTags.BOW_ENCHANTABLE).add(bow);
         }
         tag(ItemTags.ARMOR_ENCHANTABLE)

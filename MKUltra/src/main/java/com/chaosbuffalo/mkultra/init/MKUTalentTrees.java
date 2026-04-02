@@ -167,20 +167,19 @@ public class MKUTalentTrees {
     }
 
     private static @NotNull TalentTreeDefinition makeWarriorTree(BootstrapContext<TalentTreeDefinition> context) {
-        TalentTreeDefinition tree = new TalentTreeDefinition(defaultName(WARRIOR));
+        var tree = new TalentTreeDefinition.Builder(defaultName(WARRIOR));
         tree.setVersion(1);
         tree.setDefault(true);
 
-        TalentLineDefinition aLine = new TalentLineDefinition(tree, "a");
+        var aLine = tree.createLine("a");
         aLine.addNode(attrNode(context, MELEE_CRIT_MULTIPLIER, 2, 0.1));
         aLine.addNode(attrNode(context, MAX_HEALTH, 2, 1));
         aLine.addNode(attrNode(context, ARMOR, 1, 1));
         aLine.addNode(attrNode(context, MOVEMENT_SPEED, 2, 0.01));
         aLine.addNode(attrNode(context, MELEE_CRIT_MULTIPLIER, 2, 0.1));
         // FIXME: Dual wield was here
-        tree.addLine(aLine);
 
-        TalentLineDefinition bLine = new TalentLineDefinition(tree, "b");
+        var bLine = tree.createLine("b");
         bLine.addNode(attrNode(context, MELEE_CRIT_MULTIPLIER, 2, 0.1));
         bLine.addNode(attrNode(context, MELEE_CRIT, 3, 0.01));
         bLine.addNode(attrNode(context, MELEE_CRIT_MULTIPLIER, 2, 0.1));
@@ -190,33 +189,32 @@ public class MKUTalentTrees {
         bLine.addNode(attrNode(context, HEALTH_REGEN, 2, 0.25));
         bLine.addNode(attrNode(context, MELEE_CRIT_MULTIPLIER, 3, 0.1));
         // FIXME: bolstering roar was here
-        tree.addLine(bLine);
 
-        TalentLineDefinition cLine = new TalentLineDefinition(tree, "c");
+        var cLine = tree.createLine("c");
         cLine.addNode(attrNode(context, MELEE_CRIT_MULTIPLIER, 2, 0.1));
         cLine.addNode(attrNode(context, HEALTH_REGEN, 2, 0.25));
         cLine.addNode(attrNode(context, ARMOR, 1, 1));
         cLine.addNode(attrNode(context, MAX_HEALTH, 2, 1));
         cLine.addNode(attrNode(context, MELEE_CRIT_MULTIPLIER, 2, 0.1));
         // FIXME: blademaster went here
-        tree.addLine(cLine);
-        return tree;
+
+        return tree.build();
     }
 
     private static @NotNull TalentTreeDefinition makePriestTree(BootstrapContext<TalentTreeDefinition> context) {
-        TalentTreeDefinition tree = new TalentTreeDefinition(defaultName(PRIEST));
+        var tree = new TalentTreeDefinition.Builder(defaultName(PRIEST));
         tree.setVersion(1);
         tree.setDefault(true);
-        TalentLineDefinition aLine = new TalentLineDefinition(tree, "a");
+
+        var aLine = tree.createLine("a");
         aLine.addNode(attrNode(context, MAX_MANA, 2, 1));
         aLine.addNode(attrNode(context, HEAL_BONUS, 1, 1));
         aLine.addNode(attrNode(context, MOVEMENT_SPEED, 3, 0.01));
         aLine.addNode(attrNode(context, COOLDOWN_REDUCTION, 2, 0.025));
         aLine.addNode(attrNode(context, HOLY_DAMAGE, 5, 1));
         // FIXME: Armor Training here
-        tree.addLine(aLine);
 
-        TalentLineDefinition bLine = new TalentLineDefinition(tree, "b");
+        var bLine = tree.createLine("b");
         bLine.addNode(attrNode(context, MAX_MANA, 2, 1));
         bLine.addNode(attrNode(context, COOLDOWN_REDUCTION, 2, 0.025));
         bLine.addNode(attrNode(context, HEAL_BONUS, 1, 1));
@@ -226,24 +224,23 @@ public class MKUTalentTrees {
         bLine.addNode(attrNode(context, HEAL_BONUS, 2, 1));
         bLine.addNode(attrNode(context, COOLDOWN_REDUCTION, 2, 0.025));
         // FIXME: Healing Rain
-        tree.addLine(bLine);
 
-        TalentLineDefinition cLine = new TalentLineDefinition(tree, "c");
+        var cLine = tree.createLine("c");
         cLine.addNode(attrNode(context, MAX_MANA, 2, 1));
         cLine.addNode(attrNode(context, MANA_REGEN, 2, .25));
         cLine.addNode(attrNode(context, NATURE_DAMAGE, 5, 1));
         cLine.addNode(attrNode(context, MANA_REGEN, 4, 0.25));
         cLine.addNode(attrNode(context, HEAL_BONUS, 1, 1));
         // FIXME: Guardian Angle
-        tree.addLine(cLine);
-        return tree;
+        return tree.build();
     }
 
     private static @NotNull TalentTreeDefinition makeMageTree(BootstrapContext<TalentTreeDefinition> context) {
-        TalentTreeDefinition tree = new TalentTreeDefinition(defaultName(MAGE));
+        var tree = new TalentTreeDefinition.Builder(defaultName(MAGE));
         tree.setVersion(1);
         tree.setDefault(true);
-        TalentLineDefinition aLine = new TalentLineDefinition(tree, "a");
+
+        var aLine = tree.createLine("a");
         aLine.addNode(attrNode(context, SPELL_CRIT, 2, 0.01));
         aLine.addNode(attrNode(context, MANA_REGEN, 2, 0.25));
         aLine.addNode(attrNode(context, FIRE_DAMAGE, 5, 1));
@@ -252,9 +249,8 @@ public class MKUTalentTrees {
         aLine.addNode(attrNode(context, MOVEMENT_SPEED, 2, 0.01));
         aLine.addNode(attrNode(context, SPELL_CRIT_MULTIPLIER, 2, 0.2));
         // FIXME: Burning Soul here
-        tree.addLine(aLine);
 
-        TalentLineDefinition bLine = new TalentLineDefinition(tree, "b");
+        var bLine = tree.createLine("b");
         bLine.addNode(attrNode(context, ARCANE_DAMAGE, 5, 1));
         bLine.addNode(attrNode(context, MANA_REGEN, 2, 0.25));
         bLine.addNode(attrNode(context, SPELL_CRIT_MULTIPLIER, 2, 0.2));
@@ -263,9 +259,8 @@ public class MKUTalentTrees {
         bLine.addNode(attrNode(context, ARCANE_RESIST, 5, 0.01));
         bLine.addNode(attrNode(context, SPELL_CRIT_MULTIPLIER, 2, 0.2));
         // FIXME: Meteor here
-        tree.addLine(bLine);
 
-        TalentLineDefinition cLine = new TalentLineDefinition(tree, "c");
+        var cLine = tree.createLine("c");
         cLine.addNode(attrNode(context, MAX_MANA, 2, 1));
         cLine.addNode(attrNode(context, MANA_REGEN, 4, 0.25));
         cLine.addNode(attrNode(context, FROST_DAMAGE, 5, 1));
@@ -274,25 +269,23 @@ public class MKUTalentTrees {
         cLine.addNode(attrNode(context, SPELL_CRIT, 2, 0.01));
         cLine.addNode(attrNode(context, SPELL_CRIT_MULTIPLIER, 2, 0.2));
         // FIXME: Soul drain here
-        tree.addLine(cLine);
-        return tree;
+        return tree.build();
     }
 
     private static @NotNull TalentTreeDefinition makeKnightTree(BootstrapContext<TalentTreeDefinition> context) {
-        TalentTreeDefinition tree = new TalentTreeDefinition(defaultName(KNIGHT));
+        var tree = new TalentTreeDefinition.Builder(defaultName(KNIGHT));
         tree.setVersion(1);
         tree.setDefault(true);
 
-        TalentLineDefinition aLine = new TalentLineDefinition(tree, "a");
+        var aLine = tree.createLine("a");
         aLine.addNode(attrNode(context, MAX_HEALTH, 2, 1));
         aLine.addNode(attrNode(context, ARMOR, 2, 1));
         aLine.addNode(attrNode(context, MAX_POISE, 2, 2.0));
         aLine.addNode(attrNode(context, MAX_MANA, 2, 1));
         aLine.addNode(attrNode(context, HEALTH_REGEN, 2, 0.25));
         // FIXME: 2 handed style
-        tree.addLine(aLine);
 
-        TalentLineDefinition bLine = new TalentLineDefinition(tree, "b");
+        var bLine = tree.createLine("b");
         bLine.addNode(attrNode(context, MAX_HEALTH, 2, 1));
         bLine.addNode(attrNode(context, HEALTH_REGEN, 4, 0.25));
         bLine.addNode(attrNode(context, MAX_HEALTH, 4, 1));
@@ -303,31 +296,29 @@ public class MKUTalentTrees {
         bLine.addNode(attrNode(context, ARMOR, 4, 1));
         bLine.addNode(attrNode(context, MANA_REGEN, 2, 0.25));
         // FIXME: Righteous judgement
-        tree.addLine(bLine);
 
-        TalentLineDefinition cLine = new TalentLineDefinition(tree, "c");
+        var cLine = tree.createLine("c");
         cLine.addNode(attrNode(context, MAX_HEALTH, 2, 1));
         cLine.addNode(attrNode(context, ARCANE_RESIST, 2, 0.01));
         cLine.addNode(attrNode(context, HEALTH_REGEN, 2, 0.25));
         cLine.addNode(attrNode(context, ARMOR, 2, 1));
         cLine.addNode(attrNode(context, MANA_REGEN, 2, 0.25));
         // FIXME: holy aura
-        tree.addLine(cLine);
-        return tree;
+        return tree.build();
     }
 
     private static @NotNull TalentTreeDefinition makeGreenKnightTree(BootstrapContext<TalentTreeDefinition> context) {
-        TalentTreeDefinition tree = new TalentTreeDefinition(defaultName(GREEN_KNIGHT));
+        var tree = new TalentTreeDefinition.Builder(defaultName(GREEN_KNIGHT));
         tree.setVersion(1);
-        TalentLineDefinition line = new TalentLineDefinition(tree, "a");
+
+        var line = tree.createLine("a");
         line.addNode(attrNode(context, MAX_HEALTH, 3, 4.0));
         line.addNode(attrNode(context, MAX_POISE, 2, 2.0));
         line.addNode(attrNode(context, POISE_REGEN, 2, 0.25));
         line.addNode(attrNode(context, POISE_BREAK_CD, 2, -0.5));
         line.addNode(attrNode(context, POISE_REGEN, 2, 0.25));
-        tree.addLine(line);
 
-        TalentLineDefinition soul = new TalentLineDefinition(tree, "b");
+        var soul = tree.createLine("b");
         soul.addNode(attrNode(context, MAX_HEALTH, 3, 4.0));
         soul.addNode(new EntitlementGrantTalentNode(
                 entitlement(context, CoreEntitlements.ABILITY_POOL_SIZE),
@@ -339,32 +330,30 @@ public class MKUTalentTrees {
         soul.addNode(attrNode(context, ARMOR, 5, 1.0));
         soul.addNode(new AbilityGrantTalentNode(MKUAbilities.GREEN_SOUL,
                 nodeDisplay(context, MKUTalentDisplayNodes.GREEN_SOUL)));
-        tree.addLine(soul);
 
-        TalentLineDefinition healing = new TalentLineDefinition(tree, "c");
+        var healing = tree.createLine("c");
         healing.addNode(attrNode(context, MAX_HEALTH, 3, 4.0));
         healing.addNode(attrNode(context, HEAL_BONUS, 2, 1.0));
         healing.addNode(attrNode(context, MAX_MANA, 3, 2.0));
         healing.addNode(attrNode(context, MAX_POISE, 2, 2.0));
         healing.addNode(attrNode(context, MANA_REGEN, 1, 0.5));
-        tree.addLine(healing);
-        return tree;
+        return tree.build();
     }
 
     private static @NotNull TalentTreeDefinition makeKnaveTree(BootstrapContext<TalentTreeDefinition> context) {
-        TalentTreeDefinition tree = new TalentTreeDefinition(defaultName(KNAVE));
+        var tree = new TalentTreeDefinition.Builder(defaultName(KNAVE));
         tree.setVersion(1);
         tree.setDefault(true);
-        TalentLineDefinition aLine = new TalentLineDefinition(tree, "a");
+
+        var aLine = tree.createLine("a");
         aLine.addNode(attrNode(context, BLEED_DAMAGE, 1, 1));
         aLine.addNode(attrNode(context, BLEED_RESIST, 3, 0.01));
         aLine.addNode(attrNode(context, MELEE_CRIT, 2, 0.01));
         aLine.addNode(attrNode(context, BLEED_DAMAGE, 1, 1));
         aLine.addNode(attrNode(context, MAX_HEALTH, 2, 1));
         // FIXME: life siphon used to be here
-        tree.addLine(aLine);
 
-        TalentLineDefinition bLine = new TalentLineDefinition(tree, "b");
+        var bLine = tree.createLine("b");
         bLine.addNode(attrNode(context, ATTACK_DAMAGE, 1, 1));
         bLine.addNode(attrNode(context, MAX_HEALTH, 2, 1));
         bLine.addNode(attrNode(context, MOVEMENT_SPEED, 3, 0.01));
@@ -375,25 +364,23 @@ public class MKUTalentTrees {
         bLine.addNode(attrNode(context, ARMOR, 1, 1));
         bLine.addNode(attrNode(context, MELEE_CRIT_MULTIPLIER, 5, 0.1));
         // FIXME: backstab
-        tree.addLine(bLine);
 
-        TalentLineDefinition cLine = new TalentLineDefinition(tree, "c");
+        var cLine = tree.createLine("c");
         cLine.addNode(attrNode(context, MAX_MANA, 2, 1));
         cLine.addNode(attrNode(context, SPELL_CRIT, 2, 0.01));
         cLine.addNode(attrNode(context, MOVEMENT_SPEED, 3, 0.01));
         cLine.addNode(attrNode(context, BLEED_DAMAGE, 1, 1));
         cLine.addNode(attrNode(context, BLEED_RESIST, 2, 0.01));
         cLine.addNode(attrNode(context, MELEE_CRIT, 3, 0.01));
-        tree.addLine(cLine);
-        return tree;
+        return tree.build();
     }
 
     private static @NotNull TalentTreeDefinition makeCoreTree(BootstrapContext<TalentTreeDefinition> context) {
-        TalentTreeDefinition tree = new TalentTreeDefinition(defaultName(CORE));
+        var tree = new TalentTreeDefinition.Builder(defaultName(CORE));
         tree.setVersion(2);
         tree.setDefault(true);
 
-        TalentLineDefinition line = new TalentLineDefinition(tree, "a");
+        var line = tree.createLine("a");
         line.addNode(new EntitlementGrantTalentNode(
                 entitlement(context, CoreEntitlements.BASIC_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.ABILITY_SLOT),
@@ -416,9 +403,8 @@ public class MKUTalentTrees {
                 UUID.fromString("95725b31-da3a-4a3e-b6cc-e5036a6e9a87")));
         line.addNode(new AbilityGrantTalentNode(MKUAbilities.LIFE_SIPHON,
                 nodeDisplay(context, MKUTalentDisplayNodes.LIFE_SIPHON)));
-        tree.addLine(line);
 
-        TalentLineDefinition magic = new TalentLineDefinition(tree, "b");
+        var magic = tree.createLine("b");
         magic.addNode(new EntitlementGrantTalentNode(
                 entitlement(context, CoreEntitlements.BASIC_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.ABILITY_SLOT),
@@ -452,9 +438,8 @@ public class MKUTalentTrees {
                 entitlement(context, CoreEntitlements.ULTIMATE_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.ULTIMATE_ABILITY_SLOT),
                 UUID.fromString("ecfaa441-35c7-46ce-aa67-f8372bc4fd7d")));
-        tree.addLine(magic);
 
-        TalentLineDefinition heal = new TalentLineDefinition(tree, "c");
+        var heal = tree.createLine("c");
         heal.addNode(new EntitlementGrantTalentNode(
                 entitlement(context, CoreEntitlements.BASIC_ABILITY_SLOT),
                 nodeDisplay(context, CoreTalentDisplayNodes.ABILITY_SLOT),
@@ -477,8 +462,7 @@ public class MKUTalentTrees {
                 UUID.fromString("05865420-0069-45e1-856e-331c9900f99c")));
         heal.addNode(new AbilityGrantTalentNode(MKUAbilities.SOUL_DRAIN,
                 nodeDisplay(context, MKUTalentDisplayNodes.SOUL_DRAIN)));
-        tree.addLine(heal);
-        return tree;
+        return tree.build();
     }
 
     public static void bootstrap(BootstrapContext<TalentTreeDefinition> context) {
