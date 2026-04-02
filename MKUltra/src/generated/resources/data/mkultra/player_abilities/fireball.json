@@ -24,7 +24,7 @@
     "scale_damage": 2.0,
     "trail_particles": "mkultra:fireball_trail"
   },
-  "castTime": 20,
+  "castTime": 200,
   "cooldown": 80,
   "manaCost": 5.0
 }

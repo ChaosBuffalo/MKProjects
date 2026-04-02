@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.models.MKBlazeModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKPiglinModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKSkeletalModel;
+import com.chaosbuffalo.mknpc.client.render.models.MKSkullModel;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelArgs;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
 import com.chaosbuffalo.mknpc.client.render.renderers.*;
@@ -33,6 +34,7 @@ public class RenderRegistry {
         evt.registerEntityRenderer(MKNpcEntityTypes.FLYING_SKELETON_TYPE.get(),
                 (context) -> new SkeletalGroupRenderer(context, SkeletonStyles.SKELETON_LOOKS,
                         MKNpcEntityTypes.FLYING_SKELETON_TYPE.getId()));
+        evt.registerEntityRenderer(MKNpcEntityTypes.FLYING_SKULL_TYPE.get(), MKFlyingSkullRenderer::new);
 
     }
 
@@ -72,5 +74,6 @@ public class RenderRegistry {
                 MKNpcEntityTypes.FLYING_SKELETON_TYPE.getId(), 64, 32,
                 new ModelArgs(CubeDeformation.NONE, true, 0.0f,
                         LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
+        event.registerLayerDefinition(MKFlyingSkullRenderer.LAYER_LOCATION, MKSkullModel::createMobHeadLayer);
     }
 }

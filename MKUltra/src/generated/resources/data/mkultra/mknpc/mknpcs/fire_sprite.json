@@ -11,7 +11,7 @@
         },
         {
           "ability": "mkultra:fireball_burst",
-          "chance": 0.3,
+          "chance": 1.0,
           "priority": 2
         }
       ]

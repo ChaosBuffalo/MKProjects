@@ -111,6 +111,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private final EntityTradeContainer entityTradeContainer;
     private final List<BossStage> bossStages = new ArrayList<>();
     private int currentStage;
+    private boolean canFly;
 
     private int blockDelay;
     private int blockHold;
@@ -215,6 +216,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         animSync.addPublic("particles", particleEffectTracker);
         nonCombatMoveType = NonCombatMoveType.RANDOM_WANDER;
         combatMoveType = CombatMoveType.MELEE;
+        canFly = false;
 
         // TODO: see if this is enough
         entityDataCap = Suppliers.memoize(() -> {
@@ -231,6 +233,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     public void onAddedToLevel() {
         super.onAddedToLevel();
+        getEntityDataCap();
         if (!level().isClientSide) {
             syncController.onJoinLevel();
         }
@@ -277,6 +280,14 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     public void setBlockCooldown(int blockCooldown) {
         this.blockCooldown = blockCooldown;
+    }
+
+    public void setCanFly(boolean canFly) {
+        this.canFly = canFly;
+    }
+
+    public boolean canFly() {
+        return canFly;
     }
 
     @Override
@@ -615,7 +626,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
         switch (decision.getMovementSuggestion()) {
             case KITE:
-                return new KiteMovementStrategy(Math.max(ability.getDistance(this) * .50, getMinimumRangedCastingDistance()));
+                return new KiteMovementStrategy(Math.max(ability.getDistance(this) * .50, getMinimumRangedCastingDistance()), canFly());
             case FOLLOW:
                 return new FollowMovementStrategy(1.0f, Math.round(ability.getDistance(this) / 2.0f));
             case MELEE:
@@ -780,7 +791,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get(), target);
         switch (getCombatMoveType()) {
             case STATIONARY -> MovementStrategyController.enterStationary(this);
-            case RANGE -> MovementStrategyController.enterCastingMode(this, getMinimumRangedCastingDistance());
+            case RANGE -> MovementStrategyController.enterCastingMode(this, getMinimumRangedCastingDistance(), canFly());
             default -> MovementStrategyController.enterMeleeMode(this, 1);
         }
     }

@@ -22,9 +22,10 @@ public class NpcEntityTypeTagsProvider extends EntityTypeTagsProvider {
     protected void addTags(HolderLookup.Provider provider) {
         tag(EntityTypeTags.UNDEAD).add(MKNpcEntityTypes.SKELETON_TYPE.get(), MKNpcEntityTypes.ZOMBIE_PIGLIN_TYPE.get());
         tag(EntityTypeTags.ZOMBIES).add(MKNpcEntityTypes.ZOMBIE_PIGLIN_TYPE.get());
-        tag(EntityTypeTags.SKELETONS).add(MKNpcEntityTypes.SKELETON_TYPE.get());
+        tag(EntityTypeTags.SKELETONS).add(MKNpcEntityTypes.SKELETON_TYPE.get(), MKNpcEntityTypes.FLYING_SKULL_TYPE.get());
         tag(EntityTypeTags.UNDEAD).add(MKNpcEntityTypes.BLAZE_TYPE.get());
-        tag(EntityTypeTags.FALL_DAMAGE_IMMUNE).add(MKNpcEntityTypes.BLAZE_TYPE.get()).add(MKNpcEntityTypes.FLYING_SKELETON_TYPE.get());
+        tag(EntityTypeTags.UNDEAD).add(MKNpcEntityTypes.FLYING_SKULL_TYPE.get());
+        tag(EntityTypeTags.FALL_DAMAGE_IMMUNE).add(MKNpcEntityTypes.BLAZE_TYPE.get()).add(MKNpcEntityTypes.FLYING_SKELETON_TYPE.get()).add(MKNpcEntityTypes.FLYING_SKULL_TYPE.get());
         tag(EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES).add(MKNpcEntityTypes.BLAZE_TYPE.get());
     }
 }

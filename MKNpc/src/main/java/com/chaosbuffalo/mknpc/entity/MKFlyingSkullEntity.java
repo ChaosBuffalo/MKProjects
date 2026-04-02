@@ -1,0 +1,42 @@
+package com.chaosbuffalo.mknpc.entity;
+
+import com.chaosbuffalo.mkcore.core.MKAttributes;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.level.Level;
+
+public class MKFlyingSkullEntity extends MKFlyingEntity {
+    public MKFlyingSkullEntity(EntityType<? extends MKFlyingSkullEntity> type, Level worldIn) {
+        super(type, worldIn);
+        setCombatMoveType(CombatMoveType.RANGE);
+    }
+
+    public static AttributeSupplier.Builder registerAttributes(double attackDamage, double movementSpeed) {
+        return MKFlyingEntity.registerAttributes(attackDamage, movementSpeed)
+                .add(MKAttributes.SHADOW_RESISTANCE, 0.25)
+                .add(MKAttributes.HOLY_RESISTANCE, -0.25);
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return SoundEvents.SKELETON_AMBIENT;
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
+        return SoundEvents.SKELETON_HURT;
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return SoundEvents.SKELETON_DEATH;
+    }
+
+    @Override
+    protected SoundEvent getShootSound() {
+        return SoundEvents.SKELETON_SHOOT;
+    }
+}

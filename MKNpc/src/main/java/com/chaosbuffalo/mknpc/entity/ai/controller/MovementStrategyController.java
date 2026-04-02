@@ -23,9 +23,9 @@ public class MovementStrategyController {
                 StationaryMovementStrategy.STATIONARY_MOVEMENT_STRATEGY);
     }
 
-    public static void enterCastingMode(LivingEntity entity, double castingDistance) {
+    public static void enterCastingMode(LivingEntity entity, double castingDistance, boolean canFly) {
         entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
-                new KiteMovementStrategy(castingDistance));
+                new KiteMovementStrategy(castingDistance, canFly));
     }
 
     public static void enterRandomWander(LivingEntity entity) {
