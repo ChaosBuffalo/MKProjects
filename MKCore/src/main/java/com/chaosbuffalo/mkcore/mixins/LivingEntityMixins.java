@@ -19,7 +19,9 @@ public abstract class LivingEntityMixins {
     @Shadow
     public abstract boolean isDamageSourceBlocked(DamageSource damageSourceIn);
 
-    // disable player blocking as we handle it ourselves
+    // Disable vanilla's in-method player shield resolution inside hurt().
+    // MKCore re-evaluates block eligibility from the shield block event so it can
+    // replace the built-in outcome with poise-based block handling instead.
     @Redirect(
             method = "hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z",
             at = @At(

@@ -132,6 +132,9 @@ public class MKWeaponsEventHandler {
         if (livingTarget.level().isClientSide)
             return;
         DamageSource source = event.getSource();
+        if (DamageUtils.isFullyBlockedDamage(source, event.getNewDamage())) {
+            return;
+        }
         Entity trueSource = source.getEntity();
         float newDamage = event.getNewDamage();
         boolean isMelee = DamageUtils.isMeleeDamage(source);

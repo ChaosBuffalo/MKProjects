@@ -3,9 +3,7 @@ package com.chaosbuffalo.mkcore.events;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.core.damage.IMKDamageSourceExtensions;
-import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
-import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -25,7 +23,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 
 
 @EventBusSubscriber(modid = MKCore.MOD_ID)
@@ -38,6 +36,10 @@ public class CombatEventHandler {
             return;
 
         DamageSource source = event.getSource();
+        // Fully blocked hits should not reach any attacker/victim trigger pipeline.
+        if (DamageUtils.isFullyBlockedDamage(source, event.getNewDamage())) {
+            return;
+        }
         Entity trueSource = source.getEntity();
         if (source.is(DamageTypes.FALL)) { // TODO: maybe just use LivingFallEvent?
             SpellTriggers.FALL.onLivingFall(event, source, livingTarget);
@@ -59,80 +61,65 @@ public class CombatEventHandler {
         SpellTriggers.ENTITY_HURT.onEntityHurtLiving(event, source, targetData);
     }
 
-    private static boolean canBlock(DamageSource source, LivingEntity entity) {
-        if (DamageUtils.wasAlreadyPartiallyBlocked(source)) {
-            return false;
-        }
-
-        return entity.isDamageSourceBlocked(source);
-    }
-
     private static void playSound(LivingEntity target, Holder<SoundEvent> sound) {
         SoundUtils.serverPlaySoundAtEntity(target, sound.value(), target.getSoundSource());
     }
 
     @SubscribeEvent
-    public static void onLivingAttackEvent(LivingIncomingDamageEvent event) {
+    public static void onShieldBlock(LivingShieldBlockEvent event) {
         LivingEntity target = event.getEntity();
         if (target.level().isClientSide)
             return;
 
+        DamageSource dmgSource = event.getDamageSource();
+
+        // The hurt() mixin only redirects vanilla's internal block check so MKCore can
+        // replace the built-in shield result. This direct call still returns the normal
+        // facing/shield eligibility and is used as the gate for MKCore's custom block logic.
+        if (!target.isDamageSourceBlocked(dmgSource))
+            return;
+
         IMKEntityData targetData = MKCore.getEntityDataOrThrow(target);
+        float incomingDamage = event.getOriginalBlockedDamage();
+        IMKEntityStats.BlockResult breakResult = targetData.getStats().tryPoiseBlock(incomingDamage);
 
-        DamageSource dmgSource = event.getSource();
-        Entity source = dmgSource.getEntity();
+        // NeoForge subtracts blockedDamage from the container before LivingDamageEvent.Pre.
+        // Setting this to only the poise-absorbed portion preserves the remaining damage
+        // for downstream armor/resistance processing without re-entering hurt().
+        float poiseAbsorbed = incomingDamage - breakResult.damageLeft();
+        event.setBlocked(true);
+        event.setBlockedDamage(poiseAbsorbed);
+        event.setShieldDamage(0);
 
-        if (canBlock(dmgSource, target)) {
-            IMKEntityStats.BlockResult breakResult = targetData.getStats().tryPoiseBlock(event.getAmount());
-            float left = breakResult.damageLeft();
-            if (!(dmgSource instanceof MKDamageSource)) {
-                // correct for if we're a vanilla damage source and we're going to bypass armor so pre-apply armor
-                if (DamageUtils.isProjectileDamage(dmgSource)) {
-                    left = CoreDamageTypes.RangedDamage.get().applyResistance(target, left, dmgSource);
-                } else {
-                    left = CoreDamageTypes.MeleeDamage.get().applyResistance(target, left, dmgSource);
-                }
-            }
-            // need to stop remainder damage from being blockable
-            event.setCanceled(true);
-            if (left > 0) {
-                if (dmgSource instanceof IMKDamageSourceExtensions mkSrc) {
-                    mkSrc.setCanBlock(false);
-                }
-                if (dmgSource instanceof MKDamageSource mk) {
-                    mk.setSuppressTriggers(true);
-                }
-                target.hurt(dmgSource, left);
-            }
-            if (breakResult.poiseBroke()) {
-                playSound(target, CoreSounds.block_break);
-            } else {
-                if (target.getTicksUsingItem() <= 6) {
-                    playSound(target, CoreSounds.parry);
-                    if (targetData instanceof MKPlayerData playerData) {
-                        playerData.getSkills().tryIncreaseSkill(MKAttributes.BLOCK);
-                    }
-                } else {
-                    if (targetData instanceof MKPlayerData playerData) {
-                        playerData.getSkills().tryScaledIncreaseSkill(MKAttributes.BLOCK, 0.5);
-                    }
-                    if (dmgSource.getDirectEntity() instanceof AbstractArrow) {
-                        playSound(target, CoreSounds.arrow_block);
-                    } else if (source instanceof LivingEntity attacker) {
-                        ItemStack weapon = attacker.getMainHandItem();
-                        playSound(target, weapon.getItem() instanceof SwordItem ?
-                                CoreSounds.weapon_block :
-                                CoreSounds.fist_block);
-                    } else {
-                        playSound(target, CoreSounds.fist_block);
-                    }
-                }
-            }
+        // Mark on the damage source so downstream code (triggers, knockback mixin) can detect blocking
+        if (dmgSource instanceof IMKDamageSourceExtensions ext) {
+            ext.setWasBlocked(true);
         }
 
-        if (dmgSource instanceof MKDamageSource mkDamageSource) {
-            if (mkDamageSource.shouldSuppressTriggers())
-                return;
+        Entity source = dmgSource.getEntity();
+        if (breakResult.poiseBroke()) {
+            playSound(target, CoreSounds.block_break);
+        } else {
+            if (target.getTicksUsingItem() <= 6) {
+                playSound(target, CoreSounds.parry);
+                if (targetData instanceof MKPlayerData playerData) {
+                    playerData.getSkills().tryIncreaseSkill(MKAttributes.BLOCK);
+                }
+            } else {
+                if (targetData instanceof MKPlayerData playerData) {
+                    playerData.getSkills().tryScaledIncreaseSkill(MKAttributes.BLOCK, 0.5);
+                }
+                if (dmgSource.getDirectEntity() instanceof AbstractArrow) {
+                    playSound(target, CoreSounds.arrow_block);
+                } else if (source instanceof LivingEntity attacker) {
+                    ItemStack weapon = attacker.getMainHandItem();
+                    playSound(target, weapon.getItem() instanceof SwordItem ?
+                            CoreSounds.weapon_block :
+                            CoreSounds.fist_block);
+                } else {
+                    playSound(target, CoreSounds.fist_block);
+                }
+            }
         }
     }
 

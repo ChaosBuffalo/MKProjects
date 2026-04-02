@@ -2,9 +2,8 @@ package com.chaosbuffalo.mkcore.core.damage;
 
 public interface IMKDamageSourceExtensions {
 
+    boolean wasBlocked();
 
-    boolean canBlock();
-
-    void setCanBlock(boolean value);
+    void setWasBlocked(boolean value);
 
 }
