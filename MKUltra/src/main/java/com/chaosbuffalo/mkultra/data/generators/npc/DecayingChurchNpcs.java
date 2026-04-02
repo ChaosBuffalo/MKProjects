@@ -88,7 +88,7 @@ public class DecayingChurchNpcs {
                 .attribute(MKAttributes.MAX_MANA, 350.0)
                 .attribute(MKAttributes.MANA_REGEN, 6.0)
                 .name("Ancient Cardinal")
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.GOLD_TIER, MeleeWeaponTypes.WARHAMMER_TYPE).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.GOLD_TIER, MeleeWeaponTypes.WARHAMMER_TYPE))
                 .dropChance(0.15f)
                 .helmet(MKUItems.ancientCardinalHelmet)
                 .chestplate(MKUItems.ancientCardinalChestplate)

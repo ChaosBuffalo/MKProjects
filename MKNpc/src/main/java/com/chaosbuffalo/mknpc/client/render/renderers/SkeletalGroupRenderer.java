@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.client.render.renderers;
 import com.chaosbuffalo.mknpc.client.render.models.MKSkeletalModel;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
+import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.MKSkeletonEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
@@ -11,7 +12,7 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 
 
-public class SkeletalGroupRenderer extends BipedGroupRenderer<MKSkeletonEntity, MKSkeletalModel<MKSkeletonEntity>> {
+public class SkeletalGroupRenderer extends BipedGroupRenderer<MKEntity, MKSkeletalModel<MKEntity>> {
 
     public SkeletalGroupRenderer(EntityRendererProvider.Context context, Map<String, ModelLook> styles, ResourceLocation entityType) {
         super(context);
@@ -24,7 +25,7 @@ public class SkeletalGroupRenderer extends BipedGroupRenderer<MKSkeletonEntity, 
 
     @Nonnull
     @Override
-    public ResourceLocation getBaseTexture(MKSkeletonEntity entity) {
+    public ResourceLocation getBaseTexture(MKEntity entity) {
         return SkeletonStyles.SKELETON_TEXTURES;
     }
 }

@@ -1,6 +1,8 @@
 {
   "values": [
     "mknpc:skeleton",
-    "mknpc:zombified_piglin"
+    "mknpc:zombified_piglin",
+    "mknpc:blaze",
+    "mknpc:flying_skull"
   ]
 }

@@ -19,9 +19,10 @@ public class UseAbilityGoal extends Goal {
     private LivingEntity target;
     private int ticksSinceSeenTarget;
 
-    public UseAbilityGoal(MKEntity entity) {
+    public UseAbilityGoal(MKEntity entity, boolean canMove) {
         this.entity = entity;
-        this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+
+        this.setFlags(!canMove ? EnumSet.of(Flag.MOVE, Flag.LOOK) : EnumSet.of(Flag.LOOK));
         ticksSinceSeenTarget = 0;
     }
 

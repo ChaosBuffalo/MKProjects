@@ -32,7 +32,7 @@ public class ArmorClassMasteryEntitlement extends MKEntitlement {
         return CoreEntitlementTypes.ARMOR_CLASS_MASTERY.get();
     }
 
-    public static class ArmorClassMasteryHandler extends EntitlementTypeHandler {
+    public static class ArmorClassMasteryHandler implements EntitlementTypeHandler {
         private final Persona persona;
         private final Object2IntMap<ArmorClassMasteryEntitlement> levelsByEntitlement = new Object2IntArrayMap<>();
 
@@ -70,7 +70,7 @@ public class ArmorClassMasteryEntitlement extends MKEntitlement {
         }
 
         @Override
-        public void onRecordLoadingFinished() {
+        public void onPersonaActivated() {
             applyEffects();
         }
     }

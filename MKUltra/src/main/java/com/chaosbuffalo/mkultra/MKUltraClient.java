@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkultra;
 
 
-import com.chaosbuffalo.mkultra.client.MKUItemProperties;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -16,6 +15,5 @@ public class MKUltraClient {
     }
 
     public void clientSetup(final FMLClientSetupEvent event) {
-        event.enqueueWork(MKUItemProperties::registerItemProperties);
     }
 }

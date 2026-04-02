@@ -2,11 +2,10 @@ package com.chaosbuffalo.mkcore.core.pets;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
-import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
-import com.chaosbuffalo.mkcore.sync.types.SyncBool;
 import com.chaosbuffalo.mkcore.sync.types.SyncEntity;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,11 +16,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class EntityPetModule implements IPlayerSyncComponentProvider {
-    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+public class EntityPetModule implements ISyncGroupProvider {
+    private final SyncGroup syncGroup = new SyncGroup();
     protected final IMKEntityData entityData;
-    protected final SyncBool isPet = new SyncBool(false);
-    protected final SyncEntity<LivingEntity> owner = new SyncEntity<>("owner", null, LivingEntity.class);
+    protected final SyncEntity<LivingEntity> owner = new SyncEntity<>();
     protected final Map<ResourceLocation, MKPet<?>> pets = new HashMap<>();
     protected final Map<ResourceLocation, MKPet.ClientMKPet> clientPetMap = new HashMap<>();
     protected final SyncMapUpdater<ResourceLocation, MKPet.ClientMKPet> clientPets = new SyncMapUpdater<>(
@@ -33,9 +31,8 @@ public class EntityPetModule implements IPlayerSyncComponentProvider {
 
     public EntityPetModule(IMKEntityData entityData) {
         this.entityData = entityData;
-        addSyncPublic("owner", owner);
-        addSyncPublic("isPet", isPet);
-        addSyncPublic("clientPets", clientPets);
+        syncGroup.addPublic("owner", owner);
+        syncGroup.addPublic("clientPets", clientPets);
     }
 
     public void addPet(MKPet<?> pet) {
@@ -83,22 +80,21 @@ public class EntityPetModule implements IPlayerSyncComponentProvider {
     }
 
     public boolean isPet() {
-        return isPet.get();
+        return owner.hasEntity();
     }
 
     public void setOwner(LivingEntity owner) {
-        isPet.set(true);
         this.owner.set(owner);
     }
 
     @Nullable
     public LivingEntity getOwner() {
-        return owner.get();
+        return owner.get(entityData.getEntity().level(), LivingEntity.class);
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public void onDeath(Entity.RemovalReason reason) {

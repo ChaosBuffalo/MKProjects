@@ -15,12 +15,10 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 
 public class EntityEquipment {
-
-    private final IMKEntityData entityData;
-    public static final ResourceLocation UNARMED_SKILL_ID = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "unarmed_skill_mod");
-
+    public static final ResourceLocation UNARMED_SKILL_ID = MKCore.id("unarmed_skill_mod");
     protected static final float UNARMED_BASE_DAMAGE = 2.0f;
 
+    private final IMKEntityData entityData;
 
     public EntityEquipment(IMKEntityData entityData) {
         this.entityData = entityData;
@@ -39,29 +37,34 @@ public class EntityEquipment {
         handleEquip(slot, to);
     }
 
-    public void removeUnarmedModifier() {
+    protected void removeUnarmedModifier() {
         AttributeInstance attr = entityData.getEntity().getAttribute(Attributes.ATTACK_DAMAGE);
         if (attr != null) {
             attr.removeModifier(UNARMED_SKILL_ID);
         }
     }
 
-    public void addUnarmedModifier() {
+    protected void addUnarmedModifier() {
         AttributeInstance attr = entityData.getEntity().getAttribute(Attributes.ATTACK_DAMAGE);
-        if (attr != null && !attr.hasModifier(UNARMED_SKILL_ID)) {
+        if (attr != null) {
             float skillLevel = MKAbility.getSkillLevel(entityData.getEntity(), MKAttributes.HAND_TO_HAND);
-            var modifier = new AttributeModifier(UNARMED_SKILL_ID, skillLevel * UNARMED_BASE_DAMAGE *
-                    MKConfig.SERVER.skillScalingMultiplier.getAsDouble(), AttributeModifier.Operation.ADD_VALUE);
+            double amount = skillLevel * UNARMED_BASE_DAMAGE * MKConfig.SERVER.skillScalingMultiplier.getAsDouble();
+            var modifier = new AttributeModifier(UNARMED_SKILL_ID, amount, AttributeModifier.Operation.ADD_VALUE);
             attr.addOrUpdateTransientModifier(modifier);
+        }
+    }
+
+    public void refreshUnarmedModifiers(ItemStack mainHand) {
+        if (mainHand.isEmpty()) {
+            addUnarmedModifier();
+        } else {
+            removeUnarmedModifier();
         }
     }
 
     protected void handleRemoval(EquipmentSlot slot, ItemStack from) {
         if (from.getItem() instanceof IMKEquipment equipment) {
             equipment.onEntityUnequip(entityData.getEntity(), slot, from);
-        }
-        if (from.isEmpty()) {
-            removeUnarmedModifier();
         }
     }
 
@@ -70,8 +73,8 @@ public class EntityEquipment {
             equipment.onEntityEquip(entityData.getEntity(), slot, to);
         }
 
-        if (to.isEmpty()) {
-            addUnarmedModifier();
+        if (slot == EquipmentSlot.MAINHAND) {
+            refreshUnarmedModifiers(to);
         }
     }
 }

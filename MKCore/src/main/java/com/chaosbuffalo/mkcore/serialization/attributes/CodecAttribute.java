@@ -58,24 +58,4 @@ public class CodecAttribute<T> implements ISerializableAttribute<T> {
     public <D> void deserialize(Dynamic<D> dynamic) {
         setValue(codec.parse(dynamic).getOrThrow());
     }
-
-    @Override
-    public void setValueFromString(String stringValue) {
-
-    }
-
-    @Override
-    public boolean validateString(String stringValue) {
-        return false;
-    }
-
-    @Override
-    public boolean isEmptyStringInput(String string) {
-        return false;
-    }
-
-    @Override
-    public String valueAsString() {
-        return currentValue.toString();
-    }
 }

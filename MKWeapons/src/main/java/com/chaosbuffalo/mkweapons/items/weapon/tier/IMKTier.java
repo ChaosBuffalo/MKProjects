@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkweapons.items.weapon.tier;
 
 import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
+import com.chaosbuffalo.mkweapons.items.effects.ranged.IRangedWeaponEffect;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tier;
@@ -18,5 +19,7 @@ public interface IMKTier extends Tier {
 
     TagKey<Item> getPrimaryIngredientTag();
 
-    List<IMeleeWeaponEffect> getTierEffects();
+    List<IMeleeWeaponEffect> getMeleeEffects();
+
+    List<IRangedWeaponEffect> getRangedEffects();
 }

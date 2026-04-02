@@ -97,11 +97,14 @@ public class MKUHumans {
 
     public static ModelLook NETHER_MAGE_1_LOOK = new ModelLook(ModelStyles.SHORT_HAIR_STYLE,
             HUMAN_SKIN_1, HUMAN_HAIR_3, MKUClothes.NETHER_MAGE_ROBES_1);
+    public static ModelLook BANDIT_RAIDER_1_LOOK = new ModelLook(ModelStyles.SHORT_HAIR_STYLE,
+            HUMAN_SKIN_2, HUMAN_HAIR_1, MKUClothes.BANDIT_LEATHERS_1);
 
     public static final String CLERIC_1_NAME = "cleric_1";
     public static final String CLERIC_2_NAME = "cleric_2";
     public static final String DEFAULT_NAME = "default";
     public static final String NETHER_MAGE_1_NAME = "nether_mage_1";
+    public static final String BANDIT_RAIDER_1_NAME = "bandit_raider_1";
     public static final String TEMPLE_GUARD_1_NAME = "temple_guard_1";
     public static final String TEMPLE_GUARD_2_NAME = "temple_guard_2";
     public static final String NECROTIDE_CULTIST_1_NAME = "necrotide_cultist_1";

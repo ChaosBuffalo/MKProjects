@@ -28,7 +28,7 @@ public class AbilityPoolEntitlement extends MKEntitlement {
         return CoreEntitlementTypes.ABILITY_POOL_COUNT.get();
     }
 
-    public static class AbilityPoolEntitlementHandler extends EntitlementTypeHandler {
+    public static class AbilityPoolEntitlementHandler implements EntitlementTypeHandler {
         private final Persona persona;
         private final Object2IntMap<AbilityPoolEntitlement> levelsByEntitlement = new Object2IntArrayMap<>();
 
@@ -62,7 +62,7 @@ public class AbilityPoolEntitlement extends MKEntitlement {
         }
 
         @Override
-        public void onRecordLoadingFinished() {
+        public void onPersonaActivated() {
             applyEffects();
         }
     }

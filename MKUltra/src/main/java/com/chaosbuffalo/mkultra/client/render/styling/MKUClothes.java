@@ -27,5 +27,6 @@ public class MKUClothes {
     public static final ResourceLocation NECROTIDE_ROBES_SKULL_HOOD = MKUltra.id("textures/entity/clothes/necrotide_robes_skull_1.png");
 
     public static final ResourceLocation SEAWOVEN_PONCHO = MKUltra.id("textures/entity/clothes/seawoven_poncho.png");
+    public static final ResourceLocation BANDIT_LEATHERS_1 = MKUltra.id("textures/entity/clothes/bandit_leathers_1.png");
 
 }

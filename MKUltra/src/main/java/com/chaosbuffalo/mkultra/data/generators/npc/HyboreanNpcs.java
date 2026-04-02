@@ -4,16 +4,14 @@ import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUSkeletons;
 import com.chaosbuffalo.mkultra.init.*;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.chaosbuffalo.mkweapons.items.weapon.types.MeleeWeaponTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
+import com.chaosbuffalo.mkweapons.items.weapon.types.RangedWeaponTypes;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 
 public class HyboreanNpcs {
@@ -45,13 +43,13 @@ public class HyboreanNpcs {
                 .health(65)
                 .mana(65)
                 .manaRegen(1.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE).orElseThrow(), 10.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.GREATSWORD_TYPE).orElseThrow(), 10.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.WARHAMMER_TYPE).orElseThrow(), 10.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE), 10.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.GREATSWORD_TYPE), 10.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.WARHAMMER_TYPE), 10.0)
                 .dropChance(1.1f)
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE, MKUltra.MODID).orElseThrow())
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.GREATSWORD_TYPE, MKUltra.MODID).orElseThrow())
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.WARHAMMER_TYPE, MKUltra.MODID).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE))
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.GREATSWORD_TYPE))
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.WARHAMMER_TYPE))
                 .helmet(MKUItems.ancientBronzeHelmet)
                 .boots(MKUItems.ancientBronzeBoots)
                 .emptyChance(EquipmentSlot.FEET, 2.0)
@@ -73,9 +71,9 @@ public class HyboreanNpcs {
                 .health(40)
                 .mana(40)
                 .manaRegen(2.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.DAGGER_TYPE).orElseThrow(), 5.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.DAGGER_TYPE), 5.0)
                 .dropChance(1.1f)
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.DAGGER_TYPE, MKUltra.MODID).orElseThrow(), 3.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.DAGGER_TYPE), 3.0)
                 .ability(MKUAbilities.FIRE_ARMOR, 2, 0.5)
                 .ability(MKUAbilities.FIREBALL, 1, 1.0)
                 .ability(MKUAbilities.EMBER, 3, 1.0)
@@ -93,11 +91,11 @@ public class HyboreanNpcs {
                 .health(165)
                 .mana(165)
                 .manaRegen(3.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE).orElseThrow())
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.GREATSWORD_TYPE).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE))
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.GREATSWORD_TYPE))
                 .dropChance(1.1f)
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE, MKUltra.MODID).orElseThrow())
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.GREATSWORD_TYPE, MKUltra.MODID).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE))
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.GREATSWORD_TYPE))
                 .helmet(MKUItems.ancientBronzeHelmet)
                 .boots(MKUItems.ancientBronzeBoots)
                 .chestplate(MKUItems.ancientBronzeChestplate)
@@ -139,9 +137,9 @@ public class HyboreanNpcs {
                 .ability(MKUAbilities.IGNITE, 2, 0.5)
                 .ability(MKUAbilities.FLAME_WAVE, 3, 1.0)
                 .ability(MKUAbilities.WARP_CURSE, 4, 0.5)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.KATANA_TYPE).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.IRON_TIER, MeleeWeaponTypes.KATANA_TYPE))
                 .dropChance(1.1f)
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.KATANA_TYPE, MKUltra.MODID).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.KATANA_TYPE))
                 .loot(LootSlotManager.MAIN_HAND, MKULootTiers.hyborean_sorcerer_queen, 1.0)
                 .loot(LootSlotManager.EARRINGS, MKULootTiers.hyborean_sorcerer_queen, 3.0)
                 .lootDropChances(2)
@@ -163,11 +161,9 @@ public class HyboreanNpcs {
                 .health(25)
                 .mana(25)
                 .manaRegen(1)
-                .mainHand(BuiltInRegistries.ITEM.getHolder(
-                        ResourceLocation.parse("mkweapons:longbow_stone")).orElseThrow(), 10.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.STONE_TIER, RangedWeaponTypes.LONGBOW), 10.0)
                 .dropChance(1.1f)
-                .mainHand(BuiltInRegistries.ITEM.getHolder(
-                        MKUltra.id("longbow_bronze")).get(), 4.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, RangedWeaponTypes.LONGBOW), 4.0)
                 .xp(25)
                 .skillClass(NpcGenUtils.NpcSkillClass.ARCHER)
                 .build();
@@ -182,17 +178,17 @@ public class HyboreanNpcs {
                 .health(30)
                 .mana(30)
                 .manaRegen(1.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE).orElseThrow(), 10.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.SPEAR_TYPE).orElseThrow(), 10.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.GREATSWORD_TYPE).orElseThrow(), 10.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.LONGSWORD_TYPE).orElseThrow(), 10.0)
-                .mainHand(MKWeaponsItems.lookupMelee(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.WARHAMMER_TYPE).orElseThrow(), 10.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE), 10.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.SPEAR_TYPE), 10.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.GREATSWORD_TYPE), 10.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.LONGSWORD_TYPE), 10.0)
+                .mainHand(MKWeaponsItems.lookupWeapon(MKWeaponsItems.STONE_TIER, MeleeWeaponTypes.WARHAMMER_TYPE), 10.0)
                 .dropChance(1.1f)
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE, MKUltra.MODID).orElseThrow())
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.SPEAR_TYPE, MKUltra.MODID).orElseThrow())
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.GREATSWORD_TYPE, MKUltra.MODID).orElseThrow())
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.LONGSWORD_TYPE, MKUltra.MODID).orElseThrow())
-                .mainHand(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.WARHAMMER_TYPE, MKUltra.MODID).orElseThrow())
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.BATTLEAXE_TYPE))
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.SPEAR_TYPE))
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.GREATSWORD_TYPE))
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.LONGSWORD_TYPE))
+                .mainHand(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.WARHAMMER_TYPE))
                 .helmet(MKUItems.ancientBronzeHelmet)
                 .boots(MKUItems.ancientBronzeBoots)
                 .chestplate(MKUItems.ancientBronzeChestplate)

@@ -35,12 +35,10 @@ public class MKPlayerData implements IMKEntityData {
     private final PlayerEffectHandler effectHandler;
     private final EntityPetModule pets;
     protected final PlayerAttributeMonitor attributeMonitor;
-    private final PlayerEventDispatcher events;
     private final EntityRiderModule riders;
 
     public MKPlayerData(Player playerEntity) {
         player = Objects.requireNonNull(playerEntity);
-        events = new PlayerEventDispatcher(this);
         syncController = new PlayerSyncController(this);
         personaManager = PersonaManager.getPersonaManager(this);
         abilityExecutor = new PlayerAbilityExecutor(this);
@@ -73,10 +71,6 @@ public class MKPlayerData implements IMKEntityData {
     @Override
     public PlayerCombatExtensionModule getCombatExtension() {
         return combatExtensionModule;
-    }
-
-    public PlayerEventDispatcher events() {
-        return events;
     }
 
     @Override
@@ -171,10 +165,7 @@ public class MKPlayerData implements IMKEntityData {
     @Override
     public void onJoinWorld() {
         getStats().onJoinLevel();
-        if (isServerSide()) {
-            getPersonaManager().onJoinWorld();
-            getEffects().onJoinLevel();
-        }
+        getEffects().onJoinLevel();
     }
 
     private void onDeath() {
@@ -207,14 +198,14 @@ public class MKPlayerData implements IMKEntityData {
     }
 
     public void attachUpdateEngine(SyncController engine) {
-        personaManager.getSyncComponent().attach("persona", engine);
-        animationModule.getSyncComponent().attach("animation", engine);
-        combatExtensionModule.getSyncComponent().attach("combat", engine);
-        stats.getSyncComponent().attach("stats", engine);
-        editorModule.getSyncComponent().attach("editor", engine);
-        pets.getSyncComponent().attach("pets", engine);
-        riders.getSyncComponent().attach("riders", engine);
-        equipment.getSyncComponent().attach("equipment", engine);
+        engine.addChild("persona", personaManager);
+        engine.addChild("animation", animationModule);
+        engine.addChild("combat", combatExtensionModule);
+        engine.addChild("stats", stats);
+        engine.addChild("editor", editorModule);
+        engine.addChild("pets", pets);
+        engine.addChild("riders", riders);
+        engine.addChild("equipment", equipment);
     }
 
     public <T extends IPersonaExtension> T getPersonaExtension(Class<T> clazz) {

@@ -3,7 +3,8 @@ package com.chaosbuffalo.mkultra.data.generators;
 
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.init.MKUItems;
-import com.chaosbuffalo.mkweapons.data.content.MKWeaponModelProvider;
+import com.chaosbuffalo.mkweapons.data.providers.MKWeaponModelProvider;
+import com.chaosbuffalo.mkweapons.init.MKWeaponsItems;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.mkweapons.items.MKMeleeWeapon;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -57,10 +58,10 @@ public class MKUItemModelProvider extends MKWeaponModelProvider {
         makeSimpleItem(MKUItems.themnianChestplate.get());
         makeSimpleItem(MKUItems.themnianLeggings.get());
         makeSimpleItem(MKUItems.themnianHelmet.get());
-        for (MKMeleeWeapon weapon : MKUItems.WEAPONS) {
+        for (MKMeleeWeapon weapon : MKWeaponsItems.getMeleeWeaponsFromMod(MKUltra.MODID)) {
             makeWeaponModel(weapon);
         }
-        for (MKBow bow : MKUItems.BOWS) {
+        for (MKBow bow : MKWeaponsItems.getRangedWeaponsFromMod(MKUltra.MODID)) {
             makeBowModels(bow);
         }
         projectileItem(MKUItems.holyWordProjectileItem.get());

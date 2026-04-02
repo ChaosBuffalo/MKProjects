@@ -1,17 +1,15 @@
 package com.chaosbuffalo.mkcore.core.talents;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceKey;
 
 import javax.annotation.Nonnull;
@@ -160,33 +158,37 @@ public class TalentTreeRecord {
     }
 
     public <T> boolean deserialize(Dynamic<T> dynamic) {
-
         int version = dynamic.get("version").asInt(-1);
         if (version != tree.getVersion()) {
-            // This isn't really an error if it's an upgrade scenario.
-            // Return true to add it to the unlocked tree map but with no points spent
-            return true;
+            // Not necessarily an error, but just install a blank tree record and let the player put points in again
+            return false;
         }
 
         Map<DataResult<String>, Dynamic<T>> lineMap = dynamic.get("lines").asMap(Dynamic::asString, Function.identity());
-        lineMap.forEach((name, value) ->
-                name.resultOrPartial(MKCore.LOGGER::error).ifPresent(s -> deserializeLineRecord(s, value)));
+        for (Map.Entry<DataResult<String>, Dynamic<T>> entry : lineMap.entrySet()) {
+            String name = entry.getKey().getOrThrow();
+            if (!deserializeLineRecord(name, entry.getValue())) {
+                return false;
+            }
+        }
 
         return true;
     }
 
-    private <T> void deserializeLineRecord(String name, Dynamic<T> dyn) {
+    private <T> boolean deserializeLineRecord(String name, Dynamic<T> dyn) {
         TalentLineRecord lineRecord = createLineRecord(name);
         if (lineRecord == null) {
             MKCore.LOGGER.error("TalentTreeRecord.deserializeLineRecord line {} - line does not exist!", name);
-            return;
+            return false;
         }
 
         if (lineRecord.deserialize(dyn)) {
             lines.put(name, lineRecord);
         } else {
             MKCore.LOGGER.error("TalentTreeRecord.deserializeLineRecord line {} - line failed to deserialize!", name);
+            return false;
         }
+        return true;
     }
 
     private TalentLineRecord createLineRecord(String name) {
@@ -198,14 +200,12 @@ public class TalentTreeRecord {
     }
 
     private static class TalentLineRecord {
-        private final TalentLineDefinition lineDefinition;
         private final List<TalentRecord> lineRecords;
 
         public TalentLineRecord(TalentLineDefinition lineDefinition, TalentTreeRecord treeRecord) {
-            this.lineDefinition = lineDefinition;
             this.lineRecords = lineDefinition.getNodes()
                     .stream()
-                    .map(node -> node.createRecord(treeRecord))
+                    .map(node -> new TalentRecord(node, treeRecord))
                     .collect(Collectors.toList());
         }
 
@@ -217,26 +217,42 @@ public class TalentTreeRecord {
         }
 
         public int getLength() {
-            return lineDefinition.getLength();
-        }
-
-        public TalentLineDefinition getLineDefinition() {
-            return lineDefinition;
+            return lineRecords.size();
         }
 
 
         public <T> T serialize(DynamicOps<T> ops) {
-            return ops.createList(lineRecords.stream().map(record -> record.serialize(ops)));
+            return ops.createList(lineRecords.stream()
+                    .takeWhile(TalentRecord::isKnown)
+                    .map(record -> record.serialize(ops)));
         }
 
         public <T> boolean deserialize(Dynamic<T> dynamic) {
             List<Dynamic<T>> storedEntries = dynamic.asList(Function.identity());
-            if (storedEntries.size() != getLength())
+            if (storedEntries.size() > getLength())
                 return false;
 
             for (int i = 0; i < lineRecords.size(); i++) {
                 TalentRecord record = lineRecords.get(i);
-                if (record == null || !record.deserialize(storedEntries.get(i))) {
+                if (record == null) {
+                    return false;
+                }
+                if (i < storedEntries.size()) {
+                    if (!record.deserialize(storedEntries.get(i))) {
+                        return false;
+                    }
+                } else {
+                    // Probably not needed, but explicitly set the remaining nodes to 0
+                    record.setRank(0);
+                }
+            }
+
+            // Reject edited/corrupt saves that skip prerequisite nodes, e.g. node 3 known while node 2 is 0.
+            boolean foundGap = false;
+            for (TalentRecord record : lineRecords) {
+                if (!record.isKnown()) {
+                    foundGap = true;
+                } else if (foundGap) {
                     return false;
                 }
             }
@@ -250,7 +266,7 @@ public class TalentTreeRecord {
 
         public void markUpdated(String lineName, int index) {
             getLineUpdater(lineName).set(index);
-            parentNotifier.notifyUpdate(this);
+            parentNotifier.notifyUpdate();
         }
 
         private BitSet getLineUpdater(String line) {
@@ -258,7 +274,7 @@ public class TalentTreeRecord {
         }
 
         @Override
-        public void setNotifier(ISyncNotifier notifier) {
+        public void setSyncUpdateNotifier(ISyncNotifier notifier) {
             parentNotifier = notifier;
         }
 
@@ -272,81 +288,69 @@ public class TalentTreeRecord {
             updatedLines.clear();
         }
 
-        @Override
-        public @Nullable Tag writeFullValue(SyncContext context) {
-            CompoundTag root = new CompoundTag();
-            root.putBoolean("f", true);
-
-            CompoundTag updateTag = new CompoundTag();
-
-            lines.values().forEach(line -> {
-                String lineName = line.getLineDefinition().getName();
-                ListTag list = line.lineRecords.stream()
-                        .map(this::writeNode)
-                        .collect(Collectors.toCollection(ListTag::new));
-                updateTag.put(lineName, list);
-            });
-
-            root.put("u", updateTag);
-            return root;
+        private IntArrayTag compressRecords(Stream<TalentRecord> recordStream) {
+            int[] nodeInfo = recordStream
+                    .mapMultiToInt((record, mapper) -> {
+                        mapper.accept(record.getNode().getIndex());
+                        mapper.accept(record.getRank());
+                    })
+                    .toArray();
+            return new IntArrayTag(nodeInfo);
         }
 
         @Override
-        public @Nullable Tag writeUpdateValue(SyncContext context) {
-            CompoundTag root = new CompoundTag();
+        public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
+            CompoundTag updateTag = new CompoundTag();
 
+            lines.forEach((name, line) -> {
+                var knownRecords = line.lineRecords.stream().takeWhile(TalentRecord::isKnown);
+                updateTag.put(name, compressRecords(knownRecords));
+            });
+
+            return updateTag;
+        }
+
+        @Override
+        public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
             CompoundTag updateTag = new CompoundTag();
             updatedLines.forEach((key, bits) -> {
                 TalentLineRecord lineRecord = getLineRecord(key);
                 if (lineRecord == null) {
                     return;
                 }
-
-                ListTag list = bits.stream()
-                        .mapToObj(lineRecord::getRecord)
-                        .map(this::writeNode)
-                        .collect(Collectors.toCollection(ListTag::new));
-                updateTag.put(key, list);
+                var dirtyRecords = bits.stream().mapToObj(lineRecord::getRecord);
+                updateTag.put(key, compressRecords(dirtyRecords));
             });
 
-            root.put("u", updateTag);
-
             updatedLines.clear();
-            return root;
+            return updateTag;
         }
 
         @Override
-        public void handleUpdatePayload(SyncContext context, Tag valueTag) {
-            if (valueTag instanceof CompoundTag root) {
-                if (root.getBoolean("f")) {
-                    lines.clear();
-                }
+        public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
+            if (valueTag instanceof CompoundTag updated) {
+                for (String line : updated.getAllKeys()) {
+                    TalentLineRecord lineRecord = getLineRecord(line);
+                    if (lineRecord == null) {
+                        MKCore.LOGGER.warn("TalentTreeUpdater received unknown line {}", line);
+                        continue;
+                    }
 
-                if (root.contains("u")) {
-                    CompoundTag updated = root.getCompound("u");
-
-                    for (String line : updated.getAllKeys()) {
-                        TalentLineRecord lineRecord = getLineRecord(line);
-                        if (lineRecord == null) {
-                            MKCore.LOGGER.warn("TalentTreeUpdater.deserializeUpdate unknown line {}", line);
-                            continue;
+                    int[] nodeInfo = updated.getIntArray(line);
+                    if (nodeInfo.length % 2 != 0) {
+                        MKCore.LOGGER.warn("TalentTreeUpdater improper node info length {}", nodeInfo.length);
+                        continue;
+                    }
+                    for (int i = 0; i < nodeInfo.length; i += 2) {
+                        int index = nodeInfo[i];
+                        int rank = nodeInfo[i + 1];
+                        TalentRecord record = lineRecord.getRecord(index);
+                        if (record != null) {
+                            record.setRank(rank);
                         }
-                        updated.getList(line, Tag.TAG_COMPOUND).forEach(nbt -> {
-                            int index = ((CompoundTag) nbt).getInt("i");
-                            TalentRecord record = lineRecord.getRecord(index);
-                            if (record != null) {
-                                record.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt));
-                            }
-                        });
                     }
                 }
             }
-        }
-
-        private CompoundTag writeNode(TalentRecord rec) {
-            CompoundTag recTag = (CompoundTag) rec.serialize(NbtOps.INSTANCE);
-            recTag.putInt("i", rec.getNode().getIndex());
-            return recTag;
         }
     }
 }

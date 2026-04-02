@@ -21,7 +21,4 @@ public class SimpleEntitlement extends MKEntitlement {
         return CoreEntitlementTypes.PLAYER_FLAG.get();
     }
 
-    public static class SimpleEntitlementHandler extends EntitlementTypeHandler {
-
-    }
 }

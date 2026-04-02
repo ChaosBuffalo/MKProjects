@@ -1,4 +1,6 @@
-// 1.21.1	2025-06-26T08:37:45.4214647	Tags for minecraft:entity_type mod id mknpc
-7602070d5d7585ba63931092ef41f3058b48ddbf data/minecraft/tags/entity_type/skeletons.json
-67d6ecb600461f45a600d760ce29374a2cffb409 data/minecraft/tags/entity_type/undead.json
+// 1.21.1	2026-04-01T12:28:49.0472132	Tags for minecraft:entity_type mod id mknpc
+823cb2c7a69a6ecd542d5843de79ac976c2a4493 data/minecraft/tags/entity_type/fall_damage_immune.json
+e0ca061cba6e8dc895083855887935623dc3aa76 data/minecraft/tags/entity_type/freeze_hurts_extra_types.json
+e1f785a7fae71c4b6a4f9c30d3f6be85e124033f data/minecraft/tags/entity_type/skeletons.json
+9c4081ef848bc26337b2e814f8b67e80e685da56 data/minecraft/tags/entity_type/undead.json
 557dae85100bf4614b3bfa61fc03672d05ac1c5c data/minecraft/tags/entity_type/zombies.json

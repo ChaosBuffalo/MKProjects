@@ -2,9 +2,10 @@ package com.chaosbuffalo.mkcore.sync.adapters;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
-import com.chaosbuffalo.mkcore.sync.ISyncNotifier;
-import com.chaosbuffalo.mkcore.sync.ISyncObject;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
+import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -48,11 +49,11 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
 
     public void markDirty(K key) {
         dirty.add(key);
-        parentNotifier.notifyUpdate(this);
+        parentNotifier.notifyUpdate();
     }
 
     @Override
-    public void setNotifier(ISyncNotifier notifier) {
+    public void setSyncUpdateNotifier(ISyncNotifier notifier) {
         parentNotifier = notifier;
     }
 
@@ -90,12 +91,11 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
             if (encodedKey.isEmpty())
                 continue;
 
-            K key = keyDecoder.apply(encodedKey);
-            if (onRemoveCallback != null) {
-                onRemoveCallback.accept(key);
+            K key = decodeKey(encodedKey);
+            if (key == null) {
+                continue;
             }
-            backingMap.remove(key);
-//            MKCore.LOGGER.info("removing {} {} {} {}", encodedKey, key, old != null, backingMap.size());
+            removeEntry(key);
         }
     }
 
@@ -104,18 +104,17 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     }
 
     @Override
-    public @Nullable Tag writeFullValue(SyncContext context) {
-        if (backingMap.isEmpty())
-            return null;
-
+    public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
         CompoundTag root = new CompoundTag();
         root.putBoolean("f", true);
-        root.put("l", makeSyncMap(context.provider(), backingMap.keySet()));
+        if (!backingMap.isEmpty()) {
+            root.put("l", makeSyncMap(context.provider(), backingMap.keySet()));
+        }
         return root;
     }
 
     @Override
-    public @Nullable Tag writeUpdateValue(SyncContext context) {
+    public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
         if (dirty.isEmpty())
             return null;
 
@@ -135,10 +134,10 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     }
 
     @Override
-    public void handleUpdatePayload(SyncContext context, Tag valueTag) {
+    public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
         if (valueTag instanceof CompoundTag root) {
             if (root.getBoolean("f")) {
-                backingMap.clear();
+                clearMap();
             }
 
             if (root.contains("r")) {
@@ -174,13 +173,17 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
     private void deserializeMap(CompoundTag tag,
                                 BiPredicate<V, CompoundTag> valueDeserializer) {
         for (String key : tag.getAllKeys()) {
-            K decodedKey = keyDecoder.apply(key);
+            K decodedKey = decodeKey(key);
             if (decodedKey == null) {
                 MKCore.LOGGER.error("Failed to decode map key {}", key);
                 continue;
             }
 
-            V current = backingMap.computeIfAbsent(decodedKey, valueFactory);
+            V current = backingMap.get(decodedKey);
+            boolean isNewValue = current == null;
+            if (current == null) {
+                current = valueFactory.apply(decodedKey);
+            }
             if (current == null) {
                 MKCore.LOGGER.error("Failed to compute map value for key {}", decodedKey);
                 continue;
@@ -191,7 +194,9 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
                 MKCore.LOGGER.error("Failed to deserialize map value for {}", decodedKey);
                 continue;
             }
-            backingMap.put(decodedKey, current);
+            if (isNewValue) {
+                backingMap.put(decodedKey, current);
+            }
         }
     }
 
@@ -201,8 +206,35 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
 
     public void deserializeStorage(HolderLookup.Provider provider, Tag tag) {
         if (tag instanceof CompoundTag compoundTag) {
-            backingMap.clear();
+            clearMap();
             deserializeMap(compoundTag, (o, t) -> o.deserializeStorage(provider, t));
+        }
+    }
+
+    @Nullable
+    private K decodeKey(String encodedKey) {
+        try {
+            return keyDecoder.apply(encodedKey);
+        } catch (Exception e) {
+            MKCore.LOGGER.error("Exception decoding map key {}", encodedKey, e);
+            return null;
+        }
+    }
+
+    private void removeEntry(K key) {
+        if (onRemoveCallback != null) {
+            onRemoveCallback.accept(key);
+        }
+        backingMap.remove(key);
+    }
+
+    private void clearMap() {
+        if (backingMap.isEmpty()) {
+            return;
+        }
+
+        for (K key : new HashSet<>(backingMap.keySet())) {
+            removeEntry(key);
         }
     }
 

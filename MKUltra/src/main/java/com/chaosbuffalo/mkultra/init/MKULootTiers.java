@@ -97,8 +97,8 @@ public class MKULootTiers {
     private static LootTier themcromancerLibrarian(ResourceKey<LootTier> tierKey) {
         LootTier tier = new LootTier();
         LootItemTemplate shadowTouchedTemplate = new LootItemTemplate(LootSlotManager.MAIN_HAND);
-        shadowTouchedTemplate.addItem(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE, MKUltra.MODID).orElseThrow().value());
-        shadowTouchedTemplate.addItem(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.DAGGER_TYPE, MKUltra.MODID).orElseThrow().value());
+        shadowTouchedTemplate.addItem(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE));
+        shadowTouchedTemplate.addItem(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.DAGGER_TYPE));
         AddAbilityOption abilityOption = new AddAbilityOption(MKUAbilities.SHADOW_BOLT_DUAL_SHOTGUN,
                 RandomizationSlotManager.ABILITY_SLOT);
         shadowTouchedTemplate.addRandomizationOption(abilityOption);
@@ -109,8 +109,8 @@ public class MKULootTiers {
         tier.addItemTemplate(shadowTouchedTemplate, 10.0);
 
         LootItemTemplate fieryTemplate = new LootItemTemplate(LootSlotManager.MAIN_HAND);
-        fieryTemplate.addItem(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE, MKUltra.MODID).orElseThrow().value());
-        fieryTemplate.addItem(MKWeaponsItems.lookupMelee(MKUItems.BRONZE_TIER, MeleeWeaponTypes.DAGGER_TYPE, MKUltra.MODID).orElseThrow().value());
+        fieryTemplate.addItem(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE));
+        fieryTemplate.addItem(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.DAGGER_TYPE));
         AddAbilityOption abilityOption2 = new AddAbilityOption(MKUAbilities.FIREBALL_BURST,
                 RandomizationSlotManager.ABILITY_SLOT);
         fieryTemplate.addRandomizationOption(abilityOption2);
@@ -436,7 +436,7 @@ public class MKULootTiers {
 
     private static void addFlameWaveStaff(ResourceKey<LootTier> tierKey, LootTier tier, double weight) {
         LootItemTemplate staff = new LootItemTemplate(LootSlotManager.MAIN_HAND);
-        staff.addItem(MKUItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE));
+        staff.addItem(MKWeaponsItems.lookupWeapon(MKUItems.BRONZE_TIER, MeleeWeaponTypes.STAFF_TYPE));
         AddAbilityOption abilityOption = new AddAbilityOption(MKUAbilities.FLAME_WAVE, RandomizationSlotManager.ABILITY_SLOT);
         staff.addRandomizationOption(abilityOption);
         NameOption name = new NameOption(Component.literal("Staff of Flames"));

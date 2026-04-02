@@ -58,7 +58,7 @@ public class AttributeTalentNode extends TalentNode {
     }
 
     public AttributeModifier createModifier(TalentRecord record) {
-        ResourceLocation modId = record.getUniqueId().withSuffix("/%d".formatted(operation.ordinal()));
+        ResourceLocation modId = record.getUniqueId().withPrefix("talent/").withSuffix("/%d".formatted(operation.ordinal()));
 
         double value = getValue(record.getRank());
         return new AttributeModifier(modId, value, operation);

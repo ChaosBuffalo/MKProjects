@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.abilities.ProjectileAbility;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 
-public class BallisticsSolveModeAttribute extends SimpleAttribute<ProjectileAbility.BallisticsSolveMode> {
+public class BallisticsSolveModeAttribute extends SimpleAttribute<ProjectileAbility.BallisticsSolveMode> implements IGuiDisplayAttribute {
 
     public BallisticsSolveModeAttribute(String name, ProjectileAbility.BallisticsSolveMode defaultValue) {
         super(name, defaultValue);

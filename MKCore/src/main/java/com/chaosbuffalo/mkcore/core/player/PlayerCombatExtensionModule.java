@@ -7,24 +7,26 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
-public class PlayerCombatExtensionModule extends CombatExtensionModule implements IPlayerSyncComponentProvider {
+public class PlayerCombatExtensionModule extends CombatExtensionModule implements ISyncGroupProvider {
     private static final ResourceLocation blockMaxPoiseBonusId = MKCore.id("block_skill_modifier");
-    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+    private final SyncGroup syncGroup = new SyncGroup();
     private final SyncInt currentProjectileHitCount = new SyncInt(0);
 
 
     public PlayerCombatExtensionModule(MKPlayerData playerData) {
         super(playerData);
-        addSyncPrivate("projectileHits", currentProjectileHitCount);
+        syncGroup.addPrivate("projectileHits", currentProjectileHitCount);
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     private MKPlayerData getPlayerData() {
@@ -39,10 +41,9 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
     private static void updatePoiseBonus(MKPlayerData playerData) {
         AttributeInstance maxPoise = playerData.getEntity().getAttribute(MKAttributes.MAX_POISE);
         if (maxPoise != null) {
-            maxPoise.removeModifier(blockMaxPoiseBonusId);
             AttributeModifier blockPoiseBonus = new AttributeModifier(blockMaxPoiseBonusId,
                     getBlockSkillMaxPoiseBonus(playerData), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-            maxPoise.addTransientModifier(blockPoiseBonus);
+            maxPoise.addOrUpdateTransientModifier(blockPoiseBonus);
         }
     }
 

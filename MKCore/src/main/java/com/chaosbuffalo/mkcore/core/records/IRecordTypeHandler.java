@@ -10,7 +10,14 @@ public interface IRecordTypeHandler<T extends IRecordInstance<T>> {
 
     }
 
-    default void onRecordLoadingFinished() {
+    /**
+     * Will be called after all records are loaded
+     */
+    default void onPersonaActivated() {
+
+    }
+
+    default void onPersonaDeactivated() {
 
     }
 }

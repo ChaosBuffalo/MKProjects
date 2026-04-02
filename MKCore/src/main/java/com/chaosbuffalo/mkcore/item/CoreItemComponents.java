@@ -15,6 +15,11 @@ public class CoreItemComponents {
                 return builder.persistent(ItemGrantedAbility.CODEC).networkSynchronized(ItemGrantedAbility.STREAM_CODEC);
             });
 
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<AbilitySourceOverride>> ABILITY_SOURCE = COMPONENT_TYPES
+            .registerComponentType("ability_source", builder -> {
+                return builder.persistent(AbilitySourceOverride.CODEC).networkSynchronized(AbilitySourceOverride.STREAM_CODEC);
+            });
+
     public static void register(IEventBus modBus) {
         COMPONENT_TYPES.register(modBus);
     }

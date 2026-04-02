@@ -1,0 +1,16 @@
+{
+  "values": {
+    "#minecraft:swords": {
+      "block_efficiency": 0.75,
+      "max_poise": 20.0
+    },
+    "minecraft:diamond_sword": {
+      "block_efficiency": 0.8,
+      "max_poise": 25.0
+    },
+    "minecraft:shield": {
+      "block_efficiency": 1.0,
+      "max_poise": 50.0
+    }
+  }
+}

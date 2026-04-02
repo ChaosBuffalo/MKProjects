@@ -3,6 +3,8 @@ package com.chaosbuffalo.mkcore.events;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.item.ItemBlockStats;
+import com.chaosbuffalo.mkcore.item.ItemCriticalStats;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
@@ -33,7 +35,7 @@ public class ItemEventHandler {
     }
 
     private static AttributeModifier createDefaultSlotModifier(String id, double amount, AttributeModifier.Operation op) {
-        return new AttributeModifier(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, id), amount, op);
+        return new AttributeModifier(MKCore.id(id), amount, op);
     }
 
     private static void addDefaultAttribute(ItemAttributeModifierEvent event, Holder<Attribute> attribute, Function<String,AttributeModifier> modifierSupplier, EquipmentSlotGroup group) {
@@ -47,35 +49,42 @@ public class ItemEventHandler {
     public static void onItemAttributeModifierEvent(ItemAttributeModifierEvent event) {
         Item from = event.getItemStack().getItem();
         if (from instanceof SwordItem) {
-            addDefaultAttribute(event, MKAttributes.MAX_POISE,
-                    id -> createDefaultSlotModifier(id,
-                            20.0,
-                            AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+            var blockStats = ItemBlockStats.get(event.getItemStack());
+            if (blockStats != null) {
+                addDefaultAttribute(event, MKAttributes.MAX_POISE,
+                        id -> createDefaultSlotModifier(id,
+                                blockStats.maxPoise(),
+                                AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
 
-            addDefaultAttribute(event, MKAttributes.BLOCK_EFFICIENCY,
-                    id -> createDefaultSlotModifier(id,
-                            0.75,
-                            AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+                addDefaultAttribute(event, MKAttributes.BLOCK_EFFICIENCY,
+                        id -> createDefaultSlotModifier(id,
+                                blockStats.blockEfficiency(),
+                                AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+            }
 
+            var critStats = ItemCriticalStats.getOrDefault(event.getItemStack());
             addDefaultAttribute(event, MKAttributes.MELEE_CRIT,
                     id -> createDefaultSlotModifier(id,
-                            ItemUtils.getCritChanceForItem(event.getItemStack()),
+                            critStats.critChance(),
                             AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
 
             addDefaultAttribute(event, MKAttributes.MELEE_CRIT_MULTIPLIER,
                     id -> createDefaultSlotModifier(id,
-                            ItemUtils.getCritMultiplierForItem(event.getItemStack()),
+                            critStats.critMultiplier(),
                             AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         }
         if (from instanceof ShieldItem) {
-            addDefaultAttribute(event, MKAttributes.MAX_POISE,
-                    id -> createDefaultSlotModifier(id,
-                            50.0,
-                            AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.OFFHAND);
-            addDefaultAttribute(event, MKAttributes.BLOCK_EFFICIENCY,
-                    id -> createDefaultSlotModifier(id,
-                            1.0f,
-                            AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.OFFHAND);
+            var blockStats = ItemBlockStats.get(event.getItemStack());
+            if (blockStats != null) {
+                addDefaultAttribute(event, MKAttributes.MAX_POISE,
+                        id -> createDefaultSlotModifier(id,
+                                blockStats.maxPoise(),
+                                AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.OFFHAND);
+                addDefaultAttribute(event, MKAttributes.BLOCK_EFFICIENCY,
+                        id -> createDefaultSlotModifier(id,
+                                blockStats.blockEfficiency(),
+                                AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.OFFHAND);
+            }
         }
     }
 }

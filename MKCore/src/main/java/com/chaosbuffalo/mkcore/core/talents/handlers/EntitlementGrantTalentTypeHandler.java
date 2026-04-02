@@ -21,4 +21,9 @@ public class EntitlementGrantTalentTypeHandler extends TalentTypeHandler {
             }
         }
     }
+
+    @Override
+    public void onRecordLoaded(TalentRecord record) {
+        onRecordUpdated(record);
+    }
 }

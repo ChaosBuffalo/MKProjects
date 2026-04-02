@@ -1,6 +1,9 @@
 package com.chaosbuffalo.mknpc.init;
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.entity.MKBlazeEntity;
+import com.chaosbuffalo.mknpc.entity.MKFlyingSkeletonEntity;
+import com.chaosbuffalo.mknpc.entity.MKFlyingSkullEntity;
 import com.chaosbuffalo.mknpc.entity.MKSkeletonEntity;
 import com.chaosbuffalo.mknpc.entity.MKZombifiedPiglinEntity;
 import net.minecraft.core.registries.Registries;
@@ -17,11 +20,17 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public class MKNpcEntityTypes {
     public static final String SKELETON_NAME = "skeleton";
     public static final String ZOMBIFIED_PIGLIN_NAME = "zombified_piglin";
+    public static final String BLAZE_NAME = "blaze";
+    public static final String FLYING_SKELETON_NAME = "flying_skeleton";
+    public static final String FLYING_SKULL_NAME = "flying_skull";
 
     @SubscribeEvent
     public static void registerEntityAttributes(EntityAttributeCreationEvent event) {
         event.put(SKELETON_TYPE.get(), MKSkeletonEntity.registerAttributes(1.0, 0.3).build());
         event.put(ZOMBIE_PIGLIN_TYPE.get(), MKZombifiedPiglinEntity.registerAttributes(1.0, 0.2).build());
+        event.put(BLAZE_TYPE.get(), MKBlazeEntity.registerAttributes(1.0, 0.38).build());
+        event.put(FLYING_SKELETON_TYPE.get(), MKFlyingSkeletonEntity.registerAttributes(1.0, 0.3).build());
+        event.put(FLYING_SKULL_TYPE.get(), MKFlyingSkullEntity.registerAttributes(1.0, 0.3).build());
     }
 
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, MKNpc.MODID);
@@ -35,6 +44,24 @@ public class MKNpcEntityTypes {
             () -> EntityType.Builder.of(MKZombifiedPiglinEntity::new, MobCategory.MONSTER)
                     .sized(EntityType.ZOMBIFIED_PIGLIN.getWidth(), EntityType.ZOMBIFIED_PIGLIN.getHeight())
                     .build(ZOMBIFIED_PIGLIN_NAME));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<MKBlazeEntity>> BLAZE_TYPE = ENTITIES.register(BLAZE_NAME,
+            () -> EntityType.Builder.of(MKBlazeEntity::new, MobCategory.MONSTER)
+                    .fireImmune()
+                    .sized(EntityType.BLAZE.getWidth(), EntityType.BLAZE.getHeight())
+                    .build(BLAZE_NAME));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<MKFlyingSkeletonEntity>> FLYING_SKELETON_TYPE = ENTITIES.register(FLYING_SKELETON_NAME,
+            () -> EntityType.Builder.of(MKFlyingSkeletonEntity::new, MobCategory.MONSTER)
+                    .sized(EntityType.SKELETON.getWidth(), EntityType.SKELETON.getHeight())
+                    .build(SKELETON_NAME));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<MKFlyingSkullEntity>> FLYING_SKULL_TYPE = ENTITIES.register(FLYING_SKULL_NAME,
+            () -> EntityType.Builder.of(MKFlyingSkullEntity::new, MobCategory.MONSTER)
+                    .sized(0.8f, 0.8f)
+                    .build(FLYING_SKULL_NAME));
+
+
 
 
     public static void register(IEventBus modBus) {

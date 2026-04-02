@@ -115,6 +115,10 @@ public class NpcDefinitionBuilder {
         return equip(slot, new ItemStack(item.value()), weight, dropChance);
     }
 
+    public NpcDefinitionBuilder equip(EquipmentSlot slot, Item item, double weight, float dropChance) {
+        return equip(slot, new ItemStack(item), weight, dropChance);
+    }
+
     public NpcDefinitionBuilder dropChance(float chance) {
         this.defaultDropChance = chance;
         return this;
@@ -124,11 +128,23 @@ public class NpcDefinitionBuilder {
         return equip(slot, item, 1.0, defaultDropChance);
     }
 
+    public NpcDefinitionBuilder equip(EquipmentSlot slot, Item item) {
+        return equip(slot, item, 1.0, defaultDropChance);
+    }
+
     public NpcDefinitionBuilder mainHand(Holder<Item> item) {
         return equip(EquipmentSlot.MAINHAND, item);
     }
 
+    public NpcDefinitionBuilder mainHand(Item item) {
+        return equip(EquipmentSlot.MAINHAND, item);
+    }
+
     public NpcDefinitionBuilder mainHand(Holder<Item> item, double weight) {
+        return equip(EquipmentSlot.MAINHAND, item, weight, defaultDropChance);
+    }
+
+    public NpcDefinitionBuilder mainHand(Item item, double weight) {
         return equip(EquipmentSlot.MAINHAND, item, weight, defaultDropChance);
     }
 

@@ -6,10 +6,13 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
+import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
 import com.chaosbuffalo.mkcore.item.CoreItemComponents;
 import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
 import com.chaosbuffalo.mkcore.sync.types.SyncString;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -18,17 +21,19 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 import javax.annotation.Nonnull;
 import java.util.*;
 
-public class PlayerEquipment extends EntityEquipment implements IPlayerSyncComponentProvider {
-    private static final UUID EV_ID = UUID.fromString("951a29de-b941-4c4d-9d01-dba4c68b7897");
+public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvider {
 
     private final MKPlayerData playerData;
-    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+    private final SyncGroup syncGroup = new SyncGroup();
     private final Set<ResourceLocation> armorMastery;
     private final SyncString clientMasteryInfo;
+    private boolean lastHandsEmpty = false;
 
     public PlayerEquipment(MKPlayerData playerData) {
         super(playerData);
@@ -36,14 +41,12 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
         this.armorMastery = new HashSet<>();
         clientMasteryInfo = new SyncString(""); // TODO: better sync? this is pretty dumb
         clientMasteryInfo.setCallback(this::handleClientMasteryUpdate);
-        addSyncPrivate("armor_mastery", clientMasteryInfo);
-        playerData.events().subscribe(PlayerEvents.PERSONA_ACTIVATE, EV_ID, this::onPersonaActivated);
-        playerData.events().subscribe(PlayerEvents.PERSONA_DEACTIVATE, EV_ID, this::onPersonaDeactivated);
+        syncGroup.addPrivate("armor_mastery", clientMasteryInfo);
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     private void handleClientMasteryUpdate(String masteryInfo) {
@@ -69,7 +72,7 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
         if (slot.isArmor()) {
             // Need to do refresh here so armor mastery is applied to the armor worn at login
             // persona activate callback is done before equipment is ready
-            refreshArmorClassBonus(slot);
+            refreshArmorClassBonus(slot, to);
         }
     }
 
@@ -106,7 +109,7 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
         return armorKey != null && armorMastery.contains(armorKey.location());
     }
 
-    private void applyArmorClassBonus(EquipmentSlot slot, ItemStack to) {
+    private void refreshArmorClassBonus(EquipmentSlot slot, ItemStack to) {
         if (to.isEmpty())
             return;
 
@@ -116,7 +119,9 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
 
         ArmorClass armorClass = holder.value();
         armorClass.getPositiveModifierMap(slot).forEach((attr, mod) -> tryAddModifier(attr, slot, mod));
-        if (!isArmorClassMastered(holder)) {
+        if (isArmorClassMastered(holder)) {
+            armorClass.getNegativeModifierMap(slot).forEach((attr, mod) -> tryRemoveModifier(attr, slot, mod));
+        } else {
             armorClass.getNegativeModifierMap(slot).forEach((attr, mod) -> tryAddModifier(attr, slot, mod));
         }
     }
@@ -137,8 +142,7 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
     private void refreshArmorClassBonus(EquipmentSlot slot) {
         var item = playerData.getEntity().getItemBySlot(slot);
         if (!item.isEmpty()) {
-            removeArmorClassBonus(slot, item);
-            applyArmorClassBonus(slot, item);
+            refreshArmorClassBonus(slot, item);
         }
     }
 
@@ -151,7 +155,7 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
         if (instance != null) {
             var modId = makeSlotModifierId(template, slot);
             AttributeModifier mod = new AttributeModifier(modId, template.amount(), template.operation());
-            instance.addTransientModifier(mod);
+            instance.addOrUpdateTransientModifier(mod);
         }
     }
 
@@ -201,27 +205,27 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
     }
 
     @Override
-    public void addUnarmedModifier() {
+    protected void addUnarmedModifier() {
         super.addUnarmedModifier();
-        AttributeInstance attr = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT);
         float skillLevel = MKAbility.getSkillLevel(playerData.getEntity(), MKAttributes.HAND_TO_HAND);
+
+        AttributeInstance attr = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT);
         if (attr != null) {
-            if (attr.getModifier(UNARMED_SKILL_ID) == null) {
-                attr.addTransientModifier(new AttributeModifier(UNARMED_SKILL_ID,
-                        0.05 + skillLevel / 100.0, AttributeModifier.Operation.ADD_VALUE));
-            }
+            double amount = 0.05 + skillLevel / 100.0;
+            attr.addOrUpdateTransientModifier(new AttributeModifier(UNARMED_SKILL_ID,
+                    amount, AttributeModifier.Operation.ADD_VALUE));
         }
+
         AttributeInstance crit = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT_MULTIPLIER);
         if (crit != null) {
-            if (crit.getModifier(UNARMED_SKILL_ID) == null) {
-                crit.addTransientModifier(new AttributeModifier(UNARMED_SKILL_ID,
-                        0.5 + skillLevel / 10.0, AttributeModifier.Operation.ADD_VALUE));
-            }
+            double amount = 0.5 + skillLevel / 10.0;
+            crit.addOrUpdateTransientModifier(new AttributeModifier(UNARMED_SKILL_ID,
+                    amount, AttributeModifier.Operation.ADD_VALUE));
         }
     }
 
     @Override
-    public void removeUnarmedModifier() {
+    protected void removeUnarmedModifier() {
         super.removeUnarmedModifier();
         AttributeInstance attr = playerData.getEntity().getAttribute(MKAttributes.MELEE_CRIT);
         if (attr != null) {
@@ -231,24 +235,52 @@ public class PlayerEquipment extends EntityEquipment implements IPlayerSyncCompo
         if (crit != null) {
             crit.removeModifier(UNARMED_SKILL_ID);
         }
-
     }
 
-    public void onPersonaActivated(PlayerEvents.PersonaEvent event) {
+    @Override
+    public void refreshUnarmedModifiers(ItemStack mainHand) {
+        refreshUnarmedModifiers(mainHand, false);
+    }
+
+    private void refreshUnarmedModifiers(ItemStack mainHand, boolean force) {
+        if (force || lastHandsEmpty != mainHand.isEmpty()) {
+            super.refreshUnarmedModifiers(mainHand);
+            lastHandsEmpty = mainHand.isEmpty();
+        }
+    }
+
+    private void onPersonaActivated() {
         refreshAllArmorSlots();
         addItemAbility(EquipmentSlot.MAINHAND);
         addItemAbility(EquipmentSlot.HEAD);
         addItemAbility(EquipmentSlot.CHEST);
         addItemAbility(EquipmentSlot.LEGS);
         addItemAbility(EquipmentSlot.FEET);
+
+        ItemStack mainHand = playerData.getEntity().getItemBySlot(EquipmentSlot.MAINHAND);
+        refreshUnarmedModifiers(mainHand, true);
     }
 
-    private void onPersonaDeactivated(PlayerEvents.PersonaEvent event) {
+    private void onPersonaDeactivated() {
         resetArmorMastery();
         removeItemAbility(EquipmentSlot.MAINHAND);
         removeItemAbility(EquipmentSlot.HEAD);
         removeItemAbility(EquipmentSlot.CHEST);
         removeItemAbility(EquipmentSlot.LEGS);
         removeItemAbility(EquipmentSlot.FEET);
+    }
+
+    @EventBusSubscriber
+    public static class Events {
+
+        @SubscribeEvent
+        public static void onPersonaActivated(PersonaEvent.PersonaActivated event) {
+            event.getPlayerData().getEquipment().onPersonaActivated();
+        }
+
+        @SubscribeEvent
+        public static void onPersonaDeactivated(PersonaEvent.PersonaDeactivated event) {
+            event.getPlayerData().getEquipment().onPersonaDeactivated();
+        }
     }
 }

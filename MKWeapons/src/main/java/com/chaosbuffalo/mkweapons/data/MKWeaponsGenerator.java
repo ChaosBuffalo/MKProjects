@@ -15,7 +15,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-import java.util.*;
+import java.util.Optional;
 
 @EventBusSubscriber
 public class MKWeaponsGenerator {
@@ -34,7 +34,7 @@ public class MKWeaponsGenerator {
                 gen.getPackOutput(), lookup, MKWeapons.MODID, helper);
         gen.addProvider(event.includeServer(), blockTagsProvider);
         gen.addProvider(event.includeServer(), new MKWeaponsItemTagProvider(gen, lookup, blockTagsProvider, helper));
-        gen.addProvider(event.includeClient(), new MKWeaponModelProvider(gen.getPackOutput(), helper, MKWeapons.MODID));
+        gen.addProvider(event.includeClient(), new MKWeaponsModelGenerator(gen.getPackOutput(), helper));
         gen.addProvider(event.includeServer(), new MKWeaponCurioGenerator(MKWeapons.MODID, gen.getPackOutput(), event.getExistingFileHelper(), lookup));
 
         // pack.mcmeta

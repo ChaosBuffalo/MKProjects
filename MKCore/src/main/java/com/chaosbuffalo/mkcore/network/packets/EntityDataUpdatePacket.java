@@ -66,11 +66,11 @@ public record EntityDataUpdatePacket(int entityId, List<UpdateTag> updateTags) i
             if (target instanceof Player player) {
                 MKPlayerData data = MKCore.getPlayerOrThrow(player);
                 for (var tag : packet.updateTags) {
-                    data.getSyncController().deserializeUpdate(context, tag.tag, tag.visibility);
+                    data.getSyncController().applyRemoteUpdate(context, tag.tag, tag.visibility);
                 }
             } else if (target instanceof ISyncControllerProvider provider) {
                 for (var tag : packet.updateTags) {
-                    provider.getSyncController().deserializeUpdate(context, tag.tag, tag.visibility);
+                    provider.getSyncController().applyRemoteUpdate(context, tag.tag, tag.visibility);
                 }
             }
         }

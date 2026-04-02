@@ -13,9 +13,9 @@ import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.pets.IMKPet;
 import com.chaosbuffalo.mkcore.core.pets.PetNonCombatBehavior;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
-import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.entities.ISyncControllerProvider;
 import com.chaosbuffalo.mkcore.sync.controllers.EntitySyncController;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.IMobFaction;
@@ -36,7 +36,6 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.NpcConstants;
 import com.chaosbuffalo.targeting_api.ITargetingOwner;
 import com.chaosbuffalo.targeting_api.Targeting;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
@@ -84,7 +83,6 @@ import org.apache.commons.lang3.mutable.MutableDouble;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, ISyncControllerProvider, IMKPet, ITargetingOwner {
     private static final EntityDataAccessor<String> LOOK_STYLE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.STRING);
@@ -93,7 +91,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private static final EntityDataAccessor<Float> GHOST_TRANSLUCENCY = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> HAS_GHOST_ARMOR = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> GHOST_ARMOR_TRANSLUCENCY = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
-    private final PlayerSyncComponent animSync = new PlayerSyncComponent();
+    private final SyncGroup animSync = new SyncGroup();
     private int castAnimTimer;
     private VisualCastState visualCastState;
     private MKAbility castingAbility;
@@ -106,11 +104,12 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private int comboCount;
     private int comboCooldown;
     private final EntitySyncController syncController;
-    private final Supplier<MKEntityData> entityDataCap;
+    private final MKEntityData entityDataCap;
     private final ParticleEffectInstanceTracker particleEffectTracker;
     private final EntityTradeContainer entityTradeContainer;
     private final List<BossStage> bossStages = new ArrayList<>();
     private int currentStage;
+    private boolean canFly;
 
     private int blockDelay;
     private int blockHold;
@@ -118,6 +117,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     private int castTicks;
     private int currentCastTicks;
+    private double rangedCastingDistance;
 
     @Nullable
     protected Component battlecry;
@@ -204,38 +204,37 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         castingAbility = null;
         battlecry = null;
         lungeSpeed = .25;
+        rangedCastingDistance = 6.0;
         blockCooldown = GameConstants.TICKS_PER_SECOND * 2;
         blockDelay = GameConstants.TICKS_PER_SECOND / 2;
         blockHold = GameConstants.TICKS_PER_SECOND * 2;
         syncController = new EntitySyncController(this);
-        animSync.attach("anim", syncController);
+        syncController.addChild("anim", animSync);
         particleEffectTracker = ParticleEffectInstanceTracker.getTracker(this);
         animSync.addPublic("particles", particleEffectTracker);
         nonCombatMoveType = NonCombatMoveType.RANDOM_WANDER;
         combatMoveType = CombatMoveType.MELEE;
+        canFly = false;
 
-        // TODO: see if this is enough
-        entityDataCap = Suppliers.memoize(() -> {
-            var entityDataCap = MKCore.getEntitySpecificData(this).orElseThrow(IllegalStateException::new);
-            entityDataCap.attachUpdateEngine(syncController);
-            entityDataCap.getAbilityExecutor().setStartCastCallback(this::startCast);
-            entityDataCap.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
-            entityDataCap.getAbilityExecutor().setInterruptCastCallback(this::interruptCast);
-            entityDataCap.setInstanceTracker(particleEffectTracker);
-            return entityDataCap;
-        });
+        entityDataCap = MKCore.getEntitySpecificData(this).orElseThrow(IllegalStateException::new);
+        entityDataCap.attachUpdateEngine(syncController);
+        entityDataCap.getAbilityExecutor().setStartCastCallback(this::startCast);
+        entityDataCap.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
+        entityDataCap.getAbilityExecutor().setInterruptCastCallback(this::interruptCast);
+        entityDataCap.setInstanceTracker(particleEffectTracker);
     }
 
     @Override
     public void onAddedToLevel() {
         super.onAddedToLevel();
+        getEntityDataCap();
         if (!level().isClientSide) {
             syncController.onJoinLevel();
         }
     }
 
     public MKEntityData getEntityDataCap() {
-        return entityDataCap.get();
+        return entityDataCap;
     }
 
     public boolean hasBossStages() {
@@ -275,6 +274,14 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     public void setBlockCooldown(int blockCooldown) {
         this.blockCooldown = blockCooldown;
+    }
+
+    public void setCanFly(boolean canFly) {
+        this.canFly = canFly;
+    }
+
+    public boolean canFly() {
+        return canFly;
     }
 
     @Override
@@ -448,7 +455,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         this.goalSelector.addGoal(priority++, new ReturnToSpawnGoal(this));
         this.goalSelector.addGoal(priority++, new FloatGoal(this));
         this.goalSelector.addGoal(priority++, new MovementGoal(this));
-        this.goalSelector.addGoal(priority++, new UseAbilityGoal(this));
+        this.goalSelector.addGoal(priority++, new UseAbilityGoal(this, false));
         this.goalSelector.addGoal(priority++, new MKBowAttackGoal(this, 5, 15.0f));
         this.goalSelector.addGoal(priority++, new MKBlockGoal(this));
         this.meleeAttackGoal = new MKMeleeAttackGoal(this);
@@ -462,7 +469,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return true;
     }
 
-    private void handleCombatMovementDetect(ItemStack stack) {
+    protected void handleCombatMovementDetect(ItemStack stack) {
         if (ItemUtils.isRangedWeapon(stack)) {
             setCombatMoveType(CombatMoveType.RANGE);
         } else {
@@ -613,7 +620,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
         switch (decision.getMovementSuggestion()) {
             case KITE:
-                return new KiteMovementStrategy(Math.max(ability.getDistance(this) * .5, 8));
+                return new KiteMovementStrategy(Math.max(ability.getDistance(this) * .50, getMinimumRangedCastingDistance()), canFly());
             case FOLLOW:
                 return new FollowMovementStrategy(1.0f, Math.round(ability.getDistance(this) / 2.0f));
             case MELEE:
@@ -778,9 +785,17 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET.get(), target);
         switch (getCombatMoveType()) {
             case STATIONARY -> MovementStrategyController.enterStationary(this);
-            case RANGE -> MovementStrategyController.enterCastingMode(this, 6.0);
+            case RANGE -> MovementStrategyController.enterCastingMode(this, getMinimumRangedCastingDistance(), canFly());
             default -> MovementStrategyController.enterMeleeMode(this, 1);
         }
+    }
+
+    public double getMinimumRangedCastingDistance(){
+        return rangedCastingDistance;
+    }
+
+    public void setMinimumRangedCastingDistance(double rangedCastingDistance) {
+        this.rangedCastingDistance = rangedCastingDistance;
     }
 
     @Override
@@ -793,10 +808,14 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             }
         } else {
             switch (getNonCombatMoveType()) {
-                case RANDOM_WANDER -> MovementStrategyController.enterRandomWander(this);
+                case RANDOM_WANDER -> enterWanderState();
                 default -> MovementStrategyController.enterStationary(this);
             }
         }
+    }
+
+    protected void enterWanderState() {
+        MovementStrategyController.enterRandomWander(this);
     }
 
     public boolean hasThreatTarget() {

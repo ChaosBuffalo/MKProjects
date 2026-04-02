@@ -52,20 +52,19 @@ public class MeleeSkillScalingEffect extends BaseMeleeWeaponEffect {
     }
 
     @Override
-    public void onSkillChange(Player player) {
-        onEntityUnequip(player);
-        onEntityEquip(player);
+    public void onSkillChange(Player player, Holder<Attribute> skill) {
+        if (this.skill.is(skill)) {
+            onEntityEquip(player);
+        }
     }
 
     @Override
     public void onEntityEquip(LivingEntity entity) {
         AttributeInstance attr = entity.getAttribute(Attributes.ATTACK_DAMAGE);
         if (attr != null) {
-            if (attr.getModifier(skillScaling) == null) {
-                float skillLevel = MKAbility.getSkillLevel(entity, skill);
-                attr.addTransientModifier(new AttributeModifier(skillScaling, skillLevel * baseDamage *
-                        MKConfig.SERVER.skillScalingMultiplier.getAsDouble(), AttributeModifier.Operation.ADD_VALUE));
-            }
+            float skillLevel = MKAbility.getSkillLevel(entity, skill);
+            double amount = skillLevel * baseDamage * MKConfig.SERVER.skillScalingMultiplier.getAsDouble();
+            attr.addOrUpdateTransientModifier(new AttributeModifier(skillScaling, amount, AttributeModifier.Operation.ADD_VALUE));
         }
     }
 

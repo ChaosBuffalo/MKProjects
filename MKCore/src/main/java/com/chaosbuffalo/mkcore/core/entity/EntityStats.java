@@ -3,33 +3,33 @@ package com.chaosbuffalo.mkcore.core.entity;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.*;
-import com.chaosbuffalo.mkcore.core.player.IPlayerSyncComponentProvider;
-import com.chaosbuffalo.mkcore.core.player.PlayerSyncComponent;
 import com.chaosbuffalo.mkcore.sync.types.SyncFloat;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 
-public abstract class EntityStats implements IMKEntityStats, IPlayerSyncComponentProvider {
+public abstract class EntityStats implements IMKEntityStats, ISyncGroupProvider {
 
     public static final ResourceLocation POISE_BREAK_TIMER = MKCore.id("timer.poise_break");
     protected final IMKEntityData entityData;
     protected final AbilityTracker abilityTracker;
     protected final SyncFloat mana = new SyncFloat(0f);
     protected final SyncFloat poise = new SyncFloat(0f);
-    private final PlayerSyncComponent sync = new PlayerSyncComponent();
+    private final SyncGroup syncGroup = new SyncGroup();
 
     public EntityStats(IMKEntityData data) {
         entityData = data;
         abilityTracker = AbilityTracker.getTracker(data.getEntity());
-        addSyncPublic("mana", mana);
-        addSyncPrivate("poise", poise);
-        addSyncPrivate("timers", abilityTracker);
+        syncGroup.addPublic("mana", mana);
+        syncGroup.addPrivate("poise", poise);
+        syncGroup.addPrivate("timers", abilityTracker);
     }
 
     @Override
-    public PlayerSyncComponent getSyncComponent() {
-        return sync;
+    public SyncGroup getSyncGroup() {
+        return syncGroup;
     }
 
     public void tick() {

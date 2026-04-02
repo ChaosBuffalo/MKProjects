@@ -47,6 +47,8 @@ public class MKCoreGenerators {
             generator.addProvider(true, new CoreParticleProvider(generator));
             generator.addProvider(true, new CoreArmorClassProvider(packOutput, datapackLookup));
             generator.addProvider(true, new CoreDimensionDifficultyProvider(packOutput, datapackLookup));
+            generator.addProvider(true, new CoreItemCriticalStatsProvider(packOutput, datapackLookup));
+            generator.addProvider(true, new CoreItemBlockStatsProvider(packOutput, datapackLookup));
 
             new CoreAbilityLanguageProvider(languageProvider).run();
         }

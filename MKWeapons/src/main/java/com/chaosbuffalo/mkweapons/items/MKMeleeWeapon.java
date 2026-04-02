@@ -15,6 +15,7 @@ import com.chaosbuffalo.mkweapons.items.weapon.types.IMeleeWeaponType;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -22,6 +23,7 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
@@ -30,8 +32,6 @@ import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
@@ -52,12 +52,12 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
         this.weaponType = weaponType;
         this.mkTier = tier;
         this.weaponEffects = ConcatenatedListView.of(
-                tier.getTierEffects(),
+                tier.getMeleeEffects(),
                 weaponType.getWeaponEffects()
         );
     }
 
-    public static ItemAttributeModifiers createAttributes(IMKTier tier, IMeleeWeaponType weaponType) {
+    public static ItemAttributeModifiers.Builder createAttributes(IMKTier tier, IMeleeWeaponType weaponType) {
         ResourceLocation modId = weaponType.getName().withSuffix("_" + tier.getName());
         return ItemAttributeModifiers.builder()
                 .add(
@@ -94,8 +94,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
                         MKAttributes.BLOCK_EFFICIENCY,
                         new AttributeModifier(modId, weaponType.getBlockEfficiency(), AttributeModifier.Operation.ADD_VALUE),
                         EquipmentSlotGroup.MAINHAND
-                )
-                .build();
+                );
     }
 
 
@@ -196,7 +195,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     }
 
     @Override
-    public void onSkillChange(ItemStack stack, Player playerEntity) {
-        getWeaponEffects(stack).forEach(x -> x.onSkillChange(playerEntity));
+    public void onSkillChange(ItemStack stack, Player playerEntity, Holder<Attribute> skill) {
+        getWeaponEffects(stack).forEach(x -> x.onSkillChange(playerEntity, skill));
     }
 }

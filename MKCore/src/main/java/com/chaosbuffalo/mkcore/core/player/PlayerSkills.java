@@ -30,11 +30,16 @@ import java.util.function.DoubleUnaryOperator;
 public class PlayerSkills implements IMKSerializable<CompoundTag> {
 
     protected interface SkillChangeHandler {
-        void onSkillChange(MKPlayerData playerData, double value);
+        void onSkillChange(MKPlayerData playerData, Holder<Attribute> skill);
+    }
+
+    public interface PlayerSkillChangeObserver {
+        void onSkillLevelChange(MKPlayerData playerData, AttributeInstance attribute);
     }
 
     private final Persona persona;
     private final Object2DoubleMap<Holder<Attribute>> skillValues = new Object2DoubleOpenHashMap<>();
+    private final List<PlayerSkillChangeObserver> skillChangeObservers = new ArrayList<>();
 
     private static final Map<Holder<Attribute>, SkillChangeHandler> skillChangeHandlers = Util.make(() -> {
         Map<Holder<Attribute>, SkillChangeHandler> map = new HashMap<>(8);
@@ -53,20 +58,19 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         this.persona = persona;
     }
 
-    private static void onWeaponSkillChange(MKPlayerData playerData, double value) {
+    private static void onWeaponSkillChange(MKPlayerData playerData, Holder<Attribute> skill) {
         ItemStack mainHand = playerData.getEntity().getItemBySlot(EquipmentSlot.MAINHAND);
         if (mainHand.getItem() instanceof IReceivesSkillChange receiver) {
-            receiver.onSkillChange(mainHand, playerData.getEntity());
+            receiver.onSkillChange(mainHand, playerData.getEntity(), skill);
         }
     }
 
-    private static void onUnarmedSkillChange(MKPlayerData playerData, double value) {
+    private static void onUnarmedSkillChange(MKPlayerData playerData, Holder<Attribute> skill) {
         ItemStack mainHand = playerData.getEntity().getItemBySlot(EquipmentSlot.MAINHAND);
         if (mainHand.getItem() instanceof IReceivesSkillChange receiver) {
-            receiver.onSkillChange(mainHand, playerData.getEntity());
+            receiver.onSkillChange(mainHand, playerData.getEntity(), skill);
         } else if (mainHand.isEmpty()) {
-            playerData.getEquipment().removeUnarmedModifier();
-            playerData.getEquipment().addUnarmedModifier();
+            playerData.getEquipment().refreshUnarmedModifiers(mainHand);
         }
     }
 
@@ -88,6 +92,10 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
         }
     }
 
+    public void addSkillChangeObserver(PlayerSkillChangeObserver skillChangeObserver) {
+        skillChangeObservers.add(skillChangeObserver);
+    }
+
     public void setSkill(Holder<Attribute> attribute, double skillLevel) {
         setSkill(attribute, skillLevel, true);
     }
@@ -103,12 +111,13 @@ public class PlayerSkills implements IMKSerializable<CompoundTag> {
             skillValues.put(attribute, skillLevel);
         }
 
-        MKPlayerData playerData = persona.getPlayerData();
         SkillChangeHandler handler = skillChangeHandlers.get(attribute);
         if (handler != null) {
-            handler.onSkillChange(playerData, skillLevel);
+            handler.onSkillChange(persona.getPlayerData(), attribute);
         }
-        playerData.events().tryTrigger(PlayerEvents.SKILL_LEVEL_CHANGE, () -> new PlayerEvents.SkillEvent(persona.getPlayerData(), attrInst));
+        if (!skillChangeObservers.isEmpty()) {
+            skillChangeObservers.forEach(s -> s.onSkillLevelChange(persona.getPlayerData(), attrInst));
+        }
     }
 
     private double getSkillValue(Holder<Attribute> attribute) {

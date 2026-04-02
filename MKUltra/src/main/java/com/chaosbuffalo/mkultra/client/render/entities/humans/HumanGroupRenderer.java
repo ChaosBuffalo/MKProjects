@@ -32,6 +32,7 @@ public class HumanGroupRenderer extends BipedGroupRenderer<HumanEntity, MKBipedM
         putLook(MKUHumans.GHOST_1_NAME, MKUHumans.GHOST_LOOK_1);
         putLook(MKUHumans.GHOST_LOOK_CLEAN_NAME, MKUHumans.GHOST_LOOK_CLEAN);
         putLook(MKUHumans.NETHER_MAGE_1_NAME, MKUHumans.NETHER_MAGE_1_LOOK);
+        putLook(MKUHumans.BANDIT_RAIDER_1_NAME, MKUHumans.BANDIT_RAIDER_1_LOOK);
         putLook(MKUHumans.TEMPLE_GUARD_1_NAME, MKUHumans.TEMPLE_GUARD_1_LOOK);
         putLook(MKUHumans.TEMPLE_GUARD_2_NAME, MKUHumans.TEMPLE_GUARD_2_LOOK);
         putLook(MKUHumans.NECROTIDE_CULTIST_1_NAME, MKUHumans.NECROTIDE_CULTIST_1);

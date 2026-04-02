@@ -27,11 +27,4 @@ public interface ISerializableAttribute<T> {
 
     <D> void deserialize(Dynamic<D> dynamic);
 
-    void setValueFromString(String stringValue);
-
-    boolean validateString(String stringValue);
-
-    boolean isEmptyStringInput(String string);
-
-    String valueAsString();
 }
