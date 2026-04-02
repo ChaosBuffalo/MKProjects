@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class MKDamageContext {
     private final LivingDamageEvent.Pre event;
@@ -158,6 +159,14 @@ public class MKDamageContext {
 
     public void syncFromEvent() {
         workingDamage = event.getNewDamage();
+    }
+
+    public void runLegacyEventMutation(String stageId, Consumer<LivingDamageEvent.Pre> consumer) {
+        addAudit("legacy:start:" + stageId);
+        syncToEvent();
+        consumer.accept(event);
+        syncFromEvent();
+        addAudit("legacy:end:" + stageId + "=" + workingDamage);
     }
 
     public void putMetadata(String key, Object value) {

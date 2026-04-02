@@ -37,8 +37,9 @@ public final class CoreDamagePipelineStages {
         }
         LivingEntity attacker = context.getAttacker();
         if (attacker != null && context.getAttackerData() != null) {
-            SpellTriggers.LIVING_HURT_ENTITY.applyDamageBonuses(context.getEvent(), context.getSource(),
-                    context.getTarget(), context.getAttackerData());
+            context.runLegacyEventMutation("mkcore:attacker_damage_bonus", event ->
+                    SpellTriggers.LIVING_HURT_ENTITY.applyDamageBonuses(event, context.getSource(),
+                            context.getTarget(), context.getAttackerData()));
         }
     }
 
@@ -48,8 +49,9 @@ public final class CoreDamagePipelineStages {
         }
         LivingEntity attacker = context.getAttacker();
         if (attacker != null && context.getAttackerData() != null) {
-            SpellTriggers.LIVING_HURT_ENTITY.applyCrits(context.getEvent(), context.getSource(),
-                    context.getTarget(), context.getAttackerData());
+            context.runLegacyEventMutation("mkcore:attacker_crits", event ->
+                    SpellTriggers.LIVING_HURT_ENTITY.applyCrits(event, context.getSource(),
+                            context.getTarget(), context.getAttackerData()));
         }
     }
 
@@ -57,7 +59,8 @@ public final class CoreDamagePipelineStages {
         if (context.isFullyBlocked()) {
             return;
         }
-        SpellTriggers.ENTITY_HURT.applyResistance(context.getEvent(), context.getSource(), context.getTargetData());
+        context.runLegacyEventMutation("mkcore:victim_resistance", event ->
+                SpellTriggers.ENTITY_HURT.applyResistance(event, context.getSource(), context.getTargetData()));
     }
 
     private static void runAttackerTriggersStage(MKDamageContext context) {
@@ -65,14 +68,16 @@ public final class CoreDamagePipelineStages {
             return;
         }
         if (context.getSource().is(DamageTypes.FALL)) {
-            SpellTriggers.FALL.onLivingFall(context.getEvent(), context.getSource(), context.getTarget());
+            context.runLegacyEventMutation("mkcore:fall_trigger", event ->
+                    SpellTriggers.FALL.onLivingFall(event, context.getSource(), context.getTarget()));
         }
         LivingEntity attacker = context.getAttacker();
         if (attacker == null || context.getAttackerData() == null) {
             return;
         }
-        SpellTriggers.LIVING_HURT_ENTITY.dispatchTriggers(context.getEvent(), context.getSource(),
-                context.getTarget(), context.getAttackerData());
+        context.runLegacyEventMutation("mkcore:attacker_triggers", event ->
+                SpellTriggers.LIVING_HURT_ENTITY.dispatchTriggers(event, context.getSource(),
+                        context.getTarget(), context.getAttackerData()));
 
         if (attacker instanceof ServerPlayer serverPlayer
                 && DamageUtils.isMeleeDamage(context.getSource())
@@ -86,6 +91,7 @@ public final class CoreDamagePipelineStages {
         if (context.isFullyBlocked()) {
             return;
         }
-        SpellTriggers.ENTITY_HURT.dispatchTriggers(context.getEvent(), context.getSource(), context.getTargetData());
+        context.runLegacyEventMutation("mkcore:victim_triggers", event ->
+                SpellTriggers.ENTITY_HURT.dispatchTriggers(event, context.getSource(), context.getTargetData()));
     }
 }

@@ -38,7 +38,7 @@ public class CombatEventHandler {
         // stages through MKDamagePipeline instead of subscribing to LivingDamageEvent.Pre.
         MKDamageContext context = MKDamageContext.from(event);
         MKDamagePipeline.run(context);
-        event.setNewDamage(context.getWorkingDamage());
+        context.syncToEvent();
     }
 
     private static void playSound(LivingEntity target, Holder<SoundEvent> sound) {
