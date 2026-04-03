@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkweapons.event;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.events.EntityAbilityEvent;
 import com.chaosbuffalo.mkcore.events.PostAttackEvent;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
@@ -79,10 +79,6 @@ public class MKWeaponsEventHandler {
         }
     }
 
-    public static void registerCombatTriggers() {
-        SpellTriggers.LIVING_HURT_ENTITY.registerProjectile(MKWeaponsEventHandler::handleProjectileDamage);
-    }
-
     @SubscribeEvent
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
         if (event.getSlot().getType() == EquipmentSlot.Type.HAND) {
@@ -139,6 +135,10 @@ public class MKWeaponsEventHandler {
         float newDamage = event.getNewDamage();
         boolean isMelee = DamageUtils.isMeleeDamage(source);
         if (trueSource instanceof LivingEntity livingSource) {
+            IMKEntityData attackerData = MKCore.getEntityDataOrThrow(livingSource);
+            if (DamageUtils.isProjectileDamage(source)) {
+                handleProjectileDamage(event, source, livingTarget, attackerData);
+            }
             if (isMelee) {
                 ItemStack mainHand = livingSource.getMainHandItem();
                 if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon meleeWeapon) {

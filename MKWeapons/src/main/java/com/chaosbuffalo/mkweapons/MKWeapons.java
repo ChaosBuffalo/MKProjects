@@ -35,8 +35,6 @@ public class MKWeapons {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        // some preinit code
-        MKWeaponsEventHandler.registerCombatTriggers();
     }
 
     private void processIMC(final InterModProcessEvent event) {

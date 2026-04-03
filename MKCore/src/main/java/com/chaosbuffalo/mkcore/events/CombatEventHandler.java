@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkcore.events;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.core.damage.IMKDamageSourceExtensions;
-import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.effects.triggers.CoreTriggerTypes;
 import com.chaosbuffalo.mkcore.effects.triggers.FallTriggerContext;
 import com.chaosbuffalo.mkcore.effects.triggers.KillTriggerContext;
@@ -40,7 +39,6 @@ public class CombatEventHandler {
         IMKEntityData livingData = MKCore.getEntityDataOrThrow(event.getEntity());
         livingData.getTriggers().dispatch(CoreTriggerTypes.FALL,
                 new FallTriggerContext(event, livingData));
-        SpellTriggers.FALL.onLivingFall(event, livingData);
     }
 
     @SubscribeEvent
@@ -59,7 +57,6 @@ public class CombatEventHandler {
         // Living is source
         if (trueSource instanceof LivingEntity livingSource) {
             var sourceData = MKCore.getEntityDataOrThrow(livingSource);
-            SpellTriggers.LIVING_HURT_ENTITY.onLivingHurtEntity(event, source, livingTarget, sourceData);
 
             if (livingSource instanceof ServerPlayer serverPlayer && DamageUtils.isMeleeDamage(source) && livingSource.getMainHandItem().isEmpty()) {
                 var playerData = MKCore.getPlayerOrThrow(serverPlayer);
@@ -69,7 +66,6 @@ public class CombatEventHandler {
 
         // Living is victim
         var targetData = MKCore.getEntityDataOrThrow(livingTarget);
-        SpellTriggers.ENTITY_HURT.onEntityHurtLiving(event, source, targetData);
     }
 
     private static void playSound(LivingEntity target, Holder<SoundEvent> sound) {
@@ -161,7 +157,6 @@ public class CombatEventHandler {
             var killerData = MKCore.getEntityDataOrThrow(killer);
             killerData.getTriggers().dispatch(CoreTriggerTypes.KILL,
                     new KillTriggerContext(event, source, killerData));
-            SpellTriggers.LIVING_KILL_ENTITY.onEntityDeath(event, source, killerData);
         }
     }
 }
