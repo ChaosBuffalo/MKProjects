@@ -15,6 +15,7 @@ import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
+import com.chaosbuffalo.mknpc.quest.rewards.QuestRewardContext;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
@@ -145,9 +146,10 @@ public class Quest {
         return objectives.stream().allMatch(x -> x.isComplete(data.getObjective(x.getObjectiveName())));
     }
 
-    public void grantRewards(IPlayerQuestingData playerData) {
+    public void grantRewards(IPlayerQuestingData playerData, IWorldNpcData worldData, QuestChainInstance questChain) {
+        QuestRewardContext context = new QuestRewardContext(playerData.getPlayer(), playerData, worldData, questChain, this);
         for (QuestReward reward : rewards) {
-            reward.grantReward(playerData.getPlayer());
+            reward.grantReward(context);
         }
     }
 }

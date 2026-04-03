@@ -5,8 +5,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
-
 public class XpReward extends QuestReward {
     public static final MapCodec<XpReward> MAP_CODEC = RecordCodecBuilder.<XpReward>mapCodec(builder ->
             builder.group(
@@ -31,9 +29,9 @@ public class XpReward extends QuestReward {
     }
 
     @Override
-    public void grantReward(Player player) {
-        player.giveExperiencePoints(xpAmount);
-        player.sendSystemMessage(Component.translatable("mknpc.quest_reward.xp.message", xpAmount)
+    public void grantReward(QuestRewardContext context) {
+        context.player().giveExperiencePoints(xpAmount);
+        context.player().sendSystemMessage(Component.translatable("mknpc.quest_reward.xp.message", xpAmount)
                 .withStyle(ChatFormatting.GOLD));
     }
 }

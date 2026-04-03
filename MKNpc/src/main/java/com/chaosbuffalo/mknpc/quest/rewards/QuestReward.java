@@ -3,8 +3,6 @@ package com.chaosbuffalo.mknpc.quest.rewards;
 import com.chaosbuffalo.mknpc.quest.QuestRegistries;
 import com.mojang.serialization.Codec;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.entity.player.Player;
 
 public abstract class QuestReward {
     public static final Codec<QuestReward> CODEC = Codec.lazyInitialized(() ->
@@ -14,5 +12,5 @@ public abstract class QuestReward {
 
     public abstract Component getDescription();
 
-    public abstract void grantReward(Player player);
+    public abstract void grantReward(QuestRewardContext context);
 }

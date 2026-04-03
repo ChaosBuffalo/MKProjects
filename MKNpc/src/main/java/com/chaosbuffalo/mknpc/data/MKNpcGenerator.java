@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.data;
 
+import com.chaosbuffalo.mknpc.data.content.MKNpcLanguageProvider;
 import com.chaosbuffalo.mknpc.data.generators.NpcRegistrySets;
 import com.chaosbuffalo.mknpc.data.generators.tags.NpcBiomeTagsProvider;
 import com.chaosbuffalo.mknpc.data.generators.tags.NpcEntityTypeTagsProvider;
@@ -37,6 +38,7 @@ public class MKNpcGenerator {
         generator.addProvider(event.includeServer(), new NpcBiomeTagsProvider(packOutput, datapackLookup, fileHelper));
         generator.addProvider(event.includeServer(), new NpcStructureTagsProvider(packOutput, datapackLookup, fileHelper));
         generator.addProvider(event.includeServer(), new NpcEntityTypeTagsProvider(packOutput, datapackLookup, fileHelper));
+        generator.addProvider(event.includeClient(), new MKNpcLanguageProvider(packOutput, "en_us"));
         generator.addProvider(event.includeServer(), new NpcModelLookProvider(generator));
 
 

@@ -9,8 +9,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
-
 import java.util.Objects;
 
 public class TalentTreeReward extends QuestReward {
@@ -35,17 +33,17 @@ public class TalentTreeReward extends QuestReward {
     }
 
     @Override
-    public void grantReward(Player player) {
+    public void grantReward(QuestRewardContext context) {
         var treeKey = treeHolder.getKey();
         Objects.requireNonNull(treeKey);
 
-        var playerData = MKCore.getPlayerOrThrow(player);
+        var playerData = MKCore.getPlayerOrThrow(context.player());
         PlayerTalentKnowledge talentKnowledge = playerData.getTalents();
         if (talentKnowledge.knowsTree(treeKey)) {
             return;
         }
         if (talentKnowledge.unlockTree(treeKey)) {
-            ChatUtils.sendMessage(player, Component.translatable("mknpc.quest_reward.talent_tree_grant",
+            ChatUtils.sendMessage(context.player(), Component.translatable("mknpc.quest_reward.talent_tree_grant",
                     treeHolder.value().getName()).withStyle(ChatFormatting.GOLD));
         }
     }

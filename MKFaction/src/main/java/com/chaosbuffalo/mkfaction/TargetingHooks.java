@@ -11,7 +11,7 @@ public class TargetingHooks {
 
     private static Targeting.TargetRelation getPlayerMobRelation(Player source, IMobFaction mobFaction) {
         IPlayerFaction playerFaction = IPlayerFaction.getOrThrow(source);
-        return playerFaction.getFactionRelation(mobFaction);
+        return playerFaction.getFactionRelation(mobFaction.getEntity());
     }
 
     private static Targeting.TargetRelation playerTargetLiving(Player source, LivingEntity target) {

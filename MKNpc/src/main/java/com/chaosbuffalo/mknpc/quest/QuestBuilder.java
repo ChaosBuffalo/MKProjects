@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.quest.dialogue.conditions.ObjectivesCompleteCondit
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.objectives.*;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
+import com.chaosbuffalo.mknpc.quest.rewards.NotableFactionOverrideReward;
 import com.chaosbuffalo.mknpc.quest.rewards.XpReward;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -42,6 +43,11 @@ public class QuestBuilder {
 
     public QuestBuilder reward(QuestReward reward) {
         quest.addReward(reward);
+        return this;
+    }
+
+    public QuestBuilder notableFactionOverride(QuestNpc npc, int factionScore) {
+        reward(new NotableFactionOverrideReward(npc.location, npc.npcDef, factionScore));
         return this;
     }
 

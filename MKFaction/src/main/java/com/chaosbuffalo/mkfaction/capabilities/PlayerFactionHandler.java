@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.UUID;
 
 public class PlayerFactionHandler implements IPlayerFaction {
 
@@ -42,6 +44,21 @@ public class PlayerFactionHandler implements IPlayerFaction {
     @Override
     public Optional<PlayerFactionEntry> getFactionEntry(Holder<MKFaction> factionHolder) {
         return Optional.ofNullable(getPersonaData().getFactionEntry(factionHolder));
+    }
+
+    @Override
+    public OptionalInt getNpcFactionOverride(UUID spawnId) {
+        return getPersonaData().getNpcFactionOverride(spawnId);
+    }
+
+    @Override
+    public void setNpcFactionOverride(UUID spawnId, int factionScore) {
+        getPersonaData().setNpcFactionOverride(spawnId, factionScore);
+    }
+
+    @Override
+    public void clearNpcFactionOverride(UUID spawnId) {
+        getPersonaData().clearNpcFactionOverride(spawnId);
     }
 
     @Override
@@ -76,7 +93,9 @@ public class PlayerFactionHandler implements IPlayerFaction {
         static final ResourceLocation NAME = MKFactionMod.id("faction_data");
 
         private final Map<Holder<MKFaction>, PlayerFactionEntry> factionMap = new HashMap<>();
+        private final Map<UUID, ScoreOverrideEntry> overrideMap = new HashMap<>();
         private final SyncMapUpdater<Holder<MKFaction>, PlayerFactionEntry> factionUpdater;
+        private final SyncMapUpdater<UUID, ScoreOverrideEntry> overrideUpdater;
         private final Persona persona;
 
         public PersonaFactionData(Persona persona) {
@@ -87,7 +106,14 @@ public class PlayerFactionHandler implements IPlayerFaction {
                     this::idToHolder,
                     this::createNewEntry
             );
+            overrideUpdater = new SyncMapUpdater<>(
+                    overrideMap,
+                    UUID::toString,
+                    UUID::fromString,
+                    this::createNewOverrideEntry
+            );
             persona.getSyncGroup().addPrivate("factions", factionUpdater);
+            persona.getSyncGroup().addPrivate("npc_faction_overrides", overrideUpdater);
         }
 
         private <T> String holderToId(Holder<T> factionHolder) {
@@ -107,8 +133,27 @@ public class PlayerFactionHandler implements IPlayerFaction {
             return new PlayerFactionEntry(faction, this::onDirtyEntry);
         }
 
+        private ScoreOverrideEntry createNewOverrideEntry(UUID spawnId) {
+            return new ScoreOverrideEntry(spawnId, this::onDirtyOverrideEntry);
+        }
+
         public Map<Holder<MKFaction>, PlayerFactionEntry> getFactionMap() {
             return factionMap;
+        }
+
+        public OptionalInt getNpcFactionOverride(UUID spawnId) {
+            ScoreOverrideEntry entry = overrideMap.get(spawnId);
+            return entry == null ? OptionalInt.empty() : OptionalInt.of(entry.getFactionScore());
+        }
+
+        public void setNpcFactionOverride(UUID spawnId, int factionScore) {
+            overrideMap.computeIfAbsent(spawnId, this::createNewOverrideEntry).setFactionScore(factionScore);
+        }
+
+        public void clearNpcFactionOverride(UUID spawnId) {
+            if (overrideMap.remove(spawnId) != null) {
+                overrideUpdater.markDirty(spawnId);
+            }
         }
 
         private PlayerFactionEntry getFactionEntry(Holder<MKFaction> factionName) {
@@ -123,6 +168,10 @@ public class PlayerFactionHandler implements IPlayerFaction {
             factionUpdater.markDirty(entry.getFaction());
         }
 
+        private void onDirtyOverrideEntry(ScoreOverrideEntry entry) {
+            overrideUpdater.markDirty(entry.getSpawnId());
+        }
+
         @Override
         public ResourceLocation getName() {
             return NAME;
@@ -133,6 +182,7 @@ public class PlayerFactionHandler implements IPlayerFaction {
 //            MKFactionMod.LOGGER.info("PersonaFactionData.serialize");
             CompoundTag tag = new CompoundTag();
             tag.put("factions", factionUpdater.serializeStorage(provider));
+            tag.put("overrides", overrideUpdater.serializeStorage(provider));
             return tag;
         }
 
@@ -140,6 +190,52 @@ public class PlayerFactionHandler implements IPlayerFaction {
         public void deserialize(HolderLookup.Provider provider, CompoundTag nbt) {
 //            MKFactionMod.LOGGER.info("PersonaFactionData.deserialize {}", nbt);
             factionUpdater.deserializeStorage(provider, nbt.getCompound("factions"));
+            overrideUpdater.deserializeStorage(provider, nbt.getCompound("overrides"));
+        }
+    }
+
+    public static class ScoreOverrideEntry implements com.chaosbuffalo.mkcore.sync.IMKSerializable<CompoundTag> {
+        private final UUID spawnId;
+        private final java.util.function.Consumer<ScoreOverrideEntry> dirtyNotifier;
+        private int factionScore;
+
+        public ScoreOverrideEntry(UUID spawnId, java.util.function.Consumer<ScoreOverrideEntry> dirtyNotifier) {
+            this.spawnId = spawnId;
+            this.dirtyNotifier = dirtyNotifier;
+        }
+
+        public UUID getSpawnId() {
+            return spawnId;
+        }
+
+        public int getFactionScore() {
+            return factionScore;
+        }
+
+        public void setFactionScore(int factionScore) {
+            this.factionScore = factionScore;
+            markDirty();
+        }
+
+        @Override
+        public CompoundTag serialize(HolderLookup.Provider provider) {
+            CompoundTag tag = new CompoundTag();
+            tag.putInt("factionScore", factionScore);
+            return tag;
+        }
+
+        @Override
+        public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
+            if (tag.contains("factionScore")) {
+                factionScore = tag.getInt("factionScore");
+            }
+            return true;
+        }
+
+        private void markDirty() {
+            if (dirtyNotifier != null) {
+                dirtyNotifier.accept(this);
+            }
         }
     }
 

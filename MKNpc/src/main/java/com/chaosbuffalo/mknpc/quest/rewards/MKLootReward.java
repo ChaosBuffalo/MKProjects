@@ -10,7 +10,6 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -48,13 +47,13 @@ public class MKLootReward extends QuestReward {
     }
 
     @Override
-    public void grantReward(Player player) {
+    public void grantReward(QuestRewardContext context) {
         LootTier tier = lootTier.value();
-        LootConstructor constructor = tier.generateConstructorForSlot(player.getRandom(), lootSlot);
+        LootConstructor constructor = tier.generateConstructorForSlot(context.player().getRandom(), lootSlot);
         if (constructor != null) {
-            double diff = WorldUtils.getDifficultyForGlobalPos(GlobalPos.of(player.level().dimension(), player.blockPosition()));
-            ItemStack loot = constructor.constructItem(player.getRandom(), diff);
-            player.getInventory().placeItemBackInInventory(loot, true);
+            double diff = WorldUtils.getDifficultyForGlobalPos(GlobalPos.of(context.player().level().dimension(), context.player().blockPosition()));
+            ItemStack loot = constructor.constructItem(context.player().getRandom(), diff);
+            context.player().getInventory().placeItemBackInInventory(loot, true);
         }
     }
 }

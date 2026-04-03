@@ -32,6 +32,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
     private QuestDefinition definition;
     private final Map<String, QuestData> questData = new HashMap<>();
     private final Map<UUID, DialogueTree> dialogueTrees = new HashMap<>();
+    private final Map<QuestStructureLocation, UUID> structureIds = new HashMap<>();
     private UUID questSourceNpc;
     private final Level level;
 
@@ -39,6 +40,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         questId = UUID.randomUUID();
         this.definition = definition;
         this.level = level;
+        questStructures.forEach((location, structure) -> structureIds.put(location, structure.getStructureId()));
         for (Quest quest : definition.getQuestChain()) {
             QuestData qData = new QuestData(quest);
             for (QuestObjective<?> objective : quest.getObjectives()) {
@@ -121,6 +123,10 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         return level;
     }
 
+    public Optional<UUID> getStructureId(QuestStructureLocation location) {
+        return Optional.ofNullable(structureIds.get(location));
+    }
+
     public QuestData getQuestData(Quest quest) {
         return questData.get(quest.getQuestName());
     }
@@ -137,6 +143,11 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         nbt.putUUID("questId", questId);
         nbt.putString("definitionId", definition.getName().toString());
         nbt.put("questData", serializeQuestParameters(provider));
+        CompoundTag structureNbt = new CompoundTag();
+        for (Map.Entry<QuestStructureLocation, UUID> entry : structureIds.entrySet()) {
+            structureNbt.putUUID(entry.getKey().toString(), entry.getValue());
+        }
+        nbt.put("structures", structureNbt);
         if (questSourceNpc != null) {
             nbt.putUUID("questSource", questSourceNpc);
         }
@@ -172,6 +183,11 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
         var questKey = ResourceKey.create(QuestRegistries.QUEST_DEFINITIONS, ResourceLocation.parse(nbt.getString("definitionId")));
         definition = provider.lookupOrThrow(QuestRegistries.QUEST_DEFINITIONS).getOrThrow(questKey).value();
         deserializeQuestParameters(provider, nbt.getCompound("questData"));
+        structureIds.clear();
+        CompoundTag structureNbt = nbt.getCompound("structures");
+        for (String key : structureNbt.getAllKeys()) {
+            structureIds.put(parseStructureLocation(key), structureNbt.getUUID(key));
+        }
         if (nbt.contains("questSource")) {
             questSourceNpc = nbt.getUUID("questSource");
         }
@@ -193,6 +209,17 @@ public class QuestChainInstance implements INBTSerializable<CompoundTag> {
                 questData.put(source.getQuestName(), data);
             }
         }
+    }
+
+    private QuestStructureLocation parseStructureLocation(String key) {
+        int splitIndex = key.indexOf('#');
+        if (splitIndex < 0) {
+            throw new IllegalArgumentException("Invalid structure location key " + key);
+        }
+        return new QuestStructureLocation(
+                ResourceLocation.parse(key.substring(0, splitIndex)),
+                key.substring(splitIndex + 1)
+        );
     }
 
     public void signalQuestProgress(IWorldNpcData worldData, IPlayerQuestingData questingData, Quest currentQuest, PlayerQuestChainInstance playerInstance, boolean manualAdvance) {

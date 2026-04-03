@@ -194,7 +194,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         public void advanceQuestChain(IWorldNpcData worldHandler, QuestChainInstance questChainInstance, Quest currentQuest, IPlayerQuestingData questingData) {
             PlayerQuestChainInstance chain = questChains.get(questChainInstance.getQuestId());
             if (chain != null && currentQuest != null) {
-                currentQuest.grantRewards(questingData);
+                currentQuest.grantRewards(questingData, worldHandler, questChainInstance);
                 SoundUtils.serverPlaySoundAtEntity(questingData.getPlayer(), CoreSounds.quest_complete_sound.value(), SoundSource.PLAYERS);
                 switch (questChainInstance.getDefinition().getMode()) {
                     case LINEAR:
