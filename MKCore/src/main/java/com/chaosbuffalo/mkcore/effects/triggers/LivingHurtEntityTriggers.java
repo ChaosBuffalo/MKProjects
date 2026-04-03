@@ -44,18 +44,18 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
     private static final String MAGIC_EFFECT_TAG = "LIVING_HURT_ENTITY.magic_effect";
     private static final String POST_EFFECT_TAG = "LIVING_HURT_ENTITY.post_effect";
     private static final String PROJECTILE_EFFECT_TAG = "LIVING_HURT_ENTITY.projectile_effect";
-    private static final List<Trigger> livingHurtEntityMeleeTriggers = new ArrayList<>();
-    private static final List<Trigger> livingHurtEntityMagicTriggers = new ArrayList<>();
-    private static final List<Trigger> livingHurtEntityPostTriggers = new ArrayList<>();
-    private static final List<Trigger> livingHurtEntityProjectileTriggers = new ArrayList<>();
+    private final List<Trigger> livingHurtEntityMeleeTriggers = new ArrayList<>();
+    private final List<Trigger> livingHurtEntityMagicTriggers = new ArrayList<>();
+    private final List<Trigger> livingHurtEntityPostTriggers = new ArrayList<>();
+    private final List<Trigger> livingHurtEntityProjectileTriggers = new ArrayList<>();
 
-    private static final LivingHurtEntityEffectTriggers livingHurtEntityMeleeEffectTriggers = new LivingHurtEntityEffectTriggers(MELEE_EFFECT_TAG);
+    private final LivingHurtEntityEffectTriggers livingHurtEntityMeleeEffectTriggers = new LivingHurtEntityEffectTriggers(MELEE_EFFECT_TAG);
 
-    private static final LivingHurtEntityEffectTriggers livingHurtEntityMagicEffectTriggers = new LivingHurtEntityEffectTriggers(MAGIC_EFFECT_TAG);
+    private final LivingHurtEntityEffectTriggers livingHurtEntityMagicEffectTriggers = new LivingHurtEntityEffectTriggers(MAGIC_EFFECT_TAG);
 
-    private static final LivingHurtEntityEffectTriggers livingHurtEntityPostEffectTriggers = new LivingHurtEntityEffectTriggers(POST_EFFECT_TAG);
+    private final LivingHurtEntityEffectTriggers livingHurtEntityPostEffectTriggers = new LivingHurtEntityEffectTriggers(POST_EFFECT_TAG);
 
-    private static final LivingHurtEntityEffectTriggers livingHurtEntityProjectileEffectTriggers = new LivingHurtEntityEffectTriggers(PROJECTILE_EFFECT_TAG);
+    private final LivingHurtEntityEffectTriggers livingHurtEntityProjectileEffectTriggers = new LivingHurtEntityEffectTriggers(PROJECTILE_EFFECT_TAG);
 
     public static class LivingHurtEntityEffectTriggers extends SpellTriggers.EffectBasedTriggerCollection<LivingHurtEntityEffectTriggers.Trigger> {
         private final String tag;
@@ -151,6 +151,8 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         if (livingHurtEntityPostEffectTriggers.hasTriggers()) {
             livingHurtEntityPostEffectTriggers.onLivingHurtEntity(event, source, livingTarget, sourceData);
         }
+        sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_POST,
+                new AttackerDamageTriggerContext(event, source, livingTarget, sourceData));
         if (livingHurtEntityPostTriggers.isEmpty() || startTrigger(sourceData, POST_TAG))
             return;
         livingHurtEntityPostTriggers.forEach(f -> f.apply(event, source, livingTarget, sourceData));
@@ -193,10 +195,22 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         if (effectTriggers.hasTriggers()) {
             effectTriggers.onLivingHurtEntity(event, source, livingTarget, sourceData);
         }
+        sourceData.getTriggers().dispatch(getTriggerType(typeTag),
+                new AttackerDamageTriggerContext(event, source, livingTarget, sourceData));
         if (playerHurtTriggers.isEmpty() || startTrigger(sourceData, typeTag))
             return;
         playerHurtTriggers.forEach(f -> f.apply(event, source, livingTarget, sourceData));
         endTrigger(sourceData, typeTag);
+    }
+
+    private static EntityTriggerType<AttackerDamageTriggerContext> getTriggerType(String typeTag) {
+        return switch (typeTag) {
+            case MELEE_TAG -> CoreTriggerTypes.ATTACKER_MELEE;
+            case MAGIC_TAG -> CoreTriggerTypes.ATTACKER_MAGIC;
+            case PROJECTILE_TAG -> CoreTriggerTypes.ATTACKER_PROJECTILE;
+            case POST_TAG -> CoreTriggerTypes.ATTACKER_POST;
+            default -> throw new IllegalArgumentException("Unknown attacker trigger type tag: " + typeTag);
+        };
     }
 
     private void sendEffectCrit(LivingEntity livingTarget, LivingEntity livingSource, MKDamageSource source,
@@ -252,6 +266,8 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         if (livingHurtEntityProjectileEffectTriggers.hasTriggers()) {
             livingHurtEntityProjectileEffectTriggers.onLivingHurtEntity(event, source, livingTarget, sourceData);
         }
+        sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_PROJECTILE,
+                new AttackerDamageTriggerContext(event, source, livingTarget, sourceData));
         if (livingHurtEntityProjectileTriggers.isEmpty() || startTrigger(sourceData, PROJECTILE_TAG))
             return;
         livingHurtEntityProjectileTriggers.forEach(f -> f.apply(event, source, livingTarget, sourceData));
@@ -284,6 +300,8 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         if (livingHurtEntityMeleeEffectTriggers.hasTriggers()) {
             livingHurtEntityMeleeEffectTriggers.onLivingHurtEntity(event, source, livingTarget, sourceData);
         }
+        sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_MELEE,
+                new AttackerDamageTriggerContext(event, source, livingTarget, sourceData));
         if (livingHurtEntityMeleeTriggers.isEmpty() || startTrigger(sourceData, MELEE_TAG))
             return;
         livingHurtEntityMeleeTriggers.forEach(f -> f.apply(event, source, livingTarget, sourceData));

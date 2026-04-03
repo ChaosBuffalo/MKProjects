@@ -26,6 +26,7 @@ public class MKEntityData implements IMKEntityData {
     private final EntityEffectHandler effectHandler;
     private final EntityPetModule pets;
     private final EntityRiderModule riders;
+    private final EntityTriggerRegistry triggers;
     @Nullable
     private ParticleEffectInstanceTracker instanceTracker = null;
 
@@ -39,6 +40,7 @@ public class MKEntityData implements IMKEntityData {
         effectHandler = new EntityEffectHandler(this);
         pets = new EntityPetModule(this);
         riders = new EntityRiderModule(this);
+        triggers = new EntityTriggerRegistry(this);
     }
 
     @Nonnull
@@ -75,6 +77,11 @@ public class MKEntityData implements IMKEntityData {
     @Override
     public EntityEquipment getEquipment() {
         return equipment;
+    }
+
+    @Override
+    public EntityTriggerRegistry getTriggers() {
+        return triggers;
     }
 
     public void setInstanceTracker(@Nullable ParticleEffectInstanceTracker instanceTracker) {

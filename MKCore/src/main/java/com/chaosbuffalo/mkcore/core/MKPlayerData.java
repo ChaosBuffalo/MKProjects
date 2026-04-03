@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.editor.PlayerEditorModule;
+import com.chaosbuffalo.mkcore.core.entity.EntityTriggerRegistry;
 import com.chaosbuffalo.mkcore.core.player.PlayerEntitlements;
 import com.chaosbuffalo.mkcore.core.entity.EntityRiderModule;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtension;
@@ -36,6 +37,7 @@ public class MKPlayerData implements IMKEntityData {
     private final EntityPetModule pets;
     protected final PlayerAttributeMonitor attributeMonitor;
     private final EntityRiderModule riders;
+    private final EntityTriggerRegistry triggers;
 
     public MKPlayerData(Player playerEntity) {
         player = Objects.requireNonNull(playerEntity);
@@ -56,6 +58,7 @@ public class MKPlayerData implements IMKEntityData {
         effectHandler = new PlayerEffectHandler(this);
         pets = new EntityPetModule(this);
         riders = new EntityRiderModule(this);
+        triggers = new EntityTriggerRegistry(this);
         attachUpdateEngine(syncController);
     }
 
@@ -110,6 +113,11 @@ public class MKPlayerData implements IMKEntityData {
     @Override
     public PlayerEquipment getEquipment() {
         return equipment;
+    }
+
+    @Override
+    public EntityTriggerRegistry getTriggers() {
+        return triggers;
     }
 
     @Nonnull

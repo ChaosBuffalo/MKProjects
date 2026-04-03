@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.OnHitEffect;
-import com.chaosbuffalo.mkcore.effects.SpellTriggers;
+import com.chaosbuffalo.mkcore.effects.triggers.CoreTriggerTypes;
 import com.chaosbuffalo.mkcore.effects.status.MKResistance;
 import com.chaosbuffalo.mkcore.effects.status.OnStackEffect;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -107,7 +107,7 @@ public class MKUEffects {
             "effect.frozen_grasp_applier",
             () -> new OnHitEffect((args) ->
                     MKUAbilities.FROZEN_GRASP.get().onHitEffect(args),
-                    SpellTriggers.LIVING_HURT_ENTITY::registerMeleeEffect,
+                    CoreTriggerTypes.ATTACKER_MELEE,
                     FrozenGraspAbility.CAST_PARTICLES, true));
 
 

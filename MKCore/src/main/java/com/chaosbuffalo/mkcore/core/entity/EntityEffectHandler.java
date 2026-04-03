@@ -96,6 +96,7 @@ public class EntityEffectHandler {
 //            MKCore.LOGGER.debug("EntityEffectHandler.EffectSource.loadEffect {}", activeEffect);
             activeEffect.getEffect().onInstanceLoaded(entityData, activeEffect);
             activeEffectMap.put(activeEffect.getEffect(), activeEffect);
+            entityData.getTriggers().markDirty();
         }
 
         // Server-side only
@@ -108,6 +109,7 @@ public class EntityEffectHandler {
         protected void onNewEffect(MKActiveEffect activeEffect) {
 //            MKCore.LOGGER.debug("EntityEffectHandler.onNewEffect {}", activeEffect);
             if (entityData.isServerSide()) {
+                entityData.getTriggers().markDirty();
                 activeEffect.getEffect().onInstanceAdded(entityData, activeEffect);
                 sendEffectSet(activeEffect);
             }
@@ -117,6 +119,7 @@ public class EntityEffectHandler {
         protected void onEffectUpdated(MKActiveEffect activeEffect) {
 //            MKCore.LOGGER.debug("EntityEffectHandler.onEffectUpdated {}", activeEffect);
             if (entityData.isServerSide()) {
+                entityData.getTriggers().markDirty();
                 if (activeEffect.getEffect().onInstanceUpdated(entityData, activeEffect)) {
                     removeEffectInstance(activeEffect);
                 } else {
@@ -129,6 +132,7 @@ public class EntityEffectHandler {
         protected void onEffectRemoved(MKActiveEffect activeEffect) {
 //            MKCore.LOGGER.debug("EntityEffectHandler.onEffectRemoved {}", activeEffect);
             if (entityData.isServerSide()) {
+                entityData.getTriggers().markDirty();
                 activeEffect.getEffect().onInstanceRemoved(entityData, activeEffect);
                 if (!activeEffect.getBehaviour().isExpired()) {
                     // If it was removed early we need to tell the client
@@ -166,6 +170,7 @@ public class EntityEffectHandler {
 
         public void onDeath() {
             activeEffectMap.clear();
+            entityData.getTriggers().markDirty();
         }
 
         public void sendAllEffectsToPlayer(ServerPlayer playerEntity) {
@@ -200,6 +205,7 @@ public class EntityEffectHandler {
 
         public void clientSetEffect(MKActiveEffect activeEffect) {
             activeEffectMap.put(activeEffect.getEffect(), activeEffect);
+            entityData.getTriggers().markDirty();
         }
 
         public void clientRemoveEffect(MKActiveEffect activeEffect) {
@@ -211,6 +217,7 @@ public class EntityEffectHandler {
             for (MKActiveEffect instance : activeEffects) {
                 activeEffectMap.put(instance.getEffect(), instance);
             }
+            entityData.getTriggers().markDirty();
         }
     }
 

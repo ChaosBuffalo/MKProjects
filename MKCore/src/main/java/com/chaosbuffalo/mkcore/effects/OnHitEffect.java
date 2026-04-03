@@ -3,7 +3,11 @@ package com.chaosbuffalo.mkcore.effects;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.effects.triggers.LivingHurtEntityTriggers;
+import com.chaosbuffalo.mkcore.effects.triggers.AttackerDamageTriggerContext;
+import com.chaosbuffalo.mkcore.effects.triggers.CoreTriggerTypes;
+import com.chaosbuffalo.mkcore.effects.triggers.EntityTriggerRegistrar;
+import com.chaosbuffalo.mkcore.effects.triggers.EntityTriggerType;
+import com.chaosbuffalo.mkcore.effects.triggers.MKTriggerContributor;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.BoneEffectInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageSource;
@@ -13,11 +17,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class OnHitEffect extends MKEffect {
-
+public class OnHitEffect extends MKEffect implements MKTriggerContributor {
     public static class OnHitCallbackData {
         public IMKEntityData entityData;
         public MKActiveEffect instance;
@@ -35,20 +37,21 @@ public class OnHitEffect extends MKEffect {
 
     private final ResourceLocation particles;
     private final boolean canBlock;
+    private final EntityTriggerType<AttackerDamageTriggerContext> triggerType;
 
     public OnHitEffect(Function<OnHitCallbackData, MKEffectBuilder<?>> effect,
-                       BiConsumer<MKEffect, LivingHurtEntityTriggers.LivingHurtEntityEffectTriggers.Trigger> trigger,
+                       EntityTriggerType<AttackerDamageTriggerContext> triggerType,
                        ResourceLocation particles, boolean canBlock) {
         super(MobEffectCategory.BENEFICIAL);
         this.effectSupplier = effect;
         this.effectUUID = UUID.randomUUID();
         this.particles = particles;
         this.canBlock = canBlock;
-        trigger.accept(this, this::onLivingHurtEntity);
+        this.triggerType = triggerType;
     }
 
-    public void onLivingHurtEntity(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
-                                   IMKEntityData sourceData, MKActiveEffect instance) {
+    private void onLivingHurtEntity(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
+                                    IMKEntityData sourceData, MKActiveEffect instance) {
 
         MKCore.getEntityData(livingTarget).ifPresent(data -> {
             // retrieve the duration and skill level from State here
@@ -60,6 +63,12 @@ public class OnHitEffect extends MKEffect {
                 sourceData.getEffects().removeEffect(this, instance.getSourceId());
             }
         });
+    }
+
+    @Override
+    public void registerTriggers(MKActiveEffect activeEffect, EntityTriggerRegistrar registrar) {
+        registrar.add(triggerType, context ->
+                onLivingHurtEntity(context.event(), context.source(), context.target(), context.attackerData(), activeEffect));
     }
 
     protected void addParticles(IMKEntityData targetData) {

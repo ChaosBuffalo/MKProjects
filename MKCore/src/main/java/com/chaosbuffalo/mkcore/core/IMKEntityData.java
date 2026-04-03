@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.core;
 import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
 import com.chaosbuffalo.mkcore.core.entity.EntityEquipment;
 import com.chaosbuffalo.mkcore.core.entity.EntityRiderModule;
+import com.chaosbuffalo.mkcore.core.entity.EntityTriggerRegistry;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
 import net.minecraft.nbt.CompoundTag;
@@ -39,6 +40,8 @@ public interface IMKEntityData extends INBTSerializable<CompoundTag> {
     EntityEffectHandler getEffects();
 
     EntityEquipment getEquipment();
+
+    EntityTriggerRegistry getTriggers();
 
     EntityPetModule getPets();
 

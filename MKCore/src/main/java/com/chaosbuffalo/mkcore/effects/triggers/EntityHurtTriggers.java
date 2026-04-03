@@ -37,6 +37,8 @@ public class EntityHurtTriggers extends SpellTriggers.TriggerCollectionBase {
         if (startTrigger(targetData, TAG))
             return;
         entityHurtLivingPreTriggers.forEach(f -> f.apply(event, source, targetData));
+        targetData.getTriggers().dispatch(CoreTriggerTypes.VICTIM_PRE_SCALE,
+                new VictimDamageTriggerContext(event, source, targetData));
 
         if (source instanceof MKDamageSource mkDamageSource) {
             // we check unblockable here because if it is blockable than the armor calculation will already be applied
@@ -47,6 +49,8 @@ public class EntityHurtTriggers extends SpellTriggers.TriggerCollectionBase {
         }
 
         entityHurtLivingPostTriggers.forEach(f -> f.apply(event, source, targetData));
+        targetData.getTriggers().dispatch(CoreTriggerTypes.VICTIM_POST_SCALE,
+                new VictimDamageTriggerContext(event, source, targetData));
         endTrigger(targetData, TAG);
     }
 }
