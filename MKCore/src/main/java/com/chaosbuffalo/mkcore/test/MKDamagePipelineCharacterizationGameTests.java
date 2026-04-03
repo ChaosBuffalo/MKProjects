@@ -169,12 +169,122 @@ public class MKDamagePipelineCharacterizationGameTests {
                 .thenSucceed();
     }
 
+    @GameTest(template = "player_data_phase0")
+    public static void meleeHitOnlyCountsForAttackerWhenVictimLacksProbeEffect(GameTestHelper helper) {
+        Player attacker = createMockPlayer(helper, ATTACKER_POS);
+        Player target = createMockPlayer(helper, TARGET_POS, false);
+        prepareAttacker(attacker);
+
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    target.hurt(attacker.damageSources().playerAttack(attacker), DAMAGE_AMOUNT);
+
+                    DamagePipelineProbeEffect.State attackerState = getProbeState(MKCore.getPlayerOrThrow(attacker));
+
+                    helper.assertValueEqual(attackerState.getAttackerMeleeCount(), 1, "attacker melee trigger count");
+                    helper.assertValueEqual(attackerState.getAttackerPostCount(), 1, "attacker post trigger count");
+                    assertProbeEffectAbsent(MKCore.getPlayerOrThrow(target), "victim should not have probe effect");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void meleeHitOnlyCountsForVictimWhenAttackerLacksProbeEffect(GameTestHelper helper) {
+        Player attacker = createMockPlayer(helper, ATTACKER_POS, false);
+        Player target = createMockPlayer(helper, TARGET_POS);
+        prepareAttacker(attacker);
+
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    target.hurt(attacker.damageSources().playerAttack(attacker), DAMAGE_AMOUNT);
+
+                    DamagePipelineProbeEffect.State targetState = getProbeState(MKCore.getPlayerOrThrow(target));
+
+                    helper.assertValueEqual(targetState.getVictimPreScaleCount(), 1, "victim pre trigger count");
+                    helper.assertValueEqual(targetState.getVictimPostScaleCount(), 1, "victim post trigger count");
+                    assertProbeEffectAbsent(MKCore.getPlayerOrThrow(attacker), "attacker should not have probe effect");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void removingProbeEffectStopsFurtherTriggerDispatch(GameTestHelper helper) {
+        Player attacker = createMockPlayer(helper, ATTACKER_POS);
+        Player target = createMockPlayer(helper, TARGET_POS);
+        prepareAttacker(attacker);
+
+        helper.startSequence()
+                .thenExecute(() -> {
+                    MKCore.getPlayerOrThrow(attacker).getEffects().removeEffect(MKTestEffects.DAMAGE_PIPELINE_PROBE.get());
+                    MKCore.getPlayerOrThrow(target).getEffects().removeEffect(MKTestEffects.DAMAGE_PIPELINE_PROBE.get());
+                })
+                .thenExecuteAfter(2, () -> {
+                    target.hurt(attacker.damageSources().playerAttack(attacker), DAMAGE_AMOUNT);
+
+                    assertProbeEffectAbsent(MKCore.getPlayerOrThrow(attacker), "attacker probe effect should be removed");
+                    assertProbeEffectAbsent(MKCore.getPlayerOrThrow(target), "target probe effect should be removed");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void reapplyingProbeEffectDoesNotDuplicateTriggerDispatch(GameTestHelper helper) {
+        Player attacker = createMockPlayer(helper, ATTACKER_POS);
+        Player target = createMockPlayer(helper, TARGET_POS);
+        prepareAttacker(attacker);
+
+        helper.startSequence()
+                .thenExecute(() -> {
+                    applyProbeEffect(MKCore.getPlayerOrThrow(attacker));
+                    applyProbeEffect(MKCore.getPlayerOrThrow(target));
+                })
+                .thenExecuteAfter(2, () -> {
+                    target.hurt(attacker.damageSources().playerAttack(attacker), DAMAGE_AMOUNT);
+
+                    DamagePipelineProbeEffect.State attackerState = getProbeState(MKCore.getPlayerOrThrow(attacker));
+                    DamagePipelineProbeEffect.State targetState = getProbeState(MKCore.getPlayerOrThrow(target));
+
+                    helper.assertValueEqual(attackerState.getAttackerMeleeCount(), 1, "reapplied attacker melee trigger count");
+                    helper.assertValueEqual(attackerState.getAttackerPostCount(), 1, "reapplied attacker post trigger count");
+                    helper.assertValueEqual(targetState.getVictimPreScaleCount(), 1, "reapplied victim pre trigger count");
+                    helper.assertValueEqual(targetState.getVictimPostScaleCount(), 1, "reapplied victim post trigger count");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void repeatedHitsIncrementExactlyOncePerHit(GameTestHelper helper) {
+        Player attacker = createMockPlayer(helper, ATTACKER_POS);
+        Player target = createMockPlayer(helper, TARGET_POS);
+        prepareAttacker(attacker);
+
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> target.hurt(attacker.damageSources().playerAttack(attacker), DAMAGE_AMOUNT))
+                .thenExecuteAfter(2, () -> target.hurt(attacker.damageSources().playerAttack(attacker), DAMAGE_AMOUNT))
+                .thenExecuteAfter(2, () -> {
+                    DamagePipelineProbeEffect.State attackerState = getProbeState(MKCore.getPlayerOrThrow(attacker));
+                    DamagePipelineProbeEffect.State targetState = getProbeState(MKCore.getPlayerOrThrow(target));
+
+                    helper.assertValueEqual(attackerState.getAttackerMeleeCount(), 2, "repeated attacker melee trigger count");
+                    helper.assertValueEqual(attackerState.getAttackerPostCount(), 2, "repeated attacker post trigger count");
+                    helper.assertValueEqual(targetState.getVictimPreScaleCount(), 2, "repeated victim pre trigger count");
+                    helper.assertValueEqual(targetState.getVictimPostScaleCount(), 2, "repeated victim post trigger count");
+                })
+                .thenSucceed();
+    }
+
     private static Player createMockPlayer(GameTestHelper helper, BlockPos relativePos) {
+        return createMockPlayer(helper, relativePos, true);
+    }
+
+    private static Player createMockPlayer(GameTestHelper helper, BlockPos relativePos, boolean applyProbeEffect) {
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
         BlockPos absolutePos = helper.absolutePos(relativePos);
         player.moveTo(absolutePos.getX() + 0.5, absolutePos.getY(), absolutePos.getZ() + 0.5, 0.0f, 0.0f);
         player.setHealth(player.getMaxHealth());
-        applyProbeEffect(MKCore.getPlayerOrThrow(player));
+        if (applyProbeEffect) {
+            applyProbeEffect(MKCore.getPlayerOrThrow(player));
+        }
         return player;
     }
 
@@ -208,6 +318,12 @@ public class MKDamagePipelineCharacterizationGameTests {
                 .findFirst()
                 .map(effect -> effect.getState(DamagePipelineProbeEffect.STATE))
                 .orElseThrow(() -> new IllegalStateException("Missing probe effect"));
+    }
+
+    private static void assertProbeEffectAbsent(MKPlayerData playerData, String label) {
+        if (!playerData.getEffects().effects(MKTestEffects.DAMAGE_PIPELINE_PROBE.get()).isEmpty()) {
+            throw new IllegalStateException(label);
+        }
     }
 
     private static void setBaseValue(Player player, net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute,
