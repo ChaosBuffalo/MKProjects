@@ -2,16 +2,28 @@ package com.chaosbuffalo.mkcore.events;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.*;
+import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.core.damage.IMKDamageSourceExtensions;
+import com.chaosbuffalo.mkcore.effects.triggers.AttackerDamageTriggerContext;
 import com.chaosbuffalo.mkcore.effects.triggers.CoreTriggerTypes;
 import com.chaosbuffalo.mkcore.effects.triggers.FallTriggerContext;
 import com.chaosbuffalo.mkcore.effects.triggers.KillTriggerContext;
+import com.chaosbuffalo.mkcore.effects.triggers.VictimDamageTriggerContext;
+import com.chaosbuffalo.mkcore.fx.ParticleEffects;
+import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
+import com.chaosbuffalo.mkcore.network.MeleeCritMessagePacket;
+import com.chaosbuffalo.mkcore.network.PacketHandler;
+import com.chaosbuffalo.mkcore.network.ParticleEffectSpawnPacket;
+import com.chaosbuffalo.mkcore.network.ProjectileCritMessagePacket;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,6 +31,7 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
@@ -57,6 +70,15 @@ public class CombatEventHandler {
         // Living is source
         if (trueSource instanceof LivingEntity livingSource) {
             var sourceData = MKCore.getEntityDataOrThrow(livingSource);
+            var attackerContext = new AttackerDamageTriggerContext(event, source, livingTarget, sourceData);
+
+            if (source instanceof MKDamageSource mkDamageSource) {
+                handleMKDamage(event, mkDamageSource, livingTarget, livingSource, sourceData, attackerContext);
+            } else {
+                handleVanillaAndProjectileDamage(event, source, livingTarget, livingSource, sourceData, attackerContext);
+            }
+
+            sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_POST, attackerContext);
 
             if (livingSource instanceof ServerPlayer serverPlayer && DamageUtils.isMeleeDamage(source) && livingSource.getMainHandItem().isEmpty()) {
                 var playerData = MKCore.getPlayerOrThrow(serverPlayer);
@@ -66,6 +88,101 @@ public class CombatEventHandler {
 
         // Living is victim
         var targetData = MKCore.getEntityDataOrThrow(livingTarget);
+        var victimContext = new VictimDamageTriggerContext(event, source, targetData);
+        targetData.getTriggers().dispatch(CoreTriggerTypes.VICTIM_PRE_SCALE, victimContext);
+        if (source instanceof MKDamageSource mkDamageSource && mkDamageSource.is(DamageTypeTags.BYPASSES_ARMOR)) {
+            event.setNewDamage(mkDamageSource.getMKDamageType().applyResistance(targetData.getEntity(),
+                    event.getNewDamage(), source));
+        }
+        targetData.getTriggers().dispatch(CoreTriggerTypes.VICTIM_POST_SCALE, victimContext);
+    }
+
+    private static void handleMKDamage(LivingDamageEvent.Pre event, MKDamageSource source, LivingEntity livingTarget,
+                                       LivingEntity livingSource, IMKEntityData sourceData,
+                                       AttackerDamageTriggerContext attackerContext) {
+        Entity immediate = source.getDirectEntity() != null ? source.getDirectEntity() : livingSource;
+        float newDamage = source.getMKDamageType().applyDamage(livingSource, livingTarget, immediate,
+                event.getNewDamage(), source.getModifierScaling());
+        boolean blocked = DamageUtils.wasAlreadyPartiallyBlocked(source);
+        if (!blocked && source.getMKDamageType().rollCrit(livingSource, livingTarget, immediate)) {
+            newDamage = source.getMKDamageType().applyCritDamage(livingSource, livingTarget, immediate, newDamage);
+            CustomPacketPayload packet = source.createCritMessage(livingTarget.getId(), livingSource.getId(), newDamage);
+            if (packet != null) {
+                sendCritPacket(livingTarget, livingSource, packet);
+            }
+        }
+        event.setNewDamage(newDamage);
+        if (blocked) {
+            return;
+        }
+
+        if (source.isMeleeDamage()) {
+            sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_MELEE, attackerContext);
+        } else {
+            sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_MAGIC, attackerContext);
+        }
+    }
+
+    private static void handleVanillaAndProjectileDamage(LivingDamageEvent.Pre event, DamageSource source,
+                                                         LivingEntity livingTarget, LivingEntity livingSource,
+                                                         IMKEntityData sourceData,
+                                                         AttackerDamageTriggerContext attackerContext) {
+        boolean blocked = DamageUtils.wasAlreadyPartiallyBlocked(source);
+        if (DamageUtils.isMinecraftPhysicalDamage(source) && !blocked && sourceData instanceof MKPlayerData) {
+            if (CoreDamageTypes.MeleeDamage.get().rollCrit(livingSource, livingTarget)) {
+                float newDamage = CoreDamageTypes.MeleeDamage.get().applyCritDamage(livingSource, livingTarget,
+                        event.getNewDamage());
+                event.setNewDamage(newDamage);
+                sendCritPacket(livingTarget, livingSource,
+                        new MeleeCritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage));
+            }
+        }
+
+        if (DamageUtils.isProjectileDamage(source)) {
+            handleProjectileDamage(event, source, livingTarget, livingSource, blocked);
+            if (!blocked) {
+                sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_PROJECTILE, attackerContext);
+            }
+        }
+
+        if (!blocked && DamageUtils.isMeleeDamage(source)) {
+            sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_MELEE, attackerContext);
+        } else if (!blocked && DamageUtils.isSpellDamage(source)) {
+            sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_MAGIC, attackerContext);
+        }
+    }
+
+    private static void handleProjectileDamage(LivingDamageEvent.Pre event, DamageSource source,
+                                               LivingEntity livingTarget, LivingEntity livingSource,
+                                               boolean blocked) {
+        Entity projectile = source.getDirectEntity();
+        float damage = event.getNewDamage();
+        if (DamageUtils.isNonMKProjectileDamage(source)) {
+            damage += (float) livingSource.getAttributeValue(MKAttributes.RANGED_DAMAGE);
+        }
+        boolean wasCrit = false;
+        if (!blocked && projectile != null && CoreDamageTypes.RangedDamage.get().rollCrit(livingSource, livingTarget, projectile)) {
+            damage = CoreDamageTypes.RangedDamage.get().applyCritDamage(livingSource, livingTarget, projectile, damage);
+            wasCrit = true;
+        }
+        damage = (float) (damage * (1.0 - livingTarget.getAttributeValue(MKAttributes.RANGED_RESISTANCE)));
+        event.setNewDamage(damage);
+        if (wasCrit && projectile != null) {
+            sendCritPacket(livingTarget, livingSource,
+                    new ProjectileCritMessagePacket(livingTarget.getId(), livingSource.getId(), damage, projectile.getId()));
+        }
+    }
+
+    private static void sendCritPacket(LivingEntity livingTarget, LivingEntity livingSource,
+                                       CustomPacketPayload packet) {
+        PacketHandler.sendToTrackingAndSelf(packet, livingSource);
+        Vec3 lookVec = livingTarget.getLookAngle();
+        PacketHandler.sendToTrackingAndSelf(new ParticleEffectSpawnPacket(
+                ParticleTypes.ENCHANTED_HIT,
+                ParticleEffects.SPHERE_MOTION, 12, 4,
+                livingTarget.getX(), livingTarget.getY() + 1.0f,
+                livingTarget.getZ(), .5f, .5f, .5f, 0.2,
+                lookVec), livingTarget);
     }
 
     private static void playSound(LivingEntity target, Holder<SoundEvent> sound) {

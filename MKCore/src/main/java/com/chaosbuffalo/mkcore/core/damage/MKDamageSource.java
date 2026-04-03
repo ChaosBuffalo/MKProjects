@@ -3,6 +3,9 @@ package com.chaosbuffalo.mkcore.core.damage;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.network.AbilityCritMessagePacket;
+import com.chaosbuffalo.mkcore.network.EffectCritMessagePacket;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -19,13 +22,6 @@ public abstract class MKDamageSource extends DamageSource {
     protected final MKDamageType damageType;
     protected float modifierScaling = 1.0f;
 
-    public enum Origination {
-        MK_ABILITY,
-        DAMAGE_TYPE
-    }
-
-    public abstract Origination getOrigination();
-
     private MKDamageSource(Level level, MKDamageType damageType,
                            @Nullable Entity directEntity, @Nullable Entity causingEntity) {
         super(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(CoreDamageTypes.MK_DAMAGE),
@@ -38,6 +34,9 @@ public abstract class MKDamageSource extends DamageSource {
         // We apply our own scaling
         return false;
     }
+
+    @Nullable
+    public abstract CustomPacketPayload createCritMessage(int targetId, int sourceId, float damage);
 
     public static class EffectDamage extends MKDamageSource {
 
@@ -56,8 +55,11 @@ public abstract class MKDamageSource extends DamageSource {
         }
 
         @Override
-        public Origination getOrigination() {
-            return Origination.DAMAGE_TYPE;
+        public CustomPacketPayload createCritMessage(int targetId, int sourceId, float damage) {
+            if (damageTypeName == null) {
+                return null;
+            }
+            return new EffectCritMessagePacket(targetId, sourceId, damage, getMKDamageType().getId(), damageTypeName);
         }
 
         @Nonnull
@@ -100,8 +102,10 @@ public abstract class MKDamageSource extends DamageSource {
         }
 
         @Override
-        public Origination getOrigination() {
-            return Origination.MK_ABILITY;
+        public CustomPacketPayload createCritMessage(int targetId, int sourceId, float damage) {
+            MKAbility ability = abilityId != null ? MKCoreRegistry.getAbility(abilityId) : null;
+            ResourceLocation critAbilityId = ability != null ? ability.getAbilityId() : MKCoreRegistry.INVALID_ABILITY;
+            return new AbilityCritMessagePacket(targetId, sourceId, damage, critAbilityId, getMKDamageType().getId());
         }
 
         @Nonnull

@@ -26,9 +26,24 @@ public class PacketHandler {
                 EntityDataUpdatePacket::handlePacket
         );
         registrar.playToClient(
-                CritMessagePacket.TYPE,
-                CritMessagePacket.STREAM_CODEC,
-                CritMessagePacket::handle
+                MeleeCritMessagePacket.TYPE,
+                MeleeCritMessagePacket.STREAM_CODEC,
+                MeleeCritMessagePacket::handle
+        );
+        registrar.playToClient(
+                AbilityCritMessagePacket.TYPE,
+                AbilityCritMessagePacket.STREAM_CODEC,
+                AbilityCritMessagePacket::handle
+        );
+        registrar.playToClient(
+                ProjectileCritMessagePacket.TYPE,
+                ProjectileCritMessagePacket.STREAM_CODEC,
+                ProjectileCritMessagePacket::handle
+        );
+        registrar.playToClient(
+                EffectCritMessagePacket.TYPE,
+                EffectCritMessagePacket.STREAM_CODEC,
+                EffectCritMessagePacket::handle
         );
         registrar.playToClient(
                 EntityCastPacket.TYPE,
