@@ -3,6 +3,8 @@ package com.chaosbuffalo.mkcore.test;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
+import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.test.effects.DamagePipelineProbeEffect;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
@@ -23,6 +25,11 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public class MKDamagePipelineCharacterizationGameTests {
     private static final BlockPos ATTACKER_POS = new BlockPos(1, 2, 1);
     private static final BlockPos TARGET_POS = new BlockPos(1, 2, 3);
+    private static final BlockPos ATTACKER_ALT_POS = new BlockPos(3, 2, 1);
+    private static final BlockPos TARGET_ALT_POS = new BlockPos(3, 2, 3);
+    private static final BlockPos ATTACKER_RANGED_POS = new BlockPos(5, 2, 1);
+    private static final BlockPos TARGET_RANGED_POS = new BlockPos(5, 2, 3);
+    private static final BlockPos TARGET_RANGED_ALT_POS = new BlockPos(7, 2, 3);
     private static final float DAMAGE_AMOUNT = 10.0f;
     private static final float STARTING_POISE = 20.0f;
 
@@ -273,6 +280,125 @@ public class MKDamagePipelineCharacterizationGameTests {
                 .thenSucceed();
     }
 
+    @GameTest(template = "player_data_phase0")
+    public static void meleeCritChanceOfOneAppliesConfiguredCritMultiplier(GameTestHelper helper) {
+        final float baseDamage = 6.0f;
+
+        Player normalAttacker = createMockPlayer(helper, ATTACKER_POS, false);
+        Player critAttacker = createMockPlayer(helper, ATTACKER_ALT_POS, false);
+        Player normalTarget = createMockPlayer(helper, TARGET_POS, false);
+        Player critTarget = createMockPlayer(helper, TARGET_ALT_POS, false);
+        prepareAttacker(normalAttacker);
+        prepareAttacker(critAttacker);
+        setBaseValue(normalAttacker, MKAttributes.MELEE_CRIT, 0.0);
+        setBaseValue(critAttacker, MKAttributes.MELEE_CRIT, 1.0);
+        setBaseValue(critAttacker, MKAttributes.MELEE_CRIT_MULTIPLIER, 2.0);
+
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    float normalDamage = dealMeleeDamage(normalAttacker, normalTarget, baseDamage);
+                    float critDamage = dealMeleeDamage(critAttacker, critTarget, baseDamage);
+
+                    assertFloatEquals(helper, normalDamage, baseDamage, 0.001f, "non-crit melee damage");
+                    assertFloatEquals(helper, critDamage, baseDamage * 2.0f, 0.001f, "crit melee damage");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void rangedResistanceAppliesAfterRangedBonusAndCritScaling(GameTestHelper helper) {
+        final float baseDamage = 6.0f;
+        final float rangedBonus = 4.0f;
+
+        Player attacker = createMockPlayer(helper, ATTACKER_RANGED_POS, false);
+        Player unresistedTarget = createMockPlayer(helper, TARGET_RANGED_POS, false);
+        Player resistedTarget = createMockPlayer(helper, TARGET_RANGED_ALT_POS, false);
+        setBaseValue(attacker, MKAttributes.RANGED_DAMAGE, rangedBonus);
+        setBaseValue(attacker, MKAttributes.RANGED_CRIT, 1.0);
+        setBaseValue(attacker, MKAttributes.RANGED_CRIT_MULTIPLIER, 2.0);
+        setBaseValue(resistedTarget, MKAttributes.RANGED_RESISTANCE, 0.5);
+
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    float unresistedDamage = dealProjectileDamage(helper, attacker, unresistedTarget, baseDamage);
+                    float resistedDamage = dealProjectileDamage(helper, attacker, resistedTarget, baseDamage);
+
+                    assertFloatEquals(helper, unresistedDamage, (baseDamage + rangedBonus) * 2.0f,
+                            0.001f, "unresisted ranged crit damage");
+                    assertFloatEquals(helper, resistedDamage, (baseDamage + rangedBonus),
+                            0.001f, "resisted ranged crit damage");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void mkAbilityDamageCritUsesSpellCritMultiplier(GameTestHelper helper) {
+        final float baseDamage = 6.0f;
+
+        Player normalAttacker = createMockPlayer(helper, ATTACKER_POS, false);
+        Player critAttacker = createMockPlayer(helper, ATTACKER_ALT_POS, false);
+        Player normalTarget = createMockPlayer(helper, TARGET_POS, false);
+        Player critTarget = createMockPlayer(helper, TARGET_ALT_POS, false);
+        setBaseValue(normalAttacker, MKAttributes.SPELL_CRIT, 0.0);
+        setBaseValue(critAttacker, MKAttributes.SPELL_CRIT, 1.0);
+        setBaseValue(critAttacker, MKAttributes.SPELL_CRIT_MULTIPLIER, 2.0);
+
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    float normalDamage = dealMKAbilityDamage(normalAttacker, normalTarget, baseDamage);
+                    float critDamage = dealMKAbilityDamage(critAttacker, critTarget, baseDamage);
+
+                    assertFloatEquals(helper, normalDamage, baseDamage, 0.001f, "non-crit MK ability damage");
+                    assertFloatEquals(helper, critDamage, baseDamage * 2.0f, 0.001f, "crit MK ability damage");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void mkEffectDamageCritUsesSpellCritMultiplier(GameTestHelper helper) {
+        final float baseDamage = 6.0f;
+
+        Player normalAttacker = createMockPlayer(helper, ATTACKER_POS, false);
+        Player critAttacker = createMockPlayer(helper, ATTACKER_ALT_POS, false);
+        Player normalTarget = createMockPlayer(helper, TARGET_POS, false);
+        Player critTarget = createMockPlayer(helper, TARGET_ALT_POS, false);
+        setBaseValue(normalAttacker, MKAttributes.SPELL_CRIT, 0.0);
+        setBaseValue(critAttacker, MKAttributes.SPELL_CRIT, 1.0);
+        setBaseValue(critAttacker, MKAttributes.SPELL_CRIT_MULTIPLIER, 2.0);
+
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    float normalDamage = dealMKEffectDamage(normalAttacker, normalTarget, baseDamage);
+                    float critDamage = dealMKEffectDamage(critAttacker, critTarget, baseDamage);
+
+                    assertFloatEquals(helper, normalDamage, baseDamage, 0.001f, "non-crit MK effect damage");
+                    assertFloatEquals(helper, critDamage, baseDamage * 2.0f, 0.001f, "crit MK effect damage");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void mkAbilityDamageCurrentlyIgnoresFireResistanceWithoutBypassesArmorTag(GameTestHelper helper) {
+        final float baseDamage = 6.0f;
+
+        Player attacker = createMockPlayer(helper, ATTACKER_POS, false);
+        Player unresistedTarget = createMockPlayer(helper, TARGET_POS, false);
+        Player resistedTarget = createMockPlayer(helper, TARGET_ALT_POS, false);
+        setBaseValue(resistedTarget, MKAttributes.FIRE_RESISTANCE, 0.8);
+
+        helper.startSequence()
+                .thenExecuteAfter(2, () -> {
+                    float unresistedDamage = dealMKAbilityDamage(attacker, unresistedTarget, baseDamage);
+                    float resistedDamage = dealMKAbilityDamage(attacker, resistedTarget, baseDamage);
+
+                    // Characterizes the current EntityHurtTriggers behavior: MKDamageType resistance
+                    // is only applied for BYPASSES_ARMOR-tagged MKDamageSource hits.
+                    assertFloatEquals(helper, unresistedDamage, baseDamage, 0.001f, "baseline MK ability damage");
+                    assertFloatEquals(helper, resistedDamage, baseDamage, 0.001f, "fire resistance is currently ignored");
+                })
+                .thenSucceed();
+    }
+
     private static Player createMockPlayer(GameTestHelper helper, BlockPos relativePos) {
         return createMockPlayer(helper, relativePos, true);
     }
@@ -307,6 +433,34 @@ public class MKDamagePipelineCharacterizationGameTests {
         target.startUsingItem(InteractionHand.OFF_HAND);
         target.tick();
         target.tick();
+    }
+
+    private static float dealMeleeDamage(Player attacker, Player target, float damageAmount) {
+        float startingHealth = target.getHealth();
+        target.hurt(attacker.damageSources().playerAttack(attacker), damageAmount);
+        return startingHealth - target.getHealth();
+    }
+
+    private static float dealProjectileDamage(GameTestHelper helper, Player attacker, Player target, float damageAmount) {
+        float startingHealth = target.getHealth();
+        Arrow arrow = helper.spawn(net.minecraft.world.entity.EntityType.ARROW, helper.absolutePos(ATTACKER_RANGED_POS));
+        arrow.setOwner(attacker);
+        target.hurt(attacker.damageSources().arrow(arrow, attacker), damageAmount);
+        return startingHealth - target.getHealth();
+    }
+
+    private static float dealMKAbilityDamage(Player attacker, Player target, float damageAmount) {
+        float startingHealth = target.getHealth();
+        target.hurt(MKDamageSource.causeAbilityDamage(target.level(), CoreDamageTypes.FireDamage.get(),
+                MKTestAbilities.TEST_EMBER.get().getAbilityId(), attacker, attacker), damageAmount);
+        return startingHealth - target.getHealth();
+    }
+
+    private static float dealMKEffectDamage(Player attacker, Player target, float damageAmount) {
+        float startingHealth = target.getHealth();
+        target.hurt(MKDamageSource.causeEffectDamage(target.level(), CoreDamageTypes.FireDamage.get(),
+                "mkcore.test.effect.damage", attacker, attacker), damageAmount);
+        return startingHealth - target.getHealth();
     }
 
     private static void applyProbeEffect(MKPlayerData playerData) {
