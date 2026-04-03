@@ -1,42 +1,12 @@
 package com.chaosbuffalo.mkultra.client.render.styling;
 
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
-import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
-import com.chaosbuffalo.mknpc.client.render.renderers.SkeletonStyles;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.chaosbuffalo.mknpc.npc.NpcRegistries;
+import com.chaosbuffalo.mkultra.init.MKUEntities;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 
 public class MKUSkeletons {
-
-    public static final ModelLook HYBOREAN_WARRIOR = new ModelLook(ModelStyles.CLOTHES_ONLY_STYLE,
-            SkeletonStyles.SKELETON_TEXTURES, MKUClothes.LOINCLOTH);
-
-    public static final ModelLook HYBOREAN_ARCHER = new ModelLook(ModelStyles.CLOTHES_ONLY_STYLE,
-            SkeletonStyles.SKELETON_TEXTURES, MKUClothes.LOINCLOTH_2);
-
-    public static final ModelLook HONOR_GUARD = new ModelLook(ModelStyles.CLOTHES_ONLY_STYLE,
-            SkeletonStyles.SKELETON_TEXTURES, MKUClothes.HYBOREAN_ARMOR);
-
-    public static final ModelLook SORCERER_QUEEN = new ModelLook(ModelStyles.CLOTHES_ONLY_STYLE,
-            SkeletonStyles.STRAY_SKELETON_TEXTURES, MKUClothes.FUR_LINED_SCRAPS_2);
-
-    public static final ModelLook SORCERER = new ModelLook(ModelStyles.CLOTHES_ONLY_STYLE,
-            SkeletonStyles.SKELETON_TEXTURES, MKUClothes.IRON_PONCHO);
-
-    public static final ModelLook ANCIENT_KING = new ModelLook(ModelStyles.CLOTHES_ONLY_STYLE,
-            SkeletonStyles.WITHER_SKELETON_TEXTURES, MKUClothes.FUR_LINED_SCRAPS);
-
-    public static final ModelLook BURNING_SKELETON = new ModelLook(ModelStyles.CLOTHES_ONLY_STYLE,
-            SkeletonStyles.WITHER_SKELETON_TEXTURES, MKUClothes.IRON_PONCHO);
-
-    public static final ModelLook SEAWOVEN_SKELETON = new ModelLook(ModelStyles.CLOTHES_ONLY_STYLE,
-            SkeletonStyles.WITHER_SKELETON_TEXTURES, MKUClothes.SEAWOVEN_PONCHO);
-
-    public static final ModelLook SEAWOVEN_WRETCH = new ModelLook(ModelStyles.BASIC_STYLE,
-            SkeletonStyles.STRAY_SKELETON_TEXTURES);
-
-    public static final Map<String, ModelLook> SKELETON_STYLES = new HashMap<>();
 
     public static final String ANCIENT_KING_NAME = "ancient_king";
 
@@ -58,18 +28,22 @@ public class MKUSkeletons {
 
     public static final String SEAWOVEN_WRTECH_NAME = "seawoven_wretch";
 
-    public static final ModelLook BASIC = new ModelLook(ModelStyles.BASIC_STYLE, SkeletonStyles.SKELETON_TEXTURES);
+    public static final ResourceKey<ModelLook> DEFAULT_LOOK = lookKey("default");
+    public static final ResourceKey<ModelLook> ANCIENT_KING_LOOK = lookKey(ANCIENT_KING_NAME);
+    public static final ResourceKey<ModelLook> SORCERER_LOOK = lookKey(SORCERER_NAME);
+    public static final ResourceKey<ModelLook> BURNING_LOOK = lookKey(BURNING_NAME);
+    public static final ResourceKey<ModelLook> SORCERER_QUEEN_LOOK = lookKey(SORCERER_QUEEN_NAME);
+    public static final ResourceKey<ModelLook> HONOR_GUARD_LOOK = lookKey(HONOR_GUARD_NAME);
+    public static final ResourceKey<ModelLook> HYBOREAN_ARCHER_LOOK = lookKey(HYBOREAN_ARCHER_NAME);
+    public static final ResourceKey<ModelLook> HYBOREAN_WARRIOR_LOOK = lookKey(HYBOREAN_WARRIOR_NAME);
+    public static final ResourceKey<ModelLook> BASIC_LOOK = lookKey(BASIC_NAME);
+    public static final ResourceKey<ModelLook> SEAWOVEN_LOOK = lookKey(SEAWOVEN_NAME);
+    public static final ResourceKey<ModelLook> SEAWOVEN_WRETCH_LOOK = lookKey(SEAWOVEN_WRTECH_NAME);
 
-    static {
-        SKELETON_STYLES.put(ANCIENT_KING_NAME, ANCIENT_KING);
-        SKELETON_STYLES.put(SORCERER_NAME, SORCERER);
-        SKELETON_STYLES.put(SORCERER_QUEEN_NAME, SORCERER_QUEEN);
-        SKELETON_STYLES.put(HONOR_GUARD_NAME, HONOR_GUARD);
-        SKELETON_STYLES.put(HYBOREAN_ARCHER_NAME, HYBOREAN_ARCHER);
-        SKELETON_STYLES.put(HYBOREAN_WARRIOR_NAME, HYBOREAN_WARRIOR);
-        SKELETON_STYLES.put(BURNING_NAME, BURNING_SKELETON);
-        SKELETON_STYLES.put(BASIC_NAME, BASIC);
-        SKELETON_STYLES.put(SEAWOVEN_NAME, SEAWOVEN_SKELETON);
-        SKELETON_STYLES.put(SEAWOVEN_WRTECH_NAME, SEAWOVEN_WRETCH);
+    private static ResourceKey<ModelLook> lookKey(String lookName) {
+        ResourceLocation entityId = MKUEntities.HYBOREAN_SKELETON_TYPE.getId();
+        return ResourceKey.create(NpcRegistries.MODEL_LOOKS,
+                ResourceLocation.fromNamespaceAndPath(entityId.getNamespace(), "%s/%s".formatted(entityId.getPath(), lookName)));
     }
 }
+

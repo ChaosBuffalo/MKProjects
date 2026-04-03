@@ -89,7 +89,7 @@
       "isNotable": true
     },
     "mknpc:render_group": {
-      "renderGroup": "destroyed_skeletal_trooper"
+      "renderGroup": "mkultra:zombified_piglin/destroyed_skeletal_trooper"
     },
     "mknpc:skills": {
       "minor_skills": [

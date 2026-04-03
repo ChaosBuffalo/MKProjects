@@ -2,6 +2,9 @@ package com.chaosbuffalo.mknpc.client.render.renderers;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyleClient;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLookManager;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HumanoidModel;
@@ -15,27 +18,23 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public abstract class BipedGroupRenderer<T extends MKEntity, M extends HumanoidModel<T>> extends LivingEntityRenderer<T, M> {
-
     private final Map<String, MKBipedRenderer<T, M>> renderers;
     private M currentModel;
-    private final Map<String, ModelLook> looks;
 
     public BipedGroupRenderer(EntityRendererProvider.Context p_174289_) {
         super(p_174289_, null, 0.5f);
         this.renderers = new HashMap<>();
-        this.looks = new HashMap<>();
         currentModel = null;
     }
 
-    protected void putLook(String name, ModelLook look) {
-        if (!renderers.containsKey(look.getStyleName(false)) || !renderers.containsKey(look.getStyleName(true))) {
-            MKNpc.LOGGER.error("Tried to register look {} to {}, but renderer for style is missing.",
-                    name, this);
-            return;
-        }
-        this.looks.put(name, look);
+    protected BipedGroupRenderer(EntityRendererProvider.Context context,
+                                 ResourceLocation entityType,
+                                 Function<ModelStyle, MKBipedRenderer<T, M>> rendererProvider) {
+        this(context);
+        putRegisteredRenderers(entityType, rendererProvider);
     }
 
     protected void putRenderer(String key, MKBipedRenderer<T, M> renderer) {
@@ -45,9 +44,16 @@ public abstract class BipedGroupRenderer<T extends MKEntity, M extends HumanoidM
         }
     }
 
+    protected void putRegisteredRenderers(ResourceLocation entityType,
+                                          Function<ModelStyle, MKBipedRenderer<T, M>> rendererProvider) {
+        for (ModelStyle style : ModelStyleClient.getRegisteredStyles(entityType)) {
+            putRenderer(style.getName(), rendererProvider.apply(style));
+        }
+    }
+
     @Nullable
     protected ModelLook getLookForEntity(T entityIn) {
-        return looks.get(entityIn.getCurrentModelLook());
+        return ModelLookManager.getLook(entityIn.level().registryAccess(), entityIn.getType(), entityIn.getCurrentModelLook());
     }
 
     @Nullable

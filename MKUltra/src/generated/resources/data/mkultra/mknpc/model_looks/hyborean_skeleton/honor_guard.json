@@ -1,0 +1,8 @@
+{
+  "baseTexture": "minecraft:textures/entity/skeleton/skeleton.png",
+  "entityType": "mkultra:hyborean_skeleton",
+  "layerTextures": {
+    "clothes_1": "mkultra:textures/entity/clothes/hyborean_armor.png"
+  },
+  "modelStyle": "mknpc:clothes_only"
+}

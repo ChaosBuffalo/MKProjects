@@ -122,7 +122,7 @@
       "isNotable": true
     },
     "mknpc:render_group": {
-      "renderGroup": "default"
+      "renderGroup": "mkultra:human/default"
     },
     "mknpc:skills": {
       "major_skills": [

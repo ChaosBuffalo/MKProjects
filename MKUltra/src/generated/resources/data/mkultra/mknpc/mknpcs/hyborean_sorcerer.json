@@ -72,7 +72,7 @@
       "name": "Hyborean Sorcerer"
     },
     "mknpc:render_group": {
-      "renderGroup": "sorcerer"
+      "renderGroup": "mkultra:hyborean_skeleton/sorcerer"
     },
     "mknpc:skills": {
       "minor_skills": [

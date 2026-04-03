@@ -13,7 +13,7 @@ public class MKFlyingSkeletonEntity extends MKFlyingEntity {
 
     public MKFlyingSkeletonEntity(EntityType<? extends MKFlyingSkeletonEntity> type, Level worldIn) {
         super(type, worldIn);
-        setCurrentModelLook(DEFAULT);
+        setCurrentModelLook(MKEntity.makeLookId(type, DEFAULT));
     }
 
     public static AttributeSupplier.Builder registerAttributes(double attackDamage, double movementSpeed) {

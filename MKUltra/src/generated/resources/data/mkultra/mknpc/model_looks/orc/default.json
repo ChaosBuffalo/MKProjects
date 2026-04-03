@@ -1,0 +1,6 @@
+{
+  "baseTexture": "mkultra:textures/entity/orcs/green_orc.png",
+  "default": true,
+  "entityType": "mkultra:orc",
+  "modelStyle": "mknpc:basic"
+}

@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.data.MKChatGenerator;
 import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.client.render.renderers.SkeletonStyles;
 import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -44,7 +45,7 @@ public class MKNpcDefinitions {
         NpcDefinition def = new NpcDefinition(key, MKNpcEntityTypes.SKELETON_TYPE);
         def.addOption(new FactionOption(MKFactions.UNDEAD));
         def.addOption(new MKSizeOption(0.25f));
-        def.addOption(new RenderGroupOption("wither_king"));
+        def.addOption(new RenderGroupOption(SkeletonStyles.lookKey(MKNpcEntityTypes.SKELETON_TYPE.get(), "wither_king")));
         return def;
     }
 

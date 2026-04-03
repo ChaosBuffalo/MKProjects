@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
 import com.chaosbuffalo.mknpc.client.gui.screens.QuestPage;
 import com.chaosbuffalo.mknpc.command.NpcCommands;
 import com.chaosbuffalo.mknpc.components.NpcComponents;
@@ -67,6 +68,7 @@ public class MKNpc {
         NpcDialogueConditionTypes.REGISTRY.register(modBus);
         QuestRegistries.register(modBus);
         NpcRegistries.register(modBus);
+        ModelStyles.register(modBus);
         NpcOptionTypes.register(modBus);
         NpcOptionEntryTypes.register(modBus);
         StructureEventManager.setupDeserializers();

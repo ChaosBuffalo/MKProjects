@@ -74,7 +74,7 @@
       "name": "Skeletal Magus"
     },
     "mknpc:render_group": {
-      "renderGroup": "destroyed_skeletal_mage"
+      "renderGroup": "mkultra:zombified_piglin/destroyed_skeletal_mage"
     },
     "mknpc:skills": {
       "minor_skills": [

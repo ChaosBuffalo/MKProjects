@@ -49,7 +49,7 @@
       "name": "Decaying Zombie"
     },
     "mknpc:render_group": {
-      "renderGroup": "zombie_pig"
+      "renderGroup": "mkultra:zombified_piglin/zombie_pig"
     },
     "mknpc:skills": {
       "minor_skills": [

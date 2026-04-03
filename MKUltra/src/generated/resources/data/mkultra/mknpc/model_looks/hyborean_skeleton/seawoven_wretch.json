@@ -1,0 +1,5 @@
+{
+  "baseTexture": "minecraft:textures/entity/skeleton/stray.png",
+  "entityType": "mkultra:hyborean_skeleton",
+  "modelStyle": "mknpc:basic"
+}

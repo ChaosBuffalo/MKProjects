@@ -15,7 +15,7 @@ public class MKGolemEntity extends MKEntity {
 
     public MKGolemEntity(EntityType<? extends MKGolemEntity> type, Level worldIn) {
         super(type, worldIn);
-        setCurrentModelLook(DEFAULT);
+        setCurrentModelLook(MKEntity.makeLookId(type, DEFAULT));
     }
 
     public static AttributeSupplier.Builder registerAttributes(double attackDamage, double movementSpeed) {

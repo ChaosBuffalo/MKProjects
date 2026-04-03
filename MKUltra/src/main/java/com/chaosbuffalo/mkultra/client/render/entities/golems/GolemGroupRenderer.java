@@ -12,9 +12,8 @@ import javax.annotation.Nonnull;
 public class GolemGroupRenderer extends BipedGroupRenderer<MKGolemEntity, MKGolemModel<MKGolemEntity>> {
 
     public GolemGroupRenderer(EntityRendererProvider.Context context, ResourceLocation entityType) {
-        super(context);
-        putRenderer(MKUGolems.BASIC_GOLEM_NAME, new GolemRenderer(context, MKUGolems.GOLEM_STYLE, entityType));
-        putLook(MKUGolems.NECROTIDE_GOLEM_NAME, MKUGolems.NECROTIDE_GOLEM_LOOK);
+        super(context, entityType,
+                style -> new GolemRenderer(context, style, entityType));
     }
 
     @Nonnull

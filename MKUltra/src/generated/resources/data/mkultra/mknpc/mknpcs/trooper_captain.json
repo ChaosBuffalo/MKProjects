@@ -107,7 +107,7 @@
       "isNotable": true
     },
     "mknpc:render_group": {
-      "renderGroup": "skeletal_trooper"
+      "renderGroup": "mkultra:zombified_piglin/skeletal_trooper"
     },
     "mknpc:skills": {
       "major_skills": [

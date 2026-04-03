@@ -11,6 +11,6 @@ public class ZombifiedPiglinRenderer extends MKBipedRenderer<MKZombifiedPiglinEn
 
     public ZombifiedPiglinRenderer(EntityRendererProvider.Context context, ModelStyle style,
                                    ResourceLocation entityType) {
-        super(context, style, PiglinStyles.DEFAULT_ZOMBIE_LOOK, 0.5f, MKPiglinModel::new, entityType);
+        super(context, style, 0.5f, MKPiglinModel::new, entityType);
     }
 }

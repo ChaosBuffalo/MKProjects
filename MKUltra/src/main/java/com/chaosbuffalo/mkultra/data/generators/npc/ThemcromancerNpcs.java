@@ -39,7 +39,7 @@ public class ThemcromancerNpcs {
     static NpcDefinition generateThemnianAcolyte(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
-                .renderGroup(MKUHumans.DEFAULT_NAME)
+                .renderGroup(MKUHumans.DEFAULT_LOOK)
                 .size(0.92f)
                 .attribute(Attributes.MAX_HEALTH, 90.0)
                 .attribute(MKAttributes.MAX_MANA, 90.0)
@@ -63,7 +63,7 @@ public class ThemcromancerNpcs {
     static NpcDefinition generateThemnianNeophyte(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
-                .renderGroup(MKUHumans.DEFAULT_NAME)
+                .renderGroup(MKUHumans.DEFAULT_LOOK)
                 .size(0.85f)
                 .attribute(Attributes.MAX_HEALTH, 40.0)
                 .attribute(MKAttributes.MAX_MANA, 40.0)
@@ -87,7 +87,7 @@ public class ThemcromancerNpcs {
 
         return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
-                .renderGroup(MKUHumans.DEFAULT_NAME)
+                .renderGroup(MKUHumans.DEFAULT_LOOK)
                 .size(1.0f)
                 .attribute(Attributes.MAX_HEALTH, 300.0)
                 .attribute(MKAttributes.MAX_MANA, 300.0)
@@ -125,7 +125,7 @@ public class ThemcromancerNpcs {
     static NpcDefinition generateThemnianLibrarian(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HUMAN_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
-                .renderGroup(MKUHumans.DEFAULT_NAME)
+                .renderGroup(MKUHumans.DEFAULT_LOOK)
                 .size(0.92f)
                 .attribute(Attributes.MAX_HEALTH, 250.0)
                 .attribute(MKAttributes.MAX_MANA, 250.0)
@@ -154,7 +154,7 @@ public class ThemcromancerNpcs {
     static NpcDefinition generateSkeletalGatekeeper(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.THEMCROMANCER_GATEKEEPER_NAME)
-                .renderGroup(MKUSkeletons.BASIC_NAME)
+                .renderGroup(MKUSkeletons.BASIC_LOOK)
                 .size(1.0f)
                 .attribute(Attributes.MAX_HEALTH, 600.0)
                 .attribute(MKAttributes.MAX_MANA, 600.0)
@@ -170,7 +170,7 @@ public class ThemcromancerNpcs {
     static NpcDefinition generateSkeletalGuard(ResourceKey<NpcDefinition> key) {
         return new NpcDefinitionBuilder(key, MKUEntities.HYBOREAN_SKELETON_TYPE)
                 .faction(MKUFactions.THEMCROMANCERS_NAME)
-                .renderGroup(MKUSkeletons.BASIC_NAME)
+                .renderGroup(MKUSkeletons.BASIC_LOOK)
                 .size(1.1f)
                 .attribute(Attributes.MAX_HEALTH, 100.0)
                 .attribute(MKAttributes.MAX_MANA, 100.0)

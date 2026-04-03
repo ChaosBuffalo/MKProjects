@@ -45,7 +45,7 @@
       "name": "Shambling Archer"
     },
     "mknpc:render_group": {
-      "renderGroup": "zombie_pig"
+      "renderGroup": "mkultra:zombified_piglin/zombie_pig"
     },
     "mknpc:skills": {
       "major_skills": [

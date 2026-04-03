@@ -1,0 +1,8 @@
+{
+  "baseTexture": "mkultra:textures/entity/humans/ghost_skin_1.png",
+  "entityType": "mkultra:human_ghost",
+  "layerTextures": {
+    "hair_1": "mkultra:textures/entity/humans/ghost_hair_1.png"
+  },
+  "modelStyle": "mkultra:ghost_short_hair_no_clothes"
+}

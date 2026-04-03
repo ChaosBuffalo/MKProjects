@@ -131,7 +131,7 @@
       "name": "Undying Honor Guard"
     },
     "mknpc:render_group": {
-      "renderGroup": "honor_guard"
+      "renderGroup": "mkultra:hyborean_skeleton/honor_guard"
     },
     "mknpc:skills": {
       "major_skills": [

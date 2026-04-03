@@ -38,6 +38,7 @@ import com.chaosbuffalo.targeting_api.ITargetingOwner;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -227,7 +228,6 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     public void onAddedToLevel() {
         super.onAddedToLevel();
-        getEntityDataCap();
         if (!level().isClientSide) {
             syncController.onJoinLevel();
         }
@@ -398,7 +398,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(LOOK_STYLE, "default");
+        builder.define(LOOK_STYLE, "");
         builder.define(SCALE, 1.0f);
         builder.define(IS_GHOST, false);
         builder.define(GHOST_TRANSLUCENCY, 1.0f);
@@ -599,13 +599,24 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     @Override
-    public String getCurrentModelLook() {
-        return entityData.get(LOOK_STYLE);
+    public ResourceLocation getCurrentModelLook() {
+        String rawId = entityData.get(LOOK_STYLE);
+        ResourceLocation lookId = ResourceLocation.tryParse(rawId);
+        if (lookId != null) {
+            return lookId;
+        }
+        return makeLookId(this.getType(), "default");
     }
 
     @Override
-    public void setCurrentModelLook(String group) {
-        entityData.set(LOOK_STYLE, group);
+    public void setCurrentModelLook(ResourceLocation lookId) {
+        entityData.set(LOOK_STYLE, lookId.toString());
+    }
+
+    public static ResourceLocation makeLookId(EntityType<?> entityType, String lookName) {
+        ResourceLocation entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
+        return ResourceLocation.fromNamespaceAndPath(entityTypeId.getNamespace(),
+                "%s/%s".formatted(entityTypeId.getPath(), lookName));
     }
 
     public MovementStrategy getMovementStrategy(AbilityTargetingDecision decision) {

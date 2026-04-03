@@ -1,0 +1,9 @@
+{
+  "baseTexture": "mkultra:textures/entity/humans/pale_skin_1.png",
+  "entityType": "mkultra:human",
+  "layerTextures": {
+    "armor_lower": "mkultra:textures/entity/clothes/necrotide_robes_2.png",
+    "armor_upper": "mkultra:textures/entity/clothes/necrotide_robes_skull_1.png"
+  },
+  "modelStyle": "mkultra:two_layer_armor_no_hair"
+}

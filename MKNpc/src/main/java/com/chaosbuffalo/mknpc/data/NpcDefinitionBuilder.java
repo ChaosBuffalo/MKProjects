@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingRequirement;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ParticleEffectInstance;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
 import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -92,8 +93,8 @@ public class NpcDefinitionBuilder {
         return this;
     }
 
-    public NpcDefinitionBuilder renderGroup(String groupName) {
-        var opt = new RenderGroupOption(groupName);
+    public NpcDefinitionBuilder renderGroup(ResourceKey<ModelLook> lookKey) {
+        var opt = new RenderGroupOption(lookKey);
         index(opt);
         return this;
     }

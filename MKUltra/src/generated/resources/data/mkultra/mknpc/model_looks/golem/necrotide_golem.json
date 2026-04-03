@@ -1,0 +1,5 @@
+{
+  "baseTexture": "mkultra:textures/entity/golem/necrotide_golem.png",
+  "entityType": "mkultra:golem",
+  "modelStyle": "mkultra:basic_golem"
+}

@@ -70,7 +70,7 @@
       "name": "Crumbling Trooper Mage"
     },
     "mknpc:render_group": {
-      "renderGroup": "zombie_pig_magus"
+      "renderGroup": "mkultra:zombified_piglin/zombie_pig_magus"
     },
     "mknpc:skills": {
       "minor_skills": [

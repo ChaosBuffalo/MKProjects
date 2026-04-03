@@ -173,7 +173,7 @@
       "name": "Hyborean Warrior"
     },
     "mknpc:render_group": {
-      "renderGroup": "hyborean_warrior"
+      "renderGroup": "mkultra:hyborean_skeleton/hyborean_warrior"
     },
     "mknpc:skills": {
       "major_skills": [

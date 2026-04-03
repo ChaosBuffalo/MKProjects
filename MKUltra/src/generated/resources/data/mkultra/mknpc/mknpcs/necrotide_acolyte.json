@@ -51,7 +51,7 @@
       "name": "A Necrotide Acolyte"
     },
     "mknpc:render_group": {
-      "renderGroup": "necrotide_cultist_1"
+      "renderGroup": "mkultra:human/necrotide_cultist_1"
     },
     "mknpc:skills": {
       "minor_skills": [

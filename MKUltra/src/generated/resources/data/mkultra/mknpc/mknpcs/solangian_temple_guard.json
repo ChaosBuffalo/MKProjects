@@ -62,7 +62,7 @@
       "isNotable": true
     },
     "mknpc:render_group": {
-      "renderGroup": "temple_guard_1"
+      "renderGroup": "mkultra:human/temple_guard_1"
     },
     "mknpc:skills": {
       "major_skills": [

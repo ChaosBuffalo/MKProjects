@@ -1,0 +1,8 @@
+{
+  "baseTexture": "minecraft:textures/entity/skeleton/skeleton.png",
+  "entityType": "mknpc:flying_skeleton",
+  "layerTextures": {
+    "clothes_1": "minecraft:textures/entity/skeleton/stray_overlay.png"
+  },
+  "modelStyle": "mknpc:clothes_only"
+}

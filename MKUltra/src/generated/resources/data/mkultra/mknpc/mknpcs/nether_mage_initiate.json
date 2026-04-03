@@ -97,7 +97,7 @@
       ]
     },
     "mknpc:render_group": {
-      "renderGroup": "nether_mage_1"
+      "renderGroup": "mkultra:human/nether_mage_1"
     },
     "mknpc:skills": {
       "minor_skills": [

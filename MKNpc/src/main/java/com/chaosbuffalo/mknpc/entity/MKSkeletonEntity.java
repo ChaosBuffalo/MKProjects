@@ -13,7 +13,7 @@ public class MKSkeletonEntity extends MKEntity {
 
     public MKSkeletonEntity(EntityType<? extends MKSkeletonEntity> type, Level worldIn) {
         super(type, worldIn);
-        setCurrentModelLook(DEFAULT);
+        setCurrentModelLook(MKEntity.makeLookId(type, DEFAULT));
     }
 
     public static AttributeSupplier.Builder registerAttributes(double attackDamage, double movementSpeed) {
