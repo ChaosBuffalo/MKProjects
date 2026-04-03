@@ -4,6 +4,9 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.*;
 import com.chaosbuffalo.mkcore.core.damage.IMKDamageSourceExtensions;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
+import com.chaosbuffalo.mkcore.effects.triggers.CoreTriggerTypes;
+import com.chaosbuffalo.mkcore.effects.triggers.FallTriggerContext;
+import com.chaosbuffalo.mkcore.effects.triggers.KillTriggerContext;
 import com.chaosbuffalo.mkcore.init.CoreSounds;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -34,7 +37,10 @@ public class CombatEventHandler {
         if (event.getEntity().level().isClientSide())
             return;
 
-        SpellTriggers.FALL.onLivingFall(event, event.getEntity());
+        IMKEntityData livingData = MKCore.getEntityDataOrThrow(event.getEntity());
+        livingData.getTriggers().dispatch(CoreTriggerTypes.FALL,
+                new FallTriggerContext(event, livingData));
+        SpellTriggers.FALL.onLivingFall(event, livingData);
     }
 
     @SubscribeEvent
@@ -153,6 +159,8 @@ public class CombatEventHandler {
             }
 
             var killerData = MKCore.getEntityDataOrThrow(killer);
+            killerData.getTriggers().dispatch(CoreTriggerTypes.KILL,
+                    new KillTriggerContext(event, source, killerData));
             SpellTriggers.LIVING_KILL_ENTITY.onEntityDeath(event, source, killerData);
         }
     }

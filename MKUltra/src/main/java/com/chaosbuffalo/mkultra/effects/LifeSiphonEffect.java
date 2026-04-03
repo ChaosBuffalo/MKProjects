@@ -6,7 +6,10 @@ import com.chaosbuffalo.mkcore.core.healing.MKHealing;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectState;
 import com.chaosbuffalo.mkcore.effects.MKSimplePassiveState;
-import com.chaosbuffalo.mkcore.effects.SpellTriggers;
+import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
+import com.chaosbuffalo.mkcore.effects.triggers.CoreTriggerTypes;
+import com.chaosbuffalo.mkcore.effects.triggers.EntityTriggerRegistrar;
+import com.chaosbuffalo.mkcore.effects.triggers.MKTriggerContributor;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
@@ -16,11 +19,10 @@ import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
-public class LifeSiphonEffect extends MKEffect {
+public class LifeSiphonEffect extends MKEffect implements MKTriggerContributor {
 
     public LifeSiphonEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        SpellTriggers.LIVING_KILL_ENTITY.register(this, this::onLivingKillEntity);
     }
 
     public void onLivingKillEntity(LivingDeathEvent event, DamageSource source, IMKEntityData killerData) {
@@ -35,5 +37,11 @@ public class LifeSiphonEffect extends MKEffect {
     @Override
     public MKEffectState makeState() {
         return MKSimplePassiveState.INSTANCE;
+    }
+
+    @Override
+    public void registerTriggers(MKActiveEffect activeEffect, EntityTriggerRegistrar registrar) {
+        registrar.add(CoreTriggerTypes.KILL, context ->
+                onLivingKillEntity(context.event(), context.source(), context.killerData()));
     }
 }

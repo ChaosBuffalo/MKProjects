@@ -19,7 +19,7 @@ public class EntityTriggerRegistry {
         this.entityData = entityData;
     }
 
-    public void markDirty() {
+    public void rebuild() {
         dirty = true;
     }
 

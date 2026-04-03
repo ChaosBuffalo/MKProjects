@@ -13,6 +13,10 @@ public final class CoreTriggerTypes {
             new EntityTriggerType<>("victim_pre_scale");
     public static final EntityTriggerType<VictimDamageTriggerContext> VICTIM_POST_SCALE =
             new EntityTriggerType<>("victim_post_scale");
+    public static final EntityTriggerType<FallTriggerContext> FALL =
+            new EntityTriggerType<>("fall");
+    public static final EntityTriggerType<KillTriggerContext> KILL =
+            new EntityTriggerType<>("kill");
 
     private CoreTriggerTypes() {
     }

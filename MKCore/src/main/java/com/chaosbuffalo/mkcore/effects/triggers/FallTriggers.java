@@ -27,11 +27,10 @@ public class FallTriggers extends SpellTriggers.TriggerCollectionBase {
         fallTriggers.add(trigger);
     }
 
-    public void onLivingFall(LivingFallEvent event, LivingEntity entity) {
+    public void onLivingFall(LivingFallEvent event, IMKEntityData entityData) {
         if (fallTriggers.isEmpty())
             return;
 
-        IMKEntityData entityData = MKCore.getEntityDataOrThrow(entity);
         if (startTrigger(entityData, TAG))
             return;
         fallTriggers.forEach(f -> f.apply(event, entityData));

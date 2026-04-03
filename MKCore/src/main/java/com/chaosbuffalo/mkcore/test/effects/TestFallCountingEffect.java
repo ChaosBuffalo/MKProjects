@@ -4,6 +4,9 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.effects.*;
+import com.chaosbuffalo.mkcore.effects.triggers.CoreTriggerTypes;
+import com.chaosbuffalo.mkcore.effects.triggers.EntityTriggerRegistrar;
+import com.chaosbuffalo.mkcore.effects.triggers.MKTriggerContributor;
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
 import com.google.common.reflect.TypeToken;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -11,14 +14,13 @@ import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 
 import java.util.UUID;
 
-public class TestFallCountingEffect extends MKEffect {
+public class TestFallCountingEffect extends MKEffect implements MKTriggerContributor {
 
     private final TypeToken<State> STATE = new TypeToken<>() {
     };
 
     public TestFallCountingEffect() {
         super(MobEffectCategory.BENEFICIAL);
-        SpellTriggers.FALL.register(this::onFall);
     }
 
     private void onFall(LivingFallEvent event, IMKEntityData targetData) {
@@ -41,6 +43,12 @@ public class TestFallCountingEffect extends MKEffect {
     @Override
     public MKEffectBuilder<State> builder(UUID sourceId) {
         return new MKEffectBuilder<>(this, sourceId, this::makeState);
+    }
+
+    @Override
+    public void registerTriggers(MKActiveEffect activeEffect, EntityTriggerRegistrar registrar) {
+        registrar.add(CoreTriggerTypes.FALL, context ->
+                activeEffect.getState(STATE).counter++);
     }
 
     public static class State extends MKEffectState {
