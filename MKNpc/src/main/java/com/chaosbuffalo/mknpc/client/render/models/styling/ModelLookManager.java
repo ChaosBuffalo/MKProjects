@@ -1,7 +1,6 @@
-package com.chaosbuffalo.mknpc.client.render.models.styling.looks;
+package com.chaosbuffalo.mknpc.client.render.models.styling;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;

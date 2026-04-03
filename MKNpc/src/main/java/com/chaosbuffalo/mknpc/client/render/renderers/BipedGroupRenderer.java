@@ -4,7 +4,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyleClient;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
-import com.chaosbuffalo.mknpc.client.render.models.styling.looks.ModelLookManager;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLookManager;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HumanoidModel;
