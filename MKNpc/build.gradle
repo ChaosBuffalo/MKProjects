@@ -19,6 +19,26 @@ project.ext.dependentProjects = [
 
 apply from: '../common.gradle'
 
+def gameTestDir = file('run-gametest')
+
+tasks.register('cleanGameTestWorld', Delete) {
+    delete gameTestDir
+}
+
+tasks.named('prepareGameTestServerRun').configure {
+    gameDirectory = gameTestDir
+}
+
+tasks.named('runGameTestServer').configure {
+    dependsOn tasks.named('cleanGameTestWorld')
+}
+
 neoForge {
     validateAccessTransformers = true
+
+    runs {
+        gameTestServer {
+            gameDirectory = gameTestDir
+        }
+    }
 }
