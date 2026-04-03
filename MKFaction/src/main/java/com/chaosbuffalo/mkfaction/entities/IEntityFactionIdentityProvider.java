@@ -4,6 +4,6 @@ import net.minecraft.world.entity.Entity;
 
 import java.util.Optional;
 
-public interface IEntitySpawnIdentityProvider {
-    Optional<IEntitySpawnIdentity> getSpawnIdentity(Entity entity);
+public interface IEntityFactionIdentityProvider {
+    Optional<IEntityFactionIdentity> getIdentity(Entity entity);
 }

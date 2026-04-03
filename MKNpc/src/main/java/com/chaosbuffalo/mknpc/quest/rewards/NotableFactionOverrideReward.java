@@ -55,7 +55,7 @@ public class NotableFactionOverrideReward extends QuestReward {
         }
 
         IPlayerFaction playerFaction = IPlayerFaction.getOrThrow(context.player());
-        playerFaction.setNpcFactionOverride(notable.get().getSpawnerId(), factionScore);
+        playerFaction.setNpcFactionOverride(notable.get().getNotableId(), factionScore);
         context.player().sendSystemMessage(Component.translatable(
                 "mknpc.quest_reward.notable_faction_override.message",
                 notable.get().getName().copy().withStyle(ChatFormatting.GOLD),

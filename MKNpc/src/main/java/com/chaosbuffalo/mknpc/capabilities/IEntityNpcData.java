@@ -1,12 +1,13 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
-import com.chaosbuffalo.mkfaction.entities.IEntitySpawnIdentity;
+import com.chaosbuffalo.mkfaction.entities.IEntityFactionIdentity;
 import com.chaosbuffalo.mknpc.init.MKNpcAttachments;
 import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -25,7 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface IEntityNpcData extends INBTSerializable<CompoundTag>, IEntitySpawnIdentity {
+public interface IEntityNpcData extends INBTSerializable<CompoundTag>, IEntityFactionIdentity {
 
     LivingEntity getEntity();
 
@@ -62,6 +63,12 @@ public interface IEntityNpcData extends INBTSerializable<CompoundTag>, IEntitySp
 
     @Nonnull
     UUID getSpawnID();
+
+    @Override
+    default UUID getFactionIdentity() {
+        UUID notableId = getNotableUUID();
+        return !Util.NIL_UUID.equals(notableId) ? notableId : getSpawnID();
+    }
 
     void setStructureId(UUID structureId);
 

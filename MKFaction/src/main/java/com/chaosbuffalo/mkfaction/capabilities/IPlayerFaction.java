@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkfaction.capabilities;
 
-import com.chaosbuffalo.mkfaction.entities.IEntitySpawnIdentity;
+import com.chaosbuffalo.mkfaction.entities.IEntityFactionIdentity;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
 import com.chaosbuffalo.mkfaction.faction.PlayerFactionStatus;
@@ -56,7 +56,7 @@ public interface IPlayerFaction extends INBTSerializable<CompoundTag> {
                     if (mobActiveFaction == null) {
                         return 0;
                     }
-                    return getFactionScore(mobActiveFaction, IEntitySpawnIdentity.get(target).map(IEntitySpawnIdentity::getSpawnID).orElse(null));
+                    return getFactionScore(mobActiveFaction, IEntityFactionIdentity.get(target).map(IEntityFactionIdentity::getFactionIdentity).orElse(null));
                 })
                 .orElse(0);
     }
@@ -72,7 +72,7 @@ public interface IPlayerFaction extends INBTSerializable<CompoundTag> {
                     if (mobActiveFaction == null) {
                         return PlayerFactionStatus.UNKNOWN;
                     }
-                    return getFactionStatus(mobActiveFaction, IEntitySpawnIdentity.get(target).map(IEntitySpawnIdentity::getSpawnID).orElse(null));
+                    return getFactionStatus(mobActiveFaction, IEntityFactionIdentity.get(target).map(IEntityFactionIdentity::getFactionIdentity).orElse(null));
                 })
                 .orElse(PlayerFactionStatus.UNKNOWN);
     }
@@ -96,7 +96,7 @@ public interface IPlayerFaction extends INBTSerializable<CompoundTag> {
                     if (mobActiveFaction == null) {
                         return Targeting.TargetRelation.UNHANDLED;
                     }
-                    return getFactionRelation(mobActiveFaction, IEntitySpawnIdentity.get(target).map(IEntitySpawnIdentity::getSpawnID).orElse(null));
+                    return getFactionRelation(mobActiveFaction, IEntityFactionIdentity.get(target).map(IEntityFactionIdentity::getFactionIdentity).orElse(null));
                 })
                 .orElse(Targeting.TargetRelation.UNHANDLED);
     }
