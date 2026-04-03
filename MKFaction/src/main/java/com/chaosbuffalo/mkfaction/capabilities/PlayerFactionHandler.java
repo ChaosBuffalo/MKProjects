@@ -48,17 +48,17 @@ public class PlayerFactionHandler implements IPlayerFaction {
 
     @Override
     public OptionalInt getNpcFactionOverride(UUID spawnId) {
-        return getNpcOverrideData().getNpcFactionOverride(spawnId);
+        return getPersonaData().getNpcFactionOverride(spawnId);
     }
 
     @Override
     public void setNpcFactionOverride(UUID spawnId, int factionScore) {
-        getNpcOverrideData().setNpcFactionOverride(spawnId, factionScore);
+        getPersonaData().setNpcFactionOverride(spawnId, factionScore);
     }
 
     @Override
     public void clearNpcFactionOverride(UUID spawnId) {
-        getNpcOverrideData().clearNpcFactionOverride(spawnId);
+        getPersonaData().clearNpcFactionOverride(spawnId);
     }
 
     @Override
@@ -77,10 +77,6 @@ public class PlayerFactionHandler implements IPlayerFaction {
         return getPlayerData().getPersonaExtension(PersonaFactionData.class);
     }
 
-    private PersonaNpcFactionOverrideData getNpcOverrideData() {
-        return getPlayerData().getPersonaExtension(PersonaNpcFactionOverrideData.class);
-    }
-
     @Override
     public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         // This would be where global data that is shared across personas would be persisted.
@@ -97,7 +93,9 @@ public class PlayerFactionHandler implements IPlayerFaction {
         static final ResourceLocation NAME = MKFactionMod.id("faction_data");
 
         private final Map<Holder<MKFaction>, PlayerFactionEntry> factionMap = new HashMap<>();
+        private final Map<UUID, ScoreOverrideEntry> overrideMap = new HashMap<>();
         private final SyncMapUpdater<Holder<MKFaction>, PlayerFactionEntry> factionUpdater;
+        private final SyncMapUpdater<UUID, ScoreOverrideEntry> overrideUpdater;
         private final Persona persona;
 
         public PersonaFactionData(Persona persona) {
@@ -108,7 +106,14 @@ public class PlayerFactionHandler implements IPlayerFaction {
                     this::idToHolder,
                     this::createNewEntry
             );
+            overrideUpdater = new SyncMapUpdater<>(
+                    overrideMap,
+                    UUID::toString,
+                    UUID::fromString,
+                    this::createNewOverrideEntry
+            );
             persona.getSyncGroup().addPrivate("factions", factionUpdater);
+            persona.getSyncGroup().addPrivate("npc_faction_overrides", overrideUpdater);
         }
 
         private <T> String holderToId(Holder<T> factionHolder) {
@@ -128,8 +133,27 @@ public class PlayerFactionHandler implements IPlayerFaction {
             return new PlayerFactionEntry(faction, this::onDirtyEntry);
         }
 
+        private ScoreOverrideEntry createNewOverrideEntry(UUID spawnId) {
+            return new ScoreOverrideEntry(spawnId, this::onDirtyOverrideEntry);
+        }
+
         public Map<Holder<MKFaction>, PlayerFactionEntry> getFactionMap() {
             return factionMap;
+        }
+
+        public OptionalInt getNpcFactionOverride(UUID spawnId) {
+            ScoreOverrideEntry entry = overrideMap.get(spawnId);
+            return entry == null ? OptionalInt.empty() : OptionalInt.of(entry.getFactionScore());
+        }
+
+        public void setNpcFactionOverride(UUID spawnId, int factionScore) {
+            overrideMap.computeIfAbsent(spawnId, this::createNewOverrideEntry).setFactionScore(factionScore);
+        }
+
+        public void clearNpcFactionOverride(UUID spawnId) {
+            if (overrideMap.remove(spawnId) != null) {
+                overrideUpdater.markDirty(spawnId);
+            }
         }
 
         private PlayerFactionEntry getFactionEntry(Holder<MKFaction> factionName) {
@@ -144,64 +168,7 @@ public class PlayerFactionHandler implements IPlayerFaction {
             factionUpdater.markDirty(entry.getFaction());
         }
 
-        @Override
-        public ResourceLocation getName() {
-            return NAME;
-        }
-
-        @Override
-        public CompoundTag serialize(HolderLookup.Provider provider) {
-//            MKFactionMod.LOGGER.info("PersonaFactionData.serialize");
-            CompoundTag tag = new CompoundTag();
-            tag.put("factions", factionUpdater.serializeStorage(provider));
-            return tag;
-        }
-
-        @Override
-        public void deserialize(HolderLookup.Provider provider, CompoundTag nbt) {
-//            MKFactionMod.LOGGER.info("PersonaFactionData.deserialize {}", nbt);
-            factionUpdater.deserializeStorage(provider, nbt.getCompound("factions"));
-        }
-    }
-
-    public static class PersonaNpcFactionOverrideData implements IPersonaExtension {
-        static final ResourceLocation NAME = MKFactionMod.id("npc_faction_override_data");
-
-        private final Map<UUID, ScoreOverrideEntry> overrideMap = new HashMap<>();
-        private final SyncMapUpdater<UUID, ScoreOverrideEntry> overrideUpdater;
-        private final Persona persona;
-
-        public PersonaNpcFactionOverrideData(Persona persona) {
-            this.persona = persona;
-            overrideUpdater = new SyncMapUpdater<>(
-                    overrideMap,
-                    UUID::toString,
-                    UUID::fromString,
-                    this::createNewEntry
-            );
-            persona.getSyncGroup().addPrivate("npc_faction_overrides", overrideUpdater);
-        }
-
-        private ScoreOverrideEntry createNewEntry(UUID spawnId) {
-            return new ScoreOverrideEntry(spawnId, this::onDirtyEntry);
-        }
-
-        public OptionalInt getNpcFactionOverride(UUID spawnId) {
-            ScoreOverrideEntry entry = overrideMap.get(spawnId);
-            return entry == null ? OptionalInt.empty() : OptionalInt.of(entry.getFactionScore());
-        }
-
-        public void setNpcFactionOverride(UUID spawnId, int factionScore) {
-            overrideMap.computeIfAbsent(spawnId, this::createNewEntry).setFactionScore(factionScore);
-        }
-
-        public void clearNpcFactionOverride(UUID spawnId) {
-            if (overrideMap.remove(spawnId) != null) {
-                overrideUpdater.markDirty(spawnId);
-            }
-        }
-
-        private void onDirtyEntry(ScoreOverrideEntry entry) {
+        private void onDirtyOverrideEntry(ScoreOverrideEntry entry) {
             overrideUpdater.markDirty(entry.getSpawnId());
         }
 
@@ -212,13 +179,17 @@ public class PlayerFactionHandler implements IPlayerFaction {
 
         @Override
         public CompoundTag serialize(HolderLookup.Provider provider) {
+//            MKFactionMod.LOGGER.info("PersonaFactionData.serialize");
             CompoundTag tag = new CompoundTag();
+            tag.put("factions", factionUpdater.serializeStorage(provider));
             tag.put("overrides", overrideUpdater.serializeStorage(provider));
             return tag;
         }
 
         @Override
         public void deserialize(HolderLookup.Provider provider, CompoundTag nbt) {
+//            MKFactionMod.LOGGER.info("PersonaFactionData.deserialize {}", nbt);
+            factionUpdater.deserializeStorage(provider, nbt.getCompound("factions"));
             overrideUpdater.deserializeStorage(provider, nbt.getCompound("overrides"));
         }
     }
@@ -272,21 +243,12 @@ public class PlayerFactionHandler implements IPlayerFaction {
         return new PersonaFactionData(persona);
     }
 
-    private static PersonaNpcFactionOverrideData createNewNpcOverrideData(Persona persona) {
-        return new PersonaNpcFactionOverrideData(persona);
-    }
-
     public static void registerPersonaExtension() {
         IPersonaExtensionProvider factory = PlayerFactionHandler::createNewPersonaData;
-        IPersonaExtensionProvider overrideFactory = PlayerFactionHandler::createNewNpcOverrideData;
         // some example code to dispatch IMC to another mod
         InterModComms.sendTo("mkcore", "register_persona_extension", () -> {
             MKFactionMod.LOGGER.debug("Faction register persona by IMC");
             return factory;
-        });
-        InterModComms.sendTo("mkcore", "register_persona_extension", () -> {
-            MKFactionMod.LOGGER.debug("Faction register npc override persona by IMC");
-            return overrideFactory;
         });
     }
 }
