@@ -137,7 +137,7 @@ public class MKUQuestProvider {
                         null
                 )
                 .reward(new FactionReward(100, factionReg.getOrThrow(MKUFactions.THEMCROMANCERS_NAME)))
-                .reward(new FactionReward(-10000, factionReg.getOrThrow(MKUFactions.SEE_OF_SOLANG_NAME)))
+                .notableFactionOverride(solangTempleGuard, -10000)
                 .reward(new GrantEntitlementReward(entitlements.getOrThrow(MKUEntitlements.ThemcromancerTier2)))
                 .reward(new XpReward(250))
                 .quest();

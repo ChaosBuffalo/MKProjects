@@ -57,7 +57,7 @@ public class MobFactionHandler implements IMobFaction {
 
         if (otherEntity instanceof Player player) {
             IPlayerFaction playerFaction = IPlayerFaction.getOrThrow(player);
-            return playerFaction.getFactionRelation(this);
+            return playerFaction.getFactionRelation(getEntity());
         }
         IMobFaction targetFaction = IMobFaction.getMobOrThrow(otherEntity);
         return faction.value().getNonPlayerEntityRelationship(otherEntity, targetFaction.getFaction());

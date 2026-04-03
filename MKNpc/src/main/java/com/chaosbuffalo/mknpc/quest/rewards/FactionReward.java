@@ -8,8 +8,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
-
 public class FactionReward extends QuestReward {
     public static final MapCodec<FactionReward> MAP_CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
             Codec.INT.fieldOf("faction_amount").forGetter(i -> i.factionAmount),
@@ -35,12 +33,12 @@ public class FactionReward extends QuestReward {
     }
 
     @Override
-    public void grantReward(Player player) {
-        IPlayerFaction playerFaction = IPlayerFaction.getOrThrow(player);
+    public void grantReward(QuestRewardContext context) {
+        IPlayerFaction playerFaction = IPlayerFaction.getOrThrow(context.player());
 
         playerFaction.getFactionEntry(faction).ifPresent(r -> r.incrementFaction(factionAmount));
 
-        player.sendSystemMessage(Component.translatable("mknpc.quest_reward.faction.message",
+        context.player().sendSystemMessage(Component.translatable("mknpc.quest_reward.faction.message",
                 factionAmount, faction.value().getDisplayName().withStyle(ChatFormatting.GOLD)));
     }
 }

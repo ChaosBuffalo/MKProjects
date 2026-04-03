@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
+import com.chaosbuffalo.mkfaction.entities.IEntitySpawnIdentity;
 import com.chaosbuffalo.mknpc.init.MKNpcAttachments;
 import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -24,7 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface IEntityNpcData extends INBTSerializable<CompoundTag> {
+public interface IEntityNpcData extends INBTSerializable<CompoundTag>, IEntitySpawnIdentity {
 
     LivingEntity getEntity();
 

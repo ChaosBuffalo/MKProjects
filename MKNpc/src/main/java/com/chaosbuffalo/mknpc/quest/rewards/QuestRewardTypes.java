@@ -19,4 +19,7 @@ public class QuestRewardTypes {
     public static final Supplier<QuestRewardType<GrantEntitlementReward>> ENTITLEMENT_REWARD = REGISTRY.register("entitlement", () -> () -> GrantEntitlementReward.MAP_CODEC);
 
     public static final Supplier<QuestRewardType<FactionReward>> FACTION_REWARD = REGISTRY.register("faction", () -> () -> FactionReward.MAP_CODEC);
+
+    public static final Supplier<QuestRewardType<NotableFactionOverrideReward>> NOTABLE_FACTION_OVERRIDE_REWARD =
+            REGISTRY.register("notable_faction_override", () -> () -> NotableFactionOverrideReward.MAP_CODEC);
 }

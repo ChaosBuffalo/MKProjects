@@ -8,8 +8,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
-
 import java.util.UUID;
 
 public class GrantEntitlementReward extends QuestReward {
@@ -34,11 +32,11 @@ public class GrantEntitlementReward extends QuestReward {
     }
 
     @Override
-    public void grantReward(Player player) {
+    public void grantReward(QuestRewardContext context) {
         if (entitlement != null) {
-            MKCore.getPlayer(player).ifPresent(x -> x.getEntitlements()
+            MKCore.getPlayer(context.player()).ifPresent(x -> x.getEntitlements()
                     .addEntitlement(new EntitlementInstance(entitlement, UUID.randomUUID())));
-            player.sendSystemMessage(Component.translatable("mknpc.grant_entitlement.message",
+            context.player().sendSystemMessage(Component.translatable("mknpc.grant_entitlement.message",
                     entitlement.value().getName()).withStyle(ChatFormatting.GOLD));
         }
     }

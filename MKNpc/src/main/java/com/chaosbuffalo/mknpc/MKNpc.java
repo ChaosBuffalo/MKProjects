@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc;
 
+import com.chaosbuffalo.mkfaction.entities.EntitySpawnIdentityManager;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
@@ -99,6 +100,8 @@ public class MKNpc {
 
 
     private void setup(final FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> EntitySpawnIdentityManager.registerProvider(entity ->
+                IEntityNpcData.get(entity).map(data -> data)));
 //        MKNpcWorldGen.registerStructurePoolTypes();
     }
 

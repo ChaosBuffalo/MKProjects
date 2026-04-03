@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.UUID;
 
 public class PlayerFactionHandler implements IPlayerFaction {
 
@@ -45,6 +47,21 @@ public class PlayerFactionHandler implements IPlayerFaction {
     }
 
     @Override
+    public OptionalInt getNpcFactionOverride(UUID spawnId) {
+        return getNpcOverrideData().getNpcFactionOverride(spawnId);
+    }
+
+    @Override
+    public void setNpcFactionOverride(UUID spawnId, int factionScore) {
+        getNpcOverrideData().setNpcFactionOverride(spawnId, factionScore);
+    }
+
+    @Override
+    public void clearNpcFactionOverride(UUID spawnId) {
+        getNpcOverrideData().clearNpcFactionOverride(spawnId);
+    }
+
+    @Override
     public Player getPlayer() {
         return player;
     }
@@ -58,6 +75,10 @@ public class PlayerFactionHandler implements IPlayerFaction {
 
     private PersonaFactionData getPersonaData() {
         return getPlayerData().getPersonaExtension(PersonaFactionData.class);
+    }
+
+    private PersonaNpcFactionOverrideData getNpcOverrideData() {
+        return getPlayerData().getPersonaExtension(PersonaNpcFactionOverrideData.class);
     }
 
     @Override
@@ -143,16 +164,129 @@ public class PlayerFactionHandler implements IPlayerFaction {
         }
     }
 
+    public static class PersonaNpcFactionOverrideData implements IPersonaExtension {
+        static final ResourceLocation NAME = MKFactionMod.id("npc_faction_override_data");
+
+        private final Map<UUID, ScoreOverrideEntry> overrideMap = new HashMap<>();
+        private final SyncMapUpdater<UUID, ScoreOverrideEntry> overrideUpdater;
+        private final Persona persona;
+
+        public PersonaNpcFactionOverrideData(Persona persona) {
+            this.persona = persona;
+            overrideUpdater = new SyncMapUpdater<>(
+                    overrideMap,
+                    UUID::toString,
+                    UUID::fromString,
+                    this::createNewEntry
+            );
+            persona.getSyncGroup().addPrivate("npc_faction_overrides", overrideUpdater);
+        }
+
+        private ScoreOverrideEntry createNewEntry(UUID spawnId) {
+            return new ScoreOverrideEntry(spawnId, this::onDirtyEntry);
+        }
+
+        public OptionalInt getNpcFactionOverride(UUID spawnId) {
+            ScoreOverrideEntry entry = overrideMap.get(spawnId);
+            return entry == null ? OptionalInt.empty() : OptionalInt.of(entry.getFactionScore());
+        }
+
+        public void setNpcFactionOverride(UUID spawnId, int factionScore) {
+            overrideMap.computeIfAbsent(spawnId, this::createNewEntry).setFactionScore(factionScore);
+        }
+
+        public void clearNpcFactionOverride(UUID spawnId) {
+            if (overrideMap.remove(spawnId) != null) {
+                overrideUpdater.markDirty(spawnId);
+            }
+        }
+
+        private void onDirtyEntry(ScoreOverrideEntry entry) {
+            overrideUpdater.markDirty(entry.getSpawnId());
+        }
+
+        @Override
+        public ResourceLocation getName() {
+            return NAME;
+        }
+
+        @Override
+        public CompoundTag serialize(HolderLookup.Provider provider) {
+            CompoundTag tag = new CompoundTag();
+            tag.put("overrides", overrideUpdater.serializeStorage(provider));
+            return tag;
+        }
+
+        @Override
+        public void deserialize(HolderLookup.Provider provider, CompoundTag nbt) {
+            overrideUpdater.deserializeStorage(provider, nbt.getCompound("overrides"));
+        }
+    }
+
+    public static class ScoreOverrideEntry implements com.chaosbuffalo.mkcore.sync.IMKSerializable<CompoundTag> {
+        private final UUID spawnId;
+        private final java.util.function.Consumer<ScoreOverrideEntry> dirtyNotifier;
+        private int factionScore;
+
+        public ScoreOverrideEntry(UUID spawnId, java.util.function.Consumer<ScoreOverrideEntry> dirtyNotifier) {
+            this.spawnId = spawnId;
+            this.dirtyNotifier = dirtyNotifier;
+        }
+
+        public UUID getSpawnId() {
+            return spawnId;
+        }
+
+        public int getFactionScore() {
+            return factionScore;
+        }
+
+        public void setFactionScore(int factionScore) {
+            this.factionScore = factionScore;
+            markDirty();
+        }
+
+        @Override
+        public CompoundTag serialize(HolderLookup.Provider provider) {
+            CompoundTag tag = new CompoundTag();
+            tag.putInt("factionScore", factionScore);
+            return tag;
+        }
+
+        @Override
+        public boolean deserialize(HolderLookup.Provider provider, CompoundTag tag) {
+            if (tag.contains("factionScore")) {
+                factionScore = tag.getInt("factionScore");
+            }
+            return true;
+        }
+
+        private void markDirty() {
+            if (dirtyNotifier != null) {
+                dirtyNotifier.accept(this);
+            }
+        }
+    }
+
     private static PersonaFactionData createNewPersonaData(Persona persona) {
         return new PersonaFactionData(persona);
     }
 
+    private static PersonaNpcFactionOverrideData createNewNpcOverrideData(Persona persona) {
+        return new PersonaNpcFactionOverrideData(persona);
+    }
+
     public static void registerPersonaExtension() {
         IPersonaExtensionProvider factory = PlayerFactionHandler::createNewPersonaData;
+        IPersonaExtensionProvider overrideFactory = PlayerFactionHandler::createNewNpcOverrideData;
         // some example code to dispatch IMC to another mod
         InterModComms.sendTo("mkcore", "register_persona_extension", () -> {
             MKFactionMod.LOGGER.debug("Faction register persona by IMC");
             return factory;
+        });
+        InterModComms.sendTo("mkcore", "register_persona_extension", () -> {
+            MKFactionMod.LOGGER.debug("Faction register npc override persona by IMC");
+            return overrideFactory;
         });
     }
 }
