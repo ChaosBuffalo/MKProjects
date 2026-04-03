@@ -6,10 +6,8 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.effects.*;
 import com.chaosbuffalo.mkcore.utils.ChatUtils;
 import com.google.common.reflect.TypeToken;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 
 import java.util.UUID;
 
@@ -23,15 +21,14 @@ public class TestFallCountingEffect extends MKEffect {
         SpellTriggers.FALL.register(this::onFall);
     }
 
-    private void onFall(LivingDamageEvent.Pre event, DamageSource source, LivingEntity entity) {
-        MKCore.LOGGER.info("onFall {} {}", entity, event.getNewDamage());
-
-        MKPlayerData targetData = MKCore.getPlayerOrNull(entity);
-        if (targetData == null)
+    private void onFall(LivingFallEvent event, IMKEntityData targetData) {
+        if (!(targetData instanceof MKPlayerData playerData))
             return;
 
+        MKCore.LOGGER.info("onFall {} {}d {}x", playerData.getEntity(), event.getDistance(), event.getDamageMultiplier());
+
         targetData.getEffects().effects(this).forEach(activeEffect -> {
-            ChatUtils.sendMessage(targetData.getEntity(), "onFall");
+            ChatUtils.sendMessage(playerData.getEntity(), "onFall");
             activeEffect.getState(STATE).counter++;
         });
     }

@@ -26,10 +26,19 @@ import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 
 
 @EventBusSubscriber(modid = MKCore.MOD_ID)
 public class CombatEventHandler {
+
+    @SubscribeEvent
+    public static void onLivingFall(LivingFallEvent event) {
+        if (event.getEntity().level().isClientSide())
+            return;
+
+        SpellTriggers.FALL.onLivingFall(event, event.getEntity());
+    }
 
     @SubscribeEvent
     public static void onLivingHurt(LivingDamageEvent.Pre event) {
@@ -39,9 +48,6 @@ public class CombatEventHandler {
 
         DamageSource source = event.getSource();
         Entity trueSource = source.getEntity();
-        if (source.is(DamageTypes.FALL)) { // TODO: maybe just use LivingFallEvent?
-            SpellTriggers.FALL.onLivingFall(event, source, livingTarget);
-        }
 
         // Living is source
         if (trueSource instanceof LivingEntity livingSource) {
