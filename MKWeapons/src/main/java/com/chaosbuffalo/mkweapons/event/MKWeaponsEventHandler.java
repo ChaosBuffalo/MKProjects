@@ -156,13 +156,30 @@ public class MKWeaponsEventHandler {
                     event.setNewDamage(nextDamage);
                 }
             });
+        }
+    }
 
-            if (isMelee) {
-                ItemStack mainHand = livingSource.getMainHandItem();
-                if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
-                    for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(mainHand)) {
-                        effect.onHurt(newDamage, meleeWeapon, mainHand, livingTarget, livingSource);
-                    }
+    @SubscribeEvent
+    public static void onLivingDamagePost(LivingDamageEvent.Post event) {
+        LivingEntity livingTarget = event.getEntity();
+        if (livingTarget.level().isClientSide) {
+            return;
+        }
+        if (event.getNewDamage() <= 0.0f) {
+            return;
+        }
+
+        DamageSource source = event.getSource();
+        if (!DamageUtils.isMeleeDamage(source)) {
+            return;
+        }
+
+        Entity trueSource = source.getEntity();
+        if (trueSource instanceof LivingEntity livingSource) {
+            ItemStack mainHand = livingSource.getMainHandItem();
+            if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
+                for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(mainHand)) {
+                    effect.onHurt(event.getNewDamage(), meleeWeapon, mainHand, livingTarget, livingSource);
                 }
             }
         }
