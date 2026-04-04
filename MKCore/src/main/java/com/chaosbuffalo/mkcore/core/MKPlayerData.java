@@ -20,6 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -58,7 +59,7 @@ public class MKPlayerData implements IMKEntityData {
         effectHandler = new PlayerEffectHandler(this);
         pets = new EntityPetModule(this);
         riders = new EntityRiderModule(this);
-        triggers = new EntityTriggerRegistry(this);
+        triggers = new EntityTriggerRegistry(List.of(effectHandler));
         attachUpdateEngine(syncController);
     }
 

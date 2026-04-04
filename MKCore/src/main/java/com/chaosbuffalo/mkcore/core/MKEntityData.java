@@ -12,6 +12,7 @@ import org.jetbrains.annotations.UnknownNullability;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -40,7 +41,7 @@ public class MKEntityData implements IMKEntityData {
         effectHandler = new EntityEffectHandler(this);
         pets = new EntityPetModule(this);
         riders = new EntityRiderModule(this);
-        triggers = new EntityTriggerRegistry(this);
+        triggers = new EntityTriggerRegistry(List.of(effectHandler));
     }
 
     @Nonnull

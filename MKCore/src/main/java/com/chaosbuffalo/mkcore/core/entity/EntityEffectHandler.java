@@ -6,6 +6,8 @@ import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectTickAction;
+import com.chaosbuffalo.mkcore.effects.triggers.EntityTriggerRegistrar;
+import com.chaosbuffalo.mkcore.effects.triggers.MKTriggerContributor;
 import com.chaosbuffalo.mkcore.network.EntityEffectPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.google.common.collect.ImmutableList;
@@ -20,12 +22,22 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class EntityEffectHandler {
+public class EntityEffectHandler implements EntityTriggerContributorSource {
     protected final IMKEntityData entityData;
     protected final Map<UUID, EffectSource> sources = new HashMap<>();
+    private long triggerStateVersion = 0;
 
     public EntityEffectHandler(IMKEntityData entityData) {
         this.entityData = entityData;
+    }
+
+    @Override
+    public long getTriggerContributorVersion() {
+        return triggerStateVersion;
+    }
+
+    protected void markTriggerStateDirty() {
+        triggerStateVersion++;
     }
 
     public class EffectSource {
@@ -56,6 +68,7 @@ public class EntityEffectHandler {
                 MKCore.LOGGER.debug("EntityEffectHandler.removeEffectInstance {} from {}", expiredInstance, entityData.getEntity());
             }
             activeEffectMap.remove(expiredInstance.getEffect());
+            markTriggerStateDirty();
             // Run the callbacks after removal, so they won't see the effect as active
             onEffectRemoved(expiredInstance);
         }
@@ -96,7 +109,7 @@ public class EntityEffectHandler {
 //            MKCore.LOGGER.debug("EntityEffectHandler.EffectSource.loadEffect {}", activeEffect);
             activeEffect.getEffect().onInstanceLoaded(entityData, activeEffect);
             activeEffectMap.put(activeEffect.getEffect(), activeEffect);
-            entityData.getTriggers().rebuild();
+            markTriggerStateDirty();
         }
 
         // Server-side only
@@ -109,7 +122,7 @@ public class EntityEffectHandler {
         protected void onNewEffect(MKActiveEffect activeEffect) {
 //            MKCore.LOGGER.debug("EntityEffectHandler.onNewEffect {}", activeEffect);
             if (entityData.isServerSide()) {
-                entityData.getTriggers().rebuild();
+                markTriggerStateDirty();
                 activeEffect.getEffect().onInstanceAdded(entityData, activeEffect);
                 sendEffectSet(activeEffect);
             }
@@ -119,7 +132,7 @@ public class EntityEffectHandler {
         protected void onEffectUpdated(MKActiveEffect activeEffect) {
 //            MKCore.LOGGER.debug("EntityEffectHandler.onEffectUpdated {}", activeEffect);
             if (entityData.isServerSide()) {
-                entityData.getTriggers().rebuild();
+                markTriggerStateDirty();
                 if (activeEffect.getEffect().onInstanceUpdated(entityData, activeEffect)) {
                     removeEffectInstance(activeEffect);
                 } else {
@@ -132,7 +145,6 @@ public class EntityEffectHandler {
         protected void onEffectRemoved(MKActiveEffect activeEffect) {
 //            MKCore.LOGGER.debug("EntityEffectHandler.onEffectRemoved {}", activeEffect);
             if (entityData.isServerSide()) {
-                entityData.getTriggers().rebuild();
                 activeEffect.getEffect().onInstanceRemoved(entityData, activeEffect);
                 if (!activeEffect.getBehaviour().isExpired()) {
                     // If it was removed early we need to tell the client
@@ -170,7 +182,7 @@ public class EntityEffectHandler {
 
         public void onDeath() {
             activeEffectMap.clear();
-            entityData.getTriggers().rebuild();
+            markTriggerStateDirty();
         }
 
         public void sendAllEffectsToPlayer(ServerPlayer playerEntity) {
@@ -205,7 +217,7 @@ public class EntityEffectHandler {
 
         public void clientSetEffect(MKActiveEffect activeEffect) {
             activeEffectMap.put(activeEffect.getEffect(), activeEffect);
-            entityData.getTriggers().rebuild();
+            markTriggerStateDirty();
         }
 
         public void clientRemoveEffect(MKActiveEffect activeEffect) {
@@ -217,7 +229,7 @@ public class EntityEffectHandler {
             for (MKActiveEffect instance : activeEffects) {
                 activeEffectMap.put(instance.getEffect(), instance);
             }
-            entityData.getTriggers().rebuild();
+            markTriggerStateDirty();
         }
     }
 
@@ -348,6 +360,15 @@ public class EntityEffectHandler {
         return sources.values().stream()
                 .flatMap(EffectSource::effectsStream)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void contributeTriggers(EntityTriggerRegistrar registrar) {
+        for (MKActiveEffect activeEffect : effects()) {
+            if (activeEffect.getEffect() instanceof MKTriggerContributor contributor) {
+                contributor.registerTriggers(activeEffect, registrar);
+            }
+        }
     }
 
     public CompoundTag serialize(HolderLookup.Provider provider) {

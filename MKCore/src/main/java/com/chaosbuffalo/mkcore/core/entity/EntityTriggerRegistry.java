@@ -1,26 +1,24 @@
 package com.chaosbuffalo.mkcore.core.entity;
 
-import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.triggers.EntityTrigger;
 import com.chaosbuffalo.mkcore.effects.triggers.EntityTriggerRegistrar;
 import com.chaosbuffalo.mkcore.effects.triggers.EntityTriggerType;
-import com.chaosbuffalo.mkcore.effects.triggers.MKTriggerContributor;
 
 import java.util.*;
 
 public class EntityTriggerRegistry {
-    private final IMKEntityData entityData;
+    private final List<EntityTriggerContributorSource> contributorSources;
     private final Set<EntityTriggerType<?>> activeTriggerTypes = new HashSet<>();
-    private boolean dirty = true;
+    private long builtFromContributorVersion = -1;
     private Map<EntityTriggerType<?>, List<EntityTrigger<?>>> triggersByType = Map.of();
 
-    public EntityTriggerRegistry(IMKEntityData entityData) {
-        this.entityData = entityData;
+    public EntityTriggerRegistry(List<EntityTriggerContributorSource> contributorSources) {
+        this.contributorSources = List.copyOf(contributorSources);
     }
 
+    @Deprecated(forRemoval = false)
     public void rebuild() {
-        dirty = true;
+        builtFromContributorVersion = -1;
     }
 
     public <TContext> void dispatch(EntityTriggerType<TContext> triggerType, TContext context) {
@@ -48,7 +46,8 @@ public class EntityTriggerRegistry {
     }
 
     private void rebuildIfNeeded() {
-        if (!dirty) {
+        long contributorVersion = computeCombinedContributorVersion();
+        if (builtFromContributorVersion == contributorVersion) {
             return;
         }
 
@@ -60,15 +59,21 @@ public class EntityTriggerRegistry {
             }
         };
 
-        for (MKActiveEffect activeEffect : entityData.getEffects().effects()) {
-            if (activeEffect.getEffect() instanceof MKTriggerContributor contributor) {
-                contributor.registerTriggers(activeEffect, registrar);
-            }
+        for (EntityTriggerContributorSource source : contributorSources) {
+            source.contributeTriggers(registrar);
         }
 
         Map<EntityTriggerType<?>, List<EntityTrigger<?>>> finalized = new HashMap<>();
         builder.forEach((type, triggers) -> finalized.put(type, List.copyOf(triggers)));
         triggersByType = finalized;
-        dirty = false;
+        builtFromContributorVersion = contributorVersion;
+    }
+
+    private long computeCombinedContributorVersion() {
+        long version = 1L;
+        for (EntityTriggerContributorSource source : contributorSources) {
+            version = 31L * version + source.getTriggerContributorVersion();
+        }
+        return version;
     }
 }
