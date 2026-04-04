@@ -1,0 +1,54 @@
+{
+  "entityType": "mknpc:flying_skull",
+  "name": "mkultra:flaming_skull",
+  "options": {
+    "mknpc:abilities": {
+      "abilities": [
+        {
+          "ability": "mkultra:skull_flame_breath",
+          "chance": 1.0,
+          "priority": 1
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "base_value": 35.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "base_value": 40.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "base_value": 4.0
+        }
+      ]
+    },
+    "mknpc:experience": {
+      "experience": 20
+    },
+    "mknpc:faction": {
+      "factionId": "mkultra:fire_shrine_guardians"
+    },
+    "mknpc:mk_size": {
+      "scale": 1.0
+    },
+    "mknpc:name": {
+      "name": "Flaming Skull"
+    },
+    "mknpc:skills": {
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:conjuration",
+        "mkcore:evocation"
+      ],
+      "remedial_skills": [
+        "mkcore:one_hand_pierce"
+      ]
+    }
+  }
+}

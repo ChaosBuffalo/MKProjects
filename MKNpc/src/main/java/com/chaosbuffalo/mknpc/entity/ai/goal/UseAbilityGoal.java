@@ -45,7 +45,8 @@ public class UseAbilityGoal extends Goal {
             if (entity != targetEntity) {
                 if (!isInRange(currentAbility, targetEntity))
                     return false;
-                if (!entity.getSensing().hasLineOfSight(targetEntity))
+                if (currentAbility.getAbility().requiresLineOfSightToStart(entity.getEntityDataCap(), targetEntity) &&
+                        !entity.getSensing().hasLineOfSight(targetEntity))
                     return false;
             }
 
@@ -67,7 +68,10 @@ public class UseAbilityGoal extends Goal {
     }
 
     public boolean canContinueToUse() {
-        return ticksSinceSeenTarget < CAN_SEE_TIMEOUT &&
+        boolean sightOk = currentAbility != null &&
+                (currentAbility.getAbility().maintainCastWithoutLineOfSight(entity.getEntityDataCap()) ||
+                        ticksSinceSeenTarget < CAN_SEE_TIMEOUT);
+        return sightOk &&
                 entity.getEntityDataCap().getAbilityExecutor().isCasting() &&
                 entity.getBrain().getMemory(MKAbilityMemories.ABILITY_TARGET.get())
                         .map(tar -> tar.isAlive() && tar.is(target))

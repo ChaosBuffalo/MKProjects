@@ -2,6 +2,8 @@ package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mknpc.entity.ai.controller.MovementStrategyController;
+import com.chaosbuffalo.mknpc.entity.ai.goal.FlyingUseAbilityGoal;
+import com.chaosbuffalo.mknpc.entity.ai.goal.UseAbilityGoal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
@@ -18,6 +20,7 @@ public class MKFlyingEntity extends MKEntity{
     protected MKFlyingEntity(EntityType<? extends PathfinderMob> type, Level worldIn) {
         super(type, worldIn);
         this.moveControl = new FlyingMoveControl(this, 20, true);
+        setCanFly(true);
         setNonCombatMoveType(NonCombatMoveType.RANDOM_WANDER);
         setCombatMoveType(CombatMoveType.RANGE);
     }
@@ -25,6 +28,11 @@ public class MKFlyingEntity extends MKEntity{
     @Override
     protected void enterWanderState() {
         MovementStrategyController.enterRandomFlyingWander(this);
+    }
+
+    @Override
+    protected UseAbilityGoal createUseAbilityGoal() {
+        return new FlyingUseAbilityGoal(this);
     }
 
     protected PathNavigation createNavigation(Level p_level) {

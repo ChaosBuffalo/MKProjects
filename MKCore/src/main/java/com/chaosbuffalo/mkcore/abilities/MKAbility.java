@@ -354,6 +354,14 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     }
 
+    public boolean maintainCastWithoutLineOfSight(IMKEntityData casterData) {
+        return false;
+    }
+
+    public boolean requiresLineOfSightToStart(IMKEntityData casterData, LivingEntity target) {
+        return true;
+    }
+
     public boolean isInterruptedBy(IMKEntityData targetData, CastInterruptReason reason) {
         return true;
     }

@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.effects;
 
 import com.chaosbuffalo.mkcore.entities.BaseEffectEntity;
+import com.chaosbuffalo.mkcore.entities.ConeAreaEffectEntity;
 import com.chaosbuffalo.mkcore.entities.BlockAnchoredLineEffectEntity;
 import com.chaosbuffalo.mkcore.entities.LineEffectEntity;
 import com.chaosbuffalo.mkcore.entities.PointEffectEntity;
@@ -37,6 +38,11 @@ public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
         return this;
     }
 
+    public EntityEffectBuilder<T> infiniteDuration() {
+        effect.setInfiniteDuration(true);
+        return this;
+    }
+
     public EntityEffectBuilder<T> instant() {
         return duration(6).waitTime(0);
     }
@@ -64,6 +70,11 @@ public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
 
     public EntityEffectBuilder<T> setDeathCallback(BiConsumer<BaseEffectEntity.DeathReason, BaseEffectEntity> consumer) {
         effect.setDeathCallback(consumer);
+        return this;
+    }
+
+    public EntityEffectBuilder<T> tag(String tag) {
+        effect.addTag(tag);
         return this;
     }
 
@@ -108,10 +119,15 @@ public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
     }
 
 
-    public void spawn() {
+    public T spawnEntity() {
         if (effect.getOwner() != null) {
             effect.getOwner().level().addFreshEntity(effect);
         }
+        return effect;
+    }
+
+    public void spawn() {
+        spawnEntity();
     }
 
     public static class LineEffectBuilder extends EntityEffectBuilder<LineEffectEntity> {
@@ -170,6 +186,60 @@ public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
 
     public static PointEffectBuilder createPointEffect(LivingEntity caster, Vec3 position) {
         return new PointEffectBuilder(caster, position);
+    }
+
+    public static class ConeEffectBuilder extends EntityEffectBuilder<ConeAreaEffectEntity> {
+
+        private ConeEffectBuilder(LivingEntity caster, Entity center, Vec3 offset) {
+            super(caster, center, offset);
+        }
+
+        private ConeEffectBuilder(LivingEntity caster, Vec3 position) {
+            super(caster, position);
+        }
+
+        @Override
+        protected ConeAreaEffectEntity createEntity(Level world, Vec3 pos) {
+            return new ConeAreaEffectEntity(world, pos.x(), pos.y(), pos.z());
+        }
+
+        public ConeEffectBuilder range(float range) {
+            effect.setRange(range);
+            return this;
+        }
+
+        public ConeEffectBuilder halfAngleDegrees(float angle) {
+            effect.setHalfAngleDegrees(angle);
+            return this;
+        }
+
+        public ConeEffectBuilder angleDegrees(float angle) {
+            effect.setAngleDegrees(angle);
+            return this;
+        }
+
+        public ConeEffectBuilder endpoint(Vec3 endpoint) {
+            effect.setEndpoint(endpoint);
+            return this;
+        }
+
+        public ConeEffectBuilder direction(Vec3 direction) {
+            effect.setDirection(direction);
+            return this;
+        }
+
+        public ConeEffectBuilder useOwnerLook() {
+            effect.setUseOwnerLook(true);
+            return this;
+        }
+    }
+
+    public static ConeEffectBuilder createConeEffectOnEntity(LivingEntity caster, Entity center, Vec3 offset) {
+        return new ConeEffectBuilder(caster, center, offset);
+    }
+
+    public static ConeEffectBuilder createConeEffect(LivingEntity caster, Vec3 position) {
+        return new ConeEffectBuilder(caster, position);
     }
 
     public static class BlockAnchoredLineEffectBuilder extends EntityEffectBuilder<BlockAnchoredLineEffectEntity> {

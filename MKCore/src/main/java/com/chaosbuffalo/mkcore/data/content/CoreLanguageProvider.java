@@ -181,6 +181,7 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.configuration.baseXpPerTalentPoint", "Base XP Per Talent Point");
         add("mkcore.configuration.totalTalentXpMultiplier", "Total Talent Multiplier");
         add("mkcore.configuration.scalingXpPerTalentPoint", "Scaling XP Per Talent Point");
+        add("mkcore.ui.search", "Search");
     }
 
     private void addCommands() {
@@ -264,6 +265,7 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.anim_track.particle_anim.flip_motion.name", "Flip");
         add("mkcore.ability_target.position_include_entities", "Single Target or Point In World");
         add("mkcore.spawn_pattern.particle_spawn_pattern.cone.name", "Cone");
+        add("mkcore.spawn_pattern.particle_spawn_pattern.directional_cone.name", "Directional Cone");
         add("mkcore.ability.projectile.desc", "Behavior: %s");
         add("location_provider.single.desc", "a single projectile");
         add("projectile_behavior.simple", "Fires %s at end of cast.");

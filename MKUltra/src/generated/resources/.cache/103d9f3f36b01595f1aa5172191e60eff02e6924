@@ -1,4 +1,4 @@
-// 1.21.1	2026-04-02T15:47:09.5270741	Registries
+// 1.21.1	2026-04-04T09:30:18.0116695	Registries
 0da9c23f46702bc38555b6b70af1c3a7ec4c11ef data/mkultra/mkchat/dialogue_trees/cleric_default.json
 2d28e6556d4620a466345f5777242ccf8aee30e3 data/mkultra/mkchat/dialogue_trees/intro_cleric_acolyte.json
 f0b3ca666c13a5a2e4305f664f92f2013ae433cb data/mkultra/mkchat/dialogue_trees/intro_nether_mage_initiate.json
@@ -50,6 +50,7 @@ c61e94c9193007aa7a536627806ed82f0101a9e4 data/mkultra/mknpc/mknpcs/ancient_pries
 7e9bfe39b478e3d765849886c0b9f552a42184cc data/mkultra/mknpc/mknpcs/decaying_piglin.json
 307223d7a538e754f12dfb849b7680680f41abc8 data/mkultra/mknpc/mknpcs/decaying_piglin_archer.json
 f223d9ac8bafdf3f62ca048e33a9b76860695e9c data/mkultra/mknpc/mknpcs/fire_sprite.json
+b730ab9e04c52811082154cfcc12bba8f1ed02c4 data/mkultra/mknpc/mknpcs/flaming_skull.json
 19f480492c461b978cfd682c6b741ae44be67fc2 data/mkultra/mknpc/mknpcs/forlorn_ghost.json
 05255609d577a1e344c38073c5d6f9e8e4354981 data/mkultra/mknpc/mknpcs/green_lady.json
 e281ea3a6fd920b2317385639fc306318f8052c3 data/mkultra/mknpc/mknpcs/green_lady_guard_1.json
@@ -85,7 +86,7 @@ bde1885849d51e9cb806282f333e8a2dcd85f46f data/mkultra/mknpc/mknpcs/trooper_capta
 543b4156ea43a108eeb7f0e2cc1d14647fc4bc9e data/mkultra/mknpc/mkquests/cleric_intro.json
 c977e65ae593f4b29274cc1608e0069d4c238a5f data/mkultra/mknpc/mkquests/cleric_unlock_chain.json
 d1f1b3beb850481bd9bf282fea947d8440ab0d6d data/mkultra/mknpc/mkquests/intro_quest.json
-897d98a2b24b5023cbf7ce8d7c31360785787832 data/mkultra/mknpc/mkquests/necromancer_unlock_chain.json
+73887f67afbbdf4d42efc53a4387aef9be7b610f data/mkultra/mknpc/mkquests/necromancer_unlock_chain.json
 5a6c9bdad71e216b99d590f40d3bcb1df707ced5 data/mkultra/mknpc/mkquests/nether_mage_intro.json
 e81b32b62b5976becf61529b4364d1b20ed83055 data/mkultra/mknpc/mkquests/trooper_armor.json
 48d431df2ccfe4f635c41a56f1d9eb6e159444af data/mkultra/mknpc/mkquests/unlock_themcromancers.json

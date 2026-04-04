@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.client.gui;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.client.gui.widgets.ParticleKeyFramePanel;
 import com.chaosbuffalo.mkcore.client.gui.widgets.ParticleKeyFrameView;
+import com.chaosbuffalo.mkcore.client.gui.widgets.ParticleAnimationList;
 import com.chaosbuffalo.mkcore.client.gui.widgets.ParticleSpawnPatternWidget;
 import com.chaosbuffalo.mkcore.fx.particles.MKParticleData;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
@@ -33,8 +34,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.Map;
-
 public class ParticleEditorScreen extends MKScreen {
 
     private ParticleAnimation editing;
@@ -402,23 +401,14 @@ public class ParticleEditorScreen extends MKScreen {
             background.setColor(new IntColor(0x99555555));
             popup.addWidget(background);
         }
-        MKStackLayoutVertical layout = new MKStackLayoutVertical(xPos, yPos, POPUP_WIDTH);
-        layout.setMargins(5, 5, 5, 5);
-        layout.setPaddings(0, 0, 5, 5);
-        MKScrollView scrollView = new MKScrollView(xPos, yPos, POPUP_WIDTH, POPUP_HEIGHT - 20, true);
-        scrollView.addWidget(layout);
-        popup.addWidget(scrollView);
-        for (Map.Entry<ResourceLocation, ParticleAnimation> anim : ParticleAnimationManager.ANIMATIONS.entrySet()) {
-            MKButton button = new MKButton(0, 0, anim.getKey().toString());
-            button.setWidth(POPUP_WIDTH - 10);
-            button.setPressedCallback((btn, click) -> {
-                setEditing(anim.getValue().copy());
-                closeModal(popup);
-                return true;
-            });
-            layout.addWidget(button);
-        }
+        ParticleAnimationList animationList = new ParticleAnimationList(xPos, yPos, POPUP_WIDTH, POPUP_HEIGHT - 20,
+                font, (name, anim) -> {
+            setEditing(anim.copy());
+            closeModal(popup);
+        });
+        popup.addWidget(animationList);
         addModal(popup);
+        scheduleNextTick(() -> setFocus(animationList.getSearchField()));
     }
 
     protected MKLayout getKeyFrameView() {

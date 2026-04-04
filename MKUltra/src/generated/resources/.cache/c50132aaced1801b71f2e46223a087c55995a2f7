@@ -1,4 +1,4 @@
-// 1.21.1	2025-08-02T16:04:13.309077	MK Abilities: mkultra
+// 1.21.1	2026-04-04T12:56:01.48717	MK Abilities: mkultra
 8f06670fae5893f8c3cdc2b51911b94eec3cf287 data/mkultra/player_abilities/cleansing_seed.json
 25bc9079c333533ceae36aca0ded4e323afcbd81 data/mkultra/player_abilities/drown.json
 cc5322c19e3793af8e9a3a52c580c412530df12f data/mkultra/player_abilities/ember.json
@@ -34,6 +34,7 @@ d9de14c03485e0595205a82b6ce3832528550eee data/mkultra/player_abilities/shadow_bo
 f52942442f98a9fe46ce33378a196066b158f586 data/mkultra/player_abilities/shadow_pulse.json
 0895d6530cfbb3adbad3dafd5f2f15d2e6e329ba data/mkultra/player_abilities/shadow_pulse_flurry.json
 fb01462029e506a59062a9dddbc91b8016014baf data/mkultra/player_abilities/skin_like_wood.json
+0ea16db32092f44f33bc4cf5a35e060c66bcb19e data/mkultra/player_abilities/skull_flame_breath.json
 380c0c89db810204eb5faaa26a30dc207c627f95 data/mkultra/player_abilities/smite.json
 180ae071999ffc07ed8e1c309f4227c66907b96d data/mkultra/player_abilities/soul_drain.json
 e093f96d9b2eee97f1b69963bb4ff8babd0b0b3b data/mkultra/player_abilities/spirit_bomb.json

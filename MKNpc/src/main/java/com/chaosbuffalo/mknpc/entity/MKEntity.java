@@ -26,6 +26,7 @@ import com.chaosbuffalo.mknpc.entity.ai.goal.*;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.entity.ai.memory.ThreatMapEntry;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.FollowMovementStrategy;
+import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.FlyingFollowMovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.KiteMovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.MovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.StationaryMovementStrategy;
@@ -455,7 +456,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         this.goalSelector.addGoal(priority++, new ReturnToSpawnGoal(this));
         this.goalSelector.addGoal(priority++, new FloatGoal(this));
         this.goalSelector.addGoal(priority++, new MovementGoal(this));
-        this.goalSelector.addGoal(priority++, new UseAbilityGoal(this, false));
+        this.goalSelector.addGoal(priority++, createUseAbilityGoal());
         this.goalSelector.addGoal(priority++, new MKBowAttackGoal(this, 5, 15.0f));
         this.goalSelector.addGoal(priority++, new MKBlockGoal(this));
         this.meleeAttackGoal = new MKMeleeAttackGoal(this);
@@ -463,6 +464,10 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         this.goalSelector.addGoal(priority++, new LookAtThreatTargetGoal(this));
         this.targetSelector.addGoal(3, new MKTargetGoal(this, true, true));
 
+    }
+
+    protected UseAbilityGoal createUseAbilityGoal() {
+        return new UseAbilityGoal(this, false);
     }
 
     public boolean avoidsWater() {
@@ -633,9 +638,11 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             case KITE:
                 return new KiteMovementStrategy(Math.max(ability.getDistance(this) * .50, getMinimumRangedCastingDistance()), canFly());
             case FOLLOW:
-                return new FollowMovementStrategy(1.0f, Math.round(ability.getDistance(this) / 2.0f));
+                return canFly() ?
+                        new FlyingFollowMovementStrategy(1.0f, Math.round(ability.getDistance(this) / 2.0f)) :
+                        new FollowMovementStrategy(1.0f, Math.round(ability.getDistance(this) / 2.0f));
             case MELEE:
-                return new FollowMovementStrategy(1.0f, 1);
+                return canFly() ? new FlyingFollowMovementStrategy(1.0f, 1) : new FollowMovementStrategy(1.0f, 1);
             case STATIONARY:
             default:
                 return StationaryMovementStrategy.STATIONARY_MOVEMENT_STRATEGY;
@@ -984,7 +991,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
                         MKMemoryModuleTypes.IS_RETURNING.get(),
                         MKMemoryModuleTypes.ABILITY_TIMEOUT.get(),
                         MKAbilityMemories.ABILITY_POSITION_TARGET.get(),
-                        MKAbilityMemories.CURRENT_PROJECTILES.get()
+                        MKAbilityMemories.CURRENT_PROJECTILES.get(),
+                        MKAbilityMemories.CURRENT_AREA_EFFECTS.get()
                 ),
                 ImmutableList.of(
                         MKSensorTypes.ENTITIES_SENSOR.get(),

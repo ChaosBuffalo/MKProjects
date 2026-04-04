@@ -11,7 +11,7 @@ import net.minecraft.world.level.Level;
 public class MKFlyingSkullEntity extends MKFlyingEntity {
     public MKFlyingSkullEntity(EntityType<? extends MKFlyingSkullEntity> type, Level worldIn) {
         super(type, worldIn);
-        setCombatMoveType(CombatMoveType.RANGE);
+        setCombatMoveType(CombatMoveType.MELEE);
     }
 
     public static AttributeSupplier.Builder registerAttributes(double attackDamage, double movementSpeed) {
