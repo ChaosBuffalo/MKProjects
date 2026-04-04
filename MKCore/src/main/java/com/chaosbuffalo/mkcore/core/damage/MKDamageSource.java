@@ -18,7 +18,6 @@ import javax.annotation.Nullable;
 public abstract class MKDamageSource extends DamageSource {
     protected final MKDamageType damageType;
     protected float modifierScaling = 1.0f;
-    protected boolean suppressTriggers;
 
     public enum Origination {
         MK_ABILITY,
@@ -143,15 +142,6 @@ public abstract class MKDamageSource extends DamageSource {
 
     public boolean isMeleeDamage() {
         return damageType.equals(CoreDamageTypes.MeleeDamage.get());
-    }
-
-    public boolean shouldSuppressTriggers() {
-        return suppressTriggers;
-    }
-
-    public MKDamageSource setSuppressTriggers(boolean suppressTriggers) {
-        this.suppressTriggers = suppressTriggers;
-        return this;
     }
 
     public static MKDamageSource causeAbilityDamage(Level level, MKDamageType damageType,

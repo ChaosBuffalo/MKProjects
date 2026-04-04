@@ -8,15 +8,15 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(DamageSource.class)
 public class DamageSourceMixins implements IMKDamageSourceExtensions {
     @Unique
-    private boolean mkcore$canBlock = true;
+    private boolean mkcore$wasBlocked = false;
 
     @Override
-    public boolean canBlock() {
-        return mkcore$canBlock;
+    public boolean wasBlocked() {
+        return mkcore$wasBlocked;
     }
 
     @Override
-    public void setCanBlock(boolean value) {
-        mkcore$canBlock = value;
+    public void setWasBlocked(boolean value) {
+        mkcore$wasBlocked = value;
     }
 }
