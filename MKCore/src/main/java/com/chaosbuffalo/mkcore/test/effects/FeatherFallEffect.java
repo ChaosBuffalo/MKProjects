@@ -1,14 +1,13 @@
 package com.chaosbuffalo.mkcore.test.effects;
 
-import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.*;
 import com.chaosbuffalo.mkcore.test.MKTestEffects;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 
 public class FeatherFallEffect extends MKEffect {
 
@@ -21,15 +20,13 @@ public class FeatherFallEffect extends MKEffect {
         SpellTriggers.FALL.register(this::onFall);
     }
 
-    private void onFall(LivingDamageEvent.Pre event, DamageSource source, LivingEntity entity) {
-        MKCore.getEntityData(entity).ifPresent(targetData -> {
-            if (targetData.getEffects().isEffectActive(this)) {
-                event.setNewDamage(0.0f);
-                if (entity instanceof Player) {
-                    entity.sendSystemMessage(Component.translatable("My legs are OK"));
-                }
+    private void onFall(LivingFallEvent event, IMKEntityData targetData) {
+        if (targetData.getEffects().isEffectActive(this)) {
+            event.setCanceled(true);
+            if (targetData.getEntity() instanceof Player player) {
+                player.sendSystemMessage(Component.translatable("My legs are OK"));
             }
-        });
+        }
     }
 
     @Override
