@@ -42,6 +42,8 @@ public class MKCoreGenerators {
                     datapackLookup, MKCore.MOD_ID, event.getExistingFileHelper());
             generator.addProvider(true, blockTagsProvider);
             generator.addProvider(true, new MKAbilityProvider.FromMod(generator, MKCore.MOD_ID));
+            generator.addProvider(true, new CoreDamageTypeTagsProvider(packOutput,
+                    datapackLookup, event.getExistingFileHelper()));
             generator.addProvider(true, new CoreItemTagsProvider(generator,
                     datapackLookup, blockTagsProvider, event.getExistingFileHelper()));
             generator.addProvider(true, new CoreParticleProvider(generator));
@@ -95,4 +97,3 @@ public class MKCoreGenerators {
     }
 
 }
-

@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.mixins;
 
-import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -59,7 +58,7 @@ public abstract class LivingEntityMixins {
     )
     private float mkcore$calculateInvulnerability(float value, @Local(argsOnly = true) DamageSource damageSource) {
         if (DamageUtils.isMKDamage(damageSource) ||
-                DamageUtils.isMinecraftPhysicalDamage(damageSource) ||
+                DamageUtils.isVanillaMeleeDamage(damageSource) ||
                 DamageUtils.isProjectileDamage(damageSource)) {
             return 100.0f;
         }

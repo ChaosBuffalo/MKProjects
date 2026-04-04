@@ -1,0 +1,4 @@
+// 1.21.1	2026-04-04T14:02:34.4826792	MKCore damage type tags
+1657a13c326782c029485e8bd0275d0224fdef03 data/mkcore/tags/damage_type/mk_melee_damage.json
+fab5132d014c8ec0a00af4d396729e4766dfc77a data/mkcore/tags/damage_type/mk_projectile_damage.json
+2177f46036d056af1ad62f94dcc371ca2e2e056e data/mkcore/tags/damage_type/vanilla_melee_damage.json

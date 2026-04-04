@@ -78,8 +78,6 @@ public class CombatEventHandler {
                 handleVanillaAndProjectileDamage(event, source, livingTarget, livingSource, sourceData, attackerContext);
             }
 
-            sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_POST, attackerContext);
-
             if (livingSource instanceof ServerPlayer serverPlayer && DamageUtils.isMeleeDamage(source) && livingSource.getMainHandItem().isEmpty()) {
                 var playerData = MKCore.getPlayerOrThrow(serverPlayer);
                 playerData.getSkills().tryScaledIncreaseSkill(MKAttributes.HAND_TO_HAND, 0.5);
@@ -89,12 +87,38 @@ public class CombatEventHandler {
         // Living is victim
         var targetData = MKCore.getEntityDataOrThrow(livingTarget);
         var victimContext = new VictimDamageTriggerContext(event, source, targetData);
-        targetData.getTriggers().dispatch(CoreTriggerTypes.VICTIM_PRE_SCALE, victimContext);
+        targetData.getTriggers().dispatch(CoreTriggerTypes.VICTIM_INCOMING, victimContext);
         if (source instanceof MKDamageSource mkDamageSource && mkDamageSource.is(DamageTypeTags.BYPASSES_ARMOR)) {
             event.setNewDamage(mkDamageSource.getMKDamageType().applyResistance(targetData.getEntity(),
                     event.getNewDamage(), source));
         }
-        targetData.getTriggers().dispatch(CoreTriggerTypes.VICTIM_POST_SCALE, victimContext);
+    }
+
+    ///
+    /// This fires after the damage calculations have been finalized and applied. Any triggers dispatched here can
+    /// only react to the values, not modify them.
+    @SubscribeEvent
+    public static void onFinalDamageInflicted(LivingDamageEvent.Post event) {
+        LivingEntity livingTarget = event.getEntity();
+        if (livingTarget.level().isClientSide) {
+            return;
+        }
+        if (event.getNewDamage() <= 0.0f) {
+            return;
+        }
+
+        DamageSource source = event.getSource();
+        Entity trueSource = source.getEntity();
+
+        if (trueSource instanceof LivingEntity livingSource) {
+            var sourceData = MKCore.getEntityDataOrThrow(livingSource);
+            var attackerContext = new AttackerDamageTriggerContext(event, source, livingTarget, sourceData);
+            sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_POST, attackerContext);
+        }
+
+        var targetData = MKCore.getEntityDataOrThrow(livingTarget);
+        var victimContext = new VictimDamageTriggerContext(event, source, targetData);
+        targetData.getTriggers().dispatch(CoreTriggerTypes.VICTIM_POST, victimContext);
     }
 
     private static void handleMKDamage(LivingDamageEvent.Pre event, MKDamageSource source, LivingEntity livingTarget,
@@ -128,7 +152,7 @@ public class CombatEventHandler {
                                                          IMKEntityData sourceData,
                                                          AttackerDamageTriggerContext attackerContext) {
         boolean blocked = DamageUtils.wasAlreadyPartiallyBlocked(source);
-        if (DamageUtils.isMinecraftPhysicalDamage(source) && !blocked && sourceData instanceof MKPlayerData) {
+        if (DamageUtils.isVanillaMeleeDamage(source) && !blocked && sourceData instanceof MKPlayerData) {
             if (CoreDamageTypes.MeleeDamage.get().rollCrit(livingSource, livingTarget)) {
                 float newDamage = CoreDamageTypes.MeleeDamage.get().applyCritDamage(livingSource, livingTarget,
                         event.getNewDamage());
@@ -157,7 +181,7 @@ public class CombatEventHandler {
                                                boolean blocked) {
         Entity projectile = source.getDirectEntity();
         float damage = event.getNewDamage();
-        if (DamageUtils.isNonMKProjectileDamage(source)) {
+        if (DamageUtils.isVanillaProjectileDamage(source)) {
             damage += (float) livingSource.getAttributeValue(MKAttributes.RANGED_DAMAGE);
         }
         boolean wasCrit = false;

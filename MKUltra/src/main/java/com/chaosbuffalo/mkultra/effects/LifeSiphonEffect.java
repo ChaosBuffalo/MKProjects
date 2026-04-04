@@ -9,15 +9,14 @@ import com.chaosbuffalo.mkcore.effects.MKSimplePassiveState;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import com.chaosbuffalo.mkcore.effects.triggers.CoreTriggerTypes;
 import com.chaosbuffalo.mkcore.effects.triggers.EntityTriggerRegistrar;
+import com.chaosbuffalo.mkcore.effects.triggers.KillTriggerContext;
 import com.chaosbuffalo.mkcore.effects.triggers.MKTriggerContributor;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import com.chaosbuffalo.mkultra.init.MKUAbilities;
 import com.chaosbuffalo.mkultra.init.MKUSounds;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 public class LifeSiphonEffect extends MKEffect implements MKTriggerContributor {
 
@@ -25,8 +24,8 @@ public class LifeSiphonEffect extends MKEffect implements MKTriggerContributor {
         super(MobEffectCategory.BENEFICIAL);
     }
 
-    public void onLivingKillEntity(LivingDeathEvent event, DamageSource source, IMKEntityData killerData) {
-        LivingEntity living = killerData.getEntity();
+    public void onLivingKillEntity(KillTriggerContext context) {
+        LivingEntity living = context.killerData().getEntity();
         SoundUtils.serverPlaySoundAtEntity(living, MKUSounds.spell_dark_5.value(), living.getSoundSource());
         MKHealSource healSource = new MKHealSource(MKUAbilities.LIFE_SIPHON.getId(), living, living,
                 CoreDamageTypes.ShadowDamage.get(), MKUAbilities.LIFE_SIPHON.get().getModifierScaling());
@@ -41,7 +40,6 @@ public class LifeSiphonEffect extends MKEffect implements MKTriggerContributor {
 
     @Override
     public void registerTriggers(MKActiveEffect activeEffect, EntityTriggerRegistrar registrar) {
-        registrar.add(CoreTriggerTypes.KILL, context ->
-                onLivingKillEntity(context.event(), context.source(), context.killerData()));
+        registrar.add(CoreTriggerTypes.KILL, this::onLivingKillEntity);
     }
 }

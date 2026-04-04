@@ -10,11 +10,10 @@ import com.chaosbuffalo.mkcore.effects.MKSimplePassiveState;
 import com.chaosbuffalo.mkcore.effects.triggers.CoreTriggerTypes;
 import com.chaosbuffalo.mkcore.effects.triggers.EntityTriggerRegistrar;
 import com.chaosbuffalo.mkcore.effects.triggers.MKTriggerContributor;
-import net.minecraft.world.damagesource.DamageSource;
+import com.chaosbuffalo.mkcore.effects.triggers.VictimDamageTriggerContext;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 import java.util.UUID;
 
@@ -32,7 +31,13 @@ public class SkinLikeWoodEffect extends MKEffect implements MKTriggerContributor
         return MKSimplePassiveState.INSTANCE;
     }
 
-    private void onEntityHurt(LivingDamageEvent.Pre event, DamageSource source, IMKEntityData targetData) {
+    @Override
+    public void registerTriggers(MKActiveEffect activeEffect, EntityTriggerRegistrar registrar) {
+        registrar.add(CoreTriggerTypes.VICTIM_INCOMING, this::onCasterHurt);
+    }
+
+    private void onCasterHurt(VictimDamageTriggerContext context) {
+        IMKEntityData targetData = context.victimData();
         if (targetData.getEffects().isEffectActive(this)) {
             if (targetData instanceof MKPlayerData playerData) {
                 if (!playerData.getStats().consumeMana(1)) {
@@ -40,11 +45,5 @@ public class SkinLikeWoodEffect extends MKEffect implements MKTriggerContributor
                 }
             }
         }
-    }
-
-    @Override
-    public void registerTriggers(MKActiveEffect activeEffect, EntityTriggerRegistrar registrar) {
-        registrar.add(CoreTriggerTypes.VICTIM_PRE_SCALE, context ->
-                onEntityHurt(context.event(), context.source(), context.victimData()));
     }
 }

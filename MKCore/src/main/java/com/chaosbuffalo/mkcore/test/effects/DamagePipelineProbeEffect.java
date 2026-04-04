@@ -39,9 +39,9 @@ public class DamagePipelineProbeEffect extends MKEffect implements MKTriggerCont
                 onAttackerProjectile(activeEffect));
         registrar.add(CoreTriggerTypes.ATTACKER_POST, context ->
                 onAttackerPost(activeEffect));
-        registrar.add(CoreTriggerTypes.VICTIM_PRE_SCALE, context ->
+        registrar.add(CoreTriggerTypes.VICTIM_INCOMING, context ->
                 onVictimPreScale(activeEffect));
-        registrar.add(CoreTriggerTypes.VICTIM_POST_SCALE, context ->
+        registrar.add(CoreTriggerTypes.VICTIM_POST, context ->
                 onVictimPostScale(activeEffect));
     }
 

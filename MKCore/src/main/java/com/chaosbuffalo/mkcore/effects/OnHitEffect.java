@@ -50,7 +50,7 @@ public class OnHitEffect extends MKEffect implements MKTriggerContributor {
         this.triggerType = triggerType;
     }
 
-    private void onLivingHurtEntity(LivingDamageEvent.Pre event, DamageSource source, LivingEntity livingTarget,
+    private void onLivingHurtEntity(LivingDamageEvent event, DamageSource source, LivingEntity livingTarget,
                                     IMKEntityData sourceData, MKActiveEffect instance) {
 
         MKCore.getEntityData(livingTarget).ifPresent(data -> {

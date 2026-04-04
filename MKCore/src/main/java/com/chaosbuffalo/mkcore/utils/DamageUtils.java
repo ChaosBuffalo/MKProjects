@@ -2,8 +2,8 @@ package com.chaosbuffalo.mkcore.utils;
 
 import com.chaosbuffalo.mkcore.core.damage.IMKDamageSourceExtensions;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
+import com.chaosbuffalo.mkcore.init.CoreTags;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 
 public class DamageUtils {
 
@@ -21,13 +21,13 @@ public class DamageUtils {
         return wasAlreadyPartiallyBlocked(source) && damage <= 0.0f;
     }
 
-    public static boolean isMinecraftPhysicalDamage(DamageSource source) {
-        return source.is(DamageTypes.MOB_ATTACK) || source.is(DamageTypes.PLAYER_ATTACK);
+    public static boolean isVanillaMeleeDamage(DamageSource source) {
+        return source.is(CoreTags.DamageTypes.VANILLA_MELEE_DAMAGE);
     }
 
     public static boolean isMeleeDamage(DamageSource source) {
-        return isMinecraftPhysicalDamage(source) ||
-                (source instanceof MKDamageSource && ((MKDamageSource) source).isMeleeDamage());
+        return isVanillaMeleeDamage(source) ||
+                (source instanceof MKDamageSource mkDamageSource && mkDamageSource.isMeleeDamage());
     }
 
     public static boolean isSpellDamage(DamageSource source) {
@@ -35,11 +35,10 @@ public class DamageUtils {
     }
 
     public static boolean isProjectileDamage(DamageSource source) {
-
-        return source.is(DamageTypes.MOB_PROJECTILE) || source.is(DamageTypes.ARROW);
+        return source.is(CoreTags.DamageTypes.MK_PROJECTILE_DAMAGE);
     }
 
-    public static boolean isNonMKProjectileDamage(DamageSource source) {
+    public static boolean isVanillaProjectileDamage(DamageSource source) {
         return isProjectileDamage(source) && !isMKDamage(source);
     }
 }

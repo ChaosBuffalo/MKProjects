@@ -5,6 +5,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
-public record AttackerDamageTriggerContext(LivingDamageEvent.Pre event, DamageSource source,
+public record AttackerDamageTriggerContext(LivingDamageEvent event, DamageSource source,
                                            LivingEntity target, IMKEntityData attackerData) {
 }
