@@ -35,6 +35,9 @@ public class MKTestEffects {
     public static final DeferredHolder<MKEffect, TestFallCountingEffect> FALL_COUNTER = EFFECTS
             .register("effect.v2.fall_counter", TestFallCountingEffect::new);
 
+    public static final DeferredHolder<MKEffect, DamagePipelineProbeEffect> DAMAGE_PIPELINE_PROBE = EFFECTS
+            .register("effect.v2.damage_pipeline_probe", DamagePipelineProbeEffect::new);
+
     public static final DeferredHolder<MKEffect, MKSongSustainEffect> NEW_HEAL_SONG_SUSTAIN = EFFECTS
             .register("effect.v2.new_heal_song_sustain", MKSongSustainEffect::new);
 

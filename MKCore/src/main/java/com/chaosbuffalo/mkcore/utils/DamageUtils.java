@@ -12,11 +12,13 @@ public class DamageUtils {
     }
 
     public static boolean wasAlreadyPartiallyBlocked(DamageSource source) {
-        if (source instanceof IMKDamageSourceExtensions ext) {
-            return !ext.canBlock();
-        } else {
-            return false;
-        }
+        return source instanceof IMKDamageSourceExtensions ext && ext.wasBlocked();
+    }
+
+    public static boolean isFullyBlockedDamage(DamageSource source, float damage) {
+        // `wasBlocked` marks any successful shield interaction. A hit is fully blocked
+        // only when that interaction leaves no damage for LivingDamageEvent.Pre.
+        return wasAlreadyPartiallyBlocked(source) && damage <= 0.0f;
     }
 
     public static boolean isMinecraftPhysicalDamage(DamageSource source) {
