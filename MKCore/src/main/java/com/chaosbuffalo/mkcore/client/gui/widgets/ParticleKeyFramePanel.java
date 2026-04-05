@@ -38,7 +38,7 @@ public class ParticleKeyFramePanel extends MKScrollView {
         addWidget(layout);
         particleEditor.setSpawnWidget(null);
         if (particleKeyFrame != null) {
-            MKButton backButton = new MKButton(0, 0, "Back");
+            MKButton backButton = new MKButton(0, 0, Component.translatable("mkcore.particle_editor.back"));
             backButton.setPressedCallback((btn, click) -> {
                 particleEditor.selectKeyFrame(null);
                 return true;
@@ -70,7 +70,7 @@ public class ParticleKeyFramePanel extends MKScrollView {
                 motionPanel.setTrack(particleKeyFrame.getMotionTrack());
             }
             layout.addWidget(motionPanel);
-            MKButton delete = new MKButton(0, 0, "Delete");
+            MKButton delete = new MKButton(0, 0, Component.translatable("mkcore.particle_editor.delete_track"));
             delete.setPressedCallback((button, click) -> {
                 particleEditor.deleteKeyFrame(particleKeyFrame);
                 return true;
@@ -81,7 +81,7 @@ public class ParticleKeyFramePanel extends MKScrollView {
                     getWidth(), particleEditor.getSpawnPattern(), font, particleEditor);
             particleEditor.setSpawnWidget(pattern);
             layout.addWidget(pattern);
-            MKText text = new MKText(font, Component.literal("Click a current key frame or add a new one to edit"));
+            MKText text = new MKText(font, Component.translatable("mkcore.particle_editor.select_or_add_keyframe"));
             text.setColor(0xffffffff);
             text.setWidth(layout.getWidth());
             text.setMultiline(true);

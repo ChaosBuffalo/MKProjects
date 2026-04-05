@@ -22,6 +22,7 @@ class CoreLanguageProvider extends MKLanguageProvider {
     protected void addTranslations() {
         addLegacy();
         addGui();
+        addParticles();
         addCommands();
         addDamageTypes();
         addAttributes();
@@ -190,6 +191,7 @@ class CoreLanguageProvider extends MKLanguageProvider {
     }
 
     private void addLegacy() {
+        add("mk.editors.particle_editor.name", "Particle Editor");
         add("mkcore.talent_tree.knight.name", "Knight Tree");
         add("mkcore.ability.description.cast_time", "Cast Time: %s");
         add("mkcore.ability.description.cooldown", "Cooldown: %s seconds");
@@ -248,6 +250,9 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.anim_track.particle_anim.brownian_motion.name", "Brownian");
         add("mkcore.anim_track.particle_anim.particle_motion.name", "Inherit");
         add("mkcore.anim_track.particle_anim.linear_motion.name", "Linear");
+        add("mkcore.anim_track.particle_anim.render_scale.name", "Render Scale");
+        add("mkcore.anim_track.particle_anim.lerp_color.name", "Lerp Color");
+        add("mkcore.anim_track.particle_anim.static_color.name", "Static Color");
         add("mkcore.subtitle.level_up", "An aetherial ding echoes in the area");
         add("mkcore.ability.description.uses_pool", "Using Memory Slot");
         add("mkcore.block_efficiency.description", "Block Efficiency: %.2f%%");
@@ -272,6 +277,30 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("location_provider.perpendicular_line", "%d projectiles in a perpendicular line");
         add("location_provider.circular", "%d projectiles in an arc from %s° to %s°");
         add("projectile_behavior.burst", "Fires %s, one after another over %s seconds.");
+    }
+
+    private void addParticles() {
+        add("mkcore.particle_editor.spawn", "Spawn");
+        add("mkcore.particle_editor.save", "Save");
+        add("mkcore.particle_editor.load", "Load");
+        add("mkcore.particle_editor.new", "New");
+        add("mkcore.particle_editor.back", "Back");
+        add("mkcore.particle_editor.add", "Add");
+        add("mkcore.particle_editor.empty", "Empty");
+        add("mkcore.particle_editor.select_or_add_keyframe", "Click a current key frame or add a new one to edit");
+
+        add("particle.mkcore.magic_cross", "Magic Cross");
+        add("particle.mkcore.magic_clover", "Magic Clover");
+        add("particle.mkcore.magic_line", "Magic Line");
+        add("particle.mkcore.magic_circle", "Magic Circle");
+        add("particle.mkcore.magic_gradient_square", "Magic Gradient Square");
+        add("particle.mkcore.magic_sideways_line", "Magic Sideways Line");
+        add("particle.mkcore.magic_chip", "Magic Chip");
+        add("particle.mkcore.black_magic_cross", "Black Magic Cross");
+        add("particle.mkcore.black_magic_clover", "Black Magic Clover");
+        add("particle.mkcore.black_magic_line", "Black Magic Line");
+        add("particle.mkcore.black_magic_circle", "Black Magic Circle");
+        add("particle.mkcore.black_magic_gradient_square", "Black Magic Gradient Square");
     }
 
 

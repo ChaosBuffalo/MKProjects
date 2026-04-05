@@ -11,21 +11,21 @@
           "xSpeed": 0.0,
           "zSpeed": 0.0,
           "ySpeed": 0.0,
-          "varianceMagnitude": 0.0
+          "varianceMagnitude": 5.0
         }
       },
       "scaleTrack": {
         "trackType": "mkcore:particle_anim.render_scale",
         "attributes": {
           "maxVariance": 0.0,
-          "renderScale": 0.14
+          "renderScale": 0.25
         }
       },
       "colorTrack": {
         "trackType": "mkcore:particle_anim.static_color",
         "attributes": {
           "red": 1.0,
-          "green": 0.94509804,
+          "green": 0.0,
           "blue": 0.7176471,
           "blueVariance": 0.0,
           "redVariance": 0.0,
@@ -42,14 +42,14 @@
         "trackType": "mkcore:particle_anim.render_scale",
         "attributes": {
           "maxVariance": 0.0,
-          "renderScale": 0.24
+          "renderScale": 0.18
         }
       },
       "colorTrack": {
         "trackType": "mkcore:particle_anim.lerp_color",
         "attributes": {
           "red": 1.0,
-          "green": 0.7294118,
+          "green": 0.0,
           "blue": 0.34117648,
           "blueVariance": 0.0,
           "redVariance": 0.0,
@@ -66,15 +66,15 @@
         "trackType": "mkcore:particle_anim.render_scale",
         "attributes": {
           "maxVariance": 0.0,
-          "renderScale": 0.3
+          "renderScale": 0.10
         }
       },
       "colorTrack": {
         "trackType": "mkcore:particle_anim.lerp_color",
         "attributes": {
           "red": 0.9764706,
-          "green": 0.35686275,
-          "blue": 0.015686275,
+          "green": 0.0,
+          "blue": 0.39215687,
           "blueVariance": 0.0,
           "redVariance": 0.0,
           "greenVariance": 0.0
@@ -83,7 +83,7 @@
     },
     {
       "attributes": {
-        "duration": 4,
+        "duration": 5,
         "tickStart": 6
       },
       "motionTrack": {
@@ -101,26 +101,29 @@
         "trackType": "mkcore:particle_anim.render_scale",
         "attributes": {
           "maxVariance": 0.0,
-          "renderScale": 0.006
+          "renderScale": 0.01
         }
       },
       "colorTrack": {
         "trackType": "mkcore:particle_anim.lerp_color",
         "attributes": {
           "red": 0.6431373,
-          "green": 0.11764706,
+          "green": 0.0,
           "blue": 0.015686275,
-          "blueVariance": 0.0,
+          "blueVariance": 0.39215687,
           "redVariance": 0.09803922,
-          "greenVariance": 0.078431375
+          "greenVariance": 0.0
         }
       }
     }
   ],
   "spawnPattern": {
-    "type": "mkcore:particle_spawn_pattern.single",
+    "type": "mkcore:particle_spawn_pattern.directional_cone",
     "attributes": {
-      "count": 1
+      "count": 5,
+      "halfAngleDegrees": 20.0,
+      "innerHalfAngleDegrees": 0.0,
+      "speed": 0.2
     }
   },
   "particleType": "mkcore:magic_gradient_square"

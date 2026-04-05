@@ -6,6 +6,8 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class ParticleSpawnPatternWidget extends MKStackLayoutVertical {
     private ParticleSpawnPattern spawnPattern;
@@ -28,6 +30,10 @@ public class ParticleSpawnPatternWidget extends MKStackLayoutVertical {
         setup();
     }
 
+    private static Component getParticleTypeComponent(ResourceLocation particleName) {
+        return Component.translatable(String.format("particle.%s.%s", particleName.getNamespace(), particleName.getPath()));
+    }
+
     public void setup() {
         clearWidgets();
         if (spawnPattern != null) {
@@ -48,7 +54,7 @@ public class ParticleSpawnPatternWidget extends MKStackLayoutVertical {
             });
             addWidget(addButton);
         }
-        MKButton particleTypeButton = new MKButton(getX(), getY(), this.editor.getParticleName().toString());
+        MKButton particleTypeButton = new MKButton(getX(), getY(), getParticleTypeComponent(this.editor.getParticleName()));
         particleTypeButton.setPressedCallback((but, click) -> {
             editor.promptChangeParticleType();
             return true;

@@ -14,6 +14,8 @@ import java.util.function.Function;
 
 public class DirectionalConeSpawnPattern extends ParticleSpawnPattern {
     public static final ResourceLocation TYPE = MKCore.id("particle_spawn_pattern.directional_cone");
+    private static final double MIN_AXIS_LENGTH_SQR = 1.0e-8;
+    private static final Vec3 DEGENERATE_ENDPOINT_OFFSET = new Vec3(0.0, -0.25, 0.0);
 
     protected final DoubleAttribute halfAngleDegrees = new DoubleAttribute("halfAngleDegrees", 20.0);
     protected final DoubleAttribute innerHalfAngleDegrees = new DoubleAttribute("innerHalfAngleDegrees", 0.0);
@@ -52,8 +54,9 @@ public class DirectionalConeSpawnPattern extends ParticleSpawnPattern {
                                          List<ParticleSpawnEntry> finalParticles) {
         Vec3 endpoint = getEndpoint(origin, additionalLocs);
         Vec3 axis = endpoint.subtract(origin);
-        if (axis.lengthSqr() < 1.0e-8) {
-            return;
+        if (axis.lengthSqr() < MIN_AXIS_LENGTH_SQR) {
+            endpoint = origin.add(DEGENERATE_ENDPOINT_OFFSET);
+            axis = endpoint.subtract(origin);
         }
 
         Vec3 forward = axis.normalize();

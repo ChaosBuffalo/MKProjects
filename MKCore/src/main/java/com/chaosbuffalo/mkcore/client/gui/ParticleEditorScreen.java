@@ -35,6 +35,9 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 public class ParticleEditorScreen extends MKScreen {
+    private static String getParticleTypeTranslationKey(ResourceLocation particleName) {
+        return String.format("particle.%s.%s", particleName.getNamespace(), particleName.getPath());
+    }
 
     private ParticleAnimation editing;
     private ParticleKeyFramePanel currentPanel;
@@ -180,7 +183,7 @@ public class ParticleEditorScreen extends MKScreen {
         names.setMargins(2, 2, 2, 2);
         names.doSetChildWidth(true);
         ParticleAnimationManager.PARTICLE_TYPES_FOR_EDITOR.forEach((key, value) -> {
-            MKButton button = new MKButton(0, 0, Component.literal(key.toString()));
+            MKButton button = new MKButton(0, 0, Component.translatable(getParticleTypeTranslationKey(key)));
             button.setPressedCallback((but, click) -> {
                 setParticleType(key, value);
                 closeModal(popup);
@@ -318,25 +321,25 @@ public class ParticleEditorScreen extends MKScreen {
         layout.setPaddings(0, 0, 2, 2);
         root.addWidget(layout);
 
-        MKButton spawn = new MKButton(0, 0, "Spawn");
+        MKButton spawn = new MKButton(0, 0, Component.translatable("mkcore.particle_editor.spawn"));
         spawn.setPressedCallback((button, click) -> {
             requestSpawn();
             return true;
         });
         layout.addWidget(spawn);
-        MKButton saveButton = new MKButton(0, 0, "Save");
+        MKButton saveButton = new MKButton(0, 0, Component.translatable("mkcore.particle_editor.save"));
         saveButton.setPressedCallback((btn, click) -> {
             savePromot();
             return true;
         });
         layout.addWidget(saveButton);
-        MKButton loadButton = new MKButton(0, 0, "Load");
+        MKButton loadButton = new MKButton(0, 0, Component.translatable("mkcore.particle_editor.load"));
         loadButton.setPressedCallback((btn, click) -> {
             loadPrompt();
             return true;
         });
         layout.addWidget(loadButton);
-        MKButton newButton = new MKButton(0, 0, "New");
+        MKButton newButton = new MKButton(0, 0, Component.translatable("mkcore.particle_editor.new"));
         newButton.setPressedCallback((btn, click) -> {
             setEditing(new ParticleAnimation());
             return true;
@@ -368,7 +371,7 @@ public class ParticleEditorScreen extends MKScreen {
                 POPUP_WIDTH - 10, font.lineHeight + 2, Component.literal(promptText));
         textFieldWidget.getContainedWidget().setMaxLength(500);
         layout.addWidget(textFieldWidget);
-        MKButton button = new MKButton(0, 0, "Save") {
+        MKButton button = new MKButton(0, 0, Component.translatable("mkcore.particle_editor.save")) {
             @Override
             public boolean isEnabled() {
                 return super.isEnabled() && !textFieldWidget.getText().isEmpty();
