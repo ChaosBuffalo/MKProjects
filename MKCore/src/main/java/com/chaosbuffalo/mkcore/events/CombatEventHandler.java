@@ -56,8 +56,8 @@ public class CombatEventHandler {
 
     @SubscribeEvent
     public static void onLivingHurt(LivingDamageEvent.Pre event) {
-        LivingEntity livingTarget = event.getEntity();
-        if (livingTarget.level().isClientSide)
+        LivingEntity victim = event.getEntity();
+        if (victim.level().isClientSide())
             return;
 
         DamageSource source = event.getSource();
@@ -65,31 +65,31 @@ public class CombatEventHandler {
         if (DamageUtils.isFullyBlockedDamage(source, event.getNewDamage())) {
             return;
         }
-        Entity trueSource = source.getEntity();
+
+        var victimData = MKCore.getEntityDataOrThrow(victim);
 
         // Living is source
-        if (trueSource instanceof LivingEntity livingSource) {
-            var sourceData = MKCore.getEntityDataOrThrow(livingSource);
-            var attackerContext = new AttackerDamageTriggerContext(event, source, livingTarget, sourceData);
+        Entity trueSource = source.getEntity();
+        if (trueSource instanceof LivingEntity attacker) {
+            var attackerData = MKCore.getEntityDataOrThrow(attacker);
+            var attackerContext = new AttackerDamageTriggerContext(event, source, victimData, attackerData);
 
             if (source instanceof MKDamageSource mkDamageSource) {
-                handleMKDamage(event, mkDamageSource, livingTarget, livingSource, sourceData, attackerContext);
+                handleMKDamage(event, mkDamageSource, victim, attacker, attackerData, attackerContext);
             } else {
-                handleVanillaAndProjectileDamage(event, source, livingTarget, livingSource, sourceData, attackerContext);
+                handleVanillaAndProjectileDamage(event, source, victim, attacker, attackerData, attackerContext);
             }
 
-            if (livingSource instanceof ServerPlayer serverPlayer && DamageUtils.isMeleeDamage(source) && livingSource.getMainHandItem().isEmpty()) {
+            if (attacker instanceof ServerPlayer serverPlayer && DamageUtils.isMeleeDamage(source) && attacker.getMainHandItem().isEmpty()) {
                 var playerData = MKCore.getPlayerOrThrow(serverPlayer);
                 playerData.getSkills().tryScaledIncreaseSkill(MKAttributes.HAND_TO_HAND, 0.5);
             }
         }
 
-        // Living is victim
-        var targetData = MKCore.getEntityDataOrThrow(livingTarget);
-        var victimContext = new VictimDamageTriggerContext(event, source, targetData);
-        targetData.getTriggers().dispatch(CoreTriggerTypes.VICTIM_INCOMING, victimContext);
+        var victimContext = new VictimDamageTriggerContext(event, source, victimData);
+        victimData.getTriggers().dispatch(CoreTriggerTypes.VICTIM_INCOMING, victimContext);
         if (source instanceof MKDamageSource mkDamageSource && mkDamageSource.is(DamageTypeTags.BYPASSES_ARMOR)) {
-            event.setNewDamage(mkDamageSource.getMKDamageType().applyResistance(targetData.getEntity(),
+            event.setNewDamage(mkDamageSource.getMKDamageType().applyResistance(victimData.getEntity(),
                     event.getNewDamage(), source));
         }
     }
@@ -99,40 +99,40 @@ public class CombatEventHandler {
     /// only react to the values, not modify them.
     @SubscribeEvent
     public static void onFinalDamageInflicted(LivingDamageEvent.Post event) {
-        LivingEntity livingTarget = event.getEntity();
-        if (livingTarget.level().isClientSide) {
+        LivingEntity victim = event.getEntity();
+        if (victim.level().isClientSide()) {
             return;
         }
         if (event.getNewDamage() <= 0.0f) {
             return;
         }
 
+        var victimData = MKCore.getEntityDataOrThrow(victim);
+
         DamageSource source = event.getSource();
         Entity trueSource = source.getEntity();
-
-        if (trueSource instanceof LivingEntity livingSource) {
-            var sourceData = MKCore.getEntityDataOrThrow(livingSource);
-            var attackerContext = new AttackerDamageTriggerContext(event, source, livingTarget, sourceData);
-            sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_POST, attackerContext);
+        if (trueSource instanceof LivingEntity attacker) {
+            var attackerData = MKCore.getEntityDataOrThrow(attacker);
+            var attackerContext = new AttackerDamageTriggerContext(event, source, victimData, attackerData);
+            attackerData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_POST, attackerContext);
         }
 
-        var targetData = MKCore.getEntityDataOrThrow(livingTarget);
-        var victimContext = new VictimDamageTriggerContext(event, source, targetData);
-        targetData.getTriggers().dispatch(CoreTriggerTypes.VICTIM_POST, victimContext);
+        var victimContext = new VictimDamageTriggerContext(event, source, victimData);
+        victimData.getTriggers().dispatch(CoreTriggerTypes.VICTIM_POST, victimContext);
     }
 
-    private static void handleMKDamage(LivingDamageEvent.Pre event, MKDamageSource source, LivingEntity livingTarget,
-                                       LivingEntity livingSource, IMKEntityData sourceData,
+    private static void handleMKDamage(LivingDamageEvent.Pre event, MKDamageSource source, LivingEntity victim,
+                                       LivingEntity attacker, IMKEntityData attackerData,
                                        AttackerDamageTriggerContext attackerContext) {
-        Entity immediate = source.getDirectEntity() != null ? source.getDirectEntity() : livingSource;
-        float newDamage = source.getMKDamageType().applyDamage(livingSource, livingTarget, immediate,
+        Entity immediate = source.getDirectEntity() != null ? source.getDirectEntity() : attacker;
+        float newDamage = source.getMKDamageType().applyDamage(attacker, victim, immediate,
                 event.getNewDamage(), source.getModifierScaling());
         boolean blocked = DamageUtils.wasAlreadyPartiallyBlocked(source);
-        if (!blocked && source.getMKDamageType().rollCrit(livingSource, livingTarget, immediate)) {
-            newDamage = source.getMKDamageType().applyCritDamage(livingSource, livingTarget, immediate, newDamage);
-            CustomPacketPayload packet = source.createCritMessage(livingTarget.getId(), livingSource.getId(), newDamage);
+        if (!blocked && source.getMKDamageType().rollCrit(attacker, victim, immediate)) {
+            newDamage = source.getMKDamageType().applyCritDamage(attacker, victim, immediate, newDamage);
+            CustomPacketPayload packet = source.createCritMessage(victim.getId(), attacker.getId(), newDamage);
             if (packet != null) {
-                sendCritPacket(livingTarget, livingSource, packet);
+                sendCritPacket(victim, attacker, packet);
             }
         }
         event.setNewDamage(newDamage);
@@ -141,9 +141,9 @@ public class CombatEventHandler {
         }
 
         if (source.isMeleeDamage()) {
-            sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_MELEE, attackerContext);
+            attackerData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_MELEE, attackerContext);
         } else {
-            sourceData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_MAGIC, attackerContext);
+            attackerData.getTriggers().dispatch(CoreTriggerTypes.ATTACKER_MAGIC, attackerContext);
         }
     }
 

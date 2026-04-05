@@ -21,7 +21,7 @@ public class SoulDrainEffect extends MKEffect implements MKTriggerContributor {
         super(MobEffectCategory.BENEFICIAL);
     }
 
-    private static void onLivingKillEntity(KillTriggerContext context) {
+    private static void onLivingKillEntity(KillTriggerContext context, MKActiveEffect activeEffect) {
         IMKEntityData data = context.killerData();
         SoundUtils.serverPlaySoundAtEntity(data.getEntity(), MKUSounds.spell_dark_4.value(), data.getEntity().getSoundSource());
         float mana = MKUAbilities.SOUL_DRAIN.get().getDrainValue((attr) -> MKAbility.getSkillLevel(data.getEntity(), attr));
@@ -35,6 +35,6 @@ public class SoulDrainEffect extends MKEffect implements MKTriggerContributor {
 
     @Override
     public void registerTriggers(MKActiveEffect activeEffect, EntityTriggerRegistrar registrar) {
-        registrar.add(CoreTriggerTypes.KILL, SoulDrainEffect::onLivingKillEntity);
+        registrar.add(CoreTriggerTypes.KILL, activeEffect, SoulDrainEffect::onLivingKillEntity);
     }
 }

@@ -33,16 +33,16 @@ public class DamagePipelineProbeEffect extends MKEffect implements MKTriggerCont
 
     @Override
     public void registerTriggers(MKActiveEffect activeEffect, EntityTriggerRegistrar registrar) {
-        registrar.add(CoreTriggerTypes.ATTACKER_MELEE, context ->
-                onAttackerMelee(activeEffect));
-        registrar.add(CoreTriggerTypes.ATTACKER_PROJECTILE, context ->
-                onAttackerProjectile(activeEffect));
-        registrar.add(CoreTriggerTypes.ATTACKER_POST, context ->
-                onAttackerPost(activeEffect));
-        registrar.add(CoreTriggerTypes.VICTIM_INCOMING, context ->
-                onVictimPreScale(activeEffect));
-        registrar.add(CoreTriggerTypes.VICTIM_POST, context ->
-                onVictimPostScale(activeEffect));
+        registrar.add(CoreTriggerTypes.ATTACKER_MELEE, activeEffect, (context, effect) ->
+                onAttackerMelee(effect));
+        registrar.add(CoreTriggerTypes.ATTACKER_PROJECTILE, activeEffect, (context, effect) ->
+                onAttackerProjectile(effect));
+        registrar.add(CoreTriggerTypes.ATTACKER_POST, activeEffect, (context, effect) ->
+                onAttackerPost(effect));
+        registrar.add(CoreTriggerTypes.VICTIM_INCOMING, activeEffect, (context, effect) ->
+                onVictimPreScale(effect));
+        registrar.add(CoreTriggerTypes.VICTIM_POST, activeEffect, (context, effect) ->
+                onVictimPostScale(effect));
     }
 
     private void onAttackerMelee(MKActiveEffect activeEffect) {

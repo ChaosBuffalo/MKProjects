@@ -77,11 +77,13 @@ public class FrozenGraspAbility extends MKAbility {
     private final Vec3 YP = new Vec3(0.0, 1.0, 0.0);
 
     public MKEffectBuilder<?> onHitEffect(OnHitEffect.OnHitCallbackData args) {
-        int dur = getBuffDuration(args.entityData, args.instance.getSkillLevel(),
+        int dur = getBuffDuration(args.attackerData(), args.effectInstance().getSkillLevel(),
                 baseDuration.value(), scaleDuration.value());
-        MKParticles.spawnOffset(args.target, YP, hitParticles.getValue());
-        return MKUEffects.FROZEN_GRASP.get().builder(args.entityData.getEntity())
-                .skillLevel(args.instance.getSkillLevel()).timed(dur);
+        MKParticles.spawnOffset(args.victimData().getEntity(), YP, hitParticles.getValue());
+        return MKUEffects.FROZEN_GRASP.get()
+                .builder(args.attackerData().getEntity())
+                .skillLevel(args.effectInstance().getSkillLevel())
+                .timed(dur);
     }
 
     @Override
