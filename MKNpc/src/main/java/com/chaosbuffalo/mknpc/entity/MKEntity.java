@@ -14,6 +14,7 @@ import com.chaosbuffalo.mkcore.core.pets.IMKPet;
 import com.chaosbuffalo.mkcore.core.pets.PetNonCombatBehavior;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
 import com.chaosbuffalo.mkcore.entities.ISyncControllerProvider;
+import com.chaosbuffalo.mkcore.init.CoreAttachments;
 import com.chaosbuffalo.mkcore.sync.controllers.EntitySyncController;
 import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
@@ -223,6 +224,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         entityDataCap.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
         entityDataCap.getAbilityExecutor().setInterruptCastCallback(this::interruptCast);
         entityDataCap.setInstanceTracker(particleEffectTracker);
+        // Install the attachment manually. Note that this needs a custom attachment serializer to avoid creating dupes.
+        setData(CoreAttachments.ENTITY_DATA_ATTACHMENT, entityDataCap);
     }
 
     @Override
