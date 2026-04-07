@@ -19,6 +19,7 @@ public class ModelStyles {
     public static final String SHORT_HAIR_NAME = "short_hair";
     public static final String CLOTHES_ONLY_NAME = "clothes_only";
     public static final String BASIC_NAME = "basic";
+    public static final String BASIC_GOLEM_NAME = "basic_golem";
     public static final String CLOTHES_ARMOR_NAME = "clothes_armor";
     public static final String CLOTHES_ARMOR_TRANSLUCENT_NAME = "clothes_armor_translucent";
 
@@ -80,6 +81,13 @@ public class ModelStyles {
             () -> new ModelStyle(
                     BASIC_NAME,
                     true,
+                    false));
+
+    public static final DeferredHolder<ModelStyle, ModelStyle> BASIC_GOLEM_STYLE = REGISTRY.register(
+            BASIC_GOLEM_NAME,
+            () -> new ModelStyle(
+                    BASIC_GOLEM_NAME,
+                    false,
                     false));
 
     public static void register(IEventBus modBus) {

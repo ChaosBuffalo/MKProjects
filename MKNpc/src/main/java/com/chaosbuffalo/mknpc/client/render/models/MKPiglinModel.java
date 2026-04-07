@@ -38,6 +38,7 @@ public class MKPiglinModel<T extends MKEntity & IPiglinActionProvider> extends M
 
     public void setupAnim(T entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         super.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
+        float windupProgress = entityIn.getMeleeWindupProgress(ageInTicks - entityIn.tickCount);
         float f = ((float) Math.PI / 6F);
         float f1 = ageInTicks * 0.1F + limbSwing * 0.5F;
         float f2 = 0.08F + limbSwingAmount * 0.4F;
@@ -56,7 +57,7 @@ public class MKPiglinModel<T extends MKEntity & IPiglinActionProvider> extends M
             this.rightArm.y = Mth.sin(f3 * 40.0F) * 0.5F + 1.5F;
             this.leftArm.y = Mth.sin(f3 * 40.0F) * 0.5F + 1.5F;
             this.body.y = Mth.sin(f3 * 40.0F) * 0.35F;
-        } else if (piglinaction == PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON && this.attackTime == 0.0F) {
+        } else if (piglinaction == PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON && this.attackTime == 0.0F && windupProgress <= 0.0F) {
             this.rotateMainHandArm(entityIn);
         } else if (piglinaction == PiglinArmPose.CROSSBOW_HOLD) {
             AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, !entityIn.isLeftHanded());
@@ -74,15 +75,6 @@ public class MKPiglinModel<T extends MKEntity & IPiglinActionProvider> extends M
             }
         }
         this.hat.copyFrom(this.head);
-    }
-
-    @Override
-    protected void setupAttackAnimation(T entityIn, float ageInTicks) {
-        if (this.attackTime > 0.0F && entityIn.getPiglinAction() == PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON) {
-            AnimationUtils.swingWeaponDown(this.rightArm, this.leftArm, entityIn, this.attackTime, ageInTicks);
-        } else {
-            super.setupAttackAnimation(entityIn, ageInTicks);
-        }
     }
 
     private void rotateMainHandArm(T entityIn) {

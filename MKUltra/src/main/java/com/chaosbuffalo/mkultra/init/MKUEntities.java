@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkultra.init;
 
-import com.chaosbuffalo.mknpc.entity.MKGolemEntity;
 import com.chaosbuffalo.mknpc.entity.MKSkeletonEntity;
 import com.chaosbuffalo.mknpc.entity.MKZombifiedPiglinEntity;
 import com.chaosbuffalo.mkultra.MKUltra;
@@ -23,12 +22,6 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public class MKUEntities {
 
     public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, MKUltra.MODID);
-
-    public static final DeferredHolder<EntityType<?>, EntityType<MKGolemEntity>> GOLEM_TYPE = REGISTRY.register("golem",
-            () -> EntityType.Builder.of(MKGolemEntity::new, MobCategory.MONSTER)
-                    .sized(EntityType.IRON_GOLEM.getWidth(), EntityType.IRON_GOLEM.getHeight())
-                    .build(MKUltra.id("golem").toString()));
-
 
     public static final String ORC_NAME = "orc";
     public static final DeferredHolder<EntityType<?>, EntityType<OrcEntity>> ORC_TYPE = REGISTRY.register(ORC_NAME,
@@ -75,7 +68,6 @@ public class MKUEntities {
         event.put(ORC_TYPE.get(), OrcEntity.registerAttributes(2.0, 0.35).build());
         event.put(ZOMBIFIED_PIGLIN_TYPE.get(), MKZombifiedPiglinEntity.registerAttributes(2.0, 0.27).build());
         event.put(HUMAN_TYPE.get(), HumanEntity.registerAttributes(2.0, 0.35).build());
-        event.put(GOLEM_TYPE.get(), MKGolemEntity.registerAttributes(4.0, 0.35).build());
         event.put(HUMAN_GHOST_TYPE.get(), HumanEntity.registerAttributes(2.0, 0.3).build());
     }
 }

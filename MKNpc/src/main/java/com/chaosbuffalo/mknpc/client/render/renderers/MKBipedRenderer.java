@@ -21,6 +21,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.CrossbowItem;
@@ -159,7 +160,16 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
     @Override
     public void render(T entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
         this.setModelProperties(entityIn);
-        super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
+        float lungeAmount = getVisualLungeOffset(entityIn, partialTicks);
+        if (lungeAmount > 0.0F) {
+            Vec3 forward = entityIn.getLookAngle().normalize().scale(lungeAmount);
+            matrixStackIn.pushPose();
+            matrixStackIn.translate(forward.x, forward.y, forward.z);
+            super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
+            matrixStackIn.popPose();
+        } else {
+            super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
+        }
         MKEntity.VisualCastState castState = entityIn.getVisualCastState();
         if (castState == MKEntity.VisualCastState.CASTING || castState == MKEntity.VisualCastState.RELEASE) {
             MKAbility ability = entityIn.getCastingAbility();
@@ -186,5 +196,20 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
         return MCBone.getPositionOfBoneInWorld(entityIn, skeleton, partialTicks,
                 getRenderOffset(entityIn, partialTicks), handSide == HumanoidArm.LEFT ?
                         BipedSkeleton.LEFT_HAND_BONE_NAME : BipedSkeleton.RIGHT_HAND_BONE_NAME);
+    }
+
+    protected float getVisualLungeAmount(T entity) {
+        return 0.5F;
+    }
+
+    protected float getVisualLungeOffset(T entity, float partialTicks) {
+        if (entity.getCombatMoveType() != MKEntity.CombatMoveType.MELEE) {
+            return 0.0F;
+        }
+        if (entity.getVisualCastState() != MKEntity.VisualCastState.NONE) {
+            return 0.0F;
+        }
+        float attackAnim = entity.getAttackAnim(partialTicks);
+        return Mth.sin(attackAnim * (float) Math.PI) * getVisualLungeAmount(entity);
     }
 }

@@ -1,5 +1,6 @@
-// 1.21.1	2026-04-02T15:47:11.2414365	Registries
+// 1.21.1	2026-04-07T07:02:16.7357185	Registries
 1be1c5a6e5b47db3aecda7cf687a9dc6d0a4b26e data/mknpc/mknpc/mknpcs/test_ghost.json
+d35f18dc426304e4178fad5c486179efcfbe7c5f data/mknpc/mknpc/mknpcs/test_golem.json
 8b71f8f8bd40d8853355ced01f23bad9cbac99e0 data/mknpc/mknpc/mknpcs/test_lady.json
 80f0f19f6d98c75bb019857c92e2f86dfd0f4845 data/mknpc/mknpc/mknpcs/test_lady2.json
 a2580cd30a5f1bbe7c118527812144123dc3b10e data/mknpc/mknpc/mknpcs/test_skeleton.json

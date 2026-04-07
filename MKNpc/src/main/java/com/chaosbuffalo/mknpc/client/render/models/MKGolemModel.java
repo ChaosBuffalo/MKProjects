@@ -51,13 +51,108 @@ public class MKGolemModel<T extends MKEntity> extends MKBipedModel<T> {
     public void prepareMobModel(T entityIn, float limbSwing, float limbSwingAmount, float partialTick) {
         float swingProgress = entityIn.getAttackAnim(partialTick);
         if (swingProgress > 0) {
-            this.rightArm.xRot = -2.0F + 1.5F * Mth.triangleWave((float) swingProgress - partialTick, 10.0F);
-            this.leftArm.xRot = -2.0F + 1.5F * Mth.triangleWave((float) swingProgress - partialTick, 10.0F);
+            applyAttackVariant(entityIn, swingProgress);
+        } else if (entityIn.getMeleeWindupProgress(partialTick) > 0.0F) {
+            resetUpperBodyPose();
+            float windupProgress = entityIn.getMeleeWindupProgress(partialTick);
+            float windupPose = Mth.sin(windupProgress * ((float) Math.PI / 2.0F));
+            applyWindupVariant(entityIn, windupPose);
         } else {
+            resetUpperBodyPose();
             rightArm.xRot = (-0.2F + 1.5F * Mth.triangleWave(limbSwing, 13.0F)) * limbSwingAmount;
             leftArm.xRot = (-0.2F - 1.5F * Mth.triangleWave(limbSwing, 13.0F)) * limbSwingAmount;
 
         }
 
+    }
+
+    private void applyWindupVariant(T entityIn, float windupPose) {
+        int swingVariant = Math.floorMod(entityIn.getCurrentLocalSwingVariant(), 3);
+        switch (swingVariant) {
+            case 1 -> applyRoundhouseWindup(this.leftArm, this.rightArm, windupPose, 1.0F);
+            case 2 -> applyDoubleArmSmashWindup(windupPose);
+            default -> applyRoundhouseWindup(this.rightArm, this.leftArm, windupPose, -1.0F);
+        }
+    }
+
+    private void applyAttackVariant(T entityIn, float swingProgress) {
+        resetUpperBodyPose();
+
+        int swingVariant = Math.floorMod(entityIn.getCurrentLocalSwingVariant() - 1, 3);
+        switch (swingVariant) {
+            case 1 -> applyRoundhousePunch(this.leftArm, this.rightArm, swingProgress, 1.0F);
+            case 2 -> applyDoubleArmSmash(swingProgress);
+            default -> applyRoundhousePunch(this.rightArm, this.leftArm, swingProgress, -1.0F);
+        }
+    }
+
+    private void applyRoundhouseWindup(ModelPart strikingArm, ModelPart counterArm, float windupPose, float sideSign) {
+        this.body.yRot = sideSign * -0.34F * windupPose;
+        this.body.xRot = -0.08F * windupPose;
+
+        strikingArm.xRot = Mth.lerp(windupPose, 0.0F, -2.15F);
+        strikingArm.yRot = sideSign * -1.05F * windupPose;
+        strikingArm.zRot = sideSign * 0.28F * windupPose;
+
+        counterArm.xRot = Mth.lerp(windupPose, 0.0F, -0.4F);
+        counterArm.yRot = sideSign * 0.35F * windupPose;
+        counterArm.zRot = sideSign * 0.08F * windupPose;
+    }
+
+    private void applyDoubleArmSmashWindup(float windupPose) {
+        this.body.xRot = -0.2F * windupPose;
+
+        this.rightArm.xRot = Mth.lerp(windupPose, 0.0F, -2.25F);
+        this.leftArm.xRot = Mth.lerp(windupPose, 0.0F, -2.25F);
+        this.rightArm.yRot = 0.75F * windupPose;
+        this.leftArm.yRot = -0.75F * windupPose;
+        this.rightArm.zRot = 0.2F * windupPose;
+        this.leftArm.zRot = -0.2F * windupPose;
+    }
+
+    private void resetUpperBodyPose() {
+        this.body.xRot = 0.0F;
+        this.body.yRot = 0.0F;
+        this.body.zRot = 0.0F;
+        this.rightArm.xRot = 0.0F;
+        this.rightArm.yRot = 0.0F;
+        this.rightArm.zRot = 0.0F;
+        this.leftArm.xRot = 0.0F;
+        this.leftArm.yRot = 0.0F;
+        this.leftArm.zRot = 0.0F;
+    }
+
+    private void applyRoundhousePunch(ModelPart strikingArm, ModelPart counterArm, float swingProgress, float sideSign) {
+        float swing = Mth.clamp(swingProgress, 0.0F, 1.0F);
+        float wind = 1.0F - swing;
+        float strike = Mth.sin(swing * (float) Math.PI);
+        float followThrough = Mth.sin(Mth.clamp((swing - 0.45F) / 0.55F, 0.0F, 1.0F) * ((float) Math.PI / 2.0F));
+
+        this.body.yRot = sideSign * (-0.32F * wind + 0.5F * strike + 0.34F * followThrough);
+        this.body.xRot = 0.06F * strike;
+
+        strikingArm.xRot = -1.65F - 0.55F * wind + 0.75F * strike + 0.35F * followThrough;
+        strikingArm.yRot = sideSign * (-1.05F * wind + 1.25F * strike + 0.85F * followThrough);
+        strikingArm.zRot = sideSign * (-0.25F - 0.35F * strike + 0.1F * followThrough);
+
+        counterArm.xRot = -0.15F - 0.1F * strike;
+        counterArm.yRot = -sideSign * (0.35F + 0.15F * strike);
+        counterArm.zRot = -sideSign * 0.12F;
+    }
+
+    private void applyDoubleArmSmash(float swingProgress) {
+        float swing = Mth.clamp(swingProgress, 0.0F, 1.0F);
+        float wind = 1.0F - swing;
+        float strike = Mth.sin(swing * (float) Math.PI);
+        float followThrough = Mth.sin(Mth.clamp((swing - 0.35F) / 0.35F, 0.0F, 1.0F) * ((float) Math.PI / 2.0F));
+
+        this.body.xRot = -0.2F * wind + 0.12F * strike + 0.08F * followThrough;
+
+        this.rightArm.xRot = -2.25F * wind - 0.75F * strike - 0.85F * followThrough;
+        this.leftArm.xRot = -2.25F * wind - 0.75F * strike - 0.85F * followThrough;
+        this.rightArm.yRot = 0.75F * wind - 0.18F * strike - 0.28F * followThrough;
+        this.leftArm.yRot = -0.75F * wind + 0.18F * strike + 0.28F * followThrough;
+        this.rightArm.zRot = 0.2F * wind - 0.05F * strike - 0.08F * followThrough;
+        this.leftArm.zRot = -0.2F * wind + 0.05F * strike + 0.08F * followThrough;
     }
 }

@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.data.providers.MKDataProvider;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
 import com.chaosbuffalo.mknpc.client.render.renderers.SkeletonStyles;
+import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUClothes;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUGolems;
@@ -187,10 +188,8 @@ public class MKUModelLookProvider extends MKDataProvider {
     }
 
     private void addGolemLooks(List<CompletableFuture<?>> futures, CachedOutput output) {
-        EntityType<?> entityType = MKUEntities.GOLEM_TYPE.get();
-        futures.add(writeLook(MKUGolems.DEFAULT_LOOK,
-                new ModelLook(MKUModelStyles.BASIC_GOLEM_STYLE.get(), entityType, true, MKUGolems.NECROTIDE_GOLEM), output));
+        EntityType<?> entityType = MKNpcEntityTypes.GOLEM_TYPE.get();
         futures.add(writeLook(MKUGolems.NECROTIDE_GOLEM_LOOK,
-                new ModelLook(MKUModelStyles.BASIC_GOLEM_STYLE.get(), entityType, false, MKUGolems.NECROTIDE_GOLEM), output));
+                new ModelLook(ModelStyles.BASIC_GOLEM_STYLE.get(), entityType, false, MKUGolems.NECROTIDE_GOLEM), output));
     }
 }

@@ -1,10 +1,11 @@
-// 1.21.1	2026-04-02T15:21:47.0340937	NPC Model Looks: mknpc
+// 1.21.1	2026-04-07T07:02:16.7347149	NPC Model Looks: mknpc
 477b1ac9b45605a24b73ee0f2a5626593e593b8d data/mknpc/mknpc/model_looks/flying_skeleton/default.json
 e73e2789f00967e62c8b915f5e0da78edcc1db40 data/mknpc/mknpc/model_looks/flying_skeleton/default_stray.json
 cbad3c5d625c609584c41e5d9d835bd578272e1a data/mknpc/mknpc/model_looks/flying_skeleton/stray.json
 40d4e1569c739024877e6d4bc46d529a17bb1319 data/mknpc/mknpc/model_looks/flying_skeleton/stray_stray.json
 0eeda67b8572329f8fcd2badf360345f2e983e40 data/mknpc/mknpc/model_looks/flying_skeleton/wither.json
 77568e08794b3d490ac25084f4b84aec7047a9a5 data/mknpc/mknpc/model_looks/flying_skeleton/wither_stray.json
+80a637cc112136de50b28fe4818da800b9936000 data/mknpc/mknpc/model_looks/golem/default.json
 2ed71b2a159a80921987106c3a588bbd36daa131 data/mknpc/mknpc/model_looks/skeleton/default.json
 275e9c00e93d0e7d0b08d97689199e35b05633ca data/mknpc/mknpc/model_looks/skeleton/default_stray.json
 1e222977f729083ff719c2cf74cb180a93275963 data/mknpc/mknpc/model_looks/skeleton/stray.json

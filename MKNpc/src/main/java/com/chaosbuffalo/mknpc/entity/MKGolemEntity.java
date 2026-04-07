@@ -29,7 +29,13 @@ public class MKGolemEntity extends MKEntity {
                 .add(MKAttributes.ARCANE_RESISTANCE, 0.25)
                 .add(MKAttributes.FROST_RESISTANCE, 0.25)
                 .add(MKAttributes.NATURE_RESISTANCE, 0.25)
+                .add(Attributes.ENTITY_INTERACTION_RANGE, 4.0)
                 .add(Attributes.ARMOR, 15);
+    }
+
+    @Override
+    public double getMeleeApproachDistanceMultiplier() {
+        return 0.85;
     }
 
 

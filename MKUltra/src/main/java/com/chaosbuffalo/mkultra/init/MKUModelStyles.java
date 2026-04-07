@@ -4,7 +4,6 @@ import com.chaosbuffalo.mknpc.client.render.models.styling.LayerStyle;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
 import com.chaosbuffalo.mknpc.npc.NpcRegistries;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.client.render.styling.MKUGolems;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUHumans;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -63,10 +62,6 @@ public class MKUModelStyles {
             () -> new ModelStyle(MKUHumans.GHOST_SHORT_HAIR_NO_CLOTHES_ARMORED_NAME,
                     true, false,
                     new LayerStyle("hair_1", 0.25F, true)));
-    public static final DeferredHolder<ModelStyle, ModelStyle> BASIC_GOLEM_STYLE = REGISTRY.register(
-            MKUGolems.BASIC_GOLEM_NAME,
-            () -> new ModelStyle(MKUGolems.BASIC_GOLEM_NAME, false, false));
-
     public static void register(IEventBus modBus) {
         REGISTRY.register(modBus);
     }

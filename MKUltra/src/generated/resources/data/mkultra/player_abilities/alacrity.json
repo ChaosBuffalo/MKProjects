@@ -1,0 +1,13 @@
+{
+  "attributes": {
+    "baseDuration": 600,
+    "baseValue": 0.25,
+    "cast_particles": "mkultra:inspire_cast",
+    "casting_particles": "mkcore:fx.casting.empty",
+    "scaleDuration": 60,
+    "scaleValue": 0.03
+  },
+  "castTime": 20,
+  "cooldown": 600,
+  "manaCost": 10.0
+}

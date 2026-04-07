@@ -4,6 +4,7 @@ package com.chaosbuffalo.mkultra.data.generators.npc;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mknpc.data.NpcDefinitionBuilder;
 import com.chaosbuffalo.mknpc.data.NpcGenUtils;
+import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUGolems;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUHumans;
@@ -76,7 +77,7 @@ public class NecrotideNpcs {
     }
 
     static NpcDefinition generateNecrotideGolem(ResourceKey<NpcDefinition> key) {
-        return new NpcDefinitionBuilder(key, MKUEntities.GOLEM_TYPE)
+        return new NpcDefinitionBuilder(key, MKNpcEntityTypes.GOLEM_TYPE)
                 .faction(MKUFactions.NECROTIDE_CULTISTS_NAME)
                 .renderGroup(MKUGolems.NECROTIDE_GOLEM_LOOK)
                 .size(1.25f)

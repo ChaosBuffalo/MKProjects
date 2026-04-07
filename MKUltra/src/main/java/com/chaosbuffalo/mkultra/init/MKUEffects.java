@@ -25,6 +25,9 @@ public class MKUEffects {
 
     private static final UUID BREAK_FIRE_UUID = UUID.fromString("b610e5c3-089d-474a-9240-18074f225f6d");
 
+    private static final UUID ATTACK_SPEED_HASTE_UUID = UUID.fromString("57bdfc5d-207a-40d6-a3d4-6bdcf6948fa1");
+    private static final UUID ATTACK_SPEED_SLOW_UUID = UUID.fromString("4f2f10f0-4dc4-48a8-844a-8c4b38e707fa");
+
 
     public static final DeferredHolder<MKEffect, MKResistance> FIRE_ARMOR = REGISTRY.register("effect.fire_armor",
             () -> new MKResistance(MKAttributes.FIRE_RESISTANCE, FIRE_RESISTANCE_UUID, 0.2f));
@@ -105,6 +108,12 @@ public class MKUEffects {
 
     public static final DeferredHolder<MKEffect, HolyWordEffect> HOLY_WORD_EFFECT = REGISTRY.register("effect.holy_word",
             HolyWordEffect::new);
+
+    public static final DeferredHolder<MKEffect, AttackSpeedEffect> ATTACK_SPEED_HASTE = REGISTRY.register("effect.attack_speed_haste",
+            () -> new AttackSpeedEffect(ATTACK_SPEED_HASTE_UUID, 0.25, 0.03, MKAttributes.ENCHANTMENT));
+
+    public static final DeferredHolder<MKEffect, AttackSpeedEffect> ATTACK_SPEED_SLOW = REGISTRY.register("effect.attack_speed_slow",
+            () -> new AttackSpeedEffect(ATTACK_SPEED_SLOW_UUID, -0.25, -0.03, MKAttributes.PHANTASM));
 
     public static final DeferredHolder<MKEffect, OnHitEffect> FROZEN_GRASP_APPLIER = REGISTRY.register(
             "effect.frozen_grasp_applier",

@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.client.render;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.models.MKBlazeModel;
+import com.chaosbuffalo.mknpc.client.render.models.MKGolemModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKPiglinModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKSkeletalModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKSkullModel;
@@ -33,6 +34,8 @@ public class RenderRegistry {
         evt.registerEntityRenderer(MKNpcEntityTypes.FLYING_SKELETON_TYPE.get(),
                 (context) -> new SkeletalGroupRenderer(context, MKNpcEntityTypes.FLYING_SKELETON_TYPE.getId()));
         evt.registerEntityRenderer(MKNpcEntityTypes.FLYING_SKULL_TYPE.get(), MKFlyingSkullRenderer::new);
+        evt.registerEntityRenderer(MKNpcEntityTypes.GOLEM_TYPE.get(),
+                (context) -> new GolemGroupRenderer(context, MKNpcEntityTypes.GOLEM_TYPE.getId()));
 
     }
 
@@ -71,6 +74,10 @@ public class RenderRegistry {
         ModelStyleClient.registerModelLayers(event, ModelStyles.CLOTHES_ONLY_STYLE.get(), MKSkeletalModel::createBodyLayer,
                 MKNpcEntityTypes.FLYING_SKELETON_TYPE.getId(), 64, 32,
                 new ModelArgs(CubeDeformation.NONE, true, 0.0f,
+                        LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
+        ModelStyleClient.registerModelLayers(event, ModelStyles.BASIC_GOLEM_STYLE.get(), MKGolemModel::createBodyLayer,
+                MKNpcEntityTypes.GOLEM_TYPE.getId(), 128, 128,
+                new ModelArgs(CubeDeformation.NONE, false, 0.0f,
                         LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
         event.registerLayerDefinition(MKFlyingSkullRenderer.LAYER_LOCATION, MKSkullModel::createMobHeadLayer);
     }

@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.data.providers.MKDataProvider;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
+import com.chaosbuffalo.mknpc.client.render.renderers.GolemStyles;
 import com.chaosbuffalo.mknpc.client.render.renderers.PiglinStyles;
 import com.chaosbuffalo.mknpc.client.render.renderers.SkeletonStyles;
 import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
@@ -35,6 +36,7 @@ public class NpcModelLookProvider extends MKDataProvider {
         addSkeletonLooks(MKNpcEntityTypes.SKELETON_TYPE.get(), futures, pOutput);
         addSkeletonLooks(MKNpcEntityTypes.FLYING_SKELETON_TYPE.get(), futures, pOutput);
         addZombifiedPiglinLooks(futures, pOutput);
+        addGolemLooks(futures, pOutput);
         return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
     }
 
@@ -75,5 +77,12 @@ public class NpcModelLookProvider extends MKDataProvider {
         ModelLook look = new ModelLook(ModelStyles.BASIC_STYLE.get(), entityType, true,
                 PiglinStyles.VANILLA_ZOMBIFIED_PIGLIN_TEXTURE);
         futures.add(writeLook(PiglinStyles.DEFAULT_LOOK, look, output));
+    }
+
+    private void addGolemLooks(List<CompletableFuture<?>> futures, CachedOutput output) {
+        EntityType<?> entityType = MKNpcEntityTypes.GOLEM_TYPE.get();
+        ModelLook look = new ModelLook(ModelStyles.BASIC_GOLEM_STYLE.get(), entityType, true,
+                GolemStyles.VANILLA_IRON_GOLEM_TEXTURE);
+        futures.add(writeLook(GolemStyles.DEFAULT_LOOK, look, output));
     }
 }
