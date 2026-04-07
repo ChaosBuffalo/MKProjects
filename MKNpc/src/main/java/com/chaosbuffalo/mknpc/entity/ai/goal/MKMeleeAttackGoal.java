@@ -2,7 +2,10 @@ package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
+import com.chaosbuffalo.mkcore.core.MultiAttackHelper;
 import com.chaosbuffalo.mkcore.events.PostAttackEvent;
+import com.chaosbuffalo.mkcore.network.MeleeAttackSequencePacket;
+import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
@@ -20,6 +23,12 @@ import java.util.Optional;
 public class MKMeleeAttackGoal extends Goal {
     private final MKEntity entity;
     private LivingEntity target;
+    private LivingEntity multiAttackTarget;
+    private int multiAttackCount;
+    private int multiAttackNextIndex;
+    private int multiAttackSequenceTick;
+    private int multiAttackCooldownTicks;
+    private boolean executingMultiAttack;
 
     @Override
     public boolean canUse() {
@@ -39,6 +48,9 @@ public class MKMeleeAttackGoal extends Goal {
     public MKMeleeAttackGoal(MKEntity entity) {
         this.entity = entity;
         this.target = null;
+        this.multiAttackTarget = null;
+        this.multiAttackCount = 1;
+        this.multiAttackNextIndex = 1;
         this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
@@ -57,6 +69,7 @@ public class MKMeleeAttackGoal extends Goal {
 
     @Override
     public void tick() {
+        tickMultiAttack();
 
         boolean strafingForwards = false;
         if (entity.distanceTo(target) >= getAttackReach(target) * entity.getMeleeApproachDistanceMultiplier()) {
@@ -70,28 +83,103 @@ public class MKMeleeAttackGoal extends Goal {
 //        entity.getLookControl().setLookAt(target, 30.0f, 30.0f);
         double cooldownPeriod = entity.getMeleeCooldownPeriod();
         int ticksSinceSwing = entity.getTicksSinceLastSwing();
-        if (ticksSinceSwing >= cooldownPeriod && isInReach(target) && entity.getSensing().hasLineOfSight(target) && EntityUtils.isInFrontOf(entity, target)) {
+        if (!hasPendingMultiAttack() && ticksSinceSwing >= cooldownPeriod && isInReach(target) && entity.getSensing().hasLineOfSight(target) && EntityUtils.isInFrontOf(entity, target)) {
             performAttack(target);
         }
 
     }
 
     protected void performAttack(LivingEntity enemy) {
-        entity.swing(InteractionHand.MAIN_HAND);
+        performAttack(enemy, false);
+    }
+
+    protected void performAttack(LivingEntity enemy, boolean secondaryAttack) {
+        if (!secondaryAttack) {
+            int attackCount = scheduleMultiAttack(enemy);
+            int cooldownTicks = Math.max(attackCount, (int) Math.ceil(entity.getMeleeCooldownPeriod()));
+            int swingDurationTicks = MultiAttackHelper.getSequenceSwingDurationTicks(cooldownTicks, attackCount,
+                    entity.getMeleeSwingDurationTicks());
+            PacketHandler.sendToTrackingAndSelf(new MeleeAttackSequencePacket(
+                    entity.getId(),
+                    MultiAttackHelper.createAttackStartTicks(cooldownTicks, attackCount, 0),
+                    swingDurationTicks), entity);
+        }
         boolean didAttack = entity.doHurtTarget(enemy);
         ItemStack mainHand = entity.getMainHandItem();
         if (didAttack && !mainHand.isEmpty()) {
             mainHand.getItem().hurtEnemy(mainHand, enemy, entity);
         }
-        entity.resetSwing();
+        if (!secondaryAttack) {
+            entity.resetSwing();
+        }
 
         MKEntityData cap = entity.getEntityDataCap();
         CombatExtensionModule combat = cap.getCombatExtension();
         combat.recordSwingHit();
-        NeoForge.EVENT_BUS.post(new PostAttackEvent(cap));
-        if (combat.getCurrentSwingCount() > 0 && combat.getCurrentSwingCount() % getComboCount() == 0) {
+        NeoForge.EVENT_BUS.post(new PostAttackEvent(cap, enemy, secondaryAttack));
+        if (!secondaryAttack && combat.getCurrentSwingCount() > 0 && combat.getCurrentSwingCount() % getComboCount() == 0) {
             entity.subtractFromTicksSinceLastSwing(getComboDelay());
         }
+    }
+
+    private int scheduleMultiAttack(LivingEntity enemy) {
+        if (executingMultiAttack) {
+            return 1;
+        }
+        int attackCount = MultiAttackHelper.rollAttackCount(entity);
+        if (attackCount <= 1) {
+            cancelMultiAttack();
+            return 1;
+        }
+
+        multiAttackTarget = enemy;
+        multiAttackCount = attackCount;
+        multiAttackNextIndex = 1;
+        multiAttackSequenceTick = 0;
+        multiAttackCooldownTicks = Math.max(attackCount, (int) Math.ceil(entity.getMeleeCooldownPeriod()));
+        return attackCount;
+    }
+
+    private boolean hasPendingMultiAttack() {
+        return multiAttackTarget != null && multiAttackNextIndex < multiAttackCount;
+    }
+
+    private void tickMultiAttack() {
+        if (!hasPendingMultiAttack()) {
+            return;
+        }
+        multiAttackSequenceTick++;
+        int attackStartTick = MultiAttackHelper.getAttackStartTick(multiAttackCooldownTicks, multiAttackCount, multiAttackNextIndex);
+        if (multiAttackSequenceTick < attackStartTick) {
+            return;
+        }
+        if (!isValidMultiAttackTarget(multiAttackTarget)) {
+            cancelMultiAttack();
+            return;
+        }
+        executingMultiAttack = true;
+        try {
+            performAttack(multiAttackTarget, true);
+        } finally {
+            executingMultiAttack = false;
+        }
+        multiAttackNextIndex++;
+        if (!hasPendingMultiAttack()) {
+            cancelMultiAttack();
+        }
+    }
+
+    private boolean isValidMultiAttackTarget(LivingEntity target) {
+        return target != null && target.isAlive() && isInReach(target) && entity.getSensing().hasLineOfSight(target) &&
+                EntityUtils.isInFrontOf(entity, target);
+    }
+
+    private void cancelMultiAttack() {
+        multiAttackTarget = null;
+        multiAttackCount = 1;
+        multiAttackNextIndex = 1;
+        multiAttackSequenceTick = 0;
+        multiAttackCooldownTicks = 0;
     }
 
     public boolean isInMeleeRange(LivingEntity target) {
@@ -106,6 +194,7 @@ public class MKMeleeAttackGoal extends Goal {
     public void stop() {
         this.entity.setAggressive(false);
         this.target = null;
+        cancelMultiAttack();
     }
 
     protected double getAttackReach(LivingEntity target) {
@@ -123,6 +212,6 @@ public class MKMeleeAttackGoal extends Goal {
     public boolean canContinueToUse() {
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
-        return target != null && targetOpt.map((ent) -> ent.is(target) && isInMeleeRange(ent)).orElse(false);
+        return hasPendingMultiAttack() || target != null && targetOpt.map((ent) -> ent.is(target) && isInMeleeRange(ent)).orElse(false);
     }
 }

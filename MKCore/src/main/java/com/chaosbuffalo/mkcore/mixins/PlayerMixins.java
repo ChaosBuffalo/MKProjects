@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.mixins;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.events.PostAttackEvent;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.common.NeoForge;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,10 +21,14 @@ public class PlayerMixins {
                     shift = At.Shift.AFTER
             )
     )
-    private void mkcore$postAttack(CallbackInfo ci) {
+    private void mkcore$postAttack(Entity target, CallbackInfo ci) {
         Player player = (Player) (Object) this;
         var playerData = MKCore.getPlayerOrThrow(player);
-        playerData.getCombatExtension().recordSwingHit();
-        NeoForge.EVENT_BUS.post(new PostAttackEvent(playerData));
+        var combat = playerData.getCombatExtension();
+        combat.recordSwingHit();
+        NeoForge.EVENT_BUS.post(new PostAttackEvent(playerData, target, combat.isExecutingMultiAttack()));
+        if (!player.level().isClientSide && !combat.isExecutingMultiAttack()) {
+            combat.tryScheduleMultiAttack(target);
+        }
     }
 }

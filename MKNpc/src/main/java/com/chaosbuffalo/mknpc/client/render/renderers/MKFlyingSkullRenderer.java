@@ -34,7 +34,7 @@ public class MKFlyingSkullRenderer extends MobRenderer<MKFlyingSkullEntity, MKSk
     @Override
     public void render(MKFlyingSkullEntity entity, float entityYaw, float partialTicks, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight) {
-        float attackAnim = entity.getAttackAnim(partialTicks);
+        float attackAnim = entity.getVisualMeleeAttackAnim(partialTicks);
         float lungeAmount = Mth.sin(attackAnim * (float) Math.PI) * 0.65F;
         if (lungeAmount > 0.0F) {
             Vec3 forward = entity.getLookAngle().normalize().scale(lungeAmount);
