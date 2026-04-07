@@ -10,7 +10,7 @@ import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
-import com.chaosbuffalo.mkcore.core.combat.VisualMeleeAttackEntity;
+import com.chaosbuffalo.mkcore.core.combat.IVisualMeleeAttackEntity;
 import com.chaosbuffalo.mkcore.core.combat.VisualMeleeAttackSequence;
 import com.chaosbuffalo.mkcore.core.pets.IMKPet;
 import com.chaosbuffalo.mkcore.core.pets.PetNonCombatBehavior;
@@ -92,7 +92,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 
-public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, ISyncControllerProvider, IMKPet, ITargetingOwner, VisualMeleeAttackEntity {
+public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, ISyncControllerProvider, IMKPet, ITargetingOwner, IVisualMeleeAttackEntity {
     private static final EntityDataAccessor<String> LOOK_STYLE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Float> SCALE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> IS_GHOST = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.BOOLEAN);

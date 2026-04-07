@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mkcore.network;
 
 import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.combat.VisualMeleeAttackEntity;
+import com.chaosbuffalo.mkcore.core.combat.IVisualMeleeAttackEntity;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -61,7 +61,7 @@ public class MeleeAttackSequencePacket implements CustomPacketPayload {
         if (attacker instanceof Player attackerPlayer) {
             MKCore.getPlayer(attackerPlayer).ifPresent(data ->
                     data.getCombatExtension().startVisualMeleeAttackSequence(packet.swingStartTicks, packet.swingDurationTicks));
-        } else if (attacker instanceof VisualMeleeAttackEntity visualMeleeAttackEntity) {
+        } else if (attacker instanceof IVisualMeleeAttackEntity visualMeleeAttackEntity) {
             visualMeleeAttackEntity.startVisualMeleeAttackSequence(packet.swingStartTicks, packet.swingDurationTicks);
         }
     }
