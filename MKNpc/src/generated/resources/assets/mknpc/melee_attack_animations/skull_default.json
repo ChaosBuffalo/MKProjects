@@ -1,0 +1,12 @@
+{
+  "family": "mknpc:skull",
+  "strikes": [
+    {
+      "lunge": 0.65,
+      "pose": "mknpc:skull_default_bite"
+    }
+  ],
+  "windups": [
+    "mknpc:skull_default_windup"
+  ]
+}

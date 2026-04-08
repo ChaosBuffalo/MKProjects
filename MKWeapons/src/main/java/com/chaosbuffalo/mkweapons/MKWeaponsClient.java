@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mkweapons;
 
+import com.chaosbuffalo.mkcore.client.rendering.animations.melee.MeleeAnimationManager;
 import com.chaosbuffalo.mkweapons.client.MKWeaponsItemProperties;
+import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -16,5 +18,11 @@ public class MKWeaponsClient {
 
     public void clientSetup(final FMLClientSetupEvent event) {
         event.enqueueWork(MKWeaponsItemProperties::registerItemProperties);
+        event.enqueueWork(() -> MeleeAnimationManager.registerResolver(entity -> {
+            if (entity.getMainHandItem().getItem() instanceof IMKMeleeWeapon weapon) {
+                return weapon.getWeaponType().getName();
+            }
+            return null;
+        }));
     }
 }

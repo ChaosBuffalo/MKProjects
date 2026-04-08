@@ -1,0 +1,22 @@
+{
+  "family": "mknpc:golem",
+  "strikes": [
+    {
+      "lunge": 0.5,
+      "pose": "mknpc:golem_roundhouse_right"
+    },
+    {
+      "lunge": 0.5,
+      "pose": "mknpc:golem_roundhouse_left"
+    },
+    {
+      "lunge": 0.55,
+      "pose": "mknpc:golem_double_smash"
+    }
+  ],
+  "windups": [
+    "mknpc:golem_roundhouse_right_windup",
+    "mknpc:golem_roundhouse_left_windup",
+    "mknpc:golem_double_smash_windup"
+  ]
+}

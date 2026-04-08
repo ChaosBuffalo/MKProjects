@@ -1,0 +1,160 @@
+{
+  "channels": [
+    {
+      "property": "yRot",
+      "sign": "-handedness*swingDirection",
+      "target": "body",
+      "value": {
+        "constant": 0.04,
+        "terms": [
+          {
+            "curve": "swing_sin",
+            "scale": 0.1
+          },
+          {
+            "curve": "follow_through",
+            "scale": 0.12
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "xRot",
+      "target": "body",
+      "value": {
+        "terms": [
+          {
+            "curve": "swing_sin",
+            "scale": -0.04
+          },
+          {
+            "curve": "follow_through",
+            "scale": -0.05
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "sign": "-handedness*swingDirection",
+      "target": "main_arm",
+      "value": {
+        "constant": 0.02,
+        "terms": [
+          {
+            "curve": "swing_sin",
+            "scale": 0.04
+          },
+          {
+            "curve": "follow_through",
+            "scale": 0.04
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "main_arm",
+      "value": {
+        "constant": -1.3,
+        "terms": [
+          {
+            "curve": "swing_sin",
+            "scale": -0.4
+          },
+          {
+            "curve": "impact",
+            "scale": -1.1
+          },
+          {
+            "curve": "follow_through",
+            "scale": 1.65
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "sign": "handedness",
+      "target": "main_arm",
+      "value": {
+        "constant": 0.04,
+        "terms": [
+          {
+            "curve": "swing_sin",
+            "scale": 0.06
+          },
+          {
+            "curve": "follow_through",
+            "scale": 0.04
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "sign": "handedness*swingDirection",
+      "target": "off_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "swing_sin",
+            "scale": 0.04
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "off_arm",
+      "value": {
+        "constant": -0.7,
+        "terms": [
+          {
+            "curve": "swing_sin",
+            "scale": 0.04
+          },
+          {
+            "curve": "impact",
+            "scale": 0.06
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "sign": "-handedness",
+      "target": "off_arm",
+      "value": {
+        "constant": 0.02,
+        "terms": [
+          {
+            "curve": "swing_sin",
+            "scale": 0.02
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "xRot",
+      "target": "head",
+      "value": {
+        "terms": [
+          {
+            "curve": "swing_sin",
+            "scale": 0.02
+          },
+          {
+            "curve": "follow_through",
+            "scale": 0.04
+          }
+        ]
+      }
+    }
+  ],
+  "options": {
+    "bobArms": true
+  }
+}

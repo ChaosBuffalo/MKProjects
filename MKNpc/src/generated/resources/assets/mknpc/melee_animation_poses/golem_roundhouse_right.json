@@ -1,0 +1,127 @@
+{
+  "channels": [
+    {
+      "property": "yRot",
+      "target": "body",
+      "value": {
+        "terms": [
+          {
+            "curve": "swing_inverse",
+            "scale": 0.32
+          },
+          {
+            "curve": "swing_sin",
+            "scale": -0.5
+          },
+          {
+            "curve": "follow_through",
+            "scale": -0.34
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "body",
+      "value": {
+        "terms": [
+          {
+            "curve": "swing_sin",
+            "scale": 0.06
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "rightArm",
+      "value": {
+        "constant": -1.65,
+        "terms": [
+          {
+            "curve": "swing_inverse",
+            "scale": -0.55
+          },
+          {
+            "curve": "swing_sin",
+            "scale": 0.75
+          },
+          {
+            "curve": "follow_through",
+            "scale": 0.35
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "target": "rightArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "swing_inverse",
+            "scale": 1.05
+          },
+          {
+            "curve": "swing_sin",
+            "scale": -1.25
+          },
+          {
+            "curve": "follow_through",
+            "scale": -0.85
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "target": "rightArm",
+      "value": {
+        "constant": 0.25,
+        "terms": [
+          {
+            "curve": "swing_sin",
+            "scale": 0.35
+          },
+          {
+            "curve": "follow_through",
+            "scale": -0.1
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "leftArm",
+      "value": {
+        "constant": -0.15,
+        "terms": [
+          {
+            "curve": "swing_sin",
+            "scale": -0.1
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "target": "leftArm",
+      "value": {
+        "constant": 0.35,
+        "terms": [
+          {
+            "curve": "swing_sin",
+            "scale": 0.15
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "target": "leftArm",
+      "value": {
+        "constant": 0.12
+      }
+    }
+  ]
+}

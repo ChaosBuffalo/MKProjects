@@ -1,0 +1,144 @@
+{
+  "channels": [
+    {
+      "property": "xRot",
+      "target": "body",
+      "value": {
+        "terms": [
+          {
+            "curve": "swing_inverse",
+            "scale": -0.2
+          },
+          {
+            "curve": "swing_sin",
+            "scale": 0.12
+          },
+          {
+            "curve": "follow_through_short",
+            "scale": 0.08
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "rightArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "swing_inverse",
+            "scale": -2.25
+          },
+          {
+            "curve": "swing_sin",
+            "scale": -0.75
+          },
+          {
+            "curve": "follow_through_short",
+            "scale": -0.85
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "leftArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "swing_inverse",
+            "scale": -2.25
+          },
+          {
+            "curve": "swing_sin",
+            "scale": -0.75
+          },
+          {
+            "curve": "follow_through_short",
+            "scale": -0.85
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "target": "rightArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "swing_inverse",
+            "scale": 0.75
+          },
+          {
+            "curve": "swing_sin",
+            "scale": -0.18
+          },
+          {
+            "curve": "follow_through_short",
+            "scale": -0.28
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "target": "leftArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "swing_inverse",
+            "scale": -0.75
+          },
+          {
+            "curve": "swing_sin",
+            "scale": 0.18
+          },
+          {
+            "curve": "follow_through_short",
+            "scale": 0.28
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "target": "rightArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "swing_inverse",
+            "scale": 0.2
+          },
+          {
+            "curve": "swing_sin",
+            "scale": -0.05
+          },
+          {
+            "curve": "follow_through_short",
+            "scale": -0.08
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "target": "leftArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "swing_inverse",
+            "scale": -0.2
+          },
+          {
+            "curve": "swing_sin",
+            "scale": 0.05
+          },
+          {
+            "curve": "follow_through_short",
+            "scale": 0.08
+          }
+        ]
+      }
+    }
+  ]
+}

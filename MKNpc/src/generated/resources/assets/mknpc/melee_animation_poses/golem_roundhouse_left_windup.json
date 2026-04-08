@@ -1,0 +1,100 @@
+{
+  "channels": [
+    {
+      "property": "yRot",
+      "target": "body",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.34
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "body",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.08
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "leftArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -2.15
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "target": "leftArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -1.05
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "target": "leftArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.28
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "rightArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.4
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "target": "rightArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.35
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "target": "rightArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.08
+          }
+        ]
+      }
+    }
+  ]
+}

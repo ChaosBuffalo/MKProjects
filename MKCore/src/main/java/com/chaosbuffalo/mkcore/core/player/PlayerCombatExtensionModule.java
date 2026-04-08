@@ -7,7 +7,10 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.MultiAttackHelper;
+import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimingManager;
+import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimings;
 import com.chaosbuffalo.mkcore.core.combat.VisualMeleeAttackSequence;
+import com.chaosbuffalo.mkcore.events.PostAttackEvent;
 import com.chaosbuffalo.mkcore.network.MeleeAttackSequencePacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
@@ -21,16 +24,21 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.neoforged.neoforge.common.NeoForge;
 
 public class PlayerCombatExtensionModule extends CombatExtensionModule implements ISyncGroupProvider {
     private static final ResourceLocation blockMaxPoiseBonusId = MKCore.id("block_skill_modifier");
+    private static final int NO_TARGET_ID = -1;
     private final SyncGroup syncGroup = new SyncGroup();
     private final SyncInt currentProjectileHitCount = new SyncInt(0);
-    private int multiAttackTargetId = -1;
+    private int localPrimarySwingVariant;
+    private int queuedPrimaryTargetId = NO_TARGET_ID;
+    private int multiAttackTargetId = NO_TARGET_ID;
     private int multiAttackCount = 1;
     private int multiAttackNextIndex = 1;
     private int multiAttackSequenceTick;
     private int multiAttackCooldownTicks;
+    private int[] multiAttackStartTicks = new int[0];
     private InteractionHand multiAttackHand = InteractionHand.MAIN_HAND;
     private boolean executingMultiAttack;
     private final VisualMeleeAttackSequence visualMeleeAttackSequence = new VisualMeleeAttackSequence();
@@ -55,6 +63,7 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
                 restartLocalFirstPersonSwing();
             }
         }
+        tickQueuedPrimaryAttack();
         tickMultiAttack();
     }
 
@@ -100,7 +109,7 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         return executingMultiAttack;
     }
 
-    public void startVisualMeleeAttackSequence(int[] swingStartTicks, int swingDurationTicks) {
+    public void startVisualMeleeAttackSequence(int[] swingStartTicks, int[] swingDurationTicks) {
         visualMeleeAttackSequence.start(swingStartTicks, swingDurationTicks);
     }
 
@@ -116,6 +125,26 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         return visualMeleeAttackSequence.getLocalSwingVariant();
     }
 
+    public int getCurrentStrikePoseIndex() {
+        return getCurrentLocalSwingVariant() - 1;
+    }
+
+    public int getCurrentPrimarySwingVariant() {
+        return localPrimarySwingVariant;
+    }
+
+    public boolean shouldDelayPrimaryAttack() {
+        return getAttackStrengthTicks() < getRequiredAttackStrengthTicks();
+    }
+
+    public void queuePrimaryAttack(Entity target) {
+        if (target == null || executingMultiAttack || hasPendingMultiAttack()) {
+            clearQueuedPrimaryAttack();
+            return;
+        }
+        queuedPrimaryTargetId = target.getId();
+    }
+
     private void restartLocalFirstPersonSwing() {
         if (!getPlayerData().getEntity().isLocalPlayer()) {
             return;
@@ -125,6 +154,22 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         getPlayerData().getEntity().swingTime = 0;
         getPlayerData().getEntity().oAttackAnim = 0.0F;
         getPlayerData().getEntity().attackAnim = 0.0F;
+    }
+
+    public void recordLocalPrimarySwing() {
+        if (!getPlayerData().getEntity().level().isClientSide) {
+            return;
+        }
+        localPrimarySwingVariant++;
+    }
+
+    public void onLocalPrimaryAttackCommitted(Entity target) {
+        if (!getPlayerData().getEntity().level().isClientSide) {
+            return;
+        }
+        recordLocalPrimarySwing();
+        recordSwingHit();
+        NeoForge.EVENT_BUS.post(new PostAttackEvent(getPlayerData(), target, false));
     }
 
     public void tryScheduleMultiAttack(Entity target) {
@@ -143,14 +188,46 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         multiAttackSequenceTick = 0;
         multiAttackCooldownTicks = Math.max(attackCount, Mth.ceil(getPlayerData().getEntity().getCurrentItemAttackStrengthDelay()));
         multiAttackHand = InteractionHand.MAIN_HAND;
-        int[] extraSwingStarts = MultiAttackHelper.createAttackStartTicks(multiAttackCooldownTicks, multiAttackCount, multiAttackNextIndex);
-        int swingDurationTicks = MultiAttackHelper.getSequenceSwingDurationTicks(multiAttackCooldownTicks, multiAttackCount, 6);
+        int comboSwingCountBeforeSequence = Math.max(0, getCurrentSwingCount() - 1);
+        MeleeSequenceTimings visualTimings = MeleeSequenceTimingManager.resolve(getPlayerData().getEntity(), multiAttackCount,
+                0, multiAttackCooldownTicks, 6, comboSwingCountBeforeSequence);
+        MeleeSequenceTimings pendingTimings = MeleeSequenceTimingManager.resolve(getPlayerData().getEntity(), multiAttackCount,
+                multiAttackNextIndex, multiAttackCooldownTicks, 6, comboSwingCountBeforeSequence);
+        multiAttackStartTicks = pendingTimings.swingStartTicks();
         PacketHandler.sendToTrackingAndSelf(new MeleeAttackSequencePacket(
-                getPlayerData().getEntity().getId(), extraSwingStarts, swingDurationTicks), getPlayerData().getEntity());
+                getPlayerData().getEntity().getId(), visualTimings.swingStartTicks(), visualTimings.swingDurationTicks()), getPlayerData().getEntity());
     }
 
     private boolean hasPendingMultiAttack() {
-        return multiAttackTargetId != -1 && multiAttackNextIndex < multiAttackCount;
+        return multiAttackTargetId != NO_TARGET_ID && multiAttackNextIndex < multiAttackCount;
+    }
+
+    private boolean hasQueuedPrimaryAttack() {
+        return queuedPrimaryTargetId != NO_TARGET_ID;
+    }
+
+    private void tickQueuedPrimaryAttack() {
+        if (!hasQueuedPrimaryAttack() || hasPendingMultiAttack()) {
+            return;
+        }
+        if (getAttackStrengthTicks() < getRequiredAttackStrengthTicks()) {
+            return;
+        }
+
+        Entity target = getPlayerData().getEntity().level().getEntity(queuedPrimaryTargetId);
+        if (!isValidMultiAttackTarget(target)) {
+            clearQueuedPrimaryAttack();
+            return;
+        }
+
+        if (getPlayerData().getEntity().level().isClientSide) {
+            getPlayerData().getEntity().resetAttackStrengthTicker();
+            onLocalPrimaryAttackCommitted(target);
+            restartLocalFirstPersonSwing();
+        } else {
+            performQueuedPrimaryAttack(target);
+        }
+        clearQueuedPrimaryAttack();
     }
 
     private void tickMultiAttack() {
@@ -158,7 +235,7 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
             return;
         }
         multiAttackSequenceTick++;
-        int attackStartTick = MultiAttackHelper.getAttackStartTick(multiAttackCooldownTicks, multiAttackCount, multiAttackNextIndex);
+        int attackStartTick = multiAttackStartTicks[multiAttackNextIndex - 1];
         if (multiAttackSequenceTick < attackStartTick) {
             return;
         }
@@ -200,13 +277,27 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         }
     }
 
+    private void performQueuedPrimaryAttack(Entity target) {
+        setAttackStrengthTicks(getRequiredAttackStrengthTicks());
+        getPlayerData().getEntity().attack(target);
+    }
+
     private void cancelMultiAttack() {
-        multiAttackTargetId = -1;
+        multiAttackTargetId = NO_TARGET_ID;
         multiAttackCount = 1;
         multiAttackNextIndex = 1;
         multiAttackSequenceTick = 0;
         multiAttackCooldownTicks = 0;
+        multiAttackStartTicks = new int[0];
         multiAttackHand = InteractionHand.MAIN_HAND;
+    }
+
+    private void clearQueuedPrimaryAttack() {
+        queuedPrimaryTargetId = NO_TARGET_ID;
+    }
+
+    private int getRequiredAttackStrengthTicks() {
+        return Mth.ceil(getPlayerData().getEntity().getCurrentItemAttackStrengthDelay());
     }
 
 }

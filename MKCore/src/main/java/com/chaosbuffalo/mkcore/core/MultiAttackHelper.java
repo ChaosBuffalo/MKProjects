@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.core;
 
+import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimings;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -23,6 +24,13 @@ public class MultiAttackHelper {
         return Math.round((cooldownTicks * attackIndex) / (float) attackCount);
     }
 
+    public static int getAttackSpacingTicks(int cooldownTicks, int attackCount) {
+        if (attackCount <= 1) {
+            return 0;
+        }
+        return Math.max(2, Mth.ceil(cooldownTicks / (float) attackCount));
+    }
+
     public static int[] createAttackStartTicks(int cooldownTicks, int attackCount, int firstAttackIndex) {
         int startIndex = Mth.clamp(firstAttackIndex, 0, attackCount);
         int[] starts = new int[Math.max(0, attackCount - startIndex)];
@@ -33,7 +41,18 @@ public class MultiAttackHelper {
     }
 
     public static int getSequenceSwingDurationTicks(int cooldownTicks, int attackCount, int baseSwingDurationTicks) {
-        int sequenceSpacing = Math.max(2, Mth.ceil(cooldownTicks / (float) Math.max(1, attackCount)));
+        int sequenceSpacing = getAttackSpacingTicks(cooldownTicks, attackCount);
         return Mth.clamp(Math.min(baseSwingDurationTicks, sequenceSpacing), 2, 24);
+    }
+
+    public static MeleeSequenceTimings createUniformSequenceTimings(int cooldownTicks, int attackCount, int firstAttackIndex,
+                                                                    int baseSwingDurationTicks) {
+        int[] starts = createAttackStartTicks(cooldownTicks, attackCount, firstAttackIndex);
+        int[] durations = new int[starts.length];
+        int swingDurationTicks = getSequenceSwingDurationTicks(cooldownTicks, attackCount, baseSwingDurationTicks);
+        for (int i = 0; i < durations.length; i++) {
+            durations[i] = swingDurationTicks;
+        }
+        return new MeleeSequenceTimings(starts, durations);
     }
 }

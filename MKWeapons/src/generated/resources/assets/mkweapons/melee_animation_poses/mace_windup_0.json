@@ -1,0 +1,121 @@
+{
+  "channels": [
+    {
+      "property": "xRot",
+      "target": "main_arm",
+      "value": {
+        "constant": -0.25,
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -2.1
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "sign": "handedness",
+      "target": "main_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.45
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "sign": "handedness",
+      "target": "main_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.02
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "off_arm",
+      "value": {
+        "constant": -0.2,
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.95
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "sign": "handedness",
+      "target": "off_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.04
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "sign": "-handedness",
+      "target": "off_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.03
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "xRot",
+      "target": "body",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.1
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "sign": "handedness",
+      "target": "body",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.08
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "xRot",
+      "target": "head",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.06
+          }
+        ]
+      }
+    }
+  ]
+}

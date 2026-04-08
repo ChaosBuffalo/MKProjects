@@ -2,9 +2,11 @@ package com.chaosbuffalo.mknpc.client.render.models;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.client.rendering.animations.AdditionalBipedAnimation;
-import com.chaosbuffalo.mkcore.client.rendering.animations.BipedMeleeSwingAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedCastAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedStunAnimation;
+import com.chaosbuffalo.mkcore.client.rendering.animations.melee.MeleeAnimationManager;
+import com.chaosbuffalo.mkcore.client.rendering.animations.melee.ModelPoseAnimator;
+import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mknpc.client.render.animations.MKEntityCompleteCastAnimation;
@@ -15,10 +17,8 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
 
@@ -28,14 +28,17 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
     private final BipedCastAnimation<MKEntity> castAnimation = new BipedCastAnimation<>(this);
     private final MKEntityCompleteCastAnimation completeCastAnimation = new MKEntityCompleteCastAnimation(this);
     private final BipedStunAnimation<MKEntity> stunAnimation = new BipedStunAnimation<>(this);
+    protected final BipedSkeleton<T, MKBipedModel<T>> skeleton;
 
 
     public MKBipedModel(ModelPart modelPart) {
         super(modelPart);
+        this.skeleton = new BipedSkeleton<>(this);
     }
 
     public MKBipedModel(ModelPart modelPart, Function<ResourceLocation, RenderType> renderSupplier) {
         super(modelPart, renderSupplier);
+        this.skeleton = new BipedSkeleton<>(this);
     }
 
 
@@ -84,39 +87,23 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
         ItemStack itemstack = entityIn.getMainHandItem();
         float swing = entityIn.getVisualMeleeAttackAnim(ageInTicks - entityIn.tickCount);
         if (swing > 0.0F && (itemstack.isEmpty() || !(itemstack.getItem() instanceof BowItem))) {
-            applyHeavyMeleeSwing(entityIn, swing, ageInTicks);
+            if (!applyHeavyMeleeSwing(entityIn, swing, ageInTicks)) {
+                super.setupAttackAnimation(entityIn, ageInTicks);
+            }
         } else {
             super.setupAttackAnimation(entityIn, ageInTicks);
         }
     }
 
-    protected void applyHeavyMeleeSwing(T entityIn, float swing, float ageInTicks) {
-        BipedMeleeSwingAnimation.apply(this, entityIn.getMainArm(), swing,
-                entityIn.getCurrentLocalSwingVariant(), ageInTicks);
+    protected boolean applyHeavyMeleeSwing(T entityIn, float swing, float ageInTicks) {
+        return MeleeAnimationManager.applyResolvedStrikePose(skeleton, entityIn, MeleeAnimationManager.BIPED_FAMILY,
+                entityIn.getCurrentStrikePoseIndex(),
+                ModelPoseAnimator.Context.strike(swing, ageInTicks, entityIn.getMainArm()));
     }
 
     protected void applyMeleeWindupPose(T entityIn, float windupProgress) {
-        HumanoidArm mainArm = entityIn.getMainArm();
-        ModelPart mainWeaponArm = mainArm == HumanoidArm.RIGHT ? this.rightArm : this.leftArm;
-        ModelPart offArm = mainArm == HumanoidArm.RIGHT ? this.leftArm : this.rightArm;
-        float windupPose = Mth.sin(windupProgress * ((float) Math.PI / 2.0F));
-        float handedness = mainArm == HumanoidArm.RIGHT ? 1.0F : -1.0F;
-        float mainArmRestPitch = -0.25F;
-        float offArmRestPitch = -0.25F;
-        float mainArmPitch = -3.0F;
-        float offArmPitch = -2.0F;
-        float mainArmYaw = handedness * 0.6F;
-        float offArmYaw = handedness * 0.4F;
-
-        mainWeaponArm.xRot = Mth.lerp(windupPose, mainArmRestPitch, mainArmPitch);
-        offArm.xRot = Mth.lerp(windupPose, offArmRestPitch, offArmPitch);
-        mainWeaponArm.yRot = Mth.lerp(windupPose, 0.0F, mainArmYaw);
-        offArm.yRot = Mth.lerp(windupPose, 0.0F, offArmYaw);
-        mainWeaponArm.zRot = 0.0F;
-        offArm.zRot = Mth.lerp(windupPose, 0.0F, -handedness * 0.08F);
-        this.body.xRot -= windupPose * 0.12F;
-        this.body.yRot = Mth.lerp(windupPose, 0.0F, handedness * 0.05F);
-        this.head.xRot += windupPose * 0.1F;
+        MeleeAnimationManager.applyResolvedWindupPose(skeleton, entityIn, MeleeAnimationManager.BIPED_FAMILY, 0,
+                ModelPoseAnimator.Context.windup(windupProgress, entityIn.getMainArm()));
     }
 
     public AdditionalBipedAnimation<MKEntity> getAdditionalAnimation(T entityIn) {

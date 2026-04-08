@@ -3,6 +3,8 @@ package com.chaosbuffalo.mknpc.entity.ai.goal;
 import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.MultiAttackHelper;
+import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimingManager;
+import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimings;
 import com.chaosbuffalo.mkcore.events.PostAttackEvent;
 import com.chaosbuffalo.mkcore.network.MeleeAttackSequencePacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
@@ -28,6 +30,7 @@ public class MKMeleeAttackGoal extends Goal {
     private int multiAttackNextIndex;
     private int multiAttackSequenceTick;
     private int multiAttackCooldownTicks;
+    private int[] multiAttackStartTicks = new int[0];
     private boolean executingMultiAttack;
 
     @Override
@@ -94,15 +97,17 @@ public class MKMeleeAttackGoal extends Goal {
     }
 
     protected void performAttack(LivingEntity enemy, boolean secondaryAttack) {
+        MKEntityData cap = entity.getEntityDataCap();
+        CombatExtensionModule combat = cap.getCombatExtension();
         if (!secondaryAttack) {
             int attackCount = scheduleMultiAttack(enemy);
             int cooldownTicks = Math.max(attackCount, (int) Math.ceil(entity.getMeleeCooldownPeriod()));
-            int swingDurationTicks = MultiAttackHelper.getSequenceSwingDurationTicks(cooldownTicks, attackCount,
-                    entity.getMeleeSwingDurationTicks());
+            MeleeSequenceTimings timings = MeleeSequenceTimingManager.resolve(entity, attackCount, 0, cooldownTicks,
+                    entity.getMeleeSwingDurationTicks(), combat.getCurrentSwingCount());
             PacketHandler.sendToTrackingAndSelf(new MeleeAttackSequencePacket(
                     entity.getId(),
-                    MultiAttackHelper.createAttackStartTicks(cooldownTicks, attackCount, 0),
-                    swingDurationTicks), entity);
+                    timings.swingStartTicks(),
+                    timings.swingDurationTicks()), entity);
         }
         boolean didAttack = entity.doHurtTarget(enemy);
         ItemStack mainHand = entity.getMainHandItem();
@@ -112,9 +117,6 @@ public class MKMeleeAttackGoal extends Goal {
         if (!secondaryAttack) {
             entity.resetSwing();
         }
-
-        MKEntityData cap = entity.getEntityDataCap();
-        CombatExtensionModule combat = cap.getCombatExtension();
         combat.recordSwingHit();
         NeoForge.EVENT_BUS.post(new PostAttackEvent(cap, enemy, secondaryAttack));
         if (!secondaryAttack && combat.getCurrentSwingCount() > 0 && combat.getCurrentSwingCount() % getComboCount() == 0) {
@@ -137,6 +139,10 @@ public class MKMeleeAttackGoal extends Goal {
         multiAttackNextIndex = 1;
         multiAttackSequenceTick = 0;
         multiAttackCooldownTicks = Math.max(attackCount, (int) Math.ceil(entity.getMeleeCooldownPeriod()));
+        MeleeSequenceTimings timings = MeleeSequenceTimingManager.resolve(entity, multiAttackCount, 1,
+                multiAttackCooldownTicks, entity.getMeleeSwingDurationTicks(),
+                entity.getEntityDataCap().getCombatExtension().getCurrentSwingCount());
+        multiAttackStartTicks = timings.swingStartTicks();
         return attackCount;
     }
 
@@ -149,7 +155,7 @@ public class MKMeleeAttackGoal extends Goal {
             return;
         }
         multiAttackSequenceTick++;
-        int attackStartTick = MultiAttackHelper.getAttackStartTick(multiAttackCooldownTicks, multiAttackCount, multiAttackNextIndex);
+        int attackStartTick = multiAttackStartTicks[multiAttackNextIndex - 1];
         if (multiAttackSequenceTick < attackStartTick) {
             return;
         }
@@ -180,6 +186,7 @@ public class MKMeleeAttackGoal extends Goal {
         multiAttackNextIndex = 1;
         multiAttackSequenceTick = 0;
         multiAttackCooldownTicks = 0;
+        multiAttackStartTicks = new int[0];
     }
 
     public boolean isInMeleeRange(LivingEntity target) {

@@ -44,6 +44,18 @@ public class ComboStrikeMeleeWeaponEffect extends BaseMeleeWeaponEffect {
         return numberOfHits;
     }
 
+    public double getCooldownReductionForCompletedHits(int completedHits) {
+        if (getNumberOfHits() <= 0) {
+            return 0.0;
+        }
+        int hit = Math.floorMod(completedHits, getNumberOfHits());
+        return hit * getPerHit();
+    }
+
+    public int getCooldownAdjustmentTicks(int cooldownTicks, int completedHits) {
+        return (int) Math.round(cooldownTicks * getCooldownReductionForCompletedHits(completedHits));
+    }
+
     @Override
     public void addInformation(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
         super.addInformation(stack, player, tooltip);
@@ -57,10 +69,8 @@ public class ComboStrikeMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     public void postAttack(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData) {
         CombatExtensionModule combatModule = attackerData.getCombatExtension();
         if (combatModule.isMidMeleeCombo()) {
-            int hit = combatModule.getCurrentSwingCount() % getNumberOfHits();
-            double totalReduction = hit * getPerHit();
-            double cooldownPeriod = EntityUtils.getCooldownPeriod(attackerData.getEntity());
-            int newTicks = (int) Math.round(cooldownPeriod * totalReduction);
+            int newTicks = getCooldownAdjustmentTicks((int) Math.round(EntityUtils.getCooldownPeriod(attackerData.getEntity())),
+                    combatModule.getCurrentSwingCount());
             combatModule.increaseAttackStrengthTicks(newTicks);
         }
     }

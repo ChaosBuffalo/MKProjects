@@ -1,0 +1,29 @@
+{
+  "family": "mkcore:biped",
+  "strikes": [
+    {
+      "lunge": 0.48,
+      "pose": "mkweapons:staff_strike_0"
+    },
+    {
+      "lunge": 0.48,
+      "pose": "mkweapons:staff_strike_1"
+    },
+    {
+      "lunge": 0.52,
+      "pose": "mkweapons:staff_strike_2"
+    },
+    {
+      "lunge": 0.46,
+      "pose": "mkweapons:staff_strike_3"
+    },
+    {
+      "lunge": 0.42,
+      "pose": "mkweapons:staff_strike_4"
+    }
+  ],
+  "windups": [
+    "mkweapons:staff_windup_0",
+    "mkweapons:staff_windup_1"
+  ]
+}

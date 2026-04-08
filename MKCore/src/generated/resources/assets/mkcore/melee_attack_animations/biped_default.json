@@ -1,0 +1,20 @@
+{
+  "family": "mkcore:biped",
+  "strikes": [
+    {
+      "lunge": 0.5,
+      "pose": "mkcore:biped_default_slash_0"
+    },
+    {
+      "lunge": 0.5,
+      "pose": "mkcore:biped_default_slash_1"
+    },
+    {
+      "lunge": 0.5,
+      "pose": "mkcore:biped_default_slash_2"
+    }
+  ],
+  "windups": [
+    "mkcore:biped_default_windup"
+  ]
+}
