@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 
 import javax.annotation.Nullable;
@@ -53,12 +54,17 @@ public class MeleeAnimationManager {
     }
 
     public static MeleeAnimationProfile resolveProfile(LivingEntity entity, ResourceLocation defaultProfile) {
-        return resolveProfile(entity, defaultProfile, null);
+        return resolveProfile(entity, InteractionHand.MAIN_HAND, defaultProfile, null);
     }
 
     public static MeleeAnimationProfile resolveProfile(LivingEntity entity, ResourceLocation defaultProfile,
                                                        @Nullable ResourceLocation requiredFamily) {
-        MeleeAnimationProfile resolved = resolveProfileOverride(entity, requiredFamily);
+        return resolveProfile(entity, InteractionHand.MAIN_HAND, defaultProfile, requiredFamily);
+    }
+
+    public static MeleeAnimationProfile resolveProfile(LivingEntity entity, InteractionHand hand, ResourceLocation defaultProfile,
+                                                       @Nullable ResourceLocation requiredFamily) {
+        MeleeAnimationProfile resolved = resolveProfileOverride(entity, hand, requiredFamily);
         if (resolved != null) {
             return resolved;
         }
@@ -73,8 +79,14 @@ public class MeleeAnimationManager {
     @Nullable
     public static MeleeAnimationProfile resolveProfileOverride(LivingEntity entity,
                                                                @Nullable ResourceLocation requiredFamily) {
+        return resolveProfileOverride(entity, InteractionHand.MAIN_HAND, requiredFamily);
+    }
+
+    @Nullable
+    public static MeleeAnimationProfile resolveProfileOverride(LivingEntity entity, InteractionHand hand,
+                                                               @Nullable ResourceLocation requiredFamily) {
         for (MeleeAnimationProfileResolver resolver : RESOLVERS) {
-            ResourceLocation id = resolver.resolve(entity);
+            ResourceLocation id = resolver.resolve(entity, hand);
             MeleeAnimationProfile profile = id == null ? null : getProfile(id);
             if (profile != null && isFamilyMatch(profile, requiredFamily)) {
                 return profile;
@@ -100,13 +112,25 @@ public class MeleeAnimationManager {
     @Nullable
     public static MeleeAnimationProfile.Strike resolveStrike(LivingEntity entity, ResourceLocation defaultProfile,
                                                              @Nullable ResourceLocation requiredFamily, int strikeIndex) {
-        return resolveProfile(entity, defaultProfile, requiredFamily).getStrike(strikeIndex);
+        return resolveStrike(entity, InteractionHand.MAIN_HAND, defaultProfile, requiredFamily, strikeIndex);
+    }
+
+    @Nullable
+    public static MeleeAnimationProfile.Strike resolveStrike(LivingEntity entity, InteractionHand hand, ResourceLocation defaultProfile,
+                                                             @Nullable ResourceLocation requiredFamily, int strikeIndex) {
+        return resolveProfile(entity, hand, defaultProfile, requiredFamily).getStrike(strikeIndex);
     }
 
     @Nullable
     public static MeleeAnimationPose resolveStrikePose(LivingEntity entity, ResourceLocation defaultProfile,
                                                        @Nullable ResourceLocation requiredFamily, int strikeIndex) {
-        MeleeAnimationProfile.Strike strike = resolveStrike(entity, defaultProfile, requiredFamily, strikeIndex);
+        return resolveStrikePose(entity, InteractionHand.MAIN_HAND, defaultProfile, requiredFamily, strikeIndex);
+    }
+
+    @Nullable
+    public static MeleeAnimationPose resolveStrikePose(LivingEntity entity, InteractionHand hand, ResourceLocation defaultProfile,
+                                                       @Nullable ResourceLocation requiredFamily, int strikeIndex) {
+        MeleeAnimationProfile.Strike strike = resolveStrike(entity, hand, defaultProfile, requiredFamily, strikeIndex);
         return strike == null ? null : getPose(strike.pose());
     }
 
@@ -126,7 +150,12 @@ public class MeleeAnimationManager {
 
     public static boolean applyResolvedStrikePose(MCSkeleton skeleton, LivingEntity entity, ResourceLocation requiredFamily,
                                                   int strikeIndex, ModelPoseAnimator.Context context) {
-        MeleeAnimationProfile profile = resolveProfileOverride(entity, requiredFamily);
+        return applyResolvedStrikePose(skeleton, entity, InteractionHand.MAIN_HAND, requiredFamily, strikeIndex, context);
+    }
+
+    public static boolean applyResolvedStrikePose(MCSkeleton skeleton, LivingEntity entity, InteractionHand hand,
+                                                  ResourceLocation requiredFamily, int strikeIndex, ModelPoseAnimator.Context context) {
+        MeleeAnimationProfile profile = resolveProfileOverride(entity, hand, requiredFamily);
         return profile != null && applyStrikePose(skeleton, profile, strikeIndex, context);
     }
 

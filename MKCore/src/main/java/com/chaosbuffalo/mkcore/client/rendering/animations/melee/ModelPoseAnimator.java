@@ -4,40 +4,82 @@ import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCSkeleton;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 
 public class ModelPoseAnimator {
     public record Context(float swing, float windup, float ageInTicks, float netHeadYaw, float headPitch,
-                          HumanoidArm mainArm) {
+                          HumanoidArm mainArm, InteractionHand attackHand, boolean dualWielding) {
         public float handedness() {
             return mainArm == HumanoidArm.RIGHT ? 1.0F : -1.0F;
         }
 
         public static Context strike(float swing, float ageInTicks, HumanoidArm mainArm) {
-            return new Context(swing, 0.0F, ageInTicks, 0.0F, 0.0F, mainArm);
+            return strike(swing, ageInTicks, mainArm, InteractionHand.MAIN_HAND);
+        }
+
+        public static Context strike(float swing, float ageInTicks, HumanoidArm mainArm, InteractionHand attackHand) {
+            return strike(swing, ageInTicks, mainArm, attackHand, false);
+        }
+
+        public static Context strike(float swing, float ageInTicks, HumanoidArm mainArm, InteractionHand attackHand,
+                                     boolean dualWielding) {
+            return new Context(swing, 0.0F, ageInTicks, 0.0F, 0.0F, mainArm, attackHand, dualWielding);
         }
 
         public static Context strike(float swing, float ageInTicks, float netHeadYaw, float headPitch, HumanoidArm mainArm) {
-            return new Context(swing, 0.0F, ageInTicks, netHeadYaw, headPitch, mainArm);
+            return strike(swing, ageInTicks, netHeadYaw, headPitch, mainArm, InteractionHand.MAIN_HAND);
+        }
+
+        public static Context strike(float swing, float ageInTicks, float netHeadYaw, float headPitch, HumanoidArm mainArm,
+                                     InteractionHand attackHand) {
+            return strike(swing, ageInTicks, netHeadYaw, headPitch, mainArm, attackHand, false);
+        }
+
+        public static Context strike(float swing, float ageInTicks, float netHeadYaw, float headPitch, HumanoidArm mainArm,
+                                     InteractionHand attackHand, boolean dualWielding) {
+            return new Context(swing, 0.0F, ageInTicks, netHeadYaw, headPitch, mainArm, attackHand, dualWielding);
         }
 
         public static Context windup(float windup, HumanoidArm mainArm) {
-            return new Context(0.0F, windup, 0.0F, 0.0F, 0.0F, mainArm);
+            return windup(windup, mainArm, InteractionHand.MAIN_HAND);
+        }
+
+        public static Context windup(float windup, HumanoidArm mainArm, InteractionHand attackHand) {
+            return windup(windup, mainArm, attackHand, false);
+        }
+
+        public static Context windup(float windup, HumanoidArm mainArm, InteractionHand attackHand, boolean dualWielding) {
+            return new Context(0.0F, windup, 0.0F, 0.0F, 0.0F, mainArm, attackHand, dualWielding);
         }
 
         public static Context windup(float windup, float ageInTicks, float netHeadYaw, float headPitch, HumanoidArm mainArm) {
-            return new Context(0.0F, windup, ageInTicks, netHeadYaw, headPitch, mainArm);
+            return windup(windup, ageInTicks, netHeadYaw, headPitch, mainArm, InteractionHand.MAIN_HAND);
+        }
+
+        public static Context windup(float windup, float ageInTicks, float netHeadYaw, float headPitch, HumanoidArm mainArm,
+                                     InteractionHand attackHand) {
+            return windup(windup, ageInTicks, netHeadYaw, headPitch, mainArm, attackHand, false);
+        }
+
+        public static Context windup(float windup, float ageInTicks, float netHeadYaw, float headPitch, HumanoidArm mainArm,
+                                     InteractionHand attackHand, boolean dualWielding) {
+            return new Context(0.0F, windup, ageInTicks, netHeadYaw, headPitch, mainArm, attackHand, dualWielding);
         }
 
         public static Context idle(float ageInTicks, float netHeadYaw, float headPitch, HumanoidArm mainArm) {
-            return new Context(0.0F, 0.0F, ageInTicks, netHeadYaw, headPitch, mainArm);
+            return new Context(0.0F, 0.0F, ageInTicks, netHeadYaw, headPitch, mainArm, InteractionHand.MAIN_HAND, false);
         }
     }
 
     public static void apply(MCSkeleton skeleton, ResourceLocation family, MeleeAnimationPose pose, Context context) {
         MeleeAnimationFamilyAdapter adapter = MeleeAnimationManager.getFamilyAdapter(family);
         for (PoseChannel channel : pose.channels()) {
-            ModelPart part = skeleton.getModelPart(adapter.resolveTarget(channel.target(), context));
+            String resolvedTarget = adapter.resolveTarget(channel.target(), context);
+            if (!adapter.shouldApplyTarget(channel.target(), resolvedTarget, context)) {
+                continue;
+            }
+            ModelPart part = skeleton.getModelPart(resolvedTarget);
             if (part == null) {
                 continue;
             }

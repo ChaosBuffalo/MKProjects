@@ -14,6 +14,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 
 public class CooldownCommand {
 
@@ -41,7 +42,7 @@ public class CooldownCommand {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         double cooldownPeriod = EntityUtils.getCooldownPeriod(player);
 
-        PacketHandler.sendMessage(new ResetAttackSwingPacket((int) Math.round(cooldownPeriod)), player);
+        PacketHandler.sendMessage(new ResetAttackSwingPacket(InteractionHand.MAIN_HAND, (int) Math.round(cooldownPeriod)), player);
 
         return Command.SINGLE_SUCCESS;
     }

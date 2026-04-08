@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkweapons.event;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.events.EntityAbilityEvent;
@@ -18,6 +19,7 @@ import com.chaosbuffalo.mkweapons.items.randomization.options.AttributeOptionEnt
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKRangedWeapon;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -109,10 +111,11 @@ public class MKWeaponsEventHandler {
     public static void onPostAttackEvent(PostAttackEvent event) {
         IMKEntityData attackerData = event.getEntityData();
         LivingEntity entity = attackerData.getEntity();
-        ItemStack mainHand = entity.getMainHandItem();
-        if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
-            for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(mainHand)) {
-                effect.postAttack(meleeWeapon, mainHand, attackerData);
+        InteractionHand hand = event.getHand();
+        ItemStack weaponStack = entity.getItemInHand(hand);
+        if (!weaponStack.isEmpty() && weaponStack.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
+            for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(weaponStack)) {
+                effect.postAttack(meleeWeapon, weaponStack, attackerData, hand);
             }
         }
     }
@@ -140,13 +143,17 @@ public class MKWeaponsEventHandler {
         boolean isMelee = DamageUtils.isMeleeDamage(source);
         if (trueSource instanceof LivingEntity livingSource) {
             if (isMelee) {
-                ItemStack mainHand = livingSource.getMainHandItem();
-                if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
-                    for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(mainHand)) {
-                        newDamage = effect.modifyDamageDealt(newDamage, meleeWeapon,
-                                mainHand, livingTarget, livingSource);
+                MKCore.getEntityData(livingSource).ifPresent(attackerData -> {
+                    InteractionHand hand = attackerData.getCombatExtension().getActiveAttackHand();
+                    ItemStack attackStack = livingSource.getItemInHand(hand);
+                    if (!attackStack.isEmpty() && attackStack.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
+                        for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(attackStack)) {
+                            event.setNewDamage(effect.modifyDamageDealt(event.getNewDamage(), meleeWeapon,
+                                    attackStack, livingTarget, livingSource));
+                        }
                     }
-                }
+                });
+                newDamage = event.getNewDamage();
             }
 
             event.setNewDamage(newDamage);
@@ -158,12 +165,15 @@ public class MKWeaponsEventHandler {
             });
 
             if (isMelee) {
-                ItemStack mainHand = livingSource.getMainHandItem();
-                if (!mainHand.isEmpty() && mainHand.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
-                    for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(mainHand)) {
-                        effect.onHurt(newDamage, meleeWeapon, mainHand, livingTarget, livingSource);
+                MKCore.getEntityData(livingSource).ifPresent(attackerData -> {
+                    InteractionHand hand = attackerData.getCombatExtension().getActiveAttackHand();
+                    ItemStack attackStack = livingSource.getItemInHand(hand);
+                    if (!attackStack.isEmpty() && attackStack.getItem() instanceof IMKMeleeWeapon meleeWeapon) {
+                        for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(attackStack)) {
+                            effect.onHurt(event.getNewDamage(), meleeWeapon, attackStack, livingTarget, livingSource, hand);
+                        }
                     }
-                }
+                });
             }
         }
     }

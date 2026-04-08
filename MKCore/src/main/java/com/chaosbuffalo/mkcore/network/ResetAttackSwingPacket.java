@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.utils.SoundUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
@@ -17,13 +18,16 @@ public class ResetAttackSwingPacket implements CustomPacketPayload {
             ResetAttackSwingPacket::toBytes, ResetAttackSwingPacket::new
     );
 
+    private final InteractionHand hand;
     private final int ticksToSet;
 
-    public ResetAttackSwingPacket(int ticksToSet) {
+    public ResetAttackSwingPacket(InteractionHand hand, int ticksToSet) {
+        this.hand = hand;
         this.ticksToSet = ticksToSet;
     }
 
     public ResetAttackSwingPacket(FriendlyByteBuf buf) {
+        hand = buf.readEnum(InteractionHand.class);
         ticksToSet = buf.readInt();
     }
 
@@ -37,6 +41,7 @@ public class ResetAttackSwingPacket implements CustomPacketPayload {
     }
 
     public void toBytes(FriendlyByteBuf buf) {
+        buf.writeEnum(hand);
         buf.writeInt(ticksToSet);
     }
 
@@ -44,7 +49,7 @@ public class ResetAttackSwingPacket implements CustomPacketPayload {
         public static void handleClient(ResetAttackSwingPacket packet, Player entity) {
             // +2 to account for the client 2 tick lag before allowing attack
             MKCore.getPlayer(entity).ifPresent(cap ->
-                    cap.getCombatExtension().setAttackStrengthTicks(packet.ticksToSet + 2));
+                    cap.getCombatExtension().setAttackStrengthTicks(packet.hand, packet.ticksToSet + 2));
             SoundUtils.clientPlaySoundAtPlayer(entity, CoreSounds.attack_cd_reset.value(), entity.getSoundSource(), 1.0f, 1.0f);
         }
     }

@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkweapons.items.effects.melee;
 
 import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.mojang.serialization.Codec;
@@ -12,6 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -66,12 +66,12 @@ public class ComboStrikeMeleeWeaponEffect extends BaseMeleeWeaponEffect {
     }
 
     @Override
-    public void postAttack(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData) {
+    public void postAttack(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData, InteractionHand hand) {
         CombatExtensionModule combatModule = attackerData.getCombatExtension();
         if (combatModule.isMidMeleeCombo()) {
-            int newTicks = getCooldownAdjustmentTicks((int) Math.round(EntityUtils.getCooldownPeriod(attackerData.getEntity())),
+            int newTicks = getCooldownAdjustmentTicks(combatModule.getRequiredAttackStrengthTicks(hand),
                     combatModule.getCurrentSwingCount());
-            combatModule.increaseAttackStrengthTicks(newTicks);
+            combatModule.increaseAttackStrengthTicks(hand, newTicks);
         }
     }
 }

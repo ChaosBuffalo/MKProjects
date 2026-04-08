@@ -10,6 +10,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -22,6 +23,11 @@ public interface IMeleeWeaponEffect extends IItemEffect {
 
     }
 
+    default void onHit(IMKMeleeWeapon weapon, ItemStack stack,
+                       IMKEntityData attackerData, LivingEntity target, InteractionHand hand) {
+        onHit(weapon, stack, attackerData, target);
+    }
+
     default float modifyDamageDealt(float damage, IMKMeleeWeapon weapon, ItemStack stack,
                                     LivingEntity target, LivingEntity attacker) {
         return damage;
@@ -31,9 +37,18 @@ public interface IMeleeWeaponEffect extends IItemEffect {
 
     }
 
+    default void postAttack(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData, InteractionHand hand) {
+        postAttack(weapon, stack, attackerData);
+    }
+
     default void onHurt(float damage, IMKMeleeWeapon weapon, ItemStack stack,
                         LivingEntity target, LivingEntity attacker) {
 
+    }
+
+    default void onHurt(float damage, IMKMeleeWeapon weapon, ItemStack stack,
+                        LivingEntity target, LivingEntity attacker, InteractionHand hand) {
+        onHurt(damage, weapon, stack, target, attacker);
     }
 
     default IMeleeWeaponEffect copy() {

@@ -1,10 +1,12 @@
 package com.chaosbuffalo.mkweapons;
 
+import com.chaosbuffalo.mkcore.core.combat.DualWieldManager;
 import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimingManager;
 import com.chaosbuffalo.mkweapons.combat.ComboStrikeMeleeSequenceTimingResolver;
 import com.chaosbuffalo.mkweapons.event.MKWeaponsEventHandler;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsCommands;
 import com.chaosbuffalo.mkweapons.items.effects.IWeaponEffectsExtension;
+import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import com.chaosbuffalo.mkweapons.items.weapon.types.WeaponTypeManager;
 import com.chaosbuffalo.mkweapons.network.PacketHandler;
 import net.minecraft.resources.ResourceLocation;
@@ -40,6 +42,20 @@ public class MKWeapons {
         event.enqueueWork(() -> {
             MKWeaponsEventHandler.registerCombatTriggers();
             MeleeSequenceTimingManager.registerResolver(new ComboStrikeMeleeSequenceTimingResolver());
+            DualWieldManager.registerResolver(new com.chaosbuffalo.mkcore.core.combat.DualWieldResolver() {
+                @Override
+                public boolean canUseCustomMelee(net.minecraft.world.entity.LivingEntity entity, net.minecraft.world.InteractionHand hand) {
+                    return entity.getItemInHand(hand).getItem() instanceof IMKMeleeWeapon;
+                }
+
+                @Override
+                public boolean canUseForAttack(net.minecraft.world.entity.LivingEntity entity, net.minecraft.world.InteractionHand hand) {
+                    if (entity.getItemInHand(hand).getItem() instanceof IMKMeleeWeapon weapon) {
+                        return !weapon.getWeaponType().isTwoHanded();
+                    }
+                    return false;
+                }
+            });
         });
     }
 

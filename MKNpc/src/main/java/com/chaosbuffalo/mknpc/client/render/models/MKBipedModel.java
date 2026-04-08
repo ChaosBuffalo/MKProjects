@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.client.rendering.animations.melee.MeleeAnimationM
 import com.chaosbuffalo.mkcore.client.rendering.animations.melee.ModelPoseAnimator;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.core.combat.DualWieldManager;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mknpc.client.render.animations.MKEntityCompleteCastAnimation;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelArgs;
@@ -68,7 +69,9 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
 
         super.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
         // bow pose stuff from skeleton
-        if (this.attackTime <= 0.0F && entityIn.getVisualMeleeAttackAnim(ageInTicks - entityIn.tickCount) <= 0.0F) {
+        if (this.attackTime <= 0.0F &&
+                entityIn.getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, ageInTicks - entityIn.tickCount) <= 0.0F &&
+                entityIn.getVisualMeleeAttackAnim(InteractionHand.OFF_HAND, ageInTicks - entityIn.tickCount) <= 0.0F) {
             float windupProgress = entityIn.getMeleeWindupProgress(ageInTicks - entityIn.tickCount);
             if (windupProgress > 0.0F) {
                 applyMeleeWindupPose(entityIn, windupProgress);
@@ -85,9 +88,18 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
     @Override
     protected void setupAttackAnimation(T entityIn, float ageInTicks) {
         ItemStack itemstack = entityIn.getMainHandItem();
-        float swing = entityIn.getVisualMeleeAttackAnim(ageInTicks - entityIn.tickCount);
-        if (swing > 0.0F && (itemstack.isEmpty() || !(itemstack.getItem() instanceof BowItem))) {
-            if (!applyHeavyMeleeSwing(entityIn, swing, ageInTicks)) {
+        float partialTicks = ageInTicks - entityIn.tickCount;
+        float mainSwing = entityIn.getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, partialTicks);
+        float offSwing = entityIn.getVisualMeleeAttackAnim(InteractionHand.OFF_HAND, partialTicks);
+        boolean applied = false;
+        if (mainSwing > 0.0F && (itemstack.isEmpty() || !(itemstack.getItem() instanceof BowItem))) {
+            applied |= applyHeavyMeleeSwing(entityIn, InteractionHand.MAIN_HAND, mainSwing, ageInTicks);
+        }
+        if (offSwing > 0.0F) {
+            applied |= applyHeavyMeleeSwing(entityIn, InteractionHand.OFF_HAND, offSwing, ageInTicks);
+        }
+        if (mainSwing > 0.0F || offSwing > 0.0F) {
+            if (!applied) {
                 super.setupAttackAnimation(entityIn, ageInTicks);
             }
         } else {
@@ -95,10 +107,13 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
         }
     }
 
-    protected boolean applyHeavyMeleeSwing(T entityIn, float swing, float ageInTicks) {
-        return MeleeAnimationManager.applyResolvedStrikePose(skeleton, entityIn, MeleeAnimationManager.BIPED_FAMILY,
-                entityIn.getCurrentStrikePoseIndex(),
-                ModelPoseAnimator.Context.strike(swing, ageInTicks, entityIn.getMainArm()));
+    protected boolean applyHeavyMeleeSwing(T entityIn, InteractionHand hand, float swing, float ageInTicks) {
+        boolean dualWielding = DualWieldManager.canUseForAttack(entityIn, InteractionHand.MAIN_HAND) &&
+                DualWieldManager.canUseForAttack(entityIn, InteractionHand.OFF_HAND);
+        HumanoidArm poseMainArm = hand == InteractionHand.MAIN_HAND ? entityIn.getMainArm() : entityIn.getMainArm().getOpposite();
+        return MeleeAnimationManager.applyResolvedStrikePose(skeleton, entityIn, hand, MeleeAnimationManager.BIPED_FAMILY,
+                entityIn.getCurrentStrikePoseIndex(hand),
+                ModelPoseAnimator.Context.strike(swing, ageInTicks, poseMainArm, hand, dualWielding));
     }
 
     protected void applyMeleeWindupPose(T entityIn, float windupProgress) {
