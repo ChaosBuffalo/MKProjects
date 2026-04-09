@@ -7,7 +7,8 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.MultiAttackHelper;
-import com.chaosbuffalo.mkcore.core.combat.DualWieldManager;
+import com.chaosbuffalo.mkcore.core.combat.MKMeleeManager;
+import com.chaosbuffalo.mkcore.core.combat.MeleeAttackContext;
 import com.chaosbuffalo.mkcore.core.combat.MultiAttackState;
 import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimingManager;
 import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimings;
@@ -73,7 +74,7 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         tickMultiAttack(InteractionHand.OFF_HAND);
     }
 
-    private MKPlayerData getPlayerData() {
+    public MKPlayerData getPlayerData() {
         return (MKPlayerData) getEntityData();
     }
 
@@ -197,20 +198,34 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         });
     }
 
+    public void onServerAttackCommitted(Entity target, InteractionHand hand, boolean secondaryAttack) {
+        if (getPlayerData().getEntity().level().isClientSide) {
+            return;
+        }
+        executeWithAttackHand(hand, () -> {
+            setAttackStrengthTicks(hand, 0);
+            recordSwingHit();
+            NeoForge.EVENT_BUS.post(new PostAttackEvent(getPlayerData(), target, secondaryAttack, hand));
+            if (!secondaryAttack) {
+                tryScheduleMultiAttack(target, hand);
+            }
+        });
+    }
+
     public boolean shouldHandleCustomMeleeInput(Entity target) {
         if (target == null || !target.isAttackable()) {
             return false;
         }
-        return DualWieldManager.canUseCustomMelee(getPlayerData().getEntity(), InteractionHand.MAIN_HAND);
+        return MKMeleeManager.canUseCustomMelee(getPlayerData().getEntity(), InteractionHand.MAIN_HAND);
     }
 
     public boolean usesCustomMainhandMelee() {
-        return DualWieldManager.canUseCustomMelee(getPlayerData().getEntity(), InteractionHand.MAIN_HAND);
+        return MKMeleeManager.canUseCustomMelee(getPlayerData().getEntity(), InteractionHand.MAIN_HAND);
     }
 
     public boolean isDualWieldingMeleeWeapons() {
-        return DualWieldManager.canUseForAttack(getPlayerData().getEntity(), InteractionHand.MAIN_HAND) &&
-                DualWieldManager.canUseForAttack(getPlayerData().getEntity(), InteractionHand.OFF_HAND);
+        return MKMeleeManager.canUseForAttack(getPlayerData().getEntity(), InteractionHand.MAIN_HAND) &&
+                MKMeleeManager.canUseForAttack(getPlayerData().getEntity(), InteractionHand.OFF_HAND);
     }
 
     public float getAttackStrengthScale(InteractionHand hand, float partialTicks) {
@@ -309,8 +324,8 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         }
         List<InteractionHand> eligible = new ArrayList<>();
         eligible.add(InteractionHand.MAIN_HAND);
-        if (DualWieldManager.canUseForAttack(getPlayerData().getEntity(), InteractionHand.MAIN_HAND) &&
-                DualWieldManager.canUseForAttack(getPlayerData().getEntity(), InteractionHand.OFF_HAND)) {
+        if (MKMeleeManager.canUseForAttack(getPlayerData().getEntity(), InteractionHand.MAIN_HAND) &&
+                MKMeleeManager.canUseForAttack(getPlayerData().getEntity(), InteractionHand.OFF_HAND)) {
             eligible.add(InteractionHand.OFF_HAND);
         }
         if (eligible.isEmpty()) {
@@ -391,42 +406,7 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         startVisualMeleeAttackSequence(hand, new int[]{0}, new int[]{getSwingDurationTicks(hand)});
         PacketHandler.sendToTracking(new MeleeAttackSequencePacket(getPlayerData().getEntity().getId(), hand,
                 new int[]{0}, new int[]{getSwingDurationTicks(hand)}), getPlayerData().getEntity());
-        if (hand == InteractionHand.MAIN_HAND) {
-            executeWithAttackHand(hand, () -> {
-                setAttackStrengthTicks(hand, getRequiredAttackStrengthTicks(hand));
-                getPlayerData().getEntity().attack(target);
-            });
-            return;
-        }
-        performProjectedOffhandAttack(target);
-    }
-
-    private void performProjectedOffhandAttack(Entity target) {
-        var player = getPlayerData().getEntity();
-        var inventory = player.getInventory();
-        int selectedSlot = inventory.selected;
-        var mainHand = inventory.items.get(selectedSlot).copy();
-        var offHand = inventory.offhand.get(0).copy();
-        int preservedMainhandTicker = getAttackStrengthTicks(InteractionHand.MAIN_HAND);
-        int offhandRequiredTicks = getRequiredAttackStrengthTicks(InteractionHand.OFF_HAND);
-        executeWithAttackHand(InteractionHand.OFF_HAND, () -> {
-            try {
-                setAttackStrengthTicks(InteractionHand.OFF_HAND, offhandRequiredTicks);
-                inventory.items.set(selectedSlot, offHand);
-                inventory.offhand.set(0, mainHand);
-                setAttackStrengthTicks(InteractionHand.MAIN_HAND, offhandRequiredTicks);
-                player.attack(target);
-            } finally {
-                int offhandPostAttackTicks = getAttackStrengthTicks(InteractionHand.OFF_HAND);
-                ItemStack projectedMainHand = inventory.items.get(selectedSlot).copy();
-                inventory.items.set(selectedSlot, mainHand);
-                inventory.offhand.set(0, projectedMainHand);
-                inventory.setChanged();
-                player.inventoryMenu.broadcastChanges();
-                setAttackStrengthTicks(InteractionHand.OFF_HAND, Math.max(0, offhandPostAttackTicks - offhandRequiredTicks));
-                setAttackStrengthTicks(InteractionHand.MAIN_HAND, preservedMainhandTicker);
-            }
-        });
+        PlayerMeleeAttackExecutor.executeAttack(this, createAttackContext(target, hand));
     }
 
     private int getSwingDurationTicks(InteractionHand hand) {
@@ -475,11 +455,7 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         state.setExecuting(true);
         try {
             setAttackStrengthTicks(hand, fullStrengthTicker);
-            if (hand == InteractionHand.MAIN_HAND) {
-                executeWithAttackHand(hand, () -> getPlayerData().getEntity().attack(target));
-            } else {
-                performProjectedOffhandAttack(target);
-            }
+            PlayerMeleeAttackExecutor.executeAttack(this, createAttackContext(target, hand, fullStrengthTicker));
         } finally {
             setAttackStrengthTicks(hand, expectedTicker);
             state.setExecuting(false);
@@ -493,30 +469,7 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
 
     @Override
     public int getRequiredAttackStrengthTicks(InteractionHand hand) {
-        return Math.max(1, Mth.ceil(resolveAttackSpeedDelay(hand)));
-    }
-
-    private float resolveAttackSpeedDelay(InteractionHand hand) {
-        if (hand == InteractionHand.MAIN_HAND) {
-            double attackSpeed = getPlayerData().getEntity().getAttributeValue(Attributes.ATTACK_SPEED);
-            return (float) (20.0D / Math.max(attackSpeed, 0.001D));
-        }
-        double currentAttackSpeed = getPlayerData().getEntity().getAttributeValue(Attributes.ATTACK_SPEED);
-        double mainHandAttackSpeed = getItemAddValueModifier(getPlayerData().getEntity().getMainHandItem(), Attributes.ATTACK_SPEED);
-        double selectedHandAttackSpeed = getItemAddValueModifier(getPlayerData().getEntity().getItemInHand(hand), Attributes.ATTACK_SPEED);
-        double effectiveAttackSpeed = currentAttackSpeed - mainHandAttackSpeed + selectedHandAttackSpeed;
-        return (float) (20.0D / Math.max(effectiveAttackSpeed, 0.001D));
-    }
-
-    private static double getItemAddValueModifier(net.minecraft.world.item.ItemStack stack,
-                                                  net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute) {
-        final double[] total = {0.0D};
-        stack.getAttributeModifiers().forEach(net.minecraft.world.entity.EquipmentSlot.MAINHAND, (holder, modifier) -> {
-            if (holder.equals(attribute) && modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
-                total[0] += modifier.amount();
-            }
-        });
-        return total[0];
+        return PlayerMeleeHandStatsResolver.getRequiredAttackStrengthTicks(this, hand);
     }
 
     private int getRequiredAttackStrengthTicks() {
@@ -525,6 +478,21 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
 
     private MultiAttackState getMultiAttackState(InteractionHand hand) {
         return multiAttackStates.get(hand);
+    }
+
+    private MeleeAttackContext createAttackContext(Entity target, InteractionHand hand) {
+        return createAttackContext(target, hand, getRequiredAttackStrengthTicks(hand));
+    }
+
+    private MeleeAttackContext createAttackContext(Entity target, InteractionHand hand, int requiredAttackStrengthTicks) {
+        return new MeleeAttackContext(
+                getPlayerData().getEntity(),
+                target,
+                hand,
+                getPlayerData().getEntity().getItemInHand(hand).copy(),
+                requiredAttackStrengthTicks,
+                getSwingDurationTicks(hand)
+        );
     }
 
 }

@@ -6,7 +6,7 @@ import net.minecraft.world.entity.LivingEntity;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class DualWieldManager {
+public class MKMeleeManager {
     private static final List<DualWieldResolver> RESOLVERS = new CopyOnWriteArrayList<>();
 
     public static void registerResolver(DualWieldResolver resolver) {

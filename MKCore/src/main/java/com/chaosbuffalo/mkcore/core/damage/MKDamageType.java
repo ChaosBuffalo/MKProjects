@@ -8,6 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -93,6 +94,11 @@ public class MKDamageType {
 
     public Component getEffectCritMessage(LivingEntity source, LivingEntity target, float damage,
                                           String damageType, boolean isSelf) {
+        return getEffectCritMessage(source, target, damage, damageType, isSelf, InteractionHand.MAIN_HAND);
+    }
+
+    public Component getEffectCritMessage(LivingEntity source, LivingEntity target, float damage,
+                                          String damageType, boolean isSelf, InteractionHand hand) {
         MutableComponent msg;
         if (isSelf) {
             msg = Component.translatable("mkcore.crit.effect.self",
@@ -111,6 +117,11 @@ public class MKDamageType {
 
     public Component getAbilityCritMessage(LivingEntity source, LivingEntity target, float damage,
                                            MKAbility ability, boolean isSelf) {
+        return getAbilityCritMessage(source, target, damage, ability, isSelf, InteractionHand.MAIN_HAND);
+    }
+
+    public Component getAbilityCritMessage(LivingEntity source, LivingEntity target, float damage,
+                                           MKAbility ability, boolean isSelf, InteractionHand hand) {
         MutableComponent msg;
         if (isSelf) {
             msg = Component.translatable("mkcore.crit.ability.self",

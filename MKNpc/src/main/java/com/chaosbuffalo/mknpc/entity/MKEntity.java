@@ -1106,6 +1106,37 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return currentAttackSpeed - mainHandAttackSpeed + selectedHandAttackSpeed;
     }
 
+    public double getProjectedAttackDamage(InteractionHand hand) {
+        if (hand == InteractionHand.MAIN_HAND) {
+            return getAttributeValue(Attributes.ATTACK_DAMAGE);
+        }
+        double currentAttackDamage = getAttributeValue(Attributes.ATTACK_DAMAGE);
+        double mainHandAttackDamage = getItemAddValueModifier(getMainHandItem(), Attributes.ATTACK_DAMAGE);
+        double selectedHandAttackDamage = getItemAddValueModifier(getItemInHand(hand), Attributes.ATTACK_DAMAGE);
+        return currentAttackDamage - mainHandAttackDamage + selectedHandAttackDamage;
+    }
+
+    public double getProjectedAttackKnockback(InteractionHand hand) {
+        if (hand == InteractionHand.MAIN_HAND) {
+            return getAttributeValue(Attributes.ATTACK_KNOCKBACK);
+        }
+        double currentAttackKnockback = getAttributeValue(Attributes.ATTACK_KNOCKBACK);
+        double mainHandAttackKnockback = getItemAddValueModifier(getMainHandItem(), Attributes.ATTACK_KNOCKBACK);
+        double selectedHandAttackKnockback = getItemAddValueModifier(getItemInHand(hand), Attributes.ATTACK_KNOCKBACK);
+        return currentAttackKnockback - mainHandAttackKnockback + selectedHandAttackKnockback;
+    }
+
+    @Override
+    public ItemStack getWeaponItem() {
+        return getItemInHand(getEntityDataCap().getCombatExtension().getActiveAttackHand());
+    }
+
+    @Override
+    public boolean canDisableShield() {
+        ItemStack weaponItem = getWeaponItem();
+        return weaponItem.canDisableShield(this.useItem, this, this);
+    }
+
     private static double getItemAddValueModifier(ItemStack stack, net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute) {
         final double[] total = {0.0D};
         stack.getAttributeModifiers().forEach(EquipmentSlot.MAINHAND, (holder, modifier) -> {

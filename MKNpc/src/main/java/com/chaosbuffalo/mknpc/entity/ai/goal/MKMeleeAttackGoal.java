@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.entity.ai.goal;
 import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.MultiAttackHelper;
-import com.chaosbuffalo.mkcore.core.combat.DualWieldManager;
+import com.chaosbuffalo.mkcore.core.combat.MKMeleeManager;
 import com.chaosbuffalo.mkcore.core.combat.MultiAttackState;
 import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimingManager;
 import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimings;
@@ -13,6 +13,7 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
+import com.chaosbuffalo.mknpc.entity.combat.NpcMeleeAttackExecutor;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
@@ -224,7 +225,7 @@ public class MKMeleeAttackGoal extends Goal {
     }
 
     private List<InteractionHand> selectHandsForAttack() {
-        boolean mainHandDualWieldable = DualWieldManager.canUseForAttack(entity, InteractionHand.MAIN_HAND);
+        boolean mainHandDualWieldable = MKMeleeManager.canUseForAttack(entity, InteractionHand.MAIN_HAND);
         if (!mainHandDualWieldable) {
             double cooldownPeriod = entity.getMeleeCooldownPeriod();
             if (entity.getTicksSinceLastSwing() >= cooldownPeriod) {
@@ -235,7 +236,7 @@ public class MKMeleeAttackGoal extends Goal {
 
         List<InteractionHand> eligible = new ArrayList<>();
         eligible.add(InteractionHand.MAIN_HAND);
-        if (DualWieldManager.canUseForAttack(entity, InteractionHand.OFF_HAND)) {
+        if (MKMeleeManager.canUseForAttack(entity, InteractionHand.OFF_HAND)) {
             eligible.add(InteractionHand.OFF_HAND);
         }
 
@@ -253,35 +254,7 @@ public class MKMeleeAttackGoal extends Goal {
     }
 
     private boolean performHandAttack(LivingEntity enemy, InteractionHand hand, CombatExtensionModule combat) {
-        if (hand == InteractionHand.MAIN_HAND) {
-            return combat.executeWithAttackHand(hand, () -> {
-                boolean didAttack = entity.doHurtTarget(enemy);
-                ItemStack stack = entity.getMainHandItem();
-                if (didAttack && !stack.isEmpty()) {
-                    stack.getItem().hurtEnemy(stack, enemy, entity);
-                }
-                entity.swing(hand, true);
-                return didAttack;
-            });
-        }
-        ItemStack mainHand = entity.getMainHandItem().copy();
-        ItemStack offHand = entity.getOffhandItem().copy();
-        return combat.executeWithAttackHand(hand, () -> {
-            try {
-                entity.setItemInHand(InteractionHand.MAIN_HAND, offHand);
-                entity.setItemInHand(InteractionHand.OFF_HAND, mainHand);
-                boolean didAttack = entity.doHurtTarget(enemy);
-                ItemStack attackStack = entity.getMainHandItem();
-                if (didAttack && !attackStack.isEmpty()) {
-                    attackStack.getItem().hurtEnemy(attackStack, enemy, entity);
-                }
-                entity.swing(hand, true);
-                return didAttack;
-            } finally {
-                entity.setItemInHand(InteractionHand.MAIN_HAND, mainHand);
-                entity.setItemInHand(InteractionHand.OFF_HAND, offHand);
-            }
-        });
+        return NpcMeleeAttackExecutor.executeAttack(entity, enemy, hand, combat);
     }
 
     @Override

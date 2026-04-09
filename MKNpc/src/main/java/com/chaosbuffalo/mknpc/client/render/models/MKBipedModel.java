@@ -8,7 +8,7 @@ import com.chaosbuffalo.mkcore.client.rendering.animations.melee.MeleeAnimationM
 import com.chaosbuffalo.mkcore.client.rendering.animations.melee.ModelPoseAnimator;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
-import com.chaosbuffalo.mkcore.core.combat.DualWieldManager;
+import com.chaosbuffalo.mkcore.core.combat.MKMeleeManager;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mknpc.client.render.animations.MKEntityCompleteCastAnimation;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelArgs;
@@ -108,8 +108,8 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
     }
 
     protected boolean applyHeavyMeleeSwing(T entityIn, InteractionHand hand, float swing, float ageInTicks) {
-        boolean dualWielding = DualWieldManager.canUseForAttack(entityIn, InteractionHand.MAIN_HAND) &&
-                DualWieldManager.canUseForAttack(entityIn, InteractionHand.OFF_HAND);
+        boolean dualWielding = MKMeleeManager.canUseForAttack(entityIn, InteractionHand.MAIN_HAND) &&
+                MKMeleeManager.canUseForAttack(entityIn, InteractionHand.OFF_HAND);
         HumanoidArm poseMainArm = hand == InteractionHand.MAIN_HAND ? entityIn.getMainArm() : entityIn.getMainArm().getOpposite();
         return MeleeAnimationManager.applyResolvedStrikePose(skeleton, entityIn, hand, MeleeAnimationManager.BIPED_FAMILY,
                 entityIn.getCurrentStrikePoseIndex(hand),

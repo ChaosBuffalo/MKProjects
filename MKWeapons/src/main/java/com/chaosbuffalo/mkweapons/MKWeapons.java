@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mkweapons;
 
-import com.chaosbuffalo.mkcore.core.combat.DualWieldManager;
+import com.chaosbuffalo.mkcore.core.combat.MKMeleeManager;
 import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimingManager;
 import com.chaosbuffalo.mkweapons.combat.ComboStrikeMeleeSequenceTimingResolver;
 import com.chaosbuffalo.mkweapons.event.MKWeaponsEventHandler;
@@ -42,7 +42,7 @@ public class MKWeapons {
         event.enqueueWork(() -> {
             MKWeaponsEventHandler.registerCombatTriggers();
             MeleeSequenceTimingManager.registerResolver(new ComboStrikeMeleeSequenceTimingResolver());
-            DualWieldManager.registerResolver(new com.chaosbuffalo.mkcore.core.combat.DualWieldResolver() {
+            MKMeleeManager.registerResolver(new com.chaosbuffalo.mkcore.core.combat.DualWieldResolver() {
                 @Override
                 public boolean canUseCustomMelee(net.minecraft.world.entity.LivingEntity entity, net.minecraft.world.InteractionHand hand) {
                     return entity.getItemInHand(hand).getItem() instanceof IMKMeleeWeapon;

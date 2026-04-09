@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.effects.triggers;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -18,6 +19,7 @@ import com.chaosbuffalo.mkcore.network.ParticleEffectSpawnPacket;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -202,9 +204,12 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
     private void sendEffectCrit(LivingEntity livingTarget, LivingEntity livingSource, MKDamageSource source,
                                 float newDamage) {
         if (source instanceof MKDamageSource.EffectDamage effectDamage) {
+            InteractionHand hand = MKCore.getEntityData(livingSource)
+                    .map(data -> data.getCombatExtension().getActiveAttackHand())
+                    .orElse(InteractionHand.MAIN_HAND);
             sendCritPacket(livingTarget, livingSource,
                     new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage,
-                            source.getMKDamageType(), effectDamage.getDamageTypeName()));
+                            source.getMKDamageType(), effectDamage.getDamageTypeName(), hand));
         }
     }
 
@@ -218,9 +223,12 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
             } else {
                 abilityName = MKCoreRegistry.INVALID_ABILITY;
             }
+            InteractionHand hand = MKCore.getEntityData(livingSource)
+                    .map(data -> data.getCombatExtension().getActiveAttackHand())
+                    .orElse(InteractionHand.MAIN_HAND);
             sendCritPacket(livingTarget, livingSource,
                     new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage,
-                            abilityName, source.getMKDamageType()));
+                            abilityName, source.getMKDamageType(), hand));
         }
     }
 
@@ -275,8 +283,9 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
             if (CoreDamageTypes.MeleeDamage.get().rollCrit(livingSource, livingTarget)) {
                 float newDamage = CoreDamageTypes.MeleeDamage.get().applyCritDamage(livingSource, livingTarget, event.getNewDamage());
                 event.setNewDamage(newDamage);
+                var critHand = sourceData.getCombatExtension().getActiveAttackHand();
                 sendCritPacket(livingTarget, livingSource,
-                        new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage));
+                        new CritMessagePacket(livingTarget.getId(), livingSource.getId(), newDamage, critHand));
             }
         }
         if (blocked)
