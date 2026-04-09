@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mkcore.core.combat;
 
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;

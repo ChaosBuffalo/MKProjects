@@ -157,7 +157,7 @@ public abstract class InGameGuiMixins {
         float strength = combat.getAttackStrengthScale(InteractionHand.OFF_HAND, partialTick);
         boolean showFull = false;
         if (minecraft.crosshairPickEntity instanceof net.minecraft.world.entity.LivingEntity livingEntity && strength >= 1.0F) {
-            showFull = combat.getRequiredAttackStrengthTicksForHand(InteractionHand.OFF_HAND) > 5.0F;
+            showFull = combat.getRequiredAttackStrengthTicks(InteractionHand.OFF_HAND) > 5.0F;
             showFull &= livingEntity.isAlive();
         }
         int x = guiGraphics.guiWidth() / 2 - 8;

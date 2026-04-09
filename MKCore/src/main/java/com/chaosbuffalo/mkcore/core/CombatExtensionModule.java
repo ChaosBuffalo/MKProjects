@@ -53,18 +53,6 @@ public class CombatExtensionModule {
         return entityData.getEntity().tickCount - lastProjectileHitTick;
     }
 
-    public int getAttackStrengthTicks() {
-        return getAttackStrengthTicks(activeAttackHand);
-    }
-
-    public void setAttackStrengthTicks(int newTicks) {
-        setAttackStrengthTicks(activeAttackHand, newTicks);
-    }
-
-    public void increaseAttackStrengthTicks(int toAdd) {
-        increaseAttackStrengthTicks(activeAttackHand, toAdd);
-    }
-
     public int getAttackStrengthTicks(InteractionHand hand) {
         return getHandState(hand).getAttackStrengthTicker();
     }
@@ -99,10 +87,6 @@ public class CombatExtensionModule {
 
     public InteractionHand getActiveAttackHand() {
         return activeAttackHand;
-    }
-
-    public void setActiveAttackHand(InteractionHand activeAttackHand) {
-        this.activeAttackHand = activeAttackHand;
     }
 
     public <T> T executeWithAttackHand(InteractionHand hand, Supplier<T> action) {

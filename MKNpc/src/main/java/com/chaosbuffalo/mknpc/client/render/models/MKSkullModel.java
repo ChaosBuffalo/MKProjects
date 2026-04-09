@@ -71,7 +71,7 @@ public class MKSkullModel<T extends MKEntity> extends HierarchicalModel<T> {
         } else if (windupProgress > 0.0F) {
             MeleeAnimationManager.applyWindupPose(skeleton, entity, MKNpcMeleeAnimations.SKULL_DEFAULT,
                     InteractionHand.MAIN_HAND, MKNpcMeleeAnimations.SKULL_FAMILY,
-                    entity.getCurrentStrikePoseIndex(InteractionHand.MAIN_HAND),
+                    entity.getCurrentMeleeWindupVariant(),
                     ModelPoseAnimator.Context.windup(windupProgress, ageInTicks, netHeadYaw, headPitch, HumanoidArm.RIGHT,
                             InteractionHand.MAIN_HAND));
         } else {

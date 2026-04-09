@@ -97,26 +97,19 @@ public class MKMeleeAttackGoal extends Goal {
 
     }
 
-    protected void performAttack(LivingEntity enemy) {
-        performAttack(enemy, InteractionHand.MAIN_HAND, false);
-    }
-
     protected void performAttack(LivingEntity enemy, InteractionHand hand, boolean secondaryAttack) {
         MKEntityData cap = entity.getEntityDataCap();
         CombatExtensionModule combat = cap.getCombatExtension();
         if (!secondaryAttack) {
             int attackCount = scheduleMultiAttack(enemy, hand);
             int cooldownTicks = Math.max(attackCount, (int) Math.ceil(entity.getMeleeCooldownPeriod(hand)));
-            MeleeSequenceTimings timings = MeleeSequenceTimingManager.resolve(entity, attackCount, 0, cooldownTicks,
+            MeleeSequenceTimings timings = MeleeSequenceTimingManager.resolve(entity, hand, attackCount, 0, cooldownTicks,
                     entity.getMeleeSwingDurationTicks(hand), combat.getCurrentSwingCount());
             PacketHandler.sendToTrackingAndSelf(new MeleeAttackSequencePacket(
                     entity.getId(),
                     hand,
                     timings.swingStartTicks(),
                     timings.swingDurationTicks()), entity);
-        } else {
-            PacketHandler.sendToTrackingAndSelf(new MeleeAttackSequencePacket(
-                    entity.getId(), hand, new int[]{0}, new int[]{entity.getMeleeSwingDurationTicks(hand)}), entity);
         }
         boolean didAttack = performHandAttack(enemy, hand, combat);
         if (!secondaryAttack) {
@@ -125,7 +118,7 @@ public class MKMeleeAttackGoal extends Goal {
         combat.recordSwingHit();
         NeoForge.EVENT_BUS.post(new PostAttackEvent(cap, enemy, secondaryAttack, hand));
         if (!secondaryAttack && combat.getCurrentSwingCount() > 0 && combat.getCurrentSwingCount() % getComboCount() == 0) {
-            entity.subtractFromTicksSinceLastSwing(getComboDelay());
+            entity.subtractFromTicksSinceLastSwing(hand, getComboDelay());
         }
     }
 
@@ -145,7 +138,7 @@ public class MKMeleeAttackGoal extends Goal {
         state.setNextIndex(1);
         state.setSequenceTick(0);
         state.setCooldownTicks(Math.max(attackCount, (int) Math.ceil(entity.getMeleeCooldownPeriod(hand))));
-        MeleeSequenceTimings timings = MeleeSequenceTimingManager.resolve(entity, attackCount, 1,
+        MeleeSequenceTimings timings = MeleeSequenceTimingManager.resolve(entity, hand, attackCount, 1,
                 state.getCooldownTicks(), entity.getMeleeSwingDurationTicks(hand),
                 entity.getEntityDataCap().getCombatExtension().getCurrentSwingCount());
         state.setStartTicks(timings.swingStartTicks());
@@ -228,7 +221,7 @@ public class MKMeleeAttackGoal extends Goal {
         boolean mainHandDualWieldable = MKMeleeManager.canUseForAttack(entity, InteractionHand.MAIN_HAND);
         if (!mainHandDualWieldable) {
             double cooldownPeriod = entity.getMeleeCooldownPeriod(InteractionHand.MAIN_HAND);
-            if (entity.getTicksSinceLastSwing() >= cooldownPeriod) {
+            if (entity.getTicksSinceLastSwing(InteractionHand.MAIN_HAND) >= cooldownPeriod) {
                 return List.of(InteractionHand.MAIN_HAND);
             }
             return List.of();

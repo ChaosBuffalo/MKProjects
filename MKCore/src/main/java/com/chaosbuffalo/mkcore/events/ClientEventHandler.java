@@ -279,8 +279,10 @@ public class ClientEventHandler {
 
             var combat = MKCore.getPlayerOrThrow(player).getCombatExtension();
             if (mc.crosshairPickEntity != null && combat.shouldHandleCustomMeleeInput(mc.crosshairPickEntity)) {
-                combat.handleLocalMeleeAttackRequest(mc.crosshairPickEntity);
-                PacketHandler.sendMessageToServer(new PlayerMeleeAttackRequestPacket(mc.crosshairPickEntity.getId()));
+                List<InteractionHand> hands = combat.handleLocalMeleeAttackRequest(mc.crosshairPickEntity);
+                if (!hands.isEmpty()) {
+                    PacketHandler.sendMessageToServer(new PlayerMeleeAttackRequestPacket(mc.crosshairPickEntity.getId(), hands));
+                }
                 event.setSwingHand(false);
                 event.setCanceled(true);
             }

@@ -146,7 +146,7 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
 
     protected void applyMeleeWindupPose(T entityIn, float windupProgress) {
         MeleeAnimationManager.applyResolvedWindupPose(skeleton, entityIn, InteractionHand.MAIN_HAND,
-                MeleeAnimationManager.BIPED_FAMILY, 0,
+                MeleeAnimationManager.BIPED_FAMILY, entityIn.getCurrentMeleeWindupVariant(),
                 ModelPoseAnimator.Context.windup(windupProgress, entityIn.getMainArm(), InteractionHand.MAIN_HAND));
     }
 

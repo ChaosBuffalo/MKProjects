@@ -766,7 +766,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
                     } else {
                         mainHandLocalSwingVariant++;
                     }
-                    resetSwing();
+                    resetSwing(swingingArm == null ? InteractionHand.MAIN_HAND : swingingArm);
                 }
                 visualMeleeWindupTicks = 0;
                 visualMeleeWindupRecoveryTicks = getMeleeWindupRecoveryTicks();
@@ -791,11 +791,6 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
-    public void resetSwing() {
-        attackStrengthTicker = 0;
-        getEntityDataCap().getCombatExtension().setAttackStrengthTicks(InteractionHand.MAIN_HAND, 0);
-    }
-
     public void resetSwing(InteractionHand hand) {
         getEntityDataCap().getCombatExtension().setAttackStrengthTicks(hand, 0);
         if (hand == InteractionHand.MAIN_HAND) {
@@ -803,13 +798,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
-    public void subtractFromTicksSinceLastSwing(int toSubtract) {
-        getEntityDataCap().getCombatExtension().increaseAttackStrengthTicks(InteractionHand.MAIN_HAND, -toSubtract);
+    public void subtractFromTicksSinceLastSwing(InteractionHand hand, int toSubtract) {
+        getEntityDataCap().getCombatExtension().increaseAttackStrengthTicks(hand, -toSubtract);
         attackStrengthTicker = getEntityDataCap().getCombatExtension().getAttackStrengthTicks(InteractionHand.MAIN_HAND);
-    }
-
-    public int getTicksSinceLastSwing() {
-        return attackStrengthTicker;
     }
 
     public int getTicksSinceLastSwing(InteractionHand hand) {
@@ -1036,34 +1027,26 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     public double getAttackSpeedMultiplier() {
         double attackSpeed = getAttributeValue(Attributes.ATTACK_SPEED);
-        return attackSpeed / Math.max(getBaseAttackSpeedValueWithItem(), 0.001D);
-    }
-
-    private double getMainHandMeleeCooldownPeriod() {
-        double basePeriod = getMainHandItem().isEmpty() ? GameConstants.TICKS_PER_SECOND :
-                GameConstants.TICKS_PER_SECOND / Math.max(getBaseAttackSpeedValueWithItem(), 0.001D);
-        return basePeriod / Math.max(getAttackSpeedMultiplier(), 0.001D);
+        return attackSpeed / Math.max(getBaseAttackSpeedValueWithItem(InteractionHand.MAIN_HAND), 0.001D);
     }
 
     public double getMeleeCooldownPeriod(InteractionHand hand) {
-        if (hand == InteractionHand.MAIN_HAND) {
-            return getMainHandMeleeCooldownPeriod();
+        if (getItemInHand(hand).isEmpty()) {
+            return GameConstants.TICKS_PER_SECOND;
         }
         double effectiveAttackSpeed = getProjectedAttackSpeed(hand);
         return GameConstants.TICKS_PER_SECOND / Math.max(effectiveAttackSpeed, 0.001D);
     }
 
-    protected int getCurrentMKSwingDuration() {
-        return Mth.clamp(Mth.ceil(6.0D / Math.max(getAttackSpeedMultiplier(), 0.001D)), 2, 24);
-    }
-
     public int getMeleeSwingDurationTicks(InteractionHand hand) {
-        return getCurrentMKSwingDuration();
+        double projectedMultiplier = getProjectedAttackSpeed(hand) / Math.max(getBaseAttackSpeedValueWithItem(hand), 0.001D);
+        return Mth.clamp(Mth.ceil(6.0D / Math.max(projectedMultiplier, 0.001D)), 2, 24);
     }
 
     @Override
     protected void updateSwingTime() {
-        int duration = getCurrentMKSwingDuration();
+        InteractionHand hand = swingingArm == null ? InteractionHand.MAIN_HAND : swingingArm;
+        int duration = getMeleeSwingDurationTicks(hand);
         if (this.swinging) {
             ++this.swingTime;
             if (this.swingTime >= duration) {
@@ -1083,7 +1066,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         if (!stack.isEmpty() && stack.onEntitySwing(this)) {
             return;
         }
-        int duration = getCurrentMKSwingDuration();
+        int duration = getMeleeSwingDurationTicks(hand);
         if (!this.swinging || this.swingTime >= duration / 2 || this.swingTime < 0) {
             this.swingTime = -1;
             this.swinging = true;
@@ -1100,8 +1083,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
-    public double getBaseAttackSpeedValueWithItem() {
-        ItemStack itemInHand = getMainHandItem();
+    public double getBaseAttackSpeedValueWithItem(InteractionHand hand) {
+        ItemStack itemInHand = getItemInHand(hand);
         double baseValue = getAttributeBaseValue(Attributes.ATTACK_SPEED);
         if (!itemInHand.isEmpty()) {
             var modifiers = itemInHand.getAttributeModifiers();

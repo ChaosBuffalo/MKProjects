@@ -216,24 +216,25 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         return Mth.clamp((getAttackStrengthTicks(hand) + partialTicks) / (float) requiredTicks, 0.0F, 1.0F);
     }
 
-    public int getRequiredAttackStrengthTicksForHand(InteractionHand hand) {
-        return getRequiredAttackStrengthTicks(hand);
-    }
-
-    public void handleLocalMeleeAttackRequest(Entity target) {
+    public List<InteractionHand> handleLocalMeleeAttackRequest(Entity target) {
         List<InteractionHand> hands = selectHandsForAttackRequest();
         if (hands.isEmpty()) {
-            return;
+            return hands;
         }
         if (areHandsReady(hands)) {
             executeAttackHands(target, hands, true);
         } else {
             queueAttackHands(target, hands);
         }
+        return hands;
     }
 
-    public void handleServerMeleeAttackRequest(Entity target) {
-        List<InteractionHand> hands = selectHandsForAttackRequest();
+    public void handleServerMeleeAttackRequest(Entity target, List<InteractionHand> requestedHands) {
+        if (!isValidMultiAttackTarget(target)) {
+            clearQueuedDualWieldAttacks();
+            return;
+        }
+        List<InteractionHand> hands = validateRequestedAttackHands(requestedHands);
         if (hands.isEmpty()) {
             return;
         }
@@ -242,6 +243,29 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         } else {
             queueAttackHands(target, hands);
         }
+    }
+
+    private List<InteractionHand> validateRequestedAttackHands(List<InteractionHand> requestedHands) {
+        if (!usesCustomMainhandMelee()) {
+            return List.of();
+        }
+        List<InteractionHand> hands = new ArrayList<>();
+        for (InteractionHand hand : requestedHands) {
+            if (hands.contains(hand) || !canRequestAttackHand(hand)) {
+                continue;
+            }
+            hands.add(hand);
+        }
+        hands.sort(Comparator.comparingInt(Enum::ordinal));
+        return hands;
+    }
+
+    private boolean canRequestAttackHand(InteractionHand hand) {
+        if (hand == InteractionHand.MAIN_HAND) {
+            return true;
+        }
+        return MKMeleeManager.canUseForAttack(getPlayerData().getEntity(), InteractionHand.MAIN_HAND) &&
+                MKMeleeManager.canUseForAttack(getPlayerData().getEntity(), InteractionHand.OFF_HAND);
     }
 
     public void tryScheduleMultiAttack(Entity target, InteractionHand hand) {
@@ -261,9 +285,9 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         state.setSequenceTick(0);
         state.setCooldownTicks(Math.max(attackCount, getRequiredAttackStrengthTicks(hand)));
         int comboSwingCountBeforeSequence = Math.max(0, getCurrentSwingCount() - 1);
-        MeleeSequenceTimings visualTimings = MeleeSequenceTimingManager.resolve(getPlayerData().getEntity(), attackCount,
+        MeleeSequenceTimings visualTimings = MeleeSequenceTimingManager.resolve(getPlayerData().getEntity(), hand, attackCount,
                 0, state.getCooldownTicks(), getSwingDurationTicks(hand), comboSwingCountBeforeSequence);
-        MeleeSequenceTimings pendingTimings = MeleeSequenceTimingManager.resolve(getPlayerData().getEntity(), attackCount,
+        MeleeSequenceTimings pendingTimings = MeleeSequenceTimingManager.resolve(getPlayerData().getEntity(), hand, attackCount,
                 state.getNextIndex(), state.getCooldownTicks(), getSwingDurationTicks(hand), comboSwingCountBeforeSequence);
         state.setStartTicks(pendingTimings.swingStartTicks());
         PacketHandler.sendToTrackingAndSelf(new MeleeAttackSequencePacket(
