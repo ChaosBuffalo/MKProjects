@@ -14,10 +14,6 @@ public class ModelPoseAnimator {
             return mainArm == HumanoidArm.RIGHT ? 1.0F : -1.0F;
         }
 
-        public static Context strike(float swing, float ageInTicks, HumanoidArm mainArm) {
-            return strike(swing, ageInTicks, mainArm, InteractionHand.MAIN_HAND);
-        }
-
         public static Context strike(float swing, float ageInTicks, HumanoidArm mainArm, InteractionHand attackHand) {
             return strike(swing, ageInTicks, mainArm, attackHand, false);
         }
@@ -25,10 +21,6 @@ public class ModelPoseAnimator {
         public static Context strike(float swing, float ageInTicks, HumanoidArm mainArm, InteractionHand attackHand,
                                      boolean dualWielding) {
             return new Context(swing, 0.0F, ageInTicks, 0.0F, 0.0F, mainArm, attackHand, dualWielding);
-        }
-
-        public static Context strike(float swing, float ageInTicks, float netHeadYaw, float headPitch, HumanoidArm mainArm) {
-            return strike(swing, ageInTicks, netHeadYaw, headPitch, mainArm, InteractionHand.MAIN_HAND);
         }
 
         public static Context strike(float swing, float ageInTicks, float netHeadYaw, float headPitch, HumanoidArm mainArm,
@@ -41,20 +33,12 @@ public class ModelPoseAnimator {
             return new Context(swing, 0.0F, ageInTicks, netHeadYaw, headPitch, mainArm, attackHand, dualWielding);
         }
 
-        public static Context windup(float windup, HumanoidArm mainArm) {
-            return windup(windup, mainArm, InteractionHand.MAIN_HAND);
-        }
-
         public static Context windup(float windup, HumanoidArm mainArm, InteractionHand attackHand) {
             return windup(windup, mainArm, attackHand, false);
         }
 
         public static Context windup(float windup, HumanoidArm mainArm, InteractionHand attackHand, boolean dualWielding) {
             return new Context(0.0F, windup, 0.0F, 0.0F, 0.0F, mainArm, attackHand, dualWielding);
-        }
-
-        public static Context windup(float windup, float ageInTicks, float netHeadYaw, float headPitch, HumanoidArm mainArm) {
-            return windup(windup, ageInTicks, netHeadYaw, headPitch, mainArm, InteractionHand.MAIN_HAND);
         }
 
         public static Context windup(float windup, float ageInTicks, float netHeadYaw, float headPitch, HumanoidArm mainArm,

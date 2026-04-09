@@ -53,15 +53,6 @@ public class MeleeAnimationManager {
         return FAMILY_ADAPTERS.getOrDefault(family, MeleeAnimationFamilyAdapter.DEFAULT);
     }
 
-    public static MeleeAnimationProfile resolveProfile(LivingEntity entity, ResourceLocation defaultProfile) {
-        return resolveProfile(entity, InteractionHand.MAIN_HAND, defaultProfile, null);
-    }
-
-    public static MeleeAnimationProfile resolveProfile(LivingEntity entity, ResourceLocation defaultProfile,
-                                                       @Nullable ResourceLocation requiredFamily) {
-        return resolveProfile(entity, InteractionHand.MAIN_HAND, defaultProfile, requiredFamily);
-    }
-
     public static MeleeAnimationProfile resolveProfile(LivingEntity entity, InteractionHand hand, ResourceLocation defaultProfile,
                                                        @Nullable ResourceLocation requiredFamily) {
         MeleeAnimationProfile resolved = resolveProfileOverride(entity, hand, requiredFamily);
@@ -74,12 +65,6 @@ public class MeleeAnimationManager {
         }
         logMissingProfile(defaultProfile);
         return MISSING_PROFILE;
-    }
-
-    @Nullable
-    public static MeleeAnimationProfile resolveProfileOverride(LivingEntity entity,
-                                                               @Nullable ResourceLocation requiredFamily) {
-        return resolveProfileOverride(entity, InteractionHand.MAIN_HAND, requiredFamily);
     }
 
     @Nullable
@@ -110,47 +95,16 @@ public class MeleeAnimationManager {
     }
 
     @Nullable
-    public static MeleeAnimationProfile.Strike resolveStrike(LivingEntity entity, ResourceLocation defaultProfile,
-                                                             @Nullable ResourceLocation requiredFamily, int strikeIndex) {
-        return resolveStrike(entity, InteractionHand.MAIN_HAND, defaultProfile, requiredFamily, strikeIndex);
-    }
-
-    @Nullable
     public static MeleeAnimationProfile.Strike resolveStrike(LivingEntity entity, InteractionHand hand, ResourceLocation defaultProfile,
                                                              @Nullable ResourceLocation requiredFamily, int strikeIndex) {
         return resolveProfile(entity, hand, defaultProfile, requiredFamily).getStrike(strikeIndex);
     }
 
-    @Nullable
-    public static MeleeAnimationPose resolveStrikePose(LivingEntity entity, ResourceLocation defaultProfile,
-                                                       @Nullable ResourceLocation requiredFamily, int strikeIndex) {
-        return resolveStrikePose(entity, InteractionHand.MAIN_HAND, defaultProfile, requiredFamily, strikeIndex);
-    }
-
-    @Nullable
-    public static MeleeAnimationPose resolveStrikePose(LivingEntity entity, InteractionHand hand, ResourceLocation defaultProfile,
-                                                       @Nullable ResourceLocation requiredFamily, int strikeIndex) {
-        MeleeAnimationProfile.Strike strike = resolveStrike(entity, hand, defaultProfile, requiredFamily, strikeIndex);
-        return strike == null ? null : getPose(strike.pose());
-    }
-
-    @Nullable
-    public static MeleeAnimationPose resolveWindupPose(LivingEntity entity, ResourceLocation defaultProfile,
-                                                       @Nullable ResourceLocation requiredFamily, int windupIndex) {
-        MeleeAnimationProfile profile = resolveProfile(entity, defaultProfile, requiredFamily);
-        ResourceLocation windup = profile.getWindup(windupIndex);
-        return windup == null ? null : getPose(windup);
-    }
-
     public static boolean applyStrikePose(MCSkeleton skeleton, LivingEntity entity, ResourceLocation defaultProfile,
-                                          ResourceLocation requiredFamily, int strikeIndex, ModelPoseAnimator.Context context) {
-        MeleeAnimationProfile profile = resolveProfile(entity, defaultProfile, requiredFamily);
+                                          InteractionHand hand, ResourceLocation requiredFamily, int strikeIndex,
+                                          ModelPoseAnimator.Context context) {
+        MeleeAnimationProfile profile = resolveProfile(entity, hand, defaultProfile, requiredFamily);
         return applyStrikePose(skeleton, profile, strikeIndex, context);
-    }
-
-    public static boolean applyResolvedStrikePose(MCSkeleton skeleton, LivingEntity entity, ResourceLocation requiredFamily,
-                                                  int strikeIndex, ModelPoseAnimator.Context context) {
-        return applyResolvedStrikePose(skeleton, entity, InteractionHand.MAIN_HAND, requiredFamily, strikeIndex, context);
     }
 
     public static boolean applyResolvedStrikePose(MCSkeleton skeleton, LivingEntity entity, InteractionHand hand,
@@ -171,14 +125,16 @@ public class MeleeAnimationManager {
     }
 
     public static boolean applyWindupPose(MCSkeleton skeleton, LivingEntity entity, ResourceLocation defaultProfile,
-                                          ResourceLocation requiredFamily, int windupIndex, ModelPoseAnimator.Context context) {
-        MeleeAnimationProfile profile = resolveProfile(entity, defaultProfile, requiredFamily);
+                                          InteractionHand hand, ResourceLocation requiredFamily, int windupIndex,
+                                          ModelPoseAnimator.Context context) {
+        MeleeAnimationProfile profile = resolveProfile(entity, hand, defaultProfile, requiredFamily);
         return applyWindupPose(skeleton, profile, windupIndex, context);
     }
 
-    public static boolean applyResolvedWindupPose(MCSkeleton skeleton, LivingEntity entity, ResourceLocation requiredFamily,
-                                                  int windupIndex, ModelPoseAnimator.Context context) {
-        MeleeAnimationProfile profile = resolveProfileOverride(entity, requiredFamily);
+    public static boolean applyResolvedWindupPose(MCSkeleton skeleton, LivingEntity entity, InteractionHand hand,
+                                                  ResourceLocation requiredFamily, int windupIndex,
+                                                  ModelPoseAnimator.Context context) {
+        MeleeAnimationProfile profile = resolveProfileOverride(entity, hand, requiredFamily);
         return profile != null && applyWindupPose(skeleton, profile, windupIndex, context);
     }
 
@@ -193,9 +149,9 @@ public class MeleeAnimationManager {
         return true;
     }
 
-    public static float resolveStrikeLunge(LivingEntity entity, ResourceLocation defaultProfile,
+    public static float resolveStrikeLunge(LivingEntity entity, InteractionHand hand, ResourceLocation defaultProfile,
                                            ResourceLocation requiredFamily, int strikeIndex) {
-        MeleeAnimationProfile.Strike strike = resolveStrike(entity, defaultProfile, requiredFamily, strikeIndex);
+        MeleeAnimationProfile.Strike strike = resolveStrike(entity, hand, defaultProfile, requiredFamily, strikeIndex);
         return strike == null ? 0.0F : strike.lunge();
     }
 

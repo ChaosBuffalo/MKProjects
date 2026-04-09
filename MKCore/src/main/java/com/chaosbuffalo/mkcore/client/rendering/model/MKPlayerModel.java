@@ -62,23 +62,25 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
             float partialTicks = ageInTicks - entityIn.tickCount;
             float mainSwing = playerData.getCombatExtension().getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, partialTicks);
             float offSwing = playerData.getCombatExtension().getVisualMeleeAttackAnim(InteractionHand.OFF_HAND, partialTicks);
+            boolean mainSwingActive = playerData.getCombatExtension().hasActiveVisualMeleeAttack(InteractionHand.MAIN_HAND, partialTicks);
+            boolean offSwingActive = playerData.getCombatExtension().hasActiveVisualMeleeAttack(InteractionHand.OFF_HAND, partialTicks);
             boolean dualWielding = playerData.getCombatExtension().isDualWieldingMeleeWeapons();
             boolean applied = false;
-            if (mainSwing > 0.0F) {
+            if (mainSwingActive) {
                 applied |= applyMeleeAnimationPose(entityIn, InteractionHand.MAIN_HAND, mainSwing, ageInTicks,
                         playerData.getCombatExtension().getCurrentStrikePoseIndex(InteractionHand.MAIN_HAND), dualWielding);
             }
-            if (offSwing > 0.0F) {
+            if (offSwingActive) {
                 applied |= applyMeleeAnimationPose(entityIn, InteractionHand.OFF_HAND, offSwing, ageInTicks,
                         playerData.getCombatExtension().getCurrentStrikePoseIndex(InteractionHand.OFF_HAND), dualWielding);
             }
             if (!applied) {
                 if (!dualWielding) {
-                    if (mainSwing > 0.0F) {
+                    if (mainSwingActive) {
                         applyVanillaAttackAnimation(entityIn, InteractionHand.MAIN_HAND, mainSwing, ageInTicks);
                         return;
                     }
-                    if (offSwing > 0.0F) {
+                    if (offSwingActive) {
                         applyVanillaAttackAnimation(entityIn, InteractionHand.OFF_HAND, offSwing, ageInTicks);
                         return;
                     }

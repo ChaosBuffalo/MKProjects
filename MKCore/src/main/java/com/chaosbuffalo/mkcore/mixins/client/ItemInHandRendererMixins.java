@@ -40,7 +40,7 @@ public abstract class ItemInHandRendererMixins {
         if (player instanceof LocalPlayer localPlayer) {
             PlayerCombatExtensionModule combat = MKCore.getPlayerOrThrow(localPlayer).getCombatExtension();
             float visualSwing = combat.getVisualMeleeAttackAnim(hand, partialTicks);
-            if (visualSwing > 0.0F) {
+            if (combat.hasActiveVisualMeleeAttack(hand, partialTicks)) {
                 resolvedSwing = visualSwing;
                 resolvedEquippedProgress = 0.0F;
             }

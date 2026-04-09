@@ -124,48 +124,28 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
         getHandState(hand).getVisualMeleeAttackSequence().start(swingStartTicks, swingDurationTicks);
     }
 
-    public void startVisualMeleeAttackSequence(int[] swingStartTicks, int[] swingDurationTicks) {
-        startVisualMeleeAttackSequence(InteractionHand.MAIN_HAND, swingStartTicks, swingDurationTicks);
-    }
-
     public float getVisualMeleeAttackAnim(InteractionHand hand, float partialTicks) {
         return getHandState(hand).getVisualMeleeAttackSequence().getAttackAnim(partialTicks);
-    }
-
-    public float getVisualMeleeAttackAnim(float partialTicks) {
-        return getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, partialTicks);
     }
 
     public boolean hasVisualMeleeAttackSequence(InteractionHand hand) {
         return getHandState(hand).getVisualMeleeAttackSequence().hasSequence();
     }
 
-    public boolean hasVisualMeleeAttackSequence() {
-        return hasVisualMeleeAttackSequence(InteractionHand.MAIN_HAND);
+    public boolean hasActiveVisualMeleeAttack(InteractionHand hand, float partialTicks) {
+        return getHandState(hand).getVisualMeleeAttackSequence().isActiveSwing(partialTicks);
     }
 
     public int getCurrentLocalSwingVariant(InteractionHand hand) {
         return getHandState(hand).getVisualMeleeAttackSequence().getLocalSwingVariant();
     }
 
-    public int getCurrentLocalSwingVariant() {
-        return getCurrentLocalSwingVariant(InteractionHand.MAIN_HAND);
-    }
-
     public int getCurrentStrikePoseIndex(InteractionHand hand) {
         return getCurrentLocalSwingVariant(hand) - 1;
     }
 
-    public int getCurrentStrikePoseIndex() {
-        return getCurrentStrikePoseIndex(InteractionHand.MAIN_HAND);
-    }
-
     public int getCurrentPrimarySwingVariant(InteractionHand hand) {
         return getHandState(hand).getLocalSwingVariant();
-    }
-
-    public int getCurrentPrimarySwingVariant() {
-        return getCurrentPrimarySwingVariant(InteractionHand.MAIN_HAND);
     }
 
     public boolean shouldQueueAttack(InteractionHand hand) {
@@ -470,10 +450,6 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
     @Override
     public int getRequiredAttackStrengthTicks(InteractionHand hand) {
         return PlayerMeleeHandStatsResolver.getRequiredAttackStrengthTicks(this, hand);
-    }
-
-    private int getRequiredAttackStrengthTicks() {
-        return getRequiredAttackStrengthTicks(InteractionHand.MAIN_HAND);
     }
 
     private MultiAttackState getMultiAttackState(InteractionHand hand) {

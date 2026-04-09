@@ -69,10 +69,11 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
 
         super.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
         // bow pose stuff from skeleton
+        float partialTicks = ageInTicks - entityIn.tickCount;
         if (this.attackTime <= 0.0F &&
-                entityIn.getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, ageInTicks - entityIn.tickCount) <= 0.0F &&
-                entityIn.getVisualMeleeAttackAnim(InteractionHand.OFF_HAND, ageInTicks - entityIn.tickCount) <= 0.0F) {
-            float windupProgress = entityIn.getMeleeWindupProgress(ageInTicks - entityIn.tickCount);
+                !entityIn.hasActiveVisualMeleeAttack(InteractionHand.MAIN_HAND, partialTicks) &&
+                !entityIn.hasActiveVisualMeleeAttack(InteractionHand.OFF_HAND, partialTicks)) {
+            float windupProgress = entityIn.getMeleeWindupProgress(partialTicks);
             if (windupProgress > 0.0F) {
                 applyMeleeWindupPose(entityIn, windupProgress);
             }
@@ -91,15 +92,29 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
         float partialTicks = ageInTicks - entityIn.tickCount;
         float mainSwing = entityIn.getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, partialTicks);
         float offSwing = entityIn.getVisualMeleeAttackAnim(InteractionHand.OFF_HAND, partialTicks);
+        boolean mainSwingActive = entityIn.hasActiveVisualMeleeAttack(InteractionHand.MAIN_HAND, partialTicks);
+        boolean offSwingActive = entityIn.hasActiveVisualMeleeAttack(InteractionHand.OFF_HAND, partialTicks);
+        boolean dualWielding = MKMeleeManager.canUseForAttack(entityIn, InteractionHand.MAIN_HAND) &&
+                MKMeleeManager.canUseForAttack(entityIn, InteractionHand.OFF_HAND);
         boolean applied = false;
-        if (mainSwing > 0.0F && (itemstack.isEmpty() || !(itemstack.getItem() instanceof BowItem))) {
+        if (mainSwingActive && (itemstack.isEmpty() || !(itemstack.getItem() instanceof BowItem))) {
             applied |= applyHeavyMeleeSwing(entityIn, InteractionHand.MAIN_HAND, mainSwing, ageInTicks);
         }
-        if (offSwing > 0.0F) {
+        if (offSwingActive) {
             applied |= applyHeavyMeleeSwing(entityIn, InteractionHand.OFF_HAND, offSwing, ageInTicks);
         }
-        if (mainSwing > 0.0F || offSwing > 0.0F) {
+        if (mainSwingActive || offSwingActive) {
             if (!applied) {
+                if (!dualWielding) {
+                    if (mainSwingActive) {
+                        applyVanillaAttackAnimation(entityIn, InteractionHand.MAIN_HAND, mainSwing, ageInTicks);
+                        return;
+                    }
+                    if (offSwingActive) {
+                        applyVanillaAttackAnimation(entityIn, InteractionHand.OFF_HAND, offSwing, ageInTicks);
+                        return;
+                    }
+                }
                 super.setupAttackAnimation(entityIn, ageInTicks);
             }
         } else {
@@ -116,9 +131,23 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
                 ModelPoseAnimator.Context.strike(swing, ageInTicks, poseMainArm, hand, dualWielding));
     }
 
+    private void applyVanillaAttackAnimation(T entityIn, InteractionHand hand, float swing, float ageInTicks) {
+        float previousAttackTime = this.attackTime;
+        InteractionHand previousSwingingArm = entityIn.swingingArm;
+        this.attackTime = swing;
+        entityIn.swingingArm = hand;
+        try {
+            super.setupAttackAnimation(entityIn, ageInTicks);
+        } finally {
+            this.attackTime = previousAttackTime;
+            entityIn.swingingArm = previousSwingingArm;
+        }
+    }
+
     protected void applyMeleeWindupPose(T entityIn, float windupProgress) {
-        MeleeAnimationManager.applyResolvedWindupPose(skeleton, entityIn, MeleeAnimationManager.BIPED_FAMILY, 0,
-                ModelPoseAnimator.Context.windup(windupProgress, entityIn.getMainArm()));
+        MeleeAnimationManager.applyResolvedWindupPose(skeleton, entityIn, InteractionHand.MAIN_HAND,
+                MeleeAnimationManager.BIPED_FAMILY, 0,
+                ModelPoseAnimator.Context.windup(windupProgress, entityIn.getMainArm(), InteractionHand.MAIN_HAND));
     }
 
     public AdditionalBipedAnimation<MKEntity> getAdditionalAnimation(T entityIn) {

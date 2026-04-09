@@ -8,10 +8,5 @@ import javax.annotation.Nullable;
 
 public interface MeleeAnimationProfileResolver {
     @Nullable
-    default ResourceLocation resolve(LivingEntity entity) {
-        return resolve(entity, InteractionHand.MAIN_HAND);
-    }
-
-    @Nullable
     ResourceLocation resolve(LivingEntity entity, InteractionHand hand);
 }

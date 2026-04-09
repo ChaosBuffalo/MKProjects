@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public class MKFlyingSkullRenderer extends MobRenderer<MKFlyingSkullEntity, MKSk
     @Override
     public void render(MKFlyingSkullEntity entity, float entityYaw, float partialTicks, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight) {
-        float attackAnim = entity.getVisualMeleeAttackAnim(partialTicks);
+        float attackAnim = entity.getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, partialTicks);
         float lungeAmount = Mth.sin(attackAnim * (float) Math.PI) * getLungeAmount(entity);
         if (lungeAmount > 0.0F) {
             Vec3 forward = entity.getLookAngle().normalize().scale(lungeAmount);
@@ -61,7 +62,7 @@ public class MKFlyingSkullRenderer extends MobRenderer<MKFlyingSkullEntity, MKSk
     }
 
     private float getLungeAmount(MKFlyingSkullEntity entity) {
-        return MeleeAnimationManager.resolveStrikeLunge(entity, MKNpcMeleeAnimations.SKULL_DEFAULT,
-                MKNpcMeleeAnimations.SKULL_FAMILY, entity.getCurrentStrikePoseIndex());
+        return MeleeAnimationManager.resolveStrikeLunge(entity, InteractionHand.MAIN_HAND, MKNpcMeleeAnimations.SKULL_DEFAULT,
+                MKNpcMeleeAnimations.SKULL_FAMILY, entity.getCurrentStrikePoseIndex(InteractionHand.MAIN_HAND));
     }
 }

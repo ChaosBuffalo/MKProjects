@@ -14,6 +14,7 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 
 public class MKGolemModel<T extends MKEntity> extends MKBipedModel<T> {
     public MKGolemModel(ModelPart modelPart) {
@@ -52,8 +53,8 @@ public class MKGolemModel<T extends MKEntity> extends MKBipedModel<T> {
 
     @Override
     public void prepareMobModel(T entityIn, float limbSwing, float limbSwingAmount, float partialTick) {
-        float swingProgress = entityIn.getVisualMeleeAttackAnim(partialTick);
-        if (swingProgress > 0) {
+        float swingProgress = entityIn.getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, partialTick);
+        if (entityIn.hasActiveVisualMeleeAttack(InteractionHand.MAIN_HAND, partialTick)) {
             applyAttackPose(entityIn, swingProgress, partialTick);
         } else if (entityIn.getMeleeWindupProgress(partialTick) > 0.0F) {
             resetUpperBodyPose();
@@ -70,15 +71,16 @@ public class MKGolemModel<T extends MKEntity> extends MKBipedModel<T> {
 
     private void applyWindupPose(T entityIn, float windupProgress) {
         MeleeAnimationManager.applyWindupPose(skeleton, entityIn, MKNpcMeleeAnimations.GOLEM_DEFAULT,
-                MKNpcMeleeAnimations.GOLEM_FAMILY, entityIn.getCurrentMeleeWindupVariant(),
-                ModelPoseAnimator.Context.windup(windupProgress, entityIn.getMainArm()));
+                InteractionHand.MAIN_HAND, MKNpcMeleeAnimations.GOLEM_FAMILY, entityIn.getCurrentMeleeWindupVariant(),
+                ModelPoseAnimator.Context.windup(windupProgress, entityIn.getMainArm(), InteractionHand.MAIN_HAND));
     }
 
     private void applyAttackPose(T entityIn, float swingProgress, float partialTick) {
         resetUpperBodyPose();
         MeleeAnimationManager.applyStrikePose(skeleton, entityIn, MKNpcMeleeAnimations.GOLEM_DEFAULT,
-                MKNpcMeleeAnimations.GOLEM_FAMILY, entityIn.getCurrentStrikePoseIndex(),
-                ModelPoseAnimator.Context.strike(swingProgress, partialTick, entityIn.getMainArm()));
+                InteractionHand.MAIN_HAND, MKNpcMeleeAnimations.GOLEM_FAMILY,
+                entityIn.getCurrentStrikePoseIndex(InteractionHand.MAIN_HAND),
+                ModelPoseAnimator.Context.strike(swingProgress, partialTick, entityIn.getMainArm(), InteractionHand.MAIN_HAND));
     }
 
     private void resetUpperBodyPose() {

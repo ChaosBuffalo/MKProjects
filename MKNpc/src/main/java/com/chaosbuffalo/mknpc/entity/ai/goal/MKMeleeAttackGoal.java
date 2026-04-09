@@ -227,7 +227,7 @@ public class MKMeleeAttackGoal extends Goal {
     private List<InteractionHand> selectHandsForAttack() {
         boolean mainHandDualWieldable = MKMeleeManager.canUseForAttack(entity, InteractionHand.MAIN_HAND);
         if (!mainHandDualWieldable) {
-            double cooldownPeriod = entity.getMeleeCooldownPeriod();
+            double cooldownPeriod = entity.getMeleeCooldownPeriod(InteractionHand.MAIN_HAND);
             if (entity.getTicksSinceLastSwing() >= cooldownPeriod) {
                 return List.of(InteractionHand.MAIN_HAND);
             }

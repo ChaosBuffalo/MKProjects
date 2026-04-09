@@ -63,19 +63,28 @@ public class VisualMeleeAttackSequence {
     }
 
     public float getAttackAnim(float partialTicks) {
-        if (!hasSequence() || activeSwingStartTick < 0) {
+        if (!isActiveSwing(partialTicks)) {
             return 0.0F;
         }
         int duration = getActiveSwingDurationTicks();
         float swingTime = sequenceTick - activeSwingStartTick + partialTicks;
-        if (swingTime <= 0.0F || swingTime >= duration) {
-            return 0.0F;
-        }
         return Mth.clamp(swingTime / duration, 0.0F, 1.0F);
     }
 
     public int getLocalSwingVariant() {
         return localSwingVariant;
+    }
+
+    public int getActiveSwingIndex() {
+        return activeSwingIndex;
+    }
+
+    public boolean isActiveSwing(float partialTicks) {
+        if (!hasSequence() || activeSwingStartTick < 0) {
+            return false;
+        }
+        float swingTime = sequenceTick - activeSwingStartTick + partialTicks;
+        return swingTime >= 0.0F && swingTime < getActiveSwingDurationTicks();
     }
 
     public void clear() {
