@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.client.rendering.model;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.client.rendering.animations.AdditionalBipedAnimation;
+import com.chaosbuffalo.mkcore.client.rendering.animations.BipedMeleeSwingAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedCastAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedStunAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.PlayerCompleteCastAnimation;
@@ -13,6 +14,8 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.ItemStack;
 
 public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
     private final BipedCastAnimation<Player> castAnimation = new BipedCastAnimation<>(this);
@@ -40,6 +43,28 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
         this.rightSleeve.copyFrom(this.rightArm);
     }
 
+
+    @Override
+    protected void setupAttackAnimation(AbstractClientPlayer entityIn, float ageInTicks) {
+        ItemStack itemStack = entityIn.getMainHandItem();
+        if (!itemStack.isEmpty() && itemStack.getItem() instanceof BowItem) {
+            super.setupAttackAnimation(entityIn, ageInTicks);
+            return;
+        }
+
+        MKCore.getPlayer(entityIn).ifPresentOrElse(playerData -> {
+            float visualSwing = playerData.getCombatExtension().getVisualMeleeAttackAnim(ageInTicks - entityIn.tickCount);
+            float swing = visualSwing > 0.0F ? visualSwing : this.attackTime;
+            if (swing > 0.0F) {
+                int variant = playerData.getCombatExtension().hasVisualMeleeAttackSequence() ?
+                        playerData.getCombatExtension().getCurrentLocalSwingVariant() :
+                        playerData.getCombatExtension().getCurrentSwingCount();
+                BipedMeleeSwingAnimation.apply(this, entityIn.getMainArm(), swing, variant, ageInTicks);
+            } else {
+                super.setupAttackAnimation(entityIn, ageInTicks);
+            }
+        }, () -> super.setupAttackAnimation(entityIn, ageInTicks));
+    }
 
     @Override
     public void renderToBuffer(PoseStack matrixStackIn, VertexConsumer bufferIn, int packedLightIn, int packedOverlayIn, int color) {

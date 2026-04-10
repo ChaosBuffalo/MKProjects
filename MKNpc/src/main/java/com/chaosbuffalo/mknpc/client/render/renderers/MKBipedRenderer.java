@@ -209,7 +209,7 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
         if (entity.getVisualCastState() != MKEntity.VisualCastState.NONE) {
             return 0.0F;
         }
-        float attackAnim = entity.getAttackAnim(partialTicks);
+        float attackAnim = entity.getVisualMeleeAttackAnim(partialTicks);
         return Mth.sin(attackAnim * (float) Math.PI) * getVisualLungeAmount(entity);
     }
 }

@@ -45,6 +45,7 @@ public class StatCommand {
                 .then(createAttributeStat("cdr", MKAttributes.COOLDOWN))
                 .then(createAttributeStat("melee_crit", MKAttributes.MELEE_CRIT))
                 .then(createAttributeStat("melee_crit_multiplier", MKAttributes.MELEE_CRIT_MULTIPLIER))
+                .then(createAttributeStat("multi_attack_chance", MKAttributes.MULTI_ATTACK_CHANCE))
                 .then(createAttributeStat("spell_crit", MKAttributes.SPELL_CRIT))
                 .then(createAttributeStat("spell_crit_multiplier", MKAttributes.SPELL_CRIT_MULTIPLIER))
                 .then(createAttributeStat("heal_bonus", MKAttributes.HEAL_BONUS))

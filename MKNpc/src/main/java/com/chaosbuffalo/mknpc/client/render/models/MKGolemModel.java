@@ -49,7 +49,7 @@ public class MKGolemModel<T extends MKEntity> extends MKBipedModel<T> {
 
     @Override
     public void prepareMobModel(T entityIn, float limbSwing, float limbSwingAmount, float partialTick) {
-        float swingProgress = entityIn.getAttackAnim(partialTick);
+        float swingProgress = entityIn.getVisualMeleeAttackAnim(partialTick);
         if (swingProgress > 0) {
             applyAttackVariant(entityIn, swingProgress);
         } else if (entityIn.getMeleeWindupProgress(partialTick) > 0.0F) {

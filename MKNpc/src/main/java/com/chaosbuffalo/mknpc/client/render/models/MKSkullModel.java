@@ -44,7 +44,7 @@ public class MKSkullModel<T extends MKEntity> extends HierarchicalModel<T> {
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         float partialTicks = ageInTicks - entity.tickCount;
-        float attackAnim = entity.getAttackAnim(partialTicks);
+        float attackAnim = entity.getVisualMeleeAttackAnim(partialTicks);
         float windupProgress = entity.getMeleeWindupProgress(partialTicks);
         float idleJaw = (float) (Math.sin(ageInTicks * 0.2F) + 1.0F) * 0.15F;
         float attackCurve = Mth.sin(attackAnim * (float) Math.PI);

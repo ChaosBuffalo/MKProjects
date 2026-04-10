@@ -36,6 +36,10 @@ public class MKAttributes {
             new MKRangedAttribute("attribute.name.mk.melee_crit_multiplier", 1.0, 0.0, 10.0)
             .setSyncType(AttributeSyncType.Private));
 
+    public static final Holder<Attribute> MULTI_ATTACK_CHANCE = REGISTRY.register("multi_attack_chance", () ->
+            new MKRangedAttribute("attribute.name.mk.multi_attack_chance", 0.0, 0.0, 4.0)
+                    .setSyncType(AttributeSyncType.Private));
+
     public static final Holder<Attribute> SPELL_CRIT = REGISTRY.register("spell_crit_chance", () ->
             new MKPercentageAttribute("attribute.name.mk.spell_crit_chance", 0.1, 0.0, 1.0)
             .setSyncType(AttributeSyncType.Private));
@@ -314,6 +318,7 @@ public class MKAttributes {
         consumer.accept(MANA_REGEN);
         consumer.accept(HAND_TO_HAND);
         consumer.accept(HEALTH_REGEN);
+        consumer.accept(MULTI_ATTACK_CHANCE);
     }
 
     public static void iteratePlayerAttributes(Consumer<Holder<Attribute>> consumer) {

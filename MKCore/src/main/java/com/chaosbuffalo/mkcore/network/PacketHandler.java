@@ -40,6 +40,11 @@ public class PacketHandler {
                 EntityEffectPacket.STREAM_CODEC,
                 EntityEffectPacket::handle
         );
+        registrar.playToClient(
+                MeleeAttackSequencePacket.TYPE,
+                MeleeAttackSequencePacket.STREAM_CODEC,
+                MeleeAttackSequencePacket::handle
+        );
         registrar.playToServer(
                 ExecuteActiveAbilityPacket.TYPE,
                 ExecuteActiveAbilityPacket.STREAM_CODEC,

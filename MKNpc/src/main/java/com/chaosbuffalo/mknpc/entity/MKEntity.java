@@ -10,6 +10,8 @@ import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
 import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
+import com.chaosbuffalo.mkcore.core.combat.IVisualMeleeAttackEntity;
+import com.chaosbuffalo.mkcore.core.combat.VisualMeleeAttackSequence;
 import com.chaosbuffalo.mkcore.core.pets.IMKPet;
 import com.chaosbuffalo.mkcore.core.pets.PetNonCombatBehavior;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
@@ -90,7 +92,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 
-public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, ISyncControllerProvider, IMKPet, ITargetingOwner {
+public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, ISyncControllerProvider, IMKPet, ITargetingOwner, IVisualMeleeAttackEntity {
     private static final EntityDataAccessor<String> LOOK_STYLE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Float> SCALE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> IS_GHOST = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.BOOLEAN);
@@ -128,6 +130,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private int visualMeleeWindupTicks;
     private int visualMeleeWindupRecoveryTicks;
     private boolean wasSwingingLastTick;
+    private final VisualMeleeAttackSequence visualMeleeAttackSequence = new VisualMeleeAttackSequence();
 
     @Nullable
     protected Component battlecry;
@@ -733,6 +736,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     public void aiStep() {
         updateSwingTime();
         if (level().isClientSide) {
+            visualMeleeAttackSequence.tick();
             if (swinging) {
                 if (!wasSwingingLastTick) {
                     localSwingVariant++;
@@ -802,7 +806,26 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     public int getCurrentLocalSwingVariant() {
+        if (visualMeleeAttackSequence.hasSequence()) {
+            return visualMeleeAttackSequence.getLocalSwingVariant();
+        }
         return localSwingVariant;
+    }
+
+    @Override
+    public void startVisualMeleeAttackSequence(int[] swingStartTicks, int swingDurationTicks) {
+        visualMeleeAttackSequence.start(swingStartTicks, swingDurationTicks);
+    }
+
+    @Override
+    public float getVisualMeleeAttackAnim(float partialTicks) {
+        float visualAttack = visualMeleeAttackSequence.getAttackAnim(partialTicks);
+        return visualAttack > 0.0F ? visualAttack : getAttackAnim(partialTicks);
+    }
+
+    @Override
+    public boolean hasVisualMeleeAttackSequence() {
+        return visualMeleeAttackSequence.hasSequence();
     }
 
     public VisualCastState getVisualCastState() {
@@ -937,6 +960,10 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     protected int getCurrentMKSwingDuration() {
         return Mth.clamp(Mth.ceil(6.0D / Math.max(getAttackSpeedMultiplier(), 0.001D)), 2, 24);
+    }
+
+    public int getMeleeSwingDurationTicks() {
+        return getCurrentMKSwingDuration();
     }
 
     @Override

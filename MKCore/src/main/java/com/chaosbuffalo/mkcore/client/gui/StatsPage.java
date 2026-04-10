@@ -44,6 +44,7 @@ public class StatsPage extends StatPageBase {
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.CASTING_SPEED);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.MELEE_CRIT);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.MELEE_CRIT_MULTIPLIER);
+        STAT_PANEL_ATTRIBUTES.add(MKAttributes.MULTI_ATTACK_CHANCE);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.RANGED_CRIT);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.RANGED_CRIT_MULTIPLIER);
         STAT_PANEL_ATTRIBUTES.add(MKAttributes.SPELL_CRIT);
