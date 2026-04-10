@@ -58,6 +58,17 @@ public class CoreEntities {
                     .noSave()
                     .build("mk_point_effect"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<ConeAreaEffectEntity>> CONE_AREA_EFFECT = ENTITIES.register("mk_cone_area_effect",
+            () -> EntityType.Builder.<ConeAreaEffectEntity>of(ConeAreaEffectEntity::new, MobCategory.MISC)
+                    .fireImmune()
+                    .sized(0, 0)
+                    .setTrackingRange(5)
+                    .setUpdateInterval(10)
+                    .setShouldReceiveVelocityUpdates(true)
+                    .noSummon()
+                    .noSave()
+                    .build("mk_cone_area_effect"));
+
     public static final DeferredHolder<EntityType<?>, EntityType<AbilityProjectileEntity>> ABILITY_PROJECTILE_TYPE = ENTITIES.register(
             "ability_projectile", () -> EntityType.Builder.of(AbilityProjectileEntity::new, MobCategory.MISC)
                     .fireImmune()

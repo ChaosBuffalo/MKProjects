@@ -9,7 +9,9 @@ public class MovementStrategyController {
 
     public static void enterMeleeMode(LivingEntity entity, int meleeDistance) {
         entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get(),
-                new FollowMovementStrategy(1.0f, meleeDistance));
+                entity instanceof com.chaosbuffalo.mknpc.entity.MKEntity mkEntity && mkEntity.canFly() ?
+                        new FlyingFollowMovementStrategy(1.0f, meleeDistance) :
+                        new FollowMovementStrategy(1.0f, meleeDistance));
     }
 
     public static void enterFollowMode(LivingEntity entity, int followDistance, LivingEntity followTarget) {

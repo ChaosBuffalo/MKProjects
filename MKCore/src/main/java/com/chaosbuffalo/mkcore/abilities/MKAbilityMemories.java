@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.abilities;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.entities.BaseEffectEntity;
 import com.chaosbuffalo.mkcore.entities.BaseProjectileEntity;
 import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import net.minecraft.core.registries.Registries;
@@ -25,6 +26,9 @@ public class MKAbilityMemories {
             () -> new MemoryModuleType<>(Optional.empty()));
 
     public static DeferredHolder<MemoryModuleType<?>, MemoryModuleType<List<BaseProjectileEntity>>> CURRENT_PROJECTILES = REGISTRY.register("current_projectiles",
+            () -> new MemoryModuleType<>(Optional.empty()));
+
+    public static DeferredHolder<MemoryModuleType<?>, MemoryModuleType<List<BaseEffectEntity>>> CURRENT_AREA_EFFECTS = REGISTRY.register("current_area_effects",
             () -> new MemoryModuleType<>(Optional.empty()));
 
     public static void register(IEventBus modBus) {

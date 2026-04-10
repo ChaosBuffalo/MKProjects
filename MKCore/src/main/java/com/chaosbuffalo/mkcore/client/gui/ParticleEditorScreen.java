@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.client.gui;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.client.gui.widgets.ParticleKeyFramePanel;
 import com.chaosbuffalo.mkcore.client.gui.widgets.ParticleKeyFrameView;
+import com.chaosbuffalo.mkcore.client.gui.widgets.ParticleAnimationList;
 import com.chaosbuffalo.mkcore.client.gui.widgets.ParticleSpawnPatternWidget;
 import com.chaosbuffalo.mkcore.fx.particles.MKParticleData;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
@@ -33,9 +34,10 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.Map;
-
 public class ParticleEditorScreen extends MKScreen {
+    private static String getParticleTypeTranslationKey(ResourceLocation particleName) {
+        return String.format("particle.%s.%s", particleName.getNamespace(), particleName.getPath());
+    }
 
     private ParticleAnimation editing;
     private ParticleKeyFramePanel currentPanel;
@@ -181,7 +183,7 @@ public class ParticleEditorScreen extends MKScreen {
         names.setMargins(2, 2, 2, 2);
         names.doSetChildWidth(true);
         ParticleAnimationManager.PARTICLE_TYPES_FOR_EDITOR.forEach((key, value) -> {
-            MKButton button = new MKButton(0, 0, Component.literal(key.toString()));
+            MKButton button = new MKButton(0, 0, Component.translatable(getParticleTypeTranslationKey(key)));
             button.setPressedCallback((but, click) -> {
                 setParticleType(key, value);
                 closeModal(popup);
@@ -319,25 +321,25 @@ public class ParticleEditorScreen extends MKScreen {
         layout.setPaddings(0, 0, 2, 2);
         root.addWidget(layout);
 
-        MKButton spawn = new MKButton(0, 0, "Spawn");
+        MKButton spawn = new MKButton(0, 0, Component.translatable("mkcore.particle_editor.spawn"));
         spawn.setPressedCallback((button, click) -> {
             requestSpawn();
             return true;
         });
         layout.addWidget(spawn);
-        MKButton saveButton = new MKButton(0, 0, "Save");
+        MKButton saveButton = new MKButton(0, 0, Component.translatable("mkcore.particle_editor.save"));
         saveButton.setPressedCallback((btn, click) -> {
             savePromot();
             return true;
         });
         layout.addWidget(saveButton);
-        MKButton loadButton = new MKButton(0, 0, "Load");
+        MKButton loadButton = new MKButton(0, 0, Component.translatable("mkcore.particle_editor.load"));
         loadButton.setPressedCallback((btn, click) -> {
             loadPrompt();
             return true;
         });
         layout.addWidget(loadButton);
-        MKButton newButton = new MKButton(0, 0, "New");
+        MKButton newButton = new MKButton(0, 0, Component.translatable("mkcore.particle_editor.new"));
         newButton.setPressedCallback((btn, click) -> {
             setEditing(new ParticleAnimation());
             return true;
@@ -369,7 +371,7 @@ public class ParticleEditorScreen extends MKScreen {
                 POPUP_WIDTH - 10, font.lineHeight + 2, Component.literal(promptText));
         textFieldWidget.getContainedWidget().setMaxLength(500);
         layout.addWidget(textFieldWidget);
-        MKButton button = new MKButton(0, 0, "Save") {
+        MKButton button = new MKButton(0, 0, Component.translatable("mkcore.particle_editor.save")) {
             @Override
             public boolean isEnabled() {
                 return super.isEnabled() && !textFieldWidget.getText().isEmpty();
@@ -402,23 +404,14 @@ public class ParticleEditorScreen extends MKScreen {
             background.setColor(new IntColor(0x99555555));
             popup.addWidget(background);
         }
-        MKStackLayoutVertical layout = new MKStackLayoutVertical(xPos, yPos, POPUP_WIDTH);
-        layout.setMargins(5, 5, 5, 5);
-        layout.setPaddings(0, 0, 5, 5);
-        MKScrollView scrollView = new MKScrollView(xPos, yPos, POPUP_WIDTH, POPUP_HEIGHT - 20, true);
-        scrollView.addWidget(layout);
-        popup.addWidget(scrollView);
-        for (Map.Entry<ResourceLocation, ParticleAnimation> anim : ParticleAnimationManager.ANIMATIONS.entrySet()) {
-            MKButton button = new MKButton(0, 0, anim.getKey().toString());
-            button.setWidth(POPUP_WIDTH - 10);
-            button.setPressedCallback((btn, click) -> {
-                setEditing(anim.getValue().copy());
-                closeModal(popup);
-                return true;
-            });
-            layout.addWidget(button);
-        }
+        ParticleAnimationList animationList = new ParticleAnimationList(xPos, yPos, POPUP_WIDTH, POPUP_HEIGHT - 20,
+                font, (name, anim) -> {
+            setEditing(anim.copy());
+            closeModal(popup);
+        });
+        popup.addWidget(animationList);
         addModal(popup);
+        scheduleNextTick(() -> setFocus(animationList.getSearchField()));
     }
 
     protected MKLayout getKeyFrameView() {

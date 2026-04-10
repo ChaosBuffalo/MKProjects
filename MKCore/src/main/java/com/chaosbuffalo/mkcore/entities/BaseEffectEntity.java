@@ -39,6 +39,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityWithComp
     protected int waitTime = 20;
     protected int tickRate = 5;
     protected int preDelay = 0;
+    protected boolean infiniteDuration = false;
 
     public enum DeathReason {
         DURATION_RAN_OUT,
@@ -164,6 +165,10 @@ public abstract class BaseEffectEntity extends Entity implements IEntityWithComp
         this.tickRate = tickRate;
     }
 
+    public void setInfiniteDuration(boolean infiniteDuration) {
+        this.infiniteDuration = infiniteDuration;
+    }
+
 
     public void addEffect(MobEffectInstance effect, TargetingContext targetContext) {
         this.effects.add(WorldAreaEffectEntry.forEffect(this, effect, targetContext));
@@ -256,6 +261,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityWithComp
         buffer.writeInt(waitTime);
         buffer.writeInt(tickCount);
         buffer.writeInt(preDelay);
+        buffer.writeBoolean(infiniteDuration);
         buffer.writeInt(BuiltInRegistries.SOUND_EVENT.getId(tickSound));
         buffer.writeNullable(particles, (buf, x) -> x.write(buf));
         buffer.writeNullable(waitingParticles, (buf, x) -> x.write(buf));
@@ -271,6 +277,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityWithComp
         waitTime = additionalData.readInt();
         tickCount = additionalData.readInt();
         preDelay = additionalData.readInt();
+        infiniteDuration = additionalData.readBoolean();
         tickSound = BuiltInRegistries.SOUND_EVENT.byId(additionalData.readInt());
         particles = additionalData.readNullable(ParticleDisplay::read);
         waitingParticles = additionalData.readNullable(ParticleDisplay::read);
@@ -312,7 +319,7 @@ public abstract class BaseEffectEntity extends Entity implements IEntityWithComp
     protected abstract Collection<LivingEntity> getEntitiesInBounds();
 
     protected boolean serverUpdate() {
-        if (tickCount > (preDelay + waitTime + duration + WAIT_LAG + 1)) {
+        if (!infiniteDuration && tickCount > (preDelay + waitTime + duration + WAIT_LAG + 1)) {
             onDeath(DeathReason.DURATION_RAN_OUT);
             return true;
         }

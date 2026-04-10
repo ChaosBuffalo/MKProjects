@@ -337,9 +337,13 @@
           "faction_amount": 100
         },
         {
-          "type": "mknpc:faction",
-          "faction": "mkultra:see_of_solang",
-          "faction_amount": -10000
+          "type": "mknpc:notable_faction_override",
+          "faction_score": -10000,
+          "npcDefinition": "mkultra:solangian_temple_guard_2",
+          "structure": {
+            "name": "0",
+            "structureId": "mkultra:desert_temple_village"
+          }
         },
         {
           "type": "mknpc:entitlement",

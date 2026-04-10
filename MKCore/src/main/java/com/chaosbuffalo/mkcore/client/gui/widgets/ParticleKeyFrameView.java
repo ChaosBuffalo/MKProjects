@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
 public class ParticleKeyFrameView extends MKScrollView {
@@ -58,23 +59,27 @@ public class ParticleKeyFrameView extends MKScrollView {
         return super.onMousePressed(minecraft, mouseX, mouseY, mouseButton);
     }
 
+    private int getPixelOffsetForTick(int tick) {
+        return tick * SPACE_PER_TICK + tick / GRID_INTERVAL;
+    }
+
     public void setup() {
         layout.clearWidgets();
         if (animation != null) {
             int totalTicks = Math.max(animation.getTickLength(), 1);
-            layout.setGridCount(Math.max(totalTicks / 5, 50));
-            int totalSpace = Math.max(layout.getDesiredWidth(), getWidth());
+            layout.setGridCount(Math.max((totalTicks + GRID_INTERVAL - 1) / GRID_INTERVAL, 50));
+            int totalSpace = Math.max(Math.max(layout.getDesiredWidth(), getPixelOffsetForTick(totalTicks) + 2), getWidth());
             layout.setWidth(totalSpace);
             for (ParticleKeyFrame keyFrame : animation.getKeyFrames()) {
                 int duration = keyFrame.getDuration();
-                int width = Math.max(duration * SPACE_PER_TICK + duration / GRID_INTERVAL, 5);
-                int startX = layout.getGridPos(keyFrame.getTickStart() / 5); // * SPACE_PER_TICK + (keyFrame.getTickStart() - 1) / 4;
+                int width = Math.max(getPixelOffsetForTick(duration), MIN_SIZE);
+                int startX = getPixelOffsetForTick(keyFrame.getTickStart());
                 ParticleKeyFrameWidget wid = new ParticleKeyFrameWidget(0, 0, width, 20, keyFrame, editor);
                 layout.addWidget(wid);
                 layout.addConstraintToWidget(new OffsetConstraint(startX + 2, 0, true, false), wid);
             }
         }
-        MKButton addButton = new MKButton(0, 0, "Add");
+        MKButton addButton = new MKButton(0, 0, Component.translatable("mkcore.particle_editor.add"));
         addButton.setPressedCallback((button, click) -> {
             if (animation != null) {
                 ParticleKeyFrame newFrame = new ParticleKeyFrame();

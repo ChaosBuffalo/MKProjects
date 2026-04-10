@@ -1,0 +1,16 @@
+{
+  "attributes": {
+    "angle": 36.0,
+    "base": 1.5,
+    "breath_particles": "mkultra:fire_breath_cone",
+    "burnSeconds": 2,
+    "casting_particles": "mkcore:fx.casting.empty",
+    "modifierScaling": 0.35,
+    "range": 5.0,
+    "scale": 0.75,
+    "tickRate": 4
+  },
+  "castTime": 120,
+  "cooldown": 80,
+  "manaCost": 5.0
+}

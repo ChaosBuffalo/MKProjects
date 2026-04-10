@@ -64,6 +64,7 @@ public class MKULangProvider extends NpcLanguageProvider {
         talentTree(MKUltra.id("core"), "Core");
         ability(MKUAbilities.WARP_CURSE, "Warp Curse", "Curses your target, causing them to teleport a short distance and take %s every %d seconds and slowing them for %d seconds.");
         ability(MKUAbilities.FLAME_WAVE, "Flame Wave", "A wave of fire engulfs your enemies, causing %s to each one. If the target is already burning damage is increased by %.2f%% and the target is withered for %d seconds.");
+        ability(MKUAbilities.SKULL_FLAME_BREATH, "Skull Flame Breath", "Channel a cone of flame for %s seconds, dealing %s every %s seconds and setting enemies on fire for %s seconds.");
         ability(MKUAbilities.FIREBALL, "Fireball", "Throws a magical ball of fire, causing %s to enemies within %.1f blocks of its impact. Reduces target fire resistance by %.2f%% for %d seconds.");
         ability(MKUAbilities.SEVER_TENDON, "Sever Tendon", "Deals %s to your target and causes them to bleed for %s seconds, dealing %s damage every %d seconds and reducing their movement speed by %.2f%%.");
         mkEffect(MKUEffects.SEVER_TENDON, "Severed Tendon");
@@ -76,6 +77,7 @@ public class MKULangProvider extends NpcLanguageProvider {
         ability(MKUAbilities.EMBER, "Ember", "Deals %s to your target and causes them to burn for %s seconds, dealing %s damage every %d seconds.");
         ability(MKUAbilities.IGNITE, "Ignite", "Ignites your target, dealing %s. If they are already burning, causes them to explode damaging nearby enemies within %.1f blocks and spreading the burn effect, if they're not burning causes them to burn.");
         mkEffect(MKUEffects.BURN, "Burn");
+        mkEffect(MKUEffects.SKULL_FLAME_BREATH, "Skull Flame Breath");
         ability(MKUAbilities.EXPLOSIVE_GROWTH, "Explosive Growth", "Dash forward, damaging all enemies you hit for %s and casting Cleansing Seed and Nature's Remedy on your allies and yourself.");
         ability(MKUAbilities.HEAL, "Heal", "Heals your target for %s.");
         ability(MKUAbilities.SMITE, "Smite", "Smites your target for %s and Stuns them for %d seconds.");

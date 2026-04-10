@@ -40,6 +40,9 @@ public class MKUEffects {
     public static final DeferredHolder<MKEffect, FlameWaveEffect> FLAME_WAVE = REGISTRY.register("effect.flame_wave",
             FlameWaveEffect::new);
 
+    public static final DeferredHolder<MKEffect, SkullFlameBreathEffect> SKULL_FLAME_BREATH = REGISTRY.register("effect.skull_flame_breath",
+            SkullFlameBreathEffect::new);
+
     public static final DeferredHolder<MKEffect, LifeSiphonEffect> LIFE_SIPHON = REGISTRY.register("effect.life_siphon",
             LifeSiphonEffect::new);
 

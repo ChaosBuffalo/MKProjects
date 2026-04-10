@@ -69,6 +69,7 @@ public class MKUAbilities {
     public static final DeferredHolder<MKAbility, FireArmorAbility> FIRE_ARMOR = REGISTRY.register("fire_armor", FireArmorAbility::new);
     public static final DeferredHolder<MKAbility, FlameWaveAbility> FLAME_WAVE = REGISTRY.register("flame_wave", FlameWaveAbility::new);
     public static final DeferredHolder<MKAbility, IgniteAbility> IGNITE = REGISTRY.register("ignite", IgniteAbility::new);
+    public static final DeferredHolder<MKAbility, SkullFlameBreathAbility> SKULL_FLAME_BREATH = REGISTRY.register("skull_flame_breath", SkullFlameBreathAbility::new);
     public static final DeferredHolder<MKAbility, WarpCurseAbility> WARP_CURSE = REGISTRY.register("warp_curse", WarpCurseAbility::new);
 
     //green knight

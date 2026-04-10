@@ -73,7 +73,7 @@ public class AnimationTrackPanel extends MKStackLayoutVertical {
     }
 
     Component getTrackName() {
-        Component trackName = track == null ? Component.literal("Empty") : track.getDescription();
+        Component trackName = track == null ? Component.translatable("mkcore.particle_editor.empty") : track.getDescription();
         switch (trackType) {
             case COLOR:
                 return Component.translatable("mkcore.particle_editor.track_type.color", trackName);

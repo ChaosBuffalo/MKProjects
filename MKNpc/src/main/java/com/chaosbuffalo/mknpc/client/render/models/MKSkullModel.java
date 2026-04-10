@@ -8,6 +8,7 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.util.Mth;
 
 public class MKSkullModel<T extends MKEntity> extends HierarchicalModel<T> {
     private final ModelPart root;
@@ -42,9 +43,14 @@ public class MKSkullModel<T extends MKEntity> extends HierarchicalModel<T> {
 
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        float attackAnim = entity.getAttackAnim(ageInTicks - entity.tickCount);
+        float idleJaw = (float) (Math.sin(ageInTicks * 0.2F) + 1.0F) * 0.15F;
+        float attackCurve = Mth.sin(attackAnim * (float) Math.PI);
+        float attackJaw = attackCurve * 1.0F;
+
         this.head.yRot = netHeadYaw * ((float) Math.PI / 180.0F);
-        this.head.xRot = headPitch * ((float) Math.PI / 180.0F);
-        this.jaw.xRot = (float) (Math.sin(ageInTicks * 0.2F) + 1.0F) * 0.15F;
+        this.head.xRot = headPitch * ((float) Math.PI / 180.0F) + attackCurve * 0.2F;
+        this.jaw.xRot = Math.max(idleJaw, attackJaw);
     }
 
     @Override
