@@ -48,7 +48,7 @@ public class SkullFlameBreathAbility extends MKAbility {
 
     public SkullFlameBreathAbility() {
         super();
-        setCooldownSeconds(4);
+        setCooldownSeconds(10);
         setManaCost(5);
         setCastTime(GameConstants.TICKS_PER_SECOND * 6);
         addAttributes(base, scale, modifierScaling, range, angle, tickRate, burnSeconds, breath_particles);

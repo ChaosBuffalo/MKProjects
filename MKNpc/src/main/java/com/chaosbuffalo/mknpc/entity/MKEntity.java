@@ -309,6 +309,15 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return canFly;
     }
 
+    public void onAIAbilityCastStart() {
+    }
+
+    public void onAIAbilityCastTick() {
+    }
+
+    public void onAIAbilityCastStop() {
+    }
+
     @Override
     public void tick() {
         super.tick();

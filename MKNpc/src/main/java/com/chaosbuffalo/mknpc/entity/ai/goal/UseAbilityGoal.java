@@ -87,6 +87,7 @@ public class UseAbilityGoal extends Goal {
             entity.lookAt(target, 360.0f, 90.0f);
             entity.getLookControl().setLookAt(target, 360.0f, 90.0f);
         }
+        entity.onAIAbilityCastStart();
         AbilityContext context = new BrainAbilityContext(entity.getEntityDataCap(), currentAbility);
 //        MKNpc.LOGGER.debug("ai {} casting {} on {}", entity, currentAbility.getAbilityId(), target);
         entity.getEntityDataCap().getAbilityExecutor().executeAbilityInfoWithContext(currentAbility, context);
@@ -94,6 +95,7 @@ public class UseAbilityGoal extends Goal {
 
     @Override
     public void tick() {
+        entity.onAIAbilityCastTick();
         if (!target.is(entity)) {
             entity.lookAt(target, 90.0f, 50.0f);
             entity.getLookControl().setLookAt(target, 90.0f, 50.0f);
@@ -108,6 +110,7 @@ public class UseAbilityGoal extends Goal {
     @Override
     public void stop() {
         super.stop();
+        entity.onAIAbilityCastStop();
         currentAbility = null;
         target = null;
         entity.getBrain().eraseMemory(MKMemoryModuleTypes.CURRENT_ABILITY.get());

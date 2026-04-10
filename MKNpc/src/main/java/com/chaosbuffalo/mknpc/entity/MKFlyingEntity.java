@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.chaosbuffalo.mknpc.entity.ai.controller.MovementStrategyController;
 import com.chaosbuffalo.mknpc.entity.ai.goal.UseAbilityGoal;
 import net.minecraft.core.BlockPos;
@@ -13,8 +14,13 @@ import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.phys.Vec3;
+
+import javax.annotation.Nullable;
 
 public class MKFlyingEntity extends MKEntity{
+    @Nullable
+    private Vec3 castHoverAnchor;
 
     protected MKFlyingEntity(EntityType<? extends PathfinderMob> type, Level worldIn) {
         super(type, worldIn);
@@ -31,7 +37,54 @@ public class MKFlyingEntity extends MKEntity{
 
     @Override
     protected UseAbilityGoal createUseAbilityGoal() {
-        return new UseAbilityGoal(this, true);
+        return new UseAbilityGoal(this, false);
+    }
+
+    @Override
+    public void onAIAbilityCastStart() {
+        if (!isFlightSuppressed()) {
+            castHoverAnchor = position();
+            getNavigation().stop();
+        }
+    }
+
+    @Override
+    public void onAIAbilityCastTick() {
+        if (isFlightSuppressed()) {
+            castHoverAnchor = null;
+            return;
+        }
+        if (castHoverAnchor == null) {
+            castHoverAnchor = position();
+        }
+    }
+
+    @Override
+    public void onAIAbilityCastStop() {
+        castHoverAnchor = null;
+    }
+
+    @Override
+    public void aiStep() {
+        if (isFlightSuppressed()) {
+            castHoverAnchor = null;
+            getNavigation().stop();
+            Vec3 delta = getDeltaMovement();
+            if (onGround()) {
+                setDeltaMovement(delta.x * 0.5, 0.0, delta.z * 0.5);
+            } else {
+                setDeltaMovement(delta.x * 0.5, Math.max(delta.y - 0.08, -0.6), delta.z * 0.5);
+            }
+        } else if (castHoverAnchor != null && getEntityDataCap().getAbilityExecutor().isCasting()) {
+            getNavigation().stop();
+            Vec3 delta = castHoverAnchor.subtract(position()).scale(0.25);
+            setDeltaMovement(delta.x, delta.y, delta.z);
+        }
+        super.aiStep();
+    }
+
+    protected boolean isFlightSuppressed() {
+        return getEntityDataCap().getEffects().isEffectActive(CoreEffects.STUN.get());
     }
 
     protected PathNavigation createNavigation(Level p_level) {

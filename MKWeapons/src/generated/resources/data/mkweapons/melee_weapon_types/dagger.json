@@ -3,11 +3,11 @@
   "blockEfficiency": 0.5,
   "critChance": 0.1,
   "critMultiplier": 1.5,
-  "damageMultiplier": 1.0,
+  "damageMultiplier": 0.5,
   "effects": [
     {
       "type": "mkweapons:weapon_effect.skill_scaling",
-      "baseDamage": 3.0,
+      "baseDamage": 1.125,
       "skill": "mkcore:one_hand_pierce"
     },
     {

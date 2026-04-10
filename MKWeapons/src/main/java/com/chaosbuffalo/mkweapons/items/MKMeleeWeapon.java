@@ -99,7 +99,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
 
 
     static int calculateDamage(IMKTier mkTier, IMeleeWeaponType weaponType) {
-        return Math.round(weaponType.getDamageForTier(mkTier) - mkTier.getAttackDamageBonus());
+        return Math.round(weaponType.getDamageForTier(mkTier));
     }
 
     @Override

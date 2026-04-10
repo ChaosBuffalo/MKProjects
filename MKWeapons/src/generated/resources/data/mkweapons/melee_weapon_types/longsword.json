@@ -3,11 +3,11 @@
   "blockEfficiency": 0.75,
   "critChance": 0.05,
   "critMultiplier": 0.5,
-  "damageMultiplier": 1.5,
+  "damageMultiplier": 0.9,
   "effects": [
     {
       "type": "mkweapons:weapon_effect.skill_scaling",
-      "baseDamage": 4.5,
+      "baseDamage": 1.6875,
       "skill": "mkcore:one_hand_slash"
     },
     {

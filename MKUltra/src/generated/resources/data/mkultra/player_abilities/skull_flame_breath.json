@@ -11,6 +11,6 @@
     "tickRate": 4
   },
   "castTime": 120,
-  "cooldown": 80,
+  "cooldown": 200,
   "manaCost": 5.0
 }

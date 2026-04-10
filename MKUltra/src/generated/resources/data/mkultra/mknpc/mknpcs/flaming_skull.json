@@ -4,6 +4,11 @@
   "options": {
     "mknpc:abilities": {
       "abilities": [
+        {
+          "ability": "mkultra:skull_flame_breath",
+          "chance": 1.0,
+          "priority": 1
+        }
       ]
     },
     "mknpc:attributes": {
