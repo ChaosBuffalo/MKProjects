@@ -1,6 +1,6 @@
 {
   "attackSpeed": -2.8,
-  "blockEfficiency": 0.9,
+  "blockEfficiency": 0.85,
   "critChance": 0.1,
   "critMultiplier": 1.25,
   "damageMultiplier": 1.6,
