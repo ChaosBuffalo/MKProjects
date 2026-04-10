@@ -19,7 +19,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
@@ -44,6 +46,7 @@ import java.util.Optional;
 @Mod(MKCore.MOD_ID)
 public class MKCore {
     public static final String MOD_ID = "mkcore";
+    private static final double EXTENDED_MAX_HEALTH_CAP = 10000.0;
     // Directly reference a log4j logger.
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final boolean DEV_LOGGING = Boolean.parseBoolean(System.getProperty("mkcore.enable_debug_log", "false"));
@@ -86,6 +89,14 @@ public class MKCore {
 
     private void registerAttributes() {
         Attributes.ATTACK_DAMAGE.value().setSyncable(true);
+        extendMaxHealthCap();
+    }
+
+    private void extendMaxHealthCap() {
+        Attribute maxHealth = Attributes.MAX_HEALTH.value();
+        if (maxHealth instanceof RangedAttribute rangedAttribute && rangedAttribute.getMaxValue() < EXTENDED_MAX_HEALTH_CAP) {
+            rangedAttribute.maxValue = EXTENDED_MAX_HEALTH_CAP;
+        }
     }
 
     @SubscribeEvent

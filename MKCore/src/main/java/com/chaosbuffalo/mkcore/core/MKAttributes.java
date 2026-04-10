@@ -21,7 +21,7 @@ public class MKAttributes {
             DeferredRegister.create(Registries.ATTRIBUTE, MKCore.MOD_ID);
 
     public static final Holder<Attribute> MAX_MANA = REGISTRY.register("max_mana", () ->
-            new MKRangedAttribute("attribute.name.mk.max_mana", 0, 0, 1024)
+            new MKRangedAttribute("attribute.name.mk.max_mana", 0, 0, 10000)
             .setSyncType(AttributeSyncType.Public));
 
     public static final Holder<Attribute> MANA_REGEN = REGISTRY.register("mana_regen", () ->
