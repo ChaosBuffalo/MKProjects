@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mknpc.entity.ai.controller.MovementStrategyController;
-import com.chaosbuffalo.mknpc.entity.ai.goal.FlyingUseAbilityGoal;
 import com.chaosbuffalo.mknpc.entity.ai.goal.UseAbilityGoal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
@@ -32,7 +31,7 @@ public class MKFlyingEntity extends MKEntity{
 
     @Override
     protected UseAbilityGoal createUseAbilityGoal() {
-        return new FlyingUseAbilityGoal(this);
+        return new UseAbilityGoal(this, true);
     }
 
     protected PathNavigation createNavigation(Level p_level) {
