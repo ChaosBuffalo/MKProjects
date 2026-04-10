@@ -1,0 +1,19 @@
+{
+  "channels": [
+    {
+      "operation": "max",
+      "property": "xRot",
+      "target": "jaw",
+      "value": {
+        "terms": [
+          {
+            "curve": "age_sin",
+            "frequency": 0.2,
+            "offset": 1.0,
+            "scale": 0.15
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -127,6 +127,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private int currentCastTicks;
     private double rangedCastingDistance;
     private int localSwingVariant;
+    private int visualMeleeWindupVariant;
+    private int nextVisualMeleeWindupVariant;
     private int visualMeleeWindupTicks;
     private int visualMeleeWindupRecoveryTicks;
     private boolean wasSwingingLastTick;
@@ -216,6 +218,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         visualCastState = VisualCastState.NONE;
         castingAbility = null;
         localSwingVariant = 0;
+        visualMeleeWindupVariant = 0;
+        nextVisualMeleeWindupVariant = 0;
         visualMeleeWindupTicks = 0;
         visualMeleeWindupRecoveryTicks = 0;
         wasSwingingLastTick = false;
@@ -737,7 +741,12 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         updateSwingTime();
         if (level().isClientSide) {
             visualMeleeAttackSequence.tick();
-            if (swinging) {
+            boolean visualSwingStarted = visualMeleeAttackSequence.consumeSwingStartedThisTick();
+            if (visualSwingStarted) {
+                localSwingVariant++;
+                visualMeleeWindupTicks = 0;
+                visualMeleeWindupRecoveryTicks = getMeleeWindupRecoveryTicks();
+            } else if (swinging) {
                 if (!wasSwingingLastTick) {
                     localSwingVariant++;
                     resetSwing();
@@ -748,6 +757,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
                 visualMeleeWindupRecoveryTicks--;
                 visualMeleeWindupTicks = 0;
             } else if (shouldShowMeleeWindup()) {
+                if (visualMeleeWindupTicks == 0) {
+                    visualMeleeWindupVariant = nextVisualMeleeWindupVariant++;
+                }
                 visualMeleeWindupTicks = Math.min(visualMeleeWindupTicks + 1, getMeleeWindupTicks());
             } else {
                 visualMeleeWindupTicks = 0;
@@ -812,8 +824,16 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return localSwingVariant;
     }
 
+    public int getCurrentStrikePoseIndex() {
+        return getCurrentLocalSwingVariant() - 1;
+    }
+
+    public int getCurrentMeleeWindupVariant() {
+        return visualMeleeWindupVariant;
+    }
+
     @Override
-    public void startVisualMeleeAttackSequence(int[] swingStartTicks, int swingDurationTicks) {
+    public void startVisualMeleeAttackSequence(int[] swingStartTicks, int[] swingDurationTicks) {
         visualMeleeAttackSequence.start(swingStartTicks, swingDurationTicks);
     }
 

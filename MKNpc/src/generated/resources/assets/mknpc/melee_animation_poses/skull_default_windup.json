@@ -1,0 +1,84 @@
+{
+  "channels": [
+    {
+      "property": "xRot",
+      "target": "head",
+      "value": {
+        "terms": [
+          {
+            "input": "headPitch"
+          },
+          {
+            "input": "headPitch",
+            "multiplierCurve": "windup_sin",
+            "scale": -1.0
+          },
+          {
+            "curve": "windup_sin",
+            "scale": -0.7853982
+          }
+        ]
+      }
+    },
+    {
+      "property": "y",
+      "target": "head",
+      "value": {
+        "constant": 20.0,
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -1.0
+          }
+        ]
+      }
+    },
+    {
+      "property": "z",
+      "target": "head",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 1.75
+          }
+        ]
+      }
+    },
+    {
+      "operation": "max",
+      "property": "xRot",
+      "target": "jaw",
+      "value": {
+        "terms": [
+          {
+            "curve": "age_sin",
+            "frequency": 0.2,
+            "offset": 1.0,
+            "scale": 0.15
+          }
+        ]
+      }
+    },
+    {
+      "operation": "max",
+      "property": "xRot",
+      "target": "jaw",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.45
+          },
+          {
+            "absolute": true,
+            "curve": "age_sin",
+            "frequency": 2.8,
+            "multiplierCurve": "windup_sin",
+            "scale": 0.4
+          }
+        ]
+      }
+    }
+  ]
+}

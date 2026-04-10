@@ -12,6 +12,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Player.class)
 public class PlayerMixins {
+    @Inject(method = "attack(Lnet/minecraft/world/entity/Entity;)V", at = @At("HEAD"), cancellable = true)
+    private void mkcore$queueAttackDuringCooldown(Entity target, CallbackInfo ci) {
+        Player player = (Player) (Object) this;
+        if (player.level().isClientSide) {
+            return;
+        }
+        var playerData = MKCore.getPlayerOrThrow(player);
+        var combat = playerData.getCombatExtension();
+        if (!combat.shouldDelayPrimaryAttack()) {
+            return;
+        }
+        combat.queuePrimaryAttack(target);
+        ci.cancel();
+    }
 
     @Inject(
             method = "attack(Lnet/minecraft/world/entity/Entity;)V",
@@ -25,6 +39,10 @@ public class PlayerMixins {
         Player player = (Player) (Object) this;
         var playerData = MKCore.getPlayerOrThrow(player);
         var combat = playerData.getCombatExtension();
+        if (player.level().isClientSide) {
+            combat.onLocalPrimaryAttackCommitted(target);
+            return;
+        }
         combat.recordSwingHit();
         NeoForge.EVENT_BUS.post(new PostAttackEvent(playerData, target, combat.isExecutingMultiAttack()));
         if (!player.level().isClientSide && !combat.isExecutingMultiAttack()) {

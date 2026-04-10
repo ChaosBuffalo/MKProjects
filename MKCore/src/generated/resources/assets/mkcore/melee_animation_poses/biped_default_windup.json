@@ -1,0 +1,113 @@
+{
+  "channels": [
+    {
+      "property": "xRot",
+      "target": "main_arm",
+      "value": {
+        "constant": -0.25,
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -2.75
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "sign": "handedness",
+      "target": "main_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.6
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "target": "main_arm",
+      "value": {}
+    },
+    {
+      "property": "xRot",
+      "target": "off_arm",
+      "value": {
+        "constant": -0.25,
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -1.75
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "sign": "handedness",
+      "target": "off_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.4
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "sign": "-handedness",
+      "target": "off_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.08
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "xRot",
+      "target": "body",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.12
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "sign": "handedness",
+      "target": "body",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.05
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "xRot",
+      "target": "head",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.1
+          }
+        ]
+      }
+    }
+  ]
+}

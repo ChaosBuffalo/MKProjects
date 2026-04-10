@@ -21,8 +21,10 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -263,11 +265,25 @@ public class ClientEventHandler {
     public static void onAttackReplacement(InputEvent.InteractionKeyMappingTriggered event) {
         if (event.isAttack() && event.getHand() == InteractionHand.MAIN_HAND) {
             Minecraft mc = Minecraft.getInstance();
-            Player player = mc.player;
-            if (player != null && mc.crosshairPickEntity != null) {
-                if (MKConfig.CLIENT.disableAutoattackForFriend.get() && Targeting.isValidFriendly(player, mc.crosshairPickEntity)) {
-                    event.setCanceled(true);
-                }
+            LocalPlayer player = mc.player;
+            if (player == null) {
+                return;
+            }
+
+            if (mc.crosshairPickEntity != null &&
+                    MKConfig.CLIENT.disableAutoattackForFriend.get() &&
+                    Targeting.isValidFriendly(player, mc.crosshairPickEntity)) {
+                event.setSwingHand(false);
+                event.setCanceled(true);
+                return;
+            }
+
+            var combat = MKCore.getPlayerOrThrow(player).getCombatExtension();
+            if (combat.shouldDelayPrimaryAttack() && mc.crosshairPickEntity != null) {
+                combat.queuePrimaryAttack(mc.crosshairPickEntity);
+                player.connection.send(ServerboundInteractPacket.createAttackPacket(mc.crosshairPickEntity, player.isShiftKeyDown()));
+                event.setSwingHand(false);
+                event.setCanceled(true);
             }
         }
     }

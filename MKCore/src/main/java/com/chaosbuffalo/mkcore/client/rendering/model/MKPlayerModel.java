@@ -2,10 +2,12 @@ package com.chaosbuffalo.mkcore.client.rendering.model;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.client.rendering.animations.AdditionalBipedAnimation;
-import com.chaosbuffalo.mkcore.client.rendering.animations.BipedMeleeSwingAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedCastAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedStunAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.PlayerCompleteCastAnimation;
+import com.chaosbuffalo.mkcore.client.rendering.animations.melee.MeleeAnimationManager;
+import com.chaosbuffalo.mkcore.client.rendering.animations.melee.ModelPoseAnimator;
+import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -21,9 +23,11 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
     private final BipedCastAnimation<Player> castAnimation = new BipedCastAnimation<>(this);
     private final PlayerCompleteCastAnimation completeCastAnimation = new PlayerCompleteCastAnimation(this);
     private final BipedStunAnimation<Player> stunAnimation = new BipedStunAnimation<>(this);
+    private final BipedSkeleton<AbstractClientPlayer, MKPlayerModel> skeleton;
 
     public MKPlayerModel(ModelPart p_170821_, boolean p_170822_) {
         super(p_170821_, p_170822_);
+        this.skeleton = new BipedSkeleton<>(this);
     }
 
     @Override
@@ -57,13 +61,20 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
             float swing = visualSwing > 0.0F ? visualSwing : this.attackTime;
             if (swing > 0.0F) {
                 int variant = playerData.getCombatExtension().hasVisualMeleeAttackSequence() ?
-                        playerData.getCombatExtension().getCurrentLocalSwingVariant() :
-                        playerData.getCombatExtension().getCurrentSwingCount();
-                BipedMeleeSwingAnimation.apply(this, entityIn.getMainArm(), swing, variant, ageInTicks);
+                        playerData.getCombatExtension().getCurrentStrikePoseIndex() :
+                        playerData.getCombatExtension().getCurrentPrimarySwingVariant();
+                if (!applyMeleeAnimationPose(entityIn, swing, ageInTicks, variant)) {
+                    super.setupAttackAnimation(entityIn, ageInTicks);
+                }
             } else {
                 super.setupAttackAnimation(entityIn, ageInTicks);
             }
         }, () -> super.setupAttackAnimation(entityIn, ageInTicks));
+    }
+
+    private boolean applyMeleeAnimationPose(AbstractClientPlayer entityIn, float swing, float ageInTicks, int variant) {
+        return MeleeAnimationManager.applyResolvedStrikePose(skeleton, entityIn, MeleeAnimationManager.BIPED_FAMILY, variant,
+                ModelPoseAnimator.Context.strike(swing, ageInTicks, entityIn.getMainArm()));
     }
 
     @Override

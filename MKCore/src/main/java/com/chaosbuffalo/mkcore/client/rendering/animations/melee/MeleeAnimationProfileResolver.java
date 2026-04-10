@@ -1,0 +1,12 @@
+package com.chaosbuffalo.mkcore.client.rendering.animations.melee;
+
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
+
+import javax.annotation.Nullable;
+
+@FunctionalInterface
+public interface MeleeAnimationProfileResolver {
+    @Nullable
+    ResourceLocation resolve(LivingEntity entity);
+}

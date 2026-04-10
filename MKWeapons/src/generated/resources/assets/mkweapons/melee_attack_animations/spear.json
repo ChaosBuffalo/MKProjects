@@ -1,0 +1,21 @@
+{
+  "family": "mkcore:biped",
+  "strikes": [
+    {
+      "lunge": 0.66,
+      "pose": "mkweapons:spear_strike_0"
+    },
+    {
+      "lunge": 0.72,
+      "pose": "mkweapons:spear_strike_1"
+    },
+    {
+      "lunge": 0.58,
+      "pose": "mkweapons:spear_strike_2"
+    }
+  ],
+  "windups": [
+    "mkweapons:spear_windup_0",
+    "mkweapons:spear_windup_1"
+  ]
+}

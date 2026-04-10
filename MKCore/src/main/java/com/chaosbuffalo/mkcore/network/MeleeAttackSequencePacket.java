@@ -20,9 +20,9 @@ public class MeleeAttackSequencePacket implements CustomPacketPayload {
 
     private final int attackerId;
     private final int[] swingStartTicks;
-    private final int swingDurationTicks;
+    private final int[] swingDurationTicks;
 
-    public MeleeAttackSequencePacket(int attackerId, int[] swingStartTicks, int swingDurationTicks) {
+    public MeleeAttackSequencePacket(int attackerId, int[] swingStartTicks, int[] swingDurationTicks) {
         this.attackerId = attackerId;
         this.swingStartTicks = swingStartTicks;
         this.swingDurationTicks = swingDurationTicks;
@@ -35,7 +35,10 @@ public class MeleeAttackSequencePacket implements CustomPacketPayload {
         for (int i = 0; i < swingCount; i++) {
             swingStartTicks[i] = buf.readVarInt();
         }
-        swingDurationTicks = buf.readVarInt();
+        swingDurationTicks = new int[swingCount];
+        for (int i = 0; i < swingCount; i++) {
+            swingDurationTicks[i] = buf.readVarInt();
+        }
     }
 
     public void toBytes(FriendlyByteBuf buf) {
@@ -44,7 +47,9 @@ public class MeleeAttackSequencePacket implements CustomPacketPayload {
         for (int swingStartTick : swingStartTicks) {
             buf.writeVarInt(swingStartTick);
         }
-        buf.writeVarInt(swingDurationTicks);
+        for (int swingDurationTick : swingDurationTicks) {
+            buf.writeVarInt(swingDurationTick);
+        }
     }
 
     @Override

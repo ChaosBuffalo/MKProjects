@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mkweapons;
 
+import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimingManager;
+import com.chaosbuffalo.mkweapons.combat.ComboStrikeMeleeSequenceTimingResolver;
 import com.chaosbuffalo.mkweapons.event.MKWeaponsEventHandler;
 import com.chaosbuffalo.mkweapons.init.MKWeaponsCommands;
 import com.chaosbuffalo.mkweapons.items.effects.IWeaponEffectsExtension;
@@ -35,8 +37,10 @@ public class MKWeapons {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        // some preinit code
-        MKWeaponsEventHandler.registerCombatTriggers();
+        event.enqueueWork(() -> {
+            MKWeaponsEventHandler.registerCombatTriggers();
+            MeleeSequenceTimingManager.registerResolver(new ComboStrikeMeleeSequenceTimingResolver());
+        });
     }
 
     private void processIMC(final InterModProcessEvent event) {

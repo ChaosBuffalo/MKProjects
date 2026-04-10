@@ -1,5 +1,10 @@
 package com.chaosbuffalo.mknpc.client.render.models;
 
+import com.chaosbuffalo.mkcore.client.rendering.animations.melee.MeleeAnimationManager;
+import com.chaosbuffalo.mkcore.client.rendering.animations.melee.MeleeAnimationPose;
+import com.chaosbuffalo.mkcore.client.rendering.animations.melee.ModelPoseAnimator;
+import com.chaosbuffalo.mknpc.client.render.animations.MKNpcMeleeAnimations;
+import com.chaosbuffalo.mknpc.client.render.skeleton.SkullSkeleton;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -8,17 +13,19 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
 
 public class MKSkullModel<T extends MKEntity> extends HierarchicalModel<T> {
     private final ModelPart root;
     protected final ModelPart head;
     protected final ModelPart jaw;
+    private final SkullSkeleton skeleton;
 
     public MKSkullModel(ModelPart root) {
         this.root = root;
         this.head = root.getChild("head");
         this.jaw = this.head.getChild("jaw");
+        this.skeleton = new SkullSkeleton(this.head, this.jaw);
     }
 
     public static MeshDefinition createHeadModel() {
@@ -46,19 +53,28 @@ public class MKSkullModel<T extends MKEntity> extends HierarchicalModel<T> {
         float partialTicks = ageInTicks - entity.tickCount;
         float attackAnim = entity.getVisualMeleeAttackAnim(partialTicks);
         float windupProgress = entity.getMeleeWindupProgress(partialTicks);
-        float idleJaw = (float) (Math.sin(ageInTicks * 0.2F) + 1.0F) * 0.15F;
-        float attackCurve = Mth.sin(attackAnim * (float) Math.PI);
-        float windupCurve = Mth.sin(windupProgress * ((float) Math.PI / 2.0F));
-        float windupPose = Mth.sin(windupProgress * ((float) Math.PI / 2.0F));
-        float chatterCurve = Mth.sin(ageInTicks * 2.8F) * windupCurve;
-        float attackJaw = attackCurve * 1.5F;
-        float windupJaw = windupCurve * 0.45F + Math.abs(chatterCurve) * 0.4F;
 
         this.head.yRot = netHeadYaw * ((float) Math.PI / 180.0F);
-        this.head.xRot = headPitch * ((float) Math.PI / 180.0F) * (1.0F - windupPose) - windupPose * ((float) Math.PI / 4.0F) + attackCurve * 0.3F;
-        this.head.y = 20.0F - windupPose * 1.0F;
-        this.head.z = windupPose * 1.75F;
-        this.jaw.xRot = Math.max(idleJaw, Math.max(windupJaw, attackJaw));
+        this.head.xRot = headPitch * ((float) Math.PI / 180.0F);
+        this.head.y = 20.0F;
+        this.head.z = 0.0F;
+        this.jaw.xRot = 0.0F;
+
+        if (attackAnim > 0.0F) {
+            MeleeAnimationManager.applyStrikePose(skeleton, entity, MKNpcMeleeAnimations.SKULL_DEFAULT,
+                    MKNpcMeleeAnimations.SKULL_FAMILY, entity.getCurrentStrikePoseIndex(),
+                    ModelPoseAnimator.Context.strike(attackAnim, ageInTicks, netHeadYaw, headPitch, HumanoidArm.RIGHT));
+        } else if (windupProgress > 0.0F) {
+            MeleeAnimationManager.applyWindupPose(skeleton, entity, MKNpcMeleeAnimations.SKULL_DEFAULT,
+                    MKNpcMeleeAnimations.SKULL_FAMILY, entity.getCurrentStrikePoseIndex(),
+                    ModelPoseAnimator.Context.windup(windupProgress, ageInTicks, netHeadYaw, headPitch, HumanoidArm.RIGHT));
+        } else {
+            MeleeAnimationPose pose = MeleeAnimationManager.getPose(MKNpcMeleeAnimations.SKULL_IDLE);
+            if (pose != null) {
+                ModelPoseAnimator.apply(skeleton, MKNpcMeleeAnimations.SKULL_FAMILY, pose,
+                        ModelPoseAnimator.Context.idle(ageInTicks, netHeadYaw, headPitch, HumanoidArm.RIGHT));
+            }
+        }
     }
 
     @Override

@@ -1,0 +1,29 @@
+{
+  "family": "mkcore:biped",
+  "strikes": [
+    {
+      "lunge": 0.44,
+      "pose": "mkweapons:katana_strike_0"
+    },
+    {
+      "lunge": 0.44,
+      "pose": "mkweapons:katana_strike_1"
+    },
+    {
+      "lunge": 0.48,
+      "pose": "mkweapons:katana_strike_2"
+    },
+    {
+      "lunge": 0.42,
+      "pose": "mkweapons:katana_strike_3"
+    },
+    {
+      "lunge": 0.52,
+      "pose": "mkweapons:katana_strike_4"
+    }
+  ],
+  "windups": [
+    "mkweapons:katana_windup_0",
+    "mkweapons:katana_windup_1"
+  ]
+}

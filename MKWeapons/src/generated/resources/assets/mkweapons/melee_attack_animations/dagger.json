@@ -1,0 +1,21 @@
+{
+  "family": "mkcore:biped",
+  "strikes": [
+    {
+      "lunge": 0.5,
+      "pose": "mkweapons:dagger_strike_0"
+    },
+    {
+      "lunge": 0.34,
+      "pose": "mkweapons:dagger_strike_1"
+    },
+    {
+      "lunge": 0.56,
+      "pose": "mkweapons:dagger_strike_2"
+    }
+  ],
+  "windups": [
+    "mkweapons:dagger_windup_0",
+    "mkweapons:dagger_windup_1"
+  ]
+}

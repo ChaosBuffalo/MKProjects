@@ -1,8 +1,10 @@
 package com.chaosbuffalo.mknpc.client.render.renderers;
 
+import com.chaosbuffalo.mkcore.client.rendering.animations.melee.MeleeAnimationManager;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.client.render.animations.MKNpcMeleeAnimations;
 import com.chaosbuffalo.mknpc.client.render.models.MKSkullModel;
 import com.chaosbuffalo.mknpc.entity.MKFlyingSkullEntity;
 import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
@@ -35,7 +37,7 @@ public class MKFlyingSkullRenderer extends MobRenderer<MKFlyingSkullEntity, MKSk
     public void render(MKFlyingSkullEntity entity, float entityYaw, float partialTicks, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight) {
         float attackAnim = entity.getVisualMeleeAttackAnim(partialTicks);
-        float lungeAmount = Mth.sin(attackAnim * (float) Math.PI) * 0.65F;
+        float lungeAmount = Mth.sin(attackAnim * (float) Math.PI) * getLungeAmount(entity);
         if (lungeAmount > 0.0F) {
             Vec3 forward = entity.getLookAngle().normalize().scale(lungeAmount);
             poseStack.pushPose();
@@ -56,5 +58,10 @@ public class MKFlyingSkullRenderer extends MobRenderer<MKFlyingSkullEntity, MKSk
         Vec3 spawnPos = entity.getEyePosition(partialTicks).add(0.0, -0.25, 0.0).add(backwards_start);
         Vec3 spawnEnd = spawnPos.add(backwards_end);
         anim.spawn(entity.level(), spawnPos, new Vec3(1.0, 1.0, 1.0), List.of(spawnEnd));
+    }
+
+    private float getLungeAmount(MKFlyingSkullEntity entity) {
+        return MeleeAnimationManager.resolveStrikeLunge(entity, MKNpcMeleeAnimations.SKULL_DEFAULT,
+                MKNpcMeleeAnimations.SKULL_FAMILY, entity.getCurrentStrikePoseIndex());
     }
 }

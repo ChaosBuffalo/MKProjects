@@ -1,0 +1,88 @@
+{
+  "channels": [
+    {
+      "property": "xRot",
+      "target": "body",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.2
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "rightArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -2.25
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "leftArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -2.25
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "target": "rightArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.75
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "target": "leftArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.75
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "target": "rightArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.2
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "target": "leftArm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.2
+          }
+        ]
+      }
+    }
+  ]
+}
