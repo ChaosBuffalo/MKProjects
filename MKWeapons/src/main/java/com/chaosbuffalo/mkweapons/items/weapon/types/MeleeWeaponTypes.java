@@ -48,7 +48,7 @@ public class MeleeWeaponTypes {
             .damageMultiplier(1.1f)
             .attackSpeed(-2.2f)
             .critical(1.5f, 0.10f)
-            .armorPiercing(0.25f)
+            .armorPiercing(0.10f)
             .isTwoHanded()
             .blocking(0.75f, 25f)
             .effect(new MeleeSkillScalingEffect(3.375, MKAttributes.TWO_HAND_SLASH))
@@ -83,12 +83,12 @@ public class MeleeWeaponTypes {
             .damageMultiplier(0.80f)
             .attackSpeed(-2.0f)
             .critical(1.0f, 0.05f)
-            .armorPiercing(0.50f)
+            .armorPiercing(0.25f)
             .reach(2.0f)
             .isTwoHanded()
             .blocking(0.8f, 40f)
             .effect(new MeleeSkillScalingEffect(2.5, MKAttributes.TWO_HAND_PIERCE))
-            .effect(new BleedMeleeWeaponEffect(0.9f, 6, 5, MKAttributes.TWO_HAND_PIERCE))
+            .effect(new BleedMeleeWeaponEffect(1.2f, 6, 5, MKAttributes.TWO_HAND_PIERCE))
             .effect(new FuryStrikeMeleeWeaponEffect(4, .5))
             .build();
 

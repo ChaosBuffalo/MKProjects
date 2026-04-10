@@ -1,5 +1,5 @@
 {
-  "armorPiercing": 0.5,
+  "armorPiercing": 0.25,
   "attackSpeed": -2.0,
   "blockEfficiency": 0.8,
   "critChance": 0.05,
@@ -13,7 +13,7 @@
     },
     {
       "type": "mkweapons:weapon_effect.bleed",
-      "damageMultiplier": 0.9,
+      "damageMultiplier": 1.2,
       "durationSeconds": 5,
       "maxStacks": 6,
       "skill": "mkcore:two_hand_pierce"
