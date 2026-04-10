@@ -1085,9 +1085,13 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return GameConstants.TICKS_PER_SECOND / Math.max(effectiveAttackSpeed, 0.001D);
     }
 
+    protected double getBaseSwingDurationTicks(InteractionHand hand) {
+        return 6.0D;
+    }
+
     public int getMeleeSwingDurationTicks(InteractionHand hand) {
         double projectedMultiplier = getProjectedAttackSpeed(hand) / Math.max(getBaseAttackSpeedValueWithItem(hand), 0.001D);
-        return Mth.clamp(Mth.ceil(6.0D / Math.max(projectedMultiplier, 0.001D)), 2, 24);
+        return Mth.clamp(Mth.ceil(getBaseSwingDurationTicks(hand) / Math.max(projectedMultiplier, 0.001D)), 2, 24);
     }
 
     @Override

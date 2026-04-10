@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.entity;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -38,6 +39,10 @@ public class MKGolemEntity extends MKEntity {
         return 0.85;
     }
 
+    @Override
+    protected double getBaseSwingDurationTicks(InteractionHand hand) {
+        return 8.0D;
+    }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
