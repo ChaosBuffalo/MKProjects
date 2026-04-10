@@ -2,9 +2,15 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.core.combat.MeleeHandState;
-import com.chaosbuffalo.mkcore.utils.EntityUtils;
+import net.minecraft.core.Holder;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ItemStack;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -58,7 +64,7 @@ public class CombatExtensionModule {
     }
 
     public int getRequiredAttackStrengthTicks(InteractionHand hand) {
-        return (int) Math.round(EntityUtils.getCooldownPeriod(getEntityData().getEntity()));
+        return Math.max(1, Mth.ceil(resolveAttackSpeedDelay(hand)));
     }
 
     public void setAttackStrengthTicks(InteractionHand hand, int newTicks) {
@@ -79,6 +85,32 @@ public class CombatExtensionModule {
         for (MeleeHandState handState : handStates.values()) {
             handState.tickAttackStrengthTicker();
         }
+    }
+
+    private float resolveAttackSpeedDelay(InteractionHand hand) {
+        LivingEntity entity = getEntityData().getEntity();
+        if (entity.getItemInHand(hand).isEmpty()) {
+            return GameConstants.TICKS_PER_SECOND;
+        }
+        if (hand == InteractionHand.MAIN_HAND) {
+            double attackSpeed = entity.getAttributeValue(Attributes.ATTACK_SPEED);
+            return (float) (GameConstants.TICKS_PER_SECOND / Math.max(attackSpeed, 0.001D));
+        }
+        double currentAttackSpeed = entity.getAttributeValue(Attributes.ATTACK_SPEED);
+        double mainHandAttackSpeed = getItemAddValueModifier(entity.getMainHandItem(), Attributes.ATTACK_SPEED);
+        double selectedHandAttackSpeed = getItemAddValueModifier(entity.getItemInHand(hand), Attributes.ATTACK_SPEED);
+        double effectiveAttackSpeed = currentAttackSpeed - mainHandAttackSpeed + selectedHandAttackSpeed;
+        return (float) (GameConstants.TICKS_PER_SECOND / Math.max(effectiveAttackSpeed, 0.001D));
+    }
+
+    private static double getItemAddValueModifier(ItemStack stack, Holder<Attribute> attribute) {
+        final double[] total = {0.0D};
+        stack.getAttributeModifiers().forEach(EquipmentSlot.MAINHAND, (holder, modifier) -> {
+            if (holder.equals(attribute) && modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
+                total[0] += modifier.amount();
+            }
+        });
+        return total[0];
     }
 
     public MeleeHandState getHandState(InteractionHand hand) {
