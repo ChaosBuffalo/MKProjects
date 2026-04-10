@@ -54,7 +54,7 @@ public class MKSkullModel<T extends MKEntity> extends HierarchicalModel<T> {
         float partialTicks = ageInTicks - entity.tickCount;
         float attackAnim = entity.getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, partialTicks);
         boolean attackActive = entity.hasActiveVisualMeleeAttack(InteractionHand.MAIN_HAND, partialTicks);
-        float windupProgress = entity.getMeleeWindupProgress(partialTicks);
+        float windupProgress = entity.getMeleeWindupProgress(InteractionHand.MAIN_HAND, partialTicks);
 
         this.head.yRot = netHeadYaw * ((float) Math.PI / 180.0F);
         this.head.xRot = headPitch * ((float) Math.PI / 180.0F);
@@ -71,7 +71,7 @@ public class MKSkullModel<T extends MKEntity> extends HierarchicalModel<T> {
         } else if (windupProgress > 0.0F) {
             MeleeAnimationManager.applyWindupPose(skeleton, entity, MKNpcMeleeAnimations.SKULL_DEFAULT,
                     InteractionHand.MAIN_HAND, MKNpcMeleeAnimations.SKULL_FAMILY,
-                    entity.getCurrentMeleeWindupVariant(),
+                    entity.getCurrentMeleeWindupVariant(InteractionHand.MAIN_HAND),
                     ModelPoseAnimator.Context.windup(windupProgress, ageInTicks, netHeadYaw, headPitch, HumanoidArm.RIGHT,
                             InteractionHand.MAIN_HAND));
         } else {

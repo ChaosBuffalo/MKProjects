@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.events.EntityAbilityEvent;
+import com.chaosbuffalo.mkcore.events.ModifyBaseMeleeDamageEvent;
 import com.chaosbuffalo.mkcore.events.PostAttackEvent;
 import com.chaosbuffalo.mkcore.utils.DamageUtils;
 import com.chaosbuffalo.mkweapons.MKWeapons;
@@ -118,6 +119,19 @@ public class MKWeaponsEventHandler {
                 effect.postAttack(meleeWeapon, weaponStack, attackerData, hand);
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onModifyBaseMeleeDamage(ModifyBaseMeleeDamageEvent event) {
+        ItemStack weaponStack = event.getWeaponStack();
+        if (!(weaponStack.getItem() instanceof IMKMeleeWeapon meleeWeapon)) {
+            return;
+        }
+        float damage = event.getDamage();
+        for (IMeleeWeaponEffect effect : meleeWeapon.getWeaponEffects(weaponStack)) {
+            damage = effect.modifyBaseAttackDamage(damage, meleeWeapon, weaponStack, event.getEntity(), event.getHand());
+        }
+        event.setDamage(damage);
     }
 
     @SubscribeEvent

@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.entity.combat;
 
 import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
 import com.chaosbuffalo.mkcore.core.combat.SharedMeleeAttackExecutor;
+import com.chaosbuffalo.mkcore.events.ModifyBaseMeleeDamageEvent;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -10,6 +11,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.neoforged.neoforge.common.NeoForge;
 
 public final class NpcMeleeAttackExecutor {
     private NpcMeleeAttackExecutor() {
@@ -26,6 +28,9 @@ public final class NpcMeleeAttackExecutor {
         ItemStack weaponStack = entity.getItemInHand(hand);
         DamageSource damageSource = entity.damageSources().mobAttack(entity);
         float baseDamage = (float) entity.getProjectedAttackDamage(hand);
+        ModifyBaseMeleeDamageEvent baseDamageEvent = new ModifyBaseMeleeDamageEvent(entity.getEntityDataCap(), hand, weaponStack, baseDamage);
+        NeoForge.EVENT_BUS.post(baseDamageEvent);
+        baseDamage = baseDamageEvent.getDamage();
         float knockback = (float) entity.getProjectedAttackKnockback(hand);
         if (entity.level() instanceof ServerLevel serverLevel) {
             baseDamage = EnchantmentHelper.modifyDamage(serverLevel, weaponStack, target, damageSource, baseDamage);

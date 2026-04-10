@@ -1,0 +1,21 @@
+{
+  "family": "mkcore:biped",
+  "strikes": [
+    {
+      "lunge": 0.44,
+      "pose": "mknpc:golem_katana_strike_0"
+    },
+    {
+      "lunge": 0.44,
+      "pose": "mknpc:golem_katana_strike_1"
+    },
+    {
+      "lunge": 0.52,
+      "pose": "mknpc:golem_katana_strike_2"
+    }
+  ],
+  "windups": [
+    "mknpc:golem_katana_windup_0",
+    "mknpc:golem_katana_windup_1"
+  ]
+}

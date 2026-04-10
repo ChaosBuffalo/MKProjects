@@ -1,0 +1,21 @@
+{
+  "family": "mkcore:biped",
+  "strikes": [
+    {
+      "lunge": 0.42,
+      "pose": "mknpc:golem_longsword_strike_0"
+    },
+    {
+      "lunge": 0.42,
+      "pose": "mknpc:golem_longsword_strike_1"
+    },
+    {
+      "lunge": 0.48,
+      "pose": "mknpc:golem_longsword_strike_2"
+    }
+  ],
+  "windups": [
+    "mknpc:golem_longsword_windup_0",
+    "mknpc:golem_longsword_windup_1"
+  ]
+}

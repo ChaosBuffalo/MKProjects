@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.client.rendering.animations.BipedStunAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.melee.MeleeAnimationManager;
 import com.chaosbuffalo.mkcore.client.rendering.animations.melee.ModelPoseAnimator;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
+import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCSkeleton;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.combat.MKMeleeManager;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
@@ -29,7 +30,7 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
     private final BipedCastAnimation<MKEntity> castAnimation = new BipedCastAnimation<>(this);
     private final MKEntityCompleteCastAnimation completeCastAnimation = new MKEntityCompleteCastAnimation(this);
     private final BipedStunAnimation<MKEntity> stunAnimation = new BipedStunAnimation<>(this);
-    protected final BipedSkeleton<T, MKBipedModel<T>> skeleton;
+    protected MCSkeleton skeleton;
 
 
     public MKBipedModel(ModelPart modelPart) {
@@ -73,9 +74,13 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
         if (this.attackTime <= 0.0F &&
                 !entityIn.hasActiveVisualMeleeAttack(InteractionHand.MAIN_HAND, partialTicks) &&
                 !entityIn.hasActiveVisualMeleeAttack(InteractionHand.OFF_HAND, partialTicks)) {
-            float windupProgress = entityIn.getMeleeWindupProgress(partialTicks);
-            if (windupProgress > 0.0F) {
-                applyMeleeWindupPose(entityIn, windupProgress);
+            float mainWindupProgress = entityIn.getMeleeWindupProgress(InteractionHand.MAIN_HAND, partialTicks);
+            float offWindupProgress = entityIn.getMeleeWindupProgress(InteractionHand.OFF_HAND, partialTicks);
+            if (mainWindupProgress > 0.0F) {
+                applyMeleeWindupPose(entityIn, InteractionHand.MAIN_HAND, mainWindupProgress);
+            }
+            if (offWindupProgress > 0.0F) {
+                applyMeleeWindupPose(entityIn, InteractionHand.OFF_HAND, offWindupProgress);
             }
         }
         this.head.zRot = 0.0f;
@@ -144,10 +149,13 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
         }
     }
 
-    protected void applyMeleeWindupPose(T entityIn, float windupProgress) {
-        MeleeAnimationManager.applyResolvedWindupPose(skeleton, entityIn, InteractionHand.MAIN_HAND,
-                MeleeAnimationManager.BIPED_FAMILY, entityIn.getCurrentMeleeWindupVariant(),
-                ModelPoseAnimator.Context.windup(windupProgress, entityIn.getMainArm(), InteractionHand.MAIN_HAND));
+    protected void applyMeleeWindupPose(T entityIn, InteractionHand hand, float windupProgress) {
+        boolean dualWielding = MKMeleeManager.canUseForAttack(entityIn, InteractionHand.MAIN_HAND) &&
+                MKMeleeManager.canUseForAttack(entityIn, InteractionHand.OFF_HAND);
+        HumanoidArm poseMainArm = hand == InteractionHand.MAIN_HAND ? entityIn.getMainArm() : entityIn.getMainArm().getOpposite();
+        MeleeAnimationManager.applyResolvedWindupPose(skeleton, entityIn, hand,
+                MeleeAnimationManager.BIPED_FAMILY, entityIn.getCurrentMeleeWindupVariant(hand),
+                ModelPoseAnimator.Context.windup(windupProgress, poseMainArm, hand, dualWielding));
     }
 
     public AdditionalBipedAnimation<MKEntity> getAdditionalAnimation(T entityIn) {

@@ -33,6 +33,11 @@ public interface IMeleeWeaponEffect extends IItemEffect {
         return damage;
     }
 
+    default float modifyBaseAttackDamage(float damage, IMKMeleeWeapon weapon, ItemStack stack,
+                                         LivingEntity attacker, InteractionHand hand) {
+        return damage;
+    }
+
     default void postAttack(IMKMeleeWeapon weapon, ItemStack stack, IMKEntityData attackerData) {
 
     }

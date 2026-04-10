@@ -12,15 +12,15 @@
     },
     {
       "type": "mkweapons:weapon_effect.bleed",
-      "damageMultiplier": 0.75,
+      "damageMultiplier": 0.9,
       "durationSeconds": 5,
-      "maxStacks": 5,
+      "maxStacks": 6,
       "skill": "mkcore:two_hand_pierce"
     },
     {
       "type": "mkweapons:weapon_effect.fury_strike",
-      "numberOfHits": 3,
-      "perHit": 0.4
+      "numberOfHits": 4,
+      "perHit": 0.5
     }
   ],
   "isTwoHanded": true,

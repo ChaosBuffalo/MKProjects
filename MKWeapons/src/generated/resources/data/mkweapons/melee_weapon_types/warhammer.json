@@ -1,18 +1,18 @@
 {
-  "attackSpeed": -2.75,
+  "attackSpeed": -2.5,
   "blockEfficiency": 0.8,
   "critChance": 0.05,
-  "critMultiplier": 0.25,
-  "damageMultiplier": 2.25,
+  "critMultiplier": 1.0,
+  "damageMultiplier": 4.0,
   "effects": [
     {
       "type": "mkweapons:weapon_effect.skill_scaling",
-      "baseDamage": 6.75,
+      "baseDamage": 7.0,
       "skill": "mkcore:two_hand_blunt"
     },
     {
       "type": "mkweapons:weapon_effect.undead_damage",
-      "multiplier": 2.0
+      "multiplier": 2.6
     },
     {
       "type": "mkweapons:weapon_effect.stun",

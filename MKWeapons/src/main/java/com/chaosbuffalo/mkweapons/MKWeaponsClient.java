@@ -3,6 +3,8 @@ package com.chaosbuffalo.mkweapons;
 import com.chaosbuffalo.mkcore.client.rendering.animations.melee.MeleeAnimationManager;
 import com.chaosbuffalo.mkweapons.client.MKWeaponsItemProperties;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -21,7 +23,12 @@ public class MKWeaponsClient {
         event.enqueueWork(MKWeaponsItemProperties::registerItemProperties);
         event.enqueueWork(() -> MeleeAnimationManager.registerResolver((entity, hand) -> {
             if (entity.getItemInHand(hand).getItem() instanceof IMKMeleeWeapon weapon) {
-                return weapon.getWeaponType().getName();
+                ResourceLocation weaponType = weapon.getWeaponType().getName();
+                ResourceLocation entityType = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+                if (entityType.equals(ResourceLocation.fromNamespaceAndPath("mknpc", "golem"))) {
+                    return ResourceLocation.fromNamespaceAndPath("mknpc", "golem_" + weaponType.getPath());
+                }
+                return weaponType;
             }
             return null;
         }));

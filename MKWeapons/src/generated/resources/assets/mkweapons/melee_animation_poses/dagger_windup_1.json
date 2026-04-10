@@ -4,11 +4,11 @@
       "property": "xRot",
       "target": "main_arm",
       "value": {
-        "constant": -0.25,
+        "constant": 0.18,
         "terms": [
           {
             "curve": "windup_sin",
-            "scale": -1.7
+            "scale": 0.78
           }
         ]
       }
@@ -21,7 +21,7 @@
         "terms": [
           {
             "curve": "windup_sin",
-            "scale": -0.22
+            "scale": -0.4
           }
         ]
       }
@@ -34,7 +34,7 @@
         "terms": [
           {
             "curve": "windup_sin",
-            "scale": 0.0
+            "scale": -0.1
           }
         ]
       }
@@ -43,11 +43,11 @@
       "property": "xRot",
       "target": "off_arm",
       "value": {
-        "constant": -0.2,
+        "constant": -0.16,
         "terms": [
           {
             "curve": "windup_sin",
-            "scale": -0.92
+            "scale": -0.48
           }
         ]
       }
@@ -60,7 +60,7 @@
         "terms": [
           {
             "curve": "windup_sin",
-            "scale": -0.04
+            "scale": 0.04
           }
         ]
       }
@@ -73,7 +73,7 @@
         "terms": [
           {
             "curve": "windup_sin",
-            "scale": 0.02
+            "scale": -0.03
           }
         ]
       }
@@ -86,7 +86,7 @@
         "terms": [
           {
             "curve": "windup_sin",
-            "scale": -0.05
+            "scale": 0.04
           }
         ]
       }
@@ -99,7 +99,7 @@
         "terms": [
           {
             "curve": "windup_sin",
-            "scale": -0.04
+            "scale": -0.06
           }
         ]
       }
@@ -112,7 +112,7 @@
         "terms": [
           {
             "curve": "windup_sin",
-            "scale": 0.04
+            "scale": -0.01
           }
         ]
       }

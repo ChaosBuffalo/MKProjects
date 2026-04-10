@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.core.player;
 
+import com.chaosbuffalo.mkcore.events.ModifyBaseMeleeDamageEvent;
 import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -7,6 +8,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.common.NeoForge;
 
 public final class PlayerMeleeHandStatsResolver {
     private PlayerMeleeHandStatsResolver() {
@@ -17,13 +19,19 @@ public final class PlayerMeleeHandStatsResolver {
     }
 
     public static float resolveAttackDamage(PlayerCombatExtensionModule combat, InteractionHand hand) {
+        float damage;
         if (hand == InteractionHand.MAIN_HAND) {
-            return (float) combat.getPlayerData().getEntity().getAttributeValue(Attributes.ATTACK_DAMAGE);
+            damage = (float) combat.getPlayerData().getEntity().getAttributeValue(Attributes.ATTACK_DAMAGE);
+        } else {
+            double currentAttackDamage = combat.getPlayerData().getEntity().getAttributeValue(Attributes.ATTACK_DAMAGE);
+            double mainHandAttackDamage = getItemAddValueModifier(combat.getPlayerData().getEntity().getMainHandItem(), Attributes.ATTACK_DAMAGE);
+            double selectedHandAttackDamage = getItemAddValueModifier(combat.getPlayerData().getEntity().getItemInHand(hand), Attributes.ATTACK_DAMAGE);
+            damage = (float) (currentAttackDamage - mainHandAttackDamage + selectedHandAttackDamage);
         }
-        double currentAttackDamage = combat.getPlayerData().getEntity().getAttributeValue(Attributes.ATTACK_DAMAGE);
-        double mainHandAttackDamage = getItemAddValueModifier(combat.getPlayerData().getEntity().getMainHandItem(), Attributes.ATTACK_DAMAGE);
-        double selectedHandAttackDamage = getItemAddValueModifier(combat.getPlayerData().getEntity().getItemInHand(hand), Attributes.ATTACK_DAMAGE);
-        return (float) (currentAttackDamage - mainHandAttackDamage + selectedHandAttackDamage);
+        ModifyBaseMeleeDamageEvent event = new ModifyBaseMeleeDamageEvent(combat.getPlayerData(), hand,
+                combat.getPlayerData().getEntity().getItemInHand(hand), damage);
+        NeoForge.EVENT_BUS.post(event);
+        return event.getDamage();
     }
 
     public static float resolveAttackKnockback(PlayerCombatExtensionModule combat, InteractionHand hand) {

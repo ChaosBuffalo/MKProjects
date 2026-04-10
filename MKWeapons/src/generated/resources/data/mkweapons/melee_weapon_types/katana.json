@@ -2,12 +2,12 @@
   "attackSpeed": -2.2,
   "blockEfficiency": 0.75,
   "critChance": 0.1,
-  "critMultiplier": 1.0,
-  "damageMultiplier": 1.5,
+  "critMultiplier": 1.5,
+  "damageMultiplier": 2.5,
   "effects": [
     {
       "type": "mkweapons:weapon_effect.skill_scaling",
-      "baseDamage": 4.5,
+      "baseDamage": 9.0,
       "skill": "mkcore:two_hand_slash"
     },
     {

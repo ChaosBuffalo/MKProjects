@@ -15,11 +15,9 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -34,7 +32,6 @@ public class MeleeSkillScalingEffect extends BaseMeleeWeaponEffect {
                 BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("skill").forGetter(i -> i.skill)
         ).apply(builder, MeleeSkillScalingEffect::new);
     });
-    public static final ResourceLocation skillScaling = MKWeapons.id("melee_skill_scaling");
     private final double baseDamage;
     private final Holder<Attribute> skill;
 
@@ -52,28 +49,14 @@ public class MeleeSkillScalingEffect extends BaseMeleeWeaponEffect {
     }
 
     @Override
-    public void onSkillChange(Player player, Holder<Attribute> skill) {
-        if (this.skill.is(skill)) {
-            onEntityEquip(player);
+    public float modifyBaseAttackDamage(float damage, IMKMeleeWeapon weapon, ItemStack stack,
+                                        LivingEntity attacker, InteractionHand hand) {
+        if (this.skill == null) {
+            return damage;
         }
-    }
-
-    @Override
-    public void onEntityEquip(LivingEntity entity) {
-        AttributeInstance attr = entity.getAttribute(Attributes.ATTACK_DAMAGE);
-        if (attr != null) {
-            float skillLevel = MKAbility.getSkillLevel(entity, skill);
-            double amount = skillLevel * baseDamage * MKConfig.SERVER.skillScalingMultiplier.getAsDouble();
-            attr.addOrUpdateTransientModifier(new AttributeModifier(skillScaling, amount, AttributeModifier.Operation.ADD_VALUE));
-        }
-    }
-
-    @Override
-    public void onEntityUnequip(LivingEntity entity) {
-        AttributeInstance attr = entity.getAttribute(Attributes.ATTACK_DAMAGE);
-        if (attr != null) {
-            attr.removeModifier(skillScaling);
-        }
+        float skillLevel = MKAbility.getSkillLevel(attacker, skill);
+        double amount = skillLevel * baseDamage * MKConfig.SERVER.skillScalingMultiplier.getAsDouble();
+        return damage + (float) amount;
     }
 
     @Override

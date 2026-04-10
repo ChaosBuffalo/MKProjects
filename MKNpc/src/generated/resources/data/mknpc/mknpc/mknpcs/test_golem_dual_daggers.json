@@ -1,0 +1,51 @@
+{
+  "entityType": "mknpc:golem",
+  "name": "mknpc:test_golem_dual_daggers",
+  "options": {
+    "mknpc:attributes": {
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "base_value": 200.0
+        },
+        {
+          "attribute": "minecraft:generic.attack_damage",
+          "base_value": 8.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "equipment": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "count": 1,
+              "id": "mkweapons:dagger_iron"
+            },
+            "weight": 1.0
+          }
+        ],
+        "offhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "count": 1,
+              "id": "mkweapons:dagger_iron"
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:faction": {
+      "factionId": "mkfaction:undead"
+    },
+    "mknpc:name": {
+      "name": "Test Golem Dual Daggers"
+    },
+    "mknpc:render_group": {
+      "renderGroup": "mknpc:golem/default"
+    }
+  }
+}

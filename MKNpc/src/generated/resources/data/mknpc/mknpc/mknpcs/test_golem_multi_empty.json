@@ -1,0 +1,31 @@
+{
+  "entityType": "mknpc:golem",
+  "name": "mknpc:test_golem_multi_empty",
+  "options": {
+    "mknpc:attributes": {
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "base_value": 200.0
+        },
+        {
+          "attribute": "minecraft:generic.attack_damage",
+          "base_value": 8.0
+        },
+        {
+          "attribute": "mkcore:multi_attack_chance",
+          "base_value": 4.0
+        }
+      ]
+    },
+    "mknpc:faction": {
+      "factionId": "mkfaction:undead"
+    },
+    "mknpc:name": {
+      "name": "Test Golem Multi Empty"
+    },
+    "mknpc:render_group": {
+      "renderGroup": "mknpc:golem/default"
+    }
+  }
+}

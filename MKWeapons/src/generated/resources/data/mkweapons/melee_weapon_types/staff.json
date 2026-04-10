@@ -2,12 +2,12 @@
   "attackSpeed": -2.5,
   "blockEfficiency": 0.85,
   "critChance": 0.05,
-  "critMultiplier": 0.5,
-  "damageMultiplier": 1.75,
+  "critMultiplier": 1.0,
+  "damageMultiplier": 2.75,
   "effects": [
     {
       "type": "mkweapons:weapon_effect.skill_scaling",
-      "baseDamage": 5.25,
+      "baseDamage": 6.5,
       "skill": "mkcore:two_hand_blunt"
     },
     {
@@ -18,7 +18,7 @@
     {
       "type": "mkweapons:weapon_effect.combo_strike",
       "numberOfHits": 5,
-      "perHit": 0.15
+      "perHit": 0.25
     }
   ],
   "isTwoHanded": true,

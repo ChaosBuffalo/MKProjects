@@ -12,15 +12,15 @@
     },
     {
       "type": "mkweapons:weapon_effect.bleed",
-      "damageMultiplier": 1.0,
+      "damageMultiplier": 0.8,
       "durationSeconds": 4,
-      "maxStacks": 10,
+      "maxStacks": 8,
       "skill": "mkcore:one_hand_pierce"
     },
     {
       "type": "mkweapons:weapon_effect.combo_strike",
-      "numberOfHits": 3,
-      "perHit": 0.5
+      "numberOfHits": 4,
+      "perHit": 0.33
     }
   ],
   "isTwoHanded": false,

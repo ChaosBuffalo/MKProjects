@@ -13,7 +13,7 @@
     {
       "type": "mkweapons:weapon_effect.fury_strike",
       "numberOfHits": 5,
-      "perHit": 0.25
+      "perHit": 0.4
     }
   ],
   "isTwoHanded": false,
