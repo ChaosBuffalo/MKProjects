@@ -43,14 +43,22 @@ public class MKSkullModel<T extends MKEntity> extends HierarchicalModel<T> {
 
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        float attackAnim = entity.getAttackAnim(ageInTicks - entity.tickCount);
+        float partialTicks = ageInTicks - entity.tickCount;
+        float attackAnim = entity.getAttackAnim(partialTicks);
+        float windupProgress = entity.getMeleeWindupProgress(partialTicks);
         float idleJaw = (float) (Math.sin(ageInTicks * 0.2F) + 1.0F) * 0.15F;
         float attackCurve = Mth.sin(attackAnim * (float) Math.PI);
-        float attackJaw = attackCurve * 1.0F;
+        float windupCurve = Mth.sin(windupProgress * ((float) Math.PI / 2.0F));
+        float windupPose = Mth.sin(windupProgress * ((float) Math.PI / 2.0F));
+        float chatterCurve = Mth.sin(ageInTicks * 2.8F) * windupCurve;
+        float attackJaw = attackCurve * 1.5F;
+        float windupJaw = windupCurve * 0.45F + Math.abs(chatterCurve) * 0.4F;
 
         this.head.yRot = netHeadYaw * ((float) Math.PI / 180.0F);
-        this.head.xRot = headPitch * ((float) Math.PI / 180.0F) + attackCurve * 0.2F;
-        this.jaw.xRot = Math.max(idleJaw, attackJaw);
+        this.head.xRot = headPitch * ((float) Math.PI / 180.0F) * (1.0F - windupPose) - windupPose * ((float) Math.PI / 4.0F) + attackCurve * 0.3F;
+        this.head.y = 20.0F - windupPose * 1.0F;
+        this.head.z = windupPose * 1.75F;
+        this.jaw.xRot = Math.max(idleJaw, Math.max(windupJaw, attackJaw));
     }
 
     @Override

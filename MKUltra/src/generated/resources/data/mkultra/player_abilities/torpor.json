@@ -1,0 +1,13 @@
+{
+  "attributes": {
+    "baseDuration": 60,
+    "baseValue": -0.25,
+    "cast_particles": "mkultra:warp_curse_cast",
+    "casting_particles": "mkcore:fx.casting.empty",
+    "scaleDuration": 10,
+    "scaleValue": -0.03
+  },
+  "castTime": 20,
+  "cooldown": 360,
+  "manaCost": 8.0
+}

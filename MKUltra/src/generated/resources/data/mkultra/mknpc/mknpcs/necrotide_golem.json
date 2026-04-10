@@ -1,5 +1,5 @@
 {
-  "entityType": "mkultra:golem",
+  "entityType": "mknpc:golem",
   "name": "mkultra:necrotide_golem",
   "options": {
     "mknpc:abilities": {

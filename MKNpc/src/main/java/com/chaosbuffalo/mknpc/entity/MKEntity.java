@@ -44,15 +44,18 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -121,6 +124,10 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private int castTicks;
     private int currentCastTicks;
     private double rangedCastingDistance;
+    private int localSwingVariant;
+    private int visualMeleeWindupTicks;
+    private int visualMeleeWindupRecoveryTicks;
+    private boolean wasSwingingLastTick;
 
     @Nullable
     protected Component battlecry;
@@ -205,6 +212,10 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         currentCastTicks = 0;
         visualCastState = VisualCastState.NONE;
         castingAbility = null;
+        localSwingVariant = 0;
+        visualMeleeWindupTicks = 0;
+        visualMeleeWindupRecoveryTicks = 0;
+        wasSwingingLastTick = false;
         battlecry = null;
         lungeSpeed = .25;
         rangedCastingDistance = 6.0;
@@ -417,6 +428,10 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     public double getEntityReach() {
         return getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
+    }
+
+    public double getMeleeApproachDistanceMultiplier() {
+        return 0.5;
     }
 
     public void attackEntityWithRangedAttack(LivingEntity target, float launchPower, float launchVelocity) {
@@ -717,6 +732,24 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     @Override
     public void aiStep() {
         updateSwingTime();
+        if (level().isClientSide) {
+            if (swinging) {
+                if (!wasSwingingLastTick) {
+                    localSwingVariant++;
+                    resetSwing();
+                }
+                visualMeleeWindupTicks = 0;
+                visualMeleeWindupRecoveryTicks = getMeleeWindupRecoveryTicks();
+            } else if (visualMeleeWindupRecoveryTicks > 0) {
+                visualMeleeWindupRecoveryTicks--;
+                visualMeleeWindupTicks = 0;
+            } else if (shouldShowMeleeWindup()) {
+                visualMeleeWindupTicks = Math.min(visualMeleeWindupTicks + 1, getMeleeWindupTicks());
+            } else {
+                visualMeleeWindupTicks = 0;
+            }
+            wasSwingingLastTick = swinging;
+        }
         attackStrengthTicker++;
         super.aiStep();
         if (nonCombatBehavior != null && !hasThreatTarget()) {
@@ -734,6 +767,42 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     public int getTicksSinceLastSwing() {
         return attackStrengthTicker;
+    }
+
+    public int getMeleeWindupTicks() {
+        return Mth.clamp(Mth.ceil(getMeleeCooldownPeriod() * 0.3), 3, 16);
+    }
+
+    public int getMeleeWindupRecoveryTicks() {
+        return Mth.clamp(Mth.ceil(getMeleeCooldownPeriod() * 0.45), 4, 24);
+    }
+
+    protected double getVisualMeleeWindupRangeMultiplier() {
+        return 1.15;
+    }
+
+    protected double getVisualMeleeWindupRangeSqr(LivingEntity target) {
+        double range = getEntityReach() * getScale() * getVisualMeleeWindupRangeMultiplier();
+        return range * range;
+    }
+
+    public boolean shouldShowMeleeWindup() {
+        if (getCombatMoveType() != CombatMoveType.MELEE || getVisualCastState() != VisualCastState.NONE) {
+            return false;
+        }
+        return isAggressive() || swinging || visualMeleeWindupTicks > 0;
+    }
+
+    public float getMeleeWindupProgress(float partialTicks) {
+        int windupTicks = getMeleeWindupTicks();
+        if (windupTicks <= 0 || visualMeleeWindupRecoveryTicks > 0 || !shouldShowMeleeWindup()) {
+            return 0.0F;
+        }
+        return Mth.clamp((visualMeleeWindupTicks + partialTicks) / windupTicks, 0.0F, 1.0F);
+    }
+
+    public int getCurrentLocalSwingVariant() {
+        return localSwingVariant;
     }
 
     public VisualCastState getVisualCastState() {
@@ -857,7 +926,56 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     public double getAttackSpeedMultiplier() {
         double attackSpeed = getAttributeValue(Attributes.ATTACK_SPEED);
-        return attackSpeed / getBaseAttackSpeedValueWithItem();
+        return attackSpeed / Math.max(getBaseAttackSpeedValueWithItem(), 0.001D);
+    }
+
+    public double getMeleeCooldownPeriod() {
+        double basePeriod = getMainHandItem().isEmpty() ? GameConstants.TICKS_PER_SECOND :
+                GameConstants.TICKS_PER_SECOND / Math.max(getBaseAttackSpeedValueWithItem(), 0.001D);
+        return basePeriod / Math.max(getAttackSpeedMultiplier(), 0.001D);
+    }
+
+    protected int getCurrentMKSwingDuration() {
+        return Mth.clamp(Mth.ceil(6.0D / Math.max(getAttackSpeedMultiplier(), 0.001D)), 2, 24);
+    }
+
+    @Override
+    protected void updateSwingTime() {
+        int duration = getCurrentMKSwingDuration();
+        if (this.swinging) {
+            ++this.swingTime;
+            if (this.swingTime >= duration) {
+                this.swingTime = 0;
+                this.swinging = false;
+            }
+        } else {
+            this.swingTime = 0;
+        }
+
+        this.attackAnim = (float) this.swingTime / (float) duration;
+    }
+
+    @Override
+    public void swing(InteractionHand hand, boolean updateSelf) {
+        ItemStack stack = getItemInHand(hand);
+        if (!stack.isEmpty() && stack.onEntitySwing(this)) {
+            return;
+        }
+        int duration = getCurrentMKSwingDuration();
+        if (!this.swinging || this.swingTime >= duration / 2 || this.swingTime < 0) {
+            this.swingTime = -1;
+            this.swinging = true;
+            this.swingingArm = hand;
+            if (this.level() instanceof ServerLevel serverLevel) {
+                ClientboundAnimatePacket packet = new ClientboundAnimatePacket(this, hand == InteractionHand.MAIN_HAND ? 0 : 3);
+                ServerChunkCache chunkSource = serverLevel.getChunkSource();
+                if (updateSelf) {
+                    chunkSource.broadcastAndSend(this, packet);
+                } else {
+                    chunkSource.broadcast(this, packet);
+                }
+            }
+        }
     }
 
     public double getBaseAttackSpeedValueWithItem() {

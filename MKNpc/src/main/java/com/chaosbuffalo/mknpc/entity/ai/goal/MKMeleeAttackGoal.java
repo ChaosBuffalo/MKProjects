@@ -59,7 +59,7 @@ public class MKMeleeAttackGoal extends Goal {
     public void tick() {
 
         boolean strafingForwards = false;
-        if (entity.distanceTo(target) >= (getAttackReach(target) / 2.0)) {
+        if (entity.distanceTo(target) >= getAttackReach(target) * entity.getMeleeApproachDistanceMultiplier()) {
             entity.getNavigation().moveTo(target, entity.getLungeSpeed());
             strafingForwards = true;
         }
@@ -68,7 +68,7 @@ public class MKMeleeAttackGoal extends Goal {
 
         entity.lookAt(target, 30.0f, 30.0f);
 //        entity.getLookControl().setLookAt(target, 30.0f, 30.0f);
-        double cooldownPeriod = EntityUtils.getCooldownPeriod(entity);
+        double cooldownPeriod = entity.getMeleeCooldownPeriod();
         int ticksSinceSwing = entity.getTicksSinceLastSwing();
         if (ticksSinceSwing >= cooldownPeriod && isInReach(target) && entity.getSensing().hasLineOfSight(target) && EntityUtils.isInFrontOf(entity, target)) {
             performAttack(target);

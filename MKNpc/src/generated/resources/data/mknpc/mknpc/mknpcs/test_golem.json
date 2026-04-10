@@ -1,0 +1,27 @@
+{
+  "entityType": "mknpc:golem",
+  "name": "mknpc:test_golem",
+  "options": {
+    "mknpc:attributes": {
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "base_value": 200.0
+        },
+        {
+          "attribute": "minecraft:generic.attack_damage",
+          "base_value": 8.0
+        }
+      ]
+    },
+    "mknpc:faction": {
+      "factionId": "mkfaction:undead"
+    },
+    "mknpc:name": {
+      "name": "Test Golem"
+    },
+    "mknpc:render_group": {
+      "renderGroup": "mknpc:golem/default"
+    }
+  }
+}

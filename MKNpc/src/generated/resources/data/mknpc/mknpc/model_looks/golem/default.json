@@ -1,0 +1,6 @@
+{
+  "baseTexture": "minecraft:textures/entity/iron_golem/iron_golem.png",
+  "default": true,
+  "entityType": "mknpc:golem",
+  "modelStyle": "mknpc:basic_golem"
+}

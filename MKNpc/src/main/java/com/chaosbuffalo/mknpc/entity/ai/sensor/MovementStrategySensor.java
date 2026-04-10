@@ -30,12 +30,12 @@ public class MovementStrategySensor extends Sensor<MKEntity> {
         Optional<WalkTarget> walkTargetOptional = entityIn.getBrain().getMemory(MemoryModuleType.WALK_TARGET);
         if (walkTargetOptional.isPresent()) {
             Vec3 pos = walkTargetOptional.get().getTarget().currentPosition();
-            PacketHandler.sendToTrackingAndSelf(new ParticleEffectSpawnPacket(
-                    CoreParticles.INDICATOR_PARTICLE.get(),
-                    ParticleEffects.SPHERE_MOTION, 1, 1,
-                    pos.x + 0.5, pos.y + 1.0,
-                    pos.z + 0.5, 0.0, 0.0, 0.0, 0.0f,
-                    entityIn.getLookAngle()), entityIn);
+//            PacketHandler.sendToTrackingAndSelf(new ParticleEffectSpawnPacket(
+//                    CoreParticles.INDICATOR_PARTICLE.get(),
+//                    ParticleEffects.SPHERE_MOTION, 1, 1,
+//                    pos.x + 0.5, pos.y + 1.0,
+//                    pos.z + 0.5, 0.0, 0.0, 0.0, 0.0f,
+//                    entityIn.getLookAngle()), entityIn);
         }
         entityIn.getBrain().getMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY.get())
                 .ifPresent(movementStrategy -> movementStrategy.update(worldIn, entityIn));

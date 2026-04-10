@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkultra.client.render.entities;
 
 import com.chaosbuffalo.mkcore.client.rendering.entities.SpriteProjectileRenderer;
 import com.chaosbuffalo.mknpc.client.render.models.MKBipedModel;
-import com.chaosbuffalo.mknpc.client.render.models.MKGolemModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKPiglinModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKSkeletalModel;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelArgs;
@@ -12,7 +11,6 @@ import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
 import com.chaosbuffalo.mknpc.client.render.renderers.SkeletalGroupRenderer;
 import com.chaosbuffalo.mknpc.client.render.renderers.ZombifiedPiglinGroupRenderer;
 import com.chaosbuffalo.mkultra.MKUltra;
-import com.chaosbuffalo.mkultra.client.render.entities.golems.GolemGroupRenderer;
 import com.chaosbuffalo.mkultra.client.render.entities.humans.HumanGroupRenderer;
 import com.chaosbuffalo.mkultra.client.render.entities.orcs.OrcGroupRenderer;
 import com.chaosbuffalo.mkultra.client.render.styling.MKUHumans;
@@ -41,7 +39,6 @@ public class MKURenderers {
                 new SkeletalGroupRenderer(context, MKUEntities.HYBOREAN_SKELETON_TYPE.getId()));
         evt.registerEntityRenderer(MKUEntities.ZOMBIFIED_PIGLIN_TYPE.get(),
                 (context) -> new ZombifiedPiglinGroupRenderer(context, MKUEntities.ZOMBIFIED_PIGLIN_TYPE.getId()));
-        evt.registerEntityRenderer(MKUEntities.GOLEM_TYPE.get(), (context) -> new GolemGroupRenderer(context, MKUEntities.GOLEM_TYPE.getId()));
         evt.registerEntityRenderer(MKUEntities.HUMAN_GHOST_TYPE.get(), (context) -> new HumanGroupRenderer(context, MKUEntities.HUMAN_GHOST_TYPE.getId()));
     }
 
@@ -89,15 +86,6 @@ public class MKURenderers {
                     new ModelArgs(CubeDeformation.NONE, true, 0.0f,
                             new CubeDeformation(1.02F), LayerDefinitions.INNER_ARMOR_DEFORMATION));
         }
-
-        List<ModelStyle> golemStyles = List.of(MKUModelStyles.BASIC_GOLEM_STYLE.get());
-        for (ModelStyle style : golemStyles) {
-            ModelStyleClient.registerModelLayers(event, style, MKGolemModel::createBodyLayer,
-                    MKUEntities.GOLEM_TYPE.getId(), 128, 128,
-                    new ModelArgs(CubeDeformation.NONE, false, 0.0f,
-                            LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
-        }
-
 
     }
 }

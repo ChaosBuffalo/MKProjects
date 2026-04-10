@@ -1,4 +1,5 @@
-// 1.21.1	2026-04-04T12:56:01.48717	MK Abilities: mkultra
+// 1.21.1	2026-04-07T10:18:07.0621215	MK Abilities: mkultra
+b4071f204c7feff21f4e583130c6782506c3b068 data/mkultra/player_abilities/alacrity.json
 8f06670fae5893f8c3cdc2b51911b94eec3cf287 data/mkultra/player_abilities/cleansing_seed.json
 25bc9079c333533ceae36aca0ded4e323afcbd81 data/mkultra/player_abilities/drown.json
 cc5322c19e3793af8e9a3a52c580c412530df12f data/mkultra/player_abilities/ember.json
@@ -40,6 +41,7 @@ fb01462029e506a59062a9dddbc91b8016014baf data/mkultra/player_abilities/skin_like
 e093f96d9b2eee97f1b69963bb4ff8babd0b0b3b data/mkultra/player_abilities/spirit_bomb.json
 f28bff0043cb1284b555f031f556a68054123c91 data/mkultra/player_abilities/stunning_shout.json
 8911cddbb57854ebaf787292236032255675fb52 data/mkultra/player_abilities/test_summon.json
+7468b279e0b36b22a243bd28d6d2be764a201cd4 data/mkultra/player_abilities/torpor.json
 2cc2ca8842f1b48ae38cee7f62daa14524657b29 data/mkultra/player_abilities/warp_curse.json
 36c3e9524ed8b9672838c0be1c99a12dd6a155b5 data/mkultra/player_abilities/whirlwind_blades.json
 60318a7869fb8745d96680898de65e52b33b80b9 data/mkultra/player_abilities/wrath_beam.json

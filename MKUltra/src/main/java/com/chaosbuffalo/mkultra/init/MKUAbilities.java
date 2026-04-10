@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.brawler.*;
 import com.chaosbuffalo.mkultra.abilities.cleric.*;
+import com.chaosbuffalo.mkultra.abilities.enchanter.*;
 import com.chaosbuffalo.mkultra.abilities.green_knight.*;
 import com.chaosbuffalo.mkultra.abilities.misc.*;
 import com.chaosbuffalo.mkultra.abilities.necromancer.*;
@@ -14,6 +15,7 @@ import com.chaosbuffalo.mkultra.abilities.nether_mage.*;
 import com.chaosbuffalo.mkultra.abilities.passives.GreenSoulAbility;
 import com.chaosbuffalo.mkultra.abilities.passives.LifeSiphonAbility;
 import com.chaosbuffalo.mkultra.abilities.passives.SoulDrainAbility;
+import com.chaosbuffalo.mkultra.abilities.shaman.*;
 import com.chaosbuffalo.mkultra.abilities.structure.NecrotideGolemBeam;
 import com.chaosbuffalo.mkultra.abilities.wet_wizard.DrownAbility;
 import com.chaosbuffalo.mkultra.data.generators.npc.HyboreanNpcs;
@@ -51,6 +53,14 @@ public class MKUAbilities {
     public static final DeferredHolder<MKAbility, HolyWordBurstAbility> HOLY_WORD_BURST = REGISTRY.register("holy_word_burst",
             HolyWordBurstAbility::new);
     public static final DeferredHolder<MKAbility, HealingCircleAbility> HOLY_CIRCLE_ABILITY = REGISTRY.register("healing_circle", HealingCircleAbility::new);
+
+    // enchanter
+    public static final DeferredHolder<MKAbility, AlacrityAbility> ALACRITY = REGISTRY.register("alacrity",
+            AlacrityAbility::new);
+
+    // shaman
+    public static final DeferredHolder<MKAbility, TorporAbility> TORPOR = REGISTRY.register("torpor",
+            TorporAbility::new);
 
     //necromancer
     public static final DeferredHolder<MKAbility, MKEntitySummonAbility> TEST_SUMMON = REGISTRY.register("test_summon",

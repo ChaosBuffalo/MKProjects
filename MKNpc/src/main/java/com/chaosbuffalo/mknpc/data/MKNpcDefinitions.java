@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkchat.MKChat;
 import com.chaosbuffalo.mkchat.data.MKChatGenerator;
 import com.chaosbuffalo.mkfaction.init.MKFactions;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.client.render.renderers.GolemStyles;
 import com.chaosbuffalo.mknpc.client.render.renderers.SkeletonStyles;
 import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
@@ -32,6 +33,7 @@ public class MKNpcDefinitions {
     public static final ResourceKey<NpcDefinition> TEST_GHOST = key("test_ghost");
     public static final ResourceKey<NpcDefinition> TEST_LADY = key("test_lady");
     public static final ResourceKey<NpcDefinition> TEST_LADY2 = key("test_lady2");
+    public static final ResourceKey<NpcDefinition> TEST_GOLEM = key("test_golem");
 
 
     public static void bootstrap(BootstrapContext<NpcDefinition> context) {
@@ -39,6 +41,7 @@ public class MKNpcDefinitions {
         context.register(TEST_GHOST, generateTestGhostSkeleton(TEST_GHOST));
         context.register(TEST_LADY, generateTestLady(TEST_LADY));
         context.register(TEST_LADY2, generateTestLady2(TEST_LADY2));
+        context.register(TEST_GOLEM, generateTestGolem(TEST_GOLEM));
     }
 
     private static NpcDefinition generateTestSkeleton(ResourceKey<NpcDefinition> key) {
@@ -79,6 +82,17 @@ public class MKNpcDefinitions {
         def.addOption(new FactionOption(MKFactions.UNDEAD));
         def.addOption(new NotableOption());
         def.addOption(new FactionNameOption().setHasLastName(true).setTitle("Chief"));
+        return def;
+    }
+
+    private static NpcDefinition generateTestGolem(ResourceKey<NpcDefinition> key) {
+        NpcDefinition def = new NpcDefinition(key, MKNpcEntityTypes.GOLEM_TYPE);
+        def.addOption(new NameOption("Test Golem"));
+        def.addOption(new FactionOption(MKFactions.UNDEAD));
+        def.addOption(new RenderGroupOption(GolemStyles.DEFAULT_LOOK));
+        def.addOption(new AttributesOption()
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.MAX_HEALTH, 200.0))
+                .addAttributeEntry(new NpcAttributeEntry(Attributes.ATTACK_DAMAGE, 8.0)));
         return def;
     }
 }

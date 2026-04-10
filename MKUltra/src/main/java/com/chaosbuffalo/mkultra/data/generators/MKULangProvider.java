@@ -25,6 +25,10 @@ public class MKULangProvider extends NpcLanguageProvider {
         ability(MKUAbilities.HOLY_FIRE_FLURRY, "Holy Fire Flurry");
         ability(MKUAbilities.HOLY_WORD_BURST, "Holy Word (Burst)");
         ability(MKUAbilities.HOLY_CIRCLE_ABILITY, "Healing Circle", "Summons a ring of divine energy with radius %s at the location, after %s seconds it starts healing %s every %s seconds for %s seconds.");
+        ability(MKUAbilities.ALACRITY, "Alacrity", "Increases your target's attack speed by %s for %d seconds.");
+        ability(MKUAbilities.TORPOR, "Torpor", "Reduces your target's attack speed by %s for %d seconds.");
+        mkEffect(MKUEffects.ATTACK_SPEED_HASTE, "Alacrity");
+        mkEffect(MKUEffects.ATTACK_SPEED_SLOW, "Torpor");
         mkEffect(MKUEffects.FROZEN_GRASP, "Frozen Grasp");
         mkEffect(MKUEffects.FROZEN_GRASP_APPLIER, "Frozen Grasp (self)");
         ability(MKUAbilities.FROZEN_GRASP, "Frozen Grasp", "Causes your next %s hits to slow the targets casting, attack, and movement speed for %s seconds.");

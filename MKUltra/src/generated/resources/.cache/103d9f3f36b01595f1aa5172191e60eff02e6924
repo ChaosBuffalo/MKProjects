@@ -1,4 +1,4 @@
-// 1.21.1	2026-04-04T09:30:18.0116695	Registries
+// 1.21.1	2026-04-07T07:02:17.0164645	Registries
 0da9c23f46702bc38555b6b70af1c3a7ec4c11ef data/mkultra/mkchat/dialogue_trees/cleric_default.json
 2d28e6556d4620a466345f5777242ccf8aee30e3 data/mkultra/mkchat/dialogue_trees/intro_cleric_acolyte.json
 f0b3ca666c13a5a2e4305f664f92f2013ae433cb data/mkultra/mkchat/dialogue_trees/intro_nether_mage_initiate.json
@@ -64,7 +64,7 @@ c64fce3c2a5b9029668ad595facdc032306685a3 data/mkultra/mknpc/mknpcs/hyborean_hono
 3d3481a63a4db76d315dc35c5badbc59b73ce72b data/mkultra/mknpc/mknpcs/imperial_magus.json
 eb655b264af514db1c2385f8ebe00d0ad2ec5da5 data/mkultra/mknpc/mknpcs/necrotide_acolyte.json
 186ffb86ea6da1e60714b71072316e531892396f data/mkultra/mknpc/mknpcs/necrotide_cultist.json
-740e5102a2539b73aea6a7d42cb765220995166a data/mkultra/mknpc/mknpcs/necrotide_golem.json
+5e596c3509ac60f8cad34d3f8a7c94a55088662d data/mkultra/mknpc/mknpcs/necrotide_golem.json
 f08d6fa061be4d34d646774399db473b9ff74e26 data/mkultra/mknpc/mknpcs/necrotide_skeletal_archer.json
 d13db5ae1c7c9a7afd1f13d2b66e842917919b4e data/mkultra/mknpc/mknpcs/necrotide_skeletal_warrior.json
 08b6d269c97840628c5a104f81fa7dea465cd5fd data/mkultra/mknpc/mknpcs/nether_mage_initiate.json
