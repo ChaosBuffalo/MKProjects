@@ -1,13 +1,14 @@
 {
+  "armorPiercing": 0.5,
   "attackSpeed": -2.0,
-  "blockEfficiency": 0.75,
+  "blockEfficiency": 0.8,
   "critChance": 0.05,
-  "critMultiplier": 0.75,
+  "critMultiplier": 1.0,
   "damageMultiplier": 0.8,
   "effects": [
     {
       "type": "mkweapons:weapon_effect.skill_scaling",
-      "baseDamage": 2.25,
+      "baseDamage": 2.5,
       "skill": "mkcore:two_hand_pierce"
     },
     {
@@ -24,6 +25,6 @@
     }
   ],
   "isTwoHanded": true,
-  "maxPoise": 30.0,
+  "maxPoise": 40.0,
   "reach": 2.0
 }

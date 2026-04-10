@@ -17,12 +17,15 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.util.Mth;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.damagesource.DamageContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 
 
@@ -35,6 +38,26 @@ public class CombatEventHandler {
             return;
 
         SpellTriggers.FALL.onLivingFall(event, event.getEntity());
+    }
+
+    @SubscribeEvent
+    public static void onIncomingDamage(LivingIncomingDamageEvent event) {
+        DamageSource source = event.getSource();
+        if (!(DamageUtils.isMinecraftPhysicalDamage(source) || DamageUtils.isProjectileDamage(source))) {
+            return;
+        }
+
+        if (!(source.getEntity() instanceof LivingEntity attacker)) {
+            return;
+        }
+
+        float armorPiercing = Mth.clamp((float) attacker.getAttributeValue(MKAttributes.ARMOR_PIERCING), 0.0f, 1.0f);
+        if (armorPiercing <= 0.0f) {
+            return;
+        }
+
+        event.addReductionModifier(DamageContainer.Reduction.ARMOR,
+                (container, armorReduction) -> armorReduction * (1.0f - armorPiercing));
     }
 
     @SubscribeEvent

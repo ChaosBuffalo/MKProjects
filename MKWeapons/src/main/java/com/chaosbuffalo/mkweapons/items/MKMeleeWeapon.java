@@ -59,7 +59,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
 
     public static ItemAttributeModifiers.Builder createAttributes(IMKTier tier, IMeleeWeaponType weaponType) {
         ResourceLocation modId = weaponType.getName().withSuffix("_" + tier.getName());
-        return ItemAttributeModifiers.builder()
+        ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder()
                 .add(
                         Attributes.ATTACK_DAMAGE,
                         new AttributeModifier(BASE_ATTACK_DAMAGE_ID, calculateDamage(tier, weaponType), AttributeModifier.Operation.ADD_VALUE),
@@ -95,6 +95,14 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
                         new AttributeModifier(modId, weaponType.getBlockEfficiency(), AttributeModifier.Operation.ADD_VALUE),
                         EquipmentSlotGroup.MAINHAND
                 );
+        if (weaponType.getArmorPiercing() > 0.0f) {
+            builder.add(
+                    MKAttributes.ARMOR_PIERCING,
+                    new AttributeModifier(modId, weaponType.getArmorPiercing(), AttributeModifier.Operation.ADD_VALUE),
+                    EquipmentSlotGroup.MAINHAND
+            );
+        }
+        return builder;
     }
 
 

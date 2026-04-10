@@ -66,6 +66,7 @@ class CoreLanguageProvider extends MKLanguageProvider {
         attributeTalent(MKAttributes.MELEE_CRIT, "Melee Critical Chance", "Increases your melee critical chance by %s");
         attributeTalent(MKAttributes.MELEE_CRIT_MULTIPLIER, "Melee Critical Damage", "Increases your melee critical damage by %s");
         attributeTalent(MKAttributes.MULTI_ATTACK_CHANCE, "Multi Attack Chance", "Increases your chance to make extra melee attacks by %s");
+        attributeTalent(MKAttributes.ARMOR_PIERCING, "Armor Piercing", "Increases the amount of armor your attacks ignore by %s");
 
         attributeTalent(MKAttributes.SPELL_CRIT, "Spell Critical Chance", "Increases your spell critical chance by %s");
         attributeTalent(MKAttributes.SPELL_CRIT_MULTIPLIER, "Spell Critical Damage", "Increases your spell critical damage by %s");
@@ -323,6 +324,7 @@ class CoreLanguageProvider extends MKLanguageProvider {
         attribute(MKAttributes.MELEE_CRIT, "Melee Crit Chance");
         attribute(MKAttributes.MELEE_CRIT_MULTIPLIER, "Melee Crit Multiplier");
         attribute(MKAttributes.MULTI_ATTACK_CHANCE, "Multi Attack Chance");
+        attribute(MKAttributes.ARMOR_PIERCING, "Armor Piercing");
         attribute(MKAttributes.RANGED_CRIT, "Ranged Crit Chance");
         attribute(MKAttributes.RANGED_CRIT_MULTIPLIER, "Ranged Crit Multiplier");
         attribute(MKAttributes.SPELL_CRIT, "Spell Crit Chance");
