@@ -4,12 +4,15 @@ import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.core.combat.AbilityMeleeAttackHelper;
+import com.chaosbuffalo.mkcore.core.combat.MeleeAttackVisualHelper;
 import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
-import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
+import com.chaosbuffalo.mkcore.effects.instant.AbilityMeleeDamageEffect;
 import com.chaosbuffalo.mkcore.fx.ParticleEffects;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.network.ParticleEffectSpawnPacket;
+import com.chaosbuffalo.mkcore.serialization.attributes.EnumAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -20,25 +23,27 @@ import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class SeverTendonAbility extends MKAbility {
-    protected final FloatAttribute base = new FloatAttribute("base", 4.0f);
-    protected final FloatAttribute scale = new FloatAttribute("scale", 2.0f);
+    protected final FloatAttribute base = new FloatAttribute("base", 1.0f);
+    protected final FloatAttribute scale = new FloatAttribute("scale", 0.25f);
     protected final FloatAttribute baseDot = new FloatAttribute("baseBleedDamage", 1.0f);
     protected final FloatAttribute scaleDot = new FloatAttribute("scaleBleedDamage", 1.0f);
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 4);
     protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 1);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 0.1f);
     protected final FloatAttribute dotModifierScaling = new FloatAttribute("bleedModifierScaling", 0.1f);
+    protected final EnumAttribute<InteractionHand> attackHand = new EnumAttribute<>("attackHand", InteractionHand.MAIN_HAND, InteractionHand.class);
 
     public SeverTendonAbility() {
         super();
         setCooldownSeconds(12);
         setManaCost(5);
         setCastTime(0);
-        addAttributes(base, scale, modifierScaling, baseDuration, scaleDuration, baseDot, scaleDot, dotModifierScaling);
+        addAttributes(base, scale, modifierScaling, baseDuration, scaleDuration, baseDot, scaleDot, dotModifierScaling, attackHand);
         addSkillAttribute(MKAttributes.PANKRATION);
     }
 
@@ -85,7 +90,9 @@ public class SeverTendonAbility extends MKAbility {
         super.endCast(entity, data, context);
         float level = context.getSkill(MKAttributes.PANKRATION);
         context.getMemory(MKAbilityMemories.ABILITY_TARGET).ifPresent(targetEntity -> {
-            MKEffectBuilder<?> damage = MKAbilityDamageEffect.from(entity, CoreDamageTypes.MeleeDamage.get(),
+            InteractionHand hand = AbilityMeleeAttackHelper.resolveHand(entity, attackHand.getValue());
+            MeleeAttackVisualHelper.startVisualAttack(entity, hand, new int[]{0}, new int[]{6});
+            MKEffectBuilder<?> damage = AbilityMeleeDamageEffect.from(entity, hand,
                             base.value(), scale.value(), modifierScaling.value())
                     .ability(this)
                     .skillLevel(level);

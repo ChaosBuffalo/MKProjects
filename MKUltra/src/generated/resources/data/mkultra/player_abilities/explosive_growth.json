@@ -1,10 +1,11 @@
 {
   "attributes": {
-    "baseDamage": 10.0,
+    "attackHand": "main_hand",
+    "baseDamage": 4.0,
     "cast_particles": "mkultra:explosive_growth_cast",
     "casting_particles": "mkultra:explosive_growth_casting",
     "detonate_particles": "mkultra:explosive_growth_detonate",
-    "scaleDamage": 5.0
+    "scaleDamage": 1.0
   },
   "castTime": 5,
   "cooldown": 700,

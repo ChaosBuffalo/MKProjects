@@ -9,10 +9,13 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.AbilityType;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
-import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
-import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.core.combat.AbilityMeleeAttackContext;
+import com.chaosbuffalo.mkcore.core.combat.AbilityMeleeAttackExecutor;
+import com.chaosbuffalo.mkcore.core.combat.AbilityMeleeAttackHelper;
+import com.chaosbuffalo.mkcore.core.combat.MeleeAttackVisualHelper;
 import com.chaosbuffalo.mkcore.fx.MKParticles;
 import com.chaosbuffalo.mkcore.init.CoreDamageTypes;
+import com.chaosbuffalo.mkcore.serialization.attributes.EnumAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.FloatAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mkcore.utils.RayTraceUtils;
@@ -29,6 +32,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.HitResult;
@@ -41,18 +45,19 @@ public class ExplosiveGrowthAbility extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("explosive_growth_casting");
     public static final ResourceLocation CAST_PARTICLES = MKUltra.id("explosive_growth_cast");
     public static final ResourceLocation DETONATE_PARTICLES = MKUltra.id("explosive_growth_detonate");
-    protected final FloatAttribute baseDamage = new FloatAttribute("baseDamage", 10.0f);
-    protected final FloatAttribute scaleDamage = new FloatAttribute("scaleDamage", 5.0f);
-    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 1.0f);
+    protected final FloatAttribute baseDamage = new FloatAttribute("baseDamage", 4.0f);
+    protected final FloatAttribute scaleDamage = new FloatAttribute("scaleDamage", 1.0f);
+    protected final FloatAttribute modifierScaling = new FloatAttribute("modifierScaling", 0.1f);
     protected final ResourceLocationAttribute cast_particles = new ResourceLocationAttribute("cast_particles", CAST_PARTICLES);
     protected final ResourceLocationAttribute detonate_particles = new ResourceLocationAttribute("detonate_particles", DETONATE_PARTICLES);
+    protected final EnumAttribute<InteractionHand> attackHand = new EnumAttribute<>("attackHand", InteractionHand.MAIN_HAND, InteractionHand.class);
 
     public ExplosiveGrowthAbility() {
         super();
         setCooldownSeconds(35);
         setManaCost(6);
         setCastTime(GameConstants.TICKS_PER_SECOND / 4);
-        addAttributes(baseDamage, scaleDamage, cast_particles, detonate_particles);
+        addAttributes(baseDamage, scaleDamage, cast_particles, detonate_particles, attackHand);
         addSkillAttribute(MKAttributes.RESTORATION);
         addSkillAttribute(MKAttributes.PANKRATION);
         castingParticles.setDefaultValue(CASTING_PARTICLES);
@@ -103,20 +108,23 @@ public class ExplosiveGrowthAbility extends MKAbility {
         super.endCast(castingEntity, casterData, context);
         float restoLevel = context.getSkill(MKAttributes.RESTORATION);
         float pankrationLevel = context.getSkill(MKAttributes.PANKRATION);
+        InteractionHand hand = AbilityMeleeAttackHelper.resolveHand(castingEntity, attackHand.getValue());
+        float damage = AbilityMeleeAttackHelper.computeBonusDamage(casterData, baseDamage.value(), scaleDamage.value(),
+                pankrationLevel, modifierScaling.value());
 
         SoundSource cat = castingEntity instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
-        float damage = baseDamage.value() + scaleDamage.value() * pankrationLevel;
 
-        MKEffectBuilder<?> cure = CureEffect.from(castingEntity)
+        var cure = CureEffect.from(castingEntity)
                 .ability(this)
                 .skillLevel(restoLevel);
-        MKEffectBuilder<?> remedy = MKUAbilities.NATURES_REMEDY.get().createNaturesRemedyEffect(casterData, restoLevel)
+        var remedy = MKUAbilities.NATURES_REMEDY.get().createNaturesRemedyEffect(casterData, restoLevel)
                 .ability(this);
 
         Vec3 look = castingEntity.getLookAngle().scale(getDistance(castingEntity));
         Vec3 from = castingEntity.position().add(0, castingEntity.getEyeHeight(), 0);
         Vec3 to = from.add(look);
         List<LivingEntity> entityHit = TargetUtil.getTargetsInLine(castingEntity, from, to, 1.0f, this::isValidTarget);
+        boolean swungAtEnemy = false;
 
         for (LivingEntity entHit : entityHit) {
             Targeting.TargetRelation relation = Targeting.getTargetRelation(castingEntity, entHit);
@@ -131,7 +139,23 @@ public class ExplosiveGrowthAbility extends MKAbility {
                     break;
                 }
                 case ENEMY: {
-                    entHit.hurt(MKDamageSource.causeMeleeDamage(castingEntity.level(), getAbilityId(), castingEntity, castingEntity), damage);
+                    if (!swungAtEnemy) {
+                        MeleeAttackVisualHelper.startVisualAttack(castingEntity, hand, new int[]{0}, new int[]{6});
+                        swungAtEnemy = true;
+                    }
+                    AbilityMeleeAttackExecutor.executeAttack(new AbilityMeleeAttackContext(
+                            casterData,
+                            castingEntity,
+                            entHit,
+                            hand,
+                            getAbilityId(),
+                            1.0f,
+                            damage,
+                            castingEntity,
+                            new int[0],
+                            new int[0],
+                            false
+                    ));
                     SoundUtils.serverPlaySoundAtEntity(entHit, MKUSounds.spell_earth_1.value(), cat);
                     break;
                 }

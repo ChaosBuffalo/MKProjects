@@ -50,7 +50,7 @@ public class MKULangProvider extends NpcLanguageProvider {
         entitlement(MKUEntitlements.NetherMageTier3, "Nether Mage Tier 3");
         entitlement(MKUEntitlements.IntroNetherMageTier1, "Initiate's Knowledge");
         entitlement(MKUEntitlements.IntroClericTier1, "Acolyte's Blessing");
-        ability(MKUAbilities.WHIRLWIND_BLADES, "Whirlwind Blades", "Strikes all targets around you every %s seconds for %s seconds. Each hit increases the damage contribution from your weapon by %s, dealing from %s on first hit to %s damage on the last.");
+        ability(MKUAbilities.WHIRLWIND_BLADES, "Whirlwind Blades", "Strikes all targets around you every %s seconds for %s seconds. Each main-hand hit deals %s of a full swing, increasing up to %s by the last pulse. Off-hand hits use %s of that swing scaling and each strike also adds %s.");
         ability(MKUAbilities.FURIOUS_BROODING, "Furious Brooding", "Restores %s health every second for %s seconds. Reduces your movement speed by %s.");
         ability(MKUAbilities.YANK, "Yank", "Pulls the target towards you, applying %s force.");
         ability(MKUAbilities.YAUP, "Yaup", "Let loose a mighty yaup increases you and your allies' attack speed and strength for %s seconds.");
@@ -70,7 +70,7 @@ public class MKULangProvider extends NpcLanguageProvider {
         ability(MKUAbilities.FLAME_WAVE, "Flame Wave", "A wave of fire engulfs your enemies, causing %s to each one. If the target is already burning damage is increased by %.2f%% and the target is withered for %d seconds.");
         ability(MKUAbilities.SKULL_FLAME_BREATH, "Skull Flame Breath", "Channel a cone of flame for %s seconds, dealing %s every %s seconds and setting enemies on fire for %s seconds.");
         ability(MKUAbilities.FIREBALL, "Fireball", "Throws a magical ball of fire, causing %s to enemies within %.1f blocks of its impact. Reduces target fire resistance by %.2f%% for %d seconds.");
-        ability(MKUAbilities.SEVER_TENDON, "Sever Tendon", "Deals %s to your target and causes them to bleed for %s seconds, dealing %s damage every %d seconds and reducing their movement speed by %.2f%%.");
+        ability(MKUAbilities.SEVER_TENDON, "Sever Tendon", "Strike your target for a full melee hit plus %s, then cause them to bleed for %s seconds, dealing %s damage every %d seconds and reducing their movement speed by %.2f%%.");
         mkEffect(MKUEffects.SEVER_TENDON, "Severed Tendon");
         mkEffect(MKUEffects.BREAK_FIRE, "Break Fire");
         mkEffect(MKUEffects.FIRE_ARMOR, "Fire Armor");
@@ -82,7 +82,7 @@ public class MKULangProvider extends NpcLanguageProvider {
         ability(MKUAbilities.IGNITE, "Ignite", "Ignites your target, dealing %s. If they are already burning, causes them to explode damaging nearby enemies within %.1f blocks and spreading the burn effect, if they're not burning causes them to burn.");
         mkEffect(MKUEffects.BURN, "Burn");
         mkEffect(MKUEffects.SKULL_FLAME_BREATH, "Skull Flame Breath");
-        ability(MKUAbilities.EXPLOSIVE_GROWTH, "Explosive Growth", "Dash forward, damaging all enemies you hit for %s and casting Cleansing Seed and Nature's Remedy on your allies and yourself.");
+        ability(MKUAbilities.EXPLOSIVE_GROWTH, "Explosive Growth", "Dash forward, striking each enemy you hit with a full melee attack plus %s, while casting Cleansing Seed and Nature's Remedy on your allies and yourself.");
         ability(MKUAbilities.HEAL, "Heal", "Heals your target for %s.");
         ability(MKUAbilities.SMITE, "Smite", "Smites your target for %s and Stuns them for %d seconds.");
         ability(MKUAbilities.POWER_WORD_SUMMON, "Power Word Summon", "Summons your target in front of you, if they're an enemy roots them for %d seconds.");

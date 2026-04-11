@@ -1,11 +1,12 @@
 {
   "attributes": {
-    "base": 2.0,
+    "base": 1.0,
     "cast_particles": "mkultra:whirlwind_blades_pulse",
     "casting_particles": "mkcore:fx.casting.empty",
-    "modifierScaling": 1.0,
+    "modifierScaling": 0.15,
+    "offHandScaleModifier": 0.6,
     "perTick": 0.15,
-    "scale": 1.0
+    "scale": 0.5
   },
   "castTime": 60,
   "cooldown": 400,
