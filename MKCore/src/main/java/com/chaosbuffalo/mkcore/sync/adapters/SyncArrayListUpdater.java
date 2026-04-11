@@ -6,9 +6,12 @@ import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
@@ -18,6 +21,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class SyncArrayListUpdater<T> implements ISyncObject {
+    private static final int INVALID_REGISTRY_ID = -1;
+
     private final List<T> parent;
     private final ElementSerializer<T> serializer;
     private final @Nullable T defaultValue;
@@ -40,6 +45,61 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
                 return ResourceLocation.tryParse(value.getAsString());
             }
         };
+
+        static <K, V> ElementSerializer<K> registryElements(
+                ResourceKey<? extends Registry<V>> registryKey,
+                RegistryElementAdapter<K, V> adapter,
+                @Nullable K defaultValue) {
+            return new ElementSerializer<>() {
+                @Override
+                public Tag encodeValue(SyncContext context, K value) {
+                    if (defaultValue != null && Objects.equals(defaultValue, value)) {
+                        return IntTag.valueOf(INVALID_REGISTRY_ID);
+                    }
+
+                    Registry<V> registry = context.registryOrThrow(registryKey);
+                    V registryValue = adapter.toRegistryValue(registry, value);
+                    if (registryValue == null) {
+                        MKCore.LOGGER.error("Failed to resolve registry-backed list value {} in {}", value, registryKey.location());
+                        return IntTag.valueOf(INVALID_REGISTRY_ID);
+                    }
+
+                    int rawId = registry.getId(registryValue);
+                    if (rawId < 0) {
+                        MKCore.LOGGER.error("Failed to encode registry-backed list value {} in {}", value, registryKey.location());
+                        return IntTag.valueOf(INVALID_REGISTRY_ID);
+                    }
+                    return IntTag.valueOf(rawId);
+                }
+
+                @Override
+                public K decodeValue(SyncContext context, Tag value) {
+                    if (!(value instanceof IntTag intTag)) {
+                        MKCore.LOGGER.error("Expected int tag for registry-backed list in {} but found {}", registryKey.location(), value);
+                        return defaultValue;
+                    }
+
+                    int rawId = intTag.getAsInt();
+                    if (rawId == INVALID_REGISTRY_ID) {
+                        return defaultValue;
+                    }
+
+                    Registry<V> registry = context.registryOrThrow(registryKey);
+                    V registryValue = registry.byId(rawId);
+                    if (registryValue == null) {
+                        MKCore.LOGGER.error("Failed to decode registry-backed list raw id {} in {}", rawId, registryKey.location());
+                        return defaultValue;
+                    }
+
+                    K decoded = adapter.fromRegistryValue(registry, registryValue);
+                    if (decoded == null) {
+                        MKCore.LOGGER.error("Failed to convert registry-backed list value {} from {}", registryValue, registryKey.location());
+                        return defaultValue;
+                    }
+                    return decoded;
+                }
+            };
+        }
     }
 
     public static SyncArrayListUpdater<ResourceLocation> resourceLocations(List<ResourceLocation> list) {
@@ -49,6 +109,40 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
     public static SyncArrayListUpdater<ResourceLocation> resourceLocations(List<ResourceLocation> list,
                                                                            @Nullable ResourceLocation defaultValue) {
         return new SyncArrayListUpdater<>(list, ElementSerializer.RESOURCE_LOCATION, defaultValue);
+    }
+
+    public static <V> SyncArrayListUpdater<ResourceLocation> registryResourceLocations(
+            List<ResourceLocation> list,
+            ResourceKey<? extends Registry<V>> registryKey) {
+        return registryResourceLocations(list, registryKey, null);
+    }
+
+    public static <V> SyncArrayListUpdater<ResourceLocation> registryResourceLocations(
+            List<ResourceLocation> list,
+            ResourceKey<? extends Registry<V>> registryKey,
+            @Nullable ResourceLocation defaultValue) {
+        return new SyncArrayListUpdater<>(
+                list,
+                ElementSerializer.registryElements(registryKey, RegistryElementAdapter.resourceLocations(), defaultValue),
+                defaultValue
+        );
+    }
+
+    public static <V> SyncArrayListUpdater<ResourceKey<V>> registryResourceKeys(
+            List<ResourceKey<V>> list,
+            ResourceKey<? extends Registry<V>> registryKey) {
+        return registryResourceKeys(list, registryKey, null);
+    }
+
+    public static <V> SyncArrayListUpdater<ResourceKey<V>> registryResourceKeys(
+            List<ResourceKey<V>> list,
+            ResourceKey<? extends Registry<V>> registryKey,
+            @Nullable ResourceKey<V> defaultValue) {
+        return new SyncArrayListUpdater<>(
+                list,
+                ElementSerializer.registryElements(registryKey, RegistryElementAdapter.resourceKeys(), defaultValue),
+                defaultValue
+        );
     }
 
     public SyncArrayListUpdater(List<T> list, ElementSerializer<T> elementSerializer) {
@@ -116,31 +210,14 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
             return null;
 
         CompoundTag root = new CompoundTag();
-        if (hasDefaultValue() && dirtyEntries.stream().anyMatch(i -> isDefaultValue(parent.get(i)))) {
-            root.putBoolean("f", true);
-            root.putInt("n", parent.size());
-            ListTag sparseList = new ListTag();
-            for (int i = 0; i < parent.size(); i++) {
-                T value = parent.get(i);
-                if (isDefaultValue(value)) {
-                    continue;
-                }
-                CompoundTag tag = new CompoundTag();
-                tag.putInt("i", i);
-                tag.put("v", serializer.encodeValue(context, value));
-                sparseList.add(tag);
-            }
-            root.put("s", sparseList);
-        } else {
-            ListTag list = new ListTag();
-            dirtyEntries.stream().forEach(i -> {
-                CompoundTag tag = new CompoundTag();
-                tag.putInt("i", i);
-                tag.put("v", serializer.encodeValue(context, parent.get(i)));
-                list.add(tag);
-            });
-            root.put("s", list);
-        }
+        ListTag list = new ListTag();
+        dirtyEntries.stream().forEach(i -> {
+            CompoundTag tag = new CompoundTag();
+            tag.putInt("i", i);
+            tag.put("v", serializer.encodeValue(context, parent.get(i)));
+            list.add(tag);
+        });
+        root.put("s", list);
         dirtyEntries.clear();
         return root;
     }

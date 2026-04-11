@@ -2,7 +2,11 @@ package com.chaosbuffalo.mkcore.test;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities.AbilitySource;
+import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.core.MKServerPlayerData;
+import com.chaosbuffalo.mkcore.core.player.AbilityGroup;
+import com.chaosbuffalo.mkcore.core.player.AbilityGroupId;
 import com.chaosbuffalo.mkcore.init.CoreArmorClasses;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
@@ -15,6 +19,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -94,6 +99,54 @@ public class MKSyncRegistrySetCharacterizationGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = "player_data_phase0")
+    public static void abilityGroupSyncUsesCompactRegistryIds(GameTestHelper helper) {
+        MKServerPlayerData sourceData = createPlayerData(helper);
+        MKServerPlayerData targetData = createPlayerData(helper);
+        SyncContext context = new SyncContext(sourceData.getEntity().registryAccess());
+        ResourceLocation abilityId = learnAbility(sourceData, MKTestAbilities.TEST_EMBER.get());
+        ResourceLocation secondAbilityId = learnAbility(sourceData, MKTestAbilities.TEST_HEAL.get());
+
+        AbilityGroup sourceGroup = sourceData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
+        sourceGroup.setSlot(0, abilityId);
+
+        Tag payload = sourceGroup.getSyncGroup().writeFullValue(context, SyncVisibility.Private);
+        helper.assertTrue(payload instanceof CompoundTag, "Ability group sync payload should be a compound tag");
+        CompoundTag root = (CompoundTag) payload;
+        CompoundTag activeTag = root.getCompound("active");
+        helper.assertTrue(activeTag.contains("s", Tag.TAG_LIST), "Default-backed slot sync should use sparse entry payloads");
+        CompoundTag firstEntry = activeTag.getList("s", Tag.TAG_COMPOUND).getCompound(0);
+        helper.assertTrue(firstEntry.contains("v", Tag.TAG_INT), "Ability slot payloads should use compact registry ids");
+        helper.assertFalse(firstEntry.contains("v", Tag.TAG_STRING), "Ability slot payloads should no longer send string ids");
+
+        AbilityGroup targetGroup = targetData.getLoadout().getAbilityGroup(AbilityGroupId.Basic);
+        targetGroup.getSyncGroup().handleUpdatePayload(context, payload, SyncVisibility.Private);
+        helper.assertValueEqual(targetGroup.getSlot(0), abilityId, "synced ability slot");
+
+        sourceGroup.getSyncGroup().clearDirty();
+        sourceGroup.clearSlot(0);
+        sourceGroup.setSlot(1, secondAbilityId);
+
+        Tag dirtyPayload = sourceGroup.getSyncGroup().writeDirtyValue(context, SyncVisibility.Private);
+        helper.assertTrue(dirtyPayload instanceof CompoundTag, "Ability group dirty sync payload should be a compound tag");
+        CompoundTag dirtyRoot = (CompoundTag) dirtyPayload;
+        CompoundTag dirtyActiveTag = dirtyRoot.getCompound("active");
+        helper.assertFalse(dirtyActiveTag.getBoolean("f"), "Clearing a default-backed slot should stay incremental");
+        var dirtyEntries = dirtyActiveTag.getList("s", Tag.TAG_COMPOUND);
+        helper.assertValueEqual(dirtyEntries.size(), 2, "dirty slot update count");
+        CompoundTag clearedEntry = dirtyEntries.getCompound(0);
+        helper.assertValueEqual(clearedEntry.getInt("i"), 0, "cleared slot index");
+        helper.assertValueEqual(clearedEntry.getInt("v"), -1, "cleared slot sentinel");
+        CompoundTag dirtyEntry = dirtyEntries.getCompound(1);
+        helper.assertValueEqual(dirtyEntry.getInt("i"), 1, "set slot index");
+        helper.assertTrue(dirtyEntry.contains("v", Tag.TAG_INT), "Dirty slot payloads should also use compact registry ids");
+
+        targetGroup.getSyncGroup().handleUpdatePayload(context, dirtyPayload, SyncVisibility.Private);
+        helper.assertValueEqual(targetGroup.getSlot(0), MKCoreRegistry.INVALID_ABILITY, "dirty sync cleared slot");
+        helper.assertValueEqual(targetGroup.getSlot(1), secondAbilityId, "dirty sync set slot");
+        helper.succeed();
+    }
+
     private static MKServerPlayerData createPlayerData(GameTestHelper helper) {
         var cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "sync-set-test-player"), false);
         ServerPlayer player = new ServerPlayer(
@@ -103,5 +156,12 @@ public class MKSyncRegistrySetCharacterizationGameTests {
                 cookie.clientInformation()
         );
         return (MKServerPlayerData) MKCore.getPlayerOrThrow(player);
+    }
+
+    private static ResourceLocation learnAbility(MKServerPlayerData playerData, MKAbility ability) {
+        if (!playerData.getAbilities().learnAbility(ability, AbilitySource.ADMIN)) {
+            throw new IllegalStateException("Failed to learn test ability " + ability.getAbilityId());
+        }
+        return ability.getAbilityId();
     }
 }

@@ -42,7 +42,11 @@ public class AbilityGroup implements ISyncGroupProvider {
         this.playerData = persona.getPlayerData();
         this.groupId = groupId;
         activeAbilities = NonNullList.withSize(groupId.getMaxSlots(), MKCoreRegistry.INVALID_ABILITY);
-        activeUpdater = SyncArrayListUpdater.resourceLocations(activeAbilities, MKCoreRegistry.INVALID_ABILITY);
+        activeUpdater = SyncArrayListUpdater.registryResourceLocations(
+                activeAbilities,
+                MKCoreRegistry.ABILITY_REGISTRY_KEY,
+                MKCoreRegistry.INVALID_ABILITY
+        );
         slots = new SyncInt(groupId.getDefaultSlots());
         syncGroup.addPrivate("active", activeUpdater);
         syncGroup.addPrivate("slots", slots);
