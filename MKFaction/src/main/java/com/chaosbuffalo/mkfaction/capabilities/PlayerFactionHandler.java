@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtension;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtensionProvider;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
+import com.chaosbuffalo.mkcore.sync.adapters.MapStorageCodec;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
@@ -13,6 +14,7 @@ import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.fml.InterModComms;
@@ -94,19 +96,28 @@ public class PlayerFactionHandler implements IPlayerFaction {
         private final Map<UUID, ScoreOverrideEntry> overrideMap = new HashMap<>();
         private final SyncMapUpdater<Holder<MKFaction>, PlayerFactionEntry> factionUpdater;
         private final SyncMapUpdater<UUID, ScoreOverrideEntry> overrideUpdater;
-        private final Persona persona;
+        private final MapStorageCodec<Holder<MKFaction>, PlayerFactionEntry> factionStorage;
+        private final MapStorageCodec<UUID, ScoreOverrideEntry> overrideStorage;
 
         public PersonaFactionData(Persona persona) {
-            this.persona = persona;
             factionUpdater = new SyncMapUpdater<>(
                     factionMap,
-                    SyncMapUpdater.KeyCodec.registryHolders(
-                            MKFactionRegistry.FACTION_REGISTRY_KEY,
-                            () -> persona.getEntity().registryAccess()
-                    ),
+                    SyncMapUpdater.KeyCodec.registryHolders(MKFactionRegistry.FACTION_REGISTRY_KEY),
                     this::createNewEntry
             );
             overrideUpdater = new SyncMapUpdater<>(
+                    overrideMap,
+                    UUID::toString,
+                    UUID::fromString,
+                    this::createNewOverrideEntry
+            );
+            factionStorage = new MapStorageCodec<>(
+                    factionMap,
+                    holder -> holder.getKey().location().toString(),
+                    PersonaFactionData::decodeFactionHolder,
+                    this::createNewEntry
+            );
+            overrideStorage = new MapStorageCodec<>(
                     overrideMap,
                     UUID::toString,
                     UUID::fromString,
@@ -118,6 +129,18 @@ public class PlayerFactionHandler implements IPlayerFaction {
 
         private PlayerFactionEntry createNewEntry(Holder<MKFaction> faction) {
             return new PlayerFactionEntry(faction, this::onDirtyEntry);
+        }
+
+        private static Holder<MKFaction> decodeFactionHolder(HolderLookup.Provider provider, String key) {
+            ResourceLocation factionId = ResourceLocation.tryParse(key);
+            if (factionId == null) {
+                return null;
+            }
+
+            ResourceKey<MKFaction> factionKey = ResourceKey.create(MKFactionRegistry.FACTION_REGISTRY_KEY, factionId);
+            return provider.lookupOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY)
+                    .get(factionKey)
+                    .orElse(null);
         }
 
         private ScoreOverrideEntry createNewOverrideEntry(UUID spawnId) {
@@ -166,18 +189,16 @@ public class PlayerFactionHandler implements IPlayerFaction {
 
         @Override
         public CompoundTag serialize(HolderLookup.Provider provider) {
-//            MKFactionMod.LOGGER.info("PersonaFactionData.serialize");
             CompoundTag tag = new CompoundTag();
-            tag.put("factions", factionUpdater.serializeStorage(provider));
-            tag.put("overrides", overrideUpdater.serializeStorage(provider));
+            tag.put("factions", factionStorage.serialize(provider));
+            tag.put("overrides", overrideStorage.serialize(provider));
             return tag;
         }
 
         @Override
         public void deserialize(HolderLookup.Provider provider, CompoundTag nbt) {
-//            MKFactionMod.LOGGER.info("PersonaFactionData.deserialize {}", nbt);
-            factionUpdater.deserializeStorage(provider, nbt.getCompound("factions"));
-            overrideUpdater.deserializeStorage(provider, nbt.getCompound("overrides"));
+            factionStorage.deserialize(provider, nbt.getCompound("factions"));
+            overrideStorage.deserialize(provider, nbt.getCompound("overrides"));
         }
     }
 

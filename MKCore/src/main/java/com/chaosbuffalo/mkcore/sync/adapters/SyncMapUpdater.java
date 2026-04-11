@@ -6,10 +6,7 @@ import com.chaosbuffalo.mkcore.sync.SyncContext;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.ListTag;
@@ -26,11 +23,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 
 public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implements ISyncObject {
@@ -44,11 +39,6 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
         Tag writeRemovals(SyncContext context, Collection<K> removedKeys);
 
         void readRemovals(SyncContext context, Tag tag, Consumer<K> keyConsumer);
-
-        String toStorageKey(K key);
-
-        @Nullable
-        K fromStorageKey(String encoded);
 
         static <K> KeyCodec<K> stringKeys(Function<K, String> encoder, Function<String, K> decoder) {
             return new KeyCodec<>() {
@@ -69,7 +59,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
                 public void readEntries(SyncContext context, Tag tag, BiConsumer<K, CompoundTag> entryConsumer) {
                     if (!(tag instanceof CompoundTag ct)) return;
                     for (String key : ct.getAllKeys()) {
-                        K decoded = fromStorageKey(key);
+                        K decoded = decodeKey(key);
                         if (decoded != null) {
                             entryConsumer.accept(decoded, ct.getCompound(key));
                         }
@@ -91,7 +81,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
                     for (int i = 0; i < list.size(); i++) {
                         String encoded = list.getString(i);
                         if (!encoded.isEmpty()) {
-                            K key = fromStorageKey(encoded);
+                            K key = decodeKey(encoded);
                             if (key != null) {
                                 keyConsumer.accept(key);
                             }
@@ -99,14 +89,8 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
                     }
                 }
 
-                @Override
-                public String toStorageKey(K key) {
-                    return encoder.apply(key);
-                }
-
-                @Override
                 @Nullable
-                public K fromStorageKey(String encoded) {
+                private K decodeKey(String encoded) {
                     try {
                         return decoder.apply(encoded);
                     } catch (Exception e) {
@@ -118,9 +102,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
         }
 
         static <K, RV> KeyCodec<K> registry(ResourceKey<? extends Registry<RV>> registryKey,
-                                             RegistryElementAdapter<K, RV> adapter,
-                                             Function<K, String> storageEncoder,
-                                             Function<String, K> storageDecoder) {
+                                             RegistryElementAdapter<K, RV> adapter) {
             return new KeyCodec<>() {
                 @Override
                 public Tag writeEntries(SyncContext context, Collection<K> keys,
@@ -201,40 +183,22 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
                         }
                     }
                 }
-
-                @Override
-                public String toStorageKey(K key) {
-                    return storageEncoder.apply(key);
-                }
-
-                @Override
-                @Nullable
-                public K fromStorageKey(String encoded) {
-                    try {
-                        return storageDecoder.apply(encoded);
-                    } catch (Exception e) {
-                        MKCore.LOGGER.error("Exception decoding storage map key {}", encoded, e);
-                        return null;
-                    }
-                }
             };
         }
 
-        static <RV> KeyCodec<Holder<RV>> registryHolders(ResourceKey<? extends Registry<RV>> registryKey,
-                                                          Supplier<RegistryAccess> registryAccessSupplier) {
-            return registry(
-                    registryKey,
-                    RegistryElementAdapter.holders(),
-                    holder -> Objects.requireNonNull(holder.getKey()).location().toString(),
-                    encoded -> {
-                        ResourceLocation rl = ResourceLocation.tryParse(encoded);
-                        if (rl == null) return null;
-                        return registryAccessSupplier.get()
-                                .registryOrThrow(registryKey)
-                                .getHolder(ResourceKey.create(registryKey, rl))
-                                .orElse(null);
-                    }
-            );
+        static <RV> KeyCodec<ResourceLocation> registryResourceLocations(
+                ResourceKey<? extends Registry<RV>> registryKey) {
+            return registry(registryKey, RegistryElementAdapter.resourceLocations());
+        }
+
+        static <RV> KeyCodec<ResourceKey<RV>> registryResourceKeys(
+                ResourceKey<? extends Registry<RV>> registryKey) {
+            return registry(registryKey, RegistryElementAdapter.resourceKeys());
+        }
+
+        static <RV> KeyCodec<net.minecraft.core.Holder<RV>> registryHolders(
+                ResourceKey<? extends Registry<RV>> registryKey) {
+            return registry(registryKey, RegistryElementAdapter.holders());
         }
     }
 
@@ -263,10 +227,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
             Map<ResourceLocation, V> map,
             ResourceKey<? extends Registry<RV>> registryKey,
             Function<ResourceLocation, V> valueFactory) {
-        return new SyncMapUpdater<>(map,
-                KeyCodec.registry(registryKey, RegistryElementAdapter.resourceLocations(),
-                        ResourceLocation::toString, ResourceLocation::tryParse),
-                valueFactory);
+        return new SyncMapUpdater<>(map, KeyCodec.registryResourceLocations(registryKey), valueFactory);
     }
 
     public void setOnRemoveCallback(Consumer<K> onRemoveCallback) {
@@ -382,49 +343,6 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
                 backingMap.put(key, current);
             }
         });
-    }
-
-    public CompoundTag serializeStorage(HolderLookup.Provider provider) {
-        CompoundTag result = new CompoundTag();
-        for (Map.Entry<K, V> entry : backingMap.entrySet()) {
-            Tag valueTag = entry.getValue().serializeStorage(provider);
-            if (valueTag != null) {
-                result.put(keyCodec.toStorageKey(entry.getKey()), valueTag);
-            }
-        }
-        return result;
-    }
-
-    public void deserializeStorage(HolderLookup.Provider provider, Tag tag) {
-        if (tag instanceof CompoundTag compoundTag) {
-            clearMap();
-            for (String key : compoundTag.getAllKeys()) {
-                K decodedKey = keyCodec.fromStorageKey(key);
-                if (decodedKey == null) {
-                    MKCore.LOGGER.error("Failed to decode storage map key {}", key);
-                    continue;
-                }
-
-                V current = backingMap.get(decodedKey);
-                boolean isNewValue = current == null;
-                if (current == null) {
-                    current = valueFactory.apply(decodedKey);
-                }
-                if (current == null) {
-                    MKCore.LOGGER.error("Failed to compute map value for key {}", decodedKey);
-                    continue;
-                }
-
-                CompoundTag entryTag = compoundTag.getCompound(key);
-                if (!current.deserializeStorage(provider, entryTag)) {
-                    MKCore.LOGGER.error("Failed to deserialize storage map value for {}", decodedKey);
-                    continue;
-                }
-                if (isNewValue) {
-                    backingMap.put(decodedKey, current);
-                }
-            }
-        }
     }
 
     private void removeEntry(K key) {

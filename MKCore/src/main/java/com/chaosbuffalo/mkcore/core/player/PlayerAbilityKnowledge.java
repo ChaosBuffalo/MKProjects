@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKAbilityKnowledge;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
+import com.chaosbuffalo.mkcore.sync.adapters.MapStorageCodec;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
@@ -33,6 +34,13 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupPr
             SyncMapUpdater.registryResourceLocations(
                     knownAbilities,
                     MKCoreRegistry.ABILITY_REGISTRY_KEY,
+                    PlayerAbilityKnowledge::createKnownAbility
+            );
+    private final MapStorageCodec<ResourceLocation, PlayerKnownAbility> knownAbilityStorage =
+            new MapStorageCodec<>(
+                    knownAbilities,
+                    ResourceLocation::toString,
+                    ResourceLocation::tryParse,
                     PlayerAbilityKnowledge::createKnownAbility
             );
 
@@ -174,13 +182,13 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupPr
 
     public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-        tag.put("known", knownAbilityUpdater.serializeStorage(provider));
+        tag.put("known", knownAbilityStorage.serialize(provider));
         tag.putInt("poolSize", poolSize.get());
         return tag;
     }
 
     public void deserialize(HolderLookup.Provider provider, CompoundTag tag) {
-        knownAbilityUpdater.deserializeStorage(provider, tag.get("known"));
+        knownAbilityStorage.deserialize(provider, tag.getCompound("known"));
         setAbilityPoolSize(tag.getInt("poolSize"));
     }
 
