@@ -10,7 +10,7 @@ import com.chaosbuffalo.mkcore.events.PersonaEvent;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
 import com.chaosbuffalo.mkcore.item.CoreItemComponents;
 import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
-import com.chaosbuffalo.mkcore.sync.types.SyncString;
+import com.chaosbuffalo.mkcore.sync.adapters.SyncRegistrySet;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
 import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import net.minecraft.core.Holder;
@@ -25,44 +25,37 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvider {
 
     private final MKPlayerData playerData;
     private final SyncGroup syncGroup = new SyncGroup();
-    private final Set<ResourceLocation> armorMastery;
-    private final SyncString clientMasteryInfo;
+    private final Set<ResourceKey<ArmorClass>> armorMastery;
+    private final SyncRegistrySet<ResourceKey<ArmorClass>, ArmorClass> armorMasterySync;
     private boolean lastHandsEmpty = false;
 
     public PlayerEquipment(MKPlayerData playerData) {
         super(playerData);
         this.playerData = playerData;
-        this.armorMastery = new HashSet<>();
-        clientMasteryInfo = new SyncString(""); // TODO: better sync? this is pretty dumb
-        clientMasteryInfo.setCallback(this::handleClientMasteryUpdate);
-        syncGroup.addPrivate("armor_mastery", clientMasteryInfo);
+        armorMastery = new HashSet<>();
+        armorMasterySync = SyncRegistrySet.resourceKeys(armorMastery, MKCoreRegistry.ARMOR_CLASS_REGISTRY_KEY);
+        syncGroup.addPrivate("armor_mastery", armorMasterySync);
+    }
+
+    public void enableArmorMastery(ResourceKey<ArmorClass> armorClassResourceKey, boolean enable) {
+        if (enable) {
+            armorMasterySync.add(armorClassResourceKey);
+        } else {
+            armorMasterySync.remove(armorClassResourceKey);
+        }
+        refreshAllArmorSlots();
     }
 
     @Override
     public SyncGroup getSyncGroup() {
         return syncGroup;
-    }
-
-    private void handleClientMasteryUpdate(String masteryInfo) {
-        armorMastery.clear();
-        Arrays.stream(masteryInfo.split("\\|")).map(ResourceLocation::parse).forEach(armorMastery::add);
-    }
-
-    public void enableArmorMastery(ResourceKey<ArmorClass> armorClassResourceKey, boolean enable) {
-        if (enable) {
-            armorMastery.add(armorClassResourceKey.location());
-        } else {
-            armorMastery.remove(armorClassResourceKey.location());
-        }
-        // Inform the client about known mastery so tooltips work properly
-        updateClientMastery();
-        refreshAllArmorSlots();
     }
 
     @Override
@@ -93,20 +86,14 @@ public class PlayerEquipment extends EntityEquipment implements ISyncGroupProvid
         refreshArmorClassBonus(EquipmentSlot.FEET);
     }
 
-    private void updateClientMastery() {
-        // Inform the client about known mastery so tooltips work properly
-        clientMasteryInfo.set(String.join("|", armorMastery.stream().map(ResourceLocation::toString).toList()));
-    }
-
     private void resetArmorMastery() {
-        armorMastery.clear();
-        updateClientMastery();
+        armorMasterySync.clear();
         refreshAllArmorSlots();
     }
 
     public boolean isArmorClassMastered(@Nonnull Holder<ArmorClass> armorClassHolder) {
         ResourceKey<ArmorClass> armorKey = armorClassHolder.getKey();
-        return armorKey != null && armorMastery.contains(armorKey.location());
+        return armorKey != null && armorMastery.contains(armorKey);
     }
 
     private void refreshArmorClassBonus(EquipmentSlot slot, ItemStack to) {
