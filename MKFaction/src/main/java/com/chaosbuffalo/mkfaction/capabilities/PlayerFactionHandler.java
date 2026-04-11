@@ -17,10 +17,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.fml.InterModComms;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
@@ -102,8 +100,10 @@ public class PlayerFactionHandler implements IPlayerFaction {
             this.persona = persona;
             factionUpdater = new SyncMapUpdater<>(
                     factionMap,
-                    this::holderToId,
-                    this::idToHolder,
+                    SyncMapUpdater.KeyCodec.registryHolders(
+                            MKFactionRegistry.FACTION_REGISTRY_KEY,
+                            () -> persona.getEntity().registryAccess()
+                    ),
                     this::createNewEntry
             );
             overrideUpdater = new SyncMapUpdater<>(
@@ -114,19 +114,6 @@ public class PlayerFactionHandler implements IPlayerFaction {
             );
             persona.getSyncGroup().addPrivate("factions", factionUpdater);
             persona.getSyncGroup().addPrivate("npc_faction_overrides", overrideUpdater);
-        }
-
-        private <T> String holderToId(Holder<T> factionHolder) {
-            return Objects.requireNonNull(factionHolder.getKey()).location().toString();
-        }
-
-        @Nullable
-        private Holder<MKFaction> idToHolder(String key) {
-            var factionKey = ResourceLocation.tryParse(key);
-            if (factionKey == null)
-                return null;
-            return MKFactionRegistry.getFactionHolder(persona.getEntity().registryAccess(), factionKey)
-                    .orElse(null);
         }
 
         private PlayerFactionEntry createNewEntry(Holder<MKFaction> faction) {

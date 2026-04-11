@@ -147,6 +147,55 @@ public class MKSyncRegistrySetCharacterizationGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = "player_data_phase0")
+    public static void abilityKnowledgeSyncUsesCompactRegistryKeys(GameTestHelper helper) {
+        MKServerPlayerData sourceData = createPlayerData(helper);
+        MKServerPlayerData targetData = createPlayerData(helper);
+        SyncContext context = new SyncContext(sourceData.getEntity().registryAccess());
+
+        MKAbility ember = MKTestAbilities.TEST_EMBER.get();
+        MKAbility heal = MKTestAbilities.TEST_HEAL.get();
+        sourceData.getAbilities().learnAbility(ember, AbilitySource.ADMIN);
+        sourceData.getAbilities().learnAbility(heal, AbilitySource.ADMIN);
+
+        Tag fullPayload = sourceData.getAbilities().getSyncGroup().writeFullValue(context, SyncVisibility.Private);
+        helper.assertTrue(fullPayload instanceof CompoundTag, "Knowledge sync payload should be a compound tag");
+        CompoundTag root = (CompoundTag) fullPayload;
+        CompoundTag knownTag = root.getCompound("known");
+        helper.assertTrue(knownTag.contains("l", Tag.TAG_LIST),
+                "Registry-backed map sync should use list-of-entries format");
+        helper.assertFalse(knownTag.contains("l", Tag.TAG_COMPOUND),
+                "Registry-backed map sync should not use string-keyed compound format");
+        CompoundTag firstEntry = knownTag.getList("l", Tag.TAG_COMPOUND).getCompound(0);
+        helper.assertTrue(firstEntry.contains("k", Tag.TAG_INT),
+                "Map entry keys should be compact registry ids");
+        helper.assertTrue(firstEntry.contains("v", Tag.TAG_COMPOUND),
+                "Map entry values should be compound tags");
+
+        targetData.getAbilities().getSyncGroup().handleUpdatePayload(context, fullPayload, SyncVisibility.Private);
+        helper.assertTrue(targetData.getAbilities().knowsAbility(ember.getAbilityId()),
+                "Full sync should transfer ember knowledge");
+        helper.assertTrue(targetData.getAbilities().knowsAbility(heal.getAbilityId()),
+                "Full sync should transfer heal knowledge");
+
+        sourceData.getAbilities().getSyncGroup().clearDirty();
+        sourceData.getAbilities().unlearnAbility(ember.getAbilityId(), AbilitySource.ADMIN);
+
+        Tag dirtyPayload = sourceData.getAbilities().getSyncGroup().writeDirtyValue(context, SyncVisibility.Private);
+        helper.assertTrue(dirtyPayload instanceof CompoundTag, "Dirty sync payload should be a compound tag");
+        CompoundTag dirtyRoot = (CompoundTag) dirtyPayload;
+        CompoundTag dirtyKnownTag = dirtyRoot.getCompound("known");
+        helper.assertTrue(dirtyKnownTag.contains("r", Tag.TAG_INT_ARRAY),
+                "Registry-backed map removals should use int array encoding");
+
+        targetData.getAbilities().getSyncGroup().handleUpdatePayload(context, dirtyPayload, SyncVisibility.Private);
+        helper.assertFalse(targetData.getAbilities().knowsAbility(ember.getAbilityId()),
+                "Dirty sync should remove ember knowledge");
+        helper.assertTrue(targetData.getAbilities().knowsAbility(heal.getAbilityId()),
+                "Dirty sync should retain heal knowledge");
+        helper.succeed();
+    }
+
     private static MKServerPlayerData createPlayerData(GameTestHelper helper) {
         var cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "sync-set-test-player"), false);
         ServerPlayer player = new ServerPlayer(

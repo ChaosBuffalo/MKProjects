@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.sync.adapters;
 
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -37,6 +38,20 @@ public interface RegistryElementAdapter<K, V> {
             @Override
             public @Nullable ResourceLocation fromRegistryValue(Registry<V> registry, V value) {
                 return registry.getKey(value);
+            }
+        };
+    }
+
+    static <V> RegistryElementAdapter<Holder<V>, V> holders() {
+        return new RegistryElementAdapter<>() {
+            @Override
+            public @Nullable V toRegistryValue(Registry<V> registry, Holder<V> element) {
+                return element.value();
+            }
+
+            @Override
+            public @Nullable Holder<V> fromRegistryValue(Registry<V> registry, V value) {
+                return registry.wrapAsHolder(value);
             }
         };
     }

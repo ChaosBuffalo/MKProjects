@@ -30,10 +30,9 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupPr
     private final Map<ResourceLocation, PlayerKnownAbility> knownAbilities = new HashMap<>();
     private final SyncInt poolSize = new SyncInt(GameConstants.DEFAULT_ABILITY_POOL_SIZE);
     private final SyncMapUpdater<ResourceLocation, PlayerKnownAbility> knownAbilityUpdater =
-            new SyncMapUpdater<>(
+            SyncMapUpdater.registryResourceLocations(
                     knownAbilities,
-                    ResourceLocation::toString,
-                    ResourceLocation::tryParse,
+                    MKCoreRegistry.ABILITY_REGISTRY_KEY,
                     PlayerAbilityKnowledge::createKnownAbility
             );
 
