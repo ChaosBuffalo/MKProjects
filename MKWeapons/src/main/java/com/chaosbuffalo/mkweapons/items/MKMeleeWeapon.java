@@ -2,6 +2,8 @@ package com.chaosbuffalo.mkweapons.items;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.fx.particles.effect_instances.IItemParticleAttachmentProvider;
+import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ItemParticleAttachmentProfile;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
 import com.chaosbuffalo.mkweapons.components.MeleeEffectsComponent;
 import com.chaosbuffalo.mkweapons.components.WeaponsComponents;
@@ -41,7 +43,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceivesSkillChange {
+public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceivesSkillChange, IItemParticleAttachmentProvider {
     private final IMeleeWeaponType weaponType;
     private final IMKTier mkTier;
     private final List<IMeleeWeaponEffect> weaponEffects;
@@ -210,6 +212,11 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     @Override
     public void onSkillChange(ItemStack stack, Player playerEntity, Holder<Attribute> skill) {
         getWeaponEffects(stack).forEach(x -> x.onSkillChange(playerEntity, skill));
+    }
+
+    @Override
+    public @Nullable ItemParticleAttachmentProfile getParticleAttachmentProfile(ItemStack stack) {
+        return weaponType.getParticleAttachmentProfile();
     }
 
     private double getEffectiveCooldownSeconds() {

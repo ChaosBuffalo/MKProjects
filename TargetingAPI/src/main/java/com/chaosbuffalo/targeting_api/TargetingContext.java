@@ -87,6 +87,7 @@ public class TargetingContext {
             this.clazz = clazz;
             canTargetCaster = true;
             requiresAlive = true;
+            canBeCreative = true;
             locKey = "targeting_api.targeting_context.default";
         }
 

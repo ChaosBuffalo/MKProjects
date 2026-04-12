@@ -1,11 +1,13 @@
 package com.chaosbuffalo.mkweapons.items.weapon.types;
 
+import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ItemParticleAttachmentProfile;
 import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Tier;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public interface IMeleeWeaponType {
@@ -31,6 +33,9 @@ public interface IMeleeWeaponType {
     boolean canBlock();
 
     List<IMeleeWeaponEffect> getWeaponEffects();
+
+    @Nullable
+    ItemParticleAttachmentProfile getParticleAttachmentProfile();
 
     <D> D serialize(DynamicOps<D> ops);
 

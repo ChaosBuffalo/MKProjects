@@ -1,8 +1,8 @@
-// 1.21.1	2026-04-10T15:05:34.7468114	Weapon Types: mkweapons
-490978dae0ee0cb73da57664eefdfcc024510475 data/mkweapons/melee_weapon_types/battleaxe.json
+// 1.21.1	2026-04-11T08:45:21.2659141	Weapon Types: mkweapons
+599b22227d4d0764049b22c06039ccff101b4d1a data/mkweapons/melee_weapon_types/battleaxe.json
 887b5bd7847831b7b87aed1d6ce6e2602f6cef36 data/mkweapons/melee_weapon_types/dagger.json
 4a9bdd4907db0093847a17f1ab94f9b21af47cb9 data/mkweapons/melee_weapon_types/greatsword.json
-ab939d353088ea8fadd93a7f40645eebe7a24b61 data/mkweapons/melee_weapon_types/katana.json
+51661e40d372926515bbacc54890c2219a88c040 data/mkweapons/melee_weapon_types/katana.json
 ed1c20db34e78af77abbbbaf3c9b28188356494e data/mkweapons/melee_weapon_types/longsword.json
 c1f05ea594b8addbe54dcb35386741e0640ebd5a data/mkweapons/melee_weapon_types/mace.json
 3d285c8cb5347eec6bdace0a2fdc553157451edb data/mkweapons/melee_weapon_types/spear.json

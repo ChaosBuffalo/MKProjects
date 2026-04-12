@@ -1,11 +1,13 @@
 package com.chaosbuffalo.mkweapons.items.weapon.types;
 
+import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ItemParticleAttachmentProfile;
 import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,10 +23,13 @@ public class MeleeWeaponType implements IMeleeWeaponType {
     private final ResourceLocation name;
     private final List<IMeleeWeaponEffect> effects;
     private boolean isTwoHanded;
+    @Nullable
+    private ItemParticleAttachmentProfile particleAttachmentProfile;
 
     public MeleeWeaponType(ResourceLocation name, float damageMultiplier, float attackSpeed,
                            float critMultiplier, float critChance, float armorPiercing, float reach, boolean isTwoHanded,
-                           float blockEfficiency, float maxPoise, List<IMeleeWeaponEffect> effects) {
+                           float blockEfficiency, float maxPoise, List<IMeleeWeaponEffect> effects,
+                           @Nullable ItemParticleAttachmentProfile particleAttachmentProfile) {
         this.damageMultiplier = damageMultiplier;
         this.name = name;
         this.attackSpeed = attackSpeed;
@@ -36,6 +41,7 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         this.blockEfficiency = blockEfficiency;
         this.effects = new ArrayList<>(effects);
         this.isTwoHanded = isTwoHanded;
+        this.particleAttachmentProfile = particleAttachmentProfile;
     }
 
     @Override
@@ -61,6 +67,10 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         builder.put(ops.createString("effects"), ops.createList(getWeaponEffects().stream().map(effect -> effect.serialize(ops))));
         builder.put(ops.createString("blockEfficiency"), ops.createFloat(getBlockEfficiency()));
         builder.put(ops.createString("maxPoise"), ops.createFloat(getMaxPoise()));
+        if (getParticleAttachmentProfile() != null) {
+            builder.put(ops.createString("particleAttachmentProfile"),
+                    ItemParticleAttachmentProfile.CODEC.encodeStart(ops, getParticleAttachmentProfile()).getOrThrow());
+        }
 
         return ops.createMap(builder.build());
     }
@@ -76,6 +86,10 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         isTwoHanded = dynamic.get("isTwoHanded").asBoolean(false);
         blockEfficiency = dynamic.get("blockEfficiency").asFloat(0.75f);
         maxPoise = dynamic.get("maxPoise").asFloat(20.0f);
+        particleAttachmentProfile = dynamic.get("particleAttachmentProfile")
+                .flatMap(d -> ItemParticleAttachmentProfile.CODEC.parse(d.getOps(), d.getValue()))
+                .result()
+                .orElse(particleAttachmentProfile);
         effects.clear();
         List<IMeleeWeaponEffect> deserializedEffects = dynamic.get("effects").asList(IMeleeWeaponEffect::deserialize);
         for (IMeleeWeaponEffect effect : deserializedEffects) {
@@ -133,6 +147,11 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         return name;
     }
 
+    @Override
+    public @Nullable ItemParticleAttachmentProfile getParticleAttachmentProfile() {
+        return particleAttachmentProfile;
+    }
+
     public static Builder builder(ResourceLocation id) {
         return new Builder(id);
     }
@@ -150,6 +169,8 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         private float maxPoise = 20f;
         private final List<IMeleeWeaponEffect> effects = new ArrayList<>();
         private boolean isTwoHanded = false;
+        @Nullable
+        private ItemParticleAttachmentProfile particleAttachmentProfile = null;
 
         public Builder(ResourceLocation typeId) {
             this.name = typeId;
@@ -197,9 +218,14 @@ public class MeleeWeaponType implements IMeleeWeaponType {
             return this;
         }
 
+        public Builder particleAttachmentProfile(ItemParticleAttachmentProfile profile) {
+            this.particleAttachmentProfile = profile;
+            return this;
+        }
+
         public MeleeWeaponType build() {
             return new MeleeWeaponType(name, damageMultiplier, attackSpeed, critMultiplier, critChance, armorPiercing, reachModifier,
-                    isTwoHanded, blockEfficiency, maxPoise, effects);
+                    isTwoHanded, blockEfficiency, maxPoise, effects, particleAttachmentProfile);
         }
     }
 }

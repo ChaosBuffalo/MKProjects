@@ -1,4 +1,4 @@
-// 1.21.1	2026-04-11T07:51:34.7722795	MK Abilities: mkultra
+// 1.21.1	2026-04-11T08:45:23.0987537	MK Abilities: mkultra
 b4071f204c7feff21f4e583130c6782506c3b068 data/mkultra/player_abilities/alacrity.json
 8f06670fae5893f8c3cdc2b51911b94eec3cf287 data/mkultra/player_abilities/cleansing_seed.json
 25bc9079c333533ceae36aca0ded4e323afcbd81 data/mkultra/player_abilities/drown.json
@@ -8,6 +8,7 @@ d3a3fc08109fb2902b07fc3d593c412b547f14ec data/mkultra/player_abilities/explosive
 1aa55ec80d65afa7b99605967b10f83c91fe774e data/mkultra/player_abilities/fireball.json
 7fc22f9146cfd7fcd5854603a55a42337fa92c0d data/mkultra/player_abilities/fireball_burst.json
 59ed64ab4270354caf13a2a3942a5c8f928f49e5 data/mkultra/player_abilities/fire_armor.json
+a9bb68c145a8fac955671c5d1704a0d4c9a47723 data/mkultra/player_abilities/flame_blade.json
 742c76729f9ced6356fbff2164e066c0568f17af data/mkultra/player_abilities/flame_wave.json
 760afe768fa8bc4c6e39c983a0e82c8d7e6b9acf data/mkultra/player_abilities/frozen_grasp.json
 382c58074a4cbdc22ae70ed439821e417d7b072b data/mkultra/player_abilities/furious_brooding.json

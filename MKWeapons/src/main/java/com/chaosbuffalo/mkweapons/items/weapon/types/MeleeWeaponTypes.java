@@ -1,15 +1,26 @@
 package com.chaosbuffalo.mkweapons.items.weapon.types;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ItemParticleAttachment;
+import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ItemParticleAttachmentProfile;
 import com.chaosbuffalo.mkweapons.MKWeapons;
 import com.chaosbuffalo.mkweapons.items.effects.melee.*;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MeleeWeaponTypes {
+    private static final ItemParticleAttachmentProfile KATANA_ATTACHMENT_PROFILE = new ItemParticleAttachmentProfile(List.of(
+            new ItemParticleAttachment(new Vec3(2.3, 2.3, 8.05), new Vec3(17.2, 17.9, 8.05))
+    ));
+    private static final ItemParticleAttachmentProfile BATTLEAXE_ATTACHMENT_PROFILE = new ItemParticleAttachmentProfile(List.of(
+            new ItemParticleAttachment(new Vec3(9.75, 12.5, 8.0), new Vec3(17.75, 20.5, 8.0)),
+            new ItemParticleAttachment(new Vec3(9.75, 12.5, 8.0), new Vec3(1.75, 20.5, 8.0))
+    ));
 
     public static final Map<ResourceLocation, IMeleeWeaponType> WEAPON_TYPES = new HashMap<>();
 
@@ -51,6 +62,7 @@ public class MeleeWeaponTypes {
             .armorPiercing(0.10f)
             .isTwoHanded()
             .blocking(0.75f, 25f)
+            .particleAttachmentProfile(KATANA_ATTACHMENT_PROFILE)
             .effect(new MeleeSkillScalingEffect(3.375, MKAttributes.TWO_HAND_SLASH))
             .effect(new ComboStrikeMeleeWeaponEffect(5, .25))
             .build();
@@ -110,6 +122,7 @@ public class MeleeWeaponTypes {
             .critical(0.9f, 0.05f)
             .isTwoHanded()
             .blocking(0.80f, 60f)
+            .particleAttachmentProfile(BATTLEAXE_ATTACHMENT_PROFILE)
             .effect(new MeleeSkillScalingEffect(2.71875, MKAttributes.TWO_HAND_SLASH))
             .effect(new BleedMeleeWeaponEffect(2.0f, 5, 4, MKAttributes.TWO_HAND_SLASH))
             .build();

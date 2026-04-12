@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.client.rendering.model.MKPlayerModel;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
 import com.chaosbuffalo.mkcore.core.player.PlayerAnimationModule;
+import com.chaosbuffalo.mkcore.fx.particles.effect_instances.HeldItemParticleEffectInstance;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
@@ -87,7 +88,9 @@ public class MKPlayerRenderer extends PlayerRenderer {
 
 
             data.getAnimationModule().getParticleInstances().forEach(instance -> {
-                instance.update(playerIn, skeleton, 0.0f, getRenderOffset(playerIn, 0.0f));
+                if (!(instance instanceof HeldItemParticleEffectInstance)) {
+                    instance.update(playerIn, skeleton, 0.0f, getRenderOffset(playerIn, 0.0f));
+                }
             });
         });
     }

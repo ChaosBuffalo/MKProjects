@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.effects;
 
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.chaosbuffalo.targeting_api.TargetingContext;
@@ -49,6 +50,13 @@ public abstract class WorldAreaEffectEntry {
         public void apply(IMKEntityData casterData, IMKEntityData targetData) {
             boolean validTarget = newEffect.getEffect().isValidTarget(targetContext, casterData, targetData);
             if (!validTarget) {
+                if (newEffect.getEffect().getId().toString().equals("mkultra:effect.flame_blade_applier")) {
+                    MKCore.LOGGER.warn("FlameBlade target rejected context={} caster={} target={} relation={}",
+                            targetContext.getLocalizedDescription().getString(),
+                            casterData.getEntity(),
+                            targetData.getEntity(),
+                            Targeting.getTargetRelation(casterData.getEntity(), targetData.getEntity()));
+                }
                 return;
             }
 
