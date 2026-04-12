@@ -155,8 +155,8 @@ public class MKWeaponMeleeAnimationProvider implements DataProvider {
         ResourceLocation strike1 = MKWeapons.id("dagger_strike_1");
         ResourceLocation strike2 = MKWeapons.id("dagger_strike_2");
 
-        futures.add(savePose(output, windup0, weaponWindup(-1.85F, 0.28F, -0.90F, 0.06F, 0.05F, -0.06F, 0.05F, 0.0F, -0.02F)));
-        futures.add(savePose(output, windup1, weaponWindup(-1.70F, -0.22F, -0.92F, -0.04F, -0.04F, -0.05F, 0.04F, 0.0F, 0.02F)));
+        futures.add(savePose(output, windup0, daggerWindup(0.88F, 0.46F, -0.44F, -0.06F, 0.08F, 0.04F, -0.02F, 0.10F, 0.03F)));
+        futures.add(savePose(output, windup1, daggerWindup(0.78F, -0.40F, -0.48F, 0.04F, -0.06F, 0.04F, -0.01F, -0.10F, -0.03F)));
         futures.add(savePose(output, strike0, underhandStabPose(1.0F, 0.06F, 0.16F, 0.08F,
                 0.16F, 0.18F, 0.10F, 0.60F, 0.55F, -1.70F, -0.65F,
                 0.22F, 0.18F, "handedness", -0.95F, 0.10F, 0.10F, 0.06F,
@@ -185,8 +185,8 @@ public class MKWeaponMeleeAnimationProvider implements DataProvider {
         ResourceLocation strike1 = MKWeapons.id("spear_strike_1");
         ResourceLocation strike2 = MKWeapons.id("spear_strike_2");
 
-        futures.add(savePose(output, windup0, polearmWindup(-2.40F, 0.38F, -1.55F, -0.35F, 0.06F, -0.14F, 0.10F)));
-        futures.add(savePose(output, windup1, polearmWindup(-2.55F, -0.34F, -1.60F, 0.28F, -0.05F, -0.12F, 0.08F)));
+        futures.add(savePose(output, windup0, spearWindup(0.82F, 0.34F, -0.96F, -0.26F, 0.08F, 0.04F, -0.02F, 0.06F)));
+        futures.add(savePose(output, windup1, spearWindup(0.90F, -0.30F, -1.02F, 0.22F, -0.06F, 0.04F, -0.01F, -0.06F)));
         futures.add(savePose(output, strike0, underhandPolearmThrustPose(1.0F, 0.10F, 0.18F, 0.12F,
                 0.20F, 0.18F, 0.12F, 0.72F, 0.58F, -1.95F, -0.78F,
                 0.24F, 0.20F, -1.45F, 0.14F, 0.10F, 0.08F,
@@ -299,6 +299,22 @@ public class MKWeaponMeleeAnimationProvider implements DataProvider {
         return poseJson.build();
     }
 
+    private MeleeAnimationPose daggerWindup(float mainArmX, float mainArmY, float offArmX, float offArmY, float bodyY,
+                                            float bodyX, float headX, float mainArmZ, float offArmZ) {
+        PoseBuilder poseJson = pose(false, 1.0F);
+        List<PoseChannel> poseChannels = poseJson.channels();
+        poseChannels.add(channel("main_arm", "xRot", "set", "none", value(0.18F, term("windup_sin", mainArmX))));
+        poseChannels.add(channel("main_arm", "yRot", "set", "handedness", value(0.0F, term("windup_sin", mainArmY))));
+        poseChannels.add(channel("main_arm", "zRot", "set", "handedness", value(0.0F, term("windup_sin", mainArmZ))));
+        poseChannels.add(channel("off_arm", "xRot", "set", "none", value(-0.16F, term("windup_sin", offArmX))));
+        poseChannels.add(channel("off_arm", "yRot", "set", "handedness", value(0.0F, term("windup_sin", offArmY))));
+        poseChannels.add(channel("off_arm", "zRot", "set", "-handedness", value(0.0F, term("windup_sin", offArmZ))));
+        poseChannels.add(channel("body", "xRot", "add", "none", value(0.0F, term("windup_sin", bodyX))));
+        poseChannels.add(channel("body", "yRot", "set", "handedness", value(0.0F, term("windup_sin", bodyY))));
+        poseChannels.add(channel("head", "xRot", "add", "none", value(0.0F, term("windup_sin", headX))));
+        return poseJson.build();
+    }
+
     private MeleeAnimationPose polearmWindup(float mainArmX, float mainArmY, float offArmX, float offArmY,
                                      float bodyY, float bodyX, float headX) {
         PoseBuilder poseJson = pose(false, 1.0F);
@@ -308,6 +324,22 @@ public class MKWeaponMeleeAnimationProvider implements DataProvider {
         poseChannels.add(channel("off_arm", "xRot", "set", "none", value(-0.20F, term("windup_sin", offArmX))));
         poseChannels.add(channel("off_arm", "yRot", "set", "handedness", value(0.0F, term("windup_sin", offArmY))));
         poseChannels.add(channel("off_arm", "zRot", "set", "-handedness", value(0.0F, term("windup_sin", 0.06F))));
+        poseChannels.add(channel("body", "xRot", "add", "none", value(0.0F, term("windup_sin", bodyX))));
+        poseChannels.add(channel("body", "yRot", "set", "handedness", value(0.0F, term("windup_sin", bodyY))));
+        poseChannels.add(channel("head", "xRot", "add", "none", value(0.0F, term("windup_sin", headX))));
+        return poseJson.build();
+    }
+
+    private MeleeAnimationPose spearWindup(float mainArmX, float mainArmY, float offArmX, float offArmY,
+                                           float bodyY, float bodyX, float headX, float mainArmZ) {
+        PoseBuilder poseJson = pose(false, 1.0F);
+        List<PoseChannel> poseChannels = poseJson.channels();
+        poseChannels.add(channel("main_arm", "xRot", "set", "none", value(0.12F, term("windup_sin", mainArmX))));
+        poseChannels.add(channel("main_arm", "yRot", "set", "handedness", value(0.0F, term("windup_sin", mainArmY))));
+        poseChannels.add(channel("main_arm", "zRot", "set", "handedness", value(0.0F, term("windup_sin", mainArmZ))));
+        poseChannels.add(channel("off_arm", "xRot", "set", "none", value(-0.12F, term("windup_sin", offArmX))));
+        poseChannels.add(channel("off_arm", "yRot", "set", "handedness", value(0.0F, term("windup_sin", offArmY))));
+        poseChannels.add(channel("off_arm", "zRot", "set", "-handedness", value(0.0F, term("windup_sin", 0.04F))));
         poseChannels.add(channel("body", "xRot", "add", "none", value(0.0F, term("windup_sin", bodyX))));
         poseChannels.add(channel("body", "yRot", "set", "handedness", value(0.0F, term("windup_sin", bodyY))));
         poseChannels.add(channel("head", "xRot", "add", "none", value(0.0F, term("windup_sin", headX))));

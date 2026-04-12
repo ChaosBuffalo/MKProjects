@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.client.render.renderers;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
+import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCSkeleton;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
@@ -37,7 +38,7 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
     private final ModelStyle style;
     private final float defaultShadowSize;
     private ModelLook look;
-    private final BipedSkeleton<T, M> skeleton;
+    protected MCSkeleton skeleton;
 
 
     public MKBipedRenderer(EntityRendererProvider.Context context, ModelStyle style,
@@ -209,7 +210,7 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
         if (entity.getVisualCastState() != MKEntity.VisualCastState.NONE) {
             return 0.0F;
         }
-        float attackAnim = entity.getVisualMeleeAttackAnim(partialTicks);
+        float attackAnim = entity.getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, partialTicks);
         return Mth.sin(attackAnim * (float) Math.PI) * getVisualLungeAmount(entity);
     }
 }

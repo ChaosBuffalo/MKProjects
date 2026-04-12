@@ -41,6 +41,9 @@ public class MultiAttackHelper {
     }
 
     public static int getSequenceSwingDurationTicks(int cooldownTicks, int attackCount, int baseSwingDurationTicks) {
+        if (attackCount <= 1) {
+            return Mth.clamp(baseSwingDurationTicks, 2, 24);
+        }
         int sequenceSpacing = getAttackSpacingTicks(cooldownTicks, attackCount);
         return Mth.clamp(Math.min(baseSwingDurationTicks, sequenceSpacing), 2, 24);
     }

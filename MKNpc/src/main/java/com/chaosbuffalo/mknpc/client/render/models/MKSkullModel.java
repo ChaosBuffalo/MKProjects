@@ -13,6 +13,7 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 
 public class MKSkullModel<T extends MKEntity> extends HierarchicalModel<T> {
@@ -51,8 +52,9 @@ public class MKSkullModel<T extends MKEntity> extends HierarchicalModel<T> {
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         float partialTicks = ageInTicks - entity.tickCount;
-        float attackAnim = entity.getVisualMeleeAttackAnim(partialTicks);
-        float windupProgress = entity.getMeleeWindupProgress(partialTicks);
+        float attackAnim = entity.getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, partialTicks);
+        boolean attackActive = entity.hasActiveVisualMeleeAttack(InteractionHand.MAIN_HAND, partialTicks);
+        float windupProgress = entity.getMeleeWindupProgress(InteractionHand.MAIN_HAND, partialTicks);
 
         this.head.yRot = netHeadYaw * ((float) Math.PI / 180.0F);
         this.head.xRot = headPitch * ((float) Math.PI / 180.0F);
@@ -60,14 +62,18 @@ public class MKSkullModel<T extends MKEntity> extends HierarchicalModel<T> {
         this.head.z = 0.0F;
         this.jaw.xRot = 0.0F;
 
-        if (attackAnim > 0.0F) {
+        if (attackActive) {
             MeleeAnimationManager.applyStrikePose(skeleton, entity, MKNpcMeleeAnimations.SKULL_DEFAULT,
-                    MKNpcMeleeAnimations.SKULL_FAMILY, entity.getCurrentStrikePoseIndex(),
-                    ModelPoseAnimator.Context.strike(attackAnim, ageInTicks, netHeadYaw, headPitch, HumanoidArm.RIGHT));
+                    InteractionHand.MAIN_HAND, MKNpcMeleeAnimations.SKULL_FAMILY,
+                    entity.getCurrentStrikePoseIndex(InteractionHand.MAIN_HAND),
+                    ModelPoseAnimator.Context.strike(attackAnim, ageInTicks, netHeadYaw, headPitch, HumanoidArm.RIGHT,
+                            InteractionHand.MAIN_HAND));
         } else if (windupProgress > 0.0F) {
             MeleeAnimationManager.applyWindupPose(skeleton, entity, MKNpcMeleeAnimations.SKULL_DEFAULT,
-                    MKNpcMeleeAnimations.SKULL_FAMILY, entity.getCurrentStrikePoseIndex(),
-                    ModelPoseAnimator.Context.windup(windupProgress, ageInTicks, netHeadYaw, headPitch, HumanoidArm.RIGHT));
+                    InteractionHand.MAIN_HAND, MKNpcMeleeAnimations.SKULL_FAMILY,
+                    entity.getCurrentMeleeWindupVariant(InteractionHand.MAIN_HAND),
+                    ModelPoseAnimator.Context.windup(windupProgress, ageInTicks, netHeadYaw, headPitch, HumanoidArm.RIGHT,
+                            InteractionHand.MAIN_HAND));
         } else {
             MeleeAnimationPose pose = MeleeAnimationManager.getPose(MKNpcMeleeAnimations.SKULL_IDLE);
             if (pose != null) {

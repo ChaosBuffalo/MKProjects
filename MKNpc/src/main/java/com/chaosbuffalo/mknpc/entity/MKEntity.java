@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.entity;
 import com.chaosbuffalo.mkchat.capabilities.INpcDialogue;
 import com.chaosbuffalo.mkchat.dialogue.DialogueUtils;
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
@@ -11,6 +12,7 @@ import com.chaosbuffalo.mkcore.core.CastInterruptReason;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.MKEntityData;
 import com.chaosbuffalo.mkcore.core.combat.IVisualMeleeAttackEntity;
+import com.chaosbuffalo.mkcore.core.combat.MKMeleeManager;
 import com.chaosbuffalo.mkcore.core.combat.VisualMeleeAttackSequence;
 import com.chaosbuffalo.mkcore.core.pets.IMKPet;
 import com.chaosbuffalo.mkcore.core.pets.PetNonCombatBehavior;
@@ -126,13 +128,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private int castTicks;
     private int currentCastTicks;
     private double rangedCastingDistance;
-    private int localSwingVariant;
-    private int visualMeleeWindupVariant;
-    private int nextVisualMeleeWindupVariant;
-    private int visualMeleeWindupTicks;
-    private int visualMeleeWindupRecoveryTicks;
     private boolean wasSwingingLastTick;
-    private final VisualMeleeAttackSequence visualMeleeAttackSequence = new VisualMeleeAttackSequence();
+    private final VisualMeleeHandState mainHandVisualMeleeState = new VisualMeleeHandState();
+    private final VisualMeleeHandState offHandVisualMeleeState = new VisualMeleeHandState();
 
     @Nullable
     protected Component battlecry;
@@ -164,6 +162,16 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         NONE,
         CASTING,
         RELEASE,
+    }
+
+    private static final class VisualMeleeHandState {
+        private final VisualMeleeAttackSequence attackSequence = new VisualMeleeAttackSequence();
+        private int localSwingVariant;
+        private int visualAttackBaseVariant;
+        private int windupVariant;
+        private int nextWindupVariant;
+        private int windupTicks;
+        private int windupRecoveryTicks;
     }
 
     public void setGhost(boolean ghost) {
@@ -217,11 +225,6 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         currentCastTicks = 0;
         visualCastState = VisualCastState.NONE;
         castingAbility = null;
-        localSwingVariant = 0;
-        visualMeleeWindupVariant = 0;
-        nextVisualMeleeWindupVariant = 0;
-        visualMeleeWindupTicks = 0;
-        visualMeleeWindupRecoveryTicks = 0;
         wasSwingingLastTick = false;
         battlecry = null;
         lungeSpeed = .25;
@@ -304,6 +307,15 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     public boolean canFly() {
         return canFly;
+    }
+
+    public void onAIAbilityCastStart() {
+    }
+
+    public void onAIAbilityCastTick() {
+    }
+
+    public void onAIAbilityCastStop() {
     }
 
     @Override
@@ -740,57 +752,63 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     public void aiStep() {
         updateSwingTime();
         if (level().isClientSide) {
-            visualMeleeAttackSequence.tick();
-            boolean visualSwingStarted = visualMeleeAttackSequence.consumeSwingStartedThisTick();
-            if (visualSwingStarted) {
-                localSwingVariant++;
-                visualMeleeWindupTicks = 0;
-                visualMeleeWindupRecoveryTicks = getMeleeWindupRecoveryTicks();
-            } else if (swinging) {
-                if (!wasSwingingLastTick) {
-                    localSwingVariant++;
-                    resetSwing();
-                }
-                visualMeleeWindupTicks = 0;
-                visualMeleeWindupRecoveryTicks = getMeleeWindupRecoveryTicks();
-            } else if (visualMeleeWindupRecoveryTicks > 0) {
-                visualMeleeWindupRecoveryTicks--;
-                visualMeleeWindupTicks = 0;
-            } else if (shouldShowMeleeWindup()) {
-                if (visualMeleeWindupTicks == 0) {
-                    visualMeleeWindupVariant = nextVisualMeleeWindupVariant++;
-                }
-                visualMeleeWindupTicks = Math.min(visualMeleeWindupTicks + 1, getMeleeWindupTicks());
-            } else {
-                visualMeleeWindupTicks = 0;
+            getVisualMeleeState(InteractionHand.MAIN_HAND).attackSequence.tick();
+            getVisualMeleeState(InteractionHand.OFF_HAND).attackSequence.tick();
+            boolean mainVisualSwingStarted = getVisualMeleeState(InteractionHand.MAIN_HAND).attackSequence.consumeSwingStartedThisTick();
+            boolean offVisualSwingStarted = getVisualMeleeState(InteractionHand.OFF_HAND).attackSequence.consumeSwingStartedThisTick();
+            if (mainVisualSwingStarted) {
+                incrementLocalSwingVariant(InteractionHand.MAIN_HAND);
+                resetVisualMeleeWindup(InteractionHand.MAIN_HAND);
             }
+            if (offVisualSwingStarted) {
+                incrementLocalSwingVariant(InteractionHand.OFF_HAND);
+                resetVisualMeleeWindup(InteractionHand.OFF_HAND);
+            }
+            if (!(mainVisualSwingStarted || offVisualSwingStarted) && swinging) {
+                if (!wasSwingingLastTick) {
+                    if (swingingArm == InteractionHand.OFF_HAND) {
+                        incrementLocalSwingVariant(InteractionHand.OFF_HAND);
+                    } else {
+                        incrementLocalSwingVariant(InteractionHand.MAIN_HAND);
+                    }
+                    resetSwing(swingingArm == null ? InteractionHand.MAIN_HAND : swingingArm);
+                    resetVisualMeleeWindup(swingingArm == null ? InteractionHand.MAIN_HAND : swingingArm);
+                }
+            }
+            tickVisualMeleeWindupState(InteractionHand.MAIN_HAND);
+            tickVisualMeleeWindupState(InteractionHand.OFF_HAND);
             wasSwingingLastTick = swinging;
         }
-        attackStrengthTicker++;
+        getEntityDataCap().getCombatExtension().tickAttackStrengthTicks();
+        attackStrengthTicker = getEntityDataCap().getCombatExtension().getAttackStrengthTicks(InteractionHand.MAIN_HAND);
         super.aiStep();
         if (nonCombatBehavior != null && !hasThreatTarget()) {
             nonCombatBehavior.getEntity().ifPresent(x -> getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT.get(), x.blockPosition()));
         }
     }
 
-    public void resetSwing() {
-        attackStrengthTicker = 0;
+    public void resetSwing(InteractionHand hand) {
+        getEntityDataCap().getCombatExtension().setAttackStrengthTicks(hand, 0);
+        if (hand == InteractionHand.MAIN_HAND) {
+            attackStrengthTicker = 0;
+        }
     }
 
-    public void subtractFromTicksSinceLastSwing(int toSubtract) {
-        attackStrengthTicker -= toSubtract;
+    public void subtractFromTicksSinceLastSwing(InteractionHand hand, int toSubtract) {
+        getEntityDataCap().getCombatExtension().increaseAttackStrengthTicks(hand, -toSubtract);
+        attackStrengthTicker = getEntityDataCap().getCombatExtension().getAttackStrengthTicks(InteractionHand.MAIN_HAND);
     }
 
-    public int getTicksSinceLastSwing() {
-        return attackStrengthTicker;
+    public int getTicksSinceLastSwing(InteractionHand hand) {
+        return getEntityDataCap().getCombatExtension().getAttackStrengthTicks(hand);
     }
 
-    public int getMeleeWindupTicks() {
-        return Mth.clamp(Mth.ceil(getMeleeCooldownPeriod() * 0.3), 3, 16);
+    public int getMeleeWindupTicks(InteractionHand hand) {
+        return Mth.clamp(Mth.ceil(getMeleeCooldownPeriod(hand) * 0.3), 3, 16);
     }
 
-    public int getMeleeWindupRecoveryTicks() {
-        return Mth.clamp(Mth.ceil(getMeleeCooldownPeriod() * 0.45), 4, 24);
+    public int getMeleeWindupRecoveryTicks(InteractionHand hand) {
+        return Mth.clamp(Mth.ceil(getMeleeCooldownPeriod(hand) * 0.45), 4, 24);
     }
 
     protected double getVisualMeleeWindupRangeMultiplier() {
@@ -802,50 +820,146 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return range * range;
     }
 
-    public boolean shouldShowMeleeWindup() {
+    public boolean shouldShowMeleeWindup(InteractionHand hand) {
         if (getCombatMoveType() != CombatMoveType.MELEE || getVisualCastState() != VisualCastState.NONE) {
             return false;
         }
-        return isAggressive() || swinging || visualMeleeWindupTicks > 0;
+        if (isUsingItem()) {
+            return false;
+        }
+        if (hand == InteractionHand.OFF_HAND && !MKMeleeManager.canUseForAttack(this, InteractionHand.OFF_HAND)) {
+            return false;
+        }
+        return isAggressive() || (swinging && swingingArm == hand) || getVisualMeleeWindupTicks(hand) > 0;
     }
 
-    public float getMeleeWindupProgress(float partialTicks) {
-        int windupTicks = getMeleeWindupTicks();
-        if (windupTicks <= 0 || visualMeleeWindupRecoveryTicks > 0 || !shouldShowMeleeWindup()) {
+    public float getMeleeWindupProgress(InteractionHand hand, float partialTicks) {
+        int windupTicks = getMeleeWindupTicks(hand);
+        if (windupTicks <= 0 || getVisualMeleeWindupRecoveryTicks(hand) > 0 || !shouldShowMeleeWindup(hand)) {
             return 0.0F;
         }
-        return Mth.clamp((visualMeleeWindupTicks + partialTicks) / windupTicks, 0.0F, 1.0F);
+        return Mth.clamp((getVisualMeleeWindupTicks(hand) + partialTicks) / windupTicks, 0.0F, 1.0F);
     }
 
-    public int getCurrentLocalSwingVariant() {
-        if (visualMeleeAttackSequence.hasSequence()) {
-            return visualMeleeAttackSequence.getLocalSwingVariant();
+    public int getCurrentLocalSwingVariant(InteractionHand hand) {
+        VisualMeleeAttackSequence sequence = getVisualMeleeAttackSequence(hand);
+        if (sequence.hasSequence()) {
+            return sequence.getLocalSwingVariant();
         }
-        return localSwingVariant;
+        return getVisualMeleeState(hand).localSwingVariant;
+    }
+    
+    public int getCurrentStrikePoseIndex(InteractionHand hand) {
+        VisualMeleeAttackSequence sequence = getVisualMeleeAttackSequence(hand);
+        if (sequence.hasSequence() && sequence.getActiveSwingIndex() >= 0) {
+            return getVisualMeleeAttackBaseVariant(hand) + sequence.getActiveSwingIndex();
+        }
+        return getCurrentLocalSwingVariant(hand) - 1;
     }
 
-    public int getCurrentStrikePoseIndex() {
-        return getCurrentLocalSwingVariant() - 1;
-    }
-
-    public int getCurrentMeleeWindupVariant() {
-        return visualMeleeWindupVariant;
-    }
-
-    @Override
-    public void startVisualMeleeAttackSequence(int[] swingStartTicks, int[] swingDurationTicks) {
-        visualMeleeAttackSequence.start(swingStartTicks, swingDurationTicks);
-    }
-
-    @Override
-    public float getVisualMeleeAttackAnim(float partialTicks) {
-        float visualAttack = visualMeleeAttackSequence.getAttackAnim(partialTicks);
-        return visualAttack > 0.0F ? visualAttack : getAttackAnim(partialTicks);
+    public int getCurrentMeleeWindupVariant(InteractionHand hand) {
+        return getVisualMeleeState(hand).windupVariant;
     }
 
     @Override
-    public boolean hasVisualMeleeAttackSequence() {
-        return visualMeleeAttackSequence.hasSequence();
+    public void startVisualMeleeAttackSequence(InteractionHand hand, int[] swingStartTicks, int[] swingDurationTicks) {
+        VisualMeleeAttackSequence sequence = getVisualMeleeAttackSequence(hand);
+        setVisualMeleeAttackBaseVariant(hand, resolveVisualMeleeAttackBaseVariant(hand, sequence));
+        sequence.start(swingStartTicks, swingDurationTicks);
+    }
+
+    @Override
+    public float getVisualMeleeAttackAnim(InteractionHand hand, float partialTicks) {
+        VisualMeleeAttackSequence sequence = getVisualMeleeAttackSequence(hand);
+        float visualAttack = sequence.getAttackAnim(partialTicks);
+        return sequence.isActiveSwing(partialTicks) ? visualAttack : getAttackAnim(partialTicks);
+    }
+
+    @Override
+    public boolean hasVisualMeleeAttackSequence(InteractionHand hand) {
+        return getVisualMeleeAttackSequence(hand).hasSequence();
+    }
+
+    @Override
+    public boolean hasActiveVisualMeleeAttack(InteractionHand hand, float partialTicks) {
+        return getVisualMeleeAttackSequence(hand).isActiveSwing(partialTicks);
+    }
+
+    private VisualMeleeAttackSequence getVisualMeleeAttackSequence(InteractionHand hand) {
+        return getVisualMeleeState(hand).attackSequence;
+    }
+
+    private int resolveVisualMeleeAttackBaseVariant(InteractionHand hand, VisualMeleeAttackSequence sequence) {
+        if (getVisualMeleeWindupTicks(hand) > 0) {
+            return getCurrentMeleeWindupVariant(hand);
+        }
+        return sequence.getLocalSwingVariant();
+    }
+
+    private void tickVisualMeleeWindupState(InteractionHand hand) {
+        if (getVisualMeleeWindupRecoveryTicks(hand) > 0) {
+            setVisualMeleeWindupRecoveryTicks(hand, getVisualMeleeWindupRecoveryTicks(hand) - 1);
+            setVisualMeleeWindupTicks(hand, 0);
+            return;
+        }
+        if (shouldShowMeleeWindup(hand)) {
+            if (getVisualMeleeWindupTicks(hand) == 0) {
+                setCurrentMeleeWindupVariant(hand, getNextVisualMeleeWindupVariant(hand));
+                incrementNextVisualMeleeWindupVariant(hand);
+            }
+            setVisualMeleeWindupTicks(hand, Math.min(getVisualMeleeWindupTicks(hand) + 1, getMeleeWindupTicks(hand)));
+            return;
+        }
+        setVisualMeleeWindupTicks(hand, 0);
+    }
+
+    private void resetVisualMeleeWindup(InteractionHand hand) {
+        setVisualMeleeWindupTicks(hand, 0);
+        setVisualMeleeWindupRecoveryTicks(hand, getMeleeWindupRecoveryTicks(hand));
+    }
+
+    private int getVisualMeleeWindupTicks(InteractionHand hand) {
+        return getVisualMeleeState(hand).windupTicks;
+    }
+
+    private void setVisualMeleeWindupTicks(InteractionHand hand, int value) {
+        getVisualMeleeState(hand).windupTicks = value;
+    }
+
+    private int getVisualMeleeWindupRecoveryTicks(InteractionHand hand) {
+        return getVisualMeleeState(hand).windupRecoveryTicks;
+    }
+
+    private void setVisualMeleeWindupRecoveryTicks(InteractionHand hand, int value) {
+        getVisualMeleeState(hand).windupRecoveryTicks = value;
+    }
+
+    private void setCurrentMeleeWindupVariant(InteractionHand hand, int value) {
+        getVisualMeleeState(hand).windupVariant = value;
+    }
+
+    private int getNextVisualMeleeWindupVariant(InteractionHand hand) {
+        return getVisualMeleeState(hand).nextWindupVariant;
+    }
+
+    private void incrementNextVisualMeleeWindupVariant(InteractionHand hand) {
+        getVisualMeleeState(hand).nextWindupVariant++;
+    }
+
+    private int getVisualMeleeAttackBaseVariant(InteractionHand hand) {
+        return getVisualMeleeState(hand).visualAttackBaseVariant;
+    }
+
+    private void setVisualMeleeAttackBaseVariant(InteractionHand hand, int variant) {
+        getVisualMeleeState(hand).visualAttackBaseVariant = variant;
+    }
+
+    private void incrementLocalSwingVariant(InteractionHand hand) {
+        getVisualMeleeState(hand).localSwingVariant++;
+    }
+
+    private VisualMeleeHandState getVisualMeleeState(InteractionHand hand) {
+        return hand == InteractionHand.OFF_HAND ? offHandVisualMeleeState : mainHandVisualMeleeState;
     }
 
     public VisualCastState getVisualCastState() {
@@ -969,26 +1083,30 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
 
     public double getAttackSpeedMultiplier() {
         double attackSpeed = getAttributeValue(Attributes.ATTACK_SPEED);
-        return attackSpeed / Math.max(getBaseAttackSpeedValueWithItem(), 0.001D);
+        return attackSpeed / Math.max(getBaseAttackSpeedValueWithItem(InteractionHand.MAIN_HAND), 0.001D);
     }
 
-    public double getMeleeCooldownPeriod() {
-        double basePeriod = getMainHandItem().isEmpty() ? GameConstants.TICKS_PER_SECOND :
-                GameConstants.TICKS_PER_SECOND / Math.max(getBaseAttackSpeedValueWithItem(), 0.001D);
-        return basePeriod / Math.max(getAttackSpeedMultiplier(), 0.001D);
+    public double getMeleeCooldownPeriod(InteractionHand hand) {
+        if (getItemInHand(hand).isEmpty()) {
+            return GameConstants.TICKS_PER_SECOND;
+        }
+        double effectiveAttackSpeed = getProjectedAttackSpeed(hand);
+        return GameConstants.TICKS_PER_SECOND / Math.max(effectiveAttackSpeed, 0.001D);
     }
 
-    protected int getCurrentMKSwingDuration() {
-        return Mth.clamp(Mth.ceil(6.0D / Math.max(getAttackSpeedMultiplier(), 0.001D)), 2, 24);
+    protected double getBaseSwingDurationTicks(InteractionHand hand) {
+        return 6.0D;
     }
 
-    public int getMeleeSwingDurationTicks() {
-        return getCurrentMKSwingDuration();
+    public int getMeleeSwingDurationTicks(InteractionHand hand) {
+        double projectedMultiplier = getProjectedAttackSpeed(hand) / Math.max(getBaseAttackSpeedValueWithItem(hand), 0.001D);
+        return Mth.clamp(Mth.ceil(getBaseSwingDurationTicks(hand) / Math.max(projectedMultiplier, 0.001D)), 2, 24);
     }
 
     @Override
     protected void updateSwingTime() {
-        int duration = getCurrentMKSwingDuration();
+        InteractionHand hand = swingingArm == null ? InteractionHand.MAIN_HAND : swingingArm;
+        int duration = getMeleeSwingDurationTicks(hand);
         if (this.swinging) {
             ++this.swingTime;
             if (this.swingTime >= duration) {
@@ -1008,7 +1126,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         if (!stack.isEmpty() && stack.onEntitySwing(this)) {
             return;
         }
-        int duration = getCurrentMKSwingDuration();
+        int duration = getMeleeSwingDurationTicks(hand);
         if (!this.swinging || this.swingTime >= duration / 2 || this.swingTime < 0) {
             this.swingTime = -1;
             this.swinging = true;
@@ -1025,8 +1143,8 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         }
     }
 
-    public double getBaseAttackSpeedValueWithItem() {
-        ItemStack itemInHand = getMainHandItem();
+    public double getBaseAttackSpeedValueWithItem(InteractionHand hand) {
+        ItemStack itemInHand = getItemInHand(hand);
         double baseValue = getAttributeBaseValue(Attributes.ATTACK_SPEED);
         if (!itemInHand.isEmpty()) {
             var modifiers = itemInHand.getAttributeModifiers();
@@ -1040,6 +1158,57 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
             baseValue = modifiedBase.doubleValue();
         }
         return baseValue;
+    }
+
+    public double getProjectedAttackSpeed(InteractionHand hand) {
+        if (hand == InteractionHand.MAIN_HAND) {
+            return getAttributeValue(Attributes.ATTACK_SPEED);
+        }
+        double currentAttackSpeed = getAttributeValue(Attributes.ATTACK_SPEED);
+        double mainHandAttackSpeed = getItemAddValueModifier(getMainHandItem(), Attributes.ATTACK_SPEED);
+        double selectedHandAttackSpeed = getItemAddValueModifier(getItemInHand(hand), Attributes.ATTACK_SPEED);
+        return currentAttackSpeed - mainHandAttackSpeed + selectedHandAttackSpeed;
+    }
+
+    public double getProjectedAttackDamage(InteractionHand hand) {
+        if (hand == InteractionHand.MAIN_HAND) {
+            return getAttributeValue(Attributes.ATTACK_DAMAGE);
+        }
+        double currentAttackDamage = getAttributeValue(Attributes.ATTACK_DAMAGE);
+        double mainHandAttackDamage = getItemAddValueModifier(getMainHandItem(), Attributes.ATTACK_DAMAGE);
+        double selectedHandAttackDamage = getItemAddValueModifier(getItemInHand(hand), Attributes.ATTACK_DAMAGE);
+        return currentAttackDamage - mainHandAttackDamage + selectedHandAttackDamage;
+    }
+
+    public double getProjectedAttackKnockback(InteractionHand hand) {
+        if (hand == InteractionHand.MAIN_HAND) {
+            return getAttributeValue(Attributes.ATTACK_KNOCKBACK);
+        }
+        double currentAttackKnockback = getAttributeValue(Attributes.ATTACK_KNOCKBACK);
+        double mainHandAttackKnockback = getItemAddValueModifier(getMainHandItem(), Attributes.ATTACK_KNOCKBACK);
+        double selectedHandAttackKnockback = getItemAddValueModifier(getItemInHand(hand), Attributes.ATTACK_KNOCKBACK);
+        return currentAttackKnockback - mainHandAttackKnockback + selectedHandAttackKnockback;
+    }
+
+    @Override
+    public ItemStack getWeaponItem() {
+        return getItemInHand(getEntityDataCap().getCombatExtension().getActiveAttackHand());
+    }
+
+    @Override
+    public boolean canDisableShield() {
+        ItemStack weaponItem = getWeaponItem();
+        return weaponItem.canDisableShield(this.useItem, this, this);
+    }
+
+    private static double getItemAddValueModifier(ItemStack stack, net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute) {
+        final double[] total = {0.0D};
+        stack.getAttributeModifiers().forEach(EquipmentSlot.MAINHAND, (holder, modifier) -> {
+            if (holder.equals(attribute) && modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
+                total[0] += modifier.amount();
+            }
+        });
+        return total[0];
     }
 
     @Override

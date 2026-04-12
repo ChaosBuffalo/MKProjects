@@ -38,7 +38,7 @@ public class MKPiglinModel<T extends MKEntity & IPiglinActionProvider> extends M
 
     public void setupAnim(T entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         super.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-        float windupProgress = entityIn.getMeleeWindupProgress(ageInTicks - entityIn.tickCount);
+        float windupProgress = entityIn.getMeleeWindupProgress(net.minecraft.world.InteractionHand.MAIN_HAND, ageInTicks - entityIn.tickCount);
         float f = ((float) Math.PI / 6F);
         float f1 = ageInTicks * 0.1F + limbSwing * 0.5F;
         float f2 = 0.08F + limbSwingAmount * 0.4F;

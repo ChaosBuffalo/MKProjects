@@ -96,6 +96,11 @@ public class PacketHandler {
                 PlayerLearnAbilityRequestPacket::handle
         );
         registrar.playToServer(
+                PlayerMeleeAttackRequestPacket.TYPE,
+                PlayerMeleeAttackRequestPacket.STREAM_CODEC,
+                PlayerMeleeAttackRequestPacket::handle
+        );
+        registrar.playToServer(
                 PlayerSlotAbilityPacket.TYPE,
                 PlayerSlotAbilityPacket.STREAM_CODEC,
                 PlayerSlotAbilityPacket::handle

@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.MKConfig;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import net.minecraft.world.InteractionHand;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -42,36 +43,53 @@ public class CritMessagePacket implements CustomPacketPayload {
     private int projectileId;
     private String typeName;
     private final int sourceId;
+    private InteractionHand hand;
 
     public static final StreamCodec<FriendlyByteBuf, CritMessagePacket> STREAM_CODEC = StreamCodec.ofMember(
             CritMessagePacket::toBytes, CritMessagePacket::new
     );
 
     public CritMessagePacket(int targetId, int sourceId, float critDamage) {
+        this(targetId, sourceId, critDamage, InteractionHand.MAIN_HAND);
+    }
+
+    public CritMessagePacket(int targetId, int sourceId, float critDamage, InteractionHand hand) {
         this.targetId = targetId;
         this.sourceId = sourceId;
         this.critDamage = critDamage;
         this.type = CritType.MELEE_CRIT;
+        this.hand = hand;
     }
 
     public CritMessagePacket(int targetId, int sourceId, float critDamage, MKDamageType damageType, String typeName) {
+        this(targetId, sourceId, critDamage, damageType, typeName, InteractionHand.MAIN_HAND);
+    }
+
+    public CritMessagePacket(int targetId, int sourceId, float critDamage, MKDamageType damageType, String typeName, InteractionHand hand) {
         this.targetId = targetId;
         this.sourceId = sourceId;
         this.critDamage = critDamage;
         this.type = CritType.TYPED_CRIT;
         this.typeName = typeName;
         this.damageType = damageType.getId();
+        this.hand = hand;
     }
 
 
     public CritMessagePacket(int targetId, int sourceId, float critDamage, ResourceLocation abilityName,
                              MKDamageType damageType) {
+        this(targetId, sourceId, critDamage, abilityName, damageType, InteractionHand.MAIN_HAND);
+    }
+
+    public CritMessagePacket(int targetId, int sourceId, float critDamage, ResourceLocation abilityName,
+                             MKDamageType damageType, InteractionHand hand) {
         this.targetId = targetId;
         this.sourceId = sourceId;
         this.critDamage = critDamage;
         this.type = CritType.MK_CRIT;
         this.abilityName = abilityName;
         this.damageType = damageType.getId();
+        this.hand = hand;
     }
 
     public CritMessagePacket(int targetId, int sourceId, float critDamage, int projectileId) {
@@ -87,9 +105,13 @@ public class CritMessagePacket implements CustomPacketPayload {
         this.targetId = pb.readInt();
         sourceId = pb.readInt();
         this.critDamage = pb.readFloat();
+        if (type == CritType.MELEE_CRIT) {
+            this.hand = pb.readEnum(InteractionHand.class);
+        }
         if (type == CritType.MK_CRIT) {
             this.abilityName = pb.readResourceLocation();
             this.damageType = pb.readResourceLocation();
+            this.hand = pb.readEnum(InteractionHand.class);
         }
         if (type == CritType.PROJECTILE_CRIT) {
             this.projectileId = pb.readInt();
@@ -97,6 +119,7 @@ public class CritMessagePacket implements CustomPacketPayload {
         if (type == CritType.TYPED_CRIT) {
             this.damageType = pb.readResourceLocation();
             this.typeName = pb.readUtf();
+            this.hand = pb.readEnum(InteractionHand.class);
         }
     }
 
@@ -105,9 +128,13 @@ public class CritMessagePacket implements CustomPacketPayload {
         pb.writeInt(targetId);
         pb.writeInt(sourceId);
         pb.writeFloat(critDamage);
+        if (type == CritType.MELEE_CRIT) {
+            pb.writeEnum(hand);
+        }
         if (type == CritType.MK_CRIT) {
             pb.writeResourceLocation(this.abilityName);
             pb.writeResourceLocation(this.damageType);
+            pb.writeEnum(hand);
         }
         if (type == CritType.PROJECTILE_CRIT) {
             pb.writeInt(this.projectileId);
@@ -115,6 +142,7 @@ public class CritMessagePacket implements CustomPacketPayload {
         if (type == CritType.TYPED_CRIT) {
             pb.writeResourceLocation(damageType);
             pb.writeUtf(typeName);
+            pb.writeEnum(hand);
         }
     }
 
@@ -149,17 +177,23 @@ public class CritMessagePacket implements CustomPacketPayload {
             }
             switch (packet.type) {
                 case MELEE_CRIT:
+                    var critHand = packet.hand;
+                    if (critHand == null) {
+                        critHand = MKCore.getEntityData(livingSource)
+                                .map(data -> data.getCombatExtension().getActiveAttackHand())
+                                .orElse(InteractionHand.MAIN_HAND);
+                    }
                     if (isSelf) {
                         player.sendSystemMessage(Component.translatable("mkcore.crit.melee.self",
                                 target.getDisplayName(),
-                                livingSource.getMainHandItem().getHoverName(),
+                                livingSource.getItemInHand(critHand).getHoverName(),
                                 Math.round(packet.critDamage)
                         ).withStyle(ChatFormatting.DARK_RED));
                     } else {
                         player.sendSystemMessage(Component.translatable("mkcore.crit.melee.other",
                                 livingSource.getDisplayName(),
                                 target.getDisplayName(),
-                                livingSource.getMainHandItem().getHoverName(),
+                                livingSource.getItemInHand(critHand).getHoverName(),
                                 Math.round(packet.critDamage)
                         ).withStyle(ChatFormatting.DARK_RED));
                     }
@@ -171,7 +205,8 @@ public class CritMessagePacket implements CustomPacketPayload {
                     if (ability == null || mkDamageType == null) {
                         break;
                     }
-                    player.sendSystemMessage(mkDamageType.getAbilityCritMessage(livingSource, (LivingEntity) target, packet.critDamage, ability, isSelf));
+                    player.sendSystemMessage(mkDamageType.getAbilityCritMessage(livingSource, (LivingEntity) target, packet.critDamage, ability, isSelf,
+                            packet.hand == null ? InteractionHand.MAIN_HAND : packet.hand));
                     break;
                 case PROJECTILE_CRIT:
                     Entity projectile = player.getCommandSenderWorld().getEntity(packet.projectileId);
@@ -197,7 +232,8 @@ public class CritMessagePacket implements CustomPacketPayload {
                     if (mkDamageType == null) {
                         break;
                     }
-                    player.sendSystemMessage(mkDamageType.getEffectCritMessage(livingSource, (LivingEntity) target, packet.critDamage, packet.typeName, isSelf));
+                    player.sendSystemMessage(mkDamageType.getEffectCritMessage(livingSource, (LivingEntity) target, packet.critDamage, packet.typeName, isSelf,
+                            packet.hand == null ? InteractionHand.MAIN_HAND : packet.hand));
                     break;
             }
         }

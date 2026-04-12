@@ -16,6 +16,7 @@ import com.chaosbuffalo.mkcore.item.CoreItemComponents;
 import com.chaosbuffalo.mkcore.item.ItemGrantedAbility;
 import com.chaosbuffalo.mkcore.network.ExecuteActiveAbilityPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
+import com.chaosbuffalo.mkcore.network.PlayerMeleeAttackRequestPacket;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.ChatFormatting;
@@ -24,7 +25,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -50,7 +50,6 @@ import java.util.List;
 
 @EventBusSubscriber(modid = MKCore.MOD_ID, value = Dist.CLIENT)
 public class ClientEventHandler {
-
     private static final KeyMapping playerMenuBind = new KeyMapping("key.hud.playermenu",
             InputConstants.KEY_J, "key.mkcore.category");
     private static final KeyMapping particleEditorBind = new KeyMapping("key.hud.particle_editor",
@@ -279,9 +278,11 @@ public class ClientEventHandler {
             }
 
             var combat = MKCore.getPlayerOrThrow(player).getCombatExtension();
-            if (combat.shouldDelayPrimaryAttack() && mc.crosshairPickEntity != null) {
-                combat.queuePrimaryAttack(mc.crosshairPickEntity);
-                player.connection.send(ServerboundInteractPacket.createAttackPacket(mc.crosshairPickEntity, player.isShiftKeyDown()));
+            if (mc.crosshairPickEntity != null && combat.shouldHandleCustomMeleeInput(mc.crosshairPickEntity)) {
+                List<InteractionHand> hands = combat.handleLocalMeleeAttackRequest(mc.crosshairPickEntity);
+                if (!hands.isEmpty()) {
+                    PacketHandler.sendMessageToServer(new PlayerMeleeAttackRequestPacket(mc.crosshairPickEntity.getId(), hands));
+                }
                 event.setSwingHand(false);
                 event.setCanceled(true);
             }

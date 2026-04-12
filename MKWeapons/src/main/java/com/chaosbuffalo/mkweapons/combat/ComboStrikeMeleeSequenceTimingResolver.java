@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkweapons.items.effects.melee.ComboStrikeMeleeWeaponEffe
 import com.chaosbuffalo.mkweapons.items.effects.melee.IMeleeWeaponEffect;
 import com.chaosbuffalo.mkweapons.items.weapon.IMKMeleeWeapon;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -16,15 +17,15 @@ import java.util.List;
 
 public class ComboStrikeMeleeSequenceTimingResolver implements MeleeSequenceTimingResolver {
     @Override
-    public @Nullable MeleeSequenceTimings resolve(LivingEntity attacker, int attackCount, int firstAttackIndex,
+    public @Nullable MeleeSequenceTimings resolve(LivingEntity attacker, InteractionHand hand, int attackCount, int firstAttackIndex,
                                                   int baseCooldownTicks, int baseSwingDurationTicks,
                                                   int currentSwingCount) {
-        ItemStack mainHand = attacker.getMainHandItem();
-        if (!(mainHand.getItem() instanceof IMKMeleeWeapon weapon)) {
+        ItemStack stack = attacker.getItemInHand(hand);
+        if (!(stack.getItem() instanceof IMKMeleeWeapon weapon)) {
             return null;
         }
 
-        List<ComboStrikeMeleeWeaponEffect> comboEffects = getComboEffects(weapon, mainHand);
+        List<ComboStrikeMeleeWeaponEffect> comboEffects = getComboEffects(weapon, stack);
         if (comboEffects.isEmpty()) {
             return null;
         }

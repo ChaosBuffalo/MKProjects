@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.core.combat;
 
 import com.chaosbuffalo.mkcore.core.MultiAttackHelper;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.List;
@@ -13,10 +14,10 @@ public class MeleeSequenceTimingManager {
         RESOLVERS.add(resolver);
     }
 
-    public static MeleeSequenceTimings resolve(LivingEntity attacker, int attackCount, int firstAttackIndex,
+    public static MeleeSequenceTimings resolve(LivingEntity attacker, InteractionHand hand, int attackCount, int firstAttackIndex,
                                                int baseCooldownTicks, int baseSwingDurationTicks, int currentSwingCount) {
         for (MeleeSequenceTimingResolver resolver : RESOLVERS) {
-            MeleeSequenceTimings timings = resolver.resolve(attacker, attackCount, firstAttackIndex,
+            MeleeSequenceTimings timings = resolver.resolve(attacker, hand, attackCount, firstAttackIndex,
                     baseCooldownTicks, baseSwingDurationTicks, currentSwingCount);
             if (timings != null) {
                 return timings;

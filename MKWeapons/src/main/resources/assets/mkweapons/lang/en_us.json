@@ -77,6 +77,7 @@
   "item.mkweapons.mace_netherite": "Netherite Mace",
   "item.mkweapons.warhammer_netherite": "Netherite Warhammer",
   "item.mkweapons.battleaxe_netherite": "Netherite Battleaxe",
+  "mkweapons.melee_cooldown.description": "Cooldown: %.2fs",
   "item.mkweapons.haft": "Haft",
   "mkweapons.two_handed.name": "Two-Handed",
   "mkweapons.two_handed.description": "You cannot equip a shield with this weapon.",

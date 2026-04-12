@@ -1,24 +1,25 @@
 {
+  "armorPiercing": 0.0,
   "attackSpeed": -3.2,
   "blockEfficiency": 0.8,
   "critChance": 0.05,
-  "critMultiplier": 0.75,
-  "damageMultiplier": 2.25,
+  "critMultiplier": 0.9,
+  "damageMultiplier": 1.4,
   "effects": [
     {
       "type": "mkweapons:weapon_effect.skill_scaling",
-      "baseDamage": 6.75,
+      "baseDamage": 2.71875,
       "skill": "mkcore:two_hand_slash"
     },
     {
       "type": "mkweapons:weapon_effect.bleed",
-      "damageMultiplier": 1.0,
+      "damageMultiplier": 2.0,
       "durationSeconds": 4,
-      "maxStacks": 2,
+      "maxStacks": 5,
       "skill": "mkcore:two_hand_slash"
     }
   ],
   "isTwoHanded": true,
-  "maxPoise": 25.0,
+  "maxPoise": 60.0,
   "reach": 0.0
 }

@@ -1,0 +1,28 @@
+{
+  "entityType": "mknpc:flying_skull",
+  "name": "mknpc:test_skull_multi",
+  "options": {
+    "mknpc:attributes": {
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "base_value": 100.0
+        },
+        {
+          "attribute": "minecraft:generic.attack_damage",
+          "base_value": 4.0
+        },
+        {
+          "attribute": "mkcore:multi_attack_chance",
+          "base_value": 4.0
+        }
+      ]
+    },
+    "mknpc:faction": {
+      "factionId": "mkfaction:undead"
+    },
+    "mknpc:name": {
+      "name": "Test Skull Multi"
+    }
+  }
+}

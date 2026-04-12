@@ -11,8 +11,12 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.neoforged.neoforge.event.EventHooks;
 
 public class MKSummonCommand {
 
@@ -31,12 +35,12 @@ public class MKSummonCommand {
         if (definition != null) {
             Entity entity = definition.createEntity(player.level(), player.position(), difficulty_value);
             if (entity != null) {
+                if (entity instanceof Mob mob && player.level() instanceof ServerLevel serverLevel) {
+                    EventHooks.finalizeMobSpawn(mob, serverLevel,
+                            serverLevel.getCurrentDifficultyAt(player.blockPosition()),
+                            MobSpawnType.COMMAND, null);
+                }
                 player.level().addFreshEntity(entity);
-                // TODO: fix spawn
-//                if (entity instanceof Mob) {
-//                    ((Mob) entity).finalizeSpawn(player.getLevel(), player.getLevel().getCurrentDifficultyAt(
-//                            player.blockPosition(), MobSpawnType.COMMAND, null, null);
-//                }
             } else {
                 player.sendSystemMessage(Component.literal(String.format("Failed to summon: %s", definitionId)));
             }

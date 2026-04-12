@@ -1,0 +1,41 @@
+{
+  "entityType": "mknpc:skeleton",
+  "name": "mknpc:test_melee_spear",
+  "options": {
+    "mknpc:attributes": {
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "base_value": 100.0
+        },
+        {
+          "attribute": "minecraft:generic.attack_damage",
+          "base_value": 4.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "equipment": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "count": 1,
+              "id": "mkweapons:spear_iron"
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:faction": {
+      "factionId": "mkfaction:undead"
+    },
+    "mknpc:name": {
+      "name": "Test Melee Spear"
+    },
+    "mknpc:render_group": {
+      "renderGroup": "mknpc:skeleton/wither_king"
+    }
+  }
+}

@@ -1,13 +1,14 @@
 {
+  "armorPiercing": 0.0,
   "attackSpeed": -2.1,
   "blockEfficiency": 0.75,
   "critChance": 0.05,
   "critMultiplier": 0.25,
-  "damageMultiplier": 1.75,
+  "damageMultiplier": 0.8,
   "effects": [
     {
       "type": "mkweapons:weapon_effect.skill_scaling",
-      "baseDamage": 5.25,
+      "baseDamage": 1.96875,
       "skill": "mkcore:one_hand_blunt"
     },
     {
@@ -20,6 +21,6 @@
     }
   ],
   "isTwoHanded": false,
-  "maxPoise": 30.0,
+  "maxPoise": 35.0,
   "reach": 0.0
 }

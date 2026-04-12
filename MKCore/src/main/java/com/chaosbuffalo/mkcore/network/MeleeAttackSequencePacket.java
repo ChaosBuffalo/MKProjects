@@ -6,6 +6,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -19,17 +20,20 @@ public class MeleeAttackSequencePacket implements CustomPacketPayload {
     );
 
     private final int attackerId;
+    private final InteractionHand hand;
     private final int[] swingStartTicks;
     private final int[] swingDurationTicks;
 
-    public MeleeAttackSequencePacket(int attackerId, int[] swingStartTicks, int[] swingDurationTicks) {
+    public MeleeAttackSequencePacket(int attackerId, InteractionHand hand, int[] swingStartTicks, int[] swingDurationTicks) {
         this.attackerId = attackerId;
+        this.hand = hand;
         this.swingStartTicks = swingStartTicks;
         this.swingDurationTicks = swingDurationTicks;
     }
 
     public MeleeAttackSequencePacket(FriendlyByteBuf buf) {
         attackerId = buf.readInt();
+        hand = buf.readEnum(InteractionHand.class);
         int swingCount = buf.readVarInt();
         swingStartTicks = new int[swingCount];
         for (int i = 0; i < swingCount; i++) {
@@ -43,6 +47,7 @@ public class MeleeAttackSequencePacket implements CustomPacketPayload {
 
     public void toBytes(FriendlyByteBuf buf) {
         buf.writeInt(attackerId);
+        buf.writeEnum(hand);
         buf.writeVarInt(swingStartTicks.length);
         for (int swingStartTick : swingStartTicks) {
             buf.writeVarInt(swingStartTick);
@@ -65,9 +70,9 @@ public class MeleeAttackSequencePacket implements CustomPacketPayload {
         Entity attacker = player.level().getEntity(packet.attackerId);
         if (attacker instanceof Player attackerPlayer) {
             MKCore.getPlayer(attackerPlayer).ifPresent(data ->
-                    data.getCombatExtension().startVisualMeleeAttackSequence(packet.swingStartTicks, packet.swingDurationTicks));
+                    data.getCombatExtension().startVisualMeleeAttackSequence(packet.hand, packet.swingStartTicks, packet.swingDurationTicks));
         } else if (attacker instanceof IVisualMeleeAttackEntity visualMeleeAttackEntity) {
-            visualMeleeAttackEntity.startVisualMeleeAttackSequence(packet.swingStartTicks, packet.swingDurationTicks);
+            visualMeleeAttackEntity.startVisualMeleeAttackSequence(packet.hand, packet.swingStartTicks, packet.swingDurationTicks);
         }
     }
 }

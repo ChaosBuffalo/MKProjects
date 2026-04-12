@@ -1,9 +1,13 @@
 package com.chaosbuffalo.mkcore.core.combat;
 
+import net.minecraft.world.InteractionHand;
+
 public interface IVisualMeleeAttackEntity {
-    void startVisualMeleeAttackSequence(int[] swingStartTicks, int[] swingDurationTicks);
+    void startVisualMeleeAttackSequence(InteractionHand hand, int[] swingStartTicks, int[] swingDurationTicks);
 
-    float getVisualMeleeAttackAnim(float partialTicks);
+    float getVisualMeleeAttackAnim(InteractionHand hand, float partialTicks);
 
-    boolean hasVisualMeleeAttackSequence();
+    boolean hasVisualMeleeAttackSequence(InteractionHand hand);
+
+    boolean hasActiveVisualMeleeAttack(InteractionHand hand, float partialTicks);
 }

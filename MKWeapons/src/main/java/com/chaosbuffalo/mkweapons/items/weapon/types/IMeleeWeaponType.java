@@ -18,6 +18,8 @@ public interface IMeleeWeaponType {
 
     float getCritChance();
 
+    float getArmorPiercing();
+
     float getReach();
 
     boolean isTwoHanded();

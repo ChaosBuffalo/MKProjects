@@ -1,13 +1,14 @@
 {
+  "armorPiercing": 0.0,
   "attackSpeed": -2.5,
-  "blockEfficiency": 0.85,
+  "blockEfficiency": 0.95,
   "critChance": 0.05,
-  "critMultiplier": 0.5,
-  "damageMultiplier": 1.75,
+  "critMultiplier": 1.0,
+  "damageMultiplier": 0.75,
   "effects": [
     {
       "type": "mkweapons:weapon_effect.skill_scaling",
-      "baseDamage": 5.25,
+      "baseDamage": 3.0,
       "skill": "mkcore:two_hand_blunt"
     },
     {
@@ -16,12 +17,16 @@
       "duration": 2
     },
     {
+      "type": "mkweapons:weapon_effect.undead_damage",
+      "multiplier": 2.0
+    },
+    {
       "type": "mkweapons:weapon_effect.combo_strike",
       "numberOfHits": 5,
-      "perHit": 0.15
+      "perHit": 0.25
     }
   ],
   "isTwoHanded": true,
-  "maxPoise": 30.0,
+  "maxPoise": 50.0,
   "reach": 1.0
 }

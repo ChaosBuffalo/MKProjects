@@ -14,6 +14,7 @@ public class MeleeWeaponType implements IMeleeWeaponType {
     private float attackSpeed;
     private float critMultiplier;
     private float critChance;
+    private float armorPiercing;
     private float reach;
     private float blockEfficiency;
     private float maxPoise;
@@ -22,13 +23,14 @@ public class MeleeWeaponType implements IMeleeWeaponType {
     private boolean isTwoHanded;
 
     public MeleeWeaponType(ResourceLocation name, float damageMultiplier, float attackSpeed,
-                           float critMultiplier, float critChance, float reach, boolean isTwoHanded,
+                           float critMultiplier, float critChance, float armorPiercing, float reach, boolean isTwoHanded,
                            float blockEfficiency, float maxPoise, List<IMeleeWeaponEffect> effects) {
         this.damageMultiplier = damageMultiplier;
         this.name = name;
         this.attackSpeed = attackSpeed;
         this.critMultiplier = critMultiplier;
         this.critChance = critChance;
+        this.armorPiercing = armorPiercing;
         this.reach = reach;
         this.maxPoise = maxPoise;
         this.blockEfficiency = blockEfficiency;
@@ -54,6 +56,7 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         builder.put(ops.createString("reach"), ops.createFloat(getReach()));
         builder.put(ops.createString("critMultiplier"), ops.createFloat(getCritMultiplier()));
         builder.put(ops.createString("critChance"), ops.createFloat(getCritChance()));
+        builder.put(ops.createString("armorPiercing"), ops.createFloat(getArmorPiercing()));
         builder.put(ops.createString("isTwoHanded"), ops.createBoolean(isTwoHanded()));
         builder.put(ops.createString("effects"), ops.createList(getWeaponEffects().stream().map(effect -> effect.serialize(ops))));
         builder.put(ops.createString("blockEfficiency"), ops.createFloat(getBlockEfficiency()));
@@ -69,6 +72,7 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         reach = dynamic.get("reach").asFloat(0f);
         critChance = dynamic.get("critChance").asFloat(0.05f);
         critMultiplier = dynamic.get("critMultiplier").asFloat(1.5f);
+        armorPiercing = dynamic.get("armorPiercing").asFloat(0.0f);
         isTwoHanded = dynamic.get("isTwoHanded").asBoolean(false);
         blockEfficiency = dynamic.get("blockEfficiency").asFloat(0.75f);
         maxPoise = dynamic.get("maxPoise").asFloat(20.0f);
@@ -99,6 +103,11 @@ public class MeleeWeaponType implements IMeleeWeaponType {
     @Override
     public float getCritChance() {
         return critChance;
+    }
+
+    @Override
+    public float getArmorPiercing() {
+        return armorPiercing;
     }
 
     @Override
@@ -135,6 +144,7 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         private float attackSpeed = -2.4f;
         private float critMultiplier = 1.5f;
         private float critChance = 0.05f;
+        private float armorPiercing = 0.0f;
         private float reachModifier = 0.0f;
         private float blockEfficiency = 0.75f;
         private float maxPoise = 20f;
@@ -161,6 +171,11 @@ public class MeleeWeaponType implements IMeleeWeaponType {
             return this;
         }
 
+        public Builder armorPiercing(float amount) {
+            armorPiercing = amount;
+            return this;
+        }
+
         public Builder reach(float r) {
             reachModifier = r;
             return this;
@@ -183,7 +198,7 @@ public class MeleeWeaponType implements IMeleeWeaponType {
         }
 
         public MeleeWeaponType build() {
-            return new MeleeWeaponType(name, damageMultiplier, attackSpeed, critMultiplier, critChance, reachModifier,
+            return new MeleeWeaponType(name, damageMultiplier, attackSpeed, critMultiplier, critChance, armorPiercing, reachModifier,
                     isTwoHanded, blockEfficiency, maxPoise, effects);
         }
     }

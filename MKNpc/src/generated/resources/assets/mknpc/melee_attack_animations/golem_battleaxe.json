@@ -1,0 +1,21 @@
+{
+  "family": "mkcore:biped",
+  "strikes": [
+    {
+      "lunge": 0.3,
+      "pose": "mknpc:golem_mace_strike_0"
+    },
+    {
+      "lunge": 0.3,
+      "pose": "mknpc:golem_mace_strike_1"
+    },
+    {
+      "lunge": 0.44,
+      "pose": "mknpc:golem_mace_strike_2"
+    }
+  ],
+  "windups": [
+    "mknpc:golem_mace_windup_0",
+    "mknpc:golem_mace_windup_1"
+  ]
+}

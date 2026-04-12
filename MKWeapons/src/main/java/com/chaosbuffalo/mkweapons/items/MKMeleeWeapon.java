@@ -3,7 +3,6 @@ package com.chaosbuffalo.mkweapons.items;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.item.IReceivesSkillChange;
-import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkweapons.components.MeleeEffectsComponent;
 import com.chaosbuffalo.mkweapons.components.WeaponsComponents;
 import com.chaosbuffalo.mkweapons.items.accessories.MKAccessories;
@@ -39,6 +38,7 @@ import net.neoforged.neoforge.common.util.ConcatenatedListView;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceivesSkillChange {
@@ -59,7 +59,7 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
 
     public static ItemAttributeModifiers.Builder createAttributes(IMKTier tier, IMeleeWeaponType weaponType) {
         ResourceLocation modId = weaponType.getName().withSuffix("_" + tier.getName());
-        return ItemAttributeModifiers.builder()
+        ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder()
                 .add(
                         Attributes.ATTACK_DAMAGE,
                         new AttributeModifier(BASE_ATTACK_DAMAGE_ID, calculateDamage(tier, weaponType), AttributeModifier.Operation.ADD_VALUE),
@@ -95,11 +95,19 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
                         new AttributeModifier(modId, weaponType.getBlockEfficiency(), AttributeModifier.Operation.ADD_VALUE),
                         EquipmentSlotGroup.MAINHAND
                 );
+        if (weaponType.getArmorPiercing() > 0.0f) {
+            builder.add(
+                    MKAttributes.ARMOR_PIERCING,
+                    new AttributeModifier(modId, weaponType.getArmorPiercing(), AttributeModifier.Operation.ADD_VALUE),
+                    EquipmentSlotGroup.MAINHAND
+            );
+        }
+        return builder;
     }
 
 
     static int calculateDamage(IMKTier mkTier, IMeleeWeaponType weaponType) {
-        return Math.round(weaponType.getDamageForTier(mkTier) - mkTier.getAttackDamageBonus());
+        return Math.round(weaponType.getDamageForTier(mkTier));
     }
 
     @Override
@@ -111,17 +119,20 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         if (!target.isBlocking()) {
             MKCore.getEntityData(attacker).ifPresent(attackerData -> {
-                if (attackerData.getCombatExtension().getAttackStrengthTicks() >= EntityUtils.getCooldownPeriod(attacker)) {
-                    for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
-                        effect.onHit(this, stack, attackerData, target);
-                    }
-
-                    MKAccessories.iterateAccessories(attacker, (accStack, accessory) -> {
-                        for (IAccessoryEffect effect : accessory.getAccessoryEffects(accStack)) {
-                            effect.onMeleeHit(this, stack, attackerData, target);
-                        }
-                    });
+                InteractionHand hand = attackerData.getCombatExtension().getActiveAttackHand();
+                if (attackerData.getCombatExtension().getAttackStrengthTicks(hand) <
+                        attackerData.getCombatExtension().getRequiredAttackStrengthTicks(hand)) {
+                    return;
                 }
+                for (IMeleeWeaponEffect effect : getWeaponEffects(stack)) {
+                    effect.onHit(this, stack, attackerData, target, hand);
+                }
+
+                MKAccessories.iterateAccessories(attacker, (accStack, accessory) -> {
+                    for (IAccessoryEffect effect : accessory.getAccessoryEffects(accStack)) {
+                        effect.onMeleeHit(this, stack, attackerData, target);
+                    }
+                });
 
             });
         }
@@ -171,6 +182,8 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     }
 
     public void addToTooltip(ItemStack stack, @Nullable Player player, List<Component> tooltip) {
+        tooltip.add(Component.translatable("mkweapons.melee_cooldown.description",
+                formatEffectiveCooldownSeconds()).withStyle(ChatFormatting.GRAY));
         if (getWeaponType().isTwoHanded()) {
             tooltip.add(Component.translatable("mkweapons.two_handed.name")
                     .withStyle(ChatFormatting.GRAY));
@@ -197,5 +210,19 @@ public class MKMeleeWeapon extends SwordItem implements IMKMeleeWeapon, IReceive
     @Override
     public void onSkillChange(ItemStack stack, Player playerEntity, Holder<Attribute> skill) {
         getWeaponEffects(stack).forEach(x -> x.onSkillChange(playerEntity, skill));
+    }
+
+    private double getEffectiveCooldownSeconds() {
+        double attackSpeed = Attributes.ATTACK_SPEED.value().getDefaultValue() + getWeaponType().getAttackSpeed();
+        if (attackSpeed <= 0.0D) {
+            return 0.0D;
+        }
+        return 1.0D / attackSpeed;
+    }
+
+    private String formatEffectiveCooldownSeconds() {
+        double cooldownSeconds = getEffectiveCooldownSeconds();
+        double truncated = Math.floor(cooldownSeconds * 100.0D) / 100.0D;
+        return String.format(Locale.ROOT, "%.2f", truncated);
     }
 }

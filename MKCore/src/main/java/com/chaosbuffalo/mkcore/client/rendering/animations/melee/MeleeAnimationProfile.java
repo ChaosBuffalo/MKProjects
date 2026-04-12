@@ -32,11 +32,6 @@ public record MeleeAnimationProfile(ResourceLocation id, ResourceLocation family
     }
 
     @Nullable
-    public ResourceLocation windup() {
-        return getWindup(0);
-    }
-
-    @Nullable
     public ResourceLocation getWindup(int variant) {
         if (windups.isEmpty()) {
             return null;

@@ -15,7 +15,7 @@
           },
           {
             "curve": "follow_through",
-            "scale": 0.34
+            "scale": 0.2
           }
         ]
       }
@@ -48,7 +48,7 @@
           },
           {
             "curve": "follow_through",
-            "scale": 0.35
+            "scale": 0.18
           }
         ]
       }
@@ -68,7 +68,7 @@
           },
           {
             "curve": "follow_through",
-            "scale": 0.85
+            "scale": 0.42
           }
         ]
       }
@@ -85,7 +85,7 @@
           },
           {
             "curve": "follow_through",
-            "scale": 0.1
+            "scale": 0.04
           }
         ]
       }
