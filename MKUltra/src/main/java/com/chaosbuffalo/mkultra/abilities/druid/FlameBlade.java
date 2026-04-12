@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 public class FlameBlade extends MKAbility {
     public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("fire_armor_casting");
     public static final ResourceLocation CAST_PARTICLES = MKUltra.id("fire_armor_cast");
-    public static final ResourceLocation EDGE_PARTICLES = MKUltra.id("necrotide_golem_beam_wait");
+    public static final ResourceLocation EDGE_PARTICLES = MKUltra.id("flame_blade_particles");
 
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 10);
     protected final IntAttribute scaleDuration = new IntAttribute("scaleDuration", 5);

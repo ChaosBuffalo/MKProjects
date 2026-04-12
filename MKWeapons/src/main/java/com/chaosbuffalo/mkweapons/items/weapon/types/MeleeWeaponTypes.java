@@ -14,12 +14,33 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MeleeWeaponTypes {
+    private static final ItemParticleAttachmentProfile LONGSWORD_ATTACHMENT_PROFILE = new ItemParticleAttachmentProfile(List.of(
+            new ItemParticleAttachment(new Vec3(2.8, 2.8, 8.0), new Vec3(17.5, 17.5, 8.0))
+    ));
+    private static final ItemParticleAttachmentProfile GREATSWORD_ATTACHMENT_PROFILE = new ItemParticleAttachmentProfile(List.of(
+            new ItemParticleAttachment(new Vec3(4.8, 4.8, 8.0), new Vec3(23.9, 23.9, 8.0))
+    ));
     private static final ItemParticleAttachmentProfile KATANA_ATTACHMENT_PROFILE = new ItemParticleAttachmentProfile(List.of(
             new ItemParticleAttachment(new Vec3(2.3, 2.3, 8.05), new Vec3(17.2, 17.9, 8.05))
     ));
+    private static final ItemParticleAttachmentProfile DAGGER_ATTACHMENT_PROFILE = new ItemParticleAttachmentProfile(List.of(
+            new ItemParticleAttachment(new Vec3(8.0, 11.0, 8.0), new Vec3(8.0, 16.5, 8.0))
+    ));
+    private static final ItemParticleAttachmentProfile SPEAR_ATTACHMENT_PROFILE = new ItemParticleAttachmentProfile(List.of(
+            new ItemParticleAttachment(new Vec3(19.0, 19.0, 8.0), new Vec3(23.0, 23.0, 8.0))
+    ));
+    private static final ItemParticleAttachmentProfile STAFF_ATTACHMENT_PROFILE = new ItemParticleAttachmentProfile(List.of(
+            new ItemParticleAttachment(new Vec3(8.0, 29.0, 7.0), new Vec3(8.0, 19.0, 7.0))
+    ));
     private static final ItemParticleAttachmentProfile BATTLEAXE_ATTACHMENT_PROFILE = new ItemParticleAttachmentProfile(List.of(
-            new ItemParticleAttachment(new Vec3(9.75, 12.5, 8.0), new Vec3(17.75, 20.5, 8.0)),
-            new ItemParticleAttachment(new Vec3(9.75, 12.5, 8.0), new Vec3(1.75, 20.5, 8.0))
+            new ItemParticleAttachment(new Vec3(12.9, 8.0, 8.0), new Vec3(17.2, 12.2, 8.0)),
+            new ItemParticleAttachment(new Vec3(7.9, 13.0, 8.0), new Vec3(12.2, 17.2, 8.0))
+    ));
+    private static final ItemParticleAttachmentProfile WARHAMMER_ATTACHMENT_PROFILE = new ItemParticleAttachmentProfile(List.of(
+            new ItemParticleAttachment(new Vec3(10.2, 16.1, 8.0), new Vec3(12.8, 17.6, 8.0))
+    ));
+    private static final ItemParticleAttachmentProfile MACE_ATTACHMENT_PROFILE = new ItemParticleAttachmentProfile(List.of(
+            new ItemParticleAttachment(new Vec3(8.0, 16.5, 8.0), new Vec3(8.0, 22.0, 8.0))
     ));
 
     public static final Map<ResourceLocation, IMeleeWeaponType> WEAPON_TYPES = new HashMap<>();
@@ -39,6 +60,7 @@ public class MeleeWeaponTypes {
             .critical(0.5f, 0.05f)
             .reach(0.0f)
             .blocking(0.75f, 25f)
+            .particleAttachmentProfile(LONGSWORD_ATTACHMENT_PROFILE)
             .effect(new MeleeSkillScalingEffect(1.6875, MKAttributes.ONE_HAND_SLASH))
             .effect(new FuryStrikeMeleeWeaponEffect(5, .4))
             .build();
@@ -50,6 +72,7 @@ public class MeleeWeaponTypes {
             .reach(1.2f)
             .isTwoHanded()
             .blocking(0.85f, 40f)
+            .particleAttachmentProfile(GREATSWORD_ATTACHMENT_PROFILE)
             .effect(new MeleeSkillScalingEffect(3.0, MKAttributes.TWO_HAND_SLASH))
             .effect(new DoubleStrikeMeleeWeaponEffect(.3))
             .effect(new FuryStrikeMeleeWeaponEffect(3, .75))
@@ -73,6 +96,7 @@ public class MeleeWeaponTypes {
             .critical(1.5f, 0.10f)
             .reach(-1.0f)
             .blocking(0.50f, 20f)
+            .particleAttachmentProfile(DAGGER_ATTACHMENT_PROFILE)
             .effect(new MeleeSkillScalingEffect(1.125, MKAttributes.ONE_HAND_PIERCE))
             .effect(new BleedMeleeWeaponEffect(0.8f, 8, 4, MKAttributes.ONE_HAND_PIERCE))
             .effect(new ComboStrikeMeleeWeaponEffect(4, .33))
@@ -85,6 +109,7 @@ public class MeleeWeaponTypes {
             .reach(1.0f)
             .isTwoHanded()
             .blocking(0.95f, 50f)
+            .particleAttachmentProfile(STAFF_ATTACHMENT_PROFILE)
             .effect(new MeleeSkillScalingEffect(3.0, MKAttributes.TWO_HAND_BLUNT))
             .effect(new StunMeleeWeaponEffect(.20, 2))
             .effect(new UndeadDamageMeleeWeaponEffect(2.0f))
@@ -99,6 +124,7 @@ public class MeleeWeaponTypes {
             .reach(2.0f)
             .isTwoHanded()
             .blocking(0.8f, 40f)
+            .particleAttachmentProfile(SPEAR_ATTACHMENT_PROFILE)
             .effect(new MeleeSkillScalingEffect(2.5, MKAttributes.TWO_HAND_PIERCE))
             .effect(new BleedMeleeWeaponEffect(1.2f, 6, 5, MKAttributes.TWO_HAND_PIERCE))
             .effect(new FuryStrikeMeleeWeaponEffect(4, .5))
@@ -111,6 +137,7 @@ public class MeleeWeaponTypes {
             .reach(1.0f)
             .isTwoHanded()
             .blocking(0.80f, 40f)
+            .particleAttachmentProfile(WARHAMMER_ATTACHMENT_PROFILE)
             .effect(new MeleeSkillScalingEffect(2.625, MKAttributes.TWO_HAND_BLUNT))
             .effect(new UndeadDamageMeleeWeaponEffect(2.6f))
             .effect(new StunMeleeWeaponEffect(.1, 5))
@@ -132,6 +159,7 @@ public class MeleeWeaponTypes {
             .attackSpeed(-2.1f)
             .critical(0.25f, 0.05f)
             .blocking(0.75f, 35f)
+            .particleAttachmentProfile(MACE_ATTACHMENT_PROFILE)
             .effect(new MeleeSkillScalingEffect(1.96875, MKAttributes.ONE_HAND_BLUNT))
             .effect(new UndeadDamageMeleeWeaponEffect(1.5f))
             .effect(new DoubleStrikeMeleeWeaponEffect(.1))

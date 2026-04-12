@@ -42,7 +42,7 @@ public final class HeldItemParticleEffectRenderer {
             return;
         }
 
-        spawnProfile(instance, entity, profile, transform);
+        spawnProfile(instance, entity, profile, transform, displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND);
     }
 
     public static void spawnForFirstPerson(HeldItemParticleEffectInstance instance, LocalPlayer player, InteractionHand hand,
@@ -54,12 +54,13 @@ public final class HeldItemParticleEffectRenderer {
     }
 
     private static void spawnProfile(HeldItemParticleEffectInstance instance, net.minecraft.world.entity.Entity entity,
-                                     ItemParticleAttachmentProfile profile, Matrix4f transform) {
+                                     ItemParticleAttachmentProfile profile, Matrix4f transform, boolean isFirstPerson) {
         instance.getAnimation().ifPresent(anim -> {
+            Vec3 scale = !isFirstPerson ? new Vec3(1.0, 1.0, 1.0) : new Vec3(0.6, 0.6, 0.6);
             for (ItemParticleAttachment attachment : profile.attachments()) {
                 Vec3 start = transformPoint(transform, attachment.start());
                 Vec3 end = transformPoint(transform, attachment.end());
-                anim.spawn(entity.getCommandSenderWorld(), start, new Vec3(1.0, 1.0, 1.0), List.of(end));
+                anim.spawn(entity.getCommandSenderWorld(), start, scale, List.of(end));
             }
         });
     }

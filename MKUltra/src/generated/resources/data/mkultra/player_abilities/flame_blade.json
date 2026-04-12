@@ -4,7 +4,7 @@
     "baseDuration": 10,
     "cast_particles": "mkultra:fire_armor_cast",
     "casting_particles": "mkultra:fire_armor_casting",
-    "edge_particles": "mkultra:necrotide_golem_beam_wait",
+    "edge_particles": "mkultra:flame_blade_particles",
     "modifierScaling": 1.0,
     "scale": 1.0,
     "scaleDuration": 5
