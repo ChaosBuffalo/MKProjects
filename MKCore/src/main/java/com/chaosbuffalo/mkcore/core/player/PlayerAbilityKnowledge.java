@@ -9,8 +9,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.core.IMKAbilityKnowledge;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
-import com.chaosbuffalo.mkcore.sync.adapters.MapStorageCodec;
-import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
+import com.chaosbuffalo.mkcore.sync.adapters.SyncStoredMap;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
 import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
@@ -28,26 +27,17 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupPr
     private final Persona persona;
     private final MKPlayerData playerData;
     private final SyncGroup syncGroup = new SyncGroup();
-    private final Map<ResourceLocation, PlayerKnownAbility> knownAbilities = new HashMap<>();
-    private final SyncInt poolSize = new SyncInt(GameConstants.DEFAULT_ABILITY_POOL_SIZE);
-    private final SyncMapUpdater<ResourceLocation, PlayerKnownAbility> knownAbilityUpdater =
-            SyncMapUpdater.registryResourceLocations(
-                    knownAbilities,
+    private final SyncStoredMap<ResourceLocation, PlayerKnownAbility> knownAbilities =
+            SyncStoredMap.registryResourceLocations(
                     MKCoreRegistry.ABILITY_REGISTRY_KEY,
                     PlayerAbilityKnowledge::createKnownAbility
             );
-    private final MapStorageCodec<ResourceLocation, PlayerKnownAbility> knownAbilityStorage =
-            new MapStorageCodec<>(
-                    knownAbilities,
-                    ResourceLocation::toString,
-                    ResourceLocation::tryParse,
-                    PlayerAbilityKnowledge::createKnownAbility
-            );
+    private final SyncInt poolSize = new SyncInt(GameConstants.DEFAULT_ABILITY_POOL_SIZE);
 
     public PlayerAbilityKnowledge(Persona persona) {
         this.persona = persona;
         this.playerData = persona.getPlayerData();
-        syncGroup.addPrivate("known", knownAbilityUpdater);
+        syncGroup.addPrivate("known", knownAbilities);
         syncGroup.addPrivate("poolSize", poolSize);
     }
 
@@ -101,7 +91,7 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupPr
     }
 
     public Collection<PlayerKnownAbility> getKnownAbilities() {
-        return Collections.unmodifiableCollection(knownAbilities.values());
+        return knownAbilities.values();
     }
 
     @Override
@@ -177,18 +167,18 @@ public class PlayerAbilityKnowledge implements IMKAbilityKnowledge, ISyncGroupPr
     }
 
     private void markDirty(PlayerKnownAbility knownAbility) {
-        knownAbilityUpdater.markDirty(knownAbility.getId());
+        knownAbilities.markDirty(knownAbility.getId());
     }
 
     public CompoundTag serialize(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-        tag.put("known", knownAbilityStorage.serialize(provider));
+        tag.put("known", knownAbilities.serializeStorage(provider));
         tag.putInt("poolSize", poolSize.get());
         return tag;
     }
 
     public void deserialize(HolderLookup.Provider provider, CompoundTag tag) {
-        knownAbilityStorage.deserialize(provider, tag.getCompound("known"));
+        knownAbilities.deserializeStorage(provider, tag.getCompound("known"));
         setAbilityPoolSize(tag.getInt("poolSize"));
     }
 

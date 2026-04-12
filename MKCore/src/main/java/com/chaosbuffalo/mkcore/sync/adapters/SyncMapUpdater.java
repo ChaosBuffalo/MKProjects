@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.sync.SyncContext;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntArrayTag;
@@ -196,7 +197,7 @@ public class SyncMapUpdater<K, V extends IMKSerializable<CompoundTag>> implement
             return registry(registryKey, RegistryElementAdapter.resourceKeys());
         }
 
-        static <RV> KeyCodec<net.minecraft.core.Holder<RV>> registryHolders(
+        static <RV> KeyCodec<Holder<RV>> registryHolders(
                 ResourceKey<? extends Registry<RV>> registryKey) {
             return registry(registryKey, RegistryElementAdapter.holders());
         }

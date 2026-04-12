@@ -5,8 +5,8 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtension;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtensionProvider;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
-import com.chaosbuffalo.mkcore.sync.adapters.MapStorageCodec;
-import com.chaosbuffalo.mkcore.sync.adapters.SyncMapUpdater;
+import com.chaosbuffalo.mkcore.sync.IMKSerializable;
+import com.chaosbuffalo.mkcore.sync.adapters.SyncStoredMap;
 import com.chaosbuffalo.mkfaction.MKFactionMod;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mkfaction.faction.MKFactionRegistry;
@@ -14,16 +14,15 @@ import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.fml.InterModComms;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class PlayerFactionHandler implements IPlayerFaction {
 
@@ -92,55 +91,18 @@ public class PlayerFactionHandler implements IPlayerFaction {
     public static class PersonaFactionData implements IPersonaExtension {
         static final ResourceLocation NAME = MKFactionMod.id("faction_data");
 
-        private final Map<Holder<MKFaction>, PlayerFactionEntry> factionMap = new HashMap<>();
-        private final Map<UUID, ScoreOverrideEntry> overrideMap = new HashMap<>();
-        private final SyncMapUpdater<Holder<MKFaction>, PlayerFactionEntry> factionUpdater;
-        private final SyncMapUpdater<UUID, ScoreOverrideEntry> overrideUpdater;
-        private final MapStorageCodec<Holder<MKFaction>, PlayerFactionEntry> factionStorage;
-        private final MapStorageCodec<UUID, ScoreOverrideEntry> overrideStorage;
+        private final SyncStoredMap<Holder<MKFaction>, PlayerFactionEntry> factionMap =
+                SyncStoredMap.registryHolders(MKFactionRegistry.FACTION_REGISTRY_KEY, this::createNewEntry);
+        private final SyncStoredMap<UUID, ScoreOverrideEntry> overrideMap =
+                SyncStoredMap.stringKeys(UUID::toString, UUID::fromString, this::createNewOverrideEntry);
 
         public PersonaFactionData(Persona persona) {
-            factionUpdater = new SyncMapUpdater<>(
-                    factionMap,
-                    SyncMapUpdater.KeyCodec.registryHolders(MKFactionRegistry.FACTION_REGISTRY_KEY),
-                    this::createNewEntry
-            );
-            overrideUpdater = new SyncMapUpdater<>(
-                    overrideMap,
-                    UUID::toString,
-                    UUID::fromString,
-                    this::createNewOverrideEntry
-            );
-            factionStorage = new MapStorageCodec<>(
-                    factionMap,
-                    holder -> holder.getKey().location().toString(),
-                    PersonaFactionData::decodeFactionHolder,
-                    this::createNewEntry
-            );
-            overrideStorage = new MapStorageCodec<>(
-                    overrideMap,
-                    UUID::toString,
-                    UUID::fromString,
-                    this::createNewOverrideEntry
-            );
-            persona.getSyncGroup().addPrivate("factions", factionUpdater);
-            persona.getSyncGroup().addPrivate("npc_faction_overrides", overrideUpdater);
+            persona.getSyncGroup().addPrivate("factions", factionMap);
+            persona.getSyncGroup().addPrivate("npc_faction_overrides", overrideMap);
         }
 
         private PlayerFactionEntry createNewEntry(Holder<MKFaction> faction) {
             return new PlayerFactionEntry(faction, this::onDirtyEntry);
-        }
-
-        private static Holder<MKFaction> decodeFactionHolder(HolderLookup.Provider provider, String key) {
-            ResourceLocation factionId = ResourceLocation.tryParse(key);
-            if (factionId == null) {
-                return null;
-            }
-
-            ResourceKey<MKFaction> factionKey = ResourceKey.create(MKFactionRegistry.FACTION_REGISTRY_KEY, factionId);
-            return provider.lookupOrThrow(MKFactionRegistry.FACTION_REGISTRY_KEY)
-                    .get(factionKey)
-                    .orElse(null);
         }
 
         private ScoreOverrideEntry createNewOverrideEntry(UUID spawnId) {
@@ -148,7 +110,7 @@ public class PlayerFactionHandler implements IPlayerFaction {
         }
 
         public Map<Holder<MKFaction>, PlayerFactionEntry> getFactionMap() {
-            return factionMap;
+            return factionMap.asMap();
         }
 
         public OptionalInt getNpcFactionOverride(UUID spawnId) {
@@ -161,13 +123,11 @@ public class PlayerFactionHandler implements IPlayerFaction {
         }
 
         public void clearNpcFactionOverride(UUID spawnId) {
-            if (overrideMap.remove(spawnId) != null) {
-                overrideUpdater.markDirty(spawnId);
-            }
+            overrideMap.remove(spawnId);
         }
 
         private PlayerFactionEntry getFactionEntry(Holder<MKFaction> factionName) {
-            return getFactionMap().computeIfAbsent(factionName, name -> {
+            return factionMap.computeIfAbsent(factionName, name -> {
                 PlayerFactionEntry newEntry = createNewEntry(name);
                 newEntry.reset();
                 return newEntry;
@@ -175,11 +135,11 @@ public class PlayerFactionHandler implements IPlayerFaction {
         }
 
         private void onDirtyEntry(PlayerFactionEntry entry) {
-            factionUpdater.markDirty(entry.getFaction());
+            factionMap.markDirty(entry.getFaction());
         }
 
         private void onDirtyOverrideEntry(ScoreOverrideEntry entry) {
-            overrideUpdater.markDirty(entry.getSpawnId());
+            overrideMap.markDirty(entry.getSpawnId());
         }
 
         @Override
@@ -190,24 +150,24 @@ public class PlayerFactionHandler implements IPlayerFaction {
         @Override
         public CompoundTag serialize(HolderLookup.Provider provider) {
             CompoundTag tag = new CompoundTag();
-            tag.put("factions", factionStorage.serialize(provider));
-            tag.put("overrides", overrideStorage.serialize(provider));
+            tag.put("factions", factionMap.serializeStorage(provider));
+            tag.put("overrides", overrideMap.serializeStorage(provider));
             return tag;
         }
 
         @Override
         public void deserialize(HolderLookup.Provider provider, CompoundTag nbt) {
-            factionStorage.deserialize(provider, nbt.getCompound("factions"));
-            overrideStorage.deserialize(provider, nbt.getCompound("overrides"));
+            factionMap.deserializeStorage(provider, nbt.getCompound("factions"));
+            overrideMap.deserializeStorage(provider, nbt.getCompound("overrides"));
         }
     }
 
-    public static class ScoreOverrideEntry implements com.chaosbuffalo.mkcore.sync.IMKSerializable<CompoundTag> {
+    public static class ScoreOverrideEntry implements IMKSerializable<CompoundTag> {
         private final UUID spawnId;
-        private final java.util.function.Consumer<ScoreOverrideEntry> dirtyNotifier;
+        private final Consumer<ScoreOverrideEntry> dirtyNotifier;
         private int factionScore;
 
-        public ScoreOverrideEntry(UUID spawnId, java.util.function.Consumer<ScoreOverrideEntry> dirtyNotifier) {
+        public ScoreOverrideEntry(UUID spawnId, Consumer<ScoreOverrideEntry> dirtyNotifier) {
             this.spawnId = spawnId;
             this.dirtyNotifier = dirtyNotifier;
         }
