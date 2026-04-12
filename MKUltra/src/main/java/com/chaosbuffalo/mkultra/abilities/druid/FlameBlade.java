@@ -32,8 +32,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Consumer;
 
 public class FlameBlade extends MKAbility {
-    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("fire_armor_casting");
-    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("fire_armor_cast");
+    public static final ResourceLocation CASTING_PARTICLES = MKUltra.id("flame_blade_casting");
+    public static final ResourceLocation CAST_PARTICLES = MKUltra.id("flame_blade_cast");
     public static final ResourceLocation EDGE_PARTICLES = MKUltra.id("flame_blade_particles");
 
     protected final IntAttribute baseDuration = new IntAttribute("baseDuration", 10);
@@ -94,12 +94,7 @@ public class FlameBlade extends MKAbility {
         Component damage = getDamageDescription(entityData, CoreDamageTypes.FireDamage.get(),
                 base.value(), scale.value(), level, modifierScaling.value());
         float duration = convertDurationToSeconds(getBuffDuration(entityData, level, baseDuration.value(), scaleDuration.value()));
-        return Component.translatable(getDescriptionTranslationKey(), damage, duration);
-    }
-
-    @Override
-    public void buildDescription(IMKEntityData casterData, AbilityContext context, Consumer<Component> consumer) {
-        super.buildDescription(casterData, context, consumer);
+        return Component.translatable(getDescriptionTranslationKey(), duration, damage);
     }
 
     @Override

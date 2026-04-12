@@ -9,7 +9,7 @@
         "trackType": "mkcore:particle_anim.render_scale",
         "attributes": {
           "maxVariance": 0.0,
-          "renderScale": 0.0125
+          "renderScale": 0.03
         }
       },
       "colorTrack": {
@@ -33,7 +33,7 @@
         "trackType": "mkcore:particle_anim.brownian_motion",
         "attributes": {
           "tickInterval": 2,
-          "magnitude": 0.01,
+          "magnitude": 0.008,
           "doX": true,
           "doGravity": true,
           "doZ": true,
@@ -44,7 +44,7 @@
         "trackType": "mkcore:particle_anim.render_scale",
         "attributes": {
           "maxVariance": 0.008,
-          "renderScale": 0.025
+          "renderScale": 0.06
         }
       },
       "colorTrack": {
@@ -68,7 +68,7 @@
         "trackType": "mkcore:particle_anim.brownian_motion",
         "attributes": {
           "tickInterval": 2,
-          "magnitude": 0.05,
+          "magnitude": 0.01,
           "doX": true,
           "doGravity": true,
           "doZ": true,
@@ -79,7 +79,7 @@
         "trackType": "mkcore:particle_anim.render_scale",
         "attributes": {
           "maxVariance": 0.0,
-          "renderScale": 0.0125
+          "renderScale": 0.03
         }
       },
       "colorTrack": {
@@ -103,7 +103,7 @@
         "trackType": "mkcore:particle_anim.brownian_motion",
         "attributes": {
           "tickInterval": 5,
-          "magnitude": 0.025,
+          "magnitude": 0.001,
           "doX": true,
           "doGravity": true,
           "doZ": true,
@@ -114,7 +114,7 @@
         "trackType": "mkcore:particle_anim.render_scale",
         "attributes": {
           "maxVariance": 0.0,
-          "renderScale": 0.005
+          "renderScale": 0.01
         }
       },
       "colorTrack": {
@@ -135,8 +135,8 @@
     "attributes": {
       "offset": 0.0,
       "motion": 0.0,
-      "per_pos_count": 5,
-      "count": 15
+      "per_pos_count": 4,
+      "count": 12
     }
   },
   "particleType": "mkcore:magic_gradient_square"
