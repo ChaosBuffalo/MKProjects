@@ -88,7 +88,7 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
                 float swing = this.attackTime;
                 if (swing > 0.0F) {
                     InteractionHand attackHand = entityIn.swingingArm == InteractionHand.OFF_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
-                    int variant = playerData.getCombatExtension().getCurrentPrimarySwingVariant(attackHand);
+                    int variant = Math.max(0, playerData.getCombatExtension().getCurrentPrimarySwingVariant(attackHand) - 1);
                     if (!applyMeleeAnimationPose(entityIn, attackHand, swing, ageInTicks, variant, dualWielding)) {
                         super.setupAttackAnimation(entityIn, ageInTicks);
                     }
