@@ -10,8 +10,12 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -115,7 +119,22 @@ public class TargetUtil {
 
     public static List<LivingEntity> getTargetsInLine(LivingEntity caster, Vec3 from, Vec3 to, float growth,
                                                       BiPredicate<LivingEntity, LivingEntity> validTargetChecker) {
-        return getEntitiesInLine(LivingEntity.class, caster, from, to, Vec3.ZERO, growth,
-                e -> validTargetChecker == null || (e != null && validTargetChecker.test(caster, e)));
+        EntityCollectionRayTraceResult<LivingEntity> traceResult = RayTraceUtils.rayTraceAllEntities(
+                LivingEntity.class,
+                caster.level(),
+                from,
+                to,
+                Vec3.ZERO,
+                growth,
+                0.0f,
+                e -> validTargetChecker == null || validTargetChecker.test(caster, e)
+        );
+        List<EntityCollectionRayTraceResult.TraceEntry<LivingEntity>> entries = new ArrayList<>(traceResult.getEntities());
+        entries.sort(Comparator.comparingDouble(entry -> entry.distance));
+        Set<LivingEntity> orderedTargets = new LinkedHashSet<>();
+        for (EntityCollectionRayTraceResult.TraceEntry<LivingEntity> entry : entries) {
+            orderedTargets.add(entry.entity);
+        }
+        return List.copyOf(orderedTargets);
     }
 }

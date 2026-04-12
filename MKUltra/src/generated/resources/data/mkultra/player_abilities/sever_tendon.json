@@ -1,12 +1,13 @@
 {
   "attributes": {
-    "base": 4.0,
+    "attackHand": "main_hand",
+    "base": 1.0,
     "baseBleedDamage": 1.0,
     "baseDuration": 4,
     "bleedModifierScaling": 0.1,
     "casting_particles": "mkcore:fx.casting.empty",
-    "modifierScaling": 1.0,
-    "scale": 2.0,
+    "modifierScaling": 0.1,
+    "scale": 0.25,
     "scaleBleedDamage": 1.0,
     "scaleDuration": 1
   },

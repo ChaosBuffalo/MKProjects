@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.core.MultiAttackHelper;
 import com.chaosbuffalo.mkcore.core.combat.MKMeleeManager;
 import com.chaosbuffalo.mkcore.core.combat.MeleeAttackContext;
+import com.chaosbuffalo.mkcore.core.combat.MeleeHandStatsResolver;
 import com.chaosbuffalo.mkcore.core.combat.MultiAttackState;
 import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimingManager;
 import com.chaosbuffalo.mkcore.core.combat.MeleeSequenceTimings;
@@ -473,7 +474,7 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
 
     @Override
     public int getRequiredAttackStrengthTicks(InteractionHand hand) {
-        return PlayerMeleeHandStatsResolver.getRequiredAttackStrengthTicks(this, hand);
+        return MeleeHandStatsResolver.getRequiredAttackStrengthTicks(getPlayerData().getEntity(), hand);
     }
 
     private MultiAttackState getMultiAttackState(InteractionHand hand) {

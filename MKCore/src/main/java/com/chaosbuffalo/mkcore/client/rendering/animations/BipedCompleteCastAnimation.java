@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore.client.rendering.animations;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 
 public abstract class BipedCompleteCastAnimation<T extends LivingEntity> extends AdditionalBipedAnimation<T> {
@@ -19,12 +20,16 @@ public abstract class BipedCompleteCastAnimation<T extends LivingEntity> extends
         int castTicks = getCastAnimTimer(entity);
         float progress = ANIM_TIME - castTicks / ANIM_TIME;
         float armZ = Mth.cos((float) (Math.PI / 2.0f + progress * (float) Math.PI)) * (float) Math.PI / 2.0f;
-        model.rightArm.yRot = 0.0F;
-        model.leftArm.yRot = 0.0F;
-        model.rightArm.zRot = -armZ;
-        model.leftArm.zRot = armZ;
-        model.rightArm.xRot = 0.0F;
-        model.leftArm.xRot = 0.0F;
+        if (!hasVisualMeleeAttackSequenceArm(entity, HumanoidArm.RIGHT)) {
+            model.rightArm.yRot = 0.0F;
+            model.rightArm.zRot = -armZ;
+            model.rightArm.xRot = 0.0F;
+        }
+        if (!hasVisualMeleeAttackSequenceArm(entity, HumanoidArm.LEFT)) {
+            model.leftArm.yRot = 0.0F;
+            model.leftArm.zRot = armZ;
+            model.leftArm.xRot = 0.0F;
+        }
 
     }
 }

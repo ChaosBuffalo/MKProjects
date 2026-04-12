@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.core.player;
 
 import com.chaosbuffalo.mkcore.core.combat.MeleeAttackContext;
+import com.chaosbuffalo.mkcore.core.combat.MeleeHandStatsResolver;
 import com.chaosbuffalo.mkcore.core.combat.SharedMeleeAttackExecutor;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
@@ -43,7 +44,7 @@ public final class PlayerMeleeAttackExecutor {
             InteractionHand hand = context.hand();
             ItemStack weaponStack = player.getItemInHand(hand);
             DamageSource damageSource = player.damageSources().playerAttack(player);
-            float baseDamage = PlayerMeleeHandStatsResolver.resolveAttackDamage(combat, hand);
+            float baseDamage = MeleeHandStatsResolver.resolveAttackDamage(combat.getPlayerData(), hand);
             float enchantDamage = player.level() instanceof ServerLevel serverLevel
                     ? EnchantmentHelper.modifyDamage(serverLevel, weaponStack, target, damageSource, baseDamage) - baseDamage
                     : 0.0F;
@@ -177,7 +178,7 @@ public final class PlayerMeleeAttackExecutor {
 
     private static float resolveKnockback(PlayerCombatExtensionModule combat, Player player, InteractionHand hand,
                                           Entity target, DamageSource damageSource) {
-        float knockback = PlayerMeleeHandStatsResolver.resolveAttackKnockback(combat, hand);
+        float knockback = MeleeHandStatsResolver.resolveAttackKnockback(combat.getPlayerData().getEntity(), hand);
         return player.level() instanceof ServerLevel serverLevel
                 ? EnchantmentHelper.modifyKnockback(serverLevel, player.getItemInHand(hand), target, damageSource, knockback)
                 : knockback;

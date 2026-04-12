@@ -204,7 +204,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
     private void sendEffectCrit(LivingEntity livingTarget, LivingEntity livingSource, MKDamageSource source,
                                 float newDamage) {
         if (source instanceof MKDamageSource.EffectDamage effectDamage) {
-            InteractionHand hand = MKCore.getEntityData(livingSource)
+            InteractionHand hand = source.getAttackHand() != null ? source.getAttackHand() : MKCore.getEntityData(livingSource)
                     .map(data -> data.getCombatExtension().getActiveAttackHand())
                     .orElse(InteractionHand.MAIN_HAND);
             sendCritPacket(livingTarget, livingSource,
@@ -223,7 +223,7 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
             } else {
                 abilityName = MKCoreRegistry.INVALID_ABILITY;
             }
-            InteractionHand hand = MKCore.getEntityData(livingSource)
+            InteractionHand hand = source.getAttackHand() != null ? source.getAttackHand() : MKCore.getEntityData(livingSource)
                     .map(data -> data.getCombatExtension().getActiveAttackHand())
                     .orElse(InteractionHand.MAIN_HAND);
             sendCritPacket(livingTarget, livingSource,

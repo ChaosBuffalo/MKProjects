@@ -7,6 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,6 +19,8 @@ import javax.annotation.Nullable;
 public abstract class MKDamageSource extends DamageSource {
     protected final MKDamageType damageType;
     protected float modifierScaling = 1.0f;
+    @Nullable
+    protected InteractionHand attackHand;
 
     public enum Origination {
         MK_ABILITY,
@@ -140,6 +143,16 @@ public abstract class MKDamageSource extends DamageSource {
         return damageType;
     }
 
+    @Nullable
+    public InteractionHand getAttackHand() {
+        return attackHand;
+    }
+
+    public MKDamageSource setAttackHand(@Nullable InteractionHand hand) {
+        attackHand = hand;
+        return this;
+    }
+
     public boolean isMeleeDamage() {
         return damageType.equals(CoreDamageTypes.MeleeDamage.get());
     }
@@ -187,8 +200,24 @@ public abstract class MKDamageSource extends DamageSource {
     public static MKDamageSource causeMeleeDamage(Level level, ResourceLocation abilityId,
                                                   @Nullable Entity immediateSource,
                                                   @Nullable Entity trueSource,
+                                                  @Nullable InteractionHand attackHand) {
+        return causeMeleeDamage(level, abilityId, immediateSource, trueSource).setAttackHand(attackHand);
+    }
+
+    public static MKDamageSource causeMeleeDamage(Level level, ResourceLocation abilityId,
+                                                  @Nullable Entity immediateSource,
+                                                  @Nullable Entity trueSource,
                                                   float modifierScaling) {
         return causeMeleeDamage(level, abilityId, immediateSource, trueSource)
+                .setModifierScaling(modifierScaling);
+    }
+
+    public static MKDamageSource causeMeleeDamage(Level level, ResourceLocation abilityId,
+                                                  @Nullable Entity immediateSource,
+                                                  @Nullable Entity trueSource,
+                                                  float modifierScaling,
+                                                  @Nullable InteractionHand attackHand) {
+        return causeMeleeDamage(level, abilityId, immediateSource, trueSource, attackHand)
                 .setModifierScaling(modifierScaling);
     }
 }

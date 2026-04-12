@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.init;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.effects.MKEffect;
+import com.chaosbuffalo.mkcore.effects.instant.AbilityMeleeDamageEffect;
 import com.chaosbuffalo.mkcore.effects.instant.AbilityMagicDamageEffect;
 import com.chaosbuffalo.mkcore.effects.instant.MKAbilityDamageEffect;
 import com.chaosbuffalo.mkcore.effects.status.StunEffect;
@@ -21,6 +22,9 @@ public class CoreEffects {
 
     public static final DeferredHolder<MKEffect, MKAbilityDamageEffect> ABILITY_DAMAGE = EFFECTS
             .register("effect.ability_damage", MKAbilityDamageEffect::new);
+
+    public static final DeferredHolder<MKEffect, AbilityMeleeDamageEffect> ABILITY_MELEE_DAMAGE = EFFECTS
+            .register("effect.ability_melee_damage", AbilityMeleeDamageEffect::new);
 
     public static final DeferredHolder<MKEffect, StunEffect> STUN = EFFECTS
             .register("effect.stun", StunEffect::new);
