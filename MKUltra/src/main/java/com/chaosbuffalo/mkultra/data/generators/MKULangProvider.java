@@ -30,6 +30,7 @@ public class MKULangProvider extends NpcLanguageProvider {
         mkEffect(MKUEffects.ATTACK_SPEED_HASTE, "Alacrity");
         mkEffect(MKUEffects.ATTACK_SPEED_SLOW, "Torpor");
         mkEffect(MKUEffects.FROZEN_GRASP, "Frozen Grasp");
+        mkEffect(MKUEffects.FLAME_BLADE_APPLIER, "Flame Blade");
         mkEffect(MKUEffects.FROZEN_GRASP_APPLIER, "Frozen Grasp (self)");
         ability(MKUAbilities.FROZEN_GRASP, "Frozen Grasp", "Causes your next %s hits to slow the targets casting, attack, and movement speed for %s seconds.");
         ability(MKUAbilities.DROWN, "Drown", "Fills the targets lungs with water dealing %s every %s seconds for %s seconds.");
@@ -37,6 +38,7 @@ public class MKULangProvider extends NpcLanguageProvider {
         ability(MKUAbilities.SEAFURY, "Seafury", "Places a line of %s eruptions down at the target position %s blocks apart, causing %s after %s seconds to targets within %s blocks.");
         ability(MKUAbilities.GREEN_SOUL, "Green Soul", "Infuses you with the indomitable spirit of a Green Knight, increasing health and armor.");
         talentTree(MKUltra.id("green_knight"), "Green Knight");
+        ability(MKUAbilities.FLAME_BLADE, "Flame Blade", "Enchants your weapons and those of nearby allies with fire for %s seconds. Each melee hit deals an additional %s.");
         ability(MKUAbilities.SHADOW_PULSE, "Shadow Pulse", "Summons a vortex of shadow with a radius of %s blocks, pulling nearby enemies in and dealing %s every %s seconds for %s seconds. When the effect ends, the vortex detonates dealing %s.");
         ability(MKUAbilities.SHADOW_BOLT, "Shadow Bolt", "Throws a magical ball of shadow, causing %s to the target.");
         ability(MKUAbilities.ENGULFING_DARKNESS, "Engulfing Darkness", "Conjures a magical darkness around the target, causing %s every %s seconds for %s seconds and slowing their movement. Every tick has a %s chance to grant the caster Shadowbringer for %s seconds. Shadowbringer causes your next Shadowbolt to have an instant cast time, 50%% of the mana cost, and instantly resets its cooldown.");

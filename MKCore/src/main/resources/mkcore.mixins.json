@@ -18,6 +18,7 @@
   },
   "client": [
     "client.EntityRendererDispatcherMixins",
+    "client.ItemInHandLayerMixins",
     "client.ItemInHandRendererMixins",
     "client.InGameGuiMixins",
     "client.LevelRendererMixins",

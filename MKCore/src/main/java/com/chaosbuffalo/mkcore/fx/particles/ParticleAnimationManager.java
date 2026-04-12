@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.fx.particles.animation_tracks.colors.ParticleLerp
 import com.chaosbuffalo.mkcore.fx.particles.animation_tracks.colors.ParticleStaticColorAnimationTrack;
 import com.chaosbuffalo.mkcore.fx.particles.animation_tracks.motions.*;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.BoneEffectInstance;
+import com.chaosbuffalo.mkcore.fx.particles.effect_instances.HeldItemParticleEffectInstance;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.ParticleEffectInstance;
 import com.chaosbuffalo.mkcore.fx.particles.spawn_patterns.*;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
@@ -129,6 +130,7 @@ public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
         putSpawnPatternDeserializer(AdvancedLineSpawnPattern.TYPE, AdvancedLineSpawnPattern::new);
 
         putEffectInstanceDeserializer(BoneEffectInstance.TYPE, BoneEffectInstance.CODEC);
+        putEffectInstanceDeserializer(HeldItemParticleEffectInstance.TYPE, HeldItemParticleEffectInstance.CODEC);
     }
 
     public static void putEffectInstanceDeserializer(ResourceLocation name, MapCodec<? extends ParticleEffectInstance> codec) {

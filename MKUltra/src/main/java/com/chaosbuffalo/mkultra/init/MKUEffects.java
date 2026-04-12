@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mkcore.effects.status.MKResistance;
 import com.chaosbuffalo.mkcore.effects.status.OnStackEffect;
 import com.chaosbuffalo.mkultra.MKUltra;
+import com.chaosbuffalo.mkultra.abilities.druid.FlameBlade;
 import com.chaosbuffalo.mkultra.abilities.misc.FrozenGraspAbility;
 import com.chaosbuffalo.mkultra.effects.*;
 import net.neoforged.bus.api.IEventBus;
@@ -121,6 +122,13 @@ public class MKUEffects {
                     MKUAbilities.FROZEN_GRASP.get().onHitEffect(args),
                     SpellTriggers.LIVING_HURT_ENTITY::registerMeleeEffect,
                     FrozenGraspAbility.CAST_PARTICLES, true));
+
+    public static final DeferredHolder<MKEffect, HeldItemOnHitEffect> FLAME_BLADE_APPLIER = REGISTRY.register(
+            "effect.flame_blade_applier",
+            () -> new HeldItemOnHitEffect((args) ->
+                    MKUAbilities.FLAME_BLADE.get().onHitEffect(args),
+                    SpellTriggers.LIVING_HURT_ENTITY::registerMeleeEffect,
+                    FlameBlade.EDGE_PARTICLES, true));
 
 
     public static void register(IEventBus modBus) {

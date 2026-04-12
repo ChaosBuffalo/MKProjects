@@ -28,5 +28,21 @@
   ],
   "isTwoHanded": true,
   "maxPoise": 50.0,
+  "particleAttachmentProfile": {
+    "attachments": [
+      {
+        "end": [
+          8.0,
+          19.0,
+          7.0
+        ],
+        "start": [
+          8.0,
+          29.0,
+          7.0
+        ]
+      }
+    ]
+  },
   "reach": 1.0
 }

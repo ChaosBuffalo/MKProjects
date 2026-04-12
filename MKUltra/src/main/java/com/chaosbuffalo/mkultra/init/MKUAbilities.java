@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkultra.MKUltra;
 import com.chaosbuffalo.mkultra.abilities.brawler.*;
 import com.chaosbuffalo.mkultra.abilities.cleric.*;
+import com.chaosbuffalo.mkultra.abilities.druid.FlameBlade;
 import com.chaosbuffalo.mkultra.abilities.enchanter.*;
 import com.chaosbuffalo.mkultra.abilities.green_knight.*;
 import com.chaosbuffalo.mkultra.abilities.misc.*;
@@ -104,6 +105,9 @@ public class MKUAbilities {
     public static final DeferredHolder<MKAbility, WhirlwindBladesAbility> WHIRLWIND_BLADES = REGISTRY.register("whirlwind_blades", WhirlwindBladesAbility::new);
     public static final DeferredHolder<MKAbility, StunningShoutAbility> STUNNING_SHOUT = REGISTRY.register("stunning_shout", StunningShoutAbility::new);
     public static final DeferredHolder<MKAbility, FuriousBroodingAbility> FURIOUS_BROODING = REGISTRY.register("furious_brooding", FuriousBroodingAbility::new);
+
+    //druid
+    public static final DeferredHolder<MKAbility, FlameBlade> FLAME_BLADE = REGISTRY.register("flame_blade", FlameBlade::new);
 
     //Wet Wizard
     public static final DeferredHolder<MKAbility, DrownAbility> DROWN = REGISTRY.register("drown", DrownAbility::new);
