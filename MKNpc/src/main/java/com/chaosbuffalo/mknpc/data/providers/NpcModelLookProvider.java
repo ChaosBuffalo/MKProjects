@@ -93,5 +93,9 @@ public class NpcModelLookProvider extends MKDataProvider {
         ModelLook look = new ModelLook(ModelStyles.BASIC_STYLE.get(), entityType, true,
                 FireElementalStyles.DEFAULT_TEXTURE);
         futures.add(writeLook(FireElementalStyles.DEFAULT_LOOK, look, output));
+
+        ModelLook chargedLook = new ModelLook(ModelStyles.BASIC_ENERGY_SWIRL_STYLE.get(), entityType, false,
+                FireElementalStyles.DEFAULT_TEXTURE, FireElementalStyles.CHARGED_OVERLAY_TEXTURE);
+        futures.add(writeLook(FireElementalStyles.CHARGED_LOOK, chargedLook, output));
     }
 }

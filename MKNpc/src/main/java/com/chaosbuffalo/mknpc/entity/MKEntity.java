@@ -101,6 +101,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     private static final EntityDataAccessor<Float> GHOST_TRANSLUCENCY = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> HAS_GHOST_ARMOR = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> GHOST_ARMOR_TRANSLUCENCY = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Boolean> SHOW_MELEE_WINDUP_VISUALS = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.BOOLEAN);
     private final SyncGroup animSync = new SyncGroup();
     private int castAnimTimer;
     private VisualCastState visualCastState;
@@ -227,7 +228,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         castingAbility = null;
         wasSwingingLastTick = false;
         battlecry = null;
-        lungeSpeed = .25;
+        lungeSpeed = 1.0;
         rangedCastingDistance = 6.0;
         blockCooldown = GameConstants.TICKS_PER_SECOND * 2;
         blockDelay = GameConstants.TICKS_PER_SECOND / 2;
@@ -411,7 +412,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
     }
 
     public double getLungeSpeed() {
-        return lungeSpeed * getAttackSpeedMultiplier();
+        return lungeSpeed;
     }
 
     public void setLungeSpeed(double lungeSpeed) {
@@ -438,6 +439,7 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         builder.define(GHOST_TRANSLUCENCY, 1.0f);
         builder.define(HAS_GHOST_ARMOR, false);
         builder.define(GHOST_ARMOR_TRANSLUCENCY, 1.0f);
+        builder.define(SHOW_MELEE_WINDUP_VISUALS, false);
     }
 
     @Override
@@ -820,6 +822,10 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         return range * range;
     }
 
+    public boolean isInVisualMeleeWindupRange(LivingEntity target) {
+        return distanceToSqr(target) <= getVisualMeleeWindupRangeSqr(target);
+    }
+
     public boolean shouldShowMeleeWindup(InteractionHand hand) {
         if (getCombatMoveType() != CombatMoveType.MELEE || getVisualCastState() != VisualCastState.NONE) {
             return false;
@@ -830,7 +836,9 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         if (hand == InteractionHand.OFF_HAND && !MKMeleeManager.canUseForAttack(this, InteractionHand.OFF_HAND)) {
             return false;
         }
-        return isAggressive() || (swinging && swingingArm == hand) || getVisualMeleeWindupTicks(hand) > 0;
+        return getEntityData().get(SHOW_MELEE_WINDUP_VISUALS) ||
+                (swinging && swingingArm == hand) ||
+                getVisualMeleeWindupTicks(hand) > 0;
     }
 
     public float getMeleeWindupProgress(InteractionHand hand, float partialTicks) {
@@ -1222,6 +1230,16 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
         this.level().getProfiler().push("brain");
         this.getBrain().tick((ServerLevel) this.level(), this);
         this.level().getProfiler().pop();
+        updateMeleeWindupVisuals();
+    }
+
+    private void updateMeleeWindupVisuals() {
+        boolean shouldShow = false;
+        if (getCombatMoveType() == CombatMoveType.MELEE && getVisualCastState() == VisualCastState.NONE && !isUsingItem()) {
+            LivingEntity threatTarget = getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET.get()).orElse(null);
+            shouldShow = threatTarget != null && threatTarget.isAlive() && isInVisualMeleeWindupRange(threatTarget);
+        }
+        getEntityData().set(SHOW_MELEE_WINDUP_VISUALS, shouldShow);
     }
 
     @Override

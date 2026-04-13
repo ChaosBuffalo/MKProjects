@@ -17,7 +17,7 @@ public class MKFireElementalEntity extends MKEntity {
 
     public MKFireElementalEntity(EntityType<? extends MKFireElementalEntity> type, Level worldIn) {
         super(type, worldIn);
-        setCurrentModelLook(MKEntity.makeLookId(type, DEFAULT));
+        setCurrentModelLook(MKEntity.makeLookId(type, "charged"));
         setPathfindingMalus(PathType.WATER, -1.0F);
         setPathfindingMalus(PathType.LAVA, 8.0F);
         setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);

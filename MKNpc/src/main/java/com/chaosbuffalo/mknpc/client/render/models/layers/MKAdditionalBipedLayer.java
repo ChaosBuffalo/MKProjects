@@ -9,14 +9,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.FastColor;
+import net.minecraft.util.Mth;
 
 import java.util.function.Function;
 
@@ -35,65 +36,56 @@ public class MKAdditionalBipedLayer<T extends MKEntity, M extends HumanoidModel<
         this.style = layer;
     }
 
-    protected static <T extends MKEntity> void renderCopyTranslucent(HumanoidModel<T> modelParentIn, HumanoidModel<T> modelIn,
-                                                                     ResourceLocation textureLocationIn, PoseStack matrixStackIn,
-                                                                     MultiBufferSource bufferIn, int packedLightIn, T entityIn,
-                                                                     float limbSwing, float limbSwingAmount, float ageInTicks,
-                                                                     float netHeadYaw, float headPitch, float partialTicks,
-                                                                     float red, float green, float blue) {
+    protected static <T extends MKEntity> void renderCopyLayer(HumanoidModel<T> modelParentIn, HumanoidModel<T> modelIn,
+                                                               ResourceLocation textureLocationIn, PoseStack matrixStackIn,
+                                                               MultiBufferSource bufferIn, int packedLightIn, T entityIn,
+                                                               float limbSwing, float limbSwingAmount, float ageInTicks,
+                                                               float netHeadYaw, float headPitch, float partialTicks,
+                                                               LayerStyle style) {
         if (!entityIn.isInvisible() || entityIn.isGhost()) {
             modelParentIn.copyPropertiesTo(modelIn);
             modelIn.prepareMobModel(entityIn, limbSwing, limbSwingAmount, partialTicks);
             modelIn.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-            renderTranslucentModel(modelIn, textureLocationIn, matrixStackIn, bufferIn, packedLightIn, entityIn, red, green, blue);
+            renderLayerModel(modelIn, textureLocationIn, matrixStackIn, bufferIn, packedLightIn, entityIn, ageInTicks, style);
         }
-
     }
 
-    protected static <T extends MKEntity> void renderTranslucentModel(HumanoidModel<T> modelIn, ResourceLocation textureLocationIn, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn, T entityIn, float red, float green, float blue) {
-        VertexConsumer ivertexbuilder = bufferIn.getBuffer(RenderType.entityTranslucent(textureLocationIn, false));
-
-        int color = FastColor.ARGB32.colorFromFloat(1.0f, red, green, blue);
-        modelIn.renderToBuffer(matrixStackIn, ivertexbuilder, packedLightIn, LivingEntityRenderer.getOverlayCoords(entityIn, 0.0F), color);
+    protected static <T extends MKEntity> void renderLayerModel(HumanoidModel<T> modelIn, ResourceLocation textureLocationIn,
+                                                                PoseStack matrixStackIn, MultiBufferSource bufferIn,
+                                                                int packedLightIn, T entityIn, float ageInTicks,
+                                                                LayerStyle style) {
+        VertexConsumer vertexBuilder = bufferIn.getBuffer(resolveRenderType(textureLocationIn, ageInTicks, style));
+        int lightValue = style.isFullBright() ? LightTexture.FULL_BRIGHT : packedLightIn;
+        int color = FastColor.ARGB32.colorFromFloat(
+                Mth.clamp(style.getAlpha(), 0.0f, 1.0f),
+                Mth.clamp(style.getRed(), 0.0f, 1.0f),
+                Mth.clamp(style.getGreen(), 0.0f, 1.0f),
+                Mth.clamp(style.getBlue(), 0.0f, 1.0f));
+        modelIn.renderToBuffer(matrixStackIn, vertexBuilder, lightValue, LivingEntityRenderer.getOverlayCoords(entityIn, 0.0F), color);
     }
 
-    protected static <T extends MKEntity> void renderCopyCutoutModel(HumanoidModel<T> modelParentIn, HumanoidModel<T> modelIn,
-                                                                     ResourceLocation textureLocationIn, PoseStack matrixStackIn,
-                                                                     MultiBufferSource bufferIn, int packedLightIn, T entityIn,
-                                                                     float limbSwing, float limbSwingAmount, float ageInTicks,
-                                                                     float netHeadYaw, float headPitch, float partialTicks,
-                                                                     float red, float green, float blue) {
-        if (!entityIn.isInvisible() || entityIn.isGhost()) {
-            modelParentIn.copyPropertiesTo(modelIn);
-            modelIn.prepareMobModel(entityIn, limbSwing, limbSwingAmount, partialTicks);
-            modelIn.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-            int color = FastColor.ARGB32.colorFromFloat(1.0f, red, green, blue);
-            renderColoredCutoutModel(modelIn, textureLocationIn, matrixStackIn, bufferIn, packedLightIn, entityIn, color);
-        }
-
+    protected static RenderType resolveRenderType(ResourceLocation textureLocationIn, float ageInTicks, LayerStyle style) {
+        return switch (style.getRenderMode()) {
+            case TRANSLUCENT -> RenderType.entityTranslucent(textureLocationIn, false);
+            case ENERGY_SWIRL -> RenderType.energySwirl(textureLocationIn,
+                    ageInTicks * style.getScrollU(), ageInTicks * style.getScrollV());
+            case CUTOUT -> RenderType.entityCutoutNoCull(textureLocationIn);
+        };
     }
 
     @Override
     public void render(PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn,
                        T entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTicks,
                        float ageInTicks, float netHeadYaw, float headPitch) {
-        if (style.isTranslucent()) {
-            renderCopyTranslucent(
+        ResourceLocation texture = renderer.getLayerTexture(style.getLayerName(), entitylivingbaseIn);
+        if (texture != null) {
+            renderCopyLayer(
                     this.getParentModel(), this.layerModel,
-                    renderer.getLayerTexture(style.getLayerName(), entitylivingbaseIn),
+                    texture,
                     matrixStackIn, bufferIn,
                     packedLightIn, entitylivingbaseIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw,
-                    headPitch, partialTicks, 1.0F, 1.0F, 1.0F
-            );
-        } else {
-            renderCopyCutoutModel(
-                    this.getParentModel(), this.layerModel,
-                    renderer.getLayerTexture(style.getLayerName(), entitylivingbaseIn),
-                    matrixStackIn, bufferIn,
-                    packedLightIn, entitylivingbaseIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw,
-                    headPitch, partialTicks, 1.0F, 1.0F, 1.0F
+                    headPitch, partialTicks, style
             );
         }
-
     }
 }

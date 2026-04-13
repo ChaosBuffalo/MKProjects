@@ -74,6 +74,10 @@ public class RenderRegistry {
                 MKNpcEntityTypes.FIRE_ELEMENTAL_TYPE.getId(), 128, 64,
                 new ModelArgs(CubeDeformation.NONE, true, 0.0f,
                         LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
+        ModelStyleClient.registerModelLayers(event, ModelStyles.BASIC_ENERGY_SWIRL_STYLE.get(), MKFireElementalModel::createBodyLayer,
+                MKNpcEntityTypes.FIRE_ELEMENTAL_TYPE.getId(), 128, 64,
+                new ModelArgs(CubeDeformation.NONE, true, 0.0f,
+                        LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
         ModelStyleClient.registerModelLayers(event, ModelStyles.BASIC_STYLE.get(), MKSkeletalModel::createBodyLayer,
                 MKNpcEntityTypes.FLYING_SKELETON_TYPE.getId(), 64, 32,
                 new ModelArgs(CubeDeformation.NONE, true, 0.0f,

@@ -37,11 +37,14 @@ public class MKMeleeAttackGoal extends Goal {
 
     @Override
     public boolean canUse() {
+        if (entity.getCombatMoveType() != MKEntity.CombatMoveType.MELEE) {
+            return false;
+        }
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
         if (targetOpt.isPresent()) {
             LivingEntity target = targetOpt.get();
-            if (isInMeleeRange(target)) {
+            if (target.isAlive() && entity.isInVisualMeleeWindupRange(target)) {
                 this.target = target;
                 return true;
             }
@@ -252,9 +255,13 @@ public class MKMeleeAttackGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
+        if (entity.getCombatMoveType() != MKEntity.CombatMoveType.MELEE) {
+            return false;
+        }
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET.get());
-        return hasPendingMultiAttack() || target != null && targetOpt.map((ent) -> ent.is(target) && isInMeleeRange(ent)).orElse(false);
+        return hasPendingMultiAttack() || target != null &&
+                targetOpt.map(ent -> ent.is(target) && ent.isAlive() && entity.isInVisualMeleeWindupRange(ent)).orElse(false);
     }
 
     private boolean isExecutingMultiAttack(InteractionHand hand) {

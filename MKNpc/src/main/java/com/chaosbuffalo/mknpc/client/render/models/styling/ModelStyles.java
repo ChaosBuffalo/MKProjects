@@ -20,8 +20,10 @@ public class ModelStyles {
     public static final String CLOTHES_ONLY_NAME = "clothes_only";
     public static final String BASIC_NAME = "basic";
     public static final String BASIC_GOLEM_NAME = "basic_golem";
+    public static final String BASIC_ENERGY_SWIRL_NAME = "basic_energy_swirl";
     public static final String CLOTHES_ARMOR_NAME = "clothes_armor";
     public static final String CLOTHES_ARMOR_TRANSLUCENT_NAME = "clothes_armor_translucent";
+    public static final String ENERGY_SWIRL = "energy_swirl";
 
     public static final DeferredHolder<ModelStyle, ModelStyle> ARMORED_LONG_HAIR_STYLE = REGISTRY.register(
             LONG_HAIR_ARMORED_NAME,
@@ -89,6 +91,18 @@ public class ModelStyles {
                     BASIC_GOLEM_NAME,
                     false,
                     false));
+
+    public static final DeferredHolder<ModelStyle, ModelStyle> BASIC_ENERGY_SWIRL_STYLE = REGISTRY.register(
+            BASIC_ENERGY_SWIRL_NAME,
+            () -> new ModelStyle(
+                    BASIC_ENERGY_SWIRL_NAME,
+                    true,
+                    false,
+                    new LayerStyle(ENERGY_SWIRL, 0.18f, LayerStyle.RenderMode.ENERGY_SWIRL)
+                            .withColor(0.95f, 0.96f, 1.0f)
+                            .withAlpha(0.85f)
+                            .withScroll(0.02f, 0.01f)
+                            .withFullBright(true)));
 
     public static void register(IEventBus modBus) {
         REGISTRY.register(modBus);
