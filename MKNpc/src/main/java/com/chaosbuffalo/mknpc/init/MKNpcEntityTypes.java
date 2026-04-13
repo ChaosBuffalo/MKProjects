@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.init;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKBlazeEntity;
+import com.chaosbuffalo.mknpc.entity.MKFireElementalEntity;
 import com.chaosbuffalo.mknpc.entity.MKFlyingSkeletonEntity;
 import com.chaosbuffalo.mknpc.entity.MKFlyingSkullEntity;
 import com.chaosbuffalo.mknpc.entity.MKGolemEntity;
@@ -22,6 +23,7 @@ public class MKNpcEntityTypes {
     public static final String SKELETON_NAME = "skeleton";
     public static final String ZOMBIFIED_PIGLIN_NAME = "zombified_piglin";
     public static final String BLAZE_NAME = "blaze";
+    public static final String FIRE_ELEMENTAL_NAME = "fire_elemental";
     public static final String FLYING_SKELETON_NAME = "flying_skeleton";
     public static final String FLYING_SKULL_NAME = "flying_skull";
     public static final String GOLEM_NAME = "golem";
@@ -31,6 +33,7 @@ public class MKNpcEntityTypes {
         event.put(SKELETON_TYPE.get(), MKSkeletonEntity.registerAttributes(1.0, 0.3).build());
         event.put(ZOMBIE_PIGLIN_TYPE.get(), MKZombifiedPiglinEntity.registerAttributes(1.0, 0.2).build());
         event.put(BLAZE_TYPE.get(), MKBlazeEntity.registerAttributes(1.0, 0.38).build());
+        event.put(FIRE_ELEMENTAL_TYPE.get(), MKFireElementalEntity.registerAttributes(3.0, 0.3).build());
         event.put(FLYING_SKELETON_TYPE.get(), MKFlyingSkeletonEntity.registerAttributes(1.0, 0.3).build());
         event.put(FLYING_SKULL_TYPE.get(), MKFlyingSkullEntity.registerAttributes(1.0, 0.3).build());
         event.put(GOLEM_TYPE.get(), MKGolemEntity.registerAttributes(4.0, 0.35).build());
@@ -53,6 +56,12 @@ public class MKNpcEntityTypes {
                     .fireImmune()
                     .sized(EntityType.BLAZE.getWidth(), EntityType.BLAZE.getHeight())
                     .build(BLAZE_NAME));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<MKFireElementalEntity>> FIRE_ELEMENTAL_TYPE = ENTITIES.register(FIRE_ELEMENTAL_NAME,
+            () -> EntityType.Builder.of(MKFireElementalEntity::new, MobCategory.MONSTER)
+                    .fireImmune()
+                    .sized(0.8f, 2.1f)
+                    .build(FIRE_ELEMENTAL_NAME));
 
     public static final DeferredHolder<EntityType<?>, EntityType<MKFlyingSkeletonEntity>> FLYING_SKELETON_TYPE = ENTITIES.register(FLYING_SKELETON_NAME,
             () -> EntityType.Builder.of(MKFlyingSkeletonEntity::new, MobCategory.MONSTER)

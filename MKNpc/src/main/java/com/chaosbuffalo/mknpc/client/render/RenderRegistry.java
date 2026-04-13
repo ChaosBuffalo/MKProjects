@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.client.render;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.models.MKBlazeModel;
+import com.chaosbuffalo.mknpc.client.render.models.MKFireElementalModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKGolemModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKPiglinModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKSkeletalModel;
@@ -31,6 +32,8 @@ public class RenderRegistry {
         evt.registerEntityRenderer(MKNpcEntityTypes.ZOMBIE_PIGLIN_TYPE.get(),
                 (context) -> new ZombifiedPiglinGroupRenderer(context, MKNpcEntityTypes.ZOMBIE_PIGLIN_TYPE.getId()));
         evt.registerEntityRenderer(MKNpcEntityTypes.BLAZE_TYPE.get(), MKBlazeRenderer::new);
+        evt.registerEntityRenderer(MKNpcEntityTypes.FIRE_ELEMENTAL_TYPE.get(),
+                (context) -> new FireElementalGroupRenderer(context, MKNpcEntityTypes.FIRE_ELEMENTAL_TYPE.getId()));
         evt.registerEntityRenderer(MKNpcEntityTypes.FLYING_SKELETON_TYPE.get(),
                 (context) -> new SkeletalGroupRenderer(context, MKNpcEntityTypes.FLYING_SKELETON_TYPE.getId()));
         evt.registerEntityRenderer(MKNpcEntityTypes.FLYING_SKULL_TYPE.get(), MKFlyingSkullRenderer::new);
@@ -67,6 +70,10 @@ public class RenderRegistry {
                         new CubeDeformation(1.02F), LayerDefinitions.INNER_ARMOR_DEFORMATION));
 
         event.registerLayerDefinition(MKBlazeRenderer.LAYER_LOCATION, MKBlazeModel::createBodyLayer);
+        ModelStyleClient.registerModelLayers(event, ModelStyles.BASIC_STYLE.get(), MKFireElementalModel::createBodyLayer,
+                MKNpcEntityTypes.FIRE_ELEMENTAL_TYPE.getId(), 128, 64,
+                new ModelArgs(CubeDeformation.NONE, true, 0.0f,
+                        LayerDefinitions.OUTER_ARMOR_DEFORMATION, LayerDefinitions.INNER_ARMOR_DEFORMATION));
         ModelStyleClient.registerModelLayers(event, ModelStyles.BASIC_STYLE.get(), MKSkeletalModel::createBodyLayer,
                 MKNpcEntityTypes.FLYING_SKELETON_TYPE.getId(), 64, 32,
                 new ModelArgs(CubeDeformation.NONE, true, 0.0f,
