@@ -19,6 +19,7 @@ import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.sync.types.SyncInt;
 import com.chaosbuffalo.mkcore.sync.v2.ISyncGroupProvider;
 import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
+import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -447,6 +448,9 @@ public class PlayerCombatExtensionModule extends CombatExtensionModule implement
 
     private boolean isValidMultiAttackTarget(Entity target) {
         if (target == null || target.isRemoved() || !target.isAlive() || !target.isAttackable()) {
+            return false;
+        }
+        if (!getPlayerData().getEntity().hasLineOfSight(target) || !EntityUtils.isInFrontOf(getPlayerData().getEntity(), target)) {
             return false;
         }
         double reach = getPlayerData().getEntity().getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
