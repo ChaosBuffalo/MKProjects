@@ -7,6 +7,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 
+import java.util.function.BiPredicate;
+
 public class ModelPoseAnimator {
     public record Context(float swing, float windup, float ageInTicks, float netHeadYaw, float headPitch,
                           HumanoidArm mainArm, InteractionHand attackHand, boolean dualWielding) {
@@ -57,9 +59,17 @@ public class ModelPoseAnimator {
     }
 
     public static void apply(MCSkeleton skeleton, ResourceLocation family, MeleeAnimationPose pose, Context context) {
+        apply(skeleton, family, pose, context, (originalTarget, resolvedTarget) -> true);
+    }
+
+    public static void apply(MCSkeleton skeleton, ResourceLocation family, MeleeAnimationPose pose, Context context,
+                             BiPredicate<String, String> targetFilter) {
         MeleeAnimationFamilyAdapter adapter = MeleeAnimationManager.getFamilyAdapter(family);
         for (PoseChannel channel : pose.channels()) {
             String resolvedTarget = adapter.resolveTarget(channel.target(), context);
+            if (!targetFilter.test(channel.target(), resolvedTarget)) {
+                continue;
+            }
             if (!adapter.shouldApplyTarget(channel.target(), resolvedTarget, context)) {
                 continue;
             }
@@ -118,6 +128,7 @@ public class ModelPoseAnimator {
             case FOLLOW_THROUGH -> Mth.sin(Mth.clamp((context.swing() - 0.45F) / 0.55F, 0.0F, 1.0F) * ((float) Math.PI / 2.0F));
             case FOLLOW_THROUGH_SHORT -> Mth.sin(Mth.clamp((context.swing() - 0.35F) / 0.35F, 0.0F, 1.0F) * ((float) Math.PI / 2.0F));
             case WINDUP_SIN -> Mth.sin(context.windup() * ((float) Math.PI / 2.0F));
+            case RELEASE_ARC -> Mth.cos((float) (Math.PI / 2.0F + context.windup() * Math.PI)) * ((float) Math.PI / 2.0F);
             case AGE_SIN -> Mth.sin(context.ageInTicks() * term.frequency()) + term.offset();
             case NONE -> 0.0F;
         };

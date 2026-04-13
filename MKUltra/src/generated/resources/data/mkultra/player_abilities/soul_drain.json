@@ -1,6 +1,7 @@
 {
   "attributes": {
     "base": 4.0,
+    "cast_animation_category": "mkcore:default",
     "casting_particles": "mkcore:fx.casting.empty",
     "scale": 4.0
   },

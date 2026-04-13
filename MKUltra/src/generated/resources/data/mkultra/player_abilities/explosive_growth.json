@@ -2,6 +2,7 @@
   "attributes": {
     "attackHand": "main_hand",
     "baseDamage": 4.0,
+    "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:explosive_growth_cast",
     "casting_particles": "mkultra:explosive_growth_casting",
     "detonate_particles": "mkultra:explosive_growth_detonate",

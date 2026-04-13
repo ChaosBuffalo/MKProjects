@@ -1,0 +1,4 @@
+// 1.21.1	2026-04-13T11:57:20.8806018	MKCore Spell Animation Assets
+b9b063054811b0e2c98cd57624ba757b12c5c7a0 assets/mkcore/melee_animation_poses/biped_default_casting_pose.json
+0f18c0bc20a983d8068014d2246cc6d00638c20a assets/mkcore/melee_animation_poses/biped_default_release_pose.json
+23526f138db96836614cdd52562fda7683c40fb1 assets/mkcore/spell_cast_animations/biped_default_cast.json

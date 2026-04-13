@@ -4,6 +4,7 @@
     "baseDuration": 3,
     "cast_1_particles": "mkultra:flame_wave_cast_1",
     "cast_2_particles": "mkultra:flame_wave_cast_2",
+    "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:flame_wave_casting",
     "damageBoost": 1.5,
     "modifierScaling": 1.0,

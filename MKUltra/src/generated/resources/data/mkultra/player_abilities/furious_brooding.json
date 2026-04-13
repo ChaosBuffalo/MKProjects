@@ -2,6 +2,7 @@
   "attributes": {
     "baseDuration": 6,
     "baseValue": 2.0,
+    "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:furious_brooding_pulse",
     "casting_particles": "mkcore:fx.casting.empty",
     "modifierScaling": 1.0,

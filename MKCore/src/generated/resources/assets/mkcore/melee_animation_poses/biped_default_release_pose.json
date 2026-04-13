@@ -1,0 +1,48 @@
+{
+  "channels": [
+    {
+      "property": "yRot",
+      "target": "main_arm",
+      "value": {}
+    },
+    {
+      "property": "yRot",
+      "target": "off_arm",
+      "value": {}
+    },
+    {
+      "property": "zRot",
+      "sign": "-handedness",
+      "target": "main_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "release_arc"
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "sign": "handedness",
+      "target": "off_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "release_arc"
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "main_arm",
+      "value": {}
+    },
+    {
+      "property": "xRot",
+      "target": "off_arm",
+      "value": {}
+    }
+  ]
+}

@@ -55,6 +55,7 @@ public class MKCoreGenerators {
 
         generator.addProvider(event.includeClient(), new CoreSoundProvider(packOutput, event.getExistingFileHelper()));
         generator.addProvider(event.includeClient(), new CoreMeleeAnimationProvider(packOutput));
+        generator.addProvider(event.includeClient(), new CoreSpellAnimationProvider(packOutput));
         generator.addProvider(true, languageProvider);
 
         // pack.mcmeta

@@ -1,6 +1,7 @@
 {
   "attributes": {
     "baseDuration": 15,
+    "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:yaup_cast",
     "casting_particles": "mkcore:fx.casting.empty",
     "scaleDuration": 5,

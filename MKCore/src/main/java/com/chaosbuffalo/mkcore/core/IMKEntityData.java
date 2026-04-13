@@ -28,9 +28,13 @@ public interface IMKEntityData extends INBTSerializable<CompoundTag> {
 
     AbilityExecutor getAbilityExecutor();
 
+    EntityAnimationModule getAnimationModule();
+
     IMKAbilityKnowledge getAbilities();
 
-    Optional<ParticleEffectInstanceTracker> getParticleEffectTracker();
+    default Optional<ParticleEffectInstanceTracker> getParticleEffectTracker() {
+        return Optional.of(getAnimationModule().getEffectInstanceTracker());
+    }
 
     IMKEntityStats getStats();
 

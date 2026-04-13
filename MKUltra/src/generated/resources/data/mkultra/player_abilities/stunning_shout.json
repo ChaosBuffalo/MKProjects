@@ -2,6 +2,7 @@
   "attributes": {
     "baseDamage": 4.0,
     "baseDuration": 1,
+    "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:stunning_shout_cast",
     "casting_particles": "mkcore:fx.casting.empty",
     "scaleDamage": 2.0,

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.client.render.renderers;
 
+import com.chaosbuffalo.mkcore.core.EntityAnimationModule;
 import com.chaosbuffalo.mknpc.client.render.models.MKFireElementalModel;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
@@ -23,7 +24,7 @@ public class FireElementalRenderer extends MKBipedRenderer<MKEntity, MKFireEleme
         if (entity.getCombatMoveType() != MKEntity.CombatMoveType.MELEE) {
             return 0.0F;
         }
-        if (entity.getVisualCastState() != MKEntity.VisualCastState.NONE) {
+        if (entity.getEntityDataCap().getAnimationModule().getVisualCastState() != EntityAnimationModule.VisualCastState.NONE) {
             return 0.0F;
         }
         float attackAnim = entity.getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, partialTicks);

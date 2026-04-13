@@ -47,7 +47,9 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
     private AbilityUseCondition useCondition;
     private final Set<Holder<Attribute>> skillAttributes;
     protected static final ResourceLocation EMPTY_PARTICLES = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "fx.casting.empty");
+    protected static final ResourceLocation DEFAULT_CAST_ANIMATION_CATEGORY = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "default");
     protected final ResourceLocationAttribute castingParticles = new ResourceLocationAttribute("casting_particles", EMPTY_PARTICLES);
+    protected final ResourceLocationAttribute castAnimationCategory = new ResourceLocationAttribute("cast_animation_category", DEFAULT_CAST_ANIMATION_CATEGORY);
     public static final ResourceLocation POOL_SLOT_ICON = ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, "textures/talents/pool_count_icon_filled.png");
     public static final NumberFormat PERCENT_FORMATTER = NumberFormat.getPercentInstance();
     public static final NumberFormat INTEGER_FORMATTER = NumberFormat.getIntegerInstance();
@@ -62,6 +64,7 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
         this.skillAttributes = new HashSet<>();
         setUseCondition(new StandardUseCondition(this));
         addAttribute(castingParticles);
+        addAttribute(castAnimationCategory);
     }
 
     public boolean hasCastingParticles() {
@@ -70,6 +73,10 @@ public abstract class MKAbility implements ISerializableAttributeContainer {
 
     public ResourceLocation getCastingParticles() {
         return castingParticles.getValue();
+    }
+
+    public ResourceLocation getCastAnimationCategory() {
+        return castAnimationCategory.getValue();
     }
 
     public Component getDamageDescription(IMKEntityData casterData, MKDamageType damageType, float damage,

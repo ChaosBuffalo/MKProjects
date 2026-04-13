@@ -2,6 +2,7 @@
   "attributes": {
     "baseDuration": 10,
     "base_damage": 4.0,
+    "cast_animation_category": "mkcore:default",
     "cast_behavior": {
       "type": "mkcore:simple",
       "doPitch": true,

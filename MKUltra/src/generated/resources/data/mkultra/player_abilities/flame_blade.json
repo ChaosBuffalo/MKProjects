@@ -2,6 +2,7 @@
   "attributes": {
     "base": 1.0,
     "baseDuration": 10,
+    "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:flame_blade_cast",
     "casting_particles": "mkultra:flame_blade_casting",
     "edge_particles": "mkultra:flame_blade_particles",

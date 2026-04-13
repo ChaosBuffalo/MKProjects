@@ -1,0 +1,6 @@
+{
+  "casting_pose": "mkcore:biped_default_casting_pose",
+  "category": "mkcore:default",
+  "family": "mkcore:biped",
+  "release_pose": "mkcore:biped_default_release_pose"
+}

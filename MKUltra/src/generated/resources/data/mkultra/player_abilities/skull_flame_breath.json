@@ -4,6 +4,7 @@
     "base": 1.5,
     "breath_particles": "mkultra:fire_breath_cone",
     "burnSeconds": 2,
+    "cast_animation_category": "mkcore:default",
     "casting_particles": "mkcore:fx.casting.empty",
     "modifierScaling": 0.35,
     "range": 5.0,

@@ -2,16 +2,16 @@ package com.chaosbuffalo.mknpc.client.render.models;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.client.rendering.animations.AdditionalBipedAnimation;
-import com.chaosbuffalo.mkcore.client.rendering.animations.BipedCastAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedStunAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.melee.MeleeAnimationManager;
 import com.chaosbuffalo.mkcore.client.rendering.animations.melee.ModelPoseAnimator;
+import com.chaosbuffalo.mkcore.client.rendering.animations.spell.SpellAnimationManager;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCSkeleton;
+import com.chaosbuffalo.mkcore.core.EntityAnimationModule;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.combat.MKMeleeManager;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
-import com.chaosbuffalo.mknpc.client.render.animations.MKEntityCompleteCastAnimation;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelArgs;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import net.minecraft.client.model.HumanoidModel;
@@ -24,11 +24,10 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
-    private final BipedCastAnimation<MKEntity> castAnimation = new BipedCastAnimation<>(this);
-    private final MKEntityCompleteCastAnimation completeCastAnimation = new MKEntityCompleteCastAnimation(this);
     private final BipedStunAnimation<MKEntity> stunAnimation = new BipedStunAnimation<>(this);
     protected MCSkeleton skeleton;
 
@@ -87,6 +86,8 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
         AdditionalBipedAnimation<MKEntity> animation = getAdditionalAnimation(entityIn);
         if (animation != null) {
             animation.apply(entityIn);
+        } else {
+            applySpellAnimation(entityIn, ageInTicks, netHeadYaw, headPitch);
         }
 
     }
@@ -163,14 +164,51 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
         if (entityData.getEffects().isEffectActive(CoreEffects.STUN.get())) {
             return stunAnimation;
         }
-        switch (entityIn.getVisualCastState()) {
-            case CASTING:
-                return castAnimation;
-            case RELEASE:
-                return completeCastAnimation;
-            case NONE:
-            default:
-                return null;
+        return null;
+    }
+
+    protected void applySpellAnimation(T entityIn, float ageInTicks, float netHeadYaw, float headPitch) {
+        IMKEntityData entityData = MKCore.getEntityData(entityIn).orElseThrow(NullPointerException::new);
+        EntityAnimationModule animationModule = entityData.getAnimationModule();
+        if (animationModule.getCastingAbility() == null) {
+            return;
         }
+
+        float progress = switch (animationModule.getVisualCastState()) {
+            case CASTING -> animationModule.getCastRatio();
+            case RELEASE -> animationModule.getReleaseRatio();
+            case NONE -> 0.0F;
+        };
+        if (progress <= 0.0F || animationModule.getVisualCastState() == EntityAnimationModule.VisualCastState.NONE) {
+            return;
+        }
+
+        BiPredicate<String, String> targetFilter = createSpellTargetFilter(entityIn);
+        ModelPoseAnimator.Context context = ModelPoseAnimator.Context.windup(progress, ageInTicks, netHeadYaw, headPitch,
+                entityIn.getMainArm(), InteractionHand.MAIN_HAND, false);
+        switch (animationModule.getVisualCastState()) {
+            case CASTING -> SpellAnimationManager.applyCastingPose(skeleton, entityIn, SpellAnimationManager.BIPED_FAMILY,
+                    animationModule.getCastingAbility().getCastAnimationCategory(), context, targetFilter);
+            case RELEASE -> SpellAnimationManager.applyReleasePose(skeleton, entityIn, SpellAnimationManager.BIPED_FAMILY,
+                    animationModule.getCastingAbility().getCastAnimationCategory(), context, targetFilter);
+            case NONE -> {
+            }
+        }
+    }
+
+    protected BiPredicate<String, String> createSpellTargetFilter(T entityIn) {
+        boolean blockMainArm = entityIn.hasVisualMeleeAttackSequence(InteractionHand.MAIN_HAND);
+        boolean blockOffArm = entityIn.hasVisualMeleeAttackSequence(InteractionHand.OFF_HAND);
+        String mainArmTarget = entityIn.getMainArm() == HumanoidArm.RIGHT ? BipedSkeleton.RIGHT_ARM_BONE_NAME : BipedSkeleton.LEFT_ARM_BONE_NAME;
+        String offArmTarget = entityIn.getMainArm() == HumanoidArm.RIGHT ? BipedSkeleton.LEFT_ARM_BONE_NAME : BipedSkeleton.RIGHT_ARM_BONE_NAME;
+        return (originalTarget, resolvedTarget) -> {
+            if (blockMainArm && resolvedTarget.equals(mainArmTarget)) {
+                return false;
+            }
+            if (blockOffArm && resolvedTarget.equals(offArmTarget)) {
+                return false;
+            }
+            return true;
+        };
     }
 }

@@ -3,6 +3,7 @@
     "baseDuration": 30,
     "baseStunDuration": 3,
     "base_damage": 5.0,
+    "cast_animation_category": "mkcore:default",
     "cast_behavior": {
       "type": "mkcore:burst",
       "doPitch": true,

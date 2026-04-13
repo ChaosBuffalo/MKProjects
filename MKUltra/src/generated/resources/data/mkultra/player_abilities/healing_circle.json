@@ -1,6 +1,7 @@
 {
   "attributes": {
     "base": 3.0,
+    "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:healing_circle_casting",
     "duration": 80,
     "modifierScaling": 1.0,

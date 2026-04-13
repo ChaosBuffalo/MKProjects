@@ -1,6 +1,7 @@
 {
   "attributes": {
     "base": 4.0,
+    "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:holy_fire_casting",
     "duration": 60,
     "modifierScaling": 1.0,

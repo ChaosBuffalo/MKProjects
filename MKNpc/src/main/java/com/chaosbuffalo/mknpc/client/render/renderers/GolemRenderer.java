@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.client.render.renderers;
 
+import com.chaosbuffalo.mkcore.core.EntityAnimationModule;
 import com.chaosbuffalo.mknpc.client.render.models.MKGolemModel;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
 import com.chaosbuffalo.mknpc.client.render.skeleton.GolemSkeleton;
@@ -25,7 +26,7 @@ public class GolemRenderer extends MKBipedRenderer<MKGolemEntity, MKGolemModel<M
         if (entity.getCombatMoveType() != MKGolemEntity.CombatMoveType.MELEE) {
             return 0.0F;
         }
-        if (entity.getVisualCastState() != MKGolemEntity.VisualCastState.NONE) {
+        if (entity.getEntityDataCap().getAnimationModule().getVisualCastState() != EntityAnimationModule.VisualCastState.NONE) {
             return 0.0F;
         }
         float attackAnim = entity.getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, partialTicks);

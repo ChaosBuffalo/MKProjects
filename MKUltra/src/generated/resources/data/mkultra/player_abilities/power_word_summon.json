@@ -1,6 +1,7 @@
 {
   "attributes": {
     "baseDuration": 4,
+    "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:power_word_summon_cast",
     "casting_particles": "mkultra:power_word_summon_casting",
     "scaleDuration": 1

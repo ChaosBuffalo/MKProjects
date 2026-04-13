@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkcore.core;
 
 import com.chaosbuffalo.mkcore.core.entity.*;
 import com.chaosbuffalo.mkcore.core.pets.EntityPetModule;
-import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
 import com.chaosbuffalo.mkcore.sync.controllers.SyncController;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -26,13 +25,16 @@ public class MKEntityData implements IMKEntityData {
     private final EntityEffectHandler effectHandler;
     private final EntityPetModule pets;
     private final EntityRiderModule riders;
-    @Nullable
-    private ParticleEffectInstanceTracker instanceTracker = null;
+    private final EntityAnimationModule animationModule;
 
     public MKEntityData(LivingEntity livingEntity) {
         entity = Objects.requireNonNull(livingEntity);
         abilities = new MobAbilityKnowledge(this);
         abilityExecutor = new AbilityExecutor(this);
+        animationModule = new EntityAnimationModule(this);
+        abilityExecutor.setStartCastCallback(animationModule::startCast);
+        abilityExecutor.setCompleteAbilityCallback(animationModule::endCast);
+        abilityExecutor.setInterruptCastCallback(animationModule::interruptCast);
         stats = new MobStats(this);
         equipment = new EntityEquipment(this);
         combatExtensionModule = new CombatExtensionModule(this);
@@ -50,6 +52,11 @@ public class MKEntityData implements IMKEntityData {
     @Override
     public AbilityExecutor getAbilityExecutor() {
         return abilityExecutor;
+    }
+
+    @Override
+    public EntityAnimationModule getAnimationModule() {
+        return animationModule;
     }
 
     @Override
@@ -77,15 +84,6 @@ public class MKEntityData implements IMKEntityData {
         return equipment;
     }
 
-    public void setInstanceTracker(@Nullable ParticleEffectInstanceTracker instanceTracker) {
-        this.instanceTracker = instanceTracker;
-    }
-
-    @Override
-    public Optional<ParticleEffectInstanceTracker> getParticleEffectTracker() {
-        return Optional.ofNullable(instanceTracker);
-    }
-
     @Override
     public void onJoinWorld() {
         if (isServerSide()) {
@@ -97,6 +95,7 @@ public class MKEntityData implements IMKEntityData {
     public void update() {
         getEffects().tick();
         getAbilityExecutor().tick();
+        getAnimationModule().tick();
         getStats().tick();
         getCombatExtension().tick();
     }
@@ -117,6 +116,7 @@ public class MKEntityData implements IMKEntityData {
     }
 
     public void attachUpdateEngine(SyncController engine) {
+        engine.addChild("animation", animationModule);
         engine.addChild("pets", pets);
         engine.addChild("stats", stats);
         engine.addChild("riders", riders);

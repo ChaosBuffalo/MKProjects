@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCSkeleton;
+import com.chaosbuffalo.mkcore.core.EntityAnimationModule;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
@@ -160,6 +161,7 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
 
     @Override
     public void render(T entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+        EntityAnimationModule animationModule = entityIn.getEntityDataCap().getAnimationModule();
         this.setModelProperties(entityIn);
         float lungeAmount = getVisualLungeOffset(entityIn, partialTicks);
         if (lungeAmount > 0.0F) {
@@ -171,14 +173,14 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
         } else {
             super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
         }
-        MKEntity.VisualCastState castState = entityIn.getVisualCastState();
-        if (castState == MKEntity.VisualCastState.CASTING || castState == MKEntity.VisualCastState.RELEASE) {
-            MKAbility ability = entityIn.getCastingAbility();
+        EntityAnimationModule.VisualCastState castState = animationModule.getVisualCastState();
+        if (castState == EntityAnimationModule.VisualCastState.CASTING || castState == EntityAnimationModule.VisualCastState.RELEASE) {
+            MKAbility ability = animationModule.getCastingAbility();
             if (ability != null) {
                 if (ability.hasCastingParticles()) {
                     ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
                     if (anim != null) {
-                        float scale = MathUtils.lerp(.6f, 1.f, entityIn.getCastRatio());
+                        float scale = MathUtils.lerp(.6f, 1.f, animationModule.getCastRatio());
                         Vec3 scaleVec = new Vec3(scale, scale, scale);
                         Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
                         leftPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, scaleVec, null));
@@ -207,7 +209,7 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
         if (entity.getCombatMoveType() != MKEntity.CombatMoveType.MELEE) {
             return 0.0F;
         }
-        if (entity.getVisualCastState() != MKEntity.VisualCastState.NONE) {
+        if (entity.getEntityDataCap().getAnimationModule().getVisualCastState() != EntityAnimationModule.VisualCastState.NONE) {
             return 0.0F;
         }
         float attackAnim = entity.getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, partialTicks);

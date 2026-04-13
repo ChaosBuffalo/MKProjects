@@ -5,12 +5,13 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.client.rendering.model.MKPlayerModel;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
-import com.chaosbuffalo.mkcore.core.player.PlayerAnimationModule;
+import com.chaosbuffalo.mkcore.core.EntityAnimationModule;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.HeldItemParticleEffectInstance;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
@@ -38,8 +39,8 @@ public class MKPlayerRenderer extends PlayerRenderer {
         super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
 
         MKCore.getPlayer(entityIn).ifPresent(data -> {
-            PlayerAnimationModule.PlayerVisualCastState state = data.getAnimationModule().getPlayerVisualCastState();
-            if (state == PlayerAnimationModule.PlayerVisualCastState.CASTING || state == PlayerAnimationModule.PlayerVisualCastState.RELEASE) {
+            EntityAnimationModule.VisualCastState state = data.getAnimationModule().getVisualCastState();
+            if (state == EntityAnimationModule.VisualCastState.CASTING || state == EntityAnimationModule.VisualCastState.RELEASE) {
                 MKAbility ability = data.getAnimationModule().getCastingAbility();
                 if (ability != null) {
                     // do spell casting
@@ -64,8 +65,8 @@ public class MKPlayerRenderer extends PlayerRenderer {
 
     public void renderHandFirstPerson(AbstractClientPlayer playerIn) {
         MKCore.getPlayer(playerIn).ifPresent(data -> {
-            PlayerAnimationModule.PlayerVisualCastState state = data.getAnimationModule().getPlayerVisualCastState();
-            if (state == PlayerAnimationModule.PlayerVisualCastState.CASTING || state == PlayerAnimationModule.PlayerVisualCastState.RELEASE) {
+            EntityAnimationModule.VisualCastState state = data.getAnimationModule().getVisualCastState();
+            if (state == EntityAnimationModule.VisualCastState.CASTING || state == EntityAnimationModule.VisualCastState.RELEASE) {
                 MKAbility ability = data.getAnimationModule().getCastingAbility();
                 if (ability != null) {
                     // do spell casting
@@ -75,11 +76,12 @@ public class MKPlayerRenderer extends PlayerRenderer {
                         if (anim != null) {
                             float scale = MathUtils.lerp(.25f, .8f, data.getAnimationModule().getCastRatio());
                             Vec3 scaleVec = new Vec3(scale, scale, scale);
+                            float partialTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
                             Vec3 leftPos = getFirstPersonHandPosition(HumanoidArm.LEFT,
-                                    (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));
+                                    (LocalPlayer) playerIn, data.getAnimationModule(), partialTicks);
                             anim.spawn(playerIn.getCommandSenderWorld(), leftPos, scaleVec, null);
                             Vec3 rightPos = getFirstPersonHandPosition(HumanoidArm.RIGHT,
-                                    (LocalPlayer) playerIn, 0.0f, getRenderOffset(playerIn, 0.0f));
+                                    (LocalPlayer) playerIn, data.getAnimationModule(), partialTicks);
                             anim.spawn(playerIn.getCommandSenderWorld(), rightPos, scaleVec, null );
                         }
                     }
@@ -95,28 +97,35 @@ public class MKPlayerRenderer extends PlayerRenderer {
         });
     }
 
-    private Vec3 getOffsetSideFirstPerson(HumanoidArm handIn, float equippedProg) {
-        int i = handIn == HumanoidArm.RIGHT ? 1 : -1;
-        return new Vec3(i * 0.56F, -0.52F + equippedProg * -0.6F, -0.72F);
-    }
+    private Vec3 getFirstPersonHandPosition(HumanoidArm handSide, LocalPlayer playerEntityIn,
+                                            EntityAnimationModule animationModule, float partialTicks) {
+        Vec3 eyePos = playerEntityIn.getEyePosition(partialTicks);
+        Vec3 look = playerEntityIn.getViewVector(partialTicks).normalize();
+        Vec3 up = playerEntityIn.getUpVector(partialTicks).normalize();
+        Vec3 right = look.cross(up).normalize();
+        double handScalar = handSide == HumanoidArm.RIGHT ? 1.0 : -1.0;
+        Vec3 localOffset = new Vec3(0.4 * handScalar, -0.1, 0.7);
+        float localRoll = 0.0F;
+        float localPitch = 0.0F;
 
-    private Vec3 getFirstPersonHandPosition(HumanoidArm handSide,
-                                            LocalPlayer playerEntityIn, float partialTicks,
-                                            Vec3 renderOffset) {
-        double entX = Mth.lerp(partialTicks, playerEntityIn.xo, playerEntityIn.getX());
-        double entY = Mth.lerp(partialTicks, playerEntityIn.yo, playerEntityIn.getY());
-        double entZ = Mth.lerp(partialTicks, playerEntityIn.zo, playerEntityIn.getZ());
-        float yaw = Mth.lerp(partialTicks, playerEntityIn.yBodyRotO, playerEntityIn.yBodyRot) * ((float) Math.PI / 180F);
-        int handScalar = handSide == HumanoidArm.RIGHT ? 1 : -1;
-        // taken from first person render pathway
-        Vec3 shoulderLoc = new Vec3(handScalar * -0.4785682F, -0.094387F, 0.05731531F);
-        // the rest from bone system
-        MCBone shoulderBone = handSide == HumanoidArm.RIGHT ? skeleton.rightArm : skeleton.leftArm;
-        MCBone castLoc = handSide == HumanoidArm.RIGHT ? skeleton.rightHand : skeleton.leftHand;
-        Vec3 bonePos = MCBone.getOffsetForStopAt(castLoc, shoulderBone);
-        bonePos = bonePos.add(shoulderLoc);
-        //a height fudge factor
-        return new Vec3(entX, entY, entZ).add(renderOffset).add(new Vec3(0.0, 1.25, 0.0)).add(bonePos.yRot(-yaw));
+        if (animationModule.getVisualCastState() == EntityAnimationModule.VisualCastState.CASTING) {
+            float progress = animationModule.getCastRatio();
+            float armZ = Mth.sin((float) (Math.PI / 2.0F + progress * Math.PI / 2.0F)) * (float) Math.PI / 4.0F;
+            float angle = (float) (Math.PI / 2.0F + Mth.sin(progress * (float) Math.PI) * ((float) Math.PI / 8.0F));
+            localRoll = (handSide == HumanoidArm.RIGHT ? -armZ : armZ) * 0.75F;
+            localPitch = -angle * 0.35F;
+            localOffset = localOffset.add(0.0, 0.08, 0.16);
+        } else if (animationModule.getVisualCastState() == EntityAnimationModule.VisualCastState.RELEASE) {
+            float progress = animationModule.getReleaseRatio();
+            float armZ = Mth.cos((float) (Math.PI / 2.0F + progress * Math.PI)) * (float) Math.PI / 2.0F;
+            localRoll = handSide == HumanoidArm.RIGHT ? -armZ : armZ;
+        }
+
+        localOffset = localOffset.zRot(localRoll).xRot(localPitch);
+        return eyePos
+                .add(right.scale(localOffset.x))
+                .add(up.scale(localOffset.y))
+                .add(look.scale(localOffset.z));
     }
 
 

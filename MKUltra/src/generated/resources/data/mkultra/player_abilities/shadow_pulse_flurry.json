@@ -1,5 +1,6 @@
 {
   "attributes": {
+    "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:shadow_bolt_casting",
     "tickRate": 20
   },

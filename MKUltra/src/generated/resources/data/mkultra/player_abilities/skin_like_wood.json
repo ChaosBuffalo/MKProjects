@@ -1,5 +1,6 @@
 {
   "attributes": {
+    "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:skin_like_wood_cast",
     "casting_particles": "mkultra:skin_like_wood_casting"
   },
