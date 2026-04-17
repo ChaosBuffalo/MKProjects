@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.fx.particles.effect_instances;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.client.rendering.ClientParticleEmissionController;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCSkeleton;
@@ -35,7 +36,13 @@ public class BoneEffectInstance extends ParticleEffectInstance {
     public void update(Entity entity, MCSkeleton skeleton, float partialTicks, Vec3 offset) {
         if (entity instanceof LivingEntity living) {
             MCBone.getPositionOfBoneInWorld(living, skeleton, partialTicks, offset, boneName).ifPresent(x ->
-                    getAnimation().ifPresent(anim -> anim.spawn(entity.getCommandSenderWorld(), x, new Vec3(1., 1., 1.), null)));
+                    getAnimation().ifPresent(anim -> {
+                        int emissions = ClientParticleEmissionController.consumeEmissions(
+                                ClientParticleEmissionController.forBoneEffect(entity, getInstanceUUID(), boneName));
+                        for (int i = 0; i < emissions; i++) {
+                            anim.spawn(entity.getCommandSenderWorld(), x, new Vec3(1., 1., 1.), null);
+                        }
+                    }));
         }
     }
 }

@@ -52,9 +52,21 @@ public class MKPlayerRenderer extends PlayerRenderer {
                             float scale = MathUtils.lerp(.6f, 1.f, data.getAnimationModule().getCastRatio());
                             Vec3 scaleVec = new Vec3(scale, scale, scale);
                             Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
-                            leftPos.ifPresent(x -> anim.spawn(entityIn.getCommandSenderWorld(), x, scaleVec, null));
+                            leftPos.ifPresent(x -> {
+                                int emissions = ClientParticleEmissionController.consumeEmissions(
+                                        ClientParticleEmissionController.forCastingHand(entityIn, ability.getCastingParticles(), "left"));
+                                for (int i = 0; i < emissions; i++) {
+                                    anim.spawn(entityIn.getCommandSenderWorld(), x, scaleVec, null);
+                                }
+                            });
                             Optional<Vec3> rightPos = getHandPosition(partialTicks, entityIn, HumanoidArm.RIGHT);
-                            rightPos.ifPresent(x -> anim.spawn(entityIn.getCommandSenderWorld(), x, scaleVec, null));
+                            rightPos.ifPresent(x -> {
+                                int emissions = ClientParticleEmissionController.consumeEmissions(
+                                        ClientParticleEmissionController.forCastingHand(entityIn, ability.getCastingParticles(), "right"));
+                                for (int i = 0; i < emissions; i++) {
+                                    anim.spawn(entityIn.getCommandSenderWorld(), x, scaleVec, null);
+                                }
+                            });
                         }
                     }
                 }
@@ -81,10 +93,18 @@ public class MKPlayerRenderer extends PlayerRenderer {
                             float partialTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
                             Vec3 leftPos = getFirstPersonHandPosition(HumanoidArm.LEFT,
                                     (LocalPlayer) playerIn, data.getAnimationModule(), partialTicks);
-                            anim.spawn(playerIn.getCommandSenderWorld(), leftPos, scaleVec, null);
+                            int leftEmissions = ClientParticleEmissionController.consumeEmissions(
+                                    ClientParticleEmissionController.forCastingHand(playerIn, ability.getCastingParticles(), "left"));
+                            for (int i = 0; i < leftEmissions; i++) {
+                                anim.spawn(playerIn.getCommandSenderWorld(), leftPos, scaleVec, null);
+                            }
                             Vec3 rightPos = getFirstPersonHandPosition(HumanoidArm.RIGHT,
                                     (LocalPlayer) playerIn, data.getAnimationModule(), partialTicks);
-                            anim.spawn(playerIn.getCommandSenderWorld(), rightPos, scaleVec, null );
+                            int rightEmissions = ClientParticleEmissionController.consumeEmissions(
+                                    ClientParticleEmissionController.forCastingHand(playerIn, ability.getCastingParticles(), "right"));
+                            for (int i = 0; i < rightEmissions; i++) {
+                                anim.spawn(playerIn.getCommandSenderWorld(), rightPos, scaleVec, null);
+                            }
                         }
                     }
                 }
