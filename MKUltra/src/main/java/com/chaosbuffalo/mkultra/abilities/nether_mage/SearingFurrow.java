@@ -98,7 +98,7 @@ public class SearingFurrow extends MKAbility {
         float level = context.getSkill(MKAttributes.EVOCATION);
         Vec3 direction = getHorizontalLookDirection(castingEntity);
         BlockPos startPos = findGroundAnchor(castingEntity, BlockPos.containing(castingEntity.position().add(direction.scale(0.85))));
-        Vec3 start = startPos != null ? Vec3.atCenterOf(startPos) : castingEntity.position();
+        Vec3 start = startPos != null ? Vec3.atBottomCenterOf(startPos) : castingEntity.position();
         Vec3 end = start.add(direction.scale(lineLength.value() - 1.0));
         EntityEffectBuilder.createLineEffect(castingEntity, start, end)
                 .effect(MKAbilityDamageEffect.from(castingEntity, com.chaosbuffalo.mkcore.init.CoreDamageTypes.FireDamage.get(),

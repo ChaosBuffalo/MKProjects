@@ -178,6 +178,84 @@ public class RayTraceUtils {
         return new EntityCollectionRayTraceResult<>(finalEnt);
     }
 
+    public static <E extends Entity> EntityCollectionRayTraceResult<E> traceAllEntitiesInCapsule(Class<E> clazz, Level world,
+                                                                                                  Vec3 from, Vec3 to,
+                                                                                                  double radius,
+                                                                                                  float entityExpansion,
+                                                                                                  final Predicate<E> filter) {
+        Predicate<E> predicate = input -> defaultFilter.test(input) && filter.test(input);
+        AABB bb = new AABB(from, to).inflate(radius);
+        List<E> entities = world.getEntitiesOfClass(clazz, bb, predicate);
+        List<EntityCollectionRayTraceResult.TraceEntry<E>> finalEnt = new ArrayList<>();
+        for (E entity : entities) {
+            addCapsuleTraceHit(finalEnt, entity, entity.getBoundingBox().inflate(entityExpansion), from, to, radius);
+        }
+        if (!world.getPartEntities().isEmpty()) {
+            Set<E> seenParts = new HashSet<>();
+            for (PartEntity<?> p : world.getPartEntities()) {
+                EntityTypeTest<Entity, E> typeTest = EntityTypeTest.forClass(clazz);
+                E t = typeTest.tryCast(p.getParent());
+                if (t == null || seenParts.contains(t)) {
+                    continue;
+                }
+                AABB entityBB = p.getBoundingBox().inflate(entityExpansion);
+                if (entityBB.intersects(bb) && predicate.test(t) && addCapsuleTraceHit(finalEnt, t, entityBB, from, to, radius)) {
+                    seenParts.add(t);
+                }
+            }
+        }
+        return new EntityCollectionRayTraceResult<>(finalEnt);
+    }
+
+    private static <E extends Entity> boolean addCapsuleTraceHit(List<EntityCollectionRayTraceResult.TraceEntry<E>> finalEnt, E entity,
+                                                                 AABB entityBB, Vec3 from, Vec3 to, double radius) {
+        ClosestSegmentPointResult result = closestPointOnSegmentToAABB(from, to, entityBB);
+        if (result.distanceSqr <= radius * radius) {
+            finalEnt.add(new EntityCollectionRayTraceResult.TraceEntry<>(entity, from.distanceTo(result.closestPoint), result.closestPoint));
+            return true;
+        }
+        return false;
+    }
+
+    private static ClosestSegmentPointResult closestPointOnSegmentToAABB(Vec3 from, Vec3 to, AABB box) {
+        double low = 0.0;
+        double high = 1.0;
+        for (int i = 0; i < 32; i++) {
+            double left = (2.0 * low + high) / 3.0;
+            double right = (low + 2.0 * high) / 3.0;
+            double leftDist = distanceSqrPointToAABB(from.lerp(to, left), box);
+            double rightDist = distanceSqrPointToAABB(from.lerp(to, right), box);
+            if (leftDist <= rightDist) {
+                high = right;
+            } else {
+                low = left;
+            }
+        }
+        double t = (low + high) * 0.5;
+        Vec3 point = from.lerp(to, t);
+        return new ClosestSegmentPointResult(point, distanceSqrPointToAABB(point, box));
+    }
+
+    private static double distanceSqrPointToAABB(Vec3 point, AABB box) {
+        double dx = axisDistance(point.x, box.minX, box.maxX);
+        double dy = axisDistance(point.y, box.minY, box.maxY);
+        double dz = axisDistance(point.z, box.minZ, box.maxZ);
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+    private static double axisDistance(double value, double min, double max) {
+        if (value < min) {
+            return min - value;
+        }
+        if (value > max) {
+            return value - max;
+        }
+        return 0.0;
+    }
+
+    private record ClosestSegmentPointResult(Vec3 closestPoint, double distanceSqr) {
+    }
+
     private static <E extends Entity> HitResult rayTraceBlocksAndEntities(Class<E> clazz, Entity mainEntity,
                                                                           Vec3 from, Vec3 to, boolean stopOnLiquid,
                                                                           final Predicate<E> entityFilter, boolean testPickable) {

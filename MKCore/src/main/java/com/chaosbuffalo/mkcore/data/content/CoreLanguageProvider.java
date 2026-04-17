@@ -269,6 +269,7 @@ class CoreLanguageProvider extends MKLanguageProvider {
         add("mkcore.subtitle.quest_complete", "The sound of someone completing a quest");
         add("mkcore.skill.increase", "Your %s Skill Increased to %.0f");
         add("mkcore.spawn_pattern.particle_spawn_pattern.advanced_line.name", "Advanced Line");
+        add("mkcore.spawn_pattern.particle_spawn_pattern.advanced_perpendicular_line.name", "Advanced Perpendicular Line");
         add("mkcore.anim_track.particle_anim.flip_motion.name", "Flip");
         add("mkcore.ability_target.position_include_entities", "Single Target or Point In World");
         add("mkcore.spawn_pattern.particle_spawn_pattern.cone.name", "Cone");

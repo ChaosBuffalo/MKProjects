@@ -23,7 +23,7 @@ public class MKRenderers {
     @SubscribeEvent
     public static void registerModels(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(CoreEntities.AREA_EFFECT.get(), EntityMKAreaEffectRenderer::new);
-        event.registerEntityRenderer(CoreEntities.LINE_EFFECT.get(), BaseEffectEntityRenderer::new);
+        event.registerEntityRenderer(CoreEntities.LINE_EFFECT.get(), LineEffectEntityRenderer::new);
         event.registerEntityRenderer(CoreEntities.POINT_EFFECT.get(), BaseEffectEntityRenderer::new);
         event.registerEntityRenderer(CoreEntities.BLOCK_ANCHORED_LINE_EFFECT.get(), BaseEffectEntityRenderer::new);
         event.registerEntityRenderer(CoreEntities.CONE_AREA_EFFECT.get(), BaseEffectEntityRenderer::new);

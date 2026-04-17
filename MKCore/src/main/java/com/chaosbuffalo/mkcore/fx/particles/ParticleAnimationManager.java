@@ -128,6 +128,7 @@ public class ParticleAnimationManager extends SimpleJsonResourceReloadListener {
         putSpawnPatternDeserializer(DirectionalConeSpawnPattern.TYPE, DirectionalConeSpawnPattern::new);
         putSpawnPatternDeserializer(SinglePositionSpawnPattern.TYPE, SinglePositionSpawnPattern::new);
         putSpawnPatternDeserializer(AdvancedLineSpawnPattern.TYPE, AdvancedLineSpawnPattern::new);
+        putSpawnPatternDeserializer(AdvancedPerpendicularLineSpawnPattern.TYPE, AdvancedPerpendicularLineSpawnPattern::new);
 
         putEffectInstanceDeserializer(BoneEffectInstance.TYPE, BoneEffectInstance.CODEC);
         putEffectInstanceDeserializer(HeldItemParticleEffectInstance.TYPE, HeldItemParticleEffectInstance.CODEC);
