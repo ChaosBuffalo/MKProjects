@@ -1,0 +1,281 @@
+{
+  "channels": [
+    {
+      "property": "xRot",
+      "target": "body",
+      "value": {
+        "constant": 0.22,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -0.26
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "y",
+      "target": "body",
+      "value": {
+        "constant": 5.2,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -2.1
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "z",
+      "target": "body",
+      "value": {
+        "constant": 0.55,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -1.1
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "main_arm",
+      "value": {
+        "constant": -1.58,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": 0.24
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "off_arm",
+      "value": {
+        "constant": -1.58,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": 0.24
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "sign": "-handedness",
+      "target": "main_arm",
+      "value": {
+        "constant": 0.18,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -0.03
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "sign": "handedness",
+      "target": "off_arm",
+      "value": {
+        "constant": 0.18,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -0.03
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "sign": "handedness",
+      "target": "main_arm",
+      "value": {
+        "constant": 0.03,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -0.02
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "sign": "-handedness",
+      "target": "off_arm",
+      "value": {
+        "constant": 0.03,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -0.02
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "y",
+      "target": "main_arm",
+      "value": {
+        "constant": 4.8,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -1.7
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "y",
+      "target": "off_arm",
+      "value": {
+        "constant": 4.8,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -1.7
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "xRot",
+      "target": "neck",
+      "value": {
+        "constant": 0.52,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -0.26
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "y",
+      "target": "neck",
+      "value": {
+        "constant": 7.5,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -2.2
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "z",
+      "target": "neck",
+      "value": {
+        "constant": 0.18,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -0.12
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "xRot",
+      "target": "vortex_top",
+      "value": {
+        "constant": 0.18,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -0.12
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "xRot",
+      "target": "vortex_mid",
+      "value": {
+        "constant": 0.08,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -0.04
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "y",
+      "target": "vortex_top",
+      "value": {
+        "constant": 4.55,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -1.8
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "z",
+      "target": "vortex_top",
+      "value": {
+        "constant": 2.92,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -1.42
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "y",
+      "target": "vortex_mid",
+      "value": {
+        "constant": 3.15,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -0.58
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "z",
+      "target": "vortex_mid",
+      "value": {
+        "constant": 0.34,
+        "terms": [
+          {
+            "curve": "release_arc",
+            "scale": -0.52
+          }
+        ]
+      }
+    }
+  ]
+}

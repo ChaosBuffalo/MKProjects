@@ -1,4 +1,4 @@
-// 1.21.1	2026-04-13T11:55:55.1017266	MK Abilities: mkultra
+// 1.21.1	2026-04-16T13:34:45.3412373	MK Abilities: mkultra
 b703c6a21952efaa14c2fc94964daa7a37459e94 data/mkultra/player_abilities/alacrity.json
 4878a55b1ce15641a2d38e6c3fddb35cbb928980 data/mkultra/player_abilities/cleansing_seed.json
 7dcaa5b4ed1e9b71dc12046905437b9994c64ed1 data/mkultra/player_abilities/drown.json
@@ -30,6 +30,7 @@ a0b5c1dcabfb5cecea18a6e6a72f1132037f19cf data/mkultra/player_abilities/necrotide
 8241d0f0b2502cdb1317f45e3c45f7591a7504a9 data/mkultra/player_abilities/necrotide_warrior_summon.json
 83869b4c7e818f5735bac10f49b4f7d9a6576a71 data/mkultra/player_abilities/power_word_summon.json
 614fcfea3fa7f3010f4abf4c386ff86e2fb65394 data/mkultra/player_abilities/seafury.json
+a42619b60fb36dfa2def136dea4408cb7aee4aec data/mkultra/player_abilities/searing_furrow.json
 15e16d3268410a56adb24251b191526e77dac8ae data/mkultra/player_abilities/sever_tendon.json
 13a8b25bfe3b53b6b6aa989f94f6d74cf2c89d90 data/mkultra/player_abilities/shadow_bolt.json
 408880aeab08fee409fc46c771d317b18a63513a data/mkultra/player_abilities/shadow_bolt_dual_shotgun.json

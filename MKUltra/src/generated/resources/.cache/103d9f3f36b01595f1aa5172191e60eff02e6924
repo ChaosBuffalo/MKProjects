@@ -1,4 +1,4 @@
-// 1.21.1	2026-04-07T07:02:17.0164645	Registries
+// 1.21.1	2026-04-16T14:50:23.38032	Registries
 0da9c23f46702bc38555b6b70af1c3a7ec4c11ef data/mkultra/mkchat/dialogue_trees/cleric_default.json
 2d28e6556d4620a466345f5777242ccf8aee30e3 data/mkultra/mkchat/dialogue_trees/intro_cleric_acolyte.json
 f0b3ca666c13a5a2e4305f664f92f2013ae433cb data/mkultra/mkchat/dialogue_trees/intro_nether_mage_initiate.json
@@ -45,6 +45,8 @@ c61e94c9193007aa7a536627806ed82f0101a9e4 data/mkultra/mknpc/mknpcs/ancient_pries
 1eefba2cad621020f50974631a0138c1979054ad data/mkultra/mknpc/mknpcs/a_skeletal_gatekeeper.json
 9bb67fce74aa6c1cebb17bdce0263f63c5ae259d data/mkultra/mknpc/mknpcs/a_skeletal_guard.json
 4f72bb0ed0a9b73f82c503b248b8dace60cfa935 data/mkultra/mknpc/mknpcs/burning_skeleton.json
+ede8d9953661475a400fabfb1704d1baf5b003b9 data/mkultra/mknpc/mknpcs/cinder_herald.json
+acee5cbf6b3fe3f453326cbc90c09cdf9ae296a4 data/mkultra/mknpc/mknpcs/cinder_herald_2.json
 35a766de6d3aca374f9ee6288efab2457369e6a3 data/mkultra/mknpc/mknpcs/crumbling_trooper.json
 1d7da59578d476fa06e42bd7a0ff76516920e763 data/mkultra/mknpc/mknpcs/crumbling_trooper_mage.json
 7e9bfe39b478e3d765849886c0b9f552a42184cc data/mkultra/mknpc/mknpcs/decaying_piglin.json

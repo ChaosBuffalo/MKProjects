@@ -5,22 +5,19 @@ import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.ManualBone;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.ModelRendererBone;
-import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.world.entity.LivingEntity;
+import com.chaosbuffalo.mknpc.client.render.models.MKFireElementalModel;
+import com.chaosbuffalo.mknpc.entity.MKEntity;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GolemSkeleton<T extends LivingEntity, M extends HumanoidModel<T>> extends MCSkeleton {
+public class FireElementalSkeleton<T extends MKEntity, M extends MKFireElementalModel<T>> extends MCSkeleton {
     private static final Vec3 MODEL_ROOT_OFFSET = Vec3.ZERO;
-    private static final Vec3 PELVIS_OFFSET = new Vec3(0.0, -5.5 / 16.0, 0.0);
-    private static final Vec3 CHEST_OFFSET = new Vec3(0.0, 8.5 / 16.0, 0.0);
-    private static final Vec3 LEFT_HAND_OFFSET = new Vec3(12.0 / 16.0, 29.0 / 16.0, -2.0 / 16.0);
-    private static final Vec3 RIGHT_HAND_OFFSET = new Vec3(-12.0 / 16.0, 29.0 / 16.0, -2.0 / 16.0);
-    private static final Vec3 FOOT_OFFSET = new Vec3(0.0, -13.0 / 16.0, 0.0);
-    private static final Vec3 HEAD_OFFSET = new Vec3(0.0, 7.0 / 16.0, 0.0);
+    public static final String VORTEX_TOP_BONE_NAME = "vortex_top";
+    public static final String VORTEX_MID_BONE_NAME = "vortex_mid";
+    public static final String VORTEX_BOTTOM_BONE_NAME = "vortex_bottom";
 
     private final M model;
     private final Map<String, MCBone> boneMap;
@@ -38,8 +35,11 @@ public class GolemSkeleton<T extends LivingEntity, M extends HumanoidModel<T>> e
     public final MCBone pelvis;
     public final MCBone body;
     public final MCBone head;
+    public final MCBone vortexTop;
+    public final MCBone vortexMid;
+    public final MCBone vortexBottom;
 
-    public GolemSkeleton(M model) {
+    public FireElementalSkeleton(M model) {
         this.model = model;
         this.boneMap = new HashMap<>();
 
@@ -49,9 +49,9 @@ public class GolemSkeleton<T extends LivingEntity, M extends HumanoidModel<T>> e
 
         this.body = new ModelRendererBone(BipedSkeleton.BODY_BONE_NAME, model.body, root, true, true, true);
         addBone(body);
-        this.pelvis = new ManualBone(BipedSkeleton.PELVIS_BONE_NAME, PELVIS_OFFSET, root);
+        this.pelvis = new ManualBone(BipedSkeleton.PELVIS_BONE_NAME, new Vec3(0.0, 12.0 / 16.0, 0.0), root);
         addBone(pelvis);
-        this.chest = new ManualBone(BipedSkeleton.CHEST_BONE_NAME, CHEST_OFFSET, pelvis);
+        this.chest = new ManualBone(BipedSkeleton.CHEST_BONE_NAME, new Vec3(0.0, 12.0 / 16.0, 0.0), pelvis);
         addBone(chest);
 
         this.rightArm = new ModelRendererBone(BipedSkeleton.RIGHT_ARM_BONE_NAME, model.rightArm, root, true, false, false);
@@ -63,27 +63,34 @@ public class GolemSkeleton<T extends LivingEntity, M extends HumanoidModel<T>> e
         this.leftLeg = new ModelRendererBone(BipedSkeleton.LEFT_LEG_BONE_NAME, model.leftLeg, root, false, false, true);
         addBone(leftLeg);
 
-        this.leftHand = new ManualBone(BipedSkeleton.LEFT_HAND_BONE_NAME, LEFT_HAND_OFFSET, leftArm);
+        this.leftHand = new ManualBone(BipedSkeleton.LEFT_HAND_BONE_NAME, new Vec3(0.5 / 16.0, 10.0 / 16.0, -2.0 / 16.0), leftArm);
         addBone(leftHand);
-        this.rightHand = new ManualBone(BipedSkeleton.RIGHT_HAND_BONE_NAME, RIGHT_HAND_OFFSET, rightArm);
+        this.rightHand = new ManualBone(BipedSkeleton.RIGHT_HAND_BONE_NAME, new Vec3(-0.5 / 16.0, 10.0 / 16.0, -2.0 / 16.0), rightArm);
         addBone(rightHand);
 
-        this.leftFoot = new ManualBone(BipedSkeleton.LEFT_FOOT_BONE_NAME, FOOT_OFFSET, leftLeg);
+        this.leftFoot = new ManualBone(BipedSkeleton.LEFT_FOOT_BONE_NAME, new Vec3(0.0, -12.0 / 16.0, 0.0), leftLeg);
         addBone(leftFoot);
-        this.rightFoot = new ManualBone(BipedSkeleton.RIGHT_FOOT_BONE_NAME, FOOT_OFFSET, rightLeg);
+        this.rightFoot = new ManualBone(BipedSkeleton.RIGHT_FOOT_BONE_NAME, new Vec3(0.0, -12.0 / 16.0, 0.0), rightLeg);
         addBone(rightFoot);
         this.neck = new ModelRendererBone(BipedSkeleton.NECK_BONE_NAME, model.head, root, true, false, false);
         addBone(neck);
-        this.head = new ManualBone(BipedSkeleton.HEAD_BONE_NAME, HEAD_OFFSET, neck);
+        this.head = new ManualBone(BipedSkeleton.HEAD_BONE_NAME, new Vec3(0.0, 0.25, 0.0), neck);
         addBone(head);
+
+        this.vortexTop = new ModelRendererBone(VORTEX_TOP_BONE_NAME, model.getVortexTop(), root, false, false, false);
+        addBone(vortexTop);
+        this.vortexMid = new ModelRendererBone(VORTEX_MID_BONE_NAME, model.getVortexMid(), root, false, false, false);
+        addBone(vortexMid);
+        this.vortexBottom = new ModelRendererBone(VORTEX_BOTTOM_BONE_NAME, model.getVortexBottom(), root, false, false, false);
+        addBone(vortexBottom);
     }
 
     public M getModel() {
         return model;
     }
 
-    private void addBone(MCBone bone) {
-        boneMap.put(bone.getBoneName(), bone);
+    public void addBone(MCBone bone) {
+        this.boneMap.put(bone.getBoneName(), bone);
     }
 
     @Nullable

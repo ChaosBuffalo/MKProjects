@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.client.render.renderers;
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.client.render.models.MKBipedModel;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyleClient;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
@@ -20,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public abstract class BipedGroupRenderer<T extends MKEntity, M extends HumanoidModel<T>> extends LivingEntityRenderer<T, M> {
+public abstract class BipedGroupRenderer<T extends MKEntity, M extends MKBipedModel<T>> extends LivingEntityRenderer<T, M> {
     private final Map<String, MKBipedRenderer<T, M>> renderers;
     private M currentModel;
 

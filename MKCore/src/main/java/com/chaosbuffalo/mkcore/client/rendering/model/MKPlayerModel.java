@@ -21,6 +21,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.function.BiPredicate;
 
@@ -30,7 +31,17 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
 
     public MKPlayerModel(ModelPart p_170821_, boolean p_170822_) {
         super(p_170821_, p_170822_);
-        this.skeleton = new BipedSkeleton<>(this);
+        Vec3 leftHandOffset = p_170822_
+                ? new Vec3(0.5 / 16.0, 10.0 / 16.0, -2.0 / 16.0)
+                : new Vec3(1.0 / 16.0, 10.0 / 16.0, -2.0 / 16.0);
+        Vec3 rightHandOffset = p_170822_
+                ? new Vec3(-0.5 / 16.0, 10.0 / 16.0, -2.0 / 16.0)
+                : new Vec3(-1.0 / 16.0, 10.0 / 16.0, -2.0 / 16.0);
+        this.skeleton = new BipedSkeleton<>(this, leftHandOffset, rightHandOffset);
+    }
+
+    public BipedSkeleton<AbstractClientPlayer, MKPlayerModel> getSkeleton() {
+        return skeleton;
     }
 
     @Override

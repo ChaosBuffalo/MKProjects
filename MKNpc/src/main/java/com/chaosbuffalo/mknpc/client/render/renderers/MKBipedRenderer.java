@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.models.layers.MKAdditionalBipedLayer;
+import com.chaosbuffalo.mknpc.client.render.models.MKBipedModel;
 import com.chaosbuffalo.mknpc.client.render.models.styling.LayerStyle;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
@@ -35,7 +36,7 @@ import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> extends HumanoidMobRenderer<T, M> implements ILayerTextureProvider<T, M> {
+public class MKBipedRenderer<T extends MKEntity, M extends MKBipedModel<T>> extends HumanoidMobRenderer<T, M> implements ILayerTextureProvider<T, M> {
     private final ModelStyle style;
     private final float defaultShadowSize;
     private ModelLook look;
@@ -47,7 +48,7 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
         super(context, modelSupplier.apply(context.bakeLayer(ModelStyleClient.getBaseLocation(entityType, style))), shadowSize);
         this.style = style;
         this.defaultShadowSize = shadowSize;
-        this.skeleton = new BipedSkeleton<>(getModel());
+        this.skeleton = getModel().getSkeleton();
         for (LayerStyle layer : style.getAdditionalLayers()) {
             addLayer(new MKAdditionalBipedLayer<>(this, context, modelSupplier, style, layer, entityType));
         }
@@ -75,7 +76,6 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
     protected void scale(T entity, PoseStack matrixStackIn, float partialTickTime) {
         float scale = entity.getScale();
         this.shadowRadius = defaultShadowSize * scale;
-        matrixStackIn.scale(scale, scale, scale);
     }
 
     @Override

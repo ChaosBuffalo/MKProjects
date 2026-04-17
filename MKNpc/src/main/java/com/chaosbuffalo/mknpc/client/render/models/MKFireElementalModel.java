@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.client.rendering.animations.melee.ModelPoseAnimat
 import com.chaosbuffalo.mkcore.core.combat.MKMeleeManager;
 import com.chaosbuffalo.mknpc.client.render.animations.MKNpcMeleeAnimations;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelArgs;
+import com.chaosbuffalo.mknpc.client.render.skeleton.FireElementalSkeleton;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -29,10 +30,23 @@ public class MKFireElementalModel<T extends MKEntity> extends MKBipedModel<T> {
         super(modelPart);
         this.root = modelPart;
         this.vortexTop = this.root.getChild("vortex_top");
-        this.vortexMid = this.vortexTop.getChild("vortex_mid");
-        this.vortexBottom = this.vortexMid.getChild("vortex_bottom");
+        this.vortexMid = this.root.getChild("vortex_mid");
+        this.vortexBottom = this.root.getChild("vortex_bottom");
+        this.skeleton = new FireElementalSkeleton<>(this);
         this.rightLeg.visible = false;
         this.leftLeg.visible = false;
+    }
+
+    public ModelPart getVortexTop() {
+        return vortexTop;
+    }
+
+    public ModelPart getVortexMid() {
+        return vortexMid;
+    }
+
+    public ModelPart getVortexBottom() {
+        return vortexBottom;
     }
 
     public static MeshDefinition createBodyLayer(ModelArgs args) {
@@ -58,24 +72,24 @@ public class MKFireElementalModel<T extends MKEntity> extends MKBipedModel<T> {
                 PartPose.offsetAndRotation(-2.1F, -7.5F, 2.0F, 0.15F, -1.0F, -0.78F));
         root.addOrReplaceChild("right_leg", CubeListBuilder.create(), PartPose.offset(-1.9F, 12.0F, 0.0F));
         root.addOrReplaceChild("left_leg", CubeListBuilder.create(), PartPose.offset(1.9F, 12.0F, 0.0F));
-        PartDefinition vortexTop = root.addOrReplaceChild("vortex_top",
+        root.addOrReplaceChild("vortex_top",
                 CubeListBuilder.create().texOffs(0, 32)
                         .addBox(-4.0F, 0.0F, -4.0F, 8.0F, 4.0F, 8.0F, args.deformation),
                 PartPose.offset(0.0F, 12.0F, 0.0F));
-        PartDefinition vortexMid = vortexTop.addOrReplaceChild("vortex_mid",
+        root.addOrReplaceChild("vortex_mid",
                 CubeListBuilder.create().texOffs(32, 32)
                         .addBox(-6.0F, 0.0F, -6.0F, 12.0F, 4.0F, 12.0F, args.deformation),
-                PartPose.offset(0.0F, 4.0F, 0.0F));
-        vortexMid.addOrReplaceChild("vortex_bottom",
+                PartPose.offset(0.0F, 16.0F, 0.0F));
+        root.addOrReplaceChild("vortex_bottom",
                 CubeListBuilder.create().texOffs(64, 32)
                         .addBox(-8.0F, 0.0F, -8.0F, 16.0F, 4.0F, 16.0F, args.deformation),
-                PartPose.offset(0.0F, 4.0F, 0.0F));
+                PartPose.offset(0.0F, 20.0F, 0.0F));
         return meshDefinition;
     }
 
     @Override
     protected Iterable<ModelPart> bodyParts() {
-        return Iterables.concat(super.bodyParts(), ImmutableList.of(vortexTop));
+        return Iterables.concat(super.bodyParts(), ImmutableList.of(vortexTop, vortexMid, vortexBottom));
     }
 
     @Override
@@ -119,12 +133,17 @@ public class MKFireElementalModel<T extends MKEntity> extends MKBipedModel<T> {
     }
 
     private static void animateBand(ModelPart band, float yRot, float sway, float tilt, float phaseOffset, float baseX, float baseZ) {
+        float posedX = band.x;
+        float posedZ = band.z;
+        float posedXRot = band.xRot;
+        float posedYRot = band.yRot;
+        float posedZRot = band.zRot;
         float wave = yRot + phaseOffset;
-        band.x = baseX + Mth.sin(wave) * sway;
-        band.z = baseZ + Mth.cos(wave * 0.85F) * sway * 0.55F;
-        band.yRot = yRot;
-        band.xRot = Mth.cos(wave * 1.15F) * tilt * sway;
-        band.zRot = Mth.sin(wave * 0.95F) * tilt * sway * 0.8F;
+        band.x = posedX + baseX + Mth.sin(wave) * sway;
+        band.z = posedZ + baseZ + Mth.cos(wave * 0.85F) * sway * 0.55F;
+        band.yRot = posedYRot + yRot;
+        band.xRot = posedXRot + Mth.cos(wave * 1.15F) * tilt * sway;
+        band.zRot = posedZRot + Mth.sin(wave * 0.95F) * tilt * sway * 0.8F;
     }
 
     @Override

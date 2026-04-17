@@ -80,6 +80,7 @@ public class MKULangProvider extends NpcLanguageProvider {
         ability(MKUAbilities.INSPIRE, "Inspire", "Inspires your allies around you, granted them regeneration and haste for %d seconds.");
         ability(MKUAbilities.GALVANIZE, "Galvanize", "Galvanizes your allies around you, curing their ill effects and granting them jump boost for %d seconds.");
         ability(MKUAbilities.FIRE_ARMOR, "Fire Armor", "Buffs your allies around you, providing Fire Resistance, Absorption, and a %.2f%% reduction in %s for %d seconds.");
+        ability(MKUAbilities.SEARING_FURROW, "Searing Furrow", "Slam the ground to leave a %s block line of fire, dealing %s every %s seconds to enemies that touch it for %s seconds.");
         ability(MKUAbilities.EMBER, "Ember", "Deals %s to your target and causes them to burn for %s seconds, dealing %s damage every %d seconds.");
         ability(MKUAbilities.IGNITE, "Ignite", "Ignites your target, dealing %s. If they are already burning, causes them to explode damaging nearby enemies within %.1f blocks and spreading the burn effect, if they're not burning causes them to burn.");
         mkEffect(MKUEffects.BURN, "Burn");

@@ -47,6 +47,10 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
         return HumanoidModel.createMesh(args.deformation, 0.0f);
     }
 
+    public MCSkeleton getSkeleton() {
+        return skeleton;
+    }
+
     @Override
     public void prepareMobModel(T entityIn, float limbSwing, float limbSwingAmount, float partialTick) {
         // bow pose stuff from skeleton

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.client.render.models;
 
+import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -12,6 +13,7 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Random;
@@ -51,6 +53,13 @@ public class MKPlayerModel<T extends MKEntity> extends MKBipedModel<T> {
 
     public MKPlayerModel(ModelPart modelPart, boolean slim) {
         super(modelPart);
+        Vec3 leftHandOffset = slim
+                ? new Vec3(0.5 / 16.0, 10.0 / 16.0, -2.0 / 16.0)
+                : new Vec3(1.0 / 16.0, 10.0 / 16.0, -2.0 / 16.0);
+        Vec3 rightHandOffset = slim
+                ? new Vec3(-0.5 / 16.0, 10.0 / 16.0, -2.0 / 16.0)
+                : new Vec3(-1.0 / 16.0, 10.0 / 16.0, -2.0 / 16.0);
+        this.skeleton = new BipedSkeleton<>(this, leftHandOffset, rightHandOffset);
         this.bipedLeftArmwear = modelPart.getChild("left_sleeve");
         this.bipedRightArmwear = modelPart.getChild("right_sleeve");
         this.bipedLeftLegwear = modelPart.getChild("left_pants");

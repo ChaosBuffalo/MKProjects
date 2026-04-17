@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.client.rendering.model.MKPlayerModel;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
+import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCSkeleton;
 import com.chaosbuffalo.mkcore.core.EntityAnimationModule;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.HeldItemParticleEffectInstance;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
@@ -26,16 +27,17 @@ import java.util.Optional;
 
 
 public class MKPlayerRenderer extends PlayerRenderer {
-    private final BipedSkeleton<AbstractClientPlayer, MKPlayerModel> skeleton;
+    private MCSkeleton skeleton;
 
     public MKPlayerRenderer(EntityRendererProvider.Context context, boolean useSmallArms) {
         super(context, useSmallArms);
         this.model = new MKPlayerModel(context.bakeLayer(useSmallArms ? ModelLayers.PLAYER_SLIM : ModelLayers.PLAYER), useSmallArms);
-        this.skeleton = new BipedSkeleton<>((MKPlayerModel) model);
+        this.skeleton = ((MKPlayerModel) this.model).getSkeleton();
     }
 
     @Override
     public void render(AbstractClientPlayer entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+        this.skeleton = ((MKPlayerModel) this.model).getSkeleton();
         super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
 
         MKCore.getPlayer(entityIn).ifPresent(data -> {
