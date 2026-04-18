@@ -12,6 +12,9 @@ public interface ISyncUpdatableBase {
     @Nullable
     Tag writeFullValue(SyncContext context, SyncVisibility visibility);
 
+    /**
+     * Returns null only when there is no dirty state to write for the requested visibility.
+     */
     @Nullable
     Tag writeDirtyValue(SyncContext context, SyncVisibility visibility);
 

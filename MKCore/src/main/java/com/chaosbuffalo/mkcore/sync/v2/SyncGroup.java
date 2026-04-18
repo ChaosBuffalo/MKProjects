@@ -21,71 +21,113 @@ public class SyncGroup implements ISyncUpdatableBase {
         ISyncUpdatableBase createSyncObject(String key, Tag valueTag, SyncVisibility visibility);
     }
 
-    private static final class MemberEntry implements ISyncUpdatableBase {
-        public final @Nullable ISyncObject object;
-        public final @Nullable SyncGroup childGroup;
-        public final @Nullable SyncVisibility visibility;
-        public boolean dirty;
+    private abstract static sealed class MemberEntry implements ISyncUpdatableBase
+            permits ObjectMemberEntry, ChildGroupMemberEntry {
+        public abstract boolean isDirtyFor(SyncVisibility visibility);
+    }
 
-        private MemberEntry(@Nullable ISyncObject object, @Nullable SyncGroup childGroup,
-                            @Nullable SyncVisibility visibility, boolean dirty) {
+    private static final class ObjectMemberEntry extends MemberEntry {
+        private final ISyncObject object;
+        private final SyncVisibility visibility;
+        private boolean dirty;
+
+        private ObjectMemberEntry(ISyncObject object, SyncVisibility visibility, boolean dirty) {
             this.object = object;
-            this.childGroup = childGroup;
             this.visibility = visibility;
             this.dirty = dirty;
         }
 
-        public static MemberEntry syncObject(ISyncObject object, SyncVisibility visibility, boolean dirty) {
-            return new MemberEntry(object, null, visibility, dirty);
+        public boolean markDirty() {
+            if (dirty) {
+                return false;
+            }
+            dirty = true;
+            return true;
         }
 
-        public static MemberEntry childGroup(SyncGroup childGroup) {
-            return new MemberEntry(null, childGroup, null, false);
-        }
-
-        public boolean isObjectVisible(SyncVisibility visibility) {
-            return object != null && this.visibility == visibility;
+        @Override
+        public boolean isDirtyFor(SyncVisibility visibility) {
+            return dirty && this.visibility == visibility;
         }
 
         @Override
         public void clearDirty() {
-            if (object != null) {
-                object.clearDirty();
-                dirty = false;
-            } else if (childGroup != null) {
-                childGroup.clearDirty();
-            }
+            object.clearDirty();
+            dirty = false;
         }
 
         @Override
         public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
-            if (object != null) {
-                object.handleUpdatePayload(context, valueTag, visibility);
-            } else if (childGroup != null) {
-                childGroup.handleUpdatePayload(context, valueTag, visibility);
-            }
+            object.handleUpdatePayload(context, valueTag, visibility);
         }
 
         @Override
         public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
-            if (object != null) {
-                return object.writeFullValue(context, visibility);
-            } else if (childGroup != null) {
-                return childGroup.writeFullValue(context, visibility);
+            if (this.visibility != visibility) {
+                return null;
             }
-            return null;
+            return object.writeFullValue(context, visibility);
         }
 
         @Override
         public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
-            if (object != null) {
-                Tag tag = object.writeDirtyValue(context, visibility);
-                dirty = false;
-                return tag;
-            } else if (childGroup != null) {
-                return childGroup.writeDirtyValue(context, visibility);
+            if (!isDirtyFor(visibility)) {
+                throw new IllegalStateException(
+                        "Sync object '%s' was asked to write while not dirty for visibility %s"
+                                .formatted(object, visibility));
             }
-            return null;
+
+            Tag tag = object.writeDirtyValue(context, visibility);
+            if (tag == null) {
+                throw new IllegalStateException(
+                        "Dirty sync object '%s' returned null for visibility %s".formatted(object, visibility));
+            }
+            dirty = false;
+            return tag;
+        }
+    }
+
+    private static final class ChildGroupMemberEntry extends MemberEntry {
+        private final SyncGroup childGroup;
+
+        private ChildGroupMemberEntry(SyncGroup childGroup) {
+            this.childGroup = childGroup;
+        }
+
+        @Override
+        public boolean isDirtyFor(SyncVisibility visibility) {
+            return childGroup.isDirty(visibility);
+        }
+
+        @Override
+        public void clearDirty() {
+            childGroup.clearDirty();
+        }
+
+        @Override
+        public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
+            childGroup.handleUpdatePayload(context, valueTag, visibility);
+        }
+
+        @Override
+        public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
+            return childGroup.writeFullValue(context, visibility);
+        }
+
+        @Override
+        public @Nullable Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
+            if (!childGroup.isDirty(visibility)) {
+                throw new IllegalStateException(
+                        "Child sync group was asked to write while not dirty for visibility %s"
+                                .formatted(visibility));
+            }
+
+            Tag tag = childGroup.writeDirtyValue(context, visibility);
+            if (tag == null) {
+                throw new IllegalStateException(
+                        "Dirty child sync group returned null for visibility %s".formatted(visibility));
+            }
+            return tag;
         }
     }
 
@@ -98,14 +140,13 @@ public class SyncGroup implements ISyncUpdatableBase {
     }
 
     public void add(String name, ISyncObject sync, SyncVisibility visibility, boolean setDirty) {
-        MemberEntry entry = MemberEntry.syncObject(sync, visibility, setDirty);
+        ObjectMemberEntry entry = new ObjectMemberEntry(sync, visibility, setDirty);
 
         members.put(name, entry);
         sync.setSyncUpdateNotifier(() -> {
-            if (entry.dirty) {
+            if (!entry.markDirty()) {
                 return;
             }
-            entry.dirty = true;
             markMemberDirty(name, entry, visibility);
         });
         if (setDirty) {
@@ -134,7 +175,7 @@ public class SyncGroup implements ISyncUpdatableBase {
     }
 
     public void addChild(String name, SyncGroup childGroup) {
-        MemberEntry entry = MemberEntry.childGroup(childGroup);
+        ChildGroupMemberEntry entry = new ChildGroupMemberEntry(childGroup);
         members.put(name, entry);
 
         childGroup.parentNotifier = vis -> markMemberDirty(name, entry, vis);
@@ -205,21 +246,22 @@ public class SyncGroup implements ISyncUpdatableBase {
         CompoundTag outputTag = new CompoundTag();
         for (var entry : dirty.entrySet()) {
             MemberEntry member = entry.getValue();
-            Tag childTag = null;
-            if (member.object != null) {
-                if (member.dirty && member.isObjectVisible(visibility)) {
-                    childTag = member.writeDirtyValue(context, visibility);
+            if (member.isDirtyFor(visibility)) {
+                Tag memberTag = member.writeDirtyValue(context, visibility);
+                if (memberTag == null) {
+                    throw new IllegalStateException(
+                            "Dirty sync member '%s' returned null for visibility %s"
+                                    .formatted(entry.getKey(), visibility));
                 }
-            } else if (member.childGroup != null && member.childGroup.isDirty(visibility)) {
-                childTag = member.childGroup.writeDirtyValue(context, visibility);
-            }
-            if (childTag != null) {
-                outputTag.put(entry.getKey(), childTag);
+                outputTag.put(entry.getKey(), memberTag);
             }
         }
-
         dirty.clear();
-        return outputTag.isEmpty() ? null : outputTag;
+        if (outputTag.isEmpty()) {
+            throw new IllegalStateException(
+                    "Dirty sync group produced no payload for visibility %s".formatted(visibility));
+        }
+        return outputTag;
     }
 
     @Override
@@ -232,14 +274,7 @@ public class SyncGroup implements ISyncUpdatableBase {
         CompoundTag groupTag = new CompoundTag();
         for (Map.Entry<String, MemberEntry> entry : members.entrySet()) {
             MemberEntry member = entry.getValue();
-            Tag childTag = null;
-            if (member.object != null) {
-                if (member.isObjectVisible(visibility)) {
-                    childTag = member.writeFullValue(context, visibility);
-                }
-            } else if (member.childGroup != null) {
-                childTag = member.childGroup.writeFullValue(context, visibility);
-            }
+            Tag childTag = member.writeFullValue(context, visibility);
             if (childTag != null) {
                 groupTag.put(entry.getKey(), childTag);
             }

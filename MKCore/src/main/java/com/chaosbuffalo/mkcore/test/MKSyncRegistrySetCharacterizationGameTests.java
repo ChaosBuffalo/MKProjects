@@ -11,12 +11,19 @@ import com.chaosbuffalo.mkcore.init.CoreArmorClasses;
 import com.chaosbuffalo.mkcore.item.ArmorClass;
 import com.chaosbuffalo.mkcore.sync.SyncContext;
 import com.chaosbuffalo.mkcore.sync.SyncVisibility;
+import com.chaosbuffalo.mkcore.sync.adapters.SyncArrayListUpdater;
 import com.chaosbuffalo.mkcore.sync.adapters.SyncRegistrySet;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncNotifier;
+import com.chaosbuffalo.mkcore.sync.v2.ISyncObject;
+import com.chaosbuffalo.mkcore.sync.v2.SyncGroup;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.Holder;
+import net.minecraft.core.NonNullList;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -26,6 +33,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
 @GameTestHolder(MKCore.MOD_ID)
@@ -196,6 +204,49 @@ public class MKSyncRegistrySetCharacterizationGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = "player_data_phase0")
+    public static void registryBackedListRejectsUnknownStringIdsWithoutClearingSlots(GameTestHelper helper) {
+        SyncContext context = new SyncContext(helper.getLevel().registryAccess());
+        ResourceLocation knownAbility = MKTestAbilities.TEST_EMBER.get().getAbilityId();
+        List<ResourceLocation> target = NonNullList.withSize(2, MKCoreRegistry.INVALID_ABILITY);
+        target.set(0, knownAbility);
+        SyncArrayListUpdater<ResourceLocation> updater = SyncArrayListUpdater.registryResourceLocations(
+                target,
+                MKCoreRegistry.ABILITY_REGISTRY_KEY,
+                MKCoreRegistry.INVALID_ABILITY
+        );
+
+        CompoundTag payload = new CompoundTag();
+        CompoundTag entry = new CompoundTag();
+        entry.putInt("i", 0);
+        entry.put("v", StringTag.valueOf("mkcore:missing_ability"));
+        ListTag sparseList = new ListTag();
+        sparseList.add(entry);
+        payload.put("s", sparseList);
+        updater.handleUpdatePayload(context, payload, SyncVisibility.Private);
+
+        helper.assertValueEqual(target.get(0), knownAbility, "invalid registry-backed update should not clear slot");
+        helper.succeed();
+    }
+
+    @GameTest(template = "player_data_phase0")
+    public static void syncGroupRejectsDirtyMembersThatReturnNull(GameTestHelper helper) {
+        SyncContext context = new SyncContext(helper.getLevel().registryAccess());
+        SyncGroup group = new SyncGroup();
+        NullDirtySyncObject object = new NullDirtySyncObject();
+        group.addPrivate("flaky", object);
+
+        object.markDirty();
+        try {
+            group.writeDirtyValue(context, SyncVisibility.Private);
+            throw new IllegalStateException("Expected dirty sync member to be rejected when it returns null");
+        } catch (IllegalStateException e) {
+            helper.assertTrue(e.getMessage().contains("returned null"),
+                    "SyncGroup should reject dirty members that violate the writeDirtyValue contract");
+        }
+        helper.succeed();
+    }
+
     private static MKServerPlayerData createPlayerData(GameTestHelper helper) {
         var cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "sync-set-test-player"), false);
         ServerPlayer player = new ServerPlayer(
@@ -212,5 +263,44 @@ public class MKSyncRegistrySetCharacterizationGameTests {
             throw new IllegalStateException("Failed to learn test ability " + ability.getAbilityId());
         }
         return ability.getAbilityId();
+    }
+
+    private static class NullDirtySyncObject implements ISyncObject {
+        private ISyncNotifier notifier = ISyncNotifier.NONE;
+        private boolean dirty;
+
+        public void markDirty() {
+            dirty = true;
+            notifier.notifyUpdate();
+        }
+
+        @Override
+        public void setSyncUpdateNotifier(ISyncNotifier notifier) {
+            this.notifier = notifier;
+        }
+
+        @Override
+        public boolean isDirty() {
+            return dirty;
+        }
+
+        @Override
+        public void clearDirty() {
+            dirty = false;
+        }
+
+        @Override
+        public Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
+            return writeDirtyValue(context, visibility);
+        }
+
+        @Override
+        public Tag writeDirtyValue(SyncContext context, SyncVisibility visibility) {
+            return null;
+        }
+
+        @Override
+        public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
+        }
     }
 }

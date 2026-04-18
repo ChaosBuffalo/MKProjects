@@ -32,6 +32,7 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
     public interface ElementSerializer<T> {
         Tag encodeValue(SyncContext context, T value);
 
+        @Nullable
         T decodeValue(SyncContext context, Tag value);
 
         ElementSerializer<ResourceLocation> RESOURCE_LOCATION = new ElementSerializer<>() {
@@ -76,7 +77,7 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
                 public K decodeValue(SyncContext context, Tag value) {
                     if (!(value instanceof IntTag intTag)) {
                         MKCore.LOGGER.error("Expected int tag for registry-backed list in {} but found {}", registryKey.location(), value);
-                        return defaultValue;
+                        return null;
                     }
 
                     int rawId = intTag.getAsInt();
@@ -88,13 +89,13 @@ public class SyncArrayListUpdater<T> implements ISyncObject {
                     V registryValue = registry.byId(rawId);
                     if (registryValue == null) {
                         MKCore.LOGGER.error("Failed to decode registry-backed list raw id {} in {}", rawId, registryKey.location());
-                        return defaultValue;
+                        return null;
                     }
 
                     K decoded = adapter.fromRegistryValue(registry, registryValue);
                     if (decoded == null) {
                         MKCore.LOGGER.error("Failed to convert registry-backed list value {} from {}", registryValue, registryKey.location());
-                        return defaultValue;
+                        return null;
                     }
                     return decoded;
                 }
