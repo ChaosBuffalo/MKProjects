@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.abilities2.runtime;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityAction;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityConditionDefinition;
@@ -524,6 +525,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
                     state.setScalingParameters(amount, 0.0f, 0.0f);
                 });
         targetData(target).getEffects().addEffect(effect);
+        emitSpellHit(invocation, target, amount, damageType, action.school());
         invocation.markProducedGameplayEffect();
     }
 
@@ -571,6 +573,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
         }
 
         effectHandler.addEffect(effect);
+        emitEffectApplied(invocation, target, action.effect(), action.stackCount());
         invocation.markProducedGameplayEffect();
     }
 
@@ -810,54 +813,27 @@ public class SimpleAbilityEngine implements AbilityEngine {
     }
 
     private void emitInvocationStarted(AbilityInvocation invocation) {
-        eventEmitter.emit(new AbilityEventSnapshot(
-                AbilityEventType.INVOCATION_STARTED,
-                invocation.invocationId(),
-                invocation.rootInvocationId(),
-                invocation.chainDepth(),
-                invocation.sourceId(),
-                invocation.abilityId(),
-                invocation.activationId(),
-                invocation.casterData().getEntity().getUUID(),
-                invocation.targets().primaryEntityId(),
-                Map.of()
-        ));
+        Map<String, AbilityValue> payload = new LinkedHashMap<>();
+        payload.put("activation_kind", eventKeywordValue(activationKind(invocation)));
+        emitEvent(AbilityEventType.INVOCATION_STARTED, invocation, invocation.targets().primaryEntityId(), payload);
     }
 
     private void emitInvocationCompleted(AbilityInvocation invocation, int castTicksSpent) {
-        eventEmitter.emit(new AbilityEventSnapshot(
-                AbilityEventType.INVOCATION_COMPLETED,
-                invocation.invocationId(),
-                invocation.rootInvocationId(),
-                invocation.chainDepth(),
-                invocation.sourceId(),
-                invocation.abilityId(),
-                invocation.activationId(),
-                invocation.casterData().getEntity().getUUID(),
-                invocation.targets().primaryEntityId(),
-                Map.of("cast_ticks_spent", new AbilityValue.IntValue(castTicksSpent))
-        ));
+        Map<String, AbilityValue> payload = new LinkedHashMap<>();
+        payload.put("activation_kind", eventKeywordValue(activationKind(invocation)));
+        payload.put("completion_reason", eventKeywordValue("completed"));
+        payload.put("cast_ticks_spent", new AbilityValue.IntValue(castTicksSpent));
+        emitEvent(AbilityEventType.INVOCATION_COMPLETED, invocation, invocation.targets().primaryEntityId(), payload);
     }
 
     private void emitInvocationInterrupted(AbilityInvocation invocation,
                                            FailureReason failureReason,
                                            int castTicksSpent) {
-        eventEmitter.emit(new AbilityEventSnapshot(
-                AbilityEventType.INVOCATION_INTERRUPTED,
-                invocation.invocationId(),
-                invocation.rootInvocationId(),
-                invocation.chainDepth(),
-                invocation.sourceId(),
-                invocation.abilityId(),
-                invocation.activationId(),
-                invocation.casterData().getEntity().getUUID(),
-                invocation.targets().primaryEntityId(),
-                Map.of(
-                        "cast_ticks_spent", new AbilityValue.IntValue(castTicksSpent),
-                        "failure", new AbilityValue.ResourceLocationValue(
-                                ResourceLocation.fromNamespaceAndPath("mkcore", failureReason.name().toLowerCase(Locale.ROOT)))
-                )
-        ));
+        Map<String, AbilityValue> payload = new LinkedHashMap<>();
+        payload.put("activation_kind", eventKeywordValue(activationKind(invocation)));
+        payload.put("completion_reason", eventKeywordValue(failureReason));
+        payload.put("cast_ticks_spent", new AbilityValue.IntValue(castTicksSpent));
+        emitEvent(AbilityEventType.INVOCATION_INTERRUPTED, invocation, invocation.targets().primaryEntityId(), payload);
     }
 
     private void finishInterruptedInvocation(AbilityInvocation invocation,
@@ -874,6 +850,63 @@ public class SimpleAbilityEngine implements AbilityEngine {
                 invocation.sourceId(),
                 invocation.abilityId()
         );
+    }
+
+    private void emitSpellHit(AbilityInvocation invocation,
+                              LivingEntity target,
+                              float amount,
+                              MKDamageType damageType,
+                              ResourceLocation damageSchool) {
+        Map<String, AbilityValue> payload = new LinkedHashMap<>();
+        payload.put("damage_amount", new AbilityValue.FloatValue(amount));
+        payload.put("damage_type", new AbilityValue.ResourceLocationValue(damageType.getId()));
+        payload.put("damage_school", new AbilityValue.ResourceLocationValue(damageSchool));
+        emitEvent(AbilityEventType.SPELL_HIT, invocation, target.getUUID(), payload);
+    }
+
+    private void emitEffectApplied(AbilityInvocation invocation,
+                                   LivingEntity target,
+                                   ResourceLocation effectId,
+                                   int stackCount) {
+        Map<String, AbilityValue> payload = new LinkedHashMap<>();
+        payload.put("effect_id", new AbilityValue.ResourceLocationValue(effectId));
+        payload.put("stack_count", new AbilityValue.IntValue(stackCount));
+        emitEvent(AbilityEventType.EFFECT_APPLIED, invocation, target.getUUID(), payload);
+    }
+
+    private void emitEvent(AbilityEventType eventType,
+                           AbilityInvocation invocation,
+                           @Nullable UUID targetEntityId,
+                           Map<String, AbilityValue> payload) {
+        eventEmitter.emit(new AbilityEventSnapshot(
+                eventType,
+                invocation.invocationId(),
+                invocation.rootInvocationId(),
+                invocation.chainDepth(),
+                invocation.sourceId(),
+                invocation.abilityId(),
+                invocation.activationId(),
+                invocation.casterData().getEntity().getUUID(),
+                targetEntityId,
+                payload
+        ));
+    }
+
+    private ActivationKind activationKind(AbilityInvocation invocation) {
+        AbilityActivationDefinition activation = invocation.definition().definition().getActivation(invocation.activationId());
+        if (activation == null) {
+            throw new IllegalStateException("Invocation %s references unknown activation %s"
+                    .formatted(invocation.invocationId(), invocation.activationId()));
+        }
+        return activation.kind();
+    }
+
+    private AbilityValue.ResourceLocationValue eventKeywordValue(Enum<?> value) {
+        return eventKeywordValue(value.name().toLowerCase(Locale.ROOT));
+    }
+
+    private AbilityValue.ResourceLocationValue eventKeywordValue(String value) {
+        return new AbilityValue.ResourceLocationValue(ResourceLocation.fromNamespaceAndPath(MKCore.MOD_ID, value));
     }
 
     private static final class PendingCast {
