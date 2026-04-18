@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -21,8 +22,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public class SyncRegistrySet<K, V> implements ISyncObject {
-    private static final boolean STABLE_WIRE_ORDERING = false;
-
     private final Set<K> backingSet;
     private final ResourceKey<? extends Registry<V>> registryKey;
     private final RegistryElementAdapter<K, V> adapter;
@@ -185,7 +184,8 @@ public class SyncRegistrySet<K, V> implements ISyncObject {
 
     private int[] encodeElements(SyncContext context, Collection<K> elements) {
         Registry<V> registry = context.registryOrThrow(registryKey);
-        List<Integer> ids = new ArrayList<>(elements.size());
+        int[] output = new int[elements.size()];
+        int count = 0;
         for (K element : elements) {
             V registryValue = adapter.toRegistryValue(registry, element);
             if (registryValue == null) {
@@ -197,16 +197,9 @@ public class SyncRegistrySet<K, V> implements ISyncObject {
                 MKCore.LOGGER.warn("Failed to encode sync set element {} in registry {}", element, registryKey.location());
                 continue;
             }
-            ids.add(rawId);
+            output[count++] = rawId;
         }
-        if (STABLE_WIRE_ORDERING) {
-            ids.sort(Integer::compareTo);
-        }
-        int[] output = new int[ids.size()];
-        for (int i = 0; i < ids.size(); i++) {
-            output[i] = ids.get(i);
-        }
-        return output;
+        return count == output.length ? output : Arrays.copyOf(output, count);
     }
 
     private boolean decodeIds(Registry<V> registry, int[] ids, boolean add) {

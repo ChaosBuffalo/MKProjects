@@ -106,7 +106,12 @@ public class SyncStoredMap<K, V extends IMKSerializable<CompoundTag>> implements
     }
 
     public V computeIfAbsent(K key, Function<K, V> mappingFunction) {
-        return backingMap.computeIfAbsent(key, mappingFunction);
+        int sizeBefore = backingMap.size();
+        V value = backingMap.computeIfAbsent(key, mappingFunction);
+        if (backingMap.size() != sizeBefore) {
+            syncUpdater.markDirty(key);
+        }
+        return value;
     }
 
     public @Nullable V remove(K key) {

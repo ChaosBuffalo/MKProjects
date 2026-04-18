@@ -51,7 +51,9 @@ public interface RegistryElementAdapter<K, V> {
 
             @Override
             public @Nullable Holder<V> fromRegistryValue(Registry<V> registry, V value) {
-                return registry.wrapAsHolder(value);
+                return registry.getResourceKey(value)
+                        .flatMap(registry::getHolder)
+                        .orElse(null);
             }
         };
     }
