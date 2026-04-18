@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkcore;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityManager;
 import com.chaosbuffalo.mkcore.abilities2.AbilityDefinitionService;
+import com.chaosbuffalo.mkcore.abilities2.AbilityRuntimeService;
 import com.chaosbuffalo.mkcore.command.MKCommand;
 import com.chaosbuffalo.mkcore.compat.CoreCompatHooks;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -54,6 +55,7 @@ public class MKCore {
     public static final boolean DEV_LOGGING = Boolean.parseBoolean(System.getProperty("mkcore.enable_debug_log", "false"));
     private final AbilityManager abilityManager;
     private final AbilityDefinitionService abilityDefinitionService;
+    private final AbilityRuntimeService abilityRuntimeService;
     private final ParticleAnimationManager particleAnimationManager;
     public static final String CORE_EXTENSION = "mk_core_extension";
     public static final String PERSONA_EXTENSION = "register_persona_extension";
@@ -73,6 +75,8 @@ public class MKCore {
         NeoForge.EVENT_BUS.register(this);
         abilityManager = new AbilityManager();
         abilityDefinitionService = new AbilityDefinitionService();
+        abilityRuntimeService = new AbilityRuntimeService(abilityDefinitionService.getResolver());
+        NeoForge.EVENT_BUS.register(abilityRuntimeService);
         particleAnimationManager = new ParticleAnimationManager();
         AbilityManager.setupDeserializers();
         ParticleAnimationManager.setupDeserializers();
@@ -205,6 +209,10 @@ public class MKCore {
 
     public static AbilityDefinitionService getAbilityDefinitionService() {
         return INSTANCE.abilityDefinitionService;
+    }
+
+    public static AbilityRuntimeService getAbilityRuntimeService() {
+        return INSTANCE.abilityRuntimeService;
     }
 
     public static ParticleAnimationManager getAnimationManager() {

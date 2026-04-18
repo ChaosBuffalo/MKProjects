@@ -1,0 +1,782 @@
+package com.chaosbuffalo.mkcore.abilities2.runtime;
+
+import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities2.actions.AbilityAction;
+import com.chaosbuffalo.mkcore.abilities2.actions.AbilityConditionDefinition;
+import com.chaosbuffalo.mkcore.abilities2.definition.*;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.core.damage.MKDamageType;
+import com.chaosbuffalo.mkcore.core.entity.EntityEffectHandler;
+import com.chaosbuffalo.mkcore.core.healing.MKHealSource;
+import com.chaosbuffalo.mkcore.core.healing.MKHealing;
+import com.chaosbuffalo.mkcore.effects.MKEffect;
+import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
+import com.chaosbuffalo.mkcore.init.CoreEffects;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.function.Supplier;
+
+public class SimpleAbilityEngine implements AbilityEngine {
+    @FunctionalInterface
+    public interface AbilityEventEmitter {
+        void emit(AbilityEventSnapshot event);
+    }
+
+    private final AbilityDefinitionResolver definitionResolver;
+    private final AbilityPowerResolver powerResolver;
+    private final AbilityStateStore stateStore;
+    private final AbilityEventEmitter eventEmitter;
+    private final Map<UUID, List<PendingCast>> pendingCastsByCaster = new HashMap<>();
+
+    public SimpleAbilityEngine(AbilityDefinitionResolver definitionResolver,
+                               AbilityPowerResolver powerResolver,
+                               AbilityStateStore stateStore) {
+        this(definitionResolver, powerResolver, stateStore, event -> {
+        });
+    }
+
+    public SimpleAbilityEngine(AbilityDefinitionResolver definitionResolver,
+                               AbilityPowerResolver powerResolver,
+                               AbilityStateStore stateStore,
+                               AbilityEventEmitter eventEmitter) {
+        this.definitionResolver = Objects.requireNonNull(definitionResolver, "definitionResolver");
+        this.powerResolver = Objects.requireNonNull(powerResolver, "powerResolver");
+        this.stateStore = Objects.requireNonNull(stateStore, "stateStore");
+        this.eventEmitter = Objects.requireNonNull(eventEmitter, "eventEmitter");
+    }
+
+    @Override
+    public InvocationResult activate(ActivationRequest request) {
+        Objects.requireNonNull(request, "request");
+        try {
+            return activateInternal(request);
+        } catch (ActivationStartFailure failure) {
+            return InvocationResult.failed(failure.failureReason());
+        }
+    }
+
+    public void tickEntity(IMKEntityData entityData) {
+        UUID casterId = entityData.getEntity().getUUID();
+        List<PendingCast> casts = pendingCastsByCaster.get(casterId);
+        if (casts == null || casts.isEmpty()) {
+            return;
+        }
+
+        Iterator<PendingCast> iterator = casts.iterator();
+        while (iterator.hasNext()) {
+            PendingCast pendingCast = iterator.next();
+            if (!entityData.getEntity().isAlive() || entityData.getEntity().isRemoved()) {
+                iterator.remove();
+                emitInvocationInterrupted(pendingCast.invocation(), FailureReason.INTERRUPTED, pendingCast.castTicksSpent());
+                continue;
+            }
+
+            pendingCast.tick();
+            if (!pendingCast.isComplete()) {
+                continue;
+            }
+
+            iterator.remove();
+            completeInvocation(pendingCast.invocation(), pendingCast.ignoreCosts(), pendingCast.castTicksSpent());
+        }
+
+        if (casts.isEmpty()) {
+            pendingCastsByCaster.remove(casterId);
+        }
+    }
+
+    private InvocationResult activateInternal(ActivationRequest request) {
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(request.ability().abilityId());
+        if (definition == null) {
+            return InvocationResult.failed(FailureReason.UNKNOWN_ABILITY);
+        }
+
+        AbilityActivationDefinition activation = definition.definition().getActivation(request.activationId());
+        if (activation == null) {
+            return InvocationResult.failed(FailureReason.UNKNOWN_ACTIVATION);
+        }
+        if (!(activation.kind() == ActivationKind.MANUAL || activation.kind() == ActivationKind.AI)) {
+            return InvocationResult.failed(FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE);
+        }
+        if (!(activation.behavior() instanceof ActivationBehavior.InstantBehavior)) {
+            return InvocationResult.failed(FailureReason.UNSUPPORTED_FEATURE);
+        }
+
+        AbilityResolvedTargets targets = resolveActivationTargets(request, activation);
+        UUID sourceId = request.sourceId() != null ? request.sourceId() : request.casterData().getEntity().getUUID();
+        AbilityStatSnapshot invocationStats = powerResolver.captureInvocationStats(request.casterData());
+
+        UUID invocationId = UUID.randomUUID();
+        AbilityInvocation invocation = new AbilityInvocation(
+                invocationId,
+                invocationId,
+                0,
+                null,
+                request.ability().abilityId(),
+                request.ability().grantId(),
+                request.activationId(),
+                activation.entryPoint(),
+                ActivationReason.DIRECT_REQUEST,
+                request.ownerData(),
+                request.casterData(),
+                sourceId,
+                targets,
+                request.eventSnapshot(),
+                definition,
+                Map.of(),
+                invocationStats,
+                Map.of(),
+                request.casterData().getEntity().getRandom()
+        );
+
+        SimpleAbilityActionContext context = createContext(invocation, Optional::empty);
+        long gameTick = currentGameTick(request.casterData());
+
+        if (!request.ignoreCooldowns()) {
+            checkCooldowns(invocation, activation, context, gameTick);
+        }
+        if (!request.ignoreCosts()) {
+            checkCosts(activation.costs(), context);
+            consumeCosts(activation.costs(), context);
+        }
+        if (!request.ignoreCooldowns()) {
+            writeCooldowns(invocation, activation, context, gameTick);
+        }
+
+        int castTicks = resolveCastTicks(activation, invocation.invocationStats());
+        emitInvocationStarted(invocation);
+        if (castTicks > 0) {
+            pendingCastsByCaster.computeIfAbsent(invocation.casterData().getEntity().getUUID(), ignored -> new ArrayList<>())
+                    .add(new PendingCast(invocation, castTicks, request.ignoreCosts()));
+        } else {
+            completeInvocation(invocation, request.ignoreCosts(), 0);
+        }
+        return InvocationResult.started(invocation.invocationId());
+    }
+
+    private AbilityResolvedTargets resolveActivationTargets(ActivationRequest request,
+                                                           AbilityActivationDefinition activation) {
+        if (request.forcedTargets() != null) {
+            validateForcedTargets(request, activation.targeting(), request.forcedTargets());
+            return request.forcedTargets();
+        }
+
+        return switch (activation.targeting().type()) {
+            case "none" -> new AbilityResolvedTargets(null, List.of(), null, null, null);
+            case "self" -> {
+                UUID selfId = request.casterData().getEntity().getUUID();
+                yield new AbilityResolvedTargets(selfId, List.of(selfId), null, null, null);
+            }
+            case "event_target" -> {
+                UUID targetId = request.eventSnapshot() != null ? request.eventSnapshot().targetEntityId() : null;
+                yield resolveSingleTarget(request.casterData(), targetId);
+            }
+            case "event_actor" -> {
+                UUID targetId = request.eventSnapshot() != null ? request.eventSnapshot().actorEntityId() : null;
+                yield resolveSingleTarget(request.casterData(), targetId);
+            }
+            default -> throw new ActivationStartFailure(FailureReason.UNSUPPORTED_FEATURE);
+        };
+    }
+
+    private AbilityResolvedTargets resolveSingleTarget(IMKEntityData casterData, @Nullable UUID targetId) {
+        if (targetId == null) {
+            throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
+        }
+        LivingEntity target = resolveLivingEntity(casterData.getEntity(), targetId);
+        if (target == null || !target.isAlive()) {
+            throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
+        }
+        return new AbilityResolvedTargets(targetId, List.of(targetId), null, null, null);
+    }
+
+    private void validateForcedTargets(ActivationRequest request,
+                                       AbilityTargetResolverDefinition targeting,
+                                       AbilityResolvedTargets targets) {
+        validateTargetEntities(request.casterData(), targets);
+        switch (targeting.type()) {
+            case "none" -> {
+                if (targets.primaryEntityId() != null || !targets.entityIds().isEmpty()) {
+                    throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
+                }
+            }
+            case "self" -> {
+                UUID casterId = request.casterData().getEntity().getUUID();
+                if (!casterId.equals(targets.primaryEntityId()) || targets.entityIds().size() != 1
+                        || !casterId.equals(targets.entityIds().getFirst())) {
+                    throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
+                }
+            }
+            case "event_target" -> {
+                UUID expected = request.eventSnapshot() != null ? request.eventSnapshot().targetEntityId() : null;
+                if (!Objects.equals(expected, targets.primaryEntityId())) {
+                    throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
+                }
+            }
+            case "event_actor" -> {
+                UUID expected = request.eventSnapshot() != null ? request.eventSnapshot().actorEntityId() : null;
+                if (!Objects.equals(expected, targets.primaryEntityId())) {
+                    throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
+                }
+            }
+            default -> throw new ActivationStartFailure(FailureReason.UNSUPPORTED_FEATURE);
+        }
+    }
+
+    private void validateTargetEntities(IMKEntityData casterData, AbilityResolvedTargets targets) {
+        for (UUID entityId : targets.entityIds()) {
+            LivingEntity entity = resolveLivingEntity(casterData.getEntity(), entityId);
+            if (entity == null || !entity.isAlive()) {
+                throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
+            }
+        }
+        if (targets.primaryEntityId() != null && !targets.entityIds().contains(targets.primaryEntityId())) {
+            throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
+        }
+    }
+
+    private void checkCooldowns(AbilityInvocation invocation,
+                                AbilityActivationDefinition activation,
+                                AbilityActionContext context,
+                                long gameTick) {
+        if (activation.gcdGroup() != null
+                && stateStore.getGcdRemainingTicks(invocation.ownerData(), activation.gcdGroup(), gameTick) > 0) {
+            throw new ActivationStartFailure(FailureReason.ON_COOLDOWN);
+        }
+
+        for (AbilityCooldownDefinition cooldown : activation.cooldowns()) {
+            if (stateStore.getCooldownRemainingTicks(invocation, cooldown.scope(), cooldown.key(), gameTick) > 0) {
+                throw new ActivationStartFailure(FailureReason.ON_COOLDOWN);
+            }
+        }
+    }
+
+    private void writeCooldowns(AbilityInvocation invocation,
+                                AbilityActivationDefinition activation,
+                                AbilityActionContext context,
+                                long gameTick) {
+        for (AbilityCooldownDefinition cooldown : activation.cooldowns()) {
+            int duration = applyCooldownRate(resolveScalarTicks(cooldown.duration(), context), invocation.invocationStats());
+            stateStore.setCooldown(invocation, cooldown.scope(), cooldown.key(), duration, gameTick);
+        }
+        if (activation.gcdGroup() != null) {
+            stateStore.setGcd(invocation.ownerData(), activation.gcdGroup(), GameConstants.GLOBAL_COOLDOWN_TICKS, gameTick);
+        }
+    }
+
+    private void checkCosts(List<AbilityCostDefinition> costs, AbilityActionContext context) {
+        for (AbilityCostDefinition cost : costs) {
+            if (!canAfford(cost, context)) {
+                throw new ActivationStartFailure(FailureReason.NOT_ENOUGH_RESOURCE);
+            }
+        }
+    }
+
+    private void consumeCosts(List<AbilityCostDefinition> costs, AbilityActionContext context) {
+        for (AbilityCostDefinition cost : costs) {
+            if (!consumeCost(cost, context)) {
+                throw new ActivationStartFailure(FailureReason.NOT_ENOUGH_RESOURCE);
+            }
+        }
+    }
+
+    private boolean canAfford(AbilityCostDefinition cost, AbilityActionContext context) {
+        double amount = resolveCostAmount(cost, context);
+        IMKEntityData ownerData = context.ownerData();
+        return switch (cost.kind()) {
+            case MANA -> ownerData.getStats().getMana() >= amount;
+            case HEALTH -> ownerData.getEntity().getHealth() > amount;
+            case CUSTOM_RESOURCE -> throw new ActivationStartFailure(FailureReason.UNSUPPORTED_FEATURE);
+        };
+    }
+
+    private boolean consumeCost(AbilityCostDefinition cost, AbilityActionContext context) {
+        double amount = resolveCostAmount(cost, context);
+        IMKEntityData ownerData = context.ownerData();
+        return switch (cost.kind()) {
+            case MANA -> ownerData.getStats().consumeMana((float) amount);
+            case HEALTH -> {
+                if (ownerData.getEntity().getHealth() <= amount) {
+                    yield false;
+                }
+                ownerData.getEntity().setHealth(Math.max(0.0f, ownerData.getEntity().getHealth() - (float) amount));
+                yield true;
+            }
+            case CUSTOM_RESOURCE -> throw new ActivationStartFailure(FailureReason.UNSUPPORTED_FEATURE);
+        };
+    }
+
+    private double resolveCostAmount(AbilityCostDefinition cost, AbilityActionContext context) {
+        double amount = powerResolver.resolve(cost.amount(), context);
+        if (cost.kind() == CostKind.MANA) {
+            amount *= context.stats(StatCapturePolicy.ON_INVOCATION).manaCostMultiplier();
+        }
+        return Math.max(0.0, amount);
+    }
+
+    private int resolveCastTicks(AbilityActivationDefinition activation, AbilityStatSnapshot stats) {
+        if (activation.castTicks() <= 0) {
+            return 0;
+        }
+        if (!activation.affectedByCastSpeed()) {
+            return activation.castTicks();
+        }
+        double modifier = 2.0 - stats.castSpeed();
+        return Math.max(0, (int) (modifier * activation.castTicks()));
+    }
+
+    private int applyCooldownRate(int baseDuration, AbilityStatSnapshot stats) {
+        double modifier = 2.0 - stats.cooldownRate();
+        return Math.max(0, (int) (modifier * baseDuration));
+    }
+
+    private int resolveScalarTicks(AbilityScalar scalar, AbilityActionContext context) {
+        return Math.max(0, (int) Math.round(powerResolver.resolve(scalar, context)));
+    }
+
+    private void completeInvocation(AbilityInvocation invocation, boolean ignoreCosts, int castTicksSpent) {
+        if (!hasValidExecutionTargets(invocation)) {
+            emitInvocationInterrupted(invocation, FailureReason.TARGET_LOST, castTicksSpent);
+            return;
+        }
+        try {
+            executeEntryPoint(invocation, createContext(invocation, Optional::empty), invocation.entryPointId(), ignoreCosts);
+            emitInvocationCompleted(invocation, castTicksSpent);
+        } catch (InvocationInterruptedException interrupted) {
+            emitInvocationInterrupted(invocation, interrupted.failureReason(), castTicksSpent);
+        }
+    }
+
+    private void executeEntryPoint(AbilityInvocation invocation,
+                                   AbilityActionContext context,
+                                   String entryPointId,
+                                   boolean ignoreCosts) {
+        List<AbilityAction> actions = invocation.definition().definition().getEntryPoint(entryPointId);
+        if (actions == null) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Unknown entry point " + entryPointId);
+        }
+        executeActions(invocation, context, actions, ignoreCosts);
+    }
+
+    private void executeActions(AbilityInvocation invocation,
+                                AbilityActionContext context,
+                                List<AbilityAction> actions,
+                                boolean ignoreCosts) {
+        for (AbilityAction action : actions) {
+            switch (action) {
+                case AbilityAction.DamageAction damageAction -> executeDamage(invocation, context, damageAction);
+                case AbilityAction.HealAction healAction -> executeHeal(invocation, context, healAction);
+                case AbilityAction.ApplyEffectAction applyEffectAction ->
+                        executeApplyEffect(invocation, context, applyEffectAction);
+                case AbilityAction.ModifyStateAction modifyStateAction ->
+                        executeModifyState(invocation, context, modifyStateAction);
+                case AbilityAction.PayCostAction payCostAction -> executePayCost(context, payCostAction, ignoreCosts);
+                case AbilityAction.SetVarAction setVarAction -> context.setVar(setVarAction.name(), setVarAction.value());
+                case AbilityAction.BranchAction branchAction -> executeBranch(invocation, context, branchAction, ignoreCosts);
+                case AbilityAction.ForEachTargetAction forEachTargetAction ->
+                        executeForEachTarget(invocation, context, forEachTargetAction, ignoreCosts);
+                case AbilityAction.StartEntryPointAction startEntryPointAction ->
+                        executeEntryPoint(invocation, context, startEntryPointAction.entryPoint(), ignoreCosts);
+            }
+        }
+    }
+
+    private void executeDamage(AbilityInvocation invocation,
+                               AbilityActionContext context,
+                               AbilityAction.DamageAction action) {
+        LivingEntity target = resolveActionTarget(context, action.target()).orElse(null);
+        if (target == null) {
+            return;
+        }
+        if (action.school() == null) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Damage actions currently require a school");
+        }
+
+        MKDamageType damageType = MKCoreRegistry.getDamageType(action.school());
+        if (damageType == null) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Unknown damage type " + action.school());
+        }
+
+        float amount = (float) powerResolver.resolve(action.amount(), context);
+        MKEffectBuilder<?> effect = CoreEffects.ABILITY_DAMAGE.get().builder(invocation.sourceId())
+                .sourceEntity(invocation.casterData().getEntity())
+                .ability(invocation.abilityId())
+                .state(state -> {
+                    state.setDamageType(damageType);
+                    state.setScalingParameters(amount, 0.0f, 0.0f);
+                });
+        targetData(target).getEffects().addEffect(effect);
+        invocation.markProducedGameplayEffect();
+    }
+
+    private void executeHeal(AbilityInvocation invocation,
+                             AbilityActionContext context,
+                             AbilityAction.HealAction action) {
+        LivingEntity target = resolveActionTarget(context, action.target()).orElse(null);
+        if (target == null) {
+            return;
+        }
+
+        float amount = (float) powerResolver.resolve(action.amount(), context);
+        MKHealing.healEntityFrom(
+                target,
+                amount,
+                MKHealSource.getHolyHeal(invocation.abilityId(), null, invocation.casterData().getEntity(), 0.0f)
+        );
+        invocation.markProducedGameplayEffect();
+    }
+
+    private void executeApplyEffect(AbilityInvocation invocation,
+                                    AbilityActionContext context,
+                                    AbilityAction.ApplyEffectAction action) {
+        LivingEntity target = resolveActionTarget(context, action.target()).orElse(null);
+        if (target == null) {
+            return;
+        }
+
+        MKEffect effectType = MKCoreRegistry.EFFECTS.get(action.effect());
+        if (effectType == null) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Unknown effect " + action.effect());
+        }
+
+        EntityEffectHandler effectHandler = targetData(target).getEffects();
+        MKEffectBuilder<?> effect = effectType.builder(invocation.sourceId())
+                .sourceEntity(invocation.casterData().getEntity())
+                .ability(invocation.abilityId())
+                .setBaseStackCount(action.stackCount());
+
+        if (action.duration() != null) {
+            effect.timed(applyBuffDuration(resolveScalarTicks(action.duration(), context), context));
+        } else {
+            effect.instant();
+        }
+
+        effectHandler.addEffect(effect);
+        invocation.markProducedGameplayEffect();
+    }
+
+    private void executeModifyState(AbilityInvocation invocation,
+                                    AbilityActionContext context,
+                                    AbilityAction.ModifyStateAction action) {
+        AbilityValue updated = switch (action.operation()) {
+            case SET_BOOL -> requireValueKind(action.value(), AbilityValueKind.BOOL, action.stateKey());
+            case SET_INT -> requireValueKind(action.value(), AbilityValueKind.INT, action.stateKey());
+            case ADD_INT -> {
+                int delta = requireValueKind(action.value(), AbilityValueKind.INT, action.stateKey()).asInt(action.stateKey());
+                int current = currentIntState(invocation, action.scope(), action.stateKey());
+                yield new AbilityValue.IntValue(current + delta);
+            }
+            case SET_FLOAT -> requireValueKind(action.value(), AbilityValueKind.FLOAT, action.stateKey());
+            case ADD_FLOAT -> {
+                float delta = requireValueKind(action.value(), AbilityValueKind.FLOAT, action.stateKey()).asFloat(action.stateKey());
+                float current = currentFloatState(invocation, action.scope(), action.stateKey());
+                yield new AbilityValue.FloatValue(current + delta);
+            }
+            case CLEAR -> null;
+        };
+        stateStore.setState(invocation, action.scope(), action.stateKey(), updated);
+        invocation.markProducedGameplayEffect();
+    }
+
+    private void executePayCost(AbilityActionContext context,
+                                AbilityAction.PayCostAction action,
+                                boolean ignoreCosts) {
+        if (ignoreCosts) {
+            return;
+        }
+        if (action.cost().kind() == CostKind.CUSTOM_RESOURCE) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Custom resources are not implemented yet");
+        }
+        if (!canAfford(action.cost(), context) || !consumeCost(action.cost(), context)) {
+            throw new InvocationInterruptedException(FailureReason.NOT_ENOUGH_RESOURCE,
+                    "Unable to pay cost " + action.cost().kind());
+        }
+        context.invocation().markProducedGameplayEffect();
+    }
+
+    private void executeBranch(AbilityInvocation invocation,
+                               AbilityActionContext context,
+                               AbilityAction.BranchAction action,
+                               boolean ignoreCosts) {
+        List<AbilityAction> branch = evaluateCondition(action.condition(), context) ? action.ifTrue() : action.ifFalse();
+        executeActions(invocation, context, branch, ignoreCosts);
+    }
+
+    private void executeForEachTarget(AbilityInvocation invocation,
+                                      AbilityActionContext context,
+                                      AbilityAction.ForEachTargetAction action,
+                                      boolean ignoreCosts) {
+        if (action.targets() != AbilityAction.TargetSet.SELECTED) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Unsupported target set " + action.targets());
+        }
+
+        for (UUID targetId : context.targets().entityIds()) {
+            LivingEntity target = resolveLivingEntity(context.casterData().getEntity(), targetId);
+            if (target == null || !target.isAlive()) {
+                continue;
+            }
+            AbilityActionContext targetContext = createContext(invocation, () -> Optional.of(target));
+            executeActions(invocation, targetContext, action.actions(), ignoreCosts);
+        }
+    }
+
+    private boolean evaluateCondition(AbilityConditionDefinition condition, AbilityActionContext context) {
+        return switch (condition.type()) {
+            case "always" -> true;
+            case "event_has_target" -> context.eventSnapshot() != null && context.eventSnapshot().targetEntityId() != null;
+            case "has_current_target" -> context.currentTarget().isPresent();
+            case "has_primary_target" -> context.targets().primaryEntityId() != null;
+            case "param_bool" -> context.getBoolParam(requiredString(condition, "parameter")) == optionalBoolean(condition, "value", true);
+            case "var_bool" -> context.getBoolVar(requiredString(condition, "name")) == optionalBoolean(condition, "value", true);
+            case "state_bool" -> {
+                StateScope scope = StateScope.valueOf(requiredString(condition, "scope").toUpperCase(Locale.ROOT));
+                String key = requiredString(condition, "state_key");
+                boolean expected = optionalBoolean(condition, "value", true);
+                AbilityValue current = context.stateStore().getState(context.invocation(), scope, key);
+                boolean actual = current instanceof AbilityValue.BoolValue boolValue && boolValue.value();
+                yield actual == expected;
+            }
+            default -> throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Unsupported condition type " + condition.type());
+        };
+    }
+
+    private int applyBuffDuration(int baseDuration, AbilityActionContext context) {
+        if (baseDuration <= 0) {
+            return 0;
+        }
+        ResourceLocation buffDurationId = BuiltInRegistries.ATTRIBUTE.getKey(MKAttributes.BUFF_DURATION.value());
+        double modifier = buffDurationId != null
+                ? context.stats(StatCapturePolicy.ON_INVOCATION).attributes().getOrDefault(buffDurationId, 1.0)
+                : 1.0;
+        return Math.max(0, (int) Math.round(baseDuration * modifier));
+    }
+
+    private AbilityValue requireValueKind(@Nullable AbilityValue value, AbilityValueKind kind, String label) {
+        if (value == null) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Missing state value for " + label);
+        }
+        if (value.kind() != kind) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "State value " + label + " expected " + kind + " but was " + value.kind());
+        }
+        return value;
+    }
+
+    private int currentIntState(AbilityInvocation invocation, StateScope scope, String key) {
+        AbilityValue current = stateStore.getState(invocation, scope, key);
+        if (current == null) {
+            return 0;
+        }
+        if (current.kind() != AbilityValueKind.INT) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "State " + key + " is not an int");
+        }
+        return current.asInt(key);
+    }
+
+    private float currentFloatState(AbilityInvocation invocation, StateScope scope, String key) {
+        AbilityValue current = stateStore.getState(invocation, scope, key);
+        if (current == null) {
+            return 0.0f;
+        }
+        if (current.kind() != AbilityValueKind.FLOAT) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "State " + key + " is not a float");
+        }
+        return current.asFloat(key);
+    }
+
+    private SimpleAbilityActionContext createContext(AbilityInvocation invocation, Supplier<Optional<LivingEntity>> currentTargetSupplier) {
+        return new SimpleAbilityActionContext(invocation, powerResolver, stateStore, currentTargetSupplier, null);
+    }
+
+    private Optional<LivingEntity> resolveActionTarget(AbilityActionContext context, AbilityAction.ActionTarget target) {
+        Optional<LivingEntity> resolved = switch (target) {
+            case SELF -> Optional.of(context.casterData().getEntity());
+            case PRIMARY_ENTITY -> Optional.ofNullable(resolveLivingEntity(context.casterData().getEntity(), context.targets().primaryEntityId()));
+            case TARGET -> context.currentTarget();
+            case EVENT_TARGET -> Optional.ofNullable(resolveLivingEntity(context.casterData().getEntity(),
+                    context.eventSnapshot() != null ? context.eventSnapshot().targetEntityId() : null));
+        };
+        return resolved.filter(LivingEntity::isAlive);
+    }
+
+    private @Nullable LivingEntity resolveLivingEntity(LivingEntity referenceEntity, @Nullable UUID entityId) {
+        if (entityId == null) {
+            return null;
+        }
+        if (!(referenceEntity.level() instanceof ServerLevel serverLevel)) {
+            return null;
+        }
+        Entity entity = serverLevel.getEntity(entityId);
+        return entity instanceof LivingEntity livingEntity ? livingEntity : null;
+    }
+
+    private IMKEntityData targetData(LivingEntity entity) {
+        return com.chaosbuffalo.mkcore.MKCore.getEntityDataOrThrow(entity);
+    }
+
+    private long currentGameTick(IMKEntityData entityData) {
+        return entityData.getEntity().level().getGameTime();
+    }
+
+    private boolean hasValidExecutionTargets(AbilityInvocation invocation) {
+        if (invocation.targets().entityIds().isEmpty()) {
+            return true;
+        }
+        if (invocation.targets().primaryEntityId() != null) {
+            LivingEntity primaryTarget = resolveLivingEntity(invocation.casterData().getEntity(), invocation.targets().primaryEntityId());
+            return primaryTarget != null && primaryTarget.isAlive();
+        }
+        return invocation.targets().entityIds().stream()
+                .map(targetId -> resolveLivingEntity(invocation.casterData().getEntity(), targetId))
+                .anyMatch(target -> target != null && target.isAlive());
+    }
+
+    private String requiredString(AbilityConditionDefinition condition, String key) {
+        var value = condition.get(key);
+        if (value == null || !value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString()) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Condition " + condition.type() + " requires string field " + key);
+        }
+        return value.getAsString();
+    }
+
+    private boolean optionalBoolean(AbilityConditionDefinition condition, String key, boolean defaultValue) {
+        var value = condition.get(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isBoolean()) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Condition " + condition.type() + " field " + key + " must be boolean");
+        }
+        return value.getAsBoolean();
+    }
+
+    private void emitInvocationStarted(AbilityInvocation invocation) {
+        eventEmitter.emit(new AbilityEventSnapshot(
+                AbilityEventType.INVOCATION_STARTED,
+                invocation.invocationId(),
+                invocation.rootInvocationId(),
+                invocation.chainDepth(),
+                invocation.sourceId(),
+                invocation.abilityId(),
+                invocation.activationId(),
+                invocation.casterData().getEntity().getUUID(),
+                invocation.targets().primaryEntityId(),
+                Map.of()
+        ));
+    }
+
+    private void emitInvocationCompleted(AbilityInvocation invocation, int castTicksSpent) {
+        eventEmitter.emit(new AbilityEventSnapshot(
+                AbilityEventType.INVOCATION_COMPLETED,
+                invocation.invocationId(),
+                invocation.rootInvocationId(),
+                invocation.chainDepth(),
+                invocation.sourceId(),
+                invocation.abilityId(),
+                invocation.activationId(),
+                invocation.casterData().getEntity().getUUID(),
+                invocation.targets().primaryEntityId(),
+                Map.of("cast_ticks_spent", new AbilityValue.IntValue(castTicksSpent))
+        ));
+    }
+
+    private void emitInvocationInterrupted(AbilityInvocation invocation,
+                                           FailureReason failureReason,
+                                           int castTicksSpent) {
+        eventEmitter.emit(new AbilityEventSnapshot(
+                AbilityEventType.INVOCATION_INTERRUPTED,
+                invocation.invocationId(),
+                invocation.rootInvocationId(),
+                invocation.chainDepth(),
+                invocation.sourceId(),
+                invocation.abilityId(),
+                invocation.activationId(),
+                invocation.casterData().getEntity().getUUID(),
+                invocation.targets().primaryEntityId(),
+                Map.of(
+                        "cast_ticks_spent", new AbilityValue.IntValue(castTicksSpent),
+                        "failure", new AbilityValue.ResourceLocationValue(
+                                ResourceLocation.fromNamespaceAndPath("mkcore", failureReason.name().toLowerCase(Locale.ROOT)))
+                )
+        ));
+    }
+
+    private static final class PendingCast {
+        private final AbilityInvocation invocation;
+        private final int totalTicks;
+        private final boolean ignoreCosts;
+        private int remainingTicks;
+
+        private PendingCast(AbilityInvocation invocation, int castTicks, boolean ignoreCosts) {
+            this.invocation = invocation;
+            this.totalTicks = castTicks;
+            this.remainingTicks = castTicks;
+            this.ignoreCosts = ignoreCosts;
+        }
+
+        private AbilityInvocation invocation() {
+            return invocation;
+        }
+
+        private boolean ignoreCosts() {
+            return ignoreCosts;
+        }
+
+        private void tick() {
+            remainingTicks--;
+        }
+
+        private boolean isComplete() {
+            return remainingTicks <= 0;
+        }
+
+        private int castTicksSpent() {
+            return Math.max(0, totalTicks - Math.max(remainingTicks, 0));
+        }
+    }
+
+    private static final class ActivationStartFailure extends RuntimeException {
+        private final FailureReason failureReason;
+
+        private ActivationStartFailure(FailureReason failureReason) {
+            this.failureReason = failureReason;
+        }
+
+        private FailureReason failureReason() {
+            return failureReason;
+        }
+    }
+
+    private static final class InvocationInterruptedException extends RuntimeException {
+        private final FailureReason failureReason;
+
+        private InvocationInterruptedException(FailureReason failureReason, String message) {
+            super(message);
+            this.failureReason = failureReason;
+        }
+
+        private FailureReason failureReason() {
+            return failureReason;
+        }
+    }
+}

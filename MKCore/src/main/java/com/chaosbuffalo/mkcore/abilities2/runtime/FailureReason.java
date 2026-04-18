@@ -8,5 +8,6 @@ public enum FailureReason {
     NOT_ENOUGH_RESOURCE,
     ON_COOLDOWN,
     INTERRUPTED,
-    TARGET_LOST
+    TARGET_LOST,
+    UNSUPPORTED_FEATURE
 }
