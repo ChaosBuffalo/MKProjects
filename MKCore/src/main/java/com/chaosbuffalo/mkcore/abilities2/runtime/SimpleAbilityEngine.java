@@ -57,7 +57,58 @@ public class SimpleAbilityEngine implements AbilityEngine {
     public InvocationResult activate(ActivationRequest request) {
         Objects.requireNonNull(request, "request");
         try {
-            return activateInternal(request);
+            return startActivation(
+                    request.ownerData(),
+                    request.casterData(),
+                    request.ability().abilityId(),
+                    request.ability().grantId(),
+                    request.activationId(),
+                    request.sourceId(),
+                    request.forcedTargets(),
+                    request.eventSnapshot(),
+                    request.ignoreCosts(),
+                    request.ignoreCooldowns(),
+                    ActivationReason.DIRECT_REQUEST,
+                    true,
+                    0,
+                    null,
+                    null
+            );
+        } catch (ActivationStartFailure failure) {
+            return InvocationResult.failed(failure.failureReason());
+        }
+    }
+
+    public InvocationResult activateReaction(RegisteredReaction reaction,
+                                             IMKEntityData ownerData,
+                                             IMKEntityData casterData,
+                                             @Nullable UUID sourceId,
+                                             AbilityEventSnapshot event) {
+        Objects.requireNonNull(reaction, "reaction");
+        Objects.requireNonNull(ownerData, "ownerData");
+        Objects.requireNonNull(casterData, "casterData");
+        Objects.requireNonNull(event, "event");
+        if (reaction.owner().abilityId() == null) {
+            return InvocationResult.failed(FailureReason.UNKNOWN_ABILITY);
+        }
+        try {
+            return startActivation(
+                    ownerData,
+                    casterData,
+                    reaction.owner().abilityId(),
+                    null,
+                    reaction.definition().activationId(),
+                    sourceId != null ? sourceId : reaction.owner().stableSourceId(),
+                    null,
+                    event,
+                    false,
+                    false,
+                    ActivationReason.REACTION,
+                    false,
+                    event.chainDepth() + 1,
+                    event.invocationId(),
+                    event.rootInvocationId()
+            );
         } catch (ActivationStartFailure failure) {
             return InvocationResult.failed(failure.failureReason());
         }
@@ -93,61 +144,80 @@ public class SimpleAbilityEngine implements AbilityEngine {
         }
     }
 
-    private InvocationResult activateInternal(ActivationRequest request) {
-        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(request.ability().abilityId());
+    private InvocationResult startActivation(IMKEntityData ownerData,
+                                             IMKEntityData casterData,
+                                             ResourceLocation abilityId,
+                                             @Nullable UUID abilityInstanceId,
+                                             String activationId,
+                                             @Nullable UUID sourceId,
+                                             @Nullable AbilityResolvedTargets forcedTargets,
+                                             @Nullable AbilityEventSnapshot eventSnapshot,
+                                             boolean ignoreCosts,
+                                             boolean ignoreCooldowns,
+                                             ActivationReason reason,
+                                             boolean externalOnly,
+                                             int chainDepth,
+                                             @Nullable UUID parentInvocationId,
+                                             @Nullable UUID inheritedRootInvocationId) {
+        PatchedAbilityDefinition definition = definitionResolver.resolvePatched(abilityId);
         if (definition == null) {
             return InvocationResult.failed(FailureReason.UNKNOWN_ABILITY);
         }
 
-        AbilityActivationDefinition activation = definition.definition().getActivation(request.activationId());
+        AbilityActivationDefinition activation = definition.definition().getActivation(activationId);
         if (activation == null) {
             return InvocationResult.failed(FailureReason.UNKNOWN_ACTIVATION);
         }
-        if (!(activation.kind() == ActivationKind.MANUAL || activation.kind() == ActivationKind.AI)) {
+
+        if (externalOnly) {
+            if (!(activation.kind() == ActivationKind.MANUAL || activation.kind() == ActivationKind.AI)) {
+                return InvocationResult.failed(FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE);
+            }
+        } else if (reason == ActivationReason.REACTION && activation.kind() != ActivationKind.PROC) {
             return InvocationResult.failed(FailureReason.ACTIVATION_NOT_EXTERNALLY_CALLABLE);
         }
         if (!(activation.behavior() instanceof ActivationBehavior.InstantBehavior)) {
             return InvocationResult.failed(FailureReason.UNSUPPORTED_FEATURE);
         }
 
-        AbilityResolvedTargets targets = resolveActivationTargets(request, activation);
-        UUID sourceId = request.sourceId() != null ? request.sourceId() : request.casterData().getEntity().getUUID();
-        AbilityStatSnapshot invocationStats = powerResolver.captureInvocationStats(request.casterData());
+        AbilityResolvedTargets targets = resolveActivationTargets(casterData, forcedTargets, eventSnapshot, activation.targeting());
+        UUID resolvedSourceId = sourceId != null ? sourceId : casterData.getEntity().getUUID();
+        AbilityStatSnapshot invocationStats = powerResolver.captureInvocationStats(casterData);
 
         UUID invocationId = UUID.randomUUID();
         AbilityInvocation invocation = new AbilityInvocation(
                 invocationId,
-                invocationId,
-                0,
-                null,
-                request.ability().abilityId(),
-                request.ability().grantId(),
-                request.activationId(),
+                inheritedRootInvocationId != null ? inheritedRootInvocationId : invocationId,
+                chainDepth,
+                parentInvocationId,
+                abilityId,
+                abilityInstanceId,
+                activationId,
                 activation.entryPoint(),
-                ActivationReason.DIRECT_REQUEST,
-                request.ownerData(),
-                request.casterData(),
-                sourceId,
+                reason,
+                ownerData,
+                casterData,
+                resolvedSourceId,
                 targets,
-                request.eventSnapshot(),
+                eventSnapshot,
                 definition,
                 Map.of(),
                 invocationStats,
                 Map.of(),
-                request.casterData().getEntity().getRandom()
+                casterData.getEntity().getRandom()
         );
 
         SimpleAbilityActionContext context = createContext(invocation, Optional::empty);
-        long gameTick = currentGameTick(request.casterData());
+        long gameTick = currentGameTick(casterData);
 
-        if (!request.ignoreCooldowns()) {
+        if (!ignoreCooldowns) {
             checkCooldowns(invocation, activation, context, gameTick);
         }
-        if (!request.ignoreCosts()) {
+        if (!ignoreCosts) {
             checkCosts(activation.costs(), context);
             consumeCosts(activation.costs(), context);
         }
-        if (!request.ignoreCooldowns()) {
+        if (!ignoreCooldowns) {
             writeCooldowns(invocation, activation, context, gameTick);
         }
 
@@ -155,33 +225,35 @@ public class SimpleAbilityEngine implements AbilityEngine {
         emitInvocationStarted(invocation);
         if (castTicks > 0) {
             pendingCastsByCaster.computeIfAbsent(invocation.casterData().getEntity().getUUID(), ignored -> new ArrayList<>())
-                    .add(new PendingCast(invocation, castTicks, request.ignoreCosts()));
+                    .add(new PendingCast(invocation, castTicks, ignoreCosts));
         } else {
-            completeInvocation(invocation, request.ignoreCosts(), 0);
+            completeInvocation(invocation, ignoreCosts, 0);
         }
         return InvocationResult.started(invocation.invocationId());
     }
 
-    private AbilityResolvedTargets resolveActivationTargets(ActivationRequest request,
-                                                           AbilityActivationDefinition activation) {
-        if (request.forcedTargets() != null) {
-            validateForcedTargets(request, activation.targeting(), request.forcedTargets());
-            return request.forcedTargets();
+    private AbilityResolvedTargets resolveActivationTargets(IMKEntityData casterData,
+                                                           @Nullable AbilityResolvedTargets forcedTargets,
+                                                           @Nullable AbilityEventSnapshot eventSnapshot,
+                                                           AbilityTargetResolverDefinition targeting) {
+        if (forcedTargets != null) {
+            validateForcedTargets(casterData, eventSnapshot, targeting, forcedTargets);
+            return forcedTargets;
         }
 
-        return switch (activation.targeting().type()) {
+        return switch (targeting.type()) {
             case "none" -> new AbilityResolvedTargets(null, List.of(), null, null, null);
             case "self" -> {
-                UUID selfId = request.casterData().getEntity().getUUID();
+                UUID selfId = casterData.getEntity().getUUID();
                 yield new AbilityResolvedTargets(selfId, List.of(selfId), null, null, null);
             }
             case "event_target" -> {
-                UUID targetId = request.eventSnapshot() != null ? request.eventSnapshot().targetEntityId() : null;
-                yield resolveSingleTarget(request.casterData(), targetId);
+                UUID targetId = eventSnapshot != null ? eventSnapshot.targetEntityId() : null;
+                yield resolveSingleTarget(casterData, targetId);
             }
             case "event_actor" -> {
-                UUID targetId = request.eventSnapshot() != null ? request.eventSnapshot().actorEntityId() : null;
-                yield resolveSingleTarget(request.casterData(), targetId);
+                UUID targetId = eventSnapshot != null ? eventSnapshot.actorEntityId() : null;
+                yield resolveSingleTarget(casterData, targetId);
             }
             default -> throw new ActivationStartFailure(FailureReason.UNSUPPORTED_FEATURE);
         };
@@ -198,10 +270,11 @@ public class SimpleAbilityEngine implements AbilityEngine {
         return new AbilityResolvedTargets(targetId, List.of(targetId), null, null, null);
     }
 
-    private void validateForcedTargets(ActivationRequest request,
+    private void validateForcedTargets(IMKEntityData casterData,
+                                       @Nullable AbilityEventSnapshot eventSnapshot,
                                        AbilityTargetResolverDefinition targeting,
                                        AbilityResolvedTargets targets) {
-        validateTargetEntities(request.casterData(), targets);
+        validateTargetEntities(casterData, targets);
         switch (targeting.type()) {
             case "none" -> {
                 if (targets.primaryEntityId() != null || !targets.entityIds().isEmpty()) {
@@ -209,20 +282,20 @@ public class SimpleAbilityEngine implements AbilityEngine {
                 }
             }
             case "self" -> {
-                UUID casterId = request.casterData().getEntity().getUUID();
+                UUID casterId = casterData.getEntity().getUUID();
                 if (!casterId.equals(targets.primaryEntityId()) || targets.entityIds().size() != 1
                         || !casterId.equals(targets.entityIds().getFirst())) {
                     throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
                 }
             }
             case "event_target" -> {
-                UUID expected = request.eventSnapshot() != null ? request.eventSnapshot().targetEntityId() : null;
+                UUID expected = eventSnapshot != null ? eventSnapshot.targetEntityId() : null;
                 if (!Objects.equals(expected, targets.primaryEntityId())) {
                     throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
                 }
             }
             case "event_actor" -> {
-                UUID expected = request.eventSnapshot() != null ? request.eventSnapshot().actorEntityId() : null;
+                UUID expected = eventSnapshot != null ? eventSnapshot.actorEntityId() : null;
                 if (!Objects.equals(expected, targets.primaryEntityId())) {
                     throw new ActivationStartFailure(FailureReason.INVALID_TARGETS);
                 }
