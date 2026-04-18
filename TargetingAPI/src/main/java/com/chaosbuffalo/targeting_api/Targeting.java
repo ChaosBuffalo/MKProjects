@@ -10,6 +10,13 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.function.BiFunction;
 
+/**
+ * Central utility class for resolving {@link Entity} relationships and validating
+ * targets against a {@link TargetingContext}.
+ * <p>
+ * Relationship checks account for direct entity identity, team membership,
+ * entity ownership, mounted controllers, and registered custom callbacks.
+ */
 public class Targeting {
 
     private static final List<TargetRelationCallback> relationCallbacks = new ArrayList<>();
@@ -28,13 +35,35 @@ public class Targeting {
         }
     }
 
+    /**
+     * Describes how one {@link Entity} relates to another for targeting purposes.
+     */
     public enum TargetRelation {
+        /**
+         * The target should be treated as friendly to the source.
+         */
         FRIEND,
+        /**
+         * The target should be treated as hostile to the source.
+         */
         ENEMY,
+        /**
+         * The target is neither friendly nor hostile.
+         */
         NEUTRAL,
+        /**
+         * No relation could be determined by the current checks.
+         */
         UNHANDLED
     }
 
+    /**
+     * Compares two entities by UUID.
+     *
+     * @param first the first entity
+     * @param second the second entity
+     * @return {@code true} if both entities are non-null and have the same UUID
+     */
     public static boolean areEntitiesEqual(Entity first, Entity second) {
         return first != null && second != null && first.getUUID().compareTo(second.getUUID()) == 0;
     }
@@ -45,6 +74,14 @@ public class Targeting {
                 Targeting.TargetRelation.ENEMY;
     }
 
+    /**
+     * Resolves the relationship between two entities after following ownership
+     * and controller chains to their effective root entities.
+     *
+     * @param source the acting entity
+     * @param target the potential target
+     * @return the resolved targeting relation
+     */
     public static TargetRelation getTargetRelation(Entity source, Entity target) {
         Entity sourceRoot = getRootEntity(source);
         Entity targetRoot = getRootEntity(target);
@@ -83,16 +120,40 @@ public class Targeting {
         return TargetRelation.UNHANDLED;
     }
 
+    /**
+     * Registers a relation callback with the default priority of {@code 10}.
+     * <p>
+     * Callbacks are evaluated in ascending priority order until one returns a
+     * relation other than {@link TargetRelation#UNHANDLED}.
+     *
+     * @param callback the callback used to resolve a source/target relation
+     */
     public static void registerRelationCallback(BiFunction<Entity, Entity, TargetRelation> callback) {
         relationCallbacks.add(new TargetRelationCallback(callback, 10));
         relationCallbacks.sort(Comparator.comparingInt(TargetRelationCallback::getPriority));
     }
 
+    /**
+     * Registers a relation callback with an explicit priority.
+     * <p>
+     * Lower priority values run first.
+     *
+     * @param callback the callback used to resolve a source/target relation
+     * @param priority the callback ordering value
+     */
     public static void registerRelationCallback(BiFunction<Entity, Entity, TargetRelation> callback, int priority) {
         relationCallbacks.add(new TargetRelationCallback(callback, priority));
         relationCallbacks.sort(Comparator.comparingInt(TargetRelationCallback::getPriority));
     }
 
+    /**
+     * Tests whether a target is valid for the supplied targeting context.
+     *
+     * @param context the targeting rules to apply
+     * @param caster the acting entity
+     * @param target the candidate target
+     * @return {@code true} if the target passes the context checks
+     */
     public static boolean isValidTarget(TargetingContext context, Entity caster, Entity target) {
         return context.isValidTarget(caster, target);
     }
@@ -133,18 +194,46 @@ public class Targeting {
         return relations.contains(relation);
     }
 
+    /**
+     * Accepts all targets.
+     *
+     * @param caster the acting entity
+     * @param target the candidate target
+     * @return always {@code true}
+     */
     public static boolean allowAny(Entity caster, Entity target) {
         return true;
     }
 
+    /**
+     * Checks whether the target is friendly to the caster.
+     *
+     * @param caster the acting entity
+     * @param target the candidate target
+     * @return {@code true} if the resolved relation is friendly
+     */
     public static boolean isValidFriendly(Entity caster, Entity target) {
         return validCheck(caster, target, EnumSet.of(TargetRelation.FRIEND));
     }
 
+    /**
+     * Checks whether the target is hostile to the caster.
+     *
+     * @param caster the acting entity
+     * @param target the candidate target
+     * @return {@code true} if the resolved relation is enemy
+     */
     public static boolean isValidEnemy(Entity caster, Entity target) {
         return validCheck(caster, target, EnumSet.of(TargetRelation.ENEMY));
     }
 
+    /**
+     * Checks whether the target is neutral or unhandled relative to the caster.
+     *
+     * @param caster the acting entity
+     * @param target the candidate target
+     * @return {@code true} if the resolved relation is neutral or unhandled
+     */
     public static boolean isValidNeutral(Entity caster, Entity target) {
         return validCheck(caster, target, EnumSet.of(TargetRelation.NEUTRAL, TargetRelation.UNHANDLED));
     }
