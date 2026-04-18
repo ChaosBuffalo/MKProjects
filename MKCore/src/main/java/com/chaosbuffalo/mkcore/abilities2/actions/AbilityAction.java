@@ -13,7 +13,8 @@ import java.util.Objects;
 public sealed interface AbilityAction permits AbilityAction.DamageAction, AbilityAction.HealAction,
         AbilityAction.ApplyEffectAction, AbilityAction.ModifyStateAction, AbilityAction.PayCostAction,
         AbilityAction.SetVarAction, AbilityAction.BranchAction, AbilityAction.ForEachTargetAction,
-        AbilityAction.StartEntryPointAction {
+        AbilityAction.StartEntryPointAction, AbilityAction.InstallReactionAction,
+        AbilityAction.RemoveReactionAction {
 
     String type();
 
@@ -170,6 +171,32 @@ public sealed interface AbilityAction permits AbilityAction.DamageAction, Abilit
         @Override
         public String type() {
             return "start_entry_point";
+        }
+    }
+
+    record InstallReactionAction(String reaction) implements AbilityAction {
+        public InstallReactionAction {
+            if (reaction == null || reaction.isBlank()) {
+                throw new IllegalArgumentException("Install reaction reaction must not be blank");
+            }
+        }
+
+        @Override
+        public String type() {
+            return "install_reaction";
+        }
+    }
+
+    record RemoveReactionAction(String reaction) implements AbilityAction {
+        public RemoveReactionAction {
+            if (reaction == null || reaction.isBlank()) {
+                throw new IllegalArgumentException("Remove reaction reaction must not be blank");
+            }
+        }
+
+        @Override
+        public String type() {
+            return "remove_reaction";
         }
     }
 }

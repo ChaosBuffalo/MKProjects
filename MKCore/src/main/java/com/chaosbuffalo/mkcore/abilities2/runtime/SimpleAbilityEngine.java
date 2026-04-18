@@ -30,10 +30,29 @@ public class SimpleAbilityEngine implements AbilityEngine {
         void emit(AbilityEventSnapshot event);
     }
 
+    public interface ReactionController {
+        ReactionController NOOP = new ReactionController() {
+        };
+
+        default void install(AbilityReactionOwner owner,
+                             UUID ownerEntityId,
+                             UUID casterEntityId,
+                             String reactionId,
+                             AbilityReactionDefinition definition) {
+        }
+
+        default void remove(AbilityReactionOwner owner, String reactionId) {
+        }
+
+        default void clearOwner(AbilityReactionOwner owner) {
+        }
+    }
+
     private final AbilityDefinitionResolver definitionResolver;
     private final AbilityPowerResolver powerResolver;
     private final AbilityStateStore stateStore;
     private final AbilityEventEmitter eventEmitter;
+    private final ReactionController reactionController;
     private final Map<UUID, List<PendingCast>> pendingCastsByCaster = new HashMap<>();
 
     public SimpleAbilityEngine(AbilityDefinitionResolver definitionResolver,
@@ -47,10 +66,19 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                AbilityPowerResolver powerResolver,
                                AbilityStateStore stateStore,
                                AbilityEventEmitter eventEmitter) {
+        this(definitionResolver, powerResolver, stateStore, eventEmitter, ReactionController.NOOP);
+    }
+
+    public SimpleAbilityEngine(AbilityDefinitionResolver definitionResolver,
+                               AbilityPowerResolver powerResolver,
+                               AbilityStateStore stateStore,
+                               AbilityEventEmitter eventEmitter,
+                               ReactionController reactionController) {
         this.definitionResolver = Objects.requireNonNull(definitionResolver, "definitionResolver");
         this.powerResolver = Objects.requireNonNull(powerResolver, "powerResolver");
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore");
         this.eventEmitter = Objects.requireNonNull(eventEmitter, "eventEmitter");
+        this.reactionController = Objects.requireNonNull(reactionController, "reactionController");
     }
 
     @Override
@@ -126,7 +154,7 @@ public class SimpleAbilityEngine implements AbilityEngine {
             PendingCast pendingCast = iterator.next();
             if (!entityData.getEntity().isAlive() || entityData.getEntity().isRemoved()) {
                 iterator.remove();
-                emitInvocationInterrupted(pendingCast.invocation(), FailureReason.INTERRUPTED, pendingCast.castTicksSpent());
+                finishInterruptedInvocation(pendingCast.invocation(), FailureReason.INTERRUPTED, pendingCast.castTicksSpent());
                 continue;
             }
 
@@ -417,15 +445,17 @@ public class SimpleAbilityEngine implements AbilityEngine {
 
     private void completeInvocation(AbilityInvocation invocation, boolean ignoreCosts, int castTicksSpent) {
         if (!hasValidExecutionTargets(invocation)) {
-            emitInvocationInterrupted(invocation, FailureReason.TARGET_LOST, castTicksSpent);
+            finishInterruptedInvocation(invocation, FailureReason.TARGET_LOST, castTicksSpent);
             return;
         }
         try {
             executeEntryPoint(invocation, createContext(invocation, Optional::empty), invocation.entryPointId(), ignoreCosts);
             emitInvocationCompleted(invocation, castTicksSpent);
         } catch (InvocationInterruptedException interrupted) {
-            emitInvocationInterrupted(invocation, interrupted.failureReason(), castTicksSpent);
+            finishInterruptedInvocation(invocation, interrupted.failureReason(), castTicksSpent);
+            return;
         }
+        reactionController.clearOwner(invocationReactionOwner(invocation));
     }
 
     private void executeEntryPoint(AbilityInvocation invocation,
@@ -459,6 +489,10 @@ public class SimpleAbilityEngine implements AbilityEngine {
                         executeForEachTarget(invocation, context, forEachTargetAction, ignoreCosts);
                 case AbilityAction.StartEntryPointAction startEntryPointAction ->
                         executeEntryPoint(invocation, context, startEntryPointAction.entryPoint(), ignoreCosts);
+                case AbilityAction.InstallReactionAction installReactionAction ->
+                        executeInstallReaction(invocation, context, installReactionAction);
+                case AbilityAction.RemoveReactionAction removeReactionAction ->
+                        executeRemoveReaction(invocation, context, removeReactionAction);
             }
         }
     }
@@ -607,6 +641,37 @@ public class SimpleAbilityEngine implements AbilityEngine {
         }
     }
 
+    private void executeInstallReaction(AbilityInvocation invocation,
+                                        AbilityActionContext context,
+                                        AbilityAction.InstallReactionAction action) {
+        AbilityReactionOwner owner = context.reactionOwner().orElseThrow(() ->
+                new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                        "install_reaction requires a reaction owner"));
+        AbilityReactionDefinition definition = invocation.definition().definition().getReaction(action.reaction());
+        if (definition == null) {
+            throw new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                    "Unknown reaction " + action.reaction());
+        }
+        reactionController.install(
+                owner,
+                invocation.ownerData().getEntity().getUUID(),
+                invocation.casterData().getEntity().getUUID(),
+                action.reaction(),
+                definition
+        );
+        invocation.markProducedGameplayEffect();
+    }
+
+    private void executeRemoveReaction(AbilityInvocation invocation,
+                                       AbilityActionContext context,
+                                       AbilityAction.RemoveReactionAction action) {
+        AbilityReactionOwner owner = context.reactionOwner().orElseThrow(() ->
+                new InvocationInterruptedException(FailureReason.UNSUPPORTED_FEATURE,
+                        "remove_reaction requires a reaction owner"));
+        reactionController.remove(owner, action.reaction());
+        invocation.markProducedGameplayEffect();
+    }
+
     private boolean evaluateCondition(AbilityConditionDefinition condition, AbilityActionContext context) {
         return switch (condition.type()) {
             case "always" -> true;
@@ -676,7 +741,8 @@ public class SimpleAbilityEngine implements AbilityEngine {
     }
 
     private SimpleAbilityActionContext createContext(AbilityInvocation invocation, Supplier<Optional<LivingEntity>> currentTargetSupplier) {
-        return new SimpleAbilityActionContext(invocation, powerResolver, stateStore, currentTargetSupplier, null);
+        return new SimpleAbilityActionContext(invocation, powerResolver, stateStore, currentTargetSupplier,
+                invocationReactionOwner(invocation));
     }
 
     private Optional<LivingEntity> resolveActionTarget(AbilityActionContext context, AbilityAction.ActionTarget target) {
@@ -792,6 +858,22 @@ public class SimpleAbilityEngine implements AbilityEngine {
                                 ResourceLocation.fromNamespaceAndPath("mkcore", failureReason.name().toLowerCase(Locale.ROOT)))
                 )
         ));
+    }
+
+    private void finishInterruptedInvocation(AbilityInvocation invocation,
+                                             FailureReason failureReason,
+                                             int castTicksSpent) {
+        emitInvocationInterrupted(invocation, failureReason, castTicksSpent);
+        reactionController.clearOwner(invocationReactionOwner(invocation));
+    }
+
+    private AbilityReactionOwner invocationReactionOwner(AbilityInvocation invocation) {
+        return new AbilityReactionOwner(
+                ReactionOwnerType.INVOCATION,
+                invocation.invocationId(),
+                invocation.sourceId(),
+                invocation.abilityId()
+        );
     }
 
     private static final class PendingCast {

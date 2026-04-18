@@ -2,17 +2,20 @@ package com.chaosbuffalo.mkcore.abilities2;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityEventFilter.ParticipantRelation;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityReactionDefinition;
 import com.chaosbuffalo.mkcore.abilities2.runtime.*;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import javax.annotation.Nullable;
-import java.util.UUID;
+import java.util.*;
 
 public class AbilityRuntimeService {
     private final AbilityDefinitionResolver definitionResolver;
@@ -20,18 +23,28 @@ public class AbilityRuntimeService {
     private final AbilityPowerResolver powerResolver;
     private final AbilityReactionBus reactionBus;
     private final SimpleAbilityEngine engine;
+    private final Map<AbilityReactionOwner, ReactionOwnerRuntime> reactionOwnerRuntime = new HashMap<>();
+    private final Map<AbilityReactionOwner, Map<String, AbilityReactionHandle>> installedReactionHandles = new HashMap<>();
 
     public AbilityRuntimeService(AbilityDefinitionResolver definitionResolver) {
         this.definitionResolver = definitionResolver;
         this.stateStore = new MemoryAbilityStateStore();
         this.powerResolver = new MKAbilityPowerResolver();
         this.reactionBus = new AbilityReactionBus(
+                RandomSource.create(),
                 this::currentGameTick,
                 this::triggerReaction,
                 this::evaluateRelation,
-                this::matchesTag
+                this::matchesTag,
+                this::resolveOwnerEntityId
         );
-        this.engine = new SimpleAbilityEngine(definitionResolver, powerResolver, stateStore, reactionBus::emit);
+        this.engine = new SimpleAbilityEngine(
+                definitionResolver,
+                powerResolver,
+                stateStore,
+                reactionBus::emit,
+                new EngineReactionController()
+        );
     }
 
     public AbilityStateStore getStateStore() {
@@ -63,14 +76,15 @@ public class AbilityRuntimeService {
     }
 
     private void triggerReaction(RegisteredReaction reaction, AbilityEventSnapshot event) {
-        LivingEntity ownerEntity = findEntity(reaction.owner().ownerId());
-        if (ownerEntity == null) {
+        IMKEntityData ownerData = resolveOwnerData(reaction.owner());
+        IMKEntityData casterData = resolveCasterData(reaction.owner());
+        if (ownerData == null || casterData == null) {
             return;
         }
         InvocationResult result = engine.activateReaction(
                 reaction,
-                MKCore.getEntityDataOrThrow(ownerEntity),
-                MKCore.getEntityDataOrThrow(ownerEntity),
+                ownerData,
+                casterData,
                 reaction.owner().stableSourceId(),
                 event
         );
@@ -97,12 +111,78 @@ public class AbilityRuntimeService {
         };
     }
 
+    private @Nullable UUID resolveOwnerEntityId(AbilityReactionOwner owner) {
+        ReactionOwnerRuntime runtime = reactionOwnerRuntime.get(owner);
+        if (runtime != null) {
+            return runtime.ownerEntityId();
+        }
+        return switch (owner.type()) {
+            case ENTITY_PASSIVE, ACTIVE_EFFECT, ITEM_SOURCE, TOGGLE_STATE -> owner.ownerId();
+            case INVOCATION, DELIVERY -> null;
+        };
+    }
+
+    private @Nullable IMKEntityData resolveOwnerData(AbilityReactionOwner owner) {
+        ReactionOwnerRuntime runtime = reactionOwnerRuntime.get(owner);
+        UUID entityId = runtime != null ? runtime.ownerEntityId() : resolveOwnerEntityId(owner);
+        LivingEntity entity = entityId != null ? findEntity(entityId) : null;
+        return entity != null ? MKCore.getEntityDataOrThrow(entity) : null;
+    }
+
+    private @Nullable IMKEntityData resolveCasterData(AbilityReactionOwner owner) {
+        ReactionOwnerRuntime runtime = reactionOwnerRuntime.get(owner);
+        UUID entityId = runtime != null ? runtime.casterEntityId() : resolveOwnerEntityId(owner);
+        LivingEntity entity = entityId != null ? findEntity(entityId) : null;
+        return entity != null ? MKCore.getEntityDataOrThrow(entity) : null;
+    }
+
     private boolean matchesTag(ResourceLocation value, ResourceLocation tag) {
         if (value.equals(tag)) {
             return true;
         }
         PatchedAbilityDefinition definition = definitionResolver.resolvePatched(value);
         return definition != null && definition.definition().data().tags().contains(tag);
+    }
+
+    private final class EngineReactionController implements SimpleAbilityEngine.ReactionController {
+        @Override
+        public void install(AbilityReactionOwner owner,
+                            UUID ownerEntityId,
+                            UUID casterEntityId,
+                            String reactionId,
+                            AbilityReactionDefinition definition) {
+            reactionOwnerRuntime.put(owner, new ReactionOwnerRuntime(ownerEntityId, casterEntityId));
+            Map<String, AbilityReactionHandle> byReactionId = installedReactionHandles.computeIfAbsent(owner,
+                    ignored -> new LinkedHashMap<>());
+            AbilityReactionHandle previous = byReactionId.remove(reactionId);
+            if (previous != null) {
+                reactionBus.unregister(previous);
+            }
+            byReactionId.put(reactionId, reactionBus.register(owner, definition));
+        }
+
+        @Override
+        public void remove(AbilityReactionOwner owner, String reactionId) {
+            Map<String, AbilityReactionHandle> byReactionId = installedReactionHandles.get(owner);
+            if (byReactionId == null) {
+                return;
+            }
+            AbilityReactionHandle handle = byReactionId.remove(reactionId);
+            if (handle != null) {
+                reactionBus.unregister(handle);
+            }
+            if (byReactionId.isEmpty()) {
+                installedReactionHandles.remove(owner);
+                reactionOwnerRuntime.remove(owner);
+            }
+        }
+
+        @Override
+        public void clearOwner(AbilityReactionOwner owner) {
+            reactionBus.unregisterOwner(owner);
+            installedReactionHandles.remove(owner);
+            reactionOwnerRuntime.remove(owner);
+        }
     }
 
     private @Nullable LivingEntity findEntity(UUID entityId) {
@@ -117,5 +197,8 @@ public class AbilityRuntimeService {
             }
         }
         return null;
+    }
+
+    private record ReactionOwnerRuntime(UUID ownerEntityId, UUID casterEntityId) {
     }
 }
