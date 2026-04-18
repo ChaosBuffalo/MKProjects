@@ -71,6 +71,7 @@ public final class AbilityReactionBus {
     public AbilityReactionHandle register(AbilityReactionOwner owner, AbilityReactionDefinition definition) {
         Objects.requireNonNull(owner, "owner");
         Objects.requireNonNull(definition, "definition");
+        validateRegistration(owner, definition);
 
         long handleValue = nextHandle++;
         AbilityReactionHandle handle = new AbilityReactionHandle(handleValue);
@@ -132,6 +133,20 @@ public final class AbilityReactionBus {
             }
         } finally {
             draining = false;
+        }
+    }
+
+    private void validateRegistration(AbilityReactionOwner owner, AbilityReactionDefinition definition) {
+        boolean requiresEntityOwner = definition.filters().stream()
+                .anyMatch(EventParticipantFilter.class::isInstance);
+        if (!requiresEntityOwner) {
+            return;
+        }
+
+        UUID ownerEntityId = ownerEntityResolver.apply(owner);
+        if (ownerEntityId == null) {
+            throw new IllegalStateException("Reaction owner %s cannot register participant filters without an entity"
+                    .formatted(owner));
         }
     }
 
