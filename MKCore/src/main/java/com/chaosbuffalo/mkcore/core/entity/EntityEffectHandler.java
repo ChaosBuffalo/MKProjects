@@ -129,6 +129,7 @@ public class EntityEffectHandler {
         protected void onEffectRemoved(MKActiveEffect activeEffect) {
 //            MKCore.LOGGER.debug("EntityEffectHandler.onEffectRemoved {}", activeEffect);
             if (entityData.isServerSide()) {
+                MKCore.getAbilityRuntimeService().emitEffectRemoved(entityData, activeEffect);
                 activeEffect.getEffect().onInstanceRemoved(entityData, activeEffect);
                 if (!activeEffect.getBehaviour().isExpired()) {
                     // If it was removed early we need to tell the client

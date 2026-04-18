@@ -179,6 +179,9 @@ public class LivingHurtEntityTriggers extends SpellTriggers.TriggerCollectionBas
         boolean notBlocked = !wasBlocked(source);
         if (notBlocked && source.getMKDamageType().rollCrit(livingSource, livingTarget, immediate)) {
             newDamage = source.getMKDamageType().applyCritDamage(livingSource, livingTarget, immediate, newDamage);
+            if (!source.isMeleeDamage()) {
+                MKCore.getAbilityRuntimeService().emitSpellCrit(source, livingTarget, newDamage);
+            }
             switch (source.getOrigination()) {
                 case MK_ABILITY:
                     sendAbilityCrit(livingTarget, livingSource, source, newDamage);

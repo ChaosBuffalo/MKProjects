@@ -1,18 +1,24 @@
 package com.chaosbuffalo.mkcore.abilities2;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityEventFilter.ParticipantRelation;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityReactionDefinition;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
 import com.chaosbuffalo.mkcore.abilities2.runtime.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
+import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -85,6 +91,22 @@ public class AbilityRuntimeService {
         }
         lastStateStoreTick = gameTick;
         stateStore.tick(gameTick, this::emitCooldownFinished);
+    }
+
+    @SubscribeEvent
+    public void onLivingDamagePost(LivingDamageEvent.Post event) {
+        if (event.getEntity().level().isClientSide() || event.getNewDamage() <= 0.0f) {
+            return;
+        }
+        emitDamageTaken(event.getSource(), event.getEntity(), event.getNewDamage());
+    }
+
+    @SubscribeEvent
+    public void onLivingDeath(LivingDeathEvent event) {
+        if (event.getEntity().level().isClientSide()) {
+            return;
+        }
+        emitKill(event.getSource(), event.getEntity());
     }
 
     private long currentGameTick() {
@@ -165,18 +187,144 @@ public class AbilityRuntimeService {
         Map<String, AbilityValue> payload = new LinkedHashMap<>();
         payload.put("cooldown_scope", new AbilityValue.StringValue(event.scope().name().toLowerCase(Locale.ROOT)));
         payload.put("cooldown_key", new AbilityValue.StringValue(event.key()));
-        reactionBus.emit(new AbilityEventSnapshot(
+        emitExternalEvent(
                 AbilityEventType.COOLDOWN_FINISHED,
-                null,
-                null,
-                0,
                 event.stableSourceId(),
-                event.abilityId(),
+                normalizeAbilityId(event.abilityId()),
                 null,
                 event.ownerEntityId(),
                 event.ownerEntityId(),
                 payload
+        );
+    }
+
+    public void emitSpellCrit(MKDamageSource source, LivingEntity target, float damageAmount) {
+        if (target.level().isClientSide()) {
+            return;
+        }
+        ResolvedCombatSource resolved = resolveCombatSource(source);
+        Map<String, AbilityValue> payload = damagePayload(damageAmount, resolved);
+        emitExternalEvent(
+                AbilityEventType.SPELL_CRIT,
+                resolved.sourceId(),
+                resolved.sourceAbilityId(),
+                null,
+                resolved.actorEntityId(),
+                target.getUUID(),
+                payload
+        );
+    }
+
+    public void emitEffectRemoved(IMKEntityData targetData, MKActiveEffect effect) {
+        if (!targetData.isServerSide()) {
+            return;
+        }
+        LivingEntity sourceEntity = effect.getSourceEntity();
+        Map<String, AbilityValue> payload = new LinkedHashMap<>();
+        payload.put("effect_id", new AbilityValue.ResourceLocationValue(effect.getEffect().getId()));
+        payload.put("stack_count", new AbilityValue.IntValue(effect.getStackCount()));
+        emitExternalEvent(
+                AbilityEventType.EFFECT_REMOVED,
+                effect.getSourceId(),
+                normalizeAbilityId(effect.getAbilityId()),
+                null,
+                sourceEntity != null ? sourceEntity.getUUID() : null,
+                targetData.getEntity().getUUID(),
+                payload
+        );
+    }
+
+    private void emitDamageTaken(DamageSource source, LivingEntity target, float damageAmount) {
+        ResolvedCombatSource resolved = resolveCombatSource(source);
+        emitExternalEvent(
+                AbilityEventType.DAMAGE_TAKEN,
+                resolved.sourceId(),
+                resolved.sourceAbilityId(),
+                null,
+                resolved.actorEntityId(),
+                target.getUUID(),
+                damagePayload(damageAmount, resolved)
+        );
+    }
+
+    private void emitKill(DamageSource source, LivingEntity target) {
+        ResolvedCombatSource resolved = resolveCombatSource(source);
+        emitExternalEvent(
+                AbilityEventType.KILL,
+                resolved.sourceId(),
+                resolved.sourceAbilityId(),
+                null,
+                resolved.actorEntityId(),
+                target.getUUID(),
+                killPayload(resolved)
+        );
+    }
+
+    private void emitExternalEvent(AbilityEventType eventType,
+                                   @Nullable UUID sourceId,
+                                   @Nullable ResourceLocation sourceAbilityId,
+                                   @Nullable String sourceActivationId,
+                                   @Nullable UUID actorEntityId,
+                                   @Nullable UUID targetEntityId,
+                                   Map<String, AbilityValue> payload) {
+        reactionBus.emit(new AbilityEventSnapshot(
+                eventType,
+                null,
+                null,
+                0,
+                sourceId,
+                sourceAbilityId,
+                sourceActivationId,
+                actorEntityId,
+                targetEntityId,
+                payload
         ));
+    }
+
+    private Map<String, AbilityValue> damagePayload(float damageAmount, ResolvedCombatSource resolved) {
+        Map<String, AbilityValue> payload = new LinkedHashMap<>();
+        payload.put("damage_amount", new AbilityValue.FloatValue(damageAmount));
+        if (resolved.damageTypeId() != null) {
+            payload.put("damage_type", new AbilityValue.ResourceLocationValue(resolved.damageTypeId()));
+        }
+        if (resolved.damageSchoolId() != null) {
+            payload.put("damage_school", new AbilityValue.ResourceLocationValue(resolved.damageSchoolId()));
+        }
+        return payload;
+    }
+
+    private Map<String, AbilityValue> killPayload(ResolvedCombatSource resolved) {
+        Map<String, AbilityValue> payload = new LinkedHashMap<>();
+        if (resolved.damageTypeId() != null) {
+            payload.put("damage_type", new AbilityValue.ResourceLocationValue(resolved.damageTypeId()));
+        }
+        if (resolved.damageSchoolId() != null) {
+            payload.put("damage_school", new AbilityValue.ResourceLocationValue(resolved.damageSchoolId()));
+        }
+        return payload;
+    }
+
+    private ResolvedCombatSource resolveCombatSource(DamageSource source) {
+        UUID actorEntityId = source.getEntity() instanceof LivingEntity living ? living.getUUID() : null;
+        UUID sourceId = actorEntityId;
+        ResourceLocation sourceAbilityId = null;
+        ResourceLocation damageTypeId = null;
+        ResourceLocation damageSchoolId = null;
+        if (source instanceof MKDamageSource mkDamageSource) {
+            damageTypeId = mkDamageSource.getMKDamageType().getId();
+            damageSchoolId = damageTypeId;
+            if (mkDamageSource instanceof MKDamageSource.AbilityDamage abilityDamage) {
+                sourceAbilityId = normalizeAbilityId(abilityDamage.getAbilityId());
+            }
+        }
+        return new ResolvedCombatSource(sourceId, sourceAbilityId, actorEntityId, damageTypeId, damageSchoolId);
+    }
+
+    private @Nullable ResourceLocation normalizeAbilityId(@Nullable ResourceLocation abilityId) {
+        if (abilityId == null || abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
+            return null;
+        }
+        return abilityId;
     }
 
     private final class EngineReactionController implements SimpleAbilityEngine.ReactionController {
@@ -235,5 +383,12 @@ public class AbilityRuntimeService {
     }
 
     private record ReactionOwnerRuntime(UUID ownerEntityId, UUID casterEntityId) {
+    }
+
+    private record ResolvedCombatSource(@Nullable UUID sourceId,
+                                        @Nullable ResourceLocation sourceAbilityId,
+                                        @Nullable UUID actorEntityId,
+                                        @Nullable ResourceLocation damageTypeId,
+                                        @Nullable ResourceLocation damageSchoolId) {
     }
 }
