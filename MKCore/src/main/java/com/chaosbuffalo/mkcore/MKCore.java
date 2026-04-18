@@ -14,6 +14,7 @@ import com.chaosbuffalo.mkcore.init.CoreAttachments;
 import com.chaosbuffalo.mkcore.init.CoreParticles;
 import com.chaosbuffalo.mkcore.utils.trace.ITraceExtensionProvider;
 import com.chaosbuffalo.mkcore.utils.trace.TraceManager;
+import com.chaosbuffalo.mkcore.utils.trace.VanillaPartEntityTraceProvider;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -130,6 +131,7 @@ public class MKCore {
 
     private void internalIMCStageSetup() {
         CoreParticles.handleEditorParticleRegistration();
+        TraceManager.registerExtension(new VanillaPartEntityTraceProvider());
     }
 
     public static ResourceLocation makeRL(String path) {
