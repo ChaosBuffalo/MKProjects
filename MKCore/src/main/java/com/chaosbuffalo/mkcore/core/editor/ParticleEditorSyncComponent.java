@@ -69,14 +69,29 @@ public class ParticleEditorSyncComponent implements ISyncObject {
         }
     }
 
-    @Override
-    public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
+    public CompoundTag serializeStorage() {
         CompoundTag syncTag = new CompoundTag();
         if (animation != null) {
             syncTag.put("animation", animation.serialize(NbtOps.INSTANCE));
         }
         syncTag.putInt("currentKeyFrame", currentFrame);
         return syncTag;
+    }
+
+    public void deserializeStorage(CompoundTag syncTag) {
+        if (syncTag.contains("animation")) {
+            this.animation = ParticleAnimation.deserializeFromDynamic(
+                    ParticleAnimationManager.RAW_EFFECT,
+                    new Dynamic<>(NbtOps.INSTANCE, syncTag.getCompound("animation")));
+        } else {
+            this.animation = null;
+        }
+        currentFrame = syncTag.getInt("currentKeyFrame");
+    }
+
+    @Override
+    public @Nullable Tag writeFullValue(SyncContext context, SyncVisibility visibility) {
+        return serializeStorage();
     }
 
     @Override
@@ -91,13 +106,7 @@ public class ParticleEditorSyncComponent implements ISyncObject {
     @Override
     public void handleUpdatePayload(SyncContext context, Tag valueTag, SyncVisibility visibility) {
         if (valueTag instanceof CompoundTag syncTag) {
-            if (syncTag.contains("animation")) {
-                this.animation = ParticleAnimation.deserializeFromDynamic(
-                        ParticleAnimationManager.RAW_EFFECT,
-                        new Dynamic<>(NbtOps.INSTANCE, syncTag.getCompound("animation")));
-            } else {
-                this.animation = null;
-            }
+            deserializeStorage(syncTag);
         }
     }
 }
