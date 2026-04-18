@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
 import com.chaosbuffalo.mkcore.abilities2.runtime.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
+import com.chaosbuffalo.mkcore.entities.AbilityProjectileEntity;
 import com.chaosbuffalo.mkcore.effects.MKActiveEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -15,13 +16,16 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import net.minecraft.world.phys.EntityHitResult;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -107,6 +111,16 @@ public class AbilityRuntimeService {
             return;
         }
         emitKill(event.getSource(), event.getEntity());
+    }
+
+    @SubscribeEvent
+    public void onProjectileImpact(ProjectileImpactEvent event) {
+        Projectile projectile = event.getProjectile();
+        if (projectile.level().isClientSide()) {
+            return;
+        }
+        emitProjectileHit(projectile, event.getRayTraceResult() instanceof EntityHitResult entityHitResult
+                && entityHitResult.getEntity() instanceof LivingEntity livingTarget ? livingTarget : null);
     }
 
     private long currentGameTick() {
@@ -257,6 +271,23 @@ public class AbilityRuntimeService {
                 resolved.actorEntityId(),
                 target.getUUID(),
                 killPayload(resolved)
+        );
+    }
+
+    private void emitProjectileHit(Projectile projectile, @Nullable LivingEntity target) {
+        LivingEntity owner = projectile.getOwner() instanceof LivingEntity living ? living : null;
+        UUID actorEntityId = owner != null ? owner.getUUID() : null;
+        ResourceLocation sourceAbilityId = projectile instanceof AbilityProjectileEntity abilityProjectile
+                ? normalizeAbilityId(abilityProjectile.getAbilityId())
+                : null;
+        emitExternalEvent(
+                AbilityEventType.PROJECTILE_HIT,
+                actorEntityId,
+                sourceAbilityId,
+                null,
+                actorEntityId,
+                target != null ? target.getUUID() : null,
+                Map.of()
         );
     }
 

@@ -5,6 +5,7 @@ import com.chaosbuffalo.targeting_api.TargetingContext;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,6 +13,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 
+import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
@@ -37,6 +39,11 @@ public class AbilityProjectileEntity extends SpriteTrailProjectileEntity{
 
     public void setAbility(Supplier<? extends ProjectileAbility> abilitySupplier) {
         this.abilitySupplier = abilitySupplier;
+    }
+
+    public @Nullable ResourceLocation getAbilityId() {
+        ProjectileAbility ability = abilitySupplier != null ? abilitySupplier.get() : null;
+        return ability != null ? ability.getAbilityId() : null;
     }
 
     public void setGravityVelocity(float gravityVelocity) {
