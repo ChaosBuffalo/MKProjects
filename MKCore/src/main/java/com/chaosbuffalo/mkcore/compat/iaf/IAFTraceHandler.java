@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore.compat.iaf;
 
 import com.chaosbuffalo.mkcore.utils.trace.ITraceExtensionProvider;
+import com.iafenvoy.iceandfire.entity.EntityDragonBase;
 import com.iafenvoy.iceandfire.entity.EntityMultipartPart;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -18,24 +19,25 @@ public class IAFTraceHandler implements ITraceExtensionProvider {
                                                                          Predicate<E> filter,
                                                                          boolean testPickable) {
         List<EntityMultipartPart> entities = world.getEntitiesOfClass(EntityMultipartPart.class, traceBounds, (ent) -> true);
+        if (entities.isEmpty()) {
+            return List.of();
+        }
         List<TraceCandidate<E>> finalEnt = new ArrayList<>();
-        if (!entities.isEmpty()) {
-            Set<E> seenParts = new HashSet<>();
-            for (EntityMultipartPart entity : entities) {
-                Entity parent = world.getEntities().get(entity.getParentId());
-                if (parent != null) {
-                    EntityTypeTest<Entity, E> typeTest = EntityTypeTest.forClass(clazz);
-                    E t = typeTest.tryCast(parent);
-                    if (seenParts.contains(t)) {
-                        continue;
-                    }
-                    if (t != null && entity.getBoundingBox().intersects(traceBounds) && filter.test(t)) {
-                        if (testPickable && !entity.isPickable()) {
-                            continue;
-                        }
-                        finalEnt.add(new TraceCandidate<>(t, entity.getBoundingBox()));
-                        seenParts.add(t);
-                    }
+        Set<E> seenParts = new HashSet<>();
+        for (EntityMultipartPart entity : entities) {
+            if (testPickable && !entity.isPickable()) {
+                continue;
+            }
+            Entity parent = world.getEntities().get(entity.getParentId());
+            if (parent != null) {
+                EntityTypeTest<Entity, E> typeTest = EntityTypeTest.forClass(clazz);
+                E t = typeTest.tryCast(parent);
+                if (seenParts.contains(t)) {
+                    continue;
+                }
+                if (t != null && entity.getBoundingBox().intersects(traceBounds) && filter.test(t)) {
+                    finalEnt.add(new TraceCandidate<>(t, entity.getBoundingBox()));
+                    seenParts.add(t);
                 }
             }
         }

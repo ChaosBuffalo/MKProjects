@@ -90,6 +90,7 @@ public class RayTraceUtils {
                 List<ITraceExtensionProvider.TraceCandidate<E>> candidates = provider.getTraceCandidates(clazz, world,
                         bb, predicate, testPickable);
                 for (ITraceExtensionProvider.TraceCandidate<E> candidate : candidates) {
+                    // the trace providers test whether the part is pickable, here we should test the actual entity
                     if (testPickable && !candidate.entity().isPickable()) {
                         continue;
                     }
