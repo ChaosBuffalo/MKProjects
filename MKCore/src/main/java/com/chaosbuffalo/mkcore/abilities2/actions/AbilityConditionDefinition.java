@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mkcore.abilities2.definition;
+package com.chaosbuffalo.mkcore.abilities2.actions;
 
 import com.google.gson.JsonElement;
 
@@ -8,14 +8,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public record AbilityTargetResolverDefinition(String type, Map<String, JsonElement> data) {
-    public AbilityTargetResolverDefinition(String type) {
+public record AbilityConditionDefinition(String type, Map<String, JsonElement> data) {
+    public AbilityConditionDefinition(String type) {
         this(type, Map.of());
     }
 
-    public AbilityTargetResolverDefinition {
+    public AbilityConditionDefinition {
         if (type == null || type.isBlank()) {
-            throw new IllegalArgumentException("Ability target resolver type must not be blank");
+            throw new IllegalArgumentException("Ability condition type must not be blank");
         }
         data = Collections.unmodifiableMap(new LinkedHashMap<>(Objects.requireNonNull(data, "data")));
     }

@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkcore;
 
 import com.chaosbuffalo.mkcore.abilities.AbilityManager;
+import com.chaosbuffalo.mkcore.abilities2.AbilityDefinitionService;
 import com.chaosbuffalo.mkcore.command.MKCommand;
 import com.chaosbuffalo.mkcore.compat.CoreCompatHooks;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
@@ -52,6 +53,7 @@ public class MKCore {
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final boolean DEV_LOGGING = Boolean.parseBoolean(System.getProperty("mkcore.enable_debug_log", "false"));
     private final AbilityManager abilityManager;
+    private final AbilityDefinitionService abilityDefinitionService;
     private final ParticleAnimationManager particleAnimationManager;
     public static final String CORE_EXTENSION = "mk_core_extension";
     public static final String PERSONA_EXTENSION = "register_persona_extension";
@@ -70,6 +72,7 @@ public class MKCore {
         // Register ourselves for server and other game events we are interested in
         NeoForge.EVENT_BUS.register(this);
         abilityManager = new AbilityManager();
+        abilityDefinitionService = new AbilityDefinitionService();
         particleAnimationManager = new ParticleAnimationManager();
         AbilityManager.setupDeserializers();
         ParticleAnimationManager.setupDeserializers();
@@ -108,6 +111,8 @@ public class MKCore {
     @SubscribeEvent
     public void addReloadListeners(AddReloadListenerEvent event) {
         event.addListener(abilityManager);
+        event.addListener(abilityDefinitionService.getDefinitionReloadListener());
+        event.addListener(abilityDefinitionService.getPatchReloadListener());
         event.addListener(particleAnimationManager);
     }
 
@@ -196,6 +201,10 @@ public class MKCore {
 
     public static AbilityManager getAbilityManager() {
         return INSTANCE.abilityManager;
+    }
+
+    public static AbilityDefinitionService getAbilityDefinitionService() {
+        return INSTANCE.abilityDefinitionService;
     }
 
     public static ParticleAnimationManager getAnimationManager() {
