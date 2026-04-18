@@ -28,9 +28,11 @@ import java.util.function.BiPredicate;
 public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
     private final BipedStunAnimation<Player> stunAnimation = new BipedStunAnimation<>(this);
     private final BipedSkeleton<AbstractClientPlayer, MKPlayerModel> skeleton;
+    private final ModelPart root;
 
     public MKPlayerModel(ModelPart p_170821_, boolean p_170822_) {
         super(p_170821_, p_170822_);
+        this.root = p_170821_;
         Vec3 leftHandOffset = p_170822_
                 ? new Vec3(0.5 / 16.0, 10.0 / 16.0, -2.0 / 16.0)
                 : new Vec3(1.0 / 16.0, 10.0 / 16.0, -2.0 / 16.0);
@@ -46,6 +48,7 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
 
     @Override
     public void setupAnim(AbstractClientPlayer entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        this.root.getAllParts().forEach(ModelPart::resetPose);
         super.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
 
         MKCore.getPlayer(entityIn).ifPresent(mkEntityData -> {

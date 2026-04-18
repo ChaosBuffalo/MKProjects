@@ -83,6 +83,12 @@ public class MKUSpellAnimationProvider implements DataProvider {
         channels.add(channel("body", "xRot", "set", "none", value(0.22F, term("release_arc", -0.26F))));
         channels.add(channel("body", "y", "add", "none", value(5.2F, term("release_arc", -2.1F))));
         channels.add(channel("body", "z", "add", "none", value(0.55F, term("release_arc", -1.1F))));
+        channels.add(channel("leftLeg", "xRot", "set", "none", value(-0.98F, term("release_arc", 0.22F))));
+        channels.add(channel("rightLeg", "xRot", "set", "none", value(-0.98F, term("release_arc", 0.22F))));
+        channels.add(channel("leftLeg", "y", "add", "none", value(3.35F, term("release_arc", -1.35F))));
+        channels.add(channel("rightLeg", "y", "add", "none", value(3.35F, term("release_arc", -1.35F))));
+        channels.add(channel("leftLeg", "z", "add", "none", value(6.5F, term("release_arc", 0.72F))));
+        channels.add(channel("rightLeg", "z", "add", "none", value(6.5F, term("release_arc", 0.72F))));
         channels.add(channel("main_arm", "xRot", "set", "none", value(-1.58F, term("release_arc", 0.24F))));
         channels.add(channel("off_arm", "xRot", "set", "none", value(-1.58F, term("release_arc", 0.24F))));
         channels.add(channel("main_arm", "yRot", "set", "-handedness", value(0.18F, term("release_arc", -0.03F))));
