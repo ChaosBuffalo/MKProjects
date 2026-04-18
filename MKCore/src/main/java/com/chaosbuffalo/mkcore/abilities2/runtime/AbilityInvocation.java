@@ -78,8 +78,8 @@ public final class AbilityInvocation {
         this.targets = Objects.requireNonNull(targets, "targets");
         this.eventSnapshot = eventSnapshot;
         this.definition = Objects.requireNonNull(definition, "definition");
-        this.grantParameterOverrides = Collections.unmodifiableMap(new LinkedHashMap<>(
-                Objects.requireNonNull(grantParameterOverrides, "grantParameterOverrides")));
+        this.grantParameterOverrides = definition.validateGrantParameterOverrides(
+                new LinkedHashMap<>(Objects.requireNonNull(grantParameterOverrides, "grantParameterOverrides")));
         this.invocationStats = Objects.requireNonNull(invocationStats, "invocationStats");
         this.graphVars = new HashMap<>(Objects.requireNonNull(graphVars, "graphVars"));
         this.rng = Objects.requireNonNull(rng, "rng");

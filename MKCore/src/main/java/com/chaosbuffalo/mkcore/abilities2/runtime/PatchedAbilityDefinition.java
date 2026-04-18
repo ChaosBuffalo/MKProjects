@@ -39,4 +39,57 @@ public record PatchedAbilityDefinition(
         }
         return Collections.unmodifiableMap(copy);
     }
+
+    public AbilityParameterDefinition getParameterDefinition(String id) {
+        AbilityParameterDefinition parameter = definition.data().parameters().get(id);
+        if (parameter == null) {
+            throw new IllegalArgumentException("Unknown parameter '%s' on ability %s"
+                    .formatted(id, definition.data().id()));
+        }
+        return parameter;
+    }
+
+    public AbilityValue getPatchedParameter(String id) {
+        AbilityValue value = patchedParameters.get(id);
+        if (value == null) {
+            throw new IllegalArgumentException("Patched parameter '%s' not found on ability %s"
+                    .formatted(id, definition.data().id()));
+        }
+        return value;
+    }
+
+    public AbilityValue resolveParameter(String id, Map<String, AbilityValue> grantOverrides) {
+        AbilityParameterDefinition parameter = getParameterDefinition(id);
+        AbilityValue override = grantOverrides.get(id);
+        if (override != null) {
+            if (!parameter.grantOverrideable()) {
+                throw new IllegalArgumentException("Parameter '%s' on ability %s is not grantOverrideable"
+                        .formatted(id, definition.data().id()));
+            }
+            if (override.kind() != parameter.kind()) {
+                throw new IllegalArgumentException("Grant override '%s' on ability %s has kind %s but expected %s"
+                        .formatted(id, definition.data().id(), override.kind(), parameter.kind()));
+            }
+            return override;
+        }
+        return getPatchedParameter(id);
+    }
+
+    public Map<String, AbilityValue> validateGrantParameterOverrides(Map<String, AbilityValue> overrides) {
+        Objects.requireNonNull(overrides, "overrides");
+        LinkedHashMap<String, AbilityValue> copy = new LinkedHashMap<>();
+        for (Map.Entry<String, AbilityValue> entry : overrides.entrySet()) {
+            AbilityParameterDefinition parameter = getParameterDefinition(entry.getKey());
+            if (!parameter.grantOverrideable()) {
+                throw new IllegalArgumentException("Grant override '%s' on ability %s is not allowed"
+                        .formatted(entry.getKey(), definition.data().id()));
+            }
+            if (entry.getValue().kind() != parameter.kind()) {
+                throw new IllegalArgumentException("Grant override '%s' on ability %s has kind %s but expected %s"
+                        .formatted(entry.getKey(), definition.data().id(), entry.getValue().kind(), parameter.kind()));
+            }
+            copy.put(entry.getKey(), entry.getValue());
+        }
+        return Collections.unmodifiableMap(copy);
+    }
 }
