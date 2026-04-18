@@ -1,15 +1,18 @@
 package com.chaosbuffalo.mkcore.mixins.client;
 
 import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.core.EntityAnimationModule;
 import com.chaosbuffalo.mkcore.core.player.PlayerCombatExtensionModule;
 import com.chaosbuffalo.mkcore.client.rendering.HeldItemParticleEffectRenderer;
 import com.chaosbuffalo.mkcore.fx.particles.effect_instances.HeldItemParticleEffectInstance;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
@@ -34,6 +37,10 @@ public abstract class ItemInHandRendererMixins {
                                    MultiBufferSource buffer, int combinedLight) {
     }
 
+    @Shadow
+    private void applyItemArmTransform(PoseStack poseStack, HumanoidArm arm, float equippedProgress) {
+    }
+
     @Redirect(
             method = "renderHandsWithItems",
             at = @At(
@@ -56,6 +63,62 @@ public abstract class ItemInHandRendererMixins {
             }
         }
         renderArmWithItem(player, partialTicks, pitch, hand, resolvedSwing, stack, resolvedEquippedProgress, poseStack, buffer, combinedLight);
+    }
+
+    @Redirect(
+            method = "renderArmWithItem",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;applyItemArmTransform(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/world/entity/HumanoidArm;F)V"
+            )
+    )
+    private void mkcore$applySpellPoseAfterHandPlacement(ItemInHandRenderer instance, PoseStack poseStack, HumanoidArm arm,
+                                                         float equippedProgress, AbstractClientPlayer player, float partialTicks,
+                                                         float pitch, InteractionHand hand, float swingProgress, ItemStack stack,
+                                                         float passedEquippedProgress, PoseStack passedPoseStack,
+                                                         MultiBufferSource buffer, int combinedLight) {
+        applyItemArmTransform(poseStack, arm, equippedProgress);
+        if (player instanceof LocalPlayer localPlayer) {
+            applyFirstPersonSpellPose(localPlayer, hand, arm, poseStack);
+        }
+    }
+
+    private void applyFirstPersonSpellPose(LocalPlayer player, InteractionHand hand, HumanoidArm arm, PoseStack poseStack) {
+        var playerData = MKCore.getPlayer(player).orElse(null);
+        if (playerData == null) {
+            return;
+        }
+        PlayerCombatExtensionModule combat = playerData.getCombatExtension();
+        if (combat.hasActiveVisualMeleeAttack(hand, 0.0F)) {
+            return;
+        }
+        EntityAnimationModule animationModule = playerData.getAnimationModule();
+        if (animationModule.getCastingAbility() == null) {
+            return;
+        }
+        float progress;
+        if (animationModule.getVisualCastState() == EntityAnimationModule.VisualCastState.CASTING) {
+            progress = animationModule.getCastRatio();
+        } else if (animationModule.getVisualCastState() == EntityAnimationModule.VisualCastState.RELEASE) {
+            progress = animationModule.getReleaseRatio();
+        } else {
+            return;
+        }
+
+        if (progress <= 0.0F) {
+            return;
+        }
+        if (animationModule.getVisualCastState() == EntityAnimationModule.VisualCastState.CASTING) {
+            float armZ = Mth.sin((float) (Math.PI / 2.0F + progress * Math.PI / 2.0F)) * (float) Math.PI / 4.0F;
+            float angle = (float) (Math.PI / 2.0F + Mth.sin(progress * (float) Math.PI) * ((float) Math.PI / 8.0F));
+            float zDegrees = (arm == HumanoidArm.RIGHT ? -armZ : armZ) * Mth.RAD_TO_DEG;
+            poseStack.mulPose(Axis.ZP.rotationDegrees(zDegrees));
+            poseStack.mulPose(Axis.XP.rotationDegrees(-angle * Mth.RAD_TO_DEG));
+        } else {
+            float armZ = Mth.cos((float) (Math.PI / 2.0F + progress * Math.PI)) * (float) Math.PI / 2.0F;
+            float zDegrees = (arm == HumanoidArm.RIGHT ? -armZ : armZ) * Mth.RAD_TO_DEG;
+            poseStack.mulPose(Axis.ZP.rotationDegrees(zDegrees));
+        }
     }
 
 

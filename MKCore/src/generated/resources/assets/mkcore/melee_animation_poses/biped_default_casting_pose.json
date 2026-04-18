@@ -1,0 +1,79 @@
+{
+  "channels": [
+    {
+      "property": "yRot",
+      "target": "main_arm",
+      "value": {}
+    },
+    {
+      "property": "yRot",
+      "target": "off_arm",
+      "value": {}
+    },
+    {
+      "property": "zRot",
+      "sign": "-handedness",
+      "target": "main_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.7853982
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "sign": "handedness",
+      "target": "off_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.7853982
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "main_arm",
+      "value": {
+        "constant": -1.5707964,
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.2617994
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "off_arm",
+      "value": {
+        "constant": -1.5707964,
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.2617994
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "xRot",
+      "target": "head",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.08
+          }
+        ]
+      }
+    }
+  ]
+}

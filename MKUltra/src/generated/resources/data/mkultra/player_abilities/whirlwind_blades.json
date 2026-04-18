@@ -1,6 +1,7 @@
 {
   "attributes": {
     "base": 1.0,
+    "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:whirlwind_blades_pulse",
     "casting_particles": "mkcore:fx.casting.empty",
     "modifierScaling": 0.15,

@@ -57,10 +57,16 @@ public final class HeldItemParticleEffectRenderer {
                                      ItemParticleAttachmentProfile profile, Matrix4f transform, boolean isFirstPerson) {
         instance.getAnimation().ifPresent(anim -> {
             Vec3 scale = !isFirstPerson ? new Vec3(1.0, 1.0, 1.0) : new Vec3(0.6, 0.6, 0.6);
-            for (ItemParticleAttachment attachment : profile.attachments()) {
+            for (int i = 0; i < profile.attachments().size(); i++) {
+                ItemParticleAttachment attachment = profile.attachments().get(i);
                 Vec3 start = transformPoint(transform, attachment.start());
                 Vec3 end = transformPoint(transform, attachment.end());
-                anim.spawn(entity.getCommandSenderWorld(), start, scale, List.of(end));
+                int emissions = ClientParticleEmissionController.consumeEmissions(
+                        ClientParticleEmissionController.forHeldItemAttachment(entity, instance.getInstanceUUID(),
+                                instance.getHand().name(), i));
+                for (int emission = 0; emission < emissions; emission++) {
+                    anim.spawn(entity.getCommandSenderWorld(), start, scale, List.of(end));
+                }
             }
         });
     }

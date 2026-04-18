@@ -1,6 +1,7 @@
 {
   "attributes": {
     "base": 1.0,
+    "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:yank_cast",
     "casting_particles": "mkcore:fx.casting.empty",
     "scale": 0.75

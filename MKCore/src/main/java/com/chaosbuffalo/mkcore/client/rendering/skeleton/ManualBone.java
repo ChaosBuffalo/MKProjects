@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mkcore.client.rendering.skeleton;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
 
 import javax.annotation.Nullable;
 
@@ -33,6 +35,15 @@ public class ManualBone extends MCBone {
     @Override
     public float getRoll() {
         return roll;
+    }
+
+    @Override
+    public void applyLocalTransform(PoseStack poseStack) {
+        Vec3 location = getBoneLocation();
+        poseStack.translate(location.x, location.y, location.z);
+        if (pitch != 0.0F || yaw != 0.0F || roll != 0.0F) {
+            poseStack.mulPose(new Quaternionf().rotationZYX(roll, yaw, pitch));
+        }
     }
 
     public void setPitch(float pitch) {

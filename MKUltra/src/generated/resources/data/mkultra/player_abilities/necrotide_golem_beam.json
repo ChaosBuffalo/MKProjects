@@ -1,6 +1,7 @@
 {
   "attributes": {
     "base": 8.0,
+    "cast_animation_category": "mkcore:default",
     "casting_particles": "mkcore:fx.casting.empty",
     "charge_time": 40,
     "duration": 40,

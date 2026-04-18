@@ -36,6 +36,7 @@ public class MKConfig {
         public ModConfigSpec.BooleanValue showArmorClassOnTooltip;
         public ModConfigSpec.BooleanValue showArmorClassEffectsOnTooltip;
         public ModConfigSpec.BooleanValue disableAutoattackForFriend;
+        public ModConfigSpec.IntValue particleEmitterUpdatesPerSecond;
 
         public Client(ModConfigSpec.Builder builder) {
             builder.comment("General settings").push("general");
@@ -58,6 +59,9 @@ public class MKConfig {
             disableAutoattackForFriend = builder
                     .comment("Disables auto-attacking on friendly targets")
                     .define("disableAttackForFriend", false);
+            particleEmitterUpdatesPerSecond = builder
+                    .comment("How many times per second render-driven particle emitters may update on the client")
+                    .defineInRange("particleEmitterUpdatesPerSecond", 60, 1, 240);
             builder.pop();
         }
     }

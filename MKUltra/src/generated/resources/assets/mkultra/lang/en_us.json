@@ -54,6 +54,8 @@
   "ability.mkultra.power_word_summon.name": "Power Word Summon",
   "ability.mkultra.seafury.description": "Places a line of %s eruptions down at the target position %s blocks apart, causing %s after %s seconds to targets within %s blocks.",
   "ability.mkultra.seafury.name": "Seafury",
+  "ability.mkultra.searing_furrow.description": "Slam the ground to leave a %s block line of fire, dealing %s every %s seconds to enemies that touch it for %s seconds.",
+  "ability.mkultra.searing_furrow.name": "Searing Furrow",
   "ability.mkultra.sever_tendon.description": "Strike your target for a full melee hit plus %s, then cause them to bleed for %s seconds, dealing %s damage every %d seconds and reducing their movement speed by %.2f%%.",
   "ability.mkultra.sever_tendon.name": "Sever Tendon",
   "ability.mkultra.shadow_bolt.description": "Throws a magical ball of shadow, causing %s to the target.",

@@ -1,6 +1,7 @@
 {
   "attributes": {
     "baseDuration": 8,
+    "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:inspire_cast",
     "casting_particles": "mkultra:inspire_casting",
     "scaleDuration": 2

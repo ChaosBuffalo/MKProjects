@@ -1,6 +1,7 @@
 {
   "attributes": {
     "burnTime": 5,
+    "cast_animation_category": "mkcore:default",
     "casting_particles": "mkcore:fx.casting.empty",
     "damage": 6.0
   },

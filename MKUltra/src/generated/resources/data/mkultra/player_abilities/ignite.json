@@ -3,6 +3,7 @@
     "base": 8.0,
     "cast_1_particles": "mkultra:ignite_cast_1",
     "cast_2_particles": "mkultra:ignite_cast_2",
+    "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:ignite_casting",
     "modifierScaling": 1.0,
     "scale": 1.0

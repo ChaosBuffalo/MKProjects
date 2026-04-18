@@ -142,11 +142,6 @@ public class MKPlayerData implements IMKEntityData {
     }
 
     @Override
-    public Optional<ParticleEffectInstanceTracker> getParticleEffectTracker() {
-        return Optional.of(getAnimationModule().getEffectInstanceTracker());
-    }
-
-    @Override
     public PlayerEffectHandler getEffects() {
         return effectHandler;
     }

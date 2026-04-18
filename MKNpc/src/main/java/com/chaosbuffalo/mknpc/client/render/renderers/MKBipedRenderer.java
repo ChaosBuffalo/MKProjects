@@ -2,13 +2,16 @@ package com.chaosbuffalo.mknpc.client.render.renderers;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
+import com.chaosbuffalo.mkcore.client.rendering.ClientParticleEmissionController;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCSkeleton;
+import com.chaosbuffalo.mkcore.core.EntityAnimationModule;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.models.layers.MKAdditionalBipedLayer;
+import com.chaosbuffalo.mknpc.client.render.models.MKBipedModel;
 import com.chaosbuffalo.mknpc.client.render.models.styling.LayerStyle;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
@@ -34,7 +37,7 @@ import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> extends HumanoidMobRenderer<T, M> implements ILayerTextureProvider<T, M> {
+public class MKBipedRenderer<T extends MKEntity, M extends MKBipedModel<T>> extends HumanoidMobRenderer<T, M> implements ILayerTextureProvider<T, M> {
     private final ModelStyle style;
     private final float defaultShadowSize;
     private ModelLook look;
@@ -46,7 +49,7 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
         super(context, modelSupplier.apply(context.bakeLayer(ModelStyleClient.getBaseLocation(entityType, style))), shadowSize);
         this.style = style;
         this.defaultShadowSize = shadowSize;
-        this.skeleton = new BipedSkeleton<>(getModel());
+        this.skeleton = getModel().getSkeleton();
         for (LayerStyle layer : style.getAdditionalLayers()) {
             addLayer(new MKAdditionalBipedLayer<>(this, context, modelSupplier, style, layer, entityType));
         }
@@ -74,7 +77,6 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
     protected void scale(T entity, PoseStack matrixStackIn, float partialTickTime) {
         float scale = entity.getScale();
         this.shadowRadius = defaultShadowSize * scale;
-        matrixStackIn.scale(scale, scale, scale);
     }
 
     @Override
@@ -160,6 +162,7 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
 
     @Override
     public void render(T entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+        EntityAnimationModule animationModule = entityIn.getEntityDataCap().getAnimationModule();
         this.setModelProperties(entityIn);
         float lungeAmount = getVisualLungeOffset(entityIn, partialTicks);
         if (lungeAmount > 0.0F) {
@@ -171,22 +174,34 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
         } else {
             super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
         }
-        MKEntity.VisualCastState castState = entityIn.getVisualCastState();
-        if (castState == MKEntity.VisualCastState.CASTING || castState == MKEntity.VisualCastState.RELEASE) {
-            MKAbility ability = entityIn.getCastingAbility();
+        EntityAnimationModule.VisualCastState castState = animationModule.getVisualCastState();
+        if (castState == EntityAnimationModule.VisualCastState.CASTING || castState == EntityAnimationModule.VisualCastState.RELEASE) {
+            MKAbility ability = animationModule.getCastingAbility();
             if (ability != null) {
                 if (ability.hasCastingParticles()) {
-                    ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
-                    if (anim != null) {
-                        float scale = MathUtils.lerp(.6f, 1.f, entityIn.getCastRatio());
-                        Vec3 scaleVec = new Vec3(scale, scale, scale);
-                        Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
-                        leftPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, scaleVec, null));
-                        Optional<Vec3> rightPos = getHandPosition(partialTicks, entityIn, HumanoidArm.RIGHT);
-                        rightPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, scaleVec, null));
+                        ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
+                        if (anim != null) {
+                            float scale = MathUtils.lerp(.6f, 1.f, animationModule.getCastRatio());
+                            Vec3 scaleVec = new Vec3(scale, scale, scale);
+                            Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
+                            leftPos.ifPresent(pos -> {
+                                int emissions = ClientParticleEmissionController.consumeEmissions(
+                                        ClientParticleEmissionController.forCastingHand(entityIn, ability.getCastingParticles(), "left"));
+                                for (int i = 0; i < emissions; i++) {
+                                    anim.spawn(entityIn.getCommandSenderWorld(), pos, scaleVec, null);
+                                }
+                            });
+                            Optional<Vec3> rightPos = getHandPosition(partialTicks, entityIn, HumanoidArm.RIGHT);
+                            rightPos.ifPresent(pos -> {
+                                int emissions = ClientParticleEmissionController.consumeEmissions(
+                                        ClientParticleEmissionController.forCastingHand(entityIn, ability.getCastingParticles(), "right"));
+                                for (int i = 0; i < emissions; i++) {
+                                    anim.spawn(entityIn.getCommandSenderWorld(), pos, scaleVec, null);
+                                }
+                            });
+                        }
                     }
                 }
-            }
         }
         entityIn.getParticleEffectTracker().getParticleInstances().forEach(instance -> {
             instance.update(entityIn, skeleton, partialTicks, getRenderOffset(entityIn, partialTicks));
@@ -207,7 +222,7 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
         if (entity.getCombatMoveType() != MKEntity.CombatMoveType.MELEE) {
             return 0.0F;
         }
-        if (entity.getVisualCastState() != MKEntity.VisualCastState.NONE) {
+        if (entity.getEntityDataCap().getAnimationModule().getVisualCastState() != EntityAnimationModule.VisualCastState.NONE) {
             return 0.0F;
         }
         float attackAnim = entity.getVisualMeleeAttackAnim(InteractionHand.MAIN_HAND, partialTicks);

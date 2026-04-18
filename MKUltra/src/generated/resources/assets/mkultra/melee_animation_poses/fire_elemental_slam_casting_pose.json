@@ -1,0 +1,125 @@
+{
+  "channels": [
+    {
+      "operation": "add",
+      "property": "xRot",
+      "target": "body",
+      "value": {
+        "constant": 0.06,
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.24
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "y",
+      "target": "body",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.45
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "main_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -2.55
+          }
+        ]
+      }
+    },
+    {
+      "property": "xRot",
+      "target": "off_arm",
+      "value": {
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -2.55
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "sign": "-handedness",
+      "target": "main_arm",
+      "value": {
+        "constant": 0.12,
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.42
+          }
+        ]
+      }
+    },
+    {
+      "property": "yRot",
+      "sign": "handedness",
+      "target": "off_arm",
+      "value": {
+        "constant": 0.12,
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.42
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "sign": "handedness",
+      "target": "main_arm",
+      "value": {
+        "constant": 0.04,
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.08
+          }
+        ]
+      }
+    },
+    {
+      "property": "zRot",
+      "sign": "-handedness",
+      "target": "off_arm",
+      "value": {
+        "constant": 0.04,
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": 0.08
+          }
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "property": "xRot",
+      "target": "neck",
+      "value": {
+        "constant": -0.02,
+        "terms": [
+          {
+            "curve": "windup_sin",
+            "scale": -0.14
+          }
+        ]
+      }
+    }
+  ]
+}

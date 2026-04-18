@@ -1,4 +1,6 @@
-// 1.21.1	2026-04-07T07:02:16.7347149	NPC Model Looks: mknpc
+// 1.21.1	2026-04-13T08:26:43.7584309	NPC Model Looks: mknpc
+35012f8abf756d462f5c5920ee93256e9a32d642 data/mknpc/mknpc/model_looks/fire_elemental/charged.json
+979d36a13a9e98272fb4295fe6829f084f10e34a data/mknpc/mknpc/model_looks/fire_elemental/default.json
 477b1ac9b45605a24b73ee0f2a5626593e593b8d data/mknpc/mknpc/model_looks/flying_skeleton/default.json
 e73e2789f00967e62c8b915f5e0da78edcc1db40 data/mknpc/mknpc/model_looks/flying_skeleton/default_stray.json
 cbad3c5d625c609584c41e5d9d835bd578272e1a data/mknpc/mknpc/model_looks/flying_skeleton/stray.json

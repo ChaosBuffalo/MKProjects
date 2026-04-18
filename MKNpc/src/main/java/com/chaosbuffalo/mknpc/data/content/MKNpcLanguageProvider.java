@@ -80,6 +80,7 @@ public class MKNpcLanguageProvider extends NpcLanguageProvider {
     private void addMisc() {
         add("mknpc.debug.enter_structure", "Entered structure %s (ID: %s)");
         add("mknpc.debug.exit_structure", "Exited structure %s (ID: %s)");
+        add("entity.mknpc.fire_elemental", "Fire Elemental");
     }
 
     private void addBlocks() {

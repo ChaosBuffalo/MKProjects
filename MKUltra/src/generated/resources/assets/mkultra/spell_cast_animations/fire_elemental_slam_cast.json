@@ -1,0 +1,6 @@
+{
+  "casting_pose": "mkultra:fire_elemental_slam_casting_pose",
+  "category": "mkultra:cast_slam",
+  "family": "mkcore:biped",
+  "release_pose": "mkultra:fire_elemental_slam_release_pose"
+}

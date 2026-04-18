@@ -1,6 +1,7 @@
 {
   "attributes": {
     "baseDuration": 10,
+    "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:frozen_grasp_cast",
     "hit_particles": "mkultra:frozen_grasp_hit",
     "scaleDuration": 2,

@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mknpc.client.render.renderers;
 
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.client.rendering.ClientParticleEmissionController;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
+import com.chaosbuffalo.mkcore.core.EntityAnimationModule;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
 import com.chaosbuffalo.mkcore.utils.MathUtils;
@@ -46,22 +48,35 @@ public class MKBlazeRenderer extends MobRenderer<MKBlazeEntity, MKBlazeModel<MKB
     @Override
     public void render(MKBlazeEntity entityIn, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         super.render(entityIn, entityYaw, partialTicks, poseStack, buffer, packedLight);
-        MKEntity.VisualCastState castState = entityIn.getVisualCastState();
-        if (castState == MKEntity.VisualCastState.CASTING || castState == MKEntity.VisualCastState.RELEASE) {
-            MKAbility ability = entityIn.getCastingAbility();
+        EntityAnimationModule animationModule = entityIn.getEntityDataCap().getAnimationModule();
+        EntityAnimationModule.VisualCastState castState = animationModule.getVisualCastState();
+        if (castState == EntityAnimationModule.VisualCastState.CASTING || castState == EntityAnimationModule.VisualCastState.RELEASE) {
+            MKAbility ability = animationModule.getCastingAbility();
             if (ability != null) {
                 if (ability.hasCastingParticles()) {
-                    ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
-                    if (anim != null) {
-                        float scale = MathUtils.lerp(.6f, 1.f, entityIn.getCastRatio());
-                        Vec3 scaleVec = new Vec3(scale, scale, scale);
-                        Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
-                        leftPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, scaleVec, null));
-                        Optional<Vec3> rightPos = getHandPosition(partialTicks, entityIn, HumanoidArm.RIGHT);
-                        rightPos.ifPresent(pos -> anim.spawn(entityIn.getCommandSenderWorld(), pos, scaleVec, null));
+                        ParticleAnimation anim = ParticleAnimationManager.ANIMATIONS.get(ability.getCastingParticles());
+                        if (anim != null) {
+                            float scale = MathUtils.lerp(.6f, 1.f, animationModule.getCastRatio());
+                            Vec3 scaleVec = new Vec3(scale, scale, scale);
+                            Optional<Vec3> leftPos = getHandPosition(partialTicks, entityIn, HumanoidArm.LEFT);
+                            leftPos.ifPresent(pos -> {
+                                int emissions = ClientParticleEmissionController.consumeEmissions(
+                                        ClientParticleEmissionController.forCastingHand(entityIn, ability.getCastingParticles(), "left"));
+                                for (int i = 0; i < emissions; i++) {
+                                    anim.spawn(entityIn.getCommandSenderWorld(), pos, scaleVec, null);
+                                }
+                            });
+                            Optional<Vec3> rightPos = getHandPosition(partialTicks, entityIn, HumanoidArm.RIGHT);
+                            rightPos.ifPresent(pos -> {
+                                int emissions = ClientParticleEmissionController.consumeEmissions(
+                                        ClientParticleEmissionController.forCastingHand(entityIn, ability.getCastingParticles(), "right"));
+                                for (int i = 0; i < emissions; i++) {
+                                    anim.spawn(entityIn.getCommandSenderWorld(), pos, scaleVec, null);
+                                }
+                            });
+                        }
                     }
                 }
-            }
         }
         entityIn.getParticleEffectTracker().getParticleInstances().forEach(instance -> {
             instance.update(entityIn, skeleton, partialTicks, getRenderOffset(entityIn, partialTicks));

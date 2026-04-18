@@ -1,5 +1,6 @@
 {
   "attributes": {
+    "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:flame_wave_casting",
     "tickRate": 10
   },

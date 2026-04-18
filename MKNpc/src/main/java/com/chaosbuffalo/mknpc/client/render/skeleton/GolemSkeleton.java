@@ -14,10 +14,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GolemSkeleton<T extends LivingEntity, M extends HumanoidModel<T>> extends MCSkeleton {
+    private static final Vec3 MODEL_ROOT_OFFSET = Vec3.ZERO;
     private static final Vec3 PELVIS_OFFSET = new Vec3(0.0, -5.5 / 16.0, 0.0);
     private static final Vec3 CHEST_OFFSET = new Vec3(0.0, 8.5 / 16.0, 0.0);
-    private static final Vec3 LEFT_HAND_OFFSET = new Vec3(11.0 / 16.0, -19.0 / 16.0, 0.0);
-    private static final Vec3 RIGHT_HAND_OFFSET = new Vec3(-11.0 / 16.0, -19.0 / 16.0, 0.0);
+    private static final Vec3 LEFT_HAND_OFFSET = new Vec3(12.0 / 16.0, 29.0 / 16.0, -2.0 / 16.0);
+    private static final Vec3 RIGHT_HAND_OFFSET = new Vec3(-12.0 / 16.0, 29.0 / 16.0, -2.0 / 16.0);
     private static final Vec3 FOOT_OFFSET = new Vec3(0.0, -13.0 / 16.0, 0.0);
     private static final Vec3 HEAD_OFFSET = new Vec3(0.0, 7.0 / 16.0, 0.0);
 
@@ -42,7 +43,7 @@ public class GolemSkeleton<T extends LivingEntity, M extends HumanoidModel<T>> e
         this.model = model;
         this.boneMap = new HashMap<>();
 
-        MCBone rootBone = new ManualBone(BipedSkeleton.ROOT_BONE_NAME, Vec3.ZERO, null);
+        MCBone rootBone = new ManualBone(BipedSkeleton.ROOT_BONE_NAME, MODEL_ROOT_OFFSET, null);
         root = rootBone;
         addBone(rootBone);
 
@@ -53,9 +54,9 @@ public class GolemSkeleton<T extends LivingEntity, M extends HumanoidModel<T>> e
         this.chest = new ManualBone(BipedSkeleton.CHEST_BONE_NAME, CHEST_OFFSET, pelvis);
         addBone(chest);
 
-        this.rightArm = new ModelRendererBone(BipedSkeleton.RIGHT_ARM_BONE_NAME, model.rightArm, chest, true, false, false);
+        this.rightArm = new ModelRendererBone(BipedSkeleton.RIGHT_ARM_BONE_NAME, model.rightArm, root, true, false, false);
         addBone(rightArm);
-        this.leftArm = new ModelRendererBone(BipedSkeleton.LEFT_ARM_BONE_NAME, model.leftArm, chest, true, false, false);
+        this.leftArm = new ModelRendererBone(BipedSkeleton.LEFT_ARM_BONE_NAME, model.leftArm, root, true, false, false);
         addBone(leftArm);
         this.rightLeg = new ModelRendererBone(BipedSkeleton.RIGHT_LEG_BONE_NAME, model.rightLeg, root, false, false, true);
         addBone(rightLeg);
@@ -71,7 +72,7 @@ public class GolemSkeleton<T extends LivingEntity, M extends HumanoidModel<T>> e
         addBone(leftFoot);
         this.rightFoot = new ManualBone(BipedSkeleton.RIGHT_FOOT_BONE_NAME, FOOT_OFFSET, rightLeg);
         addBone(rightFoot);
-        this.neck = new ModelRendererBone(BipedSkeleton.NECK_BONE_NAME, model.head, chest, true, false, false);
+        this.neck = new ModelRendererBone(BipedSkeleton.NECK_BONE_NAME, model.head, root, true, false, false);
         addBone(neck);
         this.head = new ManualBone(BipedSkeleton.HEAD_BONE_NAME, HEAD_OFFSET, neck);
         addBone(head);

@@ -78,6 +78,7 @@ public class MKUAbilities {
     // nethermage
     public static final DeferredHolder<MKAbility, EmberAbility> EMBER = REGISTRY.register("ember", EmberAbility::new);
     public static final DeferredHolder<MKAbility, FireArmorAbility> FIRE_ARMOR = REGISTRY.register("fire_armor", FireArmorAbility::new);
+    public static final DeferredHolder<MKAbility, SearingFurrow> SEARING_FURROW = REGISTRY.register("searing_furrow", SearingFurrow::new);
     public static final DeferredHolder<MKAbility, FlameWaveAbility> FLAME_WAVE = REGISTRY.register("flame_wave", FlameWaveAbility::new);
     public static final DeferredHolder<MKAbility, IgniteAbility> IGNITE = REGISTRY.register("ignite", IgniteAbility::new);
     public static final DeferredHolder<MKAbility, SkullFlameBreathAbility> SKULL_FLAME_BREATH = REGISTRY.register("skull_flame_breath", SkullFlameBreathAbility::new);

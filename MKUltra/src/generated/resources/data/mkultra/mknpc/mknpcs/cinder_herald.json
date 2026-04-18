@@ -1,0 +1,71 @@
+{
+  "entityType": "mknpc:fire_elemental",
+  "name": "mkultra:cinder_herald",
+  "options": {
+    "mknpc:abilities": {
+      "abilities": [
+        {
+          "ability": "mkultra:searing_furrow",
+          "chance": 1.0,
+          "priority": 1
+        }
+      ]
+    },
+    "mknpc:attributes": {
+      "attributes": [
+        {
+          "attribute": "minecraft:generic.max_health",
+          "base_value": 220.0
+        },
+        {
+          "attribute": "mkcore:max_mana",
+          "base_value": 160.0
+        },
+        {
+          "attribute": "mkcore:mana_regen",
+          "base_value": 5.0
+        }
+      ]
+    },
+    "mknpc:equipment": {
+      "equipment": {
+        "mainhand": [
+          {
+            "dropChance": 0.0,
+            "item": {
+              "count": 1,
+              "id": "mkweapons:battleaxe_stone"
+            },
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "mknpc:experience": {
+      "experience": 75
+    },
+    "mknpc:faction": {
+      "factionId": "mkultra:fire_shrine_guardians"
+    },
+    "mknpc:mk_size": {
+      "scale": 1.5
+    },
+    "mknpc:name": {
+      "name": "Cinder Herald"
+    },
+    "mknpc:notable": {
+      "isNotable": true
+    },
+    "mknpc:skills": {
+      "minor_skills": [
+        "mkcore:abjuration",
+        "mkcore:alteration",
+        "mkcore:conjuration",
+        "mkcore:evocation"
+      ],
+      "remedial_skills": [
+        "mkcore:one_hand_pierce"
+      ]
+    }
+  }
+}

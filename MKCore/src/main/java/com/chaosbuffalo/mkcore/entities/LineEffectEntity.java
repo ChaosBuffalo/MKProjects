@@ -9,6 +9,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Collection;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 public class LineEffectEntity extends BaseEffectEntity {
     private Vec3 startPoint;
     private Vec3 endPoint;
+    private float growth = 0.25f;
 
 
     public LineEffectEntity(EntityType<? extends LineEffectEntity> entityType, Level world) {
@@ -36,6 +38,7 @@ public class LineEffectEntity extends BaseEffectEntity {
 
     public void setStartPoint(Vec3 startPoint) {
         this.startPoint = startPoint;
+        updateTraceBounds();
     }
 
     public Vec3 getStartPoint() {
@@ -48,13 +51,22 @@ public class LineEffectEntity extends BaseEffectEntity {
 
     public void setEndPoint(Vec3 endPoint) {
         this.endPoint = endPoint;
+        updateTraceBounds();
+    }
+
+    public void setGrowth(float aaGrowth) {
+        this.growth = aaGrowth;
+        updateTraceBounds();
+    }
+
+    public float getGrowth() {
+        return growth;
     }
 
     @Override
     protected Collection<LivingEntity> getEntitiesInBounds() {
-        return RayTraceUtils.rayTraceAllEntities(LivingEntity.class, getCommandSenderWorld(),
-                        startPoint, endPoint, Vec3.ZERO,
-                        1.5f, 0.0f, this::entityCheck).getEntities().stream().map(x -> x.entity)
+        return RayTraceUtils.traceAllEntitiesInCapsule(LivingEntity.class, getCommandSenderWorld(),
+                        startPoint, endPoint, growth, 0.0f, this::entityCheck).getEntities().stream().map(x -> x.entity)
                 .collect(Collectors.toList());
     }
 
@@ -71,6 +83,7 @@ public class LineEffectEntity extends BaseEffectEntity {
         super.writeSpawnData(buffer);
         writeVector(buffer, startPoint);
         writeVector(buffer, endPoint);
+        buffer.writeFloat(growth);
     }
 
     @Override
@@ -78,5 +91,20 @@ public class LineEffectEntity extends BaseEffectEntity {
         super.readSpawnData(additionalData);
         startPoint = readVector(additionalData);
         endPoint = readVector(additionalData);
+        growth = additionalData.readFloat();
+        updateTraceBounds();
+    }
+
+    public AABB getTraceBounds() {
+        if (startPoint == null || endPoint == null) {
+            return new AABB(position(), position());
+        }
+        return new AABB(startPoint, endPoint).inflate(growth);
+    }
+
+    private void updateTraceBounds() {
+        if (startPoint != null && endPoint != null) {
+            setBoundingBox(getTraceBounds());
+        }
     }
 }

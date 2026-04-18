@@ -1,6 +1,7 @@
 {
   "attributes": {
     "base": 2.0,
+    "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:seafury_casting",
     "iterations": 3,
     "modifierScaling": 1.0,

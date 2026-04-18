@@ -2,13 +2,14 @@ package com.chaosbuffalo.mkcore.client.rendering.model;
 
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.client.rendering.animations.AdditionalBipedAnimation;
-import com.chaosbuffalo.mkcore.client.rendering.animations.BipedCastAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedStunAnimation;
-import com.chaosbuffalo.mkcore.client.rendering.animations.PlayerCompleteCastAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.melee.MeleeAnimationManager;
 import com.chaosbuffalo.mkcore.client.rendering.animations.melee.ModelPoseAnimator;
+import com.chaosbuffalo.mkcore.client.rendering.animations.spell.SpellAnimationManager;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
+import com.chaosbuffalo.mkcore.core.EntityAnimationModule;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkcore.core.player.PlayerCombatExtensionModule;
 import com.chaosbuffalo.mkcore.init.CoreEffects;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -20,20 +21,34 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.function.BiPredicate;
 
 public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
-    private final BipedCastAnimation<Player> castAnimation = new BipedCastAnimation<>(this);
-    private final PlayerCompleteCastAnimation completeCastAnimation = new PlayerCompleteCastAnimation(this);
     private final BipedStunAnimation<Player> stunAnimation = new BipedStunAnimation<>(this);
     private final BipedSkeleton<AbstractClientPlayer, MKPlayerModel> skeleton;
+    private final ModelPart root;
 
     public MKPlayerModel(ModelPart p_170821_, boolean p_170822_) {
         super(p_170821_, p_170822_);
-        this.skeleton = new BipedSkeleton<>(this);
+        this.root = p_170821_;
+        Vec3 leftHandOffset = p_170822_
+                ? new Vec3(0.5 / 16.0, 10.0 / 16.0, -2.0 / 16.0)
+                : new Vec3(1.0 / 16.0, 10.0 / 16.0, -2.0 / 16.0);
+        Vec3 rightHandOffset = p_170822_
+                ? new Vec3(-0.5 / 16.0, 10.0 / 16.0, -2.0 / 16.0)
+                : new Vec3(-1.0 / 16.0, 10.0 / 16.0, -2.0 / 16.0);
+        this.skeleton = new BipedSkeleton<>(this, leftHandOffset, rightHandOffset);
+    }
+
+    public BipedSkeleton<AbstractClientPlayer, MKPlayerModel> getSkeleton() {
+        return skeleton;
     }
 
     @Override
     public void setupAnim(AbstractClientPlayer entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        this.root.getAllParts().forEach(ModelPart::resetPose);
         super.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
 
         MKCore.getPlayer(entityIn).ifPresent(mkEntityData -> {
@@ -41,6 +56,8 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
             AdditionalBipedAnimation<Player> animation = getAdditionalAnimation(mkEntityData);
             if (animation != null) {
                 animation.apply(entityIn);
+            } else {
+                applySpellAnimation(entityIn, mkEntityData, ageInTicks, netHeadYaw, headPitch);
             }
         });
         this.leftPants.copyFrom(this.leftLeg);
@@ -133,14 +150,52 @@ public class MKPlayerModel extends PlayerModel<AbstractClientPlayer> {
         if (playerData.getEffects().isEffectActive(CoreEffects.STUN.get())) {
             return stunAnimation;
         }
-        switch (playerData.getAnimationModule().getPlayerVisualCastState()) {
-            case CASTING:
-                return castAnimation;
-            case RELEASE:
-                return completeCastAnimation;
-            case NONE:
-            default:
-                return null;
+        return null;
+    }
+
+    private void applySpellAnimation(AbstractClientPlayer entityIn, MKPlayerData playerData, float ageInTicks,
+                                     float netHeadYaw, float headPitch) {
+        EntityAnimationModule animationModule = playerData.getAnimationModule();
+        if (animationModule.getCastingAbility() == null) {
+            return;
         }
+
+        float progress = switch (animationModule.getVisualCastState()) {
+            case CASTING -> animationModule.getCastRatio();
+            case RELEASE -> animationModule.getReleaseRatio();
+            case NONE -> 0.0F;
+        };
+        if (progress <= 0.0F || animationModule.getVisualCastState() == EntityAnimationModule.VisualCastState.NONE) {
+            return;
+        }
+
+        PlayerCombatExtensionModule combatExtension = playerData.getCombatExtension();
+        BiPredicate<String, String> targetFilter = createSpellTargetFilter(entityIn, combatExtension);
+        ModelPoseAnimator.Context context = ModelPoseAnimator.Context.windup(progress, ageInTicks, netHeadYaw, headPitch,
+                entityIn.getMainArm(), InteractionHand.MAIN_HAND, false);
+        switch (animationModule.getVisualCastState()) {
+            case CASTING -> SpellAnimationManager.applyCastingPose(skeleton, entityIn, SpellAnimationManager.BIPED_FAMILY,
+                    animationModule.getCastingAbility().getCastAnimationCategory(), context, targetFilter);
+            case RELEASE -> SpellAnimationManager.applyReleasePose(skeleton, entityIn, SpellAnimationManager.BIPED_FAMILY,
+                    animationModule.getCastingAbility().getCastAnimationCategory(), context, targetFilter);
+            case NONE -> {
+            }
+        }
+    }
+
+    private BiPredicate<String, String> createSpellTargetFilter(AbstractClientPlayer entityIn, PlayerCombatExtensionModule combatExtension) {
+        boolean blockMainArm = combatExtension.hasVisualMeleeAttackSequence(InteractionHand.MAIN_HAND);
+        boolean blockOffArm = combatExtension.hasVisualMeleeAttackSequence(InteractionHand.OFF_HAND);
+        String mainArmTarget = entityIn.getMainArm() == HumanoidArm.RIGHT ? BipedSkeleton.RIGHT_ARM_BONE_NAME : BipedSkeleton.LEFT_ARM_BONE_NAME;
+        String offArmTarget = entityIn.getMainArm() == HumanoidArm.RIGHT ? BipedSkeleton.LEFT_ARM_BONE_NAME : BipedSkeleton.RIGHT_ARM_BONE_NAME;
+        return (originalTarget, resolvedTarget) -> {
+            if (blockMainArm && resolvedTarget.equals(mainArmTarget)) {
+                return false;
+            }
+            if (blockOffArm && resolvedTarget.equals(offArmTarget)) {
+                return false;
+            }
+            return true;
+        };
     }
 }

@@ -105,6 +105,7 @@ public record PoseChannel(String target, Property property, Operation operation,
         FOLLOW_THROUGH("follow_through"),
         FOLLOW_THROUGH_SHORT("follow_through_short"),
         WINDUP_SIN("windup_sin"),
+        RELEASE_ARC("release_arc"),
         AGE_SIN("age_sin");
 
         private final String jsonName;

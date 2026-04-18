@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore;
 import com.chaosbuffalo.mkcore.client.gui.MKOverlay;
 import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.client.rendering.animations.melee.MeleeAnimationManager;
+import com.chaosbuffalo.mkcore.client.rendering.animations.spell.SpellAnimationManager;
 import com.chaosbuffalo.mkcore.init.CoreItems;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -36,5 +37,6 @@ public class MKCoreClient {
     private void registerReloadListeners(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(new MeleeAnimationManager.PoseReloadListener());
         event.registerReloadListener(new MeleeAnimationManager.ProfileReloadListener());
+        event.registerReloadListener(new SpellAnimationManager.ProfileReloadListener());
     }
 }

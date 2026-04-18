@@ -1,5 +1,6 @@
 {
   "attributes": {
+    "cast_animation_category": "mkcore:default",
     "casting_particles": "mkultra:holy_fire_casting",
     "tickRate": 10
   },

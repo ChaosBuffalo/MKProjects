@@ -4,6 +4,7 @@
     "baseBurnDamage": 2.0,
     "baseDuration": 6,
     "burn_cast_particles": "mkultra:burn_tick",
+    "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:ember_cast",
     "casting_particles": "mkultra:ember_casting",
     "dotModifierScaling": 0.2,

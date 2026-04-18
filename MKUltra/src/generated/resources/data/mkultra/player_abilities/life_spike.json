@@ -1,6 +1,7 @@
 {
   "attributes": {
     "base": 10.0,
+    "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:lifespike_cast",
     "casting_particles": "mkultra:lifespike_casting",
     "healModScaling": 0.5,

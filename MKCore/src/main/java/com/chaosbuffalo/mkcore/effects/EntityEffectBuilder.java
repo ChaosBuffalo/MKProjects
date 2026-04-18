@@ -148,6 +148,11 @@ public abstract class EntityEffectBuilder<T extends BaseEffectEntity> {
         protected LineEffectEntity createEntity(Level world, Vec3 pos) {
             return new LineEffectEntity(world, pos.x(), pos.y(), pos.z());
         }
+
+        public LineEffectBuilder aaGrowth(float aaGrowth) {
+            effect.setGrowth(aaGrowth);
+            return this;
+        }
     }
 
     public static LineEffectBuilder createLineEffectOnEntity(LivingEntity caster, Entity center, Vec3 start, Vec3 end) {

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkcore.client.rendering.skeleton;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.phys.Vec3;
 
@@ -50,5 +51,10 @@ public class ModelRendererBone extends MCBone {
     @Override
     public float getRoll() {
         return modelRenderer.zRot;
+    }
+
+    @Override
+    public void applyLocalTransform(PoseStack poseStack) {
+        modelRenderer.translateAndRotate(poseStack);
     }
 }

@@ -6,9 +6,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.*;
-import net.neoforged.neoforge.entity.PartEntity;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -86,35 +84,23 @@ public class RayTraceUtils {
                 }
             }
         }
-        if (!world.getPartEntities().isEmpty()) {
-            for (PartEntity<?> p : world.getPartEntities()) {
-                if (testPickable && !p.isPickable()) {
-                    continue;
-                }
-                EntityTypeTest<Entity, E> typeTest = EntityTypeTest.forClass(clazz);
-                E t = typeTest.tryCast(p.getParent());
-                AABB entityBB = p.getBoundingBox().inflate(entityExpansion);
-                if (t != null && entityBB.intersects(bb) && predicate.test(t)) {
-                    Optional<Vec3> intercept = entityBB.clip(from, to);
-                    if (intercept.isPresent()) {
-                        double dist = from.distanceTo(intercept.get());
-                        if (dist < distance || distance == 0.0D) {
-                            nearest = t;
-                            distance = dist;
-                        }
-                    }
-                }
-            }
-        }
 
         if (!TraceManager.getExtensionProviders().isEmpty()) {
             for (ITraceExtensionProvider provider : TraceManager.getExtensionProviders()) {
-                EntityCollectionRayTraceResult<E> results = provider.getCustomTraces(clazz, world,
-                        from, to, aaExpansion, aaGrowth, entityExpansion, filter, testPickable);
-                for (EntityCollectionRayTraceResult.TraceEntry<E> result : results.getEntities()) {
-                    if (result.distance < distance || distance == 0.0D) {
-                        nearest = result.entity;
-                        distance = result.distance;
+                List<ITraceExtensionProvider.TraceCandidate<E>> candidates = provider.getTraceCandidates(clazz, world,
+                        bb, predicate, testPickable);
+                for (ITraceExtensionProvider.TraceCandidate<E> candidate : candidates) {
+                    // the trace providers test whether the part is pickable, here we should test the actual entity
+                    if (testPickable && !candidate.entity().isPickable()) {
+                        continue;
+                    }
+                    Optional<Vec3> intercept = candidate.bounds().inflate(entityExpansion).clip(from, to);
+                    if (intercept.isPresent()) {
+                        double dist = from.distanceTo(intercept.get());
+                        if (dist < distance || distance == 0.0D) {
+                            nearest = candidate.entity();
+                            distance = dist;
+                        }
                     }
                 }
             }
@@ -137,45 +123,113 @@ public class RayTraceUtils {
                 .expandTowards(aaExpansion.x, aaExpansion.y, aaExpansion.z)
                 .inflate(aaGrowth);
         List<E> entities = world.getEntitiesOfClass(clazz, bb, predicate);
-        List<EntityCollectionRayTraceResult.TraceEntry<E>> finalEnt = new ArrayList<>();
+        Map<E, EntityCollectionRayTraceResult.TraceEntry<E>> finalEnt = new LinkedHashMap<>();
         for (E entity : entities) {
             AABB entityBB = entity.getBoundingBox().inflate(entityExpansion);
             Optional<Vec3> intercept = entityBB.clip(from, to);
             if (intercept.isPresent()) {
                 double dist = from.distanceTo(intercept.get());
-                finalEnt.add(new EntityCollectionRayTraceResult.TraceEntry<>(entity, dist, intercept.get()));
-            }
-        }
-        if (!world.getPartEntities().isEmpty()) {
-            Set<E> seenParts = new HashSet<>();
-            for (PartEntity<?> p : world.getPartEntities()) {
-                EntityTypeTest<Entity, E> typeTest = EntityTypeTest.forClass(clazz);
-                E t = typeTest.tryCast(p.getParent());
-                if (seenParts.contains(t)) {
-                    continue;
-                }
-                AABB entityBB = p.getBoundingBox().inflate(entityExpansion);
-                if (t != null && entityBB.intersects(bb) && predicate.test(t)) {
-                    Optional<Vec3> intercept = entityBB.clip(from, to);
-                    if (intercept.isPresent()) {
-                        double dist = from.distanceTo(intercept.get());
-                        finalEnt.add(new EntityCollectionRayTraceResult.TraceEntry<>(t, dist, intercept.get()));
-                        seenParts.add(t);
-                    }
-                }
+                addNearestTraceHit(finalEnt, entity, dist, intercept.get());
             }
         }
 
         if (!TraceManager.getExtensionProviders().isEmpty()) {
             for (ITraceExtensionProvider provider : TraceManager.getExtensionProviders()) {
-                EntityCollectionRayTraceResult<E> results = provider.getCustomTraces(clazz, world,
-                        from, to, aaExpansion, aaGrowth, entityExpansion, filter, false);
-                finalEnt.addAll(results.getEntities());
+                List<ITraceExtensionProvider.TraceCandidate<E>> candidates = provider.getTraceCandidates(clazz, world,
+                        bb, predicate, false);
+                for (ITraceExtensionProvider.TraceCandidate<E> candidate : candidates) {
+                    Optional<Vec3> intercept = candidate.bounds().inflate(entityExpansion).clip(from, to);
+                    if (intercept.isPresent()) {
+                        double dist = from.distanceTo(intercept.get());
+                        addNearestTraceHit(finalEnt, candidate.entity(), dist, intercept.get());
+                    }
+                }
             }
         }
 
 
-        return new EntityCollectionRayTraceResult<>(finalEnt);
+        return new EntityCollectionRayTraceResult<>(new ArrayList<>(finalEnt.values()));
+    }
+
+    public static <E extends Entity> EntityCollectionRayTraceResult<E> traceAllEntitiesInCapsule(Class<E> clazz, Level world,
+                                                                                                  Vec3 from, Vec3 to,
+                                                                                                  double radius,
+                                                                                                  float entityExpansion,
+                                                                                                  final Predicate<E> filter) {
+        Predicate<E> predicate = input -> defaultFilter.test(input) && filter.test(input);
+        AABB bb = new AABB(from, to).inflate(radius);
+        List<E> entities = world.getEntitiesOfClass(clazz, bb, predicate);
+        Map<E, EntityCollectionRayTraceResult.TraceEntry<E>> finalEnt = new LinkedHashMap<>();
+        for (E entity : entities) {
+            addCapsuleTraceHit(finalEnt, entity, entity.getBoundingBox().inflate(entityExpansion), from, to, radius);
+        }
+        if (!TraceManager.getExtensionProviders().isEmpty()) {
+            for (ITraceExtensionProvider provider : TraceManager.getExtensionProviders()) {
+                List<ITraceExtensionProvider.TraceCandidate<E>> candidates = provider.getTraceCandidates(clazz, world,
+                        bb, predicate, false);
+                for (ITraceExtensionProvider.TraceCandidate<E> candidate : candidates) {
+                    addCapsuleTraceHit(finalEnt, candidate.entity(), candidate.bounds().inflate(entityExpansion), from, to, radius);
+                }
+            }
+        }
+        return new EntityCollectionRayTraceResult<>(new ArrayList<>(finalEnt.values()));
+    }
+
+    private static <E extends Entity> boolean addCapsuleTraceHit(Map<E, EntityCollectionRayTraceResult.TraceEntry<E>> finalEnt, E entity,
+                                                                 AABB entityBB, Vec3 from, Vec3 to, double radius) {
+        ClosestSegmentPointResult result = closestPointOnSegmentToAABB(from, to, entityBB);
+        if (result.distanceSqr <= radius * radius) {
+            addNearestTraceHit(finalEnt, entity, from.distanceTo(result.closestPoint), result.closestPoint);
+            return true;
+        }
+        return false;
+    }
+
+    private static <E extends Entity> void addNearestTraceHit(Map<E, EntityCollectionRayTraceResult.TraceEntry<E>> hits,
+                                                              E entity, double distance, Vec3 intercept) {
+        EntityCollectionRayTraceResult.TraceEntry<E> current = hits.get(entity);
+        if (current == null || distance < current.distance) {
+            hits.put(entity, new EntityCollectionRayTraceResult.TraceEntry<>(entity, distance, intercept));
+        }
+    }
+
+    private static ClosestSegmentPointResult closestPointOnSegmentToAABB(Vec3 from, Vec3 to, AABB box) {
+        double low = 0.0;
+        double high = 1.0;
+        for (int i = 0; i < 32; i++) {
+            double left = (2.0 * low + high) / 3.0;
+            double right = (low + 2.0 * high) / 3.0;
+            double leftDist = distanceSqrPointToAABB(from.lerp(to, left), box);
+            double rightDist = distanceSqrPointToAABB(from.lerp(to, right), box);
+            if (leftDist <= rightDist) {
+                high = right;
+            } else {
+                low = left;
+            }
+        }
+        double t = (low + high) * 0.5;
+        Vec3 point = from.lerp(to, t);
+        return new ClosestSegmentPointResult(point, distanceSqrPointToAABB(point, box));
+    }
+
+    private static double distanceSqrPointToAABB(Vec3 point, AABB box) {
+        double dx = axisDistance(point.x, box.minX, box.maxX);
+        double dy = axisDistance(point.y, box.minY, box.maxY);
+        double dz = axisDistance(point.z, box.minZ, box.maxZ);
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+    private static double axisDistance(double value, double min, double max) {
+        if (value < min) {
+            return min - value;
+        }
+        if (value > max) {
+            return value - max;
+        }
+        return 0.0;
+    }
+
+    private record ClosestSegmentPointResult(Vec3 closestPoint, double distanceSqr) {
     }
 
     private static <E extends Entity> HitResult rayTraceBlocksAndEntities(Class<E> clazz, Entity mainEntity,

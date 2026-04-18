@@ -1,0 +1,6 @@
+{
+  "baseTexture": "mknpc:textures/entity/fire_elemental.png",
+  "default": true,
+  "entityType": "mknpc:fire_elemental",
+  "modelStyle": "mknpc:basic"
+}

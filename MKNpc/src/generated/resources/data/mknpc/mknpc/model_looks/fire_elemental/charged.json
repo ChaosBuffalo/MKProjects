@@ -1,0 +1,8 @@
+{
+  "baseTexture": "mknpc:textures/entity/fire_elemental.png",
+  "entityType": "mknpc:fire_elemental",
+  "layerTextures": {
+    "energy_swirl": "mknpc:textures/entity/fire_elemental_overcharge.png"
+  },
+  "modelStyle": "mknpc:basic_energy_swirl"
+}

@@ -2,6 +2,7 @@
   "attributes": {
     "base": 4.0,
     "baseDuration": 4,
+    "cast_animation_category": "mkcore:default",
     "cast_particles": "mkultra:warp_curse_cast",
     "casting_particles": "mkultra:warp_curse_casting",
     "modifierScaling": 0.25,

@@ -1,5 +1,6 @@
 {
   "block.mknpc.mk_spawner": "MK Spawner",
+  "entity.mknpc.fire_elemental": "Fire Elemental",
   "key.hud.questmenu": "Open Quest Journal",
   "key.mknpc.category": "MKNpc",
   "mknpc.command.cant_find_cap": "Can't find mknpc World Capability, Command Failed",
