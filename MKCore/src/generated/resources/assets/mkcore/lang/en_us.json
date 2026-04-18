@@ -326,6 +326,7 @@
   "mkcore.particle_editor.track_type.unknown": "Unknown Track: %s",
   "mkcore.skill.increase": "Your %s Skill Increased to %.0f",
   "mkcore.spawn_pattern.particle_spawn_pattern.advanced_line.name": "Advanced Line",
+  "mkcore.spawn_pattern.particle_spawn_pattern.advanced_perpendicular_line.name": "Advanced Perpendicular Line",
   "mkcore.spawn_pattern.particle_spawn_pattern.circle.name": "Circular",
   "mkcore.spawn_pattern.particle_spawn_pattern.cone.name": "Cone",
   "mkcore.spawn_pattern.particle_spawn_pattern.directional_cone.name": "Directional Cone",
