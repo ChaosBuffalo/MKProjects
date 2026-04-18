@@ -70,7 +70,7 @@ public final class MKAbilityPowerResolver implements AbilityPowerResolver {
         return switch (value.kind()) {
             case FLOAT -> value.asFloat(label);
             case INT -> value.asInt(label);
-            case BOOL, ENTITY_REF, RESOURCE_LOCATION ->
+            case BOOL, STRING, ENTITY_REF, RESOURCE_LOCATION ->
                     throw new IllegalStateException("Ability scalar '" + label + "' resolved to non-numeric " + value.kind());
         };
     }

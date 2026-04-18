@@ -280,7 +280,7 @@ public final class AbilityReactionBus {
         return switch (left.kind()) {
             case FLOAT -> Float.compare(left.asFloat("payload"), right.asFloat("payload"));
             case INT -> Integer.compare(left.asInt("payload"), right.asInt("payload"));
-            case BOOL, ENTITY_REF, RESOURCE_LOCATION ->
+            case BOOL, STRING, ENTITY_REF, RESOURCE_LOCATION ->
                     throw new IllegalStateException("Cannot apply numeric comparison to " + left.kind());
         };
     }

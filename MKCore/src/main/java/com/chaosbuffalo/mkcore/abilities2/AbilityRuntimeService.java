@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.abilities2;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities2.actions.AbilityEventFilter.ParticipantRelation;
 import com.chaosbuffalo.mkcore.abilities2.definition.AbilityReactionDefinition;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityValue;
 import com.chaosbuffalo.mkcore.abilities2.runtime.*;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import net.minecraft.server.MinecraftServer;
@@ -10,7 +11,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
@@ -25,6 +28,7 @@ public class AbilityRuntimeService {
     private final SimpleAbilityEngine engine;
     private final Map<AbilityReactionOwner, ReactionOwnerRuntime> reactionOwnerRuntime = new HashMap<>();
     private final Map<AbilityReactionOwner, Map<String, AbilityReactionHandle>> installedReactionHandles = new HashMap<>();
+    private long lastStateStoreTick = Long.MIN_VALUE;
 
     public AbilityRuntimeService(AbilityDefinitionResolver definitionResolver) {
         this.definitionResolver = definitionResolver;
@@ -68,6 +72,19 @@ public class AbilityRuntimeService {
         if (event.getEntity() instanceof LivingEntity living && !living.level().isClientSide()) {
             engine.tickEntity(MKCore.getEntityDataOrThrow(living));
         }
+    }
+
+    @SubscribeEvent
+    public void onLevelTick(LevelTickEvent.Pre event) {
+        if (!(event.getLevel() instanceof ServerLevel serverLevel) || serverLevel.dimension() != Level.OVERWORLD) {
+            return;
+        }
+        long gameTick = serverLevel.getGameTime();
+        if (gameTick == lastStateStoreTick) {
+            return;
+        }
+        lastStateStoreTick = gameTick;
+        stateStore.tick(gameTick, this::emitCooldownFinished);
     }
 
     private long currentGameTick() {
@@ -142,6 +159,24 @@ public class AbilityRuntimeService {
         }
         PatchedAbilityDefinition definition = definitionResolver.resolvePatched(value);
         return definition != null && definition.definition().data().tags().contains(tag);
+    }
+
+    private void emitCooldownFinished(AbilityStateStore.CooldownFinishedEvent event) {
+        Map<String, AbilityValue> payload = new LinkedHashMap<>();
+        payload.put("cooldown_scope", new AbilityValue.StringValue(event.scope().name().toLowerCase(Locale.ROOT)));
+        payload.put("cooldown_key", new AbilityValue.StringValue(event.key()));
+        reactionBus.emit(new AbilityEventSnapshot(
+                AbilityEventType.COOLDOWN_FINISHED,
+                null,
+                null,
+                0,
+                event.stableSourceId(),
+                event.abilityId(),
+                null,
+                event.ownerEntityId(),
+                event.ownerEntityId(),
+                payload
+        ));
     }
 
     private final class EngineReactionController implements SimpleAbilityEngine.ReactionController {

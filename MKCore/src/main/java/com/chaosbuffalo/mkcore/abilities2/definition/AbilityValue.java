@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 public sealed interface AbilityValue permits AbilityValue.FloatValue, AbilityValue.IntValue, AbilityValue.BoolValue,
-        AbilityValue.EntityRefValue, AbilityValue.ResourceLocationValue {
+        AbilityValue.StringValue, AbilityValue.EntityRefValue, AbilityValue.ResourceLocationValue {
 
     AbilityValueKind kind();
 
@@ -20,6 +20,10 @@ public sealed interface AbilityValue permits AbilityValue.FloatValue, AbilityVal
 
     default boolean asBool(String id) {
         throw typeError(id, AbilityValueKind.BOOL);
+    }
+
+    default String asString(String id) {
+        throw typeError(id, AbilityValueKind.STRING);
     }
 
     default UUID asEntityRef(String id) {
@@ -67,6 +71,22 @@ public sealed interface AbilityValue permits AbilityValue.FloatValue, AbilityVal
 
         @Override
         public boolean asBool(String id) {
+            return value;
+        }
+    }
+
+    record StringValue(String value) implements AbilityValue {
+        public StringValue {
+            Objects.requireNonNull(value, "value");
+        }
+
+        @Override
+        public AbilityValueKind kind() {
+            return AbilityValueKind.STRING;
+        }
+
+        @Override
+        public String asString(String id) {
             return value;
         }
     }

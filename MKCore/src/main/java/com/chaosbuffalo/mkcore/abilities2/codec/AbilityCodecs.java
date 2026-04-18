@@ -293,6 +293,7 @@ public final class AbilityCodecs {
             case "float" -> parseField(data, "value", Codec.FLOAT).map(AbilityValue.FloatValue::new);
             case "int" -> parseField(data, "value", Codec.INT).map(AbilityValue.IntValue::new);
             case "bool" -> parseField(data, "value", Codec.BOOL).map(AbilityValue.BoolValue::new);
+            case "string" -> parseField(data, "value", Codec.STRING).map(AbilityValue.StringValue::new);
             case "entity_ref" -> parseField(data, "value", UUIDUtil.STRING_CODEC).map(AbilityValue.EntityRefValue::new);
             case "resource_location" -> parseField(data, "value", ResourceLocation.CODEC).map(AbilityValue.ResourceLocationValue::new);
             default -> DataResult.error(() -> "Unknown ability value kind '" + kind + "'");
@@ -309,6 +310,8 @@ public final class AbilityCodecs {
                     data.put("value", encodeField(intValue.value(), Codec.INT, "ability int value"));
             case AbilityValue.BoolValue boolValue ->
                     data.put("value", encodeField(boolValue.value(), Codec.BOOL, "ability bool value"));
+            case AbilityValue.StringValue stringValue ->
+                    data.put("value", encodeField(stringValue.value(), Codec.STRING, "ability string value"));
             case AbilityValue.EntityRefValue entityRefValue ->
                     data.put("value", encodeField(entityRefValue.value(), UUIDUtil.STRING_CODEC, "ability entity_ref value"));
             case AbilityValue.ResourceLocationValue resourceLocationValue ->

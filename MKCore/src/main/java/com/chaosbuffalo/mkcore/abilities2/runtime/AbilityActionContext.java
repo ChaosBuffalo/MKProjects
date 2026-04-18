@@ -45,6 +45,10 @@ public interface AbilityActionContext {
         return getParam(id).asBool(id);
     }
 
+    default String getStringParam(String id) {
+        return getParam(id).asString(id);
+    }
+
     default ResourceLocation getResourceLocationParam(String id) {
         return getParam(id).asResourceLocation(id);
     }
@@ -59,6 +63,10 @@ public interface AbilityActionContext {
 
     default boolean getBoolVar(String id) {
         return getVar(id).asBool(id);
+    }
+
+    default String getStringVar(String id) {
+        return getVar(id).asString(id);
     }
 
     default ResourceLocation getResourceLocationVar(String id) {

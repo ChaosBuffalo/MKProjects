@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -19,7 +20,7 @@ public final class MemoryAbilityStateStore implements AbilityStateStore {
     @Override
     public int getCooldownRemainingTicks(AbilityInvocation invocation, StateScope scope, String key, long gameTick) {
         CooldownKey cooldownKey = new CooldownKey(resolveScopeKey(invocation, scope), key);
-        return getRemainingTicks(cooldownExpiry, cooldownKey, gameTick);
+        return getRemainingTicks(cooldownExpiry, cooldownKey, gameTick, false);
     }
 
     @Override
@@ -31,7 +32,7 @@ public final class MemoryAbilityStateStore implements AbilityStateStore {
     @Override
     public int getGcdRemainingTicks(IMKEntityData ownerData, ResourceLocation gcdGroup, long gameTick) {
         GcdKey gcdKey = new GcdKey(ownerData.getEntity().getUUID(), gcdGroup);
-        return getRemainingTicks(gcdExpiry, gcdKey, gameTick);
+        return getRemainingTicks(gcdExpiry, gcdKey, gameTick, true);
     }
 
     @Override
@@ -55,6 +56,29 @@ public final class MemoryAbilityStateStore implements AbilityStateStore {
         }
     }
 
+    @Override
+    public void tick(long gameTick, CooldownFinishedListener listener) {
+        Objects.requireNonNull(listener, "listener");
+        Iterator<Map.Entry<CooldownKey, Long>> cooldownIterator = cooldownExpiry.entrySet().iterator();
+        while (cooldownIterator.hasNext()) {
+            Map.Entry<CooldownKey, Long> entry = cooldownIterator.next();
+            if (entry.getValue() > gameTick) {
+                continue;
+            }
+            cooldownIterator.remove();
+            ScopeKey scopeKey = entry.getKey().scopeKey();
+            listener.onCooldownFinished(new CooldownFinishedEvent(
+                    scopeKey.scope(),
+                    entry.getKey().key(),
+                    scopeKey.abilityId(),
+                    scopeKey.stableSourceId(),
+                    scopeKey.ownerEntityId()
+            ));
+        }
+
+        pruneExpired(gcdExpiry, gameTick);
+    }
+
     private ScopeKey resolveScopeKey(AbilityInvocation invocation, StateScope scope) {
         UUID ownerEntityId = invocation.ownerData().getEntity().getUUID();
         return switch (scope) {
@@ -68,13 +92,15 @@ public final class MemoryAbilityStateStore implements AbilityStateStore {
         };
     }
 
-    private <K> int getRemainingTicks(Map<K, Long> expiryMap, K key, long gameTick) {
+    private <K> int getRemainingTicks(Map<K, Long> expiryMap, K key, long gameTick, boolean removeExpired) {
         Long expiry = expiryMap.get(key);
         if (expiry == null) {
             return 0;
         }
         if (expiry <= gameTick) {
-            expiryMap.remove(key);
+            if (removeExpired) {
+                expiryMap.remove(key);
+            }
             return 0;
         }
         long remaining = expiry - gameTick;
@@ -87,6 +113,15 @@ public final class MemoryAbilityStateStore implements AbilityStateStore {
             return;
         }
         expiryMap.put(key, gameTick + durationTicks);
+    }
+
+    private <K> void pruneExpired(Map<K, Long> expiryMap, long gameTick) {
+        Iterator<Map.Entry<K, Long>> iterator = expiryMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().getValue() <= gameTick) {
+                iterator.remove();
+            }
+        }
     }
 
     private record ScopeKey(StateScope scope,

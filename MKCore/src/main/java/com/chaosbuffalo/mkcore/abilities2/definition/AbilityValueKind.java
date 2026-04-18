@@ -4,6 +4,7 @@ public enum AbilityValueKind {
     FLOAT,
     INT,
     BOOL,
+    STRING,
     ENTITY_REF,
     RESOURCE_LOCATION;
 

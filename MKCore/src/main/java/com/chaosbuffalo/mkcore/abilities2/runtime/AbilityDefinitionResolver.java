@@ -136,7 +136,7 @@ public final class AbilityDefinitionResolver {
         return switch (kind) {
             case FLOAT -> new FloatValue(current.asFloat("scaled") * (float) scale);
             case INT -> new IntValue((int) Math.round(current.asInt("scaled") * scale));
-            case BOOL, ENTITY_REF, RESOURCE_LOCATION ->
+            case BOOL, STRING, ENTITY_REF, RESOURCE_LOCATION ->
                     throw new IllegalStateException("Non-numeric kind %s reached numeric scaling".formatted(kind));
         };
     }
