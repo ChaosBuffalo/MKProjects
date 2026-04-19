@@ -14,6 +14,12 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
+/**
+ * Demo screen showcasing the primary MKWidgets building blocks.
+ * <p>
+ * This class is not core infrastructure, but it is a useful reference for users learning how screens, layouts,
+ * constraints, modals, scrolling, and tooltips fit together in practice.
+ */
 public class TestScreen extends MKScreen {
     private final int PANEL_WIDTH = 320;
     private final int PANEL_HEIGHT = 240;
@@ -23,10 +29,20 @@ public class TestScreen extends MKScreen {
             "textures/gui/chaosbuffalologo.png");
     private MKModal testPopup;
 
+    /**
+     * @param title screen title
+     */
     public TestScreen(Component title) {
         super(title);
     }
 
+    /**
+     * Builds the intro state for the demo screen.
+     *
+     * @param xPos panel x position
+     * @param yPos panel y position
+     * @return intro layout root
+     */
     public MKLayout getIntro(int xPos, int yPos) {
         MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
         root.setMargins(5, 5, 5, 5);
@@ -71,6 +87,16 @@ public class TestScreen extends MKScreen {
         return root;
     }
 
+    /**
+     * Builds the tooltip example state.
+     * <p>
+     * This example shows the simplest tooltip path in the library: attach tooltip text directly to a widget and
+     * let the default long-hover behavior schedule the tooltip during the screen's post-render phase.
+     *
+     * @param xPos panel x position
+     * @param yPos panel y position
+     * @return tooltip demo root layout
+     */
     private MKLayout getToolTipTest(int xPos, int yPos) {
         MKText textWithLongHover = new MKText(font, "This text will have tooltip.");
         textWithLongHover.setTooltip("This is a tooltip.");
@@ -83,12 +109,25 @@ public class TestScreen extends MKScreen {
 
     }
 
+    /**
+     * Builds the modal popup example state.
+     * <p>
+     * This example demonstrates that modals are just widgets attached through the screen's modal stack. The
+     * popup content itself is a normal layout tree containing a text field, a live-updating text label, and a
+     * close button.
+     *
+     * @param xPos panel x position
+     * @param yPos panel y position
+     * @return popup demo root layout
+     */
     private MKLayout getPopupTest(int xPos, int yPos) {
         MKLayout root = getRootWithTitle(xPos, yPos, "Popup Test");
         MKButton openPopup = new MKButton("Open Popup");
         root.addWidget(openPopup);
         root.addConstraintToWidget(StackConstraint.VERTICAL, openPopup);
         root.addConstraintToWidget(new CenterXConstraint(), openPopup);
+
+        // The modal itself is a full-screen overlay; the layout inside it holds the actual popup content.
         testPopup = new MKModal();
         MKLayout popupContents = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
         testPopup.addWidget(popupContents);
@@ -121,12 +160,27 @@ public class TestScreen extends MKScreen {
         return root;
     }
 
+    /**
+     * Builds a small image demo panel that constrains one image inside a boxed layout.
+     * <p>
+     * This helper shows how image widgets can be resized relative to a parent layout and then anchored using
+     * composable constraints. Debug bounds are enabled to make the layout geometry visible while experimenting.
+     *
+     * @param xPos panel x position
+     * @param yPos panel y position
+     * @param width box width
+     * @param height box height
+     * @param imageLoc image resource to render
+     * @param verticalMargin vertical edge constraint for the image
+     * @param horizontalMargin horizontal edge constraint for the image
+     * @return image box layout
+     */
     private MKLayout getImageBox(int xPos, int yPos, int width, int height, ResourceLocation imageLoc,
                                  MarginConstraint verticalMargin,
                                  MarginConstraint horizontalMargin) {
 
         MKLayout root = new MKLayout(xPos, yPos, width, height);
-        // we pass in the original image size here
+        // The source texture is 400x400, but the widget is then resized relative to the containing layout.
         MKImage image = new MKImage(xPos, yPos, 400, 400, imageLoc);
         root.addWidget(image);
         root.addConstraintToWidget(new LayoutRelativeWidthConstraint(.5f), image);
@@ -138,6 +192,18 @@ public class TestScreen extends MKScreen {
         return root;
     }
 
+    /**
+     * Builds a horizontal row containing two image boxes.
+     * <p>
+     * This helper demonstrates composition of specialized layouts: a horizontal stack lays out two child
+     * layouts, and each child layout in turn manages an anchored image of its own.
+     *
+     * @param height fixed row height
+     * @param image1 first image resource
+     * @param image2 second image resource
+     * @param verticalMargin vertical edge constraint applied inside each child image box
+     * @return horizontal row layout
+     */
     private MKLayout get2ImageBoxRow(int height, ResourceLocation image1, ResourceLocation image2,
                                      MarginConstraint verticalMargin) {
         MKStackLayoutHorizontal row = new MKStackLayoutHorizontal(0, 0, height);
@@ -149,6 +215,16 @@ public class TestScreen extends MKScreen {
         return row;
     }
 
+    /**
+     * Builds the nested image-box demo content.
+     * <p>
+     * This example stacks two horizontal rows vertically, which makes it a compact reference for how nested
+     * stack layouts compute their size from child content.
+     *
+     * @param rowHeight height for each horizontal row
+     * @param image image resource to use in each image box
+     * @return vertically stacked image box layout
+     */
     private MKLayout getImageBoxLayout(int rowHeight, ResourceLocation image) {
         MKStackLayoutVertical layout = new MKStackLayoutVertical(0, 0, rowHeight * 2 + 30);
         layout.setMargins(10, 10, 10, 10);
@@ -160,6 +236,17 @@ public class TestScreen extends MKScreen {
         return layout;
     }
 
+    /**
+     * Creates a standard panel root used by multiple demo states.
+     * <p>
+     * The returned layout establishes a common panel size, margins, padding, and centered title text so the
+     * individual examples can focus on the behavior they are demonstrating.
+     *
+     * @param xPos panel x position
+     * @param yPos panel y position
+     * @param title panel title text
+     * @return base panel layout with a title already attached
+     */
     private MKLayout getRootWithTitle(int xPos, int yPos, String title) {
         MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
         root.setMargins(5, 5, 5, 5);
@@ -172,6 +259,16 @@ public class TestScreen extends MKScreen {
         return root;
     }
 
+    /**
+     * Builds the image layout demonstration state.
+     * <p>
+     * The nested image box layout is manually recomputed before being inserted so the parent can immediately use
+     * its computed size when centering it.
+     *
+     * @param xPos panel x position
+     * @param yPos panel y position
+     * @return image demo root layout
+     */
     private MKLayout imageBoxDemo(int xPos, int yPos) {
         MKLayout root = getRootWithTitle(xPos, yPos, "Image Box Demo");
         MKLayout imageBox = getImageBoxLayout(50, CB_LOGO);
@@ -183,6 +280,14 @@ public class TestScreen extends MKScreen {
         return root;
     }
 
+    /**
+     * Adds a shared "back" button to a demo layout.
+     * <p>
+     * All example states use the screen state stack, so going "back" simply pops the current state and restores
+     * the previous root widget tree.
+     *
+     * @param layout layout that should receive the back button
+     */
     private void addBackButton(MKLayout layout) {
         MKButton back = new MKButton("Back to Main");
         layout.addWidget(back);
@@ -195,6 +300,13 @@ public class TestScreen extends MKScreen {
     }
 
 
+    /**
+     * Builds the scroll view demonstration state.
+     *
+     * @param xPos panel x position
+     * @param yPos panel y position
+     * @return scroll demo root layout
+     */
     public MKLayout textListDemo(int xPos, int yPos) {
         MKLayout root = getRootWithTitle(xPos, yPos, "Scrollable List Demo");
         MKScrollView scrollView = new MKScrollView(0, 0, 120, 100);
@@ -202,6 +314,8 @@ public class TestScreen extends MKScreen {
         scrollView.setScrollVelocity(3.0);
         root.addConstraintToWidget(StackConstraint.VERTICAL, scrollView);
         root.addConstraintToWidget(new CenterXConstraint(), scrollView);
+
+        // The scroll view holds a single content widget, so we use a vertical stack as the scrollable content.
         MKStackLayoutVertical verticalLayout = new MKStackLayoutVertical(0, 0, 120);
         verticalLayout.doSetChildWidth(true).setPaddingBot(5).setMarginTop(5).setMarginRight(5).setMarginLeft(5).setMarginBot(5);
         for (int i = 0; i < 25; i++) {
@@ -222,6 +336,11 @@ public class TestScreen extends MKScreen {
         return root;
     }
 
+    /**
+     * Registers all demo states and activates the intro state.
+     * <p>
+     * Each state is supplied lazily so the corresponding widget tree is only built when that demo is entered.
+     */
     @Override
     public void setupScreen() {
         super.setupScreen();
@@ -235,6 +354,9 @@ public class TestScreen extends MKScreen {
         pushState("intro");
     }
 
+    /**
+     * Draws the example panel background and then lets {@link MKScreen} render the active widget tree.
+     */
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         int xPos = width / 2 - PANEL_WIDTH / 2;

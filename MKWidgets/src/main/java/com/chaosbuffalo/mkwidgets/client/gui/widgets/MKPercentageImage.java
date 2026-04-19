@@ -6,11 +6,19 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 
+/**
+ * Image widget that draws only a percentage of its configured source region and output size.
+ * <p>
+ * This is commonly useful for bars, meters, and progress overlays.
+ */
 public class MKPercentageImage extends MKImage {
 
     public float widthPercentage;
     public float heightPercentage;
 
+    /**
+     * Creates a percentage image backed by a texture sub-region.
+     */
     public MKPercentageImage(int x, int y, int width, int height, int sourceWidth, int sourceHeight,
                              int imageU, int imageV, int imageWidth, int imageHeight, ResourceLocation imageLoc) {
         super(x, y, width, height, sourceWidth, sourceHeight, imageU, imageV, imageWidth, imageHeight, imageLoc);
@@ -18,17 +26,32 @@ public class MKPercentageImage extends MKImage {
         this.heightPercentage = 1.0f;
     }
 
+    /**
+     * Creates a percentage image that initially uses the full source texture.
+     */
     public MKPercentageImage(int x, int y, int width, int height, ResourceLocation imageLoc) {
         super(x, y, width, height, imageLoc);
         this.widthPercentage = 1.0f;
         this.heightPercentage = 1.0f;
     }
 
+    /**
+     * Sets the horizontal draw fraction.
+     *
+     * @param widthPercentage fraction in the range typically {@code [0, 1]}
+     * @return this widget
+     */
     public MKPercentageImage setWidthPercentage(float widthPercentage) {
         this.widthPercentage = widthPercentage;
         return this;
     }
 
+    /**
+     * Sets the vertical draw fraction.
+     *
+     * @param heightPercentage fraction in the range typically {@code [0, 1]}
+     * @return this widget
+     */
     public MKPercentageImage setHeightPercentage(float heightPercentage) {
         this.heightPercentage = heightPercentage;
         return this;

@@ -5,6 +5,9 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 
 import java.util.UUID;
 
+/**
+ * Aligns a widget to one edge of a layout using that layout's configured margins.
+ */
 public enum MarginConstraint implements IConstraint {
     TOP {
         @Override

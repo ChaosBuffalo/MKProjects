@@ -3,6 +3,9 @@ package com.chaosbuffalo.mkwidgets.client.gui.constraints;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.IMKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 
+/**
+ * Horizontally centers a widget within the layout's usable width.
+ */
 public class CenterXConstraint extends BaseConstraint {
 
     @Override

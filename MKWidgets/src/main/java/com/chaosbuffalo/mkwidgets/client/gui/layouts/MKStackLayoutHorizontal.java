@@ -6,16 +6,32 @@ import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.StackConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 
+/**
+ * Horizontal stack layout that places each child after the previous one and grows its own width to fit.
+ */
 public class MKStackLayoutHorizontal extends MKLayout {
     private int currentWidth;
     private boolean doSetHeight;
 
+    /**
+     * Creates a horizontal stack with a fixed height and computed width.
+     *
+     * @param x left position
+     * @param y top position
+     * @param height fixed layout height
+     */
     public MKStackLayoutHorizontal(int x, int y, int height) {
         super(x, y, 0, height);
         currentWidth = 0;
         doSetHeight = false;
     }
 
+    /**
+     * Configures whether children should automatically fill the stack's available height.
+     *
+     * @param value {@code true} to apply a full-height relative constraint to future children
+     * @return this layout
+     */
     public MKStackLayoutHorizontal doSetChildHeight(boolean value) {
         doSetHeight = value;
         return this;

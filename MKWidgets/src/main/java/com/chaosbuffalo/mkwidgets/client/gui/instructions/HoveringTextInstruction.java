@@ -11,11 +11,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Post-render instruction that draws one or more tooltip lines at a given screen position.
+ */
 public class HoveringTextInstruction implements IInstruction {
 
     private final List<Component> texts;
     private final Vec2i mousePos;
 
+    /**
+     * Creates a single-line tooltip from a plain string.
+     *
+     * @param text tooltip text
+     * @param mousePos tooltip anchor position
+     */
     public HoveringTextInstruction(String text, Vec2i mousePos) {
         this(Component.literal(text), mousePos);
     }
@@ -42,6 +51,13 @@ public class HoveringTextInstruction implements IInstruction {
         this.mousePos = mousePos;
     }
 
+    /**
+     * Converts plain strings into tooltip components.
+     *
+     * @param texts tooltip lines
+     * @param mousePos tooltip anchor position
+     * @return a new tooltip instruction
+     */
     public static HoveringTextInstruction fromStrings(List<String> texts, Vec2i mousePos) {
         return new HoveringTextInstruction(texts.stream().map(Component::literal).collect(Collectors.toList()), mousePos);
     }

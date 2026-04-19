@@ -4,11 +4,24 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 
+/**
+ * Adapter that wraps a vanilla {@link AbstractWidget} so it can participate in the MKWidgets tree model.
+ */
 public class MCWidgetContainer extends MKWidget {
 
     private final AbstractWidget mcWidget;
 
 
+    /**
+     * Creates a wrapper around an existing vanilla widget.
+     *
+     * @param x initial x position
+     * @param y initial y position
+     * @param width initial width
+     * @param height initial height
+     * @param mcWidget wrapped vanilla widget
+     * @param canFocus whether this wrapper should participate in MKWidgets focus traversal
+     */
     public MCWidgetContainer(int x, int y, int width, int height, AbstractWidget mcWidget, boolean canFocus) {
         super(x, y, width, height);
         this.mcWidget = mcWidget;
@@ -19,6 +32,11 @@ public class MCWidgetContainer extends MKWidget {
         setCanFocus(canFocus);
     }
 
+    /**
+     * Returns the wrapped vanilla widget.
+     *
+     * @return wrapped widget instance
+     */
     public AbstractWidget getContainedWidget() {
         return mcWidget;
     }

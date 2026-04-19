@@ -16,6 +16,19 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Supplier;
 
+/**
+ * Default screen implementation for MKWidgets-driven UIs.
+ * <p>
+ * {@code MKScreen} owns the root widget trees displayed on a Minecraft {@link Screen} and coordinates focus,
+ * modal overlays, drag state, one-shot post-render instructions, and a simple named-state stack for swapping
+ * widget hierarchies.
+ * <p>
+ * Render order is intentionally explicit:
+ * pre-draw runnables run first, hover is refreshed, root widgets are drawn, modals are drawn above them,
+ * active drag state renders next, and queued post-render instructions render last. Input mirrors that
+ * layering, with visible modals receiving pointer events before root widgets. Keyboard input is routed to the
+ * focused widget first, with screen-level fallback handling such as tab focus traversal afterward.
+ */
 public class MKScreen extends Screen implements IMKScreen {
     public final ArrayDeque<IMKWidget> children;
     public static String NO_STATE = "NO_STATE";
@@ -32,6 +45,11 @@ public class MKScreen extends Screen implements IMKScreen {
     private IMKWidget dragSource;
     private IMKWidget focus;
 
+    /**
+     * Creates a new MKWidgets screen.
+     *
+     * @param title screen title component
+     */
     public MKScreen(Component title) {
         super(title);
         firstRender = true;
@@ -262,6 +280,11 @@ public class MKScreen extends Screen implements IMKScreen {
         postSetupCallbacks.clear();
     }
 
+    /**
+     * Rebuilds the screen's content tree.
+     * <p>
+     * Subclasses override this to add states, root widgets, callbacks, and other one-time setup work.
+     */
     public void setupScreen() {
         clearWidgets();
         clearPreDrawRunnables();
@@ -269,6 +292,9 @@ public class MKScreen extends Screen implements IMKScreen {
         this.stateCache.clear();
     }
 
+    /**
+     * Rebuilds the screen's widget hierarchy on the next render pass.
+     */
     public void flagNeedSetup() {
         firstRender = true;
     }
@@ -298,6 +324,16 @@ public class MKScreen extends Screen implements IMKScreen {
         return false;
     }
 
+    /**
+     * Handles screen-level key bindings after the focused widget has had a chance to consume the key.
+     * <p>
+     * The base implementation provides tab focus traversal.
+     *
+     * @param keyCode GLFW key code
+     * @param scanCode platform scan code
+     * @param modifiers active modifier flags
+     * @return {@code true} if the key was handled
+     */
     public boolean onKeyPress(int keyCode, int scanCode, int modifiers) {
 
         if (keyCode == GLFW.GLFW_KEY_TAB) {
@@ -329,6 +365,11 @@ public class MKScreen extends Screen implements IMKScreen {
         return false;
     }
 
+    /**
+     * Returns all focusable widgets in tree order.
+     *
+     * @return focusable widgets reachable from the screen roots
+     */
     public List<IMKWidget> findFocusable() {
         List<IMKWidget> focusable = new ArrayList<>();
         for (IMKWidget child : children) {
@@ -351,6 +392,13 @@ public class MKScreen extends Screen implements IMKScreen {
         }
     }
 
+    /**
+     * Executes the full MKWidgets render flow for this screen.
+     * <p>
+     * On first render after setup is invalidated, the screen rebuilds itself. Each frame then runs registered
+     * pre-draw tasks, refreshes hover state, draws root widgets, draws active modals above them, renders any
+     * drag overlay, and finally executes queued post-render instructions such as tooltips.
+     */
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         if (firstRender) {
@@ -395,6 +443,9 @@ public class MKScreen extends Screen implements IMKScreen {
     }
 
 
+    /**
+     * Dispatches mouse drag input with modal-first precedence.
+     */
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int mouseButton,
                                 double dX, double dY) {
@@ -421,6 +472,11 @@ public class MKScreen extends Screen implements IMKScreen {
         return super.mouseDragged(mouseX, mouseY, mouseButton, dX, dY);
     }
 
+    /**
+     * Dispatches mouse press input with modal-first precedence.
+     * <p>
+     * If no widget consumes the click, screen focus is cleared before falling back to vanilla behavior.
+     */
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         Iterator<IMKModal> modalIt = modals.descendingIterator();
@@ -471,6 +527,9 @@ public class MKScreen extends Screen implements IMKScreen {
     }
 
 
+    /**
+     * Dispatches mouse release input with modal-first precedence.
+     */
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
         Iterator<IMKModal> modalIt = modals.descendingIterator();
@@ -496,6 +555,9 @@ public class MKScreen extends Screen implements IMKScreen {
         return super.mouseReleased(mouseX, mouseY, mouseButton);
     }
 
+    /**
+     * Routes key release input to the focused widget when one exists.
+     */
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
         if (focus != null) {
@@ -505,6 +567,9 @@ public class MKScreen extends Screen implements IMKScreen {
         }
     }
 
+    /**
+     * Routes typed character input to the focused widget when one exists.
+     */
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
         if (focus != null) {
@@ -514,10 +579,20 @@ public class MKScreen extends Screen implements IMKScreen {
         }
     }
 
+    /**
+     * Queues work to execute during the next screen tick.
+     *
+     * @param runnable task to execute on the next tick
+     */
     public void scheduleNextTick(Runnable runnable) {
         delayedTasks.add(runnable);
     }
 
+    /**
+     * Advances screen-level delayed work.
+     * <p>
+     * Tasks queued with {@link #scheduleNextTick(Runnable)} are executed here after the normal screen tick.
+     */
     @Override
     public void tick() {
         super.tick();

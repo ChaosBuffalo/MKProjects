@@ -5,6 +5,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 
+/**
+ * Screen-wide modal overlay widget.
+ * <p>
+ * A modal usually fills the screen, optionally draws a dim background, and receives input before ordinary
+ * root widgets.
+ */
 public class MKModal extends MKWidget implements IMKModal {
 
     private boolean doBackground;
@@ -12,6 +18,9 @@ public class MKModal extends MKWidget implements IMKModal {
     private boolean closeOnClickOutsideContent;
     private Runnable onCloseCallback;
 
+    /**
+     * Creates a modal with a translucent dark background and outside-click-to-close enabled.
+     */
     public MKModal() {
         super(0, 0, 200, 20);
         doBackground = true;
@@ -19,6 +28,12 @@ public class MKModal extends MKWidget implements IMKModal {
         closeOnClickOutsideContent = true;
     }
 
+    /**
+     * Sets the color drawn behind modal content when the modal background is enabled.
+     *
+     * @param color background fill color
+     * @return this modal
+     */
     public MKModal setBackgroundColor(int color) {
         backgroundColor = color;
         return this;
@@ -61,6 +76,12 @@ public class MKModal extends MKWidget implements IMKModal {
         return backgroundColor;
     }
 
+    /**
+     * Enables or disables the full-screen modal background fill.
+     *
+     * @param value {@code true} to draw the modal background
+     * @return this modal
+     */
     public MKModal setDoBackground(boolean value) {
         doBackground = value;
         return this;
