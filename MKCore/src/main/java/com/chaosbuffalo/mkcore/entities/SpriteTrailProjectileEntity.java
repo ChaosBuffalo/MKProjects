@@ -21,7 +21,7 @@ public abstract class SpriteTrailProjectileEntity extends TrailProjectileEntity 
     }
 
     public void setItem(ItemStack item) {
-        stack = item;
+        stack = item == null ? ItemStack.EMPTY : item;
     }
 
     @Override
@@ -32,12 +32,19 @@ public abstract class SpriteTrailProjectileEntity extends TrailProjectileEntity 
     @Override
     public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
         super.writeSpawnData(buffer);
+        if (stack.isEmpty()) {
+            buffer.writeBoolean(false);
+            return;
+        }
+        buffer.writeBoolean(true);
         ItemStack.STREAM_CODEC.encode(buffer, stack);
     }
 
     @Override
     public void readSpawnData(RegistryFriendlyByteBuf additionalData) {
         super.readSpawnData(additionalData);
-        stack = ItemStack.STREAM_CODEC.decode(additionalData);
+        stack = additionalData.readBoolean()
+                ? ItemStack.STREAM_CODEC.decode(additionalData)
+                : ItemStack.EMPTY;
     }
 }
