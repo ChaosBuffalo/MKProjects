@@ -9,10 +9,14 @@ import org.slf4j.Logger;
 
 
 /**
- * NeoForge bootstrap class for the Targeting API mod.
+ * Provides an extensible targeting utility API for defining how entities and players can interact with
+ * each other. All relationships are abstracted into one of: Friendly, Enemy, Neutral, or Unhandled.
  * <p>
- * This class exists to register the module with the mod loader and is not part
- * of the main consumer-facing targeting API.
+ * The library centers on relationship resolution between entities and reusable
+ * {@link TargetingContext targeting contexts} that describe valid targets such
+ * as self, friendly, enemy, neutral, players, or custom filtered groups.
+ * <p>
+ *
  */
 @Mod(TargetingAPI.MODID)
 public class TargetingAPI {
@@ -27,6 +31,6 @@ public class TargetingAPI {
      * @param modContainer the owning mod container
      */
     public TargetingAPI(IEventBus modEventBus, ModContainer modContainer) {
-        // do a line change in source to test ci
+
     }
 }
