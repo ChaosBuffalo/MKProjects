@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkcore.client.gui.widgets;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
 import com.chaosbuffalo.mkcore.client.gui.GuiTextures;
 import com.chaosbuffalo.mkcore.client.gui.IAbilityScreen;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -23,8 +24,11 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKImage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
+
+import javax.annotation.Nullable;
 
 public class AbilitySlotWidget extends MKLayout {
     private final AbilityGroupId slotGroup;
@@ -91,13 +95,14 @@ public class AbilitySlotWidget extends MKLayout {
             removeWidget(icon);
         }
         if (!this.abilityId.equals(MKCoreRegistry.INVALID_ABILITY)) {
-            MKAbility ability = MKCoreRegistry.getAbility(newAbilityId);
-            if (ability != null) {
-                icon = new MKImage(0, 0, 16, 16, ability.getAbilityIcon());
-                addWidget(icon);
-                addConstraintToWidget(MarginConstraint.TOP, icon);
-                addConstraintToWidget(MarginConstraint.LEFT, icon);
+            ResourceLocation iconLocation = resolveAbilityIcon(newAbilityId);
+            if (iconLocation == null) {
+                return;
             }
+            icon = new MKImage(0, 0, 16, 16, iconLocation);
+            addWidget(icon);
+            addConstraintToWidget(MarginConstraint.TOP, icon);
+            addConstraintToWidget(MarginConstraint.LEFT, icon);
         }
     }
 
@@ -170,14 +175,42 @@ public class AbilitySlotWidget extends MKLayout {
         if (isHovered()) {
             if (getScreen() != null) {
                 if (!getAbilityId().equals(MKCoreRegistry.INVALID_ABILITY)) {
-                    MKAbility ability = MKCoreRegistry.getAbility(getAbilityId());
-                    if (ability != null) {
+                    Component displayName = resolveAbilityDisplayName(getAbilityId());
+                    if (displayName != null) {
                         getScreen().addPostRenderInstruction(new HoveringTextInstruction(
-                                ability.getAbilityName(),
+                                displayName,
                                 getParentCoords(new Vec2i(mouseX, mouseY))));
                     }
                 }
             }
         }
+    }
+
+    private @Nullable ResourceLocation resolveAbilityIcon(ResourceLocation abilityId) {
+        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
+        if (ability != null) {
+            return ability.getAbilityIcon();
+        }
+
+        AbilityDefinitionData definition = MKCore.getAbilityDefinitionService().getDefinition(abilityId);
+        if (definition != null) {
+            return definition.presentation().icon();
+        }
+
+        return null;
+    }
+
+    private @Nullable Component resolveAbilityDisplayName(ResourceLocation abilityId) {
+        MKAbility ability = MKCoreRegistry.getAbility(abilityId);
+        if (ability != null) {
+            return ability.getAbilityName();
+        }
+
+        AbilityDefinitionData definition = MKCore.getAbilityDefinitionService().getDefinition(abilityId);
+        if (definition != null) {
+            return Component.literal(definition.presentation().name());
+        }
+
+        return null;
     }
 }
