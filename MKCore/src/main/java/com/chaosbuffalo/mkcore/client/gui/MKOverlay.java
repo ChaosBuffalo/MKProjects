@@ -4,6 +4,7 @@ package com.chaosbuffalo.mkcore.client.gui;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
+import com.chaosbuffalo.mkcore.abilities2.definition.AbilityDefinitionData;
 import com.chaosbuffalo.mkcore.client.gui.widgets.OnScreenXpBarWidget;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKPlayerData;
@@ -23,6 +24,8 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
+
+import javax.annotation.Nullable;
 
 import java.util.Comparator;
 import java.util.List;
@@ -332,14 +335,25 @@ public class MKOverlay implements LayeredDraw.Layer {
         float globalCooldown = executor.getGlobalCooldownPercent(partialTicks);
 
         for (int i = 0; i < slotCount; i++) {
-            MKAbilityInfo abilityInfo = abilityGroup.getAbilityInfo(i);
-            if (abilityInfo == null)
+            ResourceLocation abilityId = abilityGroup.getSlot(i);
+            if (abilityId == null) {
                 continue;
+            }
+            MKAbilityInfo abilityInfo = abilityGroup.getAbilityInfo(i);
+            MKAbility ability = abilityInfo != null ? abilityInfo.getAbility() : null;
+            ResourceLocation iconLocation = ability != null ? ability.getAbilityIcon() : resolveDefinitionAbilityIcon(abilityId);
+            if (iconLocation == null) {
+                continue;
+            }
 
-            MKAbility ability = abilityInfo.getAbility();
-
-            float manaCost = executor.getAbilityManaCost(abilityInfo);
-            if (!executor.isCasting() && data.getStats().getMana() >= manaCost) {
+            if (abilityInfo != null) {
+                float manaCost = executor.getAbilityManaCost(abilityInfo);
+                if (!executor.isCasting() && data.getStats().getMana() >= manaCost) {
+                    RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                } else {
+                    RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1.0F);
+                }
+            } else if (!executor.isCasting() && MKCore.getAbilityRuntimeService().canExecuteLoadoutAbility(group, abilityId)) {
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             } else {
                 RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1.0F);
@@ -348,26 +362,38 @@ public class MKOverlay implements LayeredDraw.Layer {
             int slotX = slotAbilityOffsetX;
             int slotY = barStartY + slotAbilityOffsetY - (startingSlot + i) + ((startingSlot + i) * SLOT_HEIGHT);
 
-            graphics.blit(ability.getAbilityIcon(), slotX, slotY, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
+            graphics.blit(iconLocation, slotX, slotY, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
 
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            float cooldownFactor = executor.getCurrentAbilityCooldownPercent(abilityInfo.getId(), partialTicks);
-            if (globalCooldown > 0.0f && cooldownFactor == 0) {
-                cooldownFactor = globalCooldown / ClientEventHandler.getTotalGlobalCooldown();
-            }
-
-            if (cooldownFactor > 0) {
-                int coolDownHeight = (int) (cooldownFactor * ABILITY_ICON_SIZE);
-                if (coolDownHeight < 1) {
-                    coolDownHeight = 1;
+            if (abilityInfo != null) {
+                float cooldownFactor = executor.getCurrentAbilityCooldownPercent(abilityInfo.getId(), partialTicks);
+                if (globalCooldown > 0.0f && cooldownFactor == 0) {
+                    cooldownFactor = globalCooldown / ClientEventHandler.getTotalGlobalCooldown();
                 }
-                graphics.blit(COOLDOWN_ICON, slotX, slotY, 0, 0, ABILITY_ICON_SIZE, coolDownHeight, ABILITY_ICON_SIZE, coolDownHeight);
+
+                if (cooldownFactor > 0) {
+                    int coolDownHeight = (int) (cooldownFactor * ABILITY_ICON_SIZE);
+                    if (coolDownHeight < 1) {
+                        coolDownHeight = 1;
+                    }
+                    graphics.blit(COOLDOWN_ICON, slotX, slotY, 0, 0, ABILITY_ICON_SIZE, coolDownHeight, ABILITY_ICON_SIZE, coolDownHeight);
+                }
             }
 
-            ability.getRenderer().drawAbilityBarEffect(data, graphics, mc, slotX, slotY);
+            if (ability != null) {
+                ability.getRenderer().drawAbilityBarEffect(data, graphics, mc, slotX, slotY);
+            }
         }
         RenderSystem.disableBlend();
         return startingSlot + slotCount;
+    }
+
+    private @Nullable ResourceLocation resolveDefinitionAbilityIcon(ResourceLocation abilityId) {
+        AbilityDefinitionData definition = MKCore.getAbilityDefinitionService().getDefinition(abilityId);
+        if (definition == null) {
+            return null;
+        }
+        return definition.presentation().icon();
     }
 
     @Override
